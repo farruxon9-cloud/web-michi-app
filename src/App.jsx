@@ -22,6 +22,9 @@ function App() {
   const [userRole, setUserRole] = useState(null); // Temporarily disable auto-login
   const [activeTab, setActiveTab] = useState('home');
   const [selectedJob, setSelectedJob] = useState(null);
+  const [selectedSchool, setSelectedSchool] = useState(null);
+  const [profileActivePage, setProfileActivePage] = useState('main');
+  const [backTab, setBackTab] = useState(null);
   const [isContractActive, setIsContractActive] = useState(false);
   const [verifiedCompanies, setVerifiedCompanies] = useState(['Sagawa Express', 'Yamato Transport']);
 
@@ -29,6 +32,20 @@ function App() {
     setVerifiedCompanies(prev => 
       prev.includes(companyId) ? prev.filter(id => id !== companyId) : [...prev, companyId]
     );
+  };
+
+  const handleSchoolClick = (school) => {
+    setBackTab('profile');
+    setActiveTab('academy');
+    setSelectedSchool(school);
+  };
+
+  const handleSchoolBack = () => {
+    setSelectedSchool(null);
+    if (backTab) {
+      setActiveTab(backTab);
+      setBackTab(null);
+    }
   };
 
   // Dark mode
@@ -355,6 +372,9 @@ function App() {
             verifiedCompanies={verifiedCompanies}
             onToggleSave={handleToggleSave}
             userRole={userRole}
+            selectedSchool={selectedSchool}
+            setSelectedSchool={setSelectedSchool}
+            onBackPress={handleSchoolBack}
           />
         );
       case 'service':
@@ -385,8 +405,11 @@ function App() {
             onAddEmployee={handleAddEmployee}
             onAcceptEmployeeRequest={handleAcceptEmployeeRequest}
             setNotifications={setNotifications}
-            profileData={profileData}
             onNavigate={setActiveTab}
+            activePage={profileActivePage}
+            setActivePage={setProfileActivePage}
+            onJobClick={setSelectedJob}
+            onSchoolClick={handleSchoolClick}
           />
         );
       default:
@@ -436,6 +459,8 @@ function App() {
         activeTab={activeTab} 
         setActiveTab={(tab) => {
           setSelectedJob(null);
+          setSelectedSchool(null);
+          setBackTab(null);
           setActiveTab(tab);
         }}
         unreadCount={unreadCount}

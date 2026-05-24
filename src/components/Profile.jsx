@@ -4,6 +4,8 @@ import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, Shi
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
   Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
+import { MOCK_JOBS } from './DriverFeed';
+import { MOCK_SCHOOLS } from './DrivingAcademy';
 import './Profile.css';
 
 const STATUS_PIPELINE = ['submitted', 'reviewing', 'reviewed', 'interview', 'rejected', 'accepted'];
@@ -22,10 +24,13 @@ export default function Profile({
   notifications, onMarkRead, onMarkAllRead, unreadCount,
   darkMode, setDarkMode, soundSettings, setSoundSettings,
   companyEmployees, onAddEmployee, onAcceptEmployeeRequest, setNotifications,
-  schoolApplications = [], onShoukaiPaid, onNavigate
+  schoolApplications = [], onShoukaiPaid, onNavigate,
+  activePage = 'main',
+  setActivePage,
+  onJobClick,
+  onSchoolClick
 }) {
   const { t } = useTranslation();
-  const [activePage, setActivePage] = useState('main');
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
   const [acceptingAppId, setAcceptingAppId] = useState(null);
@@ -526,8 +531,13 @@ const getLicenseLabel = (type) => {
 
   // ===== SAVED ITEMS PAGE =====
   if (activePage === 'saved_items') {
-    const savedJobs = profileData?.savedItems?.jobs || [];
-    const savedSchools = profileData?.savedItems?.schools || [];
+    // Filter active items
+    const savedJobs = (profileData?.savedItems?.jobs || []).filter(job => 
+      MOCK_JOBS.some(mj => mj.id === job.id && mj.isActive !== false)
+    );
+    const savedSchools = (profileData?.savedItems?.schools || []).filter(school => 
+      MOCK_SCHOOLS.some(ms => ms.id === school.id && ms.isActive !== false)
+    );
     return (
       <div className="profile-container fade-in">
         <div className="sub-page-header">
@@ -546,7 +556,12 @@ const getLicenseLabel = (type) => {
                 <div style={{ marginBottom: '24px' }}>
                   <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('jobAds', 'Ish e\'lonlari')}</h3>
                   {savedJobs.map(job => (
-                    <div key={job.id} className="app-card glass squircle" onClick={() => onNavigate('home')}>
+                    <div key={job.id} className="app-card glass squircle" onClick={() => {
+                      const fullJob = MOCK_JOBS.find(mj => mj.id === job.id);
+                      if (fullJob && onJobClick) {
+                        onJobClick(fullJob);
+                      }
+                    }}>
                       <div className="app-header-info">
                         <img src={job.logo} alt={job.company} className="app-logo" style={{ borderRadius: '8px' }} />
                         <div>
@@ -562,7 +577,12 @@ const getLicenseLabel = (type) => {
                 <div>
                   <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('drivingSchools', 'Avtomaktablar')}</h3>
                   {savedSchools.map(school => (
-                    <div key={school.id} className="app-card glass squircle" onClick={() => onNavigate('academy')}>
+                    <div key={school.id} className="app-card glass squircle" onClick={() => {
+                      const fullSchool = MOCK_SCHOOLS.find(ms => ms.id === school.id);
+                      if (fullSchool && onSchoolClick) {
+                        onSchoolClick(fullSchool);
+                      }
+                    }}>
                       <div className="app-header-info">
                         <img src={school.image} alt={school.name} className="app-logo" style={{ borderRadius: '8px' }} />
                         <div>

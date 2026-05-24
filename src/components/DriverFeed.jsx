@@ -4,7 +4,7 @@ import { Search, MapPin, Share2 } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './DriverFeed.css';
 
-const MOCK_JOBS = [
+export const MOCK_JOBS = [
   {
     id: 1,
     company: "Sagawa Express",

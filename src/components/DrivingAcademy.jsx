@@ -5,7 +5,7 @@ import VerifiedBadge from './VerifiedBadge';
 import './DrivingAcademy.css';
 import './DriverFeed.css'; // Use job-card styles
 
-const MOCK_SCHOOLS = [
+export const MOCK_SCHOOLS = [
   {
     id: 1,
     name: "Koyama Driving School",
@@ -98,9 +98,12 @@ const MOCK_SCHOOLS = [
   }
 ];
 
-export default function DrivingAcademy({ isContractActive, onApplySchool, schoolApplications = [], onShoukaiPaid, profileData, onShoukai, verifiedCompanies = [], onToggleSave, userRole }) {
+export default function DrivingAcademy({ 
+  isContractActive, onApplySchool, schoolApplications = [], onShoukaiPaid, 
+  profileData, onShoukai, verifiedCompanies = [], onToggleSave, userRole,
+  selectedSchool, setSelectedSchool, onBackPress
+}) {
   const { t } = useTranslation();
-  const [selectedSchool, setSelectedSchool] = useState(null);
   const [showShoukaiInput, setShowShoukaiInput] = useState(false);
   const [referrerName, setReferrerName] = useState('');
 
@@ -116,7 +119,14 @@ export default function DrivingAcademy({ isContractActive, onApplySchool, school
         <div className="school-detail-scroll hide-scrollbar">
           {/* Sticky Header Actions */}
           <div className="academy-header-actions">
-            <button className="icon-btn glass" onClick={() => { setSelectedSchool(null); setShowShoukaiInput(false); }}>
+            <button className="icon-btn glass" onClick={() => { 
+              if (onBackPress) {
+                onBackPress();
+              } else {
+                setSelectedSchool(null);
+              }
+              setShowShoukaiInput(false); 
+            }}>
               <ArrowLeft size={20} />
             </button>
             <button className="icon-btn glass" onClick={() => onToggleSave(school, 'schools')}>
