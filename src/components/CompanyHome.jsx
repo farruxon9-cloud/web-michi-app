@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Plus, Edit3, X, Image as ImageIcon } from 'lucide-react';
+import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './DriverFeed.css';
 
@@ -35,96 +35,281 @@ const INITIAL_COMPANY_JOBS = [
 export default function CompanyHome({ onJobClick }) {
   const { t } = useTranslation();
   const [jobs, setJobs] = useState(INITIAL_COMPANY_JOBS);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [jobImage, setJobImage] = useState(null);
+  const fileInputRef = useRef(null);
   const [newJob, setNewJob] = useState({
-    title: '', salary: '', location: '', hours: '', bonus: '', insurance: '', foreigners: '', housing: '', description: ''
+    title: '', salary: '', location: '', hours: '', bonus: '', insurance: '', foreigners: '', housing: '', description: '', dayOff: ''
   });
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setJobImage(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleAddJob = () => {
     if(!newJob.title || !newJob.salary) {
-      alert("Iltimos barcha kerakli joylarni to'ldiring");
+      alert(t('fillRequired', "Iltimos barcha kerakli joylarni to'ldiring"));
       return;
     }
     const job = {
       id: Date.now(),
-      company: "Sagawa Express", // Mock company name
+      company: "Sagawa Express",
       title: newJob.title,
       salary: newJob.salary,
-      location: newJob.location || 'Kiritilmagan',
+      location: newJob.location || t('notProvided', 'Kiritilmagan'),
       hours: newJob.hours,
       bonus: newJob.bonus,
       insurance: newJob.insurance,
       foreigners: newJob.foreigners,
       housing: newJob.housing,
       description: newJob.description,
-      image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800", // random default
+      dayOff: newJob.dayOff,
+      image: jobImage || "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
       verified: true,
       logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100"
     };
     setJobs([job, ...jobs]);
-    setShowAddModal(false);
-    setNewJob({title:'', salary:'', location:'', hours:'', bonus:'', insurance:'', foreigners:'', housing:'', description:''});
+    setShowAddForm(false);
+    setJobImage(null);
+    setNewJob({title:'', salary:'', location:'', hours:'', bonus:'', insurance:'', foreigners:'', housing:'', description:'', dayOff:''});
   };
 
+  // ===== ADD NEW JOB FORM (Full Page) =====
+  if (showAddForm) {
+    return (
+      <div className="feed-container fade-in" style={{ paddingTop: '10px', paddingBottom: '100px' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
+          <button className="icon-btn glass" onClick={() => { setShowAddForm(false); setJobImage(null); }}>
+            <ArrowLeft size={20} />
+          </button>
+          <h2 style={{ margin: 0, fontSize: '20px' }}>{t('addNewJob', "Yangi e'lon qo'shish")}</h2>
+        </div>
+
+        <div style={{ padding: '0 16px' }}>
+          {/* Image Upload Section */}
+          <div 
+            className="glass squircle"
+            onClick={() => fileInputRef.current?.click()}
+            style={{ 
+              height: '180px', 
+              display: 'flex', 
+              flexDirection: 'column',
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              cursor: 'pointer',
+              marginBottom: '20px',
+              overflow: 'hidden',
+              position: 'relative',
+              border: '2px dashed var(--primary)'
+            }}
+          >
+            {jobImage ? (
+              <>
+                <img src={jobImage} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '26px' }} />
+                <div style={{ 
+                  position: 'absolute', bottom: '10px', right: '10px', 
+                  background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '6px 12px', 
+                  borderRadius: '12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px'
+                }}>
+                  <Camera size={14} /> {t('changePhoto', "Rasmni o'zgartirish")}
+                </div>
+              </>
+            ) : (
+              <>
+                <Upload size={32} color="var(--primary)" />
+                <span style={{ marginTop: '8px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                  {t('uploadJobImage', "E'lon rasmini yuklang")}
+                </span>
+                <span style={{ fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.7, marginTop: '4px' }}>
+                  {t('optionalField', '(Ixtiyoriy)')}
+                </span>
+              </>
+            )}
+          </div>
+          <input 
+            type="file" 
+            accept="image/*" 
+            ref={fileInputRef} 
+            style={{ display: 'none' }} 
+            onChange={handleImageChange}
+          />
+
+          {/* Form Fields */}
+          <div className="glass squircle" style={{ padding: '20px', marginBottom: '16px' }}>
+            <h4 style={{ marginBottom: '16px', fontSize: '16px', color: 'var(--primary)' }}>
+              {t('jobBasicInfo', "Asosiy ma'lumotlar")}
+            </h4>
+            
+            <div className="input-group" style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+                {t('jobTitleLabel', 'Sarlavha (Vakansiya)')} *
+              </label>
+              <input 
+                type="text" 
+                value={newJob.title} 
+                onChange={e => setNewJob({...newJob, title: e.target.value})} 
+                placeholder={t('jobTitlePlaceholder', "Masalan: Mahalliy yetkazib beruvchi")} 
+                className="auth-input"
+              />
+            </div>
+            
+            <div className="input-group" style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+                {t('salaryLabel', 'Oylik maosh')} *
+              </label>
+              <input 
+                type="text" 
+                value={newJob.salary} 
+                onChange={e => setNewJob({...newJob, salary: e.target.value})} 
+                placeholder={t('salaryPlaceholder', "¥300,000 / oyiga")} 
+                className="auth-input"
+              />
+            </div>
+            
+            <div className="input-group" style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+                {t('locationLabel', 'Manzil')} ({t('optionalField', 'Ixtiyoriy')})
+              </label>
+              <input 
+                type="text" 
+                value={newJob.location} 
+                onChange={e => setNewJob({...newJob, location: e.target.value})} 
+                placeholder="Tokyo, Koto-ku" 
+                className="auth-input"
+              />
+            </div>
+          </div>
+
+          <div className="glass squircle" style={{ padding: '20px', marginBottom: '16px' }}>
+            <h4 style={{ marginBottom: '16px', fontSize: '16px', color: 'var(--primary)' }}>
+              {t('jobConditionsTitle', 'Ish sharoitlari')}
+            </h4>
+            
+            <div className="input-group" style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+                {t('workHoursLabel', 'Ish vaqti')} ({t('optionalField', 'Ixtiyoriy')})
+              </label>
+              <input 
+                type="text" 
+                value={newJob.hours} 
+                onChange={e => setNewJob({...newJob, hours: e.target.value})} 
+                placeholder="08:00 - 17:00" 
+                className="auth-input"
+              />
+            </div>
+            
+            <div className="input-group" style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+                {t('dayOffLabel', 'Dam olish kunlari')} ({t('optionalField', 'Ixtiyoriy')})
+              </label>
+              <input 
+                type="text" 
+                value={newJob.dayOff} 
+                onChange={e => setNewJob({...newJob, dayOff: e.target.value})} 
+                placeholder={t('dayOffPlaceholder', "Shanba, Yakshanba")} 
+                className="auth-input"
+              />
+            </div>
+            
+            <div className="input-group" style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+                {t('bonusLabel', "Bonus puli bormi?")} ({t('optionalField', 'Ixtiyoriy')})
+              </label>
+              <input 
+                type="text" 
+                value={newJob.bonus} 
+                onChange={e => setNewJob({...newJob, bonus: e.target.value})} 
+                placeholder={t('bonusPlaceholder', "Yiliga 2 marta")} 
+                className="auth-input"
+              />
+            </div>
+            
+            <div className="input-group" style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+                {t('insuranceLabel', "Sug'urta to'lovlari bormi?")} ({t('optionalField', 'Ixtiyoriy')})
+              </label>
+              <input 
+                type="text" 
+                value={newJob.insurance} 
+                onChange={e => setNewJob({...newJob, insurance: e.target.value})} 
+                placeholder={t('insurancePlaceholder', "To'liq ijtimoiy sug'urta")} 
+                className="auth-input"
+              />
+            </div>
+          </div>
+
+          <div className="glass squircle" style={{ padding: '20px', marginBottom: '16px' }}>
+            <h4 style={{ marginBottom: '16px', fontSize: '16px', color: 'var(--primary)' }}>
+              {t('additionalInfo', "Qo'shimcha ma'lumotlar")}
+            </h4>
+            
+            <div className="input-group" style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+                {t('foreignersLabel', "Chet elliklarni qabul qilish va Viza yordami")} ({t('optionalField', 'Ixtiyoriy')})
+              </label>
+              <input 
+                type="text" 
+                value={newJob.foreigners} 
+                onChange={e => setNewJob({...newJob, foreigners: e.target.value})} 
+                placeholder={t('foreignersPlaceholder', "Viza qo'llab-quvvatlovi bor")} 
+                className="auth-input"
+              />
+            </div>
+            
+            <div className="input-group" style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+                {t('housingLabel', "Uy ijarasi uchun qo'shimcha to'lov")} ({t('optionalField', 'Ixtiyoriy')})
+              </label>
+              <input 
+                type="text" 
+                value={newJob.housing} 
+                onChange={e => setNewJob({...newJob, housing: e.target.value})} 
+                placeholder={t('housingPlaceholder', "Uy ijarasining 50% to'lanadi")} 
+                className="auth-input"
+              />
+            </div>
+            
+            <div className="input-group" style={{ marginBottom: '14px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+                {t('jobDescLabel', 'Batafsil tavsif')} ({t('optionalField', 'Ixtiyoriy')})
+              </label>
+              <textarea 
+                value={newJob.description} 
+                onChange={e => setNewJob({...newJob, description: e.target.value})} 
+                placeholder={t('jobDescPlaceholder', "Ish haqida ma'lumot...")}
+                className="auth-input"
+                style={{ minHeight: '100px', resize: 'vertical' }}
+              ></textarea>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <button 
+            className="btn-primary squircle" 
+            style={{ width: '100%', padding: '14px', fontSize: '16px', fontWeight: '700', marginBottom: '20px' }} 
+            onClick={handleAddJob}
+          >
+            {t('publishJob', "E'lonni joylash")}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== MAIN JOB LIST =====
   return (
     <div className="feed-container fade-in" style={{ paddingTop: '20px' }}>
       
-      {showAddModal && (
-        <div className="modal-overlay">
-          <div className="modal-content glass squircle" style={{ padding: '24px', maxHeight: '80vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <h3 style={{ margin: 0 }}>Yangi e'lon qo'shish</h3>
-              <button className="icon-btn glass" onClick={() => setShowAddModal(false)}><X size={20}/></button>
-            </div>
-            
-            <div className="input-group">
-              <label>Sarlavha (Vakansiya) *</label>
-              <input type="text" value={newJob.title} onChange={e=>setNewJob({...newJob, title: e.target.value})} placeholder="Masalan: Mahalliy yetkazib beruvchi" />
-            </div>
-            <div className="input-group">
-              <label>Oylik maosh *</label>
-              <input type="text" value={newJob.salary} onChange={e=>setNewJob({...newJob, salary: e.target.value})} placeholder="¥300,000 / oyiga" />
-            </div>
-            <div className="input-group">
-              <label>Manzil (Ixtiyoriy)</label>
-              <input type="text" value={newJob.location} onChange={e=>setNewJob({...newJob, location: e.target.value})} placeholder="Tokyo, Koto-ku" />
-            </div>
-            <div className="input-group">
-              <label>Batafsil tavsif (Ixtiyoriy)</label>
-              <textarea value={newJob.description} onChange={e=>setNewJob({...newJob, description: e.target.value})} placeholder="Ish haqida ma'lumot..."></textarea>
-            </div>
-            <div className="input-group">
-              <label>Ish vaqti (Ixtiyoriy)</label>
-              <input type="text" value={newJob.hours} onChange={e=>setNewJob({...newJob, hours: e.target.value})} placeholder="08:00 - 17:00" />
-            </div>
-            <div className="input-group">
-              <label>Bonus puli bormi? Yilda nechi marta? (Ixtiyoriy)</label>
-              <input type="text" value={newJob.bonus} onChange={e=>setNewJob({...newJob, bonus: e.target.value})} placeholder="Yiliga 2 marta" />
-            </div>
-            <div className="input-group">
-              <label>Sug'urta to'lovlari bormi? (Ixtiyoriy)</label>
-              <input type="text" value={newJob.insurance} onChange={e=>setNewJob({...newJob, insurance: e.target.value})} placeholder="To'liq ijtimoiy sug'urta" />
-            </div>
-            <div className="input-group">
-              <label>Chet elliklarni qabul qilish va Viza yordami (Ixtiyoriy)</label>
-              <input type="text" value={newJob.foreigners} onChange={e=>setNewJob({...newJob, foreigners: e.target.value})} placeholder="Viza qo'llab-quvvatlovi bor" />
-            </div>
-            <div className="input-group">
-              <label>Uy ijarasi uchun qo'shimcha to'lov (Ixtiyoriy)</label>
-              <input type="text" value={newJob.housing} onChange={e=>setNewJob({...newJob, housing: e.target.value})} placeholder="Uy ijarasining 50% to'lanadi" />
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-              <button className="primary-btn squircle" style={{ flex: 1 }} onClick={handleAddJob}>Saqlash</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ADD JOB BUTTON CARD */}
       <div style={{ padding: '0 16px', marginBottom: '24px' }}>
         <div 
-          onClick={() => setShowAddModal(true)}
+          onClick={() => setShowAddForm(true)}
           style={{ 
             border: '2px dashed var(--primary)', 
             background: 'var(--glass-bg)',
