@@ -398,7 +398,7 @@ export default function CompanyHome({ onJobClick }) {
             </div>
           </div>
         ))}
-        <div style={{ height: '100px' }}></div>
+        <div style={{ height: '10px' }}></div>
       </div>
       
     </div>

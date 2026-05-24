@@ -123,9 +123,13 @@ export default function DrivingAcademy({ isContractActive, onApplySchool, school
               <Bookmark size={20} fill={isSaved ? "var(--primary)" : "none"} color={isSaved ? "var(--primary)" : "currentColor"} />
             </button>
           </div>
-          {/* School Image */}
           <div className="school-image-container">
-            <img src={school.image} alt={school.name} className="school-image" />
+            <img 
+              src={school.image} 
+              alt={school.name} 
+              className="school-image" 
+              onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
+            />
             <div className="langs-badge glass">{school.langs ? school.langs.join(', ') : 'UZ, JP'}</div>
           </div>
 
@@ -266,7 +270,7 @@ export default function DrivingAcademy({ isContractActive, onApplySchool, school
                 onClick={() => setShowShoukaiInput(true)}
                 style={{ flex: 1, background: '#e8f5e9', color: '#2e7d32', border: '1px solid #c8e6c9', padding: '14px 10px', fontSize: '14px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
-                <Share2 size={16} /> {school.shoukaiFee ? `Shoukai (${school.shoukaiFee.toLocaleString()})` : 'Shoukai'}
+                <Share2 size={16} /> {school.shoukaiFee && school.shoukaiFee > 0 ? `${t('shoukai', 'Shoukai')} (${school.shoukaiFee.toLocaleString()})` : t('shoukai', 'Shoukai')}
               </button>
             </div>
           </div>
@@ -291,7 +295,12 @@ export default function DrivingAcademy({ isContractActive, onApplySchool, school
           return (
             <div key={school.id} className="job-card" onClick={() => setSelectedSchool(school)}>
               <div className="job-image-container">
-                <img src={school.image} alt={school.name} className="job-image" />
+                <img 
+                  src={school.image} 
+                  alt={school.name} 
+                  className="job-image" 
+                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
+                />
                 <div className="langs-badge glass">
                   {school.langs ? school.langs.join(', ') : 'UZ, JP'}
                 </div>
@@ -313,7 +322,7 @@ export default function DrivingAcademy({ isContractActive, onApplySchool, school
                     {t('applyToSchool', 'Maktabga topshirish')}
                   </button>
                   <button style={{ flex:1, padding:'8px 12px', background:'rgba(255,159,10,0.1)', color:'#FF9F0A', border:'1px solid rgba(255,159,10,0.2)', borderRadius:'12px', fontSize:'13px', fontWeight:'600', display:'flex', alignItems:'center', justifyContent:'center', gap:'4px' }}>
-                    <Share2 size={14} /> {school.shoukaiFee ? `Shoukai (¥${school.shoukaiFee.toLocaleString()})` : 'Shoukai'}
+                    <Share2 size={14} /> {school.shoukaiFee && school.shoukaiFee > 0 ? `${t('shoukai', 'Shoukai')} (¥${school.shoukaiFee.toLocaleString()})` : t('shoukai', 'Shoukai')}
                   </button>
                 </div>
               </div>
