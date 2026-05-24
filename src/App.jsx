@@ -21,10 +21,27 @@ function App() {
   const [languageSelected, setLanguageSelected] = useState(false);
   const [userRole, setUserRole] = useState(null); // Temporarily disable auto-login
   const [activeTab, setActiveTab] = useState('home');
+  // ==========================================
+  // NAVIGATSIYA VA HOLATLARNI BOSHQARISH (LIFTED STATES & UX ENHANCEMENTS)
+  // Barcha brauzerlarda va mobil qurilmalarda bir xil, silliq va xatosiz ishlashini ta'minlash maqsadida
+  // holatlar (state) ilovaning eng yuqori qismiga ko'tarildi.
+  // ==========================================
+
+  // selectedJob: Foydalanuvchi hozir ko'rayotgan ish e'lonining obyekti.
+  // Tanlanganida, ilova ustidan JobDetail to'liq ekranli overlay (z-index: 200) bo'lib ochiladi.
   const [selectedJob, setSelectedJob] = useState(null);
+
+  // selectedSchool: Foydalanuvchi tanlagan avtomaktab obyekti.
+  // DrivingAcademy komponentiga uzatilib, maktab tafsilotlarini ochish uchun qo'llaniladi.
   const [selectedSchool, setSelectedSchool] = useState(null);
+
+  // profileActivePage: Profil bo'limidagi faol sub-sahifa (masalan: 'main', 'saved_items', 'settings').
+  // Brauzerda tablar almashganda (masalan home tabiga o'tib qaytganda) profil reset bo'lmasligi uchun bu holat App.jsx darajasida saqlanadi.
   const [profileActivePage, setProfileActivePage] = useState('main');
+
+  // backTab: Profilning saqlanganlaridan e'longa kirilganda, ortga qaytish manzilini eslab qoluvchi o'zgaruvchi.
   const [backTab, setBackTab] = useState(null);
+
   const [isContractActive, setIsContractActive] = useState(false);
   const [verifiedCompanies, setVerifiedCompanies] = useState(['Sagawa Express', 'Yamato Transport']);
 
@@ -34,12 +51,16 @@ function App() {
     );
   };
 
+  // handleSchoolClick: Saqlangan avtomaktab bosilganda ishlaydi.
+  // Foydalanuvchini Avtomaktab tabiga o'tkazadi va maktab batafsil sahifasini ochadi.
   const handleSchoolClick = (school) => {
-    setBackTab('profile');
-    setActiveTab('academy');
-    setSelectedSchool(school);
+    setBackTab('profile'); // Kelgan manzilini 'profile' deb belgilaymiz
+    setActiveTab('academy'); // Tabni avtomaktabga o'zgartiramiz
+    setSelectedSchool(school); // Maktabni tanlangan qilamiz
   };
 
+  // handleSchoolBack: Avtomaktab tafsilotlaridan chiqqanda ishlaydi.
+  // Maktab tanlovini bekor qiladi va agar backTab o'rnatilgan bo'lsa, foydalanuvchini o'sha tabga qaytaradi.
   const handleSchoolBack = () => {
     setSelectedSchool(null);
     if (backTab) {

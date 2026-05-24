@@ -98,6 +98,12 @@ export const MOCK_SCHOOLS = [
   }
 ];
 
+// ==========================================
+// DRIVING ACADEMY (AVTOMAKTABLAR BO'LIMI) KOMPONENTI
+// Barcha brauzerlarda va mobil platformalarda navigatsiya xatosiz ishlashi uchun:
+// 1.selectedSchool holati yuqoriga (App.jsx ga) ko'tarilgan.
+// 2.Profil saqlanganlaridan kelganda "Ortga" tugmasi Profilga qaytaradi (onBackPress orqali).
+// ==========================================
 export default function DrivingAcademy({ 
   isContractActive, onApplySchool, schoolApplications = [], onShoukaiPaid, 
   profileData, onShoukai, verifiedCompanies = [], onToggleSave, userRole,
@@ -107,7 +113,7 @@ export default function DrivingAcademy({
   const [showShoukaiInput, setShowShoukaiInput] = useState(false);
   const [referrerName, setReferrerName] = useState('');
 
-  // Detail page
+  // Maktab tanlanganda batafsil ma'lumotlarni ko'rsatish
   if (selectedSchool) {
     const school = selectedSchool;
     const existingApp = schoolApplications.find(a => a.schoolId === school.id);
@@ -119,11 +125,12 @@ export default function DrivingAcademy({
         <div className="school-detail-scroll hide-scrollbar">
           {/* Sticky Header Actions */}
           <div className="academy-header-actions">
+            {/* Ortga qaytish: Profil saqlanganlaridan kelgan bo'lsa profilga, aks holda maktablar ro'yxatiga qaytaradi */}
             <button className="icon-btn glass" onClick={() => { 
               if (onBackPress) {
-                onBackPress();
+                onBackPress(); // App.jsx dagi handleSchoolBack funksiyasini chaqiradi (profilga qaytish uchun)
               } else {
-                setSelectedSchool(null);
+                setSelectedSchool(null); // Shunchaki ro'yxatga qaytish
               }
               setShowShoukaiInput(false); 
             }}>

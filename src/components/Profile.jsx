@@ -529,18 +529,25 @@ const getLicenseLabel = (type) => {
     );
   }
 
-  // ===== SAVED ITEMS PAGE =====
+  // ===== SAVED ITEMS PAGE (SAQLANGAN E'LONLAR SAHIFASI) =====
+  // Ushbu bo'lim foydalanuvchi tomonidan saqlangan ish e'lonlari va avtomaktablarni ko'rsatadi.
+  // Barcha brauzerlarda to'liq moslik va kamchiliklarsiz ishlashini ta'minlash uchun:
+  // 1. Faol bo'lmagan (o'chirilgan yoki muddati tugagan) e'lonlar avtomatik filtrlanadi.
+  // 2. Klik qilinganda App.jsx orqali to'g'ridan-to'g'ri batafsil sahifalar (overlay/tab) ochiladi.
   if (activePage === 'saved_items') {
-    // Filter active items
+    // Faol ish e'lonlarini tekshirish va filtrlash (faqat MOCK_JOBS ichida bor va faol bo'lganlarini qoldiradi)
     const savedJobs = (profileData?.savedItems?.jobs || []).filter(job => 
       MOCK_JOBS.some(mj => mj.id === job.id && mj.isActive !== false)
     );
+    // Faol avtomaktablarni tekshirish va filtrlash (faqat MOCK_SCHOOLS ichida bor va faol bo'lganlarini qoldiradi)
     const savedSchools = (profileData?.savedItems?.schools || []).filter(school => 
       MOCK_SCHOOLS.some(ms => ms.id === school.id && ms.isActive !== false)
     );
+
     return (
       <div className="profile-container fade-in">
         <div className="sub-page-header">
+          {/* Ortga qaytish: Profil bosh sahifasiga ('main') qaytaradi */}
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
           <h2>{t('savedItemsTitle', 'Saqlanganlar')}</h2>
         </div>
@@ -552,16 +559,50 @@ const getLicenseLabel = (type) => {
             </div>
           ) : (
             <>
+              {/* --- ISH E'LONLARI BO'LIMI --- */}
               {savedJobs.length > 0 && (
                 <div style={{ marginBottom: '24px' }}>
                   <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('jobAds', 'Ish e\'lonlari')}</h3>
                   {savedJobs.map(job => (
-                    <div key={job.id} className="app-card glass squircle" onClick={() => {
-                      const fullJob = MOCK_JOBS.find(mj => mj.id === job.id);
-                      if (fullJob && onJobClick) {
-                        onJobClick(fullJob);
-                      }
-                    }}>
+                    <div 
+                      key={job.id} 
+                      className="app-card glass squircle" 
+                      onClick={() => {
+                        // Saqlangan qisqa ma'lumot o'rniga MOCK_JOBS ro'yxatidan to'liq ish obyektini topamiz
+                        const fullJob = MOCK_JOBS.find(mj => mj.id === job.id);
+                        if (fullJob && onJobClick) {
+                          onJobClick(fullJob); // To'liq ekranli overlayda ish batafsil sahifasini ochamiz
+                        }
+                      }}
+                    >
+                      <div className="app-header-info">
+                        <img src={job.logo} alt={job.company} className="app-logo" style={{ borderRadius: '8px' }} />
+                        <div>
+                          <div style={{ fontWeight: 'bold' }}>{job.title}</div>
+                          <div style={{ fontSize: '13px', color: '#8E8E93' }}>{job.company}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* --- AVTOMAKTABLAR BO'LIMI --- */}
+              {savedSchools.length > 0 && (
+                <div>
+                  <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('drivingSchools', 'Avtomaktablar')}</h3>
+                  {savedSchools.map(school => (
+                    <div 
+                      key={school.id} 
+                      className="app-card glass squircle" 
+                      onClick={() => {
+                        // Saqlangan qisqa ma'lumot o'rniga MOCK_SCHOOLS ichidan to'liq maktab obyektini topamiz
+                        const fullSchool = MOCK_SCHOOLS.find(ms => ms.id === school.id);
+                        if (fullSchool && onSchoolClick) {
+                          onSchoolClick(fullSchool); // Avtomaktab tabiga o'tkazib, uning batafsil sahifasini ochamiz
+                        }
+                      }}
+                    >
                       <div className="app-header-info">
                         <img src={job.logo} alt={job.company} className="app-logo" style={{ borderRadius: '8px' }} />
                         <div>
