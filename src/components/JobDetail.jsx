@@ -21,7 +21,12 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
       </div>
 
       <div className="detail-header-image">
-        <img src={job.image} alt={job.title} className="bg-img" />
+        <img 
+          src={job.image} 
+          alt={job.title} 
+          className="bg-img" 
+          onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
+        />
       </div>
 
       <div className="detail-content">
@@ -47,7 +52,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
             <Banknote size={20} color="#34C759" />
             <div className="info-text">
               <p>{t('salary')}</p>
-              <strong>{job.salary}</strong>
+              <strong>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}</strong>
             </div>
           </div>
           <div className="info-item glass squircle">
@@ -91,13 +96,13 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           <div className="detail-section shoukai-section glass squircle" style={{ marginTop: '24px', padding: '16px' }}>
             <div className="shoukai-header" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <Share2 size={18} color="#FF9F0A" />
-              <h4 style={{ margin: 0, fontSize: '18px' }}>Ulashish / Shoukai</h4>
+              <h4 style={{ margin: 0, fontSize: '18px' }}>{t('shoukaiShare', 'Ulashish / Shoukai')}</h4>
             </div>
             <p className="shoukai-desc" style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
-              Do'stingizni taklif qiling va mukofot oling
+              {t('shoukaiDesc', "Do'stingizni taklif qiling va mukofot oling")}
             </p>
             <div className="shoukai-amount" style={{ fontSize: '16px', fontWeight: 'bold' }}>
-              Shoukai mukofoti: <span style={{ color: '#FF9F0A' }}>{job.shoukaiAmount}</span>
+              {t('shoukaiReward', 'Shoukai mukofoti')}: <span style={{ color: '#FF9F0A' }}>{job.shoukaiAmount}</span>
             </div>
           </div>
         )}
@@ -117,7 +122,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
             style={{ flex: 1, background: '#e8f5e9', color: '#2e7d32', border: '1px solid #c8e6c9', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '14px 10px', fontSize: '14px', whiteSpace: 'nowrap' }}
             onClick={() => onShoukai(job)}
           >
-            <Share2 size={16} /> {job.shoukaiAmount ? `Shoukai (${job.shoukaiAmount})` : 'Shoukai'}
+            <Share2 size={16} /> {job.shoukaiAmount ? `${t('shoukai', 'Shoukai')} (${job.shoukaiAmount})` : t('shoukai', 'Shoukai')}
           </button>
       </div>
     </div>

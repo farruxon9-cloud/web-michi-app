@@ -368,12 +368,17 @@ export default function CompanyHome({ onJobClick }) {
         {jobs.map(job => (
           <div key={job.id} className="job-card" onClick={() => onJobClick({...job})}>
             <div className="job-image-container">
-              <img src={job.image} alt={job.title} className="job-image" />
+              <img 
+                src={job.image} 
+                alt={job.title} 
+                className="job-image" 
+                onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
+              />
               <div className="company-logo-wrapper glass">
                 <img src={job.logo} alt={job.company} className="company-logo" />
               </div>
               <div className="price-tag glass">
-                {job.salary}
+                {job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}
               </div>
             </div>
             

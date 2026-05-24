@@ -286,6 +286,9 @@ const resources = {
       addNewJobDesc: "Haydovchilar yoki xodimlar qidirish uchun yangi vakansiya yarating.",
       yourJobs: "Sizning e'lonlaringiz",
       editJob: "Tahrirlash",
+      perMonth: "oyiga",
+      loading: "Yuklanmoqda...",
+      shoukai: "Shoukai",
     }
   },
   ja: {
@@ -553,6 +556,9 @@ const resources = {
       addNewJobDesc: "ドライバーや従業員を募集するための新規求人を作成します。",
       yourJobs: "掲載中の求人",
       editJob: "編集する",
+      perMonth: "月",
+      loading: "読み込み中...",
+      shoukai: "紹介",
     }
   },
   en: {
@@ -820,6 +826,9 @@ const resources = {
       addNewJobDesc: "Create a new vacancy to search for drivers or employees.",
       yourJobs: "Your Job Postings",
       editJob: "Edit",
+      perMonth: "month",
+      loading: "Loading...",
+      shoukai: "Referral",
     }
   },
   vi: {
@@ -1080,6 +1089,9 @@ const resources = {
       addNewJobDesc: "Tạo một vị trí trống mới để tìm kiếm tài xế hoặc nhân viên.",
       yourJobs: "Tin tuyển dụng của bạn",
       editJob: "Chỉnh sửa",
+      perMonth: "tháng",
+      loading: "Đang tải...",
+      shoukai: "Giới thiệu",
     }
   },
   zh: {
@@ -1340,6 +1352,9 @@ const resources = {
       addNewJobDesc: "创建新的职位空缺以招募司机或员工。",
       yourJobs: "您的招聘广告",
       editJob: "编辑",
+      perMonth: "月",
+      loading: "加载中...",
+      shoukai: "推荐",
     }
   },
   ne: {
@@ -1600,6 +1615,9 @@ const resources = {
       addNewJobDesc: "चालक वा कर्मचारीहरू खोज्नको लागि नयाँ खाली पद सिर्जना गर्नुहोस्।",
       yourJobs: "तपाईंका रोजगार विज्ञापनहरू",
       editJob: "सम्पादन गर्नुहोस्",
+      perMonth: "महिना",
+      loading: "लोड हुँदैछ...",
+      shoukai: "सिफारिस",
     }
   }
 };

@@ -412,13 +412,13 @@ function App() {
       </header>
 
       <main className="main-content" style={{ zIndex: 10 }}>
-        <Suspense fallback={<div style={{display:'flex', justifyContent:'center', padding:40, color:'#8E8E93'}}>Yuklanmoqda...</div>}>
+        <Suspense fallback={<div style={{display:'flex', justifyContent:'center', padding:40, color:'#8E8E93'}}>{t('loading', 'Yuklanmoqda...')}</div>}>
           {renderTabContent()}
         </Suspense>
       </main>
 
       {selectedJob && (
-        <Suspense fallback={<div style={{display:'flex', justifyContent:'center', padding:40, color:'#8E8E93'}}>Yuklanmoqda...</div>}>
+        <Suspense fallback={<div style={{display:'flex', justifyContent:'center', padding:40, color:'#8E8E93'}}>{t('loading', 'Yuklanmoqda...')}</div>}>
           <JobDetail 
             job={selectedJob} 
             onBack={() => setSelectedJob(null)} 

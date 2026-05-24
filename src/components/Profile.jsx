@@ -950,7 +950,7 @@ const getLicenseLabel = (type) => {
           <div className="menu-divider"></div>
           <div className="menu-item" onClick={() => setActivePage('my_shoukai')}>
             <div className="menu-icon"><Share2 size={20} /></div>
-            <span>{userRole === 'company' ? "Shoukai bo'yicha kelganlar" : "{t('myShoukai', 'Mening Shoukai\'larim')}"}</span>
+            <span>{userRole === 'company' ? t('shoukaiViaApps', 'Shoukai orqali kelganlar') : t('myShoukai', "Mening Shoukai'larim")}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
           {userRole === 'company' && (
