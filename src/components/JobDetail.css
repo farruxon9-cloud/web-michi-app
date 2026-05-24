@@ -1,0 +1,208 @@
+.job-detail-container {
+  position: absolute;
+  top: 64px; /* Space for top header */
+  bottom: 84px; /* Space for bottom nav */
+  left: 0;
+  width: 100%;
+  background: var(--bg-color);
+  z-index: 50; /* Underneath header and nav */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-header-image {
+  position: relative;
+  width: 100%;
+  height: 300px;
+}
+
+.detail-header-image .bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-actions {
+  /* 
+    ASOSIY QISM (MAIN BO'LIMI) O'ZGARISHI:
+    Ortga va Saqlash tugmalari ekranning yuqori qismida doimiy ko'rinib turishi 
+    uchun 'absolute' o'rniga 'sticky' qiymati berildi.
+  */
+  position: sticky;
+  top: 16px;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 250;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  pointer-events: none; /* Allow clicking through empty space */
+  /* 
+    ASOSIY QISM (MAIN BO'LIMI) O'ZGARISHI:
+    Sticky element joy egallamasligi va pastdagi rasm tepaga chiqishi uchun 
+    salbiy margin (margin-bottom) berildi.
+  */
+  margin-bottom: -56px; 
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  pointer-events: auto; /* Re-enable clicks on the buttons */
+}
+
+.detail-content {
+  flex: 1;
+  padding: 24px 20px;
+  background: var(--bg-color);
+  border-radius: 32px 32px 0 0;
+  margin-top: -32px;
+  position: relative;
+  z-index: 10;
+}
+
+.company-header {
+  margin-bottom: 24px;
+}
+
+.company-title-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.detail-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  box-shadow: var(--shadow-sm);
+}
+
+.detail-title {
+  font-size: 24px;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.company-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.verified-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #0A84FF;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(10, 132, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 360px) {
+  .info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.info-text p {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.info-text strong {
+  font-size: 15px;
+  display: block;
+}
+
+.description-block {
+  margin-bottom: 24px;
+}
+
+.description-block h3, .map-block h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.description-block p {
+  color: var(--text-main);
+  opacity: 0.8;
+  line-height: 1.6;
+}
+
+.map-placeholder {
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  border: 1px dashed var(--glass-border);
+}
+
+.sticky-action {
+  padding: 16px 20px;
+  border-top: 1px solid var(--glass-border);
+  background: var(--bg-color);
+  margin-top: auto;
+}
+
+
+
+.apply-btn {
+  width: 100%;
+  padding: 18px;
+  background: #2C2C2E; /* Softer premium dark */
+  color: white;
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s ease, opacity 0.2s;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.apply-btn:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+@media (prefers-color-scheme: dark) {
+  .apply-btn {
+    background: #0A84FF;
+  }
+}
+
+.apply-btn.applied {
+  background: var(--success);
+}

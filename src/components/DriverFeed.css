@@ -1,0 +1,164 @@
+.feed-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-bottom: 90px;
+}
+
+.feed-header {
+  padding: 16px;
+  background: var(--bg-color); /* Add background to avoid transparency issues without blur */
+  position: relative !important;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: rgba(118, 118, 128, 0.12); /* iOS standard search bar bg */
+  padding: 12px 16px;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  border: none;
+  box-shadow: none;
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  margin-left: 10px;
+  font-size: 16px;
+  width: 100%;
+  color: var(--text-main);
+  outline: none;
+  font-family: inherit;
+}
+
+.search-bar input::placeholder {
+  color: var(--text-secondary);
+}
+
+.segmented-control {
+  display: flex;
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  position: relative;
+}
+
+.segment {
+  flex: 1;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.segment.active {
+  background: var(--bg-color);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12), 0 3px 1px rgba(0,0,0,0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  .segmented-control {
+    background: rgba(118, 118, 128, 0.24);
+  }
+  .segment.active {
+    background: #636366;
+  }
+}
+
+.jobs-list {
+  padding: 0 16px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.job-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.job-image-container {
+  position: relative;
+  width: 100%;
+  height: 140px; /* Smaller images */
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.job-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.job-card:active .job-image {
+  transform: scale(1.02);
+}
+
+.company-logo-wrapper {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+}
+
+.company-logo {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.price-tag {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+}
+
+.job-info {
+  padding: 0 4px;
+}
+
+.job-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.job-title {
+  font-size: 18px;
+  margin: 0;
+}
+
+.job-location {
+  font-size: 14px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

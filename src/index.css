@@ -1,0 +1,249 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #5A55EA; /* Michi Premium Indigo */
+  --primary-hover: #4a45cc;
+  --success: #34C759; /* iOS Green */
+  --bg-color: #e5eafc;
+  --card-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --text-main: #1C1C1E;
+  --text-secondary: #8E8E93;
+  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px; /* Squircle approximation */
+  --radius-full: 9999px;
+  
+  --font-family: 'SF Pro Rounded', 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light-mode) {
+    --bg-color: #050510;
+    --card-bg: rgba(28, 28, 30, 0.45);
+    --glass-bg: rgba(28, 28, 30, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --text-main: #FFFFFF;
+    --text-secondary: #AEAEB2;
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Class-based dark mode toggle */
+html.dark-mode {
+  --bg-color: #050510;
+  --card-bg: rgba(28, 28, 30, 0.45);
+  --glass-bg: rgba(28, 28, 30, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --text-main: #FFFFFF;
+  --text-secondary: #AEAEB2;
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+html.light-mode {
+  --bg-color: #f5f7fa;
+  --card-bg: rgba(255, 255, 255, 0.6);
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --text-main: #1C1C1E;
+  --text-secondary: #8E8E93;
+  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  max-width: 480px; /* Mobile width container for desktop view */
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--bg-color);
+  position: relative;
+  box-shadow: 0 0 50px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 481px) {
+  body {
+    background-color: #e5e5ea;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  #root {
+    height: 90vh;
+    border-radius: 40px;
+    overflow: hidden;
+    border: 8px solid #1c1c1e;
+  }
+}
+
+/* Glassmorphism background blobs */
+.glass-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.6;
+  mix-blend-mode: multiply;
+  animation: blob-float 15s infinite alternate ease-in-out;
+}
+
+@keyframes blob-float {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@media (prefers-color-scheme: dark) {
+  .glass-blob {
+    opacity: 0.25;
+    mix-blend-mode: screen;
+  }
+}
+
+.blob-1 {
+  width: 350px;
+  height: 350px;
+  background: #e0f2fe;
+  top: -50px;
+  left: -50px;
+}
+
+.blob-2 {
+  width: 400px;
+  height: 400px;
+  background: #e0e7ff;
+  bottom: 0px;
+  right: -50px;
+  animation-duration: 18s;
+  animation-delay: -2s;
+}
+
+.blob-3 {
+  width: 300px;
+  height: 300px;
+  background: #f3e8ff;
+  top: 30%;
+  left: 20%;
+  animation-duration: 20s;
+  animation-delay: -5s;
+}
+
+/* Logo specific styles */
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+}
+
+.logo-kanji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #0066cc, #8b5cf6);
+  color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 102, 204, 0.4);
+  font-size: 1.4rem;
+}
+
+/* Utilities */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid var(--glass-border);
+}
+
+.squircle {
+  border-radius: var(--radius-lg);
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Hide scrollbar but allow scroll */
+::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Animations & Transitions */
+button:active {
+  transform: scale(0.97);
+  transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.icon-btn { width: 40px; height: 40px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; box-shadow: var(--shadow-sm); pointer-events: auto; }
+
+/* Utility for consistent logo sizing */
+.logo-img { width: 64px; height: 64px; object-fit: contain; max-height: 64px; }
+
+/* Premium button with glassmorphism and gradient */
+.premium-btn {
+  background: linear-gradient(135deg, var(--primary), #4338CA);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.premium-btn:hover { transform: scale(1.02); box-shadow: var(--shadow-md); }

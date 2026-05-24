@@ -1,0 +1,70 @@
+.app-layout {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.global-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--bg-color);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.user-profile-corner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--glass-border);
+  object-fit: cover;
+}
+
+.header-username {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.app-logo-corner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-logo {
+  width: 34px;
+  height: 34px;
+  object-fit: contain; /* changed to contain to avoid cropping if it's a square logo */
+  border-radius: 10px;
+  background-color: #fff; /* white background makes the logo look seamless */
+  padding: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* softer shadow */
+}
+
+.app-text {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--text-main);
+}
+
+.main-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden; /* Each tab manages its own scroll to avoid scrolling the whole container under the bottom nav */
+  position: relative;
+}

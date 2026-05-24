@@ -1,0 +1,93 @@
+.bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 84px; /* iOS tab bar height */
+  display: flex;
+  justify-content: space-around;
+  padding-top: 10px;
+  padding-bottom: 24px; /* Safe area padding */
+  background: var(--bg-color);
+  box-shadow: 0 -1px 3px rgba(0,0,0,0.06);
+  z-index: 300;
+}
+
+@media (prefers-color-scheme: dark) {
+  .bottom-nav {
+    background: #1C1C1E;
+  }
+}
+html.dark-mode .bottom-nav {
+  background: #1C1C1E;
+}
+
+@media (min-width: 481px) {
+  .bottom-nav {
+    border-radius: 0 0 32px 32px;
+  }
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: none;
+  border: none;
+  color: #8E8E93; /* Solid grey for clear visibility */
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  gap: 4px;
+  flex: 1;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .nav-item {
+    color: #A1A1A6; /* Lighter grey for dark mode to ensure icons pop */
+  }
+}
+html.dark-mode .nav-item {
+  color: #A1A1A6;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-item span {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  padding: 0 2px;
+}
+
+.nav-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  background: #FF3B30;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid var(--bg-color);
+}
