@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
   Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft } from 'lucide-react';
+import { compressImage } from '../utils/imageCompressor';
 import './Profile.css';
 
 const STATUS_PIPELINE = ['submitted', 'reviewing', 'reviewed', 'interview', 'rejected', 'accepted'];
@@ -64,15 +65,22 @@ const getLicenseLabel = (type) => {
     return `https://ui-avatars.com/api/?name=${name}&background=${bg}&color=fff`;
   };
 
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onUpdateProfile({ avatar: reader.result });
-        localStorage.setItem('michi_avatar', reader.result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file, 600, 600, 0.7);
+        onUpdateProfile({ avatar: compressed });
+        localStorage.setItem('michi_avatar', compressed);
+      } catch (err) {
+        console.error("Avatar compression failed:", err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          onUpdateProfile({ avatar: reader.result });
+          localStorage.setItem('michi_avatar', reader.result);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -266,7 +274,7 @@ const getLicenseLabel = (type) => {
               <div className="resume-field">
                 <span className="field-label">{t('namePlaceholder').replace(' ✱', '')}</span>
                 {isEditing ? (
-                  <input className="edit-input" value={editData.fullName || ''} onChange={(e) => setEditData({...editData, fullName: e.target.value})} />
+                  <input className="edit-input" value={editData.fullName || ''} onChange={(e) => setEditData({...editData, fullName: e.target.value})} maxLength={50} />
                 ) : (
                   <span className="field-value">{profileData.fullName}</span>
                 )}
@@ -275,7 +283,7 @@ const getLicenseLabel = (type) => {
               <div className="resume-field">
                 <span className="field-label">Email</span>
                 {isEditing ? (
-                  <input className="edit-input" value={editData.email || ''} onChange={(e) => setEditData({...editData, email: e.target.value})} />
+                  <input className="edit-input" value={editData.email || ''} onChange={(e) => setEditData({...editData, email: e.target.value})} maxLength={80} />
                 ) : (
                   <span className="field-value">{profileData.email}</span>
                 )}
@@ -704,6 +712,7 @@ const getLicenseLabel = (type) => {
                 placeholder={t('michiIdPlaceholder', 'Michi ID (Ixtiyoriy, masalan: #Michi-A1B2)')} 
                 value={empInputId} 
                 onChange={e => setEmpInputId(e.target.value)} 
+                maxLength={12}
               />
               {!empInputId && (
                 <>
@@ -712,12 +721,14 @@ const getLicenseLabel = (type) => {
                     placeholder={t('empNamePlaceholder', 'Xodim ismi')} 
                     value={empInputName} 
                     onChange={e => setEmpInputName(e.target.value)} 
+                    maxLength={50}
                   />
                   <input 
                     className="edit-input" 
                     placeholder={t('phone', 'Telefon raqam')} 
                     value={empInputPhone} 
                     onChange={e => setEmpInputPhone(e.target.value)} 
+                    maxLength={20}
                   />
                 </>
               )}

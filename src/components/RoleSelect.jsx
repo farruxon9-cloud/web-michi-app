@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Building2, UserCircle, Plus, X, Camera, MailCheck, ArrowLeft } from 'lucide-react';
+import { compressImage } from '../utils/imageCompressor';
 import './RoleSelect.css';
 
 
@@ -112,15 +113,22 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
     }
   };
 
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatar(reader.result);
-        localStorage.setItem('michi_avatar', reader.result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file, 600, 600, 0.7);
+        setAvatar(compressed);
+        localStorage.setItem('michi_avatar', compressed);
+      } catch (err) {
+        console.error("Avatar compression failed:", err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setAvatar(reader.result);
+          localStorage.setItem('michi_avatar', reader.result);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -269,6 +277,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     className="auth-input" 
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
+                    maxLength={50}
                   />
 
                   <div className="input-label-wrap" style={{ marginTop: '16px', marginBottom: '8px' }}>
@@ -431,6 +440,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     className="auth-input" 
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
+                    maxLength={50}
                   />
                   <div className="input-label-wrap">
                     <label>{t('companyTypeLabel', 'Faoliyat turi')}</label>
@@ -453,6 +463,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     className="auth-input" 
                     value={companyAddress}
                     onChange={(e) => setCompanyAddress(e.target.value)}
+                    maxLength={120}
                   />
                 </div>
 
@@ -464,6 +475,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     className="auth-input" 
                     value={contactPerson}
                     onChange={(e) => setContactPerson(e.target.value)}
+                    maxLength={50}
                   />
                   <input 
                     type="tel" 
@@ -471,12 +483,14 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     className="auth-input" 
                     value={companyPhone}
                     onChange={(e) => setCompanyPhone(e.target.value)}
+                    maxLength={20}
                   />
                   <input 
                     type="number" 
                     placeholder={t("employeeCountPlaceholder", "Ishchilar soni")} 
                     className="auth-input" 
                     value={employeeCount}
+                    onInput={(e) => { e.target.value = e.target.value.slice(0, 6) }}
                     onChange={(e) => setEmployeeCount(e.target.value)}
                   />
                   <textarea 
@@ -484,6 +498,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     className="auth-textarea"
                     value={companyDesc}
                     onChange={(e) => setCompanyDesc(e.target.value)}
+                    maxLength={300}
                   />
                 </div>
               </>
@@ -499,6 +514,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                 className="auth-input" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                maxLength={80}
               />
               <input 
                 type="password" 
@@ -507,6 +523,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                 className="auth-input" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                maxLength={30}
               />
             </div>
 

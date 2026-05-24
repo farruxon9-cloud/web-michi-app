@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
+import { compressImage } from '../utils/imageCompressor';
 import './DriverFeed.css';
 
 const INITIAL_COMPANY_JOBS = [
@@ -42,12 +43,18 @@ export default function CompanyHome({ onJobClick }) {
     title: '', salary: '', location: '', hours: '', bonus: '', insurance: '', foreigners: '', housing: '', description: '', dayOff: ''
   });
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setJobImage(reader.result);
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file, 600, 600, 0.7);
+        setJobImage(compressed);
+      } catch (err) {
+        console.error("Job image compression failed:", err);
+        const reader = new FileReader();
+        reader.onloadend = () => setJobImage(reader.result);
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -156,6 +163,7 @@ export default function CompanyHome({ onJobClick }) {
                 onChange={e => setNewJob({...newJob, title: e.target.value})} 
                 placeholder={t('jobTitlePlaceholder', "Masalan: Mahalliy yetkazib beruvchi")} 
                 className="auth-input"
+                maxLength={50}
               />
             </div>
             
@@ -169,6 +177,7 @@ export default function CompanyHome({ onJobClick }) {
                 onChange={e => setNewJob({...newJob, salary: e.target.value})} 
                 placeholder={t('salaryPlaceholder', "¥300,000 / oyiga")} 
                 className="auth-input"
+                maxLength={30}
               />
             </div>
             
@@ -182,6 +191,7 @@ export default function CompanyHome({ onJobClick }) {
                 onChange={e => setNewJob({...newJob, location: e.target.value})} 
                 placeholder="Tokyo, Koto-ku" 
                 className="auth-input"
+                maxLength={80}
               />
             </div>
           </div>
@@ -201,6 +211,7 @@ export default function CompanyHome({ onJobClick }) {
                 onChange={e => setNewJob({...newJob, hours: e.target.value})} 
                 placeholder="08:00 - 17:00" 
                 className="auth-input"
+                maxLength={40}
               />
             </div>
             
@@ -214,6 +225,7 @@ export default function CompanyHome({ onJobClick }) {
                 onChange={e => setNewJob({...newJob, dayOff: e.target.value})} 
                 placeholder={t('dayOffPlaceholder', "Shanba, Yakshanba")} 
                 className="auth-input"
+                maxLength={40}
               />
             </div>
             
@@ -227,6 +239,7 @@ export default function CompanyHome({ onJobClick }) {
                 onChange={e => setNewJob({...newJob, bonus: e.target.value})} 
                 placeholder={t('bonusPlaceholder', "Yiliga 2 marta")} 
                 className="auth-input"
+                maxLength={50}
               />
             </div>
             
@@ -240,6 +253,7 @@ export default function CompanyHome({ onJobClick }) {
                 onChange={e => setNewJob({...newJob, insurance: e.target.value})} 
                 placeholder={t('insurancePlaceholder', "To'liq ijtimoiy sug'urta")} 
                 className="auth-input"
+                maxLength={50}
               />
             </div>
           </div>
@@ -259,6 +273,7 @@ export default function CompanyHome({ onJobClick }) {
                 onChange={e => setNewJob({...newJob, foreigners: e.target.value})} 
                 placeholder={t('foreignersPlaceholder', "Viza qo'llab-quvvatlovi bor")} 
                 className="auth-input"
+                maxLength={80}
               />
             </div>
             
@@ -272,6 +287,7 @@ export default function CompanyHome({ onJobClick }) {
                 onChange={e => setNewJob({...newJob, housing: e.target.value})} 
                 placeholder={t('housingPlaceholder', "Uy ijarasining 50% to'lanadi")} 
                 className="auth-input"
+                maxLength={80}
               />
             </div>
             
@@ -285,6 +301,7 @@ export default function CompanyHome({ onJobClick }) {
                 placeholder={t('jobDescPlaceholder', "Ish haqida ma'lumot...")}
                 className="auth-input"
                 style={{ minHeight: '100px', resize: 'vertical' }}
+                maxLength={300}
               ></textarea>
             </div>
           </div>
