@@ -20,16 +20,16 @@ export default function AdminDashboard({ verifiedCompanies, onToggleVerify, onLo
       <div className="admin-header glass">
         <div className="admin-header-title">
           <ShieldCheck size={28} color="#0A84FF" />
-          <h2>Admin Panel</h2>
+          <h2>{t('adminPanel', 'Admin Panel')}</h2>
         </div>
         <button className="admin-logout-btn squircle" onClick={onLogout}>
-          <LogOut size={16} /> Chiqish
+          <LogOut size={16} /> {t('logout', 'Chiqish')}
         </button>
       </div>
 
       <div className="admin-content">
         <p className="admin-desc">
-          Kompaniyalar va maktablarga "Ishonchli hamkor ⭐" maqomini berish yoki bekor qilish.
+          {t('adminPanelDesc', 'Kompaniyalar va maktablarga "Ishonchli hamkor ⭐" maqomini berish yoki bekor qilish.')}
         </p>
 
         <div className="admin-company-list">
@@ -44,7 +44,16 @@ export default function AdminDashboard({ verifiedCompanies, onToggleVerify, onLo
                       {company.name} 
                       {isVerified && <ShieldCheck size={14} color="#0A84FF" style={{ marginLeft: '4px' }} />}
                     </h3>
-                    <p className="admin-company-type"><Building2 size={12} /> {company.type}</p>
+                    <p className="admin-company-type">
+                      <Building2 size={12} />{' '}
+                      {company.type === 'Logistika' 
+                        ? t('typeLogistics', 'Logistika') 
+                        : company.type === 'Avtomaktab' 
+                        ? t('typeDrivingSchool', 'Avtomaktab') 
+                        : company.type === 'Xalqaro tashish' 
+                        ? t('typeLogistics', 'Xalqaro tashish')
+                        : company.type}
+                    </p>
                   </div>
                 </div>
                 
@@ -53,9 +62,9 @@ export default function AdminDashboard({ verifiedCompanies, onToggleVerify, onLo
                   onClick={() => onToggleVerify(company.id)}
                 >
                   {isVerified ? (
-                    <><CheckCircle2 size={16} /> Tasdiqlangan</>
+                    <><CheckCircle2 size={16} /> {t('verified', 'Tasdiqlangan')}</>
                   ) : (
-                    'Tasdiqlash'
+                    t('verify', 'Tasdiqlash')
                   )}
                 </button>
               </div>

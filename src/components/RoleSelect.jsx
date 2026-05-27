@@ -71,7 +71,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
         : { fullName: 'Test Haydovchi', driverLicenses: ['oogata', 'kenin'], techCertificates: ['forklift'], email: 'admin@driver.jp' };
       onSelectRole(selectedRole, mockData);
     } else {
-      alert("Login yoki parol noto'g'ri kiritilgan.");
+      alert(t('loginError', "Login yoki parol noto'g'ri kiritilgan."));
     }
   };
 
@@ -109,7 +109,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
         });
       }
     } else {
-      alert("Tasdiqlash kodi noto'g'ri!");
+      alert(t('verifyError', "Tasdiqlash kodi noto'g'ri!"));
     }
   };
 
@@ -288,14 +288,14 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                         onClick={() => setGender('male')}
                         style={{ flex: 1, padding: '12px', borderRadius: '12px', border: `2px solid ${gender === 'male' ? 'var(--primary)' : 'var(--glass-border)'}`, background: gender === 'male' ? 'rgba(90, 85, 234, 0.1)' : 'transparent', color: gender === 'male' ? 'var(--primary)' : 'var(--text-main)', cursor: 'pointer', fontWeight: 'bold' }}
                       >
-                        Erkak
+                        {t('male', 'Erkak')}
                       </button>
                       <button 
                         type="button"
                         onClick={() => setGender('female')}
                         style={{ flex: 1, padding: '12px', borderRadius: '12px', border: `2px solid ${gender === 'female' ? '#FF2D55' : 'var(--glass-border)'}`, background: gender === 'female' ? 'rgba(255, 45, 85, 0.1)' : 'transparent', color: gender === 'female' ? '#FF2D55' : 'var(--text-main)', cursor: 'pointer', fontWeight: 'bold' }}
                       >
-                        Ayol
+                        {t('female', 'Ayol')}
                       </button>
                     </div>
                   </div>

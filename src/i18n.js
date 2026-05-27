@@ -289,6 +289,12 @@ const resources = {
       perMonth: "oyiga",
       loading: "Yuklanmoqda...",
       shoukai: "Shoukai",
+      adminPanel: "Admin Panel",
+      adminPanelDesc: "Kompaniyalar va maktablarga \"Ishonchli hamkor ⭐\" maqomini berish yoki bekor qilish.",
+      verify: "Tasdiqlash",
+      verified: "Tasdiqlangan",
+      loginError: "Login yoki parol noto'g'ri kiritilgan.",
+      verifyError: "Tasdiqlash kodi noto'g'ri!",
     }
   },
   ja: {
@@ -559,6 +565,12 @@ const resources = {
       perMonth: "月",
       loading: "読み込み中...",
       shoukai: "紹介",
+      adminPanel: "管理パネル",
+      adminPanelDesc: "企業や学校に「信頼のパートナー ⭐」ステータスを付与または取り消します。",
+      verify: "承認する",
+      verified: "承認済み",
+      loginError: "ログインまたはパスワードが正しくありません。",
+      verifyError: "認証コードが正しくありません！",
     }
   },
   en: {
@@ -829,6 +841,12 @@ const resources = {
       perMonth: "month",
       loading: "Loading...",
       shoukai: "Referral",
+      adminPanel: "Admin Panel",
+      adminPanelDesc: "Grant or revoke \"Trusted Partner ⭐\" status for companies and schools.",
+      verify: "Verify",
+      verified: "Verified",
+      loginError: "Incorrect login or password.",
+      verifyError: "Incorrect verification code!",
     }
   },
   vi: {
@@ -1092,6 +1110,12 @@ const resources = {
       perMonth: "tháng",
       loading: "Đang tải...",
       shoukai: "Giới thiệu",
+      adminPanel: "Bảng Quản Trị",
+      adminPanelDesc: "Cấp hoặc thu hồi trạng thái \"Đối tác tin cậy ⭐\" cho các công ty và trường học.",
+      verify: "Xác minh",
+      verified: "Đã xác minh",
+      loginError: "Tên đăng nhập hoặc mật khẩu không chính xác.",
+      verifyError: "Mã xác minh không chính xác!",
     }
   },
   zh: {
@@ -1355,6 +1379,12 @@ const resources = {
       perMonth: "月",
       loading: "加载中...",
       shoukai: "推荐",
+      adminPanel: "管理面板",
+      adminPanelDesc: "为公司和学校授予或撤销“信赖的合作伙伴 ⭐”状态。",
+      verify: "验证",
+      verified: "已验证",
+      loginError: "登录名或密码不正确。",
+      verifyError: "验证码不正确！",
     }
   },
   ne: {
@@ -1618,6 +1648,12 @@ const resources = {
       perMonth: "महिना",
       loading: "लोड हुँदैछ...",
       shoukai: "सिफारिस",
+      adminPanel: "प्रशासक प्यानल",
+      adminPanelDesc: "कम्पनीहरू र विद्यालयहरूका लागि \"भरपर्दो साझेदार ⭐\" स्थिति प्रदान वा खारेज गर्नुहोस्।",
+      verify: "प्रमाणित गर्नुहोस्",
+      verified: "प्रमाणित",
+      loginError: "गलत लगइन वा पासवर्ड।",
+      verifyError: "गलत प्रमाणीकरण कोड!",
     }
   }
 };
