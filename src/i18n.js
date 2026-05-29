@@ -298,6 +298,10 @@ const resources = {
       preferencesTitle: "Afzalliklar",
       notifSoundLabel: "Bildirishnoma ovozlari",
       showBadgesLabel: "Profil sanoqlari ko'rinishi",
+      reviewedNotifTitle: "Ariza ko'rib chiqildi",
+      rejectedNotifTitle: "Ariza rad etildi",
+      reviewedNotifMsg: "Arizangiz ko'rib chiqildi:",
+      rejectedNotifMsg: "Arizangiz rad etildi:",
     }
   },
   ja: {
@@ -577,6 +581,10 @@ const resources = {
       preferencesTitle: "環境設定",
       notifSoundLabel: "通知音",
       showBadgesLabel: "バッジ数の表示",
+      reviewedNotifTitle: "応募が確認されました",
+      rejectedNotifTitle: "応募が却下されました",
+      reviewedNotifMsg: "あなたの応募が確認されました：",
+      rejectedNotifMsg: "あなたの応募が却下されました：",
     }
   },
   en: {
@@ -856,6 +864,10 @@ const resources = {
       preferencesTitle: "Preferences",
       notifSoundLabel: "Notification Sounds",
       showBadgesLabel: "Show Badge Counts",
+      reviewedNotifTitle: "Application Reviewed",
+      rejectedNotifTitle: "Application Rejected",
+      reviewedNotifMsg: "Your application was reviewed:",
+      rejectedNotifMsg: "Your application was rejected:",
     }
   },
   vi: {
@@ -1128,6 +1140,10 @@ const resources = {
       preferencesTitle: "Tùy chọn",
       notifSoundLabel: "Âm thanh thông báo",
       showBadgesLabel: "Hiển thị số lượng huy hiệu",
+      reviewedNotifTitle: "Đơn ứng tuyển đã xem xét",
+      rejectedNotifTitle: "Đơn ứng tuyển bị từ chối",
+      reviewedNotifMsg: "Đơn ứng tuyển của bạn đã được xem xét bởi",
+      rejectedNotifMsg: "Đơn ứng tuyển của bạn bị từ chối bởi",
     }
   },
   zh: {
@@ -1400,6 +1416,10 @@ const resources = {
       preferencesTitle: "偏好设置",
       notifSoundLabel: "通知声音",
       showBadgesLabel: "显示角标计数",
+      reviewedNotifTitle: "申请已审核",
+      rejectedNotifTitle: "申请已拒绝",
+      reviewedNotifMsg: "您的申请已审核：",
+      rejectedNotifMsg: "您的申请已拒绝：",
     }
   },
   ne: {
@@ -1672,6 +1692,10 @@ const resources = {
       preferencesTitle: "प्राथमिकताहरू",
       notifSoundLabel: "अधिसूचना ध्वनि",
       showBadgesLabel: "ब्याज गणना देखाउनुहोस्",
+      reviewedNotifTitle: "आवेदन समीक्षा भयो",
+      rejectedNotifTitle: "आवेदन अस्वीकृत भयो",
+      reviewedNotifMsg: "तपाईंको आवेदन समीक्षा भयो:",
+      rejectedNotifMsg: "तपाईंको आवेदन अस्वीकृत भयो:",
     }
   },
 };

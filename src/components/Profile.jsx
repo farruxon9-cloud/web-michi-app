@@ -171,6 +171,8 @@ const getLicenseLabel = (type) => {
                     <span className={`notif-title ${notif.type === 'shoukai_paid' ? 'shoukai-green' : ''}`}>
                       {notif.type === 'accepted' && t('acceptedNotifTitle')}
                       {notif.type === 'interview' && t('interviewNotifTitle')}
+                      {notif.type === 'reviewed' && t('reviewedNotifTitle', 'Ariza ko\'rib chiqildi')}
+                      {notif.type === 'rejected' && t('rejectedNotifTitle', 'Ariza rad etildi')}
                       {notif.type === 'shoukai_paid' && t('shoukaiPaidNotif')}
                       {notif.type === 'employee_request' && notif.title}
                     </span>
@@ -179,7 +181,9 @@ const getLicenseLabel = (type) => {
                   <p className="notif-message">
                     {notif.type === 'accepted' && `${t('acceptedNotifMsg')} ${notif.company}`}
                     {notif.type === 'interview' && `${t('interviewNotifMsg')} ${notif.company}`}
-                    {notif.type === 'shoukai_paid' && `${notif.company} ${t('shoukaiPaidMsg')} ¥${notif.title}`}
+                    {notif.type === 'reviewed' && `${t('reviewedNotifMsg', 'Arizangiz ko\'rib chiqildi:')} ${notif.company}`}
+                    {notif.type === 'rejected' && `${t('rejectedNotifMsg', 'Arizangiz rad etildi:')} ${notif.company}`}
+                    {notif.type === 'shoukai_paid' && `${notif.company} ${t('shoukaiPaidMsg')} ${notif.title}`}
                     {notif.type === 'employee_request' && `${notif.company} ${t('employeeRequestMsg', "kompaniyasi sizni xodimlar ro'yxatiga qo'shmoqchi.")}`}
                   </p>
                   {notif.type === 'employee_request' && !notif.accepted && (
@@ -536,25 +540,54 @@ const getLicenseLabel = (type) => {
                     )}
                   </div>
                 )}
-                {/* Status Pipeline */}
-                <div className="status-pipeline">
-                  {STATUS_PIPELINE.map(status => (
-                    <div 
-                      key={status} 
-                      className={`pipeline-step ${app.status === status ? 'active' : ''}`}
-                      style={{ 
-                        color: app.status === status ? STATUS_COLORS[status] : '#C7C7CC',
-                        borderColor: app.status === status ? STATUS_COLORS[status] : 'transparent',
-                      }}
-                    >
-                      <div 
-                        className="pipeline-dot" 
-                        style={{ background: app.status === status ? STATUS_COLORS[status] : '#C7C7CC' }}
-                      ></div>
-                      <span>{t(`status${status.charAt(0).toUpperCase() + status.slice(1)}`)}</span>
+                {/* Status Pipeline or Sleek Notification-like Badge for Driver */}
+                {userRole !== 'company' ? (
+                  <div className="driver-app-status-box glass squircle" style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '12px', 
+                    padding: '12px 16px', 
+                    marginTop: '12px', 
+                    borderLeft: `4px solid ${STATUS_COLORS[app.status] || '#0A84FF'}`,
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)'
+                  }}>
+                    <div className="status-indicator-dot" style={{ 
+                      width: '10px', 
+                      height: '10px', 
+                      borderRadius: '50%', 
+                      background: STATUS_COLORS[app.status] || '#0A84FF',
+                      boxShadow: `0 0 10px ${STATUS_COLORS[app.status] || '#0A84FF'}`
+                    }}></div>
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: '12px', color: '#8E8E93', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
+                        {t('applicationStatus', 'Ariza holati')}
+                      </span>
+                      <strong style={{ fontSize: '15px', color: STATUS_COLORS[app.status] || '#0A84FF', fontWeight: '600' }}>
+                        {t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`)}
+                      </strong>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ) : (
+                  <div className="status-pipeline">
+                    {STATUS_PIPELINE.map(status => (
+                      <div 
+                        key={status} 
+                        className={`pipeline-step ${app.status === status ? 'active' : ''}`}
+                        style={{ 
+                          color: app.status === status ? STATUS_COLORS[status] : '#C7C7CC',
+                          borderColor: app.status === status ? STATUS_COLORS[status] : 'transparent',
+                        }}
+                      >
+                        <div 
+                          className="pipeline-dot" 
+                          style={{ background: app.status === status ? STATUS_COLORS[status] : '#C7C7CC' }}
+                        ></div>
+                        <span>{t(`status${status.charAt(0).toUpperCase() + status.slice(1)}`)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {/* Company / Demo Action Buttons */}
                 {userRole === 'company' && (
                   <div className="demo-status-btns">
