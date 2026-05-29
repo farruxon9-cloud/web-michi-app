@@ -1,26 +1,55 @@
+/* ==========================================================================
+   DRIVING ACADEMY (AVTOMAKTABLAR BO'LIMI) — CSS STILLARI
+   
+   Bu fayl avtomaktablar bo'limining barcha ko'rinish stillarini o'z ichiga oladi:
+   - Asosiy konteyner va sarlavha
+   - Maktablar ro'yxati (kartochkalar)
+   - Maktab batafsil sahifasi (detayl)
+   - Kontakt bo'limi
+   - Shoukai (tavsiya) bo'limi
+   - Pastki tugmalar paneli (Qo'ng'iroq, Topshirish, Shoukai)
+   
+   MUHIM: Ranglar index.css dagi global CSS o'zgaruvchilardan olinadi:
+   --primary, --success, --warning, --danger, --info
+   Hardcoded rang ishlatilmasligi kerak!
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. ASOSIY KONTEYNER
+   Avtomaktablar sahifasining eng tashqi konteyneri.
+   Flex ustunli layout, pastdan 90px padding (bottom nav uchun).
+   ========================================================================== */
 .academy-container {
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  padding-bottom: 90px;
+  overflow-y: auto;           /* Vertikal scroll imkoniyati */
+  padding-bottom: 90px;       /* Pastki navigatsiya paneli uchun joy */
 }
 
+
+/* ==========================================================================
+   2. SARLAVHA (HEADER)
+   Sahifa yuqorisidagi sticky sarlavha. Faqat maktab ro'yxati sahifasida
+   ko'rinadi. Pastda shisha chegarasi (glass-border) bilan ajratiladi.
+   ========================================================================== */
 .academy-header {
   padding: 24px 20px;
   text-align: center;
   border-bottom: 1px solid var(--glass-border);
-  position: sticky;
+  position: sticky;           /* Scroll qilinganda ham yuqorida qoladi */
   top: 0;
-  z-index: 50;
+  z-index: 50;                /* Boshqa elementlardan ustida ko'rinadi */
 }
 
+/* ---------- Batafsil sahifadagi Ortga/Saqlash tugmalari ---------- 
+   Maktab rasmining ustida doimiy ko'rinib turadi.
+   Sticky pozitsiyada — scroll qilinganda ham joylashuvini saqlab qoladi.
+   pointer-events: none — bo'sh joydan bosish o'tib ketadi.
+   Tugmalarning o'zida pointer-events: auto — faqat tugmaga bosish ishlaydi.
+   margin-bottom: -56px — sticky element joy egallamasligi uchun. */
 .academy-header-actions {
-  /* 
-    ASOSIY QISM (MAIN BO'LIMI) O'ZGARISHI:
-    Ortga va Saqlash tugmalari ekranning yuqori qismida doimiy ko'rinib turishi 
-    uchun 'absolute' o'rniga 'sticky' qiymati berildi.
-  */
   position: sticky;
   top: 16px;
   left: 0;
@@ -30,29 +59,26 @@
   display: flex;
   justify-content: space-between;
   padding: 0 20px;
-  pointer-events: none; /* Allow clicking through empty space */
-  /* 
-    ASOSIY QISM (MAIN BO'LIMI) O'ZGARISHI:
-    Sticky element joy egallamasligi va pastdagi rasm tepaga chiqishi uchun 
-    salbiy margin (margin-bottom) berildi.
-  */
-  margin-bottom: -56px; 
+  pointer-events: none;
+  margin-bottom: -56px;
 }
 
+/* Ortga va Saqlash tugmalarining o'zi — doira shakl, soya bilan */
 .academy-header-actions .icon-btn {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 50%;          /* To'liq doira */
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-main);
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  pointer-events: auto; /* Re-enable clicks on the buttons */
+  box-shadow: var(--shadow-sm); /* Yengil soya — premium ko'rinish */
+  pointer-events: auto;        /* Tugmalarga bosish qayta yoqilgan */
 }
 
+/* Sarlavha matnlari */
 .academy-header h2 {
   font-size: 24px;
   margin-bottom: 4px;
@@ -64,6 +90,11 @@
   color: var(--text-secondary);
 }
 
+
+/* ==========================================================================
+   3. MAKTABLAR RO'YXATI (LIST)
+   Kartochkalar ustunli joylashuvda, 16px oraliq bilan.
+   ========================================================================== */
 .schools-list {
   padding: 16px;
   display: flex;
@@ -73,6 +104,12 @@
   z-index: 10;
 }
 
+
+/* ==========================================================================
+   4. MAKTAB KARTOCHKASI (CARD)
+   Ro'yxatdagi har bir maktab kartochkasi.
+   Bosilganda kichik scale animatsiyasi bilan.
+   ========================================================================== */
 .school-card {
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -81,37 +118,51 @@
   transition: transform 0.2s;
 }
 
+/* Kartochka bosilganda biroz kichrayadi — touch feedback */
 .school-card:active {
   transform: scale(0.98);
 }
 
+
+/* ==========================================================================
+   5. MAKTAB RASMI VA BADGE'LARI
+   Rasm to'liq kenglikda, 160px balandlikda ko'rsatiladi.
+   Ustida til badge'i (langs-badge) va narx tegi (price-tag) turadi.
+   ========================================================================== */
 .school-image-container {
   width: 100%;
   height: 160px;
-  position: relative;
+  position: relative;          /* Ichidagi absolute elementlar uchun asos */
 }
 
 .school-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover;           /* Rasm nisbatini saqlagan holda to'ldiradi */
 }
 
+/* Til badge'i — rasmning o'ng yuqori burchagida */
 .langs-badge {
   position: absolute;
   top: 12px;
   right: 12px;
   padding: 4px 10px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-full);  /* To'liq yumaloq */
   font-size: 12px;
   font-weight: 700;
   color: var(--text-main);
 }
 
+
+/* ==========================================================================
+   6. MAKTAB MA'LUMOTLARI (INFO)
+   Kartochka ichidagi matn qismi: nom, joylashuv, kurslar.
+   ========================================================================== */
 .school-info {
   padding: 16px;
 }
 
+/* Maktab nomi + Verified badge bir qatorda */
 .school-header-row {
   display: flex;
   align-items: center;
@@ -124,6 +175,7 @@
   margin: 0;
 }
 
+/* Joylashuv — MapPin ikonkasi bilan */
 .school-location {
   font-size: 14px;
   color: var(--text-secondary);
@@ -133,6 +185,13 @@
   gap: 4px;
 }
 
+
+/* ==========================================================================
+   7. KURSLAR VA NARXLAR
+   Kurslar teglari (tag), narx, chegirma badge.
+   ========================================================================== */
+
+/* Kurslar qatori — bir nechta tag gorizontal, kerak bo'lsa wrap qiladi */
 .categories-row {
   display: flex;
   flex-wrap: wrap;
@@ -140,6 +199,7 @@
   margin-bottom: 16px;
 }
 
+/* Har bir kurs tegi */
 .category-tag {
   background: rgba(142, 142, 147, 0.15);
   padding: 4px 10px;
@@ -148,24 +208,28 @@
   color: var(--text-main);
 }
 
+/* Narx qatori — chap tomonda narx, o'ng tomonda tugma */
 .price-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
 }
 
+/* Narx ustunli joylashuv */
 .price-wrap {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
+/* Asosiy narx raqami — yirik va primary rangda */
 .price-amount {
   font-size: 20px;
   font-weight: 700;
   color: var(--primary);
 }
 
+/* A'zolar uchun chegirma tegi — yashil fon */
 .discount-tag {
   font-size: 11px;
   background: var(--success-light);
@@ -176,6 +240,7 @@
   font-weight: 600;
 }
 
+/* Ma'lumot tugmasi */
 .info-btn {
   display: flex;
   align-items: center;
@@ -188,7 +253,11 @@
   cursor: pointer;
 }
 
-/* Shoukai tag on list card */
+
+/* ==========================================================================
+   8. SHOUKAI TEGI (RO'YXAT KARTOCHKASIDA)
+   Kartochka pastidagi shoukai mukofoti tegi.
+   ========================================================================== */
 .shoukai-tag {
   display: flex;
   align-items: center;
@@ -203,7 +272,13 @@
   font-weight: 600;
 }
 
-/* ===== DETAIL PAGE ===== */
+
+/* ==========================================================================
+   9. BATAFSIL SAHIFA (DETAIL PAGE)
+   Maktab tanlanganda ochiladi. Ustida rasm, pastda ma'lumotlar.
+   ========================================================================== */
+
+/* Ortga tugmasi paneli */
 .detail-back-bar {
   display: flex;
   align-items: center;
@@ -216,25 +291,29 @@
   font-size: 18px;
 }
 
+/* Batafsil sahifa scroll konteyneri */
 .school-detail-scroll {
   flex: 1;
   overflow-y: auto;
   position: relative;
 }
 
+/* Ma'lumotlar tanasi — rasmning ustiga 32px chiqib turadi (overlap effekti) */
 .school-detail-body {
   padding: 24px 20px;
   background: var(--bg-color);
-  border-radius: 32px 32px 0 0;
-  margin-top: -32px;
+  border-radius: 32px 32px 0 0;  /* Yuqori burchaklar yumaloq — karta effekti */
+  margin-top: -32px;             /* Rasm ustiga biroz chiqadi */
   position: relative;
   z-index: 10;
 }
 
+/* Har bir bo'lim orasidagi masofa */
 .detail-section {
   margin-bottom: 20px;
 }
 
+/* Bo'lim sarlavhasi — KATTA HARF, primary rang */
 .detail-section h4 {
   font-size: 14px;
   color: var(--primary);
@@ -244,13 +323,18 @@
   font-weight: 700;
 }
 
+/* Maktab haqida tavsif matni */
 .school-description {
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-secondary);
 }
 
-/* Contact section */
+
+/* ==========================================================================
+   10. KONTAKT BO'LIMI
+   Telefon, email, manzil — glass kartochka ichida.
+   ========================================================================== */
 .contact-section {
   padding: 16px;
   display: flex;
@@ -258,6 +342,7 @@
   gap: 12px;
 }
 
+/* Har bir kontakt qatori — ikonka + matn */
 .contact-row {
   display: flex;
   align-items: flex-start;
@@ -267,11 +352,19 @@
   line-height: 1.4;
 }
 
-/* Shoukai Section */
+
+/* ==========================================================================
+   11. SHOUKAI (TAVSIYA) BO'LIMI — BATAFSIL SAHIFADA
+   Do'stingizni taklif qilish va mukofot olish bo'limi.
+   Faqat shoukaiFee > 0 bo'lganda ko'rsatiladi.
+   ========================================================================== */
+
+/* Shoukai bo'limi konteyneri */
 .shoukai-section {
   padding: 16px;
 }
 
+/* Sarlavha qatori — ikonka + matn */
 .shoukai-header {
   display: flex;
   align-items: center;
@@ -283,12 +376,14 @@
   margin: 0;
 }
 
+/* Tavsif matni */
 .shoukai-desc {
   font-size: 13px;
   color: var(--text-secondary);
   margin-bottom: 10px;
 }
 
+/* Mukofot summasi */
 .shoukai-amount {
   font-size: 14px;
   margin-bottom: 12px;
@@ -300,26 +395,24 @@
   font-size: 18px;
 }
 
+/* ---------- Shoukai tugmasi — rang xususiyatlari ----------
+   Baza stili pastdagi umumiy tugma bazasida (section 13).
+   Bu yerda faqat rang va chegara ko'rsatiladi. */
 .shoukai-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px;
   background: var(--warning-light);
   color: var(--warning);
-  border: 2px solid var(--warning-light-border);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
+  border: 1.5px solid var(--warning-light-border);
+  flex-shrink: 0;              /* Bu tugma kichraymaydi */
 }
 
+/* Shoukai input maydoni — do'st ismini kiritish */
 .shoukai-input-wrap {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
+/* Shoukai bilan birga topshirish tugmasi */
 .shoukai-apply-btn {
   width: 100%;
   padding: 12px;
@@ -331,6 +424,13 @@
   cursor: pointer;
 }
 
+
+/* ==========================================================================
+   12. SHOUKAI TRACKING (KUZATUV)
+   Ariza topshirilgandan keyin shoukai holati — to'langan/to'lanmagan.
+   ========================================================================== */
+
+/* Umumiy tracking kartochkasi */
 .shoukai-track {
   margin-top: 12px;
   padding: 12px;
@@ -338,16 +438,19 @@
   border: 1px solid var(--glass-border);
 }
 
+/* To'lanmagan holat — sariq fon */
 .shoukai-track.unpaid {
   background: var(--warning-light);
   border-color: var(--warning-light-border);
 }
 
+/* To'langan holat — xiralashtirilgan */
 .shoukai-track.paid {
   background: rgba(142, 142, 147, 0.05);
   opacity: 0.7;
 }
 
+/* Tavsiya qiluvchi ismi va summa — bir qatorda */
 .shoukai-track-info {
   display: flex;
   justify-content: space-between;
@@ -366,6 +469,7 @@
   color: var(--warning);
 }
 
+/* To'lov tugmasi — to'liq kenglik */
 .shoukai-pay-btn {
   width: 100%;
   padding: 10px;
@@ -377,6 +481,7 @@
   cursor: pointer;
 }
 
+/* To'langan badge — yashil, markazlashgan */
 .shoukai-paid-badge {
   display: flex;
   align-items: center;
@@ -391,46 +496,93 @@
   font-weight: 700;
 }
 
-.school-sticky-actions {
-  padding: 16px 20px;
-  display: flex;
-  gap: 12px;
-  border-top: 1px solid var(--glass-border);
-  background: var(--bg-color);
-  margin-top: auto;
-}
 
-.call-btn {
+/* ==========================================================================
+   13. PASTKI TUGMALAR PANELI (STICKY ACTIONS)
+   
+   Maktab batafsil sahifasining eng pastida joylashgan 3 ta tugma:
+   📞 Qo'ng'iroq (call-btn)     — yashil, ikkilamchi harakat
+   📝 Topshirish (apply-btn)    — binafsha, asosiy harakat
+   🔗 Shoukai (shoukai-btn)     — sariq, uchinchi harakat
+   
+   DIZAYN QARORLARI:
+   - Pill shakl (border-radius: 20px) — zamonaviy va ixcham ko'rinish
+   - Bir xil balandlik (38px) — vizual muvozanat
+   - Ixcham shrift (12.5px) — turli tillarda sig'ishi uchun
+   - scale(0.96) micro-animatsiya — premium bosilish hissi
+   - box-shadow — asosiy tugmaga chuqurlik beradi
+   
+   MUHIM: squircle klassi ISHLATILMAYDI — pill shakl CSS da o'zida.
+   ========================================================================== */
+
+/* Konteyner — 3 ta tugma gorizontal bir qatorda */
+.school-sticky-actions {
+  padding: 12px 16px;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  padding: 14px 20px;
+  border-top: 1px solid var(--glass-border);
+  background: var(--bg-color);
+  margin-top: auto;            /* Kontentdan keyin eng pastga tushadi */
+}
+
+/* ---------- UMUMIY TUGMA BAZASI ----------
+   Barcha 3 ta tugma uchun bir xil layout, o'lcham va animatsiya.
+   Har bir tugmaning o'ziga xos ranglari pastda alohida yozilgan. */
+.call-btn,
+.apply-school-btn,
+.shoukai-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;                    /* Ikonka va matn orasidagi bo'shliq */
+  height: 38px;                /* Bir xil balandlik — vizual muvozanat */
+  padding: 0 14px;             /* Gorizontal padding — ixcham */
+  border-radius: 20px;         /* Pill shakl — to'liq yumaloq burchaklar */
+  font-size: 12.5px;           /* Ixcham shrift — turli tillarda sig'ishi uchun */
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;         /* Matn bir qatorda — ikki qatorga tushmaydi */
+  overflow: hidden;            /* Toshib ketgan matn yashiriladi */
+  text-overflow: ellipsis;     /* Uzun matn uchun "..." belgisi */
+  cursor: pointer;
+  border: none;
+  text-decoration: none;       /* <a> elementlari uchun tag'chiziq olib tashlash */
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Bosilgandagi micro-animatsiya — premium touch feedback */
+.call-btn:active,
+.apply-school-btn:active,
+.shoukai-btn:active {
+  transform: scale(0.96);
+}
+
+/* ---------- Qo'ng'iroq tugmasi (YASHIL, ikkilamchi harakat) ----------
+   Maktabga telefon qo'ng'iroq qilish uchun. <a> tag bilan ishlaydi.
+   flex-shrink: 0 — boshqa tugmalar kengayganda bu kichraymaydi. */
+.call-btn {
   background: var(--success-light);
   color: var(--success);
   border: 1px solid var(--success-light-border);
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
   flex-shrink: 0;
 }
 
+/* ---------- Topshirish tugmasi (BINAFSHA, asosiy harakat) ----------
+   Maktabga ariza topshirish — eng muhim harakat.
+   flex: 1 1 0 — qolgan bo'sh joyni to'ldiradi (eng keng tugma).
+   box-shadow — yengil soya premium ko'rinish beradi. */
 .apply-school-btn {
-  flex: 1;
-  padding: 14px;
+  flex: 1 1 0;
+  min-width: 0;                /* Flex overflow oldini oladi */
   background: var(--primary);
-  color: white;
-  border: none;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(90, 85, 234, 0.2);
 }
 
+/* Ariza yuborilgan holat — yashilga o'zgaradi */
 .apply-school-btn.applied {
   background: var(--success);
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.2);
   cursor: default;
 }

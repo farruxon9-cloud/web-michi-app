@@ -1,10 +1,69 @@
+/**
+ * ==========================================================================
+ * DRIVING ACADEMY (AVTOMAKTABLAR BO'LIMI) KOMPONENTI
+ * ==========================================================================
+ * 
+ * Bu komponent avtomaktablar bo'limining barcha UI mantiqini boshqaradi:
+ * 
+ * 1. RO'YXAT SAHIFASI (List Page):
+ *    - Barcha maktablarni kartochka shaklida ko'rsatadi
+ *    - Har bir kartochkada: rasm, nom, joylashuv, til badge, narx
+ *    - "Topshirish" va "Shoukai" tugmalari pill shaklida
+ *    - Kartochkaga bosilganda batafsil sahifa ochiladi
+ * 
+ * 2. BATAFSIL SAHIFA (Detail Page):
+ *    - Tanlangan maktabning to'liq ma'lumotlari
+ *    - Kurslar ro'yxati, narx, tavsif, kontakt ma'lumotlari
+ *    - Shoukai (tavsiya) bo'limi — faqat shoukaiFee > 0 bo'lganda
+ *    - Pastki tugmalar: Qo'ng'iroq, Topshirish, Shoukai (pill shakl)
+ * 
+ * NAVIGATSIYA MANTIQ:
+ *    - selectedSchool holati App.jsx ga ko'tarilgan (lifted state)
+ *    - Profil "Saqlanganlar"dan kelganda onBackPress orqali profilga qaytaradi
+ *    - Oddiy holatda setSelectedSchool(null) bilan ro'yxatga qaytadi
+ * 
+ * TUGMALAR DIZAYNI:
+ *    - Pill shakl (border-radius: 20px) — squircle emas
+ *    - Barcha tugmalar bir xil balandlik (38px)
+ *    - Ixcham shrift (12.5px) — turli tillarda sig'ishi uchun
+ *    - Bosilganda scale(0.96) micro-animatsiya
+ * 
+ * STILLAR: DrivingAcademy.css va DriverFeed.css (job-card stillari)
+ * ==========================================================================
+ */
+
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './DrivingAcademy.css';
-import './DriverFeed.css'; // Use job-card styles
+import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinadi
 
+
+/**
+ * ==========================================================================
+ * MOCK MA'LUMOTLAR — TEST UCHUN AVTOMAKTABLAR RO'YXATI
+ * ==========================================================================
+ * 
+ * Har bir maktab obyektining tuzilishi:
+ * - id:          Noyob identifikator
+ * - name:        Maktab nomi
+ * - type:        Maktab turi (masalan: "Barcha toifalar")
+ * - discount:    A'zolar uchun chegirma summasi
+ * - shoukai:     Shoukai mukofoti (matn ko'rinishda)
+ * - image:       Unsplash dan olingan rasm URL
+ * - verified:    Tasdiqlangan maktab yoki yo'qligi (boolean)
+ * - location:    Qisqa joylashuv (Shahar, tuman)
+ * - fullAddress: To'liq pochta manzili
+ * - description: Maktab haqida tavsif matni
+ * - courses:     Taklif qilinadigan kurslar massivi
+ * - price:       Boshlang'ich narx
+ * - phone:       Telefon raqami
+ * - email:       Email manzili
+ * - langs:       Dars tillar massivi
+ * - shoukaiFee:  Shoukai mukofoti summasi (raqam, 0 bo'lsa shoukai yo'q)
+ * ==========================================================================
+ */
 export const MOCK_SCHOOLS = [
   {
     id: 1,
@@ -98,49 +157,105 @@ export const MOCK_SCHOOLS = [
   }
 ];
 
-// ==========================================
-// DRIVING ACADEMY (AVTOMAKTABLAR BO'LIMI) KOMPONENTI
-// Barcha brauzerlarda va mobil platformalarda navigatsiya xatosiz ishlashi uchun:
-// 1.selectedSchool holati yuqoriga (App.jsx ga) ko'tarilgan.
-// 2.Profil saqlanganlaridan kelganda "Ortga" tugmasi Profilga qaytaradi (onBackPress orqali).
-// ==========================================
+
+/**
+ * ==========================================================================
+ * ASOSIY KOMPONENT — DrivingAcademy
+ * ==========================================================================
+ * 
+ * PROPS (Tashqaridan olinadigan ma'lumotlar):
+ * 
+ * @param {boolean} isContractActive     — Kompaniya shartnomasi faolmi (verified badge uchun)
+ * @param {function} onApplySchool       — Maktabga ariza topshirish funksiyasi (school, referrerName)
+ * @param {Array} schoolApplications     — Topshirilgan arizalar ro'yxati
+ * @param {function} onShoukaiPaid       — Shoukai to'lovi tasdiqlash funksiyasi
+ * @param {Object} profileData           — Foydalanuvchi profil ma'lumotlari (saqlangan elementlar uchun)
+ * @param {function} onShoukai           — Shoukai (tavsiya) funksiyasini boshlash
+ * @param {Array} verifiedCompanies      — Tasdiqlangan kompaniyalar ro'yxati
+ * @param {function} onToggleSave        — Elementni saqlash/o'chirish funksiyasi
+ * @param {string} userRole              — Foydalanuvchi roli ('driver', 'company', 'guest')
+ * @param {Object|null} selectedSchool   — Hozir tanlangan maktab (null = ro'yxat ko'rinishi)
+ * @param {function} setSelectedSchool   — Maktab tanlash/bekor qilish funksiyasi
+ * @param {function|null} onBackPress    — Profilga qaytish funksiyasi (saqlanganlardan kelganda)
+ * ==========================================================================
+ */
 export default function DrivingAcademy({ 
   isContractActive, onApplySchool, schoolApplications = [], onShoukaiPaid, 
   profileData, onShoukai, verifiedCompanies = [], onToggleSave, userRole,
   selectedSchool, setSelectedSchool, onBackPress
 }) {
   const { t } = useTranslation();
+  
+  /**
+   * showShoukaiInput — Shoukai input maydoni ko'rinishi holati.
+   * true bo'lganda do'st ismini kiritish maydoni ochiladi.
+   */
   const [showShoukaiInput, setShowShoukaiInput] = useState(false);
+  
+  /**
+   * referrerName — Shoukai orqali tavsiya qiluvchi shaxsning ismi.
+   * Input maydoni to'ldirilgandan keyin onApplySchool ga uzatiladi.
+   */
   const [referrerName, setReferrerName] = useState('');
 
-  // Maktab tanlanganda batafsil ma'lumotlarni ko'rsatish
+
+  /* ========================================================================
+     BATAFSIL SAHIFA (DETAIL VIEW)
+     Maktab tanlanganda (selectedSchool !== null) bu qism renderlanadi.
+     ======================================================================== */
   if (selectedSchool) {
     const school = selectedSchool;
-    // only count own applications, do not block the user if they referred a friend
+    
+    /**
+     * existingApp — Foydalanuvchining ushbu maktabga topshirgan arizasini topadi.
+     * isSimulatedReferral — Simulyatsiya tavsiyalarini hisobga olmaydi,
+     * faqat foydalanuvchining o'z arizalarini tekshiradi.
+     */
     const existingApp = schoolApplications.find(a => a.schoolId === school.id && !a.isSimulatedReferral);
     const hasApplied = !!existingApp;
+    
+    /** isSaved — Ushbu maktab profilning "Saqlanganlar" bo'limida bormi */
     const isSaved = profileData?.savedItems?.schools?.some(s => s.id === school.id);
 
     return (
       <div className="academy-container fade-in">
         <div className="school-detail-scroll hide-scrollbar">
-          {/* Sticky Header Actions */}
+          
+          {/* ============================================================
+              STICKY HEADER TUGMALARI
+              Ortga va Saqlash tugmalari — rasmning ustida doimiy turadi.
+              Sticky pozitsiyada, scroll qilinganda ham ko'rinib turadi.
+              ============================================================ */}
           <div className="academy-header-actions">
-            {/* Ortga qaytish: Profil saqlanganlaridan kelgan bo'lsa profilga, aks holda maktablar ro'yxatiga qaytaradi */}
+            {/* 
+              ORTGA TUGMASI:
+              - onBackPress mavjud bo'lsa → Profilga qaytaradi 
+                (Profil > Saqlanganlar > Maktab dan kelgan holat)
+              - onBackPress yo'q bo'lsa → Ro'yxatga qaytaradi
+                (Akademiya tab dan to'g'ridan-to'g'ri ochilgan holat)
+            */}
             <button className="icon-btn glass" onClick={() => { 
               if (onBackPress) {
-                onBackPress(); // App.jsx dagi handleSchoolBack funksiyasini chaqiradi (profilga qaytish uchun)
+                onBackPress(); // App.jsx dagi handleSchoolBack — profilga qaytish
               } else {
                 setSelectedSchool(null); // Shunchaki ro'yxatga qaytish
               }
-              setShowShoukaiInput(false); 
+              setShowShoukaiInput(false); // Shoukai inputni yopish
             }}>
               <ArrowLeft size={20} />
             </button>
+            
+            {/* SAQLASH TUGMASI — Bookmark ikonka, tanlangan bo'lsa to'ldirilgan */}
             <button className="icon-btn glass" onClick={() => onToggleSave(school, 'schools')}>
               <Bookmark size={20} fill={isSaved ? "var(--primary)" : "none"} color={isSaved ? "var(--primary)" : "currentColor"} />
             </button>
           </div>
+
+          {/* ============================================================
+              MAKTAB RASMI
+              To'liq kenglikda, yuqori burchakda til badge ko'rsatiladi.
+              onError — rasm yuklanmasa zaxira rasm ko'rsatiladi.
+              ============================================================ */}
           <div className="school-image-container">
             <img 
               src={school.image} 
@@ -151,17 +266,25 @@ export default function DrivingAcademy({
             <div className="langs-badge glass">{school.langs ? school.langs.join(', ') : 'UZ, JP'}</div>
           </div>
 
+          {/* ============================================================
+              MA'LUMOTLAR TANASI (BODY)
+              Rasmning ustiga 32px chiqib turadi (overlap effekti).
+              Yuqori burchaklar yumaloq — karta ko'rinishi.
+              ============================================================ */}
           <div className="school-detail-body">
-            {/* Title & Location */}
+            
+            {/* ------- SARLAVHA: Nom + Verified Badge ------- */}
             <div className="school-header-row" style={{ marginBottom: '4px' }}>
               <h2 className="school-name" style={{ fontSize: '22px' }}>{school.name}</h2>
               {(school.verified || isContractActive) && <VerifiedBadge size={20} />}
             </div>
+            
+            {/* ------- JOYLASHUV ------- */}
             <p className="school-location" style={{ marginBottom: '20px' }}>
               <MapPin size={14} /> {school.location}
             </p>
 
-            {/* Courses */}
+            {/* ------- KURSLAR BO'LIMI ------- */}
             <div className="detail-section">
               <h4>{t('courseOffered')}</h4>
               <div className="categories-row">
@@ -171,7 +294,7 @@ export default function DrivingAcademy({
               </div>
             </div>
 
-            {/* Price */}
+            {/* ------- NARX BO'LIMI ------- */}
             <div className="detail-section">
               <div className="price-wrap">
                 <span className="price-amount" style={{ fontSize: '24px' }}>{school.price || 'Maxsus narx'}</span>
@@ -181,13 +304,14 @@ export default function DrivingAcademy({
               </div>
             </div>
 
-            {/* Description */}
+            {/* ------- TAVSIF BO'LIMI ------- */}
             <div className="detail-section">
               <h4>{t('schoolDesc')}</h4>
               <p className="school-description">{school.description}</p>
             </div>
 
-            {/* Contact Info */}
+            {/* ------- KONTAKT MA'LUMOTLARI ------- 
+                Glass squircle kartochka ichida telefon, email, manzil */}
             <div className="detail-section contact-section glass squircle">
               <div className="contact-row">
                 <Phone size={16} color="#34C759" />
@@ -203,23 +327,31 @@ export default function DrivingAcademy({
               </div>
             </div>
 
-            {/* 
-              ASOSIY QISM (MAIN BO'LIMI) O'ZGARISHI:
-              Shoukai qismi faqatgina maktab tomonidan shoukai mukofoti kiritilganda 
-              (ya'ni 0 dan katta bo'lganda) ekranda alohida o'ziga xos ko'rinadi.
-              Agar shoukai summasi bo'lmasa, bu qism umuman chiqmaydi.
-            */}
+            {/* ============================================================
+                SHOUKAI (TAVSIYA) BO'LIMI
+                Faqat maktab shoukai mukofoti belgilagan bo'lsa ko'rsatiladi.
+                shoukaiFee > 0 bo'lganda — do'stni taklif qilish imkoniyati.
+                shoukaiFee = 0 bo'lganda — bu qism umuman chiqmaydi.
+                ============================================================ */}
             {school.shoukaiFee > 0 && (
               <div className="detail-section shoukai-section glass squircle">
+                {/* Shoukai sarlavhasi */}
                 <div className="shoukai-header">
                   <Share2 size={18} color="#FF9F0A" />
                   <h4>{t('shoukaiShare', 'Ulashish / Shoukai')}</h4>
                 </div>
                 <p className="shoukai-desc">{t('shoukaiDesc', "Do'stingizni taklif qiling va mukofot oling")}</p>
+                
+                {/* Mukofot summasi */}
                 <div className="shoukai-amount" style={{ fontSize: '16px', fontWeight: 'bold' }}>
                   {t('shoukaiReward', 'Shoukai mukofoti')}: <span style={{ color: '#FF9F0A' }}>¥{school.shoukaiFee.toLocaleString()}</span>
                 </div>
 
+                {/* 
+                  SHOUKAI INPUT MAYDONI:
+                  Faqat showShoukaiInput = true va ariza topshirilmagan bo'lganda ko'rinadi.
+                  Do'st ismini kiritib, "Topshirish + Shoukai" tugmasini bosish mumkin.
+                */}
                 {showShoukaiInput && !hasApplied && (
                   <div className="shoukai-input-wrap">
                     <input 
@@ -241,7 +373,11 @@ export default function DrivingAcademy({
                   </div>
                 )}
 
-                {/* Shoukai tracking for school view */}
+                {/* 
+                  SHOUKAI TRACKING (KUZATUV):
+                  Ariza topshirilgan va referrer ismi bo'lganda ko'rsatiladi.
+                  Ikki holat: to'langan (paid) va to'lanmagan (unpaid).
+                */}
                 {existingApp && existingApp.referrerName && (
                   <div className={`shoukai-track ${existingApp.paid ? 'paid' : 'unpaid'}`}>
                     <div className="shoukai-track-info">
@@ -249,6 +385,7 @@ export default function DrivingAcademy({
                       <span className="shoukai-fee">¥{school.shoukaiFee.toLocaleString()}</span>
                     </div>
                     {!existingApp.paid ? (
+                      /* To'lov tugmasi — admin/kompaniya tomonidan bosiladi */
                       <button 
                         className="shoukai-pay-btn squircle"
                         onClick={() => onShoukaiPaid(existingApp.id)}
@@ -256,6 +393,7 @@ export default function DrivingAcademy({
                         {t('shoukaiPaid')}
                       </button>
                     ) : (
+                      /* To'langan holat — yashil badge */
                       <div className="shoukai-paid-badge">
                         <CheckCircle2 size={16} /> {t('shoukaiPaid')}
                       </div>
@@ -263,32 +401,50 @@ export default function DrivingAcademy({
                   </div>
                 )}
               </div>
-            )}              </div>
+            )}
+          </div>
 
-            {/* Bottom actions (not sticky anymore) */}
-            <div className="school-sticky-actions glass" style={{ display: 'flex', gap: '8px', padding: '16px 20px', borderTop: '1px solid var(--glass-border)' }}>
-              <a href={`tel:${school.phone || '+819012345678'}`} className="call-btn squircle" style={{ flex: 1, padding: '14px 10px', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                <Phone size={16} /> Qo'ng'iroq
+            {/* ============================================================
+                PASTKI TUGMALAR PANELI (PILL SHAKL)
+                
+                3 ta tugma gorizontal bir qatorda:
+                📞 Qo'ng'iroq (call-btn)  — yashil, maktabga telefon
+                📝 Topshirish (apply-btn) — binafsha, asosiy harakat
+                🔗 Shoukai (shoukai-btn)  — sariq, tavsiya qilish
+                
+                DIZAYN: 
+                - Pill shakl (border-radius: 20px)
+                - Bir xil balandlik (38px)
+                - squircle klassi ISHLATILMAYDI
+                - Bosilganda scale(0.96) micro-animatsiya
+                ============================================================ */}
+            <div className="school-sticky-actions glass">
+              {/* Qo'ng'iroq tugmasi — <a> tag bilan tel: protokol */}
+              <a href={`tel:${school.phone || '+819012345678'}`} className="call-btn">
+                <Phone size={15} /> {t('callSchool', 'Qo\'ng\'iroq')}
               </a>
+              
+              {/* Topshirish tugmasi — hasApplied holatiga qarab o'zgaradi */}
               {!hasApplied ? (
                 <button 
-                  className="apply-school-btn squircle"
+                  className="apply-school-btn"
                   onClick={() => onApplySchool(school, '')}
-                  style={{ flex: 1, padding: '14px 10px', fontSize: '14px', whiteSpace: 'nowrap' }}
                 >
-                  {t('applyToSchool', 'Maktabga topshirish')}
+                  {t('applyToSchool', 'Topshirish')}
                 </button>
               ) : (
-                <button className="apply-school-btn squircle applied" disabled style={{ flex: 1, padding: '14px 10px', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                  <CheckCircle2 size={16} /> {t('appliedToSchool', 'Topshirilgan')}
+                /* Ariza yuborilgan holat — yashil "Topshirilgan" */
+                <button className="apply-school-btn applied" disabled>
+                  <CheckCircle2 size={14} /> {t('appliedToSchool', 'Topshirilgan')}
                 </button>
               )}
+              
+              {/* Shoukai tugmasi — do'stga ulashish */}
               <button 
-                className="shoukai-btn squircle"
+                className="shoukai-btn"
                 onClick={() => onShoukai(school)}
-                style={{ flex: 1, background: '#e8f5e9', color: '#2e7d32', border: '1px solid #c8e6c9', padding: '14px 10px', fontSize: '14px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
-                <Share2 size={16} /> {school.shoukaiFee && school.shoukaiFee > 0 ? `${t('shoukai', 'Shoukai')} (${school.shoukaiFee.toLocaleString()})` : t('shoukai', 'Shoukai')}
+                <Share2 size={14} /> {t('shoukai', 'Shoukai')}
               </button>
             </div>
           </div>
@@ -296,10 +452,16 @@ export default function DrivingAcademy({
     );
   }
 
-  // List page
+
+  /* ========================================================================
+     RO'YXAT SAHIFASI (LIST VIEW)
+     Barcha maktablarni kartochkalar shaklida ko'rsatadi.
+     DriverFeed.css dagi job-card stillarini qayta ishlatadi.
+     ======================================================================== */
   return (
     <div className="feed-container fade-in">
-      {/* Header */}
+      
+      {/* ------- QIDIRUV PANELI ------- */}
       <div className="feed-header glass">
         <div className="search-bar">
           <Search size={20} color="#8E8E93" />
@@ -307,11 +469,15 @@ export default function DrivingAcademy({
         </div>
       </div>
 
+      {/* ------- MAKTABLAR RO'YXATI ------- */}
       <div className="jobs-list hide-scrollbar">
         {MOCK_SCHOOLS.map(school => {
+          /** showVerified — Maktab tasdiqlangan YOKI shartnoma faol bo'lsa badge ko'rsatiladi */
           const showVerified = school.verified || isContractActive;
           return (
             <div key={school.id} className="job-card" onClick={() => setSelectedSchool(school)}>
+              
+              {/* Kartochka rasmi */}
               <div className="job-image-container">
                 <img 
                   src={school.image} 
@@ -319,15 +485,19 @@ export default function DrivingAcademy({
                   className="job-image" 
                   onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
                 />
+                {/* Til badge — o'ng yuqori burchakda */}
                 <div className="langs-badge glass">
                   {school.langs ? school.langs.join(', ') : 'UZ, JP'}
                 </div>
+                {/* Narx tegi — pastki qismda */}
                 <div className="price-tag glass">
                   {school.price}
                 </div>
               </div>
               
+              {/* Kartochka ma'lumotlari */}
               <div className="job-info">
+                {/* Maktab nomi + Verified badge (kichik) */}
                 <p style={{ fontSize: '12px', color: '#8E8E93', margin: '0 0 2px 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   {school.name} {showVerified && <VerifiedBadge size={14} />}
                 </p>
@@ -335,15 +505,27 @@ export default function DrivingAcademy({
                 <p className="job-location" style={{ margin: '0 0 4px 0' }}>
                   <MapPin size={14} /> {school.location}
                 </p>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                  <button style={{ flex:1, padding:'8px 12px', background:'#2C2C2E', color:'white', border:'none', borderRadius:'12px', fontSize:'13px', fontWeight:'600' }}>
-                    {t('applyToSchool', 'Maktabga topshirish')}
+                
+                {/* 
+                  KARTOCHKA TUGMALARI (PILL SHAKL):
+                  flexWrap: wrap — tugmalar sig'masa pastga tushadi.
+                  gap: 6px — tugmalar orasidagi bo'shliq.
+                  
+                  2 ta tugma:
+                  1. Topshirish (apply-school-btn) — binafsha
+                  2. Shoukai (shoukai-btn) — sariq
+                  
+                  MUHIM: squircle klassi ISHLATILMAYDI — pill shakl CSS da.
+                */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                  <button className="apply-school-btn">
+                    {t('applyToSchool', 'Topshirish')}
                   </button>
                   <button 
                     onClick={(e) => { e.stopPropagation(); onShoukai(school); }}
-                    style={{ flex:1, padding:'8px 12px', background:'rgba(255,159,10,0.1)', color:'#FF9F0A', border:'1px solid rgba(255,159,10,0.2)', borderRadius:'12px', fontSize:'13px', fontWeight:'600', display:'flex', alignItems:'center', justifyContent:'center', gap:'4px' }}
+                    className="shoukai-btn"
                   >
-                    <Share2 size={14} /> {school.shoukaiFee && school.shoukaiFee > 0 ? `${t('shoukai', 'Shoukai')} (¥${school.shoukaiFee.toLocaleString()})` : t('shoukai', 'Shoukai')}
+                    <Share2 size={13} /> {t('shoukai', 'Shoukai')}
                   </button>
                 </div>
               </div>
