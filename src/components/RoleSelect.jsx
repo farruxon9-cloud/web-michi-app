@@ -27,12 +27,19 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
   const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Recovery Credentials
-  const [forgotEmail, setForgotEmail] = useState('');
-  const [recoveryCode, setRecoveryCode] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [recoveryStep, setRecoveryStep] = useState('email'); // 'email' | 'code' | 'new_password'
-  const [recoveryShowPassword, setRecoveryShowPassword] = useState(false);
+  // ==========================================================================
+  // PAROLNI TIKLASH VA QAYTA TIZIMGA KIRISH SHARTLARI (PASSWORD RECOVERY & INSTANT LOGIN)
+  // [UZ] Foydalanuvchilar o'z parollarini unutganlarida, eski elektron pochtalari orqali
+  // o'z profillariga oson va yengil qayta kirishlarini ta'minlash uchun ushbu holat boshqaruvchilari qo'shildi.
+  // [JA] パスワード再設定及び即時ログイン管理用ステート：
+  // ユーザーがパスワードを忘れた場合、古いメールアドレスを使用してプロフィールに簡単にアクセスし、
+  // アプリの使用をシームレスに継続できるためのリカバリフローの状態管理変数群。
+  // ==========================================================================
+  const [forgotEmail, setForgotEmail] = useState(''); // [UZ] Parolni tiklash uchun kiritilgan eski email / [JA] パスワード再設定対象の登録済みメールアドレス
+  const [recoveryCode, setRecoveryCode] = useState(''); // [UZ] Elektron pochtaga yuborilgan tiklash kodi (Test uchun: 1234) / [JA] メール宛てに送出されたリカバリ用認証コード（テスト用: 1234）
+  const [newPassword, setNewPassword] = useState(''); // [UZ] Belgilanayotgan yangi kirish paroli / [JA] 設定される新しいログイン用パスワード
+  const [recoveryStep, setRecoveryStep] = useState('email'); // [UZ] Tiklash jarayoni bosqichi ('email' | 'code' | 'new_password') / [JA] リカバリフローの現在フェーズ
+  const [recoveryShowPassword, setRecoveryShowPassword] = useState(false); // [UZ] Yangi parolni ko'rsatish/yashirish to'g'risi / [JA] 新パスワード表示・非表示フラグ
 
   // Verify Code
   const [verifyCode, setVerifyCode] = useState('');
@@ -188,6 +195,20 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
   }
 
   if (authStep === 'forgot_password') {
+    // ==========================================================================
+    // PAROLNI TIKLASH VA TIZIMGA QAYTA KIRISh MANTIG'I (PASSWORD RECOVERY FLOW LOGIC)
+    // ==========================================================================
+    // [UZ] Ushbu funksiya foydalanuvchining tiklash bosqichlarini boshqaradi.
+    // 1-bosqich ('email'): Elektron pochta to'g'ri kiritilganligini tekshiradi va kod kiritish oynasiga o'tkazadi.
+    // 2-bosqich ('code'): Kiritilgan parolni tiklash kodini (simulyatsiya uchun: 1234) tekshiradi.
+    // 3-bosqich ('new_password'): Yangi parolni qabul qiladi, muvaffaqiyatli o'zgartirilganligini bildiradi
+    // va foydalanuvchining eski pochtasi ostida profilingizga bir zumda kirishni (onSelectRole) amalga oshiradi.
+    //
+    // [JA] パスワード再設定・即時ログイン処理ハンドラ：
+    // この関数はユーザーの再設定フローの各フェーズ（メール入力 -> コード検証 -> 新パスワード設定）を制御します。
+    // メール送信及びコード入力（テストコード: 1234）が完了すると、新パスワードが適用され、
+    // 古いメールアドレスを保持したままで、即座に該当ロール（運転手/企業）としてログイン（onSelectRole）を実行します。
+    // ==========================================================================
     const handleRecoverySubmit = (e) => {
       e.preventDefault();
       if (recoveryStep === 'email') {
@@ -209,7 +230,8 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
         }
         alert(t('recoverySuccessAlert', "Parolingiz muvaffaqiyatli tiklandi va profilingizga kirdingiz!"));
         
-        // Log in immediately under the old email address with mock data to easily continue profile usage
+        // [UZ] Eski elektron pochta va yangilangan parol ostida tizimga darhol kirish (yengil o'tish)
+        // [JA] 古いメールアドレス情報を引き継いだ形で即時自動ログインを実行するモックデータ定義
         const mockData = selectedRole === 'company'
           ? { fullName: 'Sagawa Express', companyType: 'logistics', email: forgotEmail }
           : { fullName: 'Mehmon Haydovchi', driverLicenses: ['oogata', 'kenin'], techCertificates: ['forklift'], email: forgotEmail };
