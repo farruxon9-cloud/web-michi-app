@@ -271,34 +271,10 @@ function App() {
       setApplications(prev => prev.map(a => 
         a.id === appId ? { ...a, shoukaiPaid: true } : a
       ));
-      const app = applications.find(a => a.id === appId);
-      if (app && app.shoukaiId) {
-        const notif = {
-          id: Date.now(),
-          type: 'shoukai_paid',
-          company: app.company,
-          title: `${app.shoukaiAmount} shoukai to'landi`,
-          date: new Date().toLocaleString(),
-          read: false,
-        };
-        setNotifications(prev => [notif, ...prev]);
-      }
     } else {
       setSchoolApplications(prev => prev.map(a => 
         a.id === appId ? { ...a, paid: true } : a
       ));
-      const app = schoolApplications.find(a => a.id === appId);
-      if (app && app.shoukaiId) {
-        const notif = {
-          id: Date.now(),
-          type: 'shoukai_paid',
-          company: app.schoolName,
-          title: `${app.shoukaiAmount} shoukai to'landi`,
-          date: new Date().toLocaleString(),
-          read: false,
-        };
-        setNotifications(prev => [notif, ...prev]);
-      }
     }
   };
 
@@ -384,17 +360,6 @@ function App() {
           isSimulatedReferral: true // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
         };
         setApplications(prev => [...prev, newApp]);
-
-        // Haqiqiy vaqt rejimida yangi bildirishnoma yaratamiz
-        const notif = {
-          id: Date.now(),
-          type: 'employee_request', // Bildirishnoma turi
-          company: item.company,
-          title: `Do'stingiz sizning havolangiz orqali e'longa topshirdi! (${item.title})`,
-          date: new Date().toLocaleString(),
-          read: false
-        };
-        setNotifications(prev => [notif, ...prev]);
       }
     } else {
       // Avtomaktablar uchun shoukai simulyatsiyasi
@@ -413,17 +378,6 @@ function App() {
           isSimulatedReferral: true // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
         };
         setSchoolApplications(prev => [...prev, newApp]);
-
-        // Haqiqiy vaqt rejimida yangi bildirishnoma yaratamiz
-        const notif = {
-          id: Date.now(),
-          type: 'employee_request',
-          company: item.name,
-          title: `Do'stingiz sizning havolangiz orqali avtomaktabga kirdi! (${item.name})`,
-          date: new Date().toLocaleString(),
-          read: false
-        };
-        setNotifications(prev => [notif, ...prev]);
       }
     }
   };

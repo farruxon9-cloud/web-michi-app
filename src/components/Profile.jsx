@@ -438,9 +438,13 @@ const getLicenseLabel = (type) => {
   // ===== MY APPLICATIONS / COMPANY INCOMING APPLICATIONS PAGE =====
   if (activePage === 'applications') {
     // Combine job and school applications for driver view
-    const combinedApps = [...applications];
-    if (userRole !== 'company') {
-      schoolApplications.forEach(s => {
+    let combinedApps = [];
+    if (userRole === 'company') {
+      combinedApps = [...applications];
+    } else {
+      // Driver or guest only sees their own applications (no simulated friend referrals)
+      combinedApps = [...applications].filter(a => !a.isSimulatedReferral);
+      (schoolApplications || []).filter(s => !s.isSimulatedReferral).forEach(s => {
         combinedApps.push({
           ...s,
           isSchool: true,
