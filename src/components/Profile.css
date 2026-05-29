@@ -412,12 +412,32 @@
 }
 
 .notif-item.unread {
-  background: rgba(10, 132, 255, 0.06);
-  border-left: 3px solid var(--primary);
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.11), rgba(10, 132, 255, 0.04)) !important;
+  border: 1px solid rgba(10, 132, 255, 0.3) !important;
+  border-left: 5px solid #0A84FF !important;
+  box-shadow: 0 8px 24px rgba(10, 132, 255, 0.18), inset 0 0 12px rgba(10, 132, 255, 0.06);
+  font-weight: 600;
+  transform: translateY(-1px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notif-item.unread:hover {
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.16), rgba(10, 132, 255, 0.06)) !important;
+  box-shadow: 0 12px 32px rgba(10, 132, 255, 0.26), inset 0 0 16px rgba(10, 132, 255, 0.1);
+  transform: translateY(-2px);
 }
 
 .notif-item.read {
   opacity: 0.6;
+  background: rgba(0, 0, 0, 0.01) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-left: 5px solid transparent !important;
+  box-shadow: none !important;
+  transition: all 0.3s ease;
+}
+
+.notif-item.read:hover {
+  opacity: 0.85;
 }
 
 .notif-indicator {
@@ -661,4 +681,25 @@
   border-color: var(--primary);
   color: var(--primary);
   background: rgba(10, 132, 255, 0.06);
+}
+
+/* Dynamic Section Header Count Badges */
+.section-header-count {
+  font-size: 16px;
+  color: var(--primary);
+  background: rgba(10, 132, 255, 0.12);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  margin-left: 10px;
+  font-weight: 700;
+  vertical-align: middle;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(10, 132, 255, 0.05);
+  letter-spacing: 0;
+  transition: all 0.3s ease;
+}
+
+.dark-mode .section-header-count {
+  background: rgba(10, 132, 255, 0.2);
+  color: #0A84FF;
 }

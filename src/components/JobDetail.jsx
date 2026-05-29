@@ -6,7 +6,8 @@ import './JobDetail.css';
 
 export default function JobDetail({ job, onBack, onApply, onShoukai, applications = [], onToggleSave, profileData, userRole }) {
   const { t } = useTranslation();
-  const alreadyApplied = applications.some(a => a.jobId === job.id);
+  // only count own applications as alreadyApplied, do not block the user if they referred a friend
+  const alreadyApplied = applications.some(a => a.jobId === job.id && !a.isSimulatedReferral);
   const isSaved = profileData?.savedItems?.jobs?.some(j => j.id === job.id);
 
   return (

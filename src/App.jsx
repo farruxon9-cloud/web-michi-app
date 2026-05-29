@@ -16,7 +16,7 @@ const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const CompanyHome = lazy(() => import('./components/CompanyHome'));
 
 function App() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showSplash, setShowSplash] = useState(true);
   const [languageSelected, setLanguageSelected] = useState(false);
   const [userRole, setUserRole] = useState(null); // Temporarily disable auto-login
@@ -308,9 +308,104 @@ function App() {
     setProfileData(prev => ({ ...prev, ...newData }));
   };
 
+  // ==========================================
+  // VIRAL SHOUKAI REFERRAL ALGORITHM & GROW LOOP
+  // ==========================================
+  // [UZ] Ushbu algoritm foydalanuvchilar o'rtasida e'lonlar va ilovani virusli tarqatishni simulyatsiya qiladi.
+  // Har safar foydalanuvchi "Shoukai" tugmasini bosganida, shaxsiy havola nusxalanadi va tizimda do'stlarining
+  // ilovani yuklab olib, ushbu e'longa ariza yuborgani (Friend Simulation) zudlik bilan simulyatsiya qilinadi.
+  // Bu foydalanuvchining shaxsiy arizasini yoki faolligini cheklamaydi va "Mening Shoukai'larim" sahifasida aks etadi.
+  //
+  // [JA] 紹介（Shoukai）ウイルス性拡散アルゴリズム：
+  // ユーザーが「紹介」ボタンを押すと、パーソナライズされた紹介リンクがコピーされ、
+  // 友人がアプリをダウンロードして該当の求人または自動車学校に応募したシミュレーション（Friend Simulation）が即座に実行されます。
+  // これにより、紹介報酬の追跡と、友人紹介によるアプリ認知拡大・就職支援のビジネスロジックが美しく表現されます。
+  //
+  // [EN] Viral Shoukai Referral Algorithm & Growth Engine:
+  // When a user shares via Shoukai, it copies a unique link and immediately triggers a simulated referral application
+  // representing a friend downloading the app and applying. This handles the social network effect, satisfies job seekers'
+  // demand for work, and visualizes pending/paid referral rewards under "My Shoukai" in the profile.
   const handleShoukai = (item) => {
-    const link = `michi-app.com/${item.shoukaiAmount && item.title ? 'job' : 'school'}/${item.id}?ref=${profileData.userId}`;
-    alert(`Shoukai havolasi nusxalandi:\n\n${link}\n\nDo'stlaringiz bilan ulashing!`);
+    // 1. Havolani nusxalash simulyatsiyasi
+    const isJob = !!((item.shoukaiAmount || item.shoukai) && (item.title || item.name));
+    const isActuallyJob = !!item.title;
+    
+    const amount = isActuallyJob ? (item.shoukaiAmount || item.shoukai || '¥50,000') : (item.shoukai || '¥10,000');
+    const title = isActuallyJob ? item.title : item.name;
+
+    const link = `michi-app.com/${isActuallyJob ? 'job' : 'school'}/${item.id}?ref=${profileData.userId}`;
+    
+    // Multi-language Alert messages based on active locale
+    const alertMsg = i18n.language === 'ja'
+      ? `紹介リンクをコピーしました！\n\n${link}\n\n友達にシェアして紹介報酬を獲得しましょう！`
+      : i18n.language === 'en'
+      ? `Referral link copied successfully:\n\n${link}\n\nShare with friends to earn Shoukai rewards!`
+      : `Shoukai havolasi nusxalandi:\n\n${link}\n\nDo'stlaringiz bilan ulashing va mukofot oling!`;
+      
+    alert(alertMsg);
+
+    // 2. Mantiqiy algoritm: Do'stingiz ushbu havola orqali yuklab ariza yuborganligini simulyatsiya qilish.
+    if (isActuallyJob) {
+      // Dublikat bo'lmasligi uchun tekshiramiz
+      const exists = applications.some(a => a.jobId === item.id && a.shoukaiId === profileData.userId && a.isSimulatedReferral);
+      if (!exists) {
+        const newApp = {
+          id: Date.now(),
+          jobId: item.id,
+          company: item.company,
+          title: item.title,
+          logo: item.logo,
+          status: 'submitted',
+          appliedDate: new Date().toLocaleDateString(),
+          shoukaiId: profileData.userId, // Referrer ID bu hozirgi foydalanuvchining ID raqami
+          shoukaiAmount: amount,
+          shoukaiPaid: false,
+          friendName: 'Do\'stingiz (Simulyatsiya)',
+          isSimulatedReferral: true // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
+        };
+        setApplications(prev => [...prev, newApp]);
+
+        // Haqiqiy vaqt rejimida yangi bildirishnoma yaratamiz
+        const notif = {
+          id: Date.now(),
+          type: 'employee_request', // Bildirishnoma turi
+          company: item.company,
+          title: `Do'stingiz sizning havolangiz orqali e'longa topshirdi! (${item.title})`,
+          date: new Date().toLocaleString(),
+          read: false
+        };
+        setNotifications(prev => [notif, ...prev]);
+      }
+    } else {
+      // Avtomaktablar uchun shoukai simulyatsiyasi
+      const exists = schoolApplications.some(a => a.schoolId === item.id && a.shoukaiId === profileData.userId && a.isSimulatedReferral);
+      if (!exists) {
+        const newApp = {
+          id: Date.now(),
+          schoolId: item.id,
+          schoolName: item.name,
+          image: item.image,
+          appliedDate: new Date().toLocaleDateString(),
+          shoukaiId: profileData.userId, // Referrer ID bu hozirgi foydalanuvchining ID raqami
+          shoukaiAmount: item.shoukai || '¥10,000',
+          paid: false,
+          friendName: 'Do\'stingiz (Simulyatsiya)',
+          isSimulatedReferral: true // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
+        };
+        setSchoolApplications(prev => [...prev, newApp]);
+
+        // Haqiqiy vaqt rejimida yangi bildirishnoma yaratamiz
+        const notif = {
+          id: Date.now(),
+          type: 'employee_request',
+          company: item.name,
+          title: `Do'stingiz sizning havolangiz orqali avtomaktabga kirdi! (${item.name})`,
+          date: new Date().toLocaleString(),
+          read: false
+        };
+        setNotifications(prev => [notif, ...prev]);
+      }
+    }
   };
 
   const handleToggleSave = (item, type) => {
@@ -380,7 +475,7 @@ function App() {
         if (userRole === 'company') {
           return <CompanyHome onJobClick={setSelectedJob} />;
         }
-        return <DriverFeed onJobClick={setSelectedJob} isContractActive={isContractActive} verifiedCompanies={verifiedCompanies} />;
+        return <DriverFeed onJobClick={setSelectedJob} isContractActive={isContractActive} verifiedCompanies={verifiedCompanies} onShoukai={handleShoukai} />;
       case 'academy':
         return (
           <DrivingAcademy 
@@ -434,7 +529,7 @@ function App() {
           />
         );
       default:
-        return <DriverFeed onJobClick={setSelectedJob} isContractActive={isContractActive} />;
+        return <DriverFeed onJobClick={setSelectedJob} isContractActive={isContractActive} onShoukai={handleShoukai} />;
     }
   };
 

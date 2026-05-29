@@ -116,7 +116,8 @@ export default function DrivingAcademy({
   // Maktab tanlanganda batafsil ma'lumotlarni ko'rsatish
   if (selectedSchool) {
     const school = selectedSchool;
-    const existingApp = schoolApplications.find(a => a.schoolId === school.id);
+    // only count own applications, do not block the user if they referred a friend
+    const existingApp = schoolApplications.find(a => a.schoolId === school.id && !a.isSimulatedReferral);
     const hasApplied = !!existingApp;
     const isSaved = profileData?.savedItems?.schools?.some(s => s.id === school.id);
 
@@ -284,7 +285,7 @@ export default function DrivingAcademy({
               )}
               <button 
                 className="shoukai-btn squircle"
-                onClick={() => setShowShoukaiInput(true)}
+                onClick={() => onShoukai(school)}
                 style={{ flex: 1, background: '#e8f5e9', color: '#2e7d32', border: '1px solid #c8e6c9', padding: '14px 10px', fontSize: '14px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
                 <Share2 size={16} /> {school.shoukaiFee && school.shoukaiFee > 0 ? `${t('shoukai', 'Shoukai')} (${school.shoukaiFee.toLocaleString()})` : t('shoukai', 'Shoukai')}
@@ -338,7 +339,10 @@ export default function DrivingAcademy({
                   <button style={{ flex:1, padding:'8px 12px', background:'#2C2C2E', color:'white', border:'none', borderRadius:'12px', fontSize:'13px', fontWeight:'600' }}>
                     {t('applyToSchool', 'Maktabga topshirish')}
                   </button>
-                  <button style={{ flex:1, padding:'8px 12px', background:'rgba(255,159,10,0.1)', color:'#FF9F0A', border:'1px solid rgba(255,159,10,0.2)', borderRadius:'12px', fontSize:'13px', fontWeight:'600', display:'flex', alignItems:'center', justifyContent:'center', gap:'4px' }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onShoukai(school); }}
+                    style={{ flex:1, padding:'8px 12px', background:'rgba(255,159,10,0.1)', color:'#FF9F0A', border:'1px solid rgba(255,159,10,0.2)', borderRadius:'12px', fontSize:'13px', fontWeight:'600', display:'flex', alignItems:'center', justifyContent:'center', gap:'4px' }}
+                  >
                     <Share2 size={14} /> {school.shoukaiFee && school.shoukaiFee > 0 ? `${t('shoukai', 'Shoukai')} (¥${school.shoukaiFee.toLocaleString()})` : t('shoukai', 'Shoukai')}
                   </button>
                 </div>

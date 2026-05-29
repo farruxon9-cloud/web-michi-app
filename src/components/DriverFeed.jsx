@@ -107,7 +107,7 @@ export const MOCK_JOBS = [
   }
 ];
 
-export default function DriverFeed({ onJobClick, isContractActive, verifiedCompanies = [] }) {
+export default function DriverFeed({ onJobClick, isContractActive, verifiedCompanies = [], onShoukai }) {
   const { t } = useTranslation();
   const [activeSegment, setActiveSegment] = useState('permanent');
 
@@ -169,7 +169,10 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
                   <button style={{ flex:1, padding:'8px 12px', background:'#2C2C2E', color:'white', border:'none', borderRadius:'12px', fontSize:'13px', fontWeight:'600' }}>
                     {t('applyJob', 'Ariza berish')}
                   </button>
-                  <button style={{ flex:1, padding:'8px 12px', background:'rgba(255,159,10,0.1)', color:'#FF9F0A', border:'1px solid rgba(255,159,10,0.2)', borderRadius:'12px', fontSize:'13px', fontWeight:'600', display:'flex', alignItems:'center', justifyContent:'center', gap:'4px' }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onShoukai && onShoukai(job); }}
+                    style={{ flex:1, padding:'8px 12px', background:'rgba(255,159,10,0.1)', color:'#FF9F0A', border:'1px solid rgba(255,159,10,0.2)', borderRadius:'12px', fontSize:'13px', fontWeight:'600', display:'flex', alignItems:'center', justifyContent:'center', gap:'4px' }}
+                  >
                     <Share2 size={14} /> {job.shoukai && job.shoukai !== "0" ? `${t('shoukai', 'Shoukai')} (${job.shoukai})` : t('shoukai', 'Shoukai')}
                   </button>
                 </div>

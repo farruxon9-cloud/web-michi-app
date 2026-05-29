@@ -31,6 +31,31 @@ export default function Profile({
   onSchoolClick
 }) {
   const { t } = useTranslation();
+
+  // --- STATISTIKA VA SANARLARNI HISOBLASH (DYNAMIC MENUS & USER BADGES) ---
+  // Hamma bo'limlar uchun bosilgan o'zgarishlar sanoqlari (badges) dynamic ravishda hisoblanadi.
+
+  // 1. Foydalanuvchining shaxsiy arizalari soni (referral qilingan do'stlar arizalari hisobga olinmaydi)
+  const ownApplicationsCount = applications.filter(a => !a.isSimulatedReferral).length;
+  const ownSchoolApplicationsCount = (schoolApplications || []).filter(a => !a.isSimulatedReferral).length;
+  const totalOwnApplications = ownApplicationsCount + (userRole !== 'company' ? ownSchoolApplicationsCount : 0);
+
+  // 2. Faol bo'lgan saqlangan e'lonlar soni (MOCK ro'yxatida mavjud bo'lgan e'lonlar)
+  const savedJobs = (profileData?.savedItems?.jobs || []).filter(job => 
+    MOCK_JOBS.some(mj => mj.id === job.id && mj.isActive !== false)
+  );
+  const savedSchools = (profileData?.savedItems?.schools || []).filter(school => 
+    MOCK_SCHOOLS.some(ms => ms.id === school.id && ms.isActive !== false)
+  );
+  const totalSavedCount = savedJobs.length + (userRole === 'driver' ? savedSchools.length : 0);
+
+  // 3. Foydalanuvchining Shoukai takliflari soni (simulyatsiya qilingan do'stlar referral arizalari yoki haqiqiy takliflar)
+  const referralsCount = userRole === 'company' 
+    ? applications.filter(a => a.company === profileData.fullName && a.shoukaiId).length
+    : (applications.filter(a => a.shoukaiId === profileData.userId).length + (schoolApplications || []).filter(a => a.shoukaiId === profileData.userId).length);
+
+  // 4. Kompaniyaning HR xodimlari soni
+  const employeesCount = (companyEmployees || []).length;
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
   const [acceptingAppId, setAcceptingAppId] = useState(null);
@@ -106,7 +131,10 @@ const getLicenseLabel = (type) => {
         <div className="sub-page-header">
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
           <div className="sub-header-row">
-            <h2>{t('notifications')}</h2>
+            <h2>
+              {t('notifications')}
+              <span className="section-header-count">({notifications.length})</span>
+            </h2>
             {unreadCount > 0 && (
               <button className="mark-all-btn" onClick={onMarkAllRead}>
                 {t('markAllRead')}
@@ -121,7 +149,13 @@ const getLicenseLabel = (type) => {
               <p>{t('noNotifications')}</p>
             </div>
           ) : (
-            notifications.map(notif => (
+            [...notifications].sort((a, b) => {
+              // 1. O'qilmagan bildirishnomalar har doim tepada turadi
+              if (!a.read && b.read) return -1;
+              if (a.read && !b.read) return 1;
+              // 2. Yangi bildirishnomalar (ID bo'yicha eng oxirgilari) tepada turadi, eskilari esa pastga tushadi
+              return b.id - a.id;
+            }).map(notif => (
               <div 
                 key={notif.id} 
                 className={`notif-item glass squircle ${!notif.read ? 'unread' : 'read'}`}
@@ -391,7 +425,10 @@ const getLicenseLabel = (type) => {
       <div className="profile-container fade-in">
         <div className="sub-page-header">
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
-          <h2>{userRole === 'company' ? t('incomingApps', 'Kelib tushgan arizalar') : t('myApplications')}</h2>
+          <h2>
+            {userRole === 'company' ? t('incomingApps', 'Kelib tushgan arizalar') : t('myApplications', 'Mening arizalarim')}
+            <span className="section-header-count">({userRole === 'company' ? applications.length : totalOwnApplications})</span>
+          </h2>
         </div>
         <div className="applications-list">
           {combinedApps.length === 0 ? (
@@ -549,7 +586,10 @@ const getLicenseLabel = (type) => {
         <div className="sub-page-header">
           {/* Ortga qaytish: Profil bosh sahifasiga ('main') qaytaradi */}
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
-          <h2>{t('savedItemsTitle', 'Saqlanganlar')}</h2>
+          <h2>
+            {t('savedItemsTitle', 'Saqlanganlar')}
+            <span className="section-header-count">({savedJobs.length + savedSchools.length})</span>
+          </h2>
         </div>
         <div className="applications-list" style={{ padding: '16px' }}>
           {savedJobs.length === 0 && savedSchools.length === 0 ? (
@@ -650,7 +690,10 @@ const getLicenseLabel = (type) => {
         <div className="profile-container fade-in">
           <div className="sub-page-header">
             <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
-            <h2>{t('shoukaiViaApps', 'Shoukai orqali kelganlar')}</h2>
+            <h2>
+              {t('shoukaiViaApps', 'Shoukai orqali kelganlar')}
+              <span className="section-header-count">({shoukaiApps.length})</span>
+            </h2>
           </div>
           <div className="applications-list" style={{ padding: '16px' }}>
             {shoukaiApps.length === 0 ? (
@@ -697,7 +740,10 @@ const getLicenseLabel = (type) => {
       <div className="profile-container fade-in">
         <div className="sub-page-header">
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
-          <h2>{t('myShoukai', 'Mening Shoukai\'larim')}</h2>
+          <h2>
+            {t('myShoukai', 'Mening Shoukai\'larim')}
+            <span className="section-header-count">({totalRefs})</span>
+          </h2>
         </div>
         <div className="applications-list" style={{ padding: '16px' }}>
           <div className="glass squircle" style={{ padding: '16px', marginBottom: '20px' }}>
@@ -761,7 +807,10 @@ const getLicenseLabel = (type) => {
       <div className="profile-container fade-in">
         <div className="sub-page-header">
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
-          <h2>{t('employeesHR', 'Xodimlar (HR)')}</h2>
+          <h2>
+            {t('employeesHR', 'Xodimlar (HR)')}
+            <span className="section-header-count">({companyEmployees.length})</span>
+          </h2>
         </div>
         <div className="applications-list" style={{ padding: '16px' }}>
           
@@ -991,9 +1040,9 @@ const getLicenseLabel = (type) => {
           <div className="menu-item" onClick={() => setActivePage('applications')}>
             <div className="menu-icon"><Briefcase size={20} /></div>
             <span>{userRole === 'company' ? t('incomingApps', 'Kelib tushgan arizalar') : t('myApplications')}</span>
-            {(applications.length + (userRole !== 'company' && schoolApplications ? schoolApplications.length : 0)) > 0 && (
+            {totalOwnApplications > 0 && (
               <span className="menu-badge">
-                {applications.length + (userRole !== 'company' && schoolApplications ? schoolApplications.length : 0)}
+                {totalOwnApplications}
               </span>
             )}
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
@@ -1004,6 +1053,11 @@ const getLicenseLabel = (type) => {
               <div className="menu-item" onClick={() => setActivePage('saved_items')}>
                 <div className="menu-icon"><Bookmark size={20} /></div>
                 <span>{t('savedItemsTitle', 'Saqlanganlar')}</span>
+                {totalSavedCount > 0 && (
+                  <span className="menu-badge">
+                    {totalSavedCount}
+                  </span>
+                )}
                 <ChevronRight size={20} color="#8E8E93" className="chevron" />
               </div>
             </>
@@ -1012,6 +1066,11 @@ const getLicenseLabel = (type) => {
           <div className="menu-item" onClick={() => setActivePage('my_shoukai')}>
             <div className="menu-icon"><Share2 size={20} /></div>
             <span>{userRole === 'company' ? t('shoukaiViaApps', 'Shoukai orqali kelganlar') : t('myShoukai', "Mening Shoukai'larim")}</span>
+            {referralsCount > 0 && (
+              <span className="menu-badge">
+                {referralsCount}
+              </span>
+            )}
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
           {userRole === 'company' && (
@@ -1020,6 +1079,11 @@ const getLicenseLabel = (type) => {
               <div className="menu-item" onClick={() => setActivePage('employees')}>
                 <div className="menu-icon"><Users size={20} /></div>
                 <span>{t('employeesHR', 'Xodimlar (HR)')}</span>
+                {employeesCount > 0 && (
+                  <span className="menu-badge">
+                    {employeesCount}
+                  </span>
+                )}
                 <ChevronRight size={20} color="#8E8E93" className="chevron" />
               </div>
             </>
