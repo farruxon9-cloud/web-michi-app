@@ -522,4 +522,28 @@ html.dark-mode .premium-input-wrapper:focus-within {
   right: 0;
 }
 
+/* Forgot Password Text Button */
+.forgot-password-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-end;
+  margin-top: -4px;
+  transition: opacity 0.2s, transform 0.2s;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.forgot-password-link:hover {
+  opacity: 0.85;
+  background: rgba(90, 85, 234, 0.06);
+}
+
+.forgot-password-link:active {
+  transform: scale(0.96);
+}
+
 

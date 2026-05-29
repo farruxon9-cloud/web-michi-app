@@ -27,6 +27,13 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
   const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // Recovery Credentials
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [recoveryCode, setRecoveryCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [recoveryStep, setRecoveryStep] = useState('email'); // 'email' | 'code' | 'new_password'
+  const [recoveryShowPassword, setRecoveryShowPassword] = useState(false);
+
   // Verify Code
   const [verifyCode, setVerifyCode] = useState('');
 
@@ -180,6 +187,149 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
     );
   }
 
+  if (authStep === 'forgot_password') {
+    const handleRecoverySubmit = (e) => {
+      e.preventDefault();
+      if (recoveryStep === 'email') {
+        if (!forgotEmail) {
+          alert(t('emailRequired', "Iltimos, elektron pochtangizni kiriting."));
+          return;
+        }
+        setRecoveryStep('code');
+      } else if (recoveryStep === 'code') {
+        if (recoveryCode === '1234') {
+          setRecoveryStep('new_password');
+        } else {
+          alert(t('verifyError', "Tasdiqlash kodi noto'g'ri!"));
+        }
+      } else if (recoveryStep === 'new_password') {
+        if (!newPassword) {
+          alert(t('passwordRequired', "Iltimos, yangi parol kiriting."));
+          return;
+        }
+        alert(t('recoverySuccessAlert', "Parolingiz muvaffaqiyatli tiklandi va profilingizga kirdingiz!"));
+        
+        // Log in immediately under the old email address with mock data to easily continue profile usage
+        const mockData = selectedRole === 'company'
+          ? { fullName: 'Sagawa Express', companyType: 'logistics', email: forgotEmail }
+          : { fullName: 'Mehmon Haydovchi', driverLicenses: ['oogata', 'kenin'], techCertificates: ['forklift'], email: forgotEmail };
+        onSelectRole(selectedRole, mockData);
+      }
+    };
+
+    return (
+      <div className="role-container login-centered-container slide-up">
+        <div className="auth-card glass squircle" style={{ position: 'relative', width: '100%' }}>
+          <button 
+            className="icon-btn" 
+            onClick={() => {
+              if (recoveryStep === 'code') setRecoveryStep('email');
+              else if (recoveryStep === 'new_password') setRecoveryStep('code');
+              else setAuthStep('login');
+            }} 
+            style={{ position: 'absolute', top: '16px', left: '16px' }}
+          >
+            <ArrowLeft size={20} />
+          </button>
+          
+          <div className="auth-logo-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '12px', marginBottom: '8px' }}>
+            <div className="logo-kanji" style={{ transform: 'scale(1.25)', boxShadow: '0 8px 24px rgba(90, 85, 234, 0.35)' }}>道</div>
+          </div>
+
+          <div className="auth-header" style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '22px', fontWeight: '800', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>
+              {t('recoveryTitle', 'Parolni tiklash')}
+            </h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
+              {recoveryStep === 'email' && t('recoveryEmailSub', 'Elektron pochtangizni kiriting')}
+              {recoveryStep === 'code' && t('recoveryCodeSub', 'Tasdiqlash kodini kiriting')}
+              {recoveryStep === 'new_password' && t('recoveryPassSub', 'Yangi parol belgilang')}
+            </p>
+          </div>
+
+          <form onSubmit={handleRecoverySubmit} className="auth-form hide-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="form-section" style={{ display: 'flex', flexDirection: 'column', gap: '16px', border: 'none', padding: 0 }}>
+              
+              {recoveryStep === 'email' && (
+                <div className="premium-input-group">
+                  <div className={`premium-input-wrapper ${forgotEmail ? 'has-value' : ''}`}>
+                    <div className="premium-input-icon">
+                      <Mail size={18} />
+                    </div>
+                    <input 
+                      type="email" 
+                      placeholder=" "
+                      className="premium-input" 
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      required
+                    />
+                    <label className="premium-label">{t("emailPlaceholder", "Email manzili")}</label>
+                    <div className="premium-input-border"></div>
+                  </div>
+                </div>
+              )}
+
+              {recoveryStep === 'code' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '8px' }}>
+                    {t('recoveryCodeSentMsg', 'Esda tuting, tiklash kodi emailingizga yuborildi. (Test kodi: 1234)')}
+                  </p>
+                  <input 
+                    type="number" 
+                    placeholder="1234" 
+                    className="auth-input" 
+                    style={{ textAlign: 'center', fontSize: '24px', letterSpacing: '8px', borderRadius: '16px', padding: '14px', border: '1px solid rgba(90, 85, 234, 0.25)' }}
+                    value={recoveryCode}
+                    onChange={(e) => setRecoveryCode(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+
+              {recoveryStep === 'new_password' && (
+                <div className="premium-input-group">
+                  <div className={`premium-input-wrapper ${newPassword ? 'has-value' : ''}`}>
+                    <div className="premium-input-icon">
+                      <Lock size={18} />
+                    </div>
+                    <input 
+                      type={recoveryShowPassword ? "text" : "password"} 
+                      placeholder=" "
+                      required 
+                      className="premium-input" 
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                    <label className="premium-label">{t("passPlaceholder", "Yangi parol")}</label>
+                    
+                    <button 
+                      type="button"
+                      className="password-toggle-btn"
+                      onClick={() => setRecoveryShowPassword(!recoveryShowPassword)}
+                      style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', padding: '8px', cursor: 'pointer', position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', zIndex: 5 }}
+                    >
+                      {recoveryShowPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                    
+                    <div className="premium-input-border"></div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+            
+            <button type="submit" className="btn-primary squircle" style={{ marginTop: '4px', width: '100%', borderRadius: '14px', background: 'linear-gradient(135deg, var(--primary), #4338CA)', boxShadow: '0 8px 20px rgba(90, 85, 234, 0.25)' }}>
+              {recoveryStep === 'email' && t('sendCodeBtn', 'Kodni yuborish')}
+              {recoveryStep === 'code' && t('verifyCodeBtn', 'Kodni tasdiqlash')}
+              {recoveryStep === 'new_password' && t('updateAndLoginBtn', 'Parolni yangilash va Kirish')}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   if (authStep === 'login') {
     return (
       <div className="role-container login-centered-container slide-up">
@@ -189,7 +339,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
           </button>
           
           <div className="auth-logo-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '12px', marginBottom: '8px' }}>
-            <div className="logo-kanji" style={{ transform: 'scale(1.25)', boxShadow: '0 8px 24px rgba(90, 85, 234, 0.35)', animation: 'blob-float 10s infinite alternate ease-in-out' }}>道</div>
+            <div className="logo-kanji" style={{ transform: 'scale(1.25)', boxShadow: '0 8px 24px rgba(90, 85, 234, 0.35)' }}>道</div>
           </div>
 
           <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -250,6 +400,21 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                   <div className="premium-input-border"></div>
                 </div>
               </div>
+
+              {/* Forgot Password trigger */}
+              <button 
+                type="button"
+                className="forgot-password-link"
+                onClick={() => {
+                  setAuthStep('forgot_password');
+                  setRecoveryStep('email');
+                  setForgotEmail(loginEmail);
+                  setRecoveryCode('');
+                  setNewPassword('');
+                }}
+              >
+                {t('forgotPasswordBtn', 'Parolni unutdingizmi?')}
+              </button>
 
             </div>
             
