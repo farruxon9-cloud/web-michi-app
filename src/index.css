@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
 
 :root {
   --primary: #5A55EA; /* Michi Premium Indigo */
@@ -183,13 +183,27 @@ body {
 /* Utilities */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .squircle {
-  border-radius: var(--radius-lg);
+  border-radius: 24px 6px 24px 24px; /* Premium Asymmetric Modernist Squircle */
+  overflow: hidden; /* Clips all inner elements perfectly to the squircle */
+}
+
+/* Global hover highlights to make all glassmorphic cards feel responsive and alive */
+.glass.squircle {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass.squircle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(90, 85, 234, 0.1), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+  border-color: rgba(90, 85, 234, 0.2);
 }
 
 .fade-in {
