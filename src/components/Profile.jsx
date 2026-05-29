@@ -673,27 +673,28 @@ const getLicenseLabel = (type) => {
               {savedJobs.length > 0 && (
                 <div style={{ marginBottom: '24px' }}>
                   <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('jobAds', 'Ish e\'lonlari')}</h3>
-                  {savedJobs.map(job => (
+                  {savedJobs.map(job => {
+                    const fullJob = MOCK_JOBS.find(mj => mj.id === job.id) || job;
+                    return (
                     <div 
-                      key={job.id} 
+                      key={fullJob.id || job.id} 
                       className="app-card glass squircle" 
                       onClick={() => {
-                        // Saqlangan qisqa ma'lumot o'rniga MOCK_JOBS ro'yxatidan to'liq ish obyektini topamiz
-                        const fullJob = MOCK_JOBS.find(mj => mj.id === job.id);
                         if (fullJob && onJobClick) {
-                          onJobClick(fullJob); // To'liq ekranli overlayda ish batafsil sahifasini ochamiz
+                          onJobClick(fullJob);
                         }
                       }}
+                      style={{ padding: '12px', marginBottom: '12px', display: 'flex', gap: '12px', alignItems: 'center', cursor: 'pointer' }}
                     >
-                      <div className="app-header-info">
-                        <img src={job.logo} alt={job.company} className="app-logo" style={{ borderRadius: '8px' }} />
-                        <div>
-                          <div style={{ fontWeight: 'bold' }}>{job.title}</div>
-                          <div style={{ fontSize: '13px', color: '#8E8E93' }}>{job.company}</div>
-                        </div>
+                      <img src={fullJob.logo || fullJob.image} alt={fullJob.company} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '15px', lineHeight: '1.2' }}>{fullJob.title}</div>
+                        <div style={{ fontSize: '13px', color: '#8E8E93', marginTop: '4px' }}>{fullJob.company}</div>
+                        {fullJob.salary && <div style={{ fontSize: '13px', color: '#34C759', fontWeight: 'bold', marginTop: '4px' }}>{fullJob.salary}</div>}
+                        {fullJob.location && <div style={{ fontSize: '12px', color: '#8E8E93', marginTop: '2px' }}>📍 {fullJob.location}</div>}
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               )}
 
@@ -701,48 +702,26 @@ const getLicenseLabel = (type) => {
               {savedSchools.length > 0 && (
                 <div>
                   <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('drivingSchools', 'Avtomaktablar')}</h3>
-                  {savedSchools.map(school => (
+                  {savedSchools.map(school => {
+                    const fullSchool = MOCK_SCHOOLS.find(ms => ms.id === school.id) || school;
+                    return (
                     <div 
-                      key={school.id} 
+                      key={fullSchool.id || school.id} 
                       className="app-card glass squircle" 
                       onClick={() => {
-                        // Saqlangan qisqa ma'lumot o'rniga MOCK_SCHOOLS ichidan to'liq maktab obyektini topamiz
-                        const fullSchool = MOCK_SCHOOLS.find(ms => ms.id === school.id);
                         if (fullSchool && onSchoolClick) {
-                          onSchoolClick(fullSchool); // Avtomaktab tabiga o'tkazib, uning batafsil sahifasini ochamiz
+                          onSchoolClick(fullSchool);
                         }
                       }}
+                      style={{ padding: '12px', marginBottom: '12px', display: 'flex', gap: '12px', alignItems: 'center', cursor: 'pointer' }}
                     >
-                      <div className="app-header-info">
-                        <img src={job.logo} alt={job.company} className="app-logo" style={{ borderRadius: '8px' }} />
-                        <div>
-                          <div style={{ fontWeight: 'bold' }}>{job.title}</div>
-                          <div style={{ fontSize: '13px', color: '#8E8E93' }}>{job.company}</div>
-                        </div>
+                      <img src={fullSchool.image} alt={fullSchool.name} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '15px', lineHeight: '1.2' }}>{fullSchool.name}</div>
+                        {fullSchool.location && <div style={{ fontSize: '13px', color: '#8E8E93', marginTop: '4px' }}>📍 {fullSchool.location}</div>}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-              {savedSchools.length > 0 && (
-                <div>
-                  <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('drivingSchools', 'Avtomaktablar')}</h3>
-                  {savedSchools.map(school => (
-                    <div key={school.id} className="app-card glass squircle" onClick={() => {
-                      const fullSchool = MOCK_SCHOOLS.find(ms => ms.id === school.id);
-                      if (fullSchool && onSchoolClick) {
-                        onSchoolClick(fullSchool);
-                      }
-                    }}>
-                      <div className="app-header-info">
-                        <img src={school.image} alt={school.name} className="app-logo" style={{ borderRadius: '8px' }} />
-                        <div>
-                          <div style={{ fontWeight: 'bold' }}>{school.name}</div>
-                          <div style={{ fontSize: '13px', color: '#8E8E93' }}>{school.location}</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  )})}
                 </div>
               )}
             </>
