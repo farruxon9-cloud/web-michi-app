@@ -370,53 +370,156 @@ select.auth-input {
   justify-content: center;
   align-items: center;
   height: 100%;
-  min-height: 80vh;
-  padding: 20px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 20px 24px;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 /* Large custom asymmetric squircled card for ultra-premium modernist branding */
 .login-centered-container .auth-card {
-  border-radius: 32px 8px 32px 32px !important;
-  max-width: 360px;
+  border-radius: 36px 12px 36px 36px !important;
+  max-width: 380px;
   width: 100%;
-  padding: 36px 24px;
-  box-shadow: 0 20px 48px rgba(90, 85, 234, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+  padding: 40px 28px;
+  box-shadow: 0 24px 60px rgba(90, 85, 234, 0.18), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
   margin-top: 0;
-  backdrop-filter: blur(32px) saturate(200%);
+  backdrop-filter: blur(40px) saturate(220%);
+  -webkit-backdrop-filter: blur(40px) saturate(220%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-/* Premium Floating Input Fields that respond dynamically to focus and cursor */
-.auth-input {
-  border-radius: 12px;
-  border: 1px solid rgba(90, 85, 234, 0.15);
-  background: rgba(255, 255, 255, 0.55) !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+html.dark-mode .login-centered-container .auth-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Premium Floating Input Fields Container */
+.premium-input-group {
+  position: relative;
+  width: 100%;
+}
+
+.premium-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  padding: 10px 16px 10px 48px;
+  min-height: 60px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02), inset 0 2px 4px rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+html.dark-mode .premium-input-wrapper {
+  background: rgba(18, 18, 24, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.premium-input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.premium-input {
+  width: 100%;
+  border: none;
+  background: transparent !important;
+  color: var(--text-main);
+  font-size: 15px;
   outline: none;
+  padding: 16px 0 0 0; /* Space for the floating label above */
+  height: 40px;
+  font-family: inherit;
+  font-weight: 500;
 }
 
-.dark-mode .auth-input {
-  background: rgba(0, 0, 0, 0.25) !important;
-  border-color: rgba(255, 255, 255, 0.08);
+/* Floating Label styling */
+.premium-label {
+  position: absolute;
+  left: 48px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 14px;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  font-weight: 500;
 }
 
-/* Highlighted focused state: lifts input up by 1px and emits a soft premium purple/blue underglow */
-.auth-input:focus {
-  border-color: var(--primary) !important;
-  background: rgba(255, 255, 255, 0.85) !important;
-  box-shadow: 0 0 14px rgba(90, 85, 234, 0.22), inset 0 1px 1px rgba(0, 0, 0, 0.02);
-  transform: translateY(-1px);
+/* Floating label behaves beautifully when focused or filled */
+.premium-input:focus ~ .premium-label,
+.premium-input:not(:placeholder-shown) ~ .premium-label,
+.premium-input-wrapper.has-value .premium-label {
+  top: 14px;
+  font-size: 11px;
+  color: var(--primary);
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
-.dark-mode .auth-input:focus {
-  background: rgba(10, 10, 15, 0.65) !important;
-  box-shadow: 0 0 16px rgba(90, 85, 234, 0.35), inset 0 1px 1px rgba(0, 0, 0, 0.02);
+/* Eye / EyeOff Password toggle button */
+.password-toggle-btn {
+  color: var(--text-secondary);
+  transition: color 0.2s, transform 0.2s;
 }
 
-/* Micro-adjustment for inputs inside the company registration or default scrolls */
-.auth-form-scroll .auth-input {
-  margin-bottom: 2px;
+.password-toggle-btn:hover {
+  color: var(--primary);
+}
+
+/* Focus highlight elevations and shadow underglows */
+.premium-input-wrapper:focus-within {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(90, 85, 234, 0.4);
+  box-shadow: 0 8px 24px rgba(90, 85, 234, 0.12), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+}
+
+html.dark-mode .premium-input-wrapper:focus-within {
+  background: rgba(26, 26, 36, 0.8);
+  border-color: rgba(90, 85, 234, 0.5);
+  box-shadow: 0 8px 24px rgba(90, 85, 234, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.premium-input-wrapper:focus-within .premium-input-icon {
+  color: var(--primary);
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* Double layered sweeping neon line focus effect */
+.premium-input-border {
+  position: absolute;
+  bottom: 0;
+  left: 24px;
+  right: 24px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), #AF52DE, transparent);
+  opacity: 0;
+  transform: scaleX(0.7);
+  transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  pointer-events: none;
+}
+
+.premium-input-wrapper:focus-within .premium-input-border {
+  opacity: 1;
+  transform: scaleX(1);
+  left: 0;
+  right: 0;
 }
 
 

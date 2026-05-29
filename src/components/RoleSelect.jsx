@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2, UserCircle, Plus, X, Camera, MailCheck, ArrowLeft } from 'lucide-react';
+import { Building2, UserCircle, Plus, X, Camera, MailCheck, ArrowLeft, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import './RoleSelect.css';
 
@@ -25,6 +25,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
   // Login credentials
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Verify Code
   const [verifyCode, setVerifyCode] = useState('');
@@ -198,25 +199,60 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
             </p>
           </div>
 
-          <form onSubmit={handleLoginSubmit} className="auth-form hide-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div className="form-section" style={{ display: 'flex', flexDirection: 'column', gap: '12px', border: 'none', padding: 0 }}>
-              <input 
-                type="text" 
-                placeholder={t("emailOrLogin", "Email yoki Login")}
-                className="auth-input" 
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                required
-              />
-              <input 
-                type="password" 
-                placeholder={t("passPlaceholder", "Parol")}
-                required 
-                className="auth-input" 
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-              />
+          <form onSubmit={handleLoginSubmit} className="auth-form hide-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="form-section" style={{ display: 'flex', flexDirection: 'column', gap: '16px', border: 'none', padding: 0 }}>
+              
+              {/* Premium Email/Login Input */}
+              <div className="premium-input-group">
+                <div className={`premium-input-wrapper ${loginEmail ? 'has-value' : ''}`}>
+                  <div className="premium-input-icon">
+                    <Mail size={18} />
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder=" "
+                    className="premium-input" 
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    required
+                  />
+                  <label className="premium-label">{t("emailOrLogin", "Email yoki Login")}</label>
+                  <div className="premium-input-border"></div>
+                </div>
+              </div>
+
+              {/* Premium Password Input with Toggle */}
+              <div className="premium-input-group">
+                <div className={`premium-input-wrapper ${loginPassword ? 'has-value' : ''}`}>
+                  <div className="premium-input-icon">
+                    <Lock size={18} />
+                  </div>
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder=" "
+                    required 
+                    className="premium-input" 
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                  />
+                  <label className="premium-label">{t("passPlaceholder", "Parol")}</label>
+                  
+                  {/* Eye Toggle button */}
+                  <button 
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', padding: '8px', cursor: 'pointer', position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', zIndex: 5 }}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                  
+                  <div className="premium-input-border"></div>
+                </div>
+              </div>
+
             </div>
+            
             <button type="submit" className="btn-primary squircle" style={{ marginTop: '4px', width: '100%', borderRadius: '14px', background: 'linear-gradient(135deg, var(--primary), #4338CA)', boxShadow: '0 8px 20px rgba(90, 85, 234, 0.25)' }}>
               {t('loginBtn', 'Kirish')}
             </button>
