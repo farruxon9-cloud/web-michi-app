@@ -1,17 +1,45 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --primary: #5A55EA; /* Michi Premium Indigo */
-  --primary-hover: #4a45cc;
-  --success: #34C759; /* iOS Green */
+  /* Brand colors: Refined & Sophisticated, escaping overly high saturation for ultra-minimalist UX */
+  --primary: #5E5CE6; /* iOS Premium Indigo */
+  --primary-hover: #4c4ac2;
+  --primary-light: rgba(94, 92, 230, 0.08);
+  --primary-light-border: rgba(94, 92, 230, 0.2);
+
+  --secondary: #AF52DE; /* iOS Premium Purple */
+  --secondary-hover: #963ec4;
+  --secondary-light: rgba(175, 82, 222, 0.08);
+  --secondary-light-border: rgba(175, 82, 222, 0.2);
+
+  --success: #30D158; /* iOS Premium Green / Emerald */
+  --success-hover: #24b043;
+  --success-light: rgba(48, 209, 88, 0.08);
+  --success-light-border: rgba(48, 209, 88, 0.2);
+
+  --warning: #FF9F0A; /* iOS Premium Amber Orange */
+  --warning-hover: #e08800;
+  --warning-light: rgba(255, 159, 10, 0.08);
+  --warning-light-border: rgba(255, 159, 10, 0.2);
+
+  --danger: #FF453A; /* iOS Premium Red / Coral */
+  --danger-hover: #e03227;
+  --danger-light: rgba(255, 69, 58, 0.08);
+  --danger-light-border: rgba(255, 69, 58, 0.2);
+
+  --info: #0A84FF; /* iOS Premium Blue */
+  --info-hover: #0070d6;
+  --info-light: rgba(10, 132, 255, 0.08);
+  --info-light-border: rgba(10, 132, 255, 0.2);
+
   --bg-color: #e5eafc;
   --card-bg: rgba(255, 255, 255, 0.55);
   --glass-bg: rgba(255, 255, 255, 0.45);
   --glass-border: rgba(255, 255, 255, 0.8);
   --text-main: #1C1C1E;
-  --text-secondary: #8E8E93;
-  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --text-secondary: #6E6E73; /* More readable but minimalistic dark gray */
+  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 8px 32px rgba(90, 85, 234, 0.06);
   --radius-sm: 12px;
   --radius-md: 20px;
   --radius-lg: 28px; /* Squircle approximation */
@@ -23,26 +51,26 @@
 @media (prefers-color-scheme: dark) {
   :root:not(.light-mode) {
     --bg-color: #050510;
-    --card-bg: rgba(28, 28, 30, 0.45);
-    --glass-bg: rgba(28, 28, 30, 0.4);
-    --glass-border: rgba(255, 255, 255, 0.08);
+    --card-bg: rgba(20, 20, 26, 0.45);
+    --glass-bg: rgba(20, 20, 26, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.06);
     --text-main: #FFFFFF;
-    --text-secondary: #AEAEB2;
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.15);
-    --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.3);
+    --text-secondary: #A1A1AA;
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.45);
   }
 }
 
 /* Class-based dark mode toggle */
 html.dark-mode {
   --bg-color: #050510;
-  --card-bg: rgba(28, 28, 30, 0.45);
-  --glass-bg: rgba(28, 28, 30, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --card-bg: rgba(20, 20, 26, 0.45);
+  --glass-bg: rgba(20, 20, 26, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.06);
   --text-main: #FFFFFF;
-  --text-secondary: #AEAEB2;
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.3);
+  --text-secondary: #A1A1AA;
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.45);
 }
 
 html.light-mode {
@@ -51,9 +79,9 @@ html.light-mode {
   --glass-bg: rgba(255, 255, 255, 0.45);
   --glass-border: rgba(255, 255, 255, 0.8);
   --text-main: #1C1C1E;
-  --text-secondary: #8E8E93;
-  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --text-secondary: #6E6E73;
+  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 8px 32px rgba(90, 85, 234, 0.06);
 }
 
 * {

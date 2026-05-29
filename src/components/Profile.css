@@ -139,8 +139,8 @@
 
 /* Badge in menu item - Modern Glassmorphic Squircled Design */
 .menu-badge {
-  background: rgba(10, 132, 255, 0.08);
-  color: #0A84FF;
+  background: var(--info-light);
+  color: var(--info);
   font-size: 11px;
   font-weight: 700;
   padding: 3px 8px;
@@ -151,43 +151,43 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(10, 132, 255, 0.2);
+  border: 1px solid var(--info-light-border);
   backdrop-filter: blur(4px);
-  box-shadow: 0 2px 6px rgba(10, 132, 255, 0.05);
+  box-shadow: 0 2px 6px rgba(10, 132, 255, 0.03);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dark-mode .menu-badge {
-  background: rgba(10, 132, 255, 0.15);
-  color: #5AC8FA;
-  border-color: rgba(10, 132, 255, 0.3);
-  box-shadow: 0 0 10px rgba(10, 132, 255, 0.1);
+  background: var(--info-light);
+  color: var(--info);
+  border-color: var(--info-light-border);
+  box-shadow: 0 0 10px rgba(10, 132, 255, 0.05);
 }
 
 .menu-badge.notif-badge {
-  background: rgba(255, 59, 48, 0.08);
-  color: #FF3B30;
-  border-color: rgba(255, 59, 48, 0.2);
-  box-shadow: 0 2px 6px rgba(255, 59, 48, 0.05);
+  background: var(--danger-light);
+  color: var(--danger);
+  border-color: var(--danger-light-border);
+  box-shadow: 0 2px 6px rgba(255, 69, 58, 0.03);
 }
 
 .dark-mode .menu-badge.notif-badge {
-  background: rgba(255, 59, 48, 0.15);
-  color: #FF453A;
-  border-color: rgba(255, 59, 48, 0.3);
-  box-shadow: 0 0 10px rgba(255, 59, 48, 0.15);
+  background: var(--danger-light);
+  color: var(--danger);
+  border-color: var(--danger-light-border);
+  box-shadow: 0 0 10px rgba(255, 69, 58, 0.05);
 }
 
 /* Subtle micro-animation when hovering a menu item */
 .menu-item:hover .menu-badge {
   transform: scale(1.1) translateY(-0.5px);
-  box-shadow: 0 4px 10px rgba(10, 132, 255, 0.15);
-  background: rgba(10, 132, 255, 0.12);
+  box-shadow: 0 4px 10px rgba(10, 132, 255, 0.1);
+  background: var(--info-light);
 }
 
 .menu-item:hover .menu-badge.notif-badge {
-  box-shadow: 0 4px 10px rgba(255, 59, 48, 0.15);
-  background: rgba(255, 59, 48, 0.12);
+  box-shadow: 0 4px 10px rgba(255, 69, 58, 0.1);
+  background: var(--danger-light);
 }
 
 /* Resume Card */
@@ -251,8 +251,9 @@
   display: inline-block;
   align-self: flex-start;
   padding: 4px 10px;
-  background: rgba(10, 132, 255, 0.1);
+  background: var(--primary-light);
   color: var(--primary);
+  border: 1px solid var(--primary-light-border);
   border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 700;
@@ -279,9 +280,10 @@
   flex-direction: column;
   gap: 2px;
   padding: 8px 12px;
-  background: rgba(10, 132, 255, 0.05);
-  border-radius: var(--radius-sm);
+  background: var(--primary-light);
+  border: 1px solid var(--primary-light-border);
   border-left: 3px solid var(--primary);
+  border-radius: var(--radius-sm);
 }
 
 .work-history-item strong {
@@ -299,8 +301,9 @@
   gap: 8px;
   margin-top: 6px;
   padding: 10px;
-  background: rgba(52, 199, 89, 0.1);
-  color: #34C759;
+  background: var(--success-light);
+  color: var(--success);
+  border: 1px solid var(--success-light-border);
   border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 700;
@@ -348,8 +351,8 @@
   gap: 4px;
 }
 
-.status-badge.inactive { background: rgba(142, 142, 147, 0.15); color: var(--text-secondary); }
-.status-badge.active { background: rgba(52, 199, 89, 0.15); color: #34C759; }
+.status-badge.inactive { background: rgba(142, 142, 147, 0.1); color: var(--text-secondary); border: 1px solid rgba(142, 142, 147, 0.2); }
+.status-badge.active { background: var(--success-light); color: var(--success); border: 1px solid var(--success-light-border); }
 
 .contract-btn {
   width: 100%;
@@ -360,13 +363,13 @@
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(10, 132, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.15);
   transition: all 0.3s ease;
 }
 
 .contract-btn.active {
-  background: #FF3B30;
-  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2);
+  background: var(--danger);
+  box-shadow: 0 4px 12px rgba(255, 69, 58, 0.15);
 }
 
 .logout-btn {
@@ -376,13 +379,13 @@
   gap: 12px;
   padding: 16px;
   border: none;
-  color: #FF3B30;
+  color: var(--danger);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
 }
 
-.logout-btn:active { background: rgba(255, 59, 48, 0.1); }
+.logout-btn:active { background: var(--danger-light); }
 
 /* Edit buttons */
 .edit-btn, .save-btn, .cancel-btn {
@@ -397,9 +400,9 @@
   border-radius: var(--radius-sm);
 }
 
-.edit-btn { background: rgba(10, 132, 255, 0.1); color: var(--primary); }
-.save-btn { background: rgba(52, 199, 89, 0.1); color: #34C759; }
-.cancel-btn { background: rgba(255, 59, 48, 0.1); color: #FF3B30; padding: 6px 8px; }
+.edit-btn { background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary-light-border); }
+.save-btn { background: var(--success-light); color: var(--success); border: 1px solid var(--success-light-border); }
+.cancel-btn { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger-light-border); padding: 6px 8px; }
 
 .edit-actions {
   display: flex;
@@ -448,18 +451,18 @@
 }
 
 .notif-item.unread {
-  background: linear-gradient(135deg, rgba(10, 132, 255, 0.11), rgba(10, 132, 255, 0.04)) !important;
-  border: 1px solid rgba(10, 132, 255, 0.3) !important;
-  border-left: 5px solid #0A84FF !important;
-  box-shadow: 0 8px 24px rgba(10, 132, 255, 0.18), inset 0 0 12px rgba(10, 132, 255, 0.06);
+  background: linear-gradient(135deg, var(--primary-light), rgba(94, 92, 230, 0.02)) !important;
+  border: 1px solid var(--primary-light-border) !important;
+  border-left: 5px solid var(--primary) !important;
+  box-shadow: 0 8px 24px rgba(94, 92, 230, 0.08), inset 0 0 12px rgba(94, 92, 230, 0.03);
   font-weight: 600;
   transform: translateY(-1px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .notif-item.unread:hover {
-  background: linear-gradient(135deg, rgba(10, 132, 255, 0.16), rgba(10, 132, 255, 0.06)) !important;
-  box-shadow: 0 12px 32px rgba(10, 132, 255, 0.26), inset 0 0 16px rgba(10, 132, 255, 0.1);
+  background: linear-gradient(135deg, rgba(94, 92, 230, 0.12), rgba(94, 92, 230, 0.04)) !important;
+  box-shadow: 0 12px 32px rgba(94, 92, 230, 0.15), inset 0 0 16px rgba(94, 92, 230, 0.06);
   transform: translateY(-2px);
 }
 

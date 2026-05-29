@@ -106,10 +106,11 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #0A84FF;
+  color: var(--info);
   font-size: 13px;
   font-weight: 600;
-  background: rgba(10, 132, 255, 0.1);
+  background: var(--info-light);
+  border: 1px solid var(--info-light-border);
   padding: 4px 8px;
   border-radius: var(--radius-sm);
 }

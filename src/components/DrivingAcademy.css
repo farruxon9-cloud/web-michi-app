@@ -168,8 +168,9 @@
 
 .discount-tag {
   font-size: 11px;
-  background: rgba(52, 199, 89, 0.15);
-  color: #34C759;
+  background: var(--success-light);
+  color: var(--success);
+  border: 1px solid var(--success-light-border);
   padding: 2px 6px;
   border-radius: 4px;
   font-weight: 600;
@@ -194,8 +195,9 @@
   gap: 6px;
   margin-top: 12px;
   padding: 6px 10px;
-  background: rgba(255, 159, 10, 0.1);
-  color: #FF9F0A;
+  background: var(--warning-light);
+  color: var(--warning);
+  border: 1px solid var(--warning-light-border);
   border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 600;
@@ -294,7 +296,7 @@
 }
 
 .shoukai-amount strong {
-  color: #FF9F0A;
+  color: var(--warning);
   font-size: 18px;
 }
 
@@ -304,9 +306,9 @@
   justify-content: center;
   gap: 8px;
   padding: 12px;
-  background: rgba(255, 159, 10, 0.1);
-  color: #FF9F0A;
-  border: 2px solid rgba(255, 159, 10, 0.3);
+  background: var(--warning-light);
+  color: var(--warning);
+  border: 2px solid var(--warning-light-border);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -321,7 +323,7 @@
 .shoukai-apply-btn {
   width: 100%;
   padding: 12px;
-  background: #FF9F0A;
+  background: var(--warning);
   color: white;
   border: none;
   font-size: 14px;
@@ -337,8 +339,8 @@
 }
 
 .shoukai-track.unpaid {
-  background: rgba(255, 159, 10, 0.05);
-  border-color: rgba(255, 159, 10, 0.2);
+  background: var(--warning-light);
+  border-color: var(--warning-light-border);
 }
 
 .shoukai-track.paid {
@@ -361,13 +363,13 @@
 .shoukai-fee {
   font-size: 16px;
   font-weight: 700;
-  color: #FF9F0A;
+  color: var(--warning);
 }
 
 .shoukai-pay-btn {
   width: 100%;
   padding: 10px;
-  background: #FF9F0A;
+  background: var(--warning);
   color: white;
   border: none;
   font-size: 13px;
@@ -381,8 +383,9 @@
   justify-content: center;
   gap: 6px;
   padding: 8px;
-  background: rgba(52, 199, 89, 0.1);
-  color: #34C759;
+  background: var(--success-light);
+  color: var(--success);
+  border: 1px solid var(--success-light-border);
   border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 700;
@@ -403,9 +406,9 @@
   justify-content: center;
   gap: 8px;
   padding: 14px 20px;
-  background: rgba(52, 199, 89, 0.1);
-  color: #34C759;
-  border: 1px solid rgba(52, 199, 89, 0.2);
+  background: var(--success-light);
+  color: var(--success);
+  border: 1px solid var(--success-light-border);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -428,6 +431,6 @@
 }
 
 .apply-school-btn.applied {
-  background: #34C759;
+  background: var(--success);
   cursor: default;
 }
