@@ -92,6 +92,26 @@ function App() {
     localStorage.setItem('michi_sound', JSON.stringify(soundSettings));
   }, [soundSettings]);
 
+  // Show profile badges preference
+  const [showProfileBadges, setShowProfileBadges] = useState(() => {
+    const saved = localStorage.getItem('michi_show_badges');
+    return saved ? saved === 'true' : true;
+  });
+
+  // Notification sound preference
+  const [notificationSound, setNotificationSound] = useState(() => {
+    const saved = localStorage.getItem('michi_notif_sound');
+    return saved ? saved === 'true' : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('michi_show_badges', showProfileBadges);
+  }, [showProfileBadges]);
+
+  useEffect(() => {
+    localStorage.setItem('michi_notif_sound', notificationSound);
+  }, [notificationSound]);
+
   // Profile Data
   const [profileData, setProfileData] = useState(() => {
     return {
@@ -526,6 +546,10 @@ function App() {
             setActivePage={setProfileActivePage}
             onJobClick={setSelectedJob}
             onSchoolClick={handleSchoolClick}
+            showProfileBadges={showProfileBadges}
+            setShowProfileBadges={setShowProfileBadges}
+            notificationSound={notificationSound}
+            setNotificationSound={setNotificationSound}
           />
         );
       default:
@@ -579,7 +603,7 @@ function App() {
           setBackTab(null);
           setActiveTab(tab);
         }}
-        unreadCount={unreadCount}
+        unreadCount={showProfileBadges ? unreadCount : 0}
       />
     </div>
   );

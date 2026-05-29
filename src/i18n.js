@@ -295,6 +295,9 @@ const resources = {
       verified: "Tasdiqlangan",
       loginError: "Login yoki parol noto'g'ri kiritilgan.",
       verifyError: "Tasdiqlash kodi noto'g'ri!",
+      preferencesTitle: "Afzalliklar",
+      notifSoundLabel: "Bildirishnoma ovozlari",
+      showBadgesLabel: "Profil sanoqlari ko'rinishi",
     }
   },
   ja: {
@@ -571,6 +574,9 @@ const resources = {
       verified: "承認済み",
       loginError: "ログインまたはパスワードが正しくありません。",
       verifyError: "認証コードが正しくありません！",
+      preferencesTitle: "環境設定",
+      notifSoundLabel: "通知音",
+      showBadgesLabel: "バッジ数の表示",
     }
   },
   en: {
@@ -847,6 +853,9 @@ const resources = {
       verified: "Verified",
       loginError: "Incorrect login or password.",
       verifyError: "Incorrect verification code!",
+      preferencesTitle: "Preferences",
+      notifSoundLabel: "Notification Sounds",
+      showBadgesLabel: "Show Badge Counts",
     }
   },
   vi: {
@@ -1116,6 +1125,9 @@ const resources = {
       verified: "Đã xác minh",
       loginError: "Tên đăng nhập hoặc mật khẩu không chính xác.",
       verifyError: "Mã xác minh không chính xác!",
+      preferencesTitle: "Tùy chọn",
+      notifSoundLabel: "Âm thanh thông báo",
+      showBadgesLabel: "Hiển thị số lượng huy hiệu",
     }
   },
   zh: {
@@ -1385,6 +1397,9 @@ const resources = {
       verified: "已验证",
       loginError: "登录名或密码不正确。",
       verifyError: "验证码不正确！",
+      preferencesTitle: "偏好设置",
+      notifSoundLabel: "通知声音",
+      showBadgesLabel: "显示角标计数",
     }
   },
   ne: {
@@ -1654,8 +1669,11 @@ const resources = {
       verified: "प्रमाणित",
       loginError: "गलत लगइन वा पासवर्ड।",
       verifyError: "गलत प्रमाणीकरण कोड!",
+      preferencesTitle: "प्राथमिकताहरू",
+      notifSoundLabel: "अधिसूचना ध्वनि",
+      showBadgesLabel: "ब्याज गणना देखाउनुहोस्",
     }
-  }
+  },
 };
 
 i18n

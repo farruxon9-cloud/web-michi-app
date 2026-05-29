@@ -28,7 +28,11 @@ export default function Profile({
   activePage = 'main',
   setActivePage,
   onJobClick,
-  onSchoolClick
+  onSchoolClick,
+  showProfileBadges = true,
+  setShowProfileBadges,
+  notificationSound = true,
+  setNotificationSound
 }) {
   const { t } = useTranslation();
 
@@ -237,6 +241,35 @@ const getLicenseLabel = (type) => {
               </div>
               <label className="toggle-switch">
                 <input type="checkbox" checked={darkMode} onChange={(e) => setDarkMode(e.target.checked)} />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          {/* Preferences Settings Group (Notification Sounds & Count Badges) */}
+          <div className="menu-group glass squircle">
+            <h4 className="settings-section-title">{t('preferencesTitle', 'Afzalliklar')}</h4>
+            
+            {/* Notification Sound Toggle */}
+            <div className="settings-toggle-row" style={{ borderBottom: '1px solid var(--glass-border)' }}>
+              <div className="toggle-label">
+                <Volume2 size={20} color="#34C759" />
+                <span>{t('notifSoundLabel', 'Bildirishnoma ovozlari')}</span>
+              </div>
+              <label className="toggle-switch">
+                <input type="checkbox" checked={notificationSound} onChange={(e) => setNotificationSound(e.target.checked)} />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
+
+            {/* Profile Badges Visibility Toggle */}
+            <div className="settings-toggle-row">
+              <div className="toggle-label">
+                <Bell size={20} color="#0A84FF" />
+                <span>{t('showBadgesLabel', "Profil sanoqlari ko'rinishi")}</span>
+              </div>
+              <label className="toggle-switch">
+                <input type="checkbox" checked={showProfileBadges} onChange={(e) => setShowProfileBadges(e.target.checked)} />
                 <span className="toggle-slider"></span>
               </label>
             </div>
@@ -1040,7 +1073,7 @@ const getLicenseLabel = (type) => {
           <div className="menu-item" onClick={() => setActivePage('applications')}>
             <div className="menu-icon"><Briefcase size={20} /></div>
             <span>{userRole === 'company' ? t('incomingApps', 'Kelib tushgan arizalar') : t('myApplications')}</span>
-            {totalOwnApplications > 0 && (
+            {showProfileBadges && totalOwnApplications > 0 && (
               <span className="menu-badge">
                 {totalOwnApplications}
               </span>
@@ -1053,7 +1086,7 @@ const getLicenseLabel = (type) => {
               <div className="menu-item" onClick={() => setActivePage('saved_items')}>
                 <div className="menu-icon"><Bookmark size={20} /></div>
                 <span>{t('savedItemsTitle', 'Saqlanganlar')}</span>
-                {totalSavedCount > 0 && (
+                {showProfileBadges && totalSavedCount > 0 && (
                   <span className="menu-badge">
                     {totalSavedCount}
                   </span>
@@ -1066,7 +1099,7 @@ const getLicenseLabel = (type) => {
           <div className="menu-item" onClick={() => setActivePage('my_shoukai')}>
             <div className="menu-icon"><Share2 size={20} /></div>
             <span>{userRole === 'company' ? t('shoukaiViaApps', 'Shoukai orqali kelganlar') : t('myShoukai', "Mening Shoukai'larim")}</span>
-            {referralsCount > 0 && (
+            {showProfileBadges && referralsCount > 0 && (
               <span className="menu-badge">
                 {referralsCount}
               </span>
@@ -1079,7 +1112,7 @@ const getLicenseLabel = (type) => {
               <div className="menu-item" onClick={() => setActivePage('employees')}>
                 <div className="menu-icon"><Users size={20} /></div>
                 <span>{t('employeesHR', 'Xodimlar (HR)')}</span>
-                {employeesCount > 0 && (
+                {showProfileBadges && employeesCount > 0 && (
                   <span className="menu-badge">
                     {employeesCount}
                   </span>
@@ -1094,7 +1127,7 @@ const getLicenseLabel = (type) => {
           <div className="menu-item" onClick={() => setActivePage('notifications')}>
             <div className="menu-icon"><Bell size={20} /></div>
             <span>{t('notifications')}</span>
-            {unreadCount > 0 && (
+            {showProfileBadges && unreadCount > 0 && (
               <span className="menu-badge notif-badge">{unreadCount}</span>
             )}
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
