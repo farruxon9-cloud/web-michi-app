@@ -151,7 +151,7 @@ function App() {
 
   // Apply for a job
   const handleApplyJob = (job) => {
-    const exists = applications.find(a => a.jobId === job.id);
+    const exists = applications.find(a => a.jobId === job.id && !a.isSimulatedReferral);
     if (exists) return;
 
     const refId = prompt("Havola orqali kirdingizmi? Unday bo'lsa tavsiya qilgan odamning ID raqamini kiriting (Simulyatsiya uchun):\nMasalan: #Michi-A1B2");
@@ -247,7 +247,7 @@ function App() {
   const [schoolApplications, setSchoolApplications] = useState([]);
 
   const handleApplySchool = (school) => {
-    const exists = schoolApplications.find(a => a.schoolId === school.id);
+    const exists = schoolApplications.find(a => a.schoolId === school.id && !a.isSimulatedReferral);
     if (exists) return;
 
     const refId = prompt("Havola orqali kirdingizmi? Unday bo'lsa tavsiya qilgan odamning ID raqamini kiriting (Simulyatsiya uchun):\nMasalan: #Michi-A1B2");
@@ -384,17 +384,6 @@ function App() {
           isSimulatedReferral: true // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
         };
         setApplications(prev => [...prev, newApp]);
-
-        // Haqiqiy vaqt rejimida Sun'iy bildirishnoma yaratamiz
-        const notif = {
-          id: Date.now(),
-          type: 'employee_request', // Bildirishnoma turi
-          company: item.company,
-          title: `Do'stingiz sizning havolangiz orqali e'longa topshirdi! (${item.title})`,
-          date: new Date().toLocaleString(),
-          read: false
-        };
-        setNotifications(prev => [notif, ...prev]);
       }
     } else {
       // Avtomaktablar uchun shoukai simulyatsiyasi
@@ -413,17 +402,6 @@ function App() {
           isSimulatedReferral: true // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
         };
         setSchoolApplications(prev => [...prev, newApp]);
-
-        // Haqiqiy vaqt rejimida Sun'iy bildirishnoma yaratamiz
-        const notif = {
-          id: Date.now(),
-          type: 'employee_request',
-          company: item.name,
-          title: `Do'stingiz sizning havolangiz orqali avtomaktabga kirdi! (${item.name})`,
-          date: new Date().toLocaleString(),
-          read: false
-        };
-        setNotifications(prev => [notif, ...prev]);
       }
     }
   };
