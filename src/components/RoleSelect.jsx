@@ -181,23 +181,32 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
 
   if (authStep === 'login') {
     return (
-      <div className="role-container slide-up">
-        <div className="auth-card glass squircle">
-          <button className="icon-btn" onClick={() => setAuthStep('role')}>
+      <div className="role-container login-centered-container slide-up">
+        <div className="auth-card glass squircle" style={{ position: 'relative', width: '100%' }}>
+          <button className="icon-btn" onClick={() => setAuthStep('role')} style={{ position: 'absolute', top: '16px', left: '16px' }}>
             <ArrowLeft size={20} />
           </button>
-          <div className="auth-header">
-            <h2>{t('loginTitle', 'Tizimga kirish')}</h2>
-            <p>{selectedRole === 'company' ? t('roleCompanyTitle', 'Kompaniya') : t('roleDriverTitle', 'Haydovchi')} - {t('loginTitle', 'Tizimga kirish')}</p>
+          
+          <div className="auth-logo-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '12px', marginBottom: '8px' }}>
+            <div className="logo-kanji" style={{ transform: 'scale(1.25)', boxShadow: '0 8px 24px rgba(90, 85, 234, 0.35)', animation: 'blob-float 10s infinite alternate ease-in-out' }}>道</div>
           </div>
-          <form onSubmit={handleLoginSubmit} className="auth-form hide-scrollbar">
-            <div className="form-section">
+
+          <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '800', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>{t('loginTitle', 'Tizimga kirish')}</h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
+              {selectedRole === 'company' ? t('roleCompanyTitle', 'Kompaniya') : t('roleDriverTitle', 'Haydovchi')} - {t('loginTitle', 'Tizimga kirish')}
+            </p>
+          </div>
+
+          <form onSubmit={handleLoginSubmit} className="auth-form hide-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="form-section" style={{ display: 'flex', flexDirection: 'column', gap: '12px', border: 'none', padding: 0 }}>
               <input 
                 type="text" 
                 placeholder={t("emailOrLogin", "Email yoki Login")}
                 className="auth-input" 
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
+                required
               />
               <input 
                 type="password" 
@@ -208,17 +217,17 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                 onChange={(e) => setLoginPassword(e.target.value)}
               />
             </div>
-            <button type="submit" className="btn-primary squircle" style={{ marginTop: '10px' }}>
+            <button type="submit" className="btn-primary squircle" style={{ marginTop: '4px', width: '100%', borderRadius: '14px', background: 'linear-gradient(135deg, var(--primary), #4338CA)', boxShadow: '0 8px 20px rgba(90, 85, 234, 0.25)' }}>
               {t('loginBtn', 'Kirish')}
             </button>
           </form>
           
-          <div style={{ marginTop: '24px', textAlign: 'center', borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: '20px' }}>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '12px' }}>{t("noAccount", "Akkauntingiz yo'qmi?")}</p>
+          <div style={{ marginTop: '24px', textAlign: 'center', borderTop: '1px solid var(--glass-border)', paddingTop: '20px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px', fontWeight: '500' }}>{t("noAccount", "Akkauntingiz yo'qmi?")}</p>
             <button 
               onClick={() => setAuthStep('register')}
               className="btn-primary squircle"
-              style={{ background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF' }}
+              style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px solid rgba(10, 132, 255, 0.15)', padding: '12px', fontSize: '14px', width: '100%', borderRadius: '12px' }}
             >
               {t("registerTitle", "Ro'yxatdan o'tish")}
             </button>
