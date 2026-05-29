@@ -137,21 +137,57 @@
   margin-left: 52px;
 }
 
-/* Badge in menu item */
+/* Badge in menu item - Modern Glassmorphic Squircled Design */
 .menu-badge {
-  background: var(--primary);
-  color: white;
+  background: rgba(10, 132, 255, 0.08);
+  color: #0A84FF;
   font-size: 11px;
   font-weight: 700;
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
+  padding: 3px 8px;
+  border-radius: 6px;
   margin-right: 8px;
-  min-width: 20px;
-  text-align: center;
+  min-width: 22px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(10, 132, 255, 0.2);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 6px rgba(10, 132, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark-mode .menu-badge {
+  background: rgba(10, 132, 255, 0.15);
+  color: #5AC8FA;
+  border-color: rgba(10, 132, 255, 0.3);
+  box-shadow: 0 0 10px rgba(10, 132, 255, 0.1);
 }
 
 .menu-badge.notif-badge {
-  background: #FF3B30;
+  background: rgba(255, 59, 48, 0.08);
+  color: #FF3B30;
+  border-color: rgba(255, 59, 48, 0.2);
+  box-shadow: 0 2px 6px rgba(255, 59, 48, 0.05);
+}
+
+.dark-mode .menu-badge.notif-badge {
+  background: rgba(255, 59, 48, 0.15);
+  color: #FF453A;
+  border-color: rgba(255, 59, 48, 0.3);
+  box-shadow: 0 0 10px rgba(255, 59, 48, 0.15);
+}
+
+/* Subtle micro-animation when hovering a menu item */
+.menu-item:hover .menu-badge {
+  transform: scale(1.1) translateY(-0.5px);
+  box-shadow: 0 4px 10px rgba(10, 132, 255, 0.15);
+  background: rgba(10, 132, 255, 0.12);
+}
+
+.menu-item:hover .menu-badge.notif-badge {
+  box-shadow: 0 4px 10px rgba(255, 59, 48, 0.15);
+  background: rgba(255, 59, 48, 0.12);
 }
 
 /* Resume Card */
@@ -683,23 +719,29 @@
   background: rgba(10, 132, 255, 0.06);
 }
 
-/* Dynamic Section Header Count Badges */
+/* Dynamic Section Header Count Badges - Modern Squircled Design */
 .section-header-count {
-  font-size: 16px;
-  color: var(--primary);
-  background: rgba(10, 132, 255, 0.12);
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
+  font-size: 14px;
+  color: #0A84FF;
+  background: rgba(10, 132, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 8px;
   margin-left: 10px;
   font-weight: 700;
   vertical-align: middle;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(10, 132, 255, 0.2);
+  backdrop-filter: blur(4px);
   box-shadow: 0 2px 8px rgba(10, 132, 255, 0.05);
   letter-spacing: 0;
   transition: all 0.3s ease;
 }
 
 .dark-mode .section-header-count {
-  background: rgba(10, 132, 255, 0.2);
-  color: #0A84FF;
+  background: rgba(10, 132, 255, 0.15);
+  color: #5AC8FA;
+  border-color: rgba(10, 132, 255, 0.3);
+  box-shadow: 0 0 10px rgba(10, 132, 255, 0.1);
 }
