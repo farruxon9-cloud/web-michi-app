@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, MapPin, Share2 } from 'lucide-react';
+import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './DriverFeed.css';
 
+// ============================================================
+// MOCK_JOBS — Yaponiyada ish qidiruvchilar uchun to'liq e'lon ma'lumotlari
+// Har bir e'lon kompaniyalar tomonidan kiritiladigan barcha muhim maydonlarni o'z ichiga oladi.
+// Bu maydonlar ish qidiruvchiga aniq va to'liq ma'lumot berish uchun zarur.
+// ============================================================
 export const MOCK_JOBS = [
   {
     id: 1,
     company: "Sagawa Express",
     title: "Mahalliy yetkazib berish (Local Delivery)",
     salary: "¥300,000 / oyiga",
-    type: "To'liq stavka (Seishain)",
+    type: "fulltime", // fulltime | parttime | contract
     shoukai: "¥50,000",
     shoukaiAmount: "¥50,000",
     image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800",
@@ -18,39 +23,45 @@ export const MOCK_JOBS = [
     location: "Tokyo, Koto-ku",
     fullAddress: "〒135-0063 Tokyo, Koto-ku, Ariake 3-1-1",
     hours: "08:00 - 17:00",
-    bonus: "Yiliga 2 marta",
-    insurance: "To'liq ijtimoiy sug'urta",
-    foreigners: "Qabul qilinadi (N3+)",
-    housing: "Mavjud emas",
+    dayOff: "shanba_yakshanba",
+    bonus: "bonus_2",
+    insurance: "insurance_full",
+    foreigners: "foreigners_n3",
+    housing: "housing_none",
+    license: "lic_futsu",
     description: "Koto-ku bo'ylab kichik posilkalarni mijozlarga yetkazib berish. Kuniga o'rtacha 80-100 ta posilka. Yo'nalishlar aniq belgilangan.",
-    logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100"
+    logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    isActive: true
   },
   {
     id: 2,
     company: "Nippon Express",
     title: "Xalqaro yuk tashish (Trailer)",
     salary: "¥500,000 / oyiga",
-    type: "To'liq stavka",
+    type: "fulltime",
     shoukai: "¥100,000",
     shoukaiAmount: "¥100,000",
     image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
     verified: true,
     location: "Kanagawa, Yokohama",
     fullAddress: "〒231-0023 Kanagawa, Yokohama, Naka-ku, Yamashitacho 12",
-    hours: "Növbətli (Shift)",
-    bonus: "Yiliga 3 marta",
-    insurance: "To'liq ijtimoiy sug'urta",
-    foreigners: "Viza yordami bor",
-    housing: "Kompaniya yotoqxonasi bor",
+    hours: "shift",
+    dayOff: "shift_rotation",
+    bonus: "bonus_3",
+    insurance: "insurance_full",
+    foreigners: "foreigners_visa",
+    housing: "housing_dorm",
+    license: "lic_kenin",
     description: "Yokohama portidan Kanto hududi bo'ylab dengiz konteynerlarini tashish. Tirkama (Ken'in) guvohnomasi majburiy.",
-    logo: "https://ui-avatars.com/api/?name=Nippon+Express&background=E63946&color=fff&size=100"
+    logo: "https://ui-avatars.com/api/?name=Nippon+Express&background=E63946&color=fff&size=100",
+    isActive: true
   },
   {
     id: 3,
     company: "Yamato Transport",
     title: "Tungi reys haydovchisi (10t yuk mashinasi)",
     salary: "¥450,000 / oyiga",
-    type: "Shartnoma asosida",
+    type: "contract",
     shoukai: "¥80,000",
     shoukaiAmount: "¥80,000",
     image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
@@ -58,19 +69,22 @@ export const MOCK_JOBS = [
     location: "Saitama, Omiya",
     fullAddress: "〒330-0854 Saitama, Omiya-ku, Sakuragicho 2-1",
     hours: "20:00 - 05:00",
-    bonus: "Yiliga 2 marta",
-    insurance: "Mavjud",
-    foreigners: "Qabul qilinadi",
-    housing: "Uy ijarasining 50% to'lanadi",
+    dayOff: "shanba_yakshanba",
+    bonus: "bonus_2",
+    insurance: "insurance_basic",
+    foreigners: "foreigners_ok",
+    housing: "housing_half",
+    license: "lic_oogata",
     description: "Kanto va Kansai o'rtasida yirik omborlar aro logistika tashish. Katta yuk mashinasi (Oogata) guvohnomasi majburiy.",
-    logo: "https://ui-avatars.com/api/?name=Yamato+Transport&background=2A9D8F&color=fff&size=100"
+    logo: "https://ui-avatars.com/api/?name=Yamato+Transport&background=2A9D8F&color=fff&size=100",
+    isActive: true
   },
   {
     id: 4,
     company: "Seino Transportation",
     title: "Ekskavator va Maxsus texnika haydovchisi",
     salary: "¥380,000 / oyiga",
-    type: "To'liq stavka",
+    type: "fulltime",
     shoukai: "0",
     shoukaiAmount: "0",
     image: "https://images.unsplash.com/photo-1541888062837-7b247f082e05?auto=format&fit=crop&q=80&w=800",
@@ -78,49 +92,83 @@ export const MOCK_JOBS = [
     location: "Chiba, Matsudo",
     fullAddress: "〒270-2253 Chiba, Matsudo, Tokiwadaira 3-2-1",
     hours: "07:00 - 16:00",
-    bonus: "Mavjud emas",
-    insurance: "Mavjud",
-    foreigners: "Faqat Yapon tili N2 daraja",
-    housing: "Mavjud emas",
+    dayOff: "shanba_yakshanba",
+    bonus: "bonus_none",
+    insurance: "insurance_basic",
+    foreigners: "foreigners_n2",
+    housing: "housing_none",
+    license: "lic_oogata_tokushu",
     description: "Qurilish maydonchalarida maxsus texnika (Ekskavator) boshqarish. Sharyo-kei litsenziyasi bo'lishi shart.",
-    logo: "https://ui-avatars.com/api/?name=Seino+Transport&background=E9C46A&color=333&size=100"
+    logo: "https://ui-avatars.com/api/?name=Seino+Transport&background=E9C46A&color=333&size=100",
+    isActive: true
   },
   {
     id: 5,
     company: "Fukuyama Transporting",
     title: "Omborxona Forklift operatori",
     salary: "¥250,000 / oyiga",
-    type: "Arubaito (Part-time)",
+    type: "parttime",
     shoukai: "¥30,000",
     shoukaiAmount: "¥30,000",
     image: "https://images.unsplash.com/photo-1587293852726-70cdb56c28ea?auto=format&fit=crop&q=80&w=800",
     verified: true,
     location: "Aichi, Nagoya",
     fullAddress: "〒450-0002 Aichi, Nagoya, Nakamura-ku, Meieki 1-1-4",
-    hours: "09:00 - 14:00 (Ixtiyoriy kunlar)",
-    bonus: "Mavjud emas",
-    insurance: "Qisman",
-    foreigners: "Til talab qilinmaydi",
-    housing: "Mavjud emas",
+    hours: "09:00 - 14:00",
+    dayOff: "flexible",
+    bonus: "bonus_none",
+    insurance: "insurance_partial",
+    foreigners: "foreigners_nolang",
+    housing: "housing_none",
+    license: "tech_forklift",
     description: "Omborda yuklarni tushirish va joylash. Forklift guvohnomasi talab etiladi.",
-    logo: "https://ui-avatars.com/api/?name=Fukuyama+Trans&background=264653&color=fff&size=100"
+    logo: "https://ui-avatars.com/api/?name=Fukuyama+Trans&background=264653&color=fff&size=100",
+    isActive: true
   }
 ];
 
+// ============================================================
+// DriverFeed — Ish e'lonlari ro'yxati (Goo-net uslubida gorizontal kartochkalar)
+// Har bir kartochkada: chapda rasm, o'ngda ma'lumotlar, pastda ikonkali chiplar
+// ============================================================
 export default function DriverFeed({ onJobClick, isContractActive, verifiedCompanies = [], onShoukai }) {
   const { t } = useTranslation();
-  const [activeSegment, setActiveSegment] = useState('permanent');
+  const [activeSegment, setActiveSegment] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filtrlash: segment va qidiruv bo'yicha
+  const filteredJobs = MOCK_JOBS.filter(job => {
+    const matchSegment = activeSegment === 'all' 
+      || (activeSegment === 'permanent' && job.type === 'fulltime')
+      || (activeSegment === 'hourly' && (job.type === 'parttime' || job.type === 'contract'));
+    const matchSearch = !searchQuery || 
+      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.location.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchSegment && matchSearch;
+  });
 
   return (
     <div className="feed-container fade-in">
-      {/* Header */}
+      {/* ====== QIDIRUV VA SEGMENT BOSHQARUVI ====== */}
       <div className="feed-header glass">
         <div className="search-bar">
           <Search size={20} color="#8E8E93" />
-          <input type="text" placeholder={t('searchPlaceholder', "Shahar yoki kompaniya nomi...")} />
+          <input 
+            type="text" 
+            placeholder={t('searchPlaceholder', "Shahar yoki kompaniya nomi...")} 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
 
         <div className="segmented-control">
+          <div 
+            className={`segment ${activeSegment === 'all' ? 'active' : ''}`}
+            onClick={() => setActiveSegment('all')}
+          >
+            {t('allJobs', "Barchasi")}
+          </div>
           <div 
             className={`segment ${activeSegment === 'permanent' ? 'active' : ''}`}
             onClick={() => setActiveSegment('permanent')}
@@ -136,51 +184,94 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
         </div>
       </div>
 
-      {/* Feed List */}
+      {/* ====== E'LONLAR RO'YXATI (GOO-NET USLUBIDA) ====== */}
       <div className="jobs-list hide-scrollbar">
-        {MOCK_JOBS.map(job => {
+        {filteredJobs.map(job => {
           const showVerified = verifiedCompanies.includes(job.company) || isContractActive;
           return (
-            <div key={job.id} className="job-card" onClick={() => onJobClick({...job, verified: showVerified})}>
-              <div className="job-image-container">
+            <div key={job.id} className="job-card-hz glass squircle" onClick={() => onJobClick({...job, verified: showVerified})}>
+              {/* ---- Chap qism: E'lon rasmi ---- */}
+              <div className="job-card-img">
                 <img 
                   src={job.image} 
                   alt={job.title} 
-                  className="job-image" 
                   onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
                 />
-                <div className="company-logo-wrapper glass">
-                  <img src={job.logo} alt={job.company} className="company-logo" />
-                </div>
-                <div className="price-tag glass">
-                  {job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}
-                </div>
+                {/* Ish turi belgisi (rasm ustida) */}
+                <span className={`job-type-badge type-${job.type}`}>
+                  {t(`jobType_${job.type}`, job.type === 'fulltime' ? '正社員' : job.type === 'parttime' ? 'アルバイト' : '契約')}
+                </span>
               </div>
-              
-              <div className="job-info">
-                <p style={{ fontSize: '12px', color: '#8E8E93', margin: '0 0 2px 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  {job.company} {showVerified && <VerifiedBadge size={14} />}
-                </p>
-                <h3 className="job-title" style={{ margin: '0 0 4px 0' }}>{job.title}</h3>
-                <p className="job-location" style={{ margin: '0 0 4px 0' }}>
-                  <MapPin size={14} /> {job.location}
-                </p>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                  <button style={{ flex:1, padding:'8px 12px', background:'#2C2C2E', color:'white', border:'none', borderRadius:'12px', fontSize:'13px', fontWeight:'600' }}>
+
+              {/* ---- O'ng qism: Ma'lumotlar ---- */}
+              <div className="job-card-body">
+                {/* Kompaniya nomi va tasdiqlash belgisi */}
+                <div className="job-card-company">
+                  <img src={job.logo} alt={job.company} className="job-card-company-logo" />
+                  <span>{job.company}</span>
+                  {showVerified && <VerifiedBadge size={14} />}
+                </div>
+
+                {/* E'lon sarlavhasi */}
+                <h3 className="job-card-title">{job.title}</h3>
+
+                {/* Maosh — eng muhim ma'lumot */}
+                <div className="job-card-salary">
+                  <Banknote size={15} />
+                  <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}</span>
+                </div>
+
+                {/* Qisqa ma'lumot chiplari (minimalistik ikonkalar bilan) */}
+                <div className="job-card-chips">
+                  <span className="job-chip">
+                    <MapPin size={12} />
+                    {job.location}
+                  </span>
+                  <span className="job-chip">
+                    <Clock size={12} />
+                    {job.hours === 'shift' ? t('shiftWork', 'Smenali') : job.hours}
+                  </span>
+                  {job.foreigners && job.foreigners !== 'foreigners_none' && (
+                    <span className="job-chip chip-highlight">
+                      <Globe size={12} />
+                      {t(job.foreigners, 'Chet elliklar')}
+                    </span>
+                  )}
+                  {job.housing && job.housing !== 'housing_none' && (
+                    <span className="job-chip chip-green">
+                      <Home size={12} />
+                      {t(job.housing, 'Uy-joy')}
+                    </span>
+                  )}
+                </div>
+
+                {/* Pastki qism: Tugmalar */}
+                <div className="job-card-actions">
+                  <button className="job-card-btn btn-apply">
+                    <Briefcase size={13} />
                     {t('applyJob', 'Ariza berish')}
                   </button>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); onShoukai && onShoukai(job); }}
-                    style={{ flex:1, padding:'8px 12px', background:'rgba(255,159,10,0.1)', color:'#FF9F0A', border:'1px solid rgba(255,159,10,0.2)', borderRadius:'12px', fontSize:'13px', fontWeight:'600', display:'flex', alignItems:'center', justifyContent:'center', gap:'4px' }}
-                  >
-                    <Share2 size={14} /> {job.shoukai && job.shoukai !== "0" ? `${t('shoukai', 'Shoukai')} (${job.shoukai})` : t('shoukai', 'Shoukai')}
-                  </button>
+                  {job.shoukai && job.shoukai !== "0" && (
+                    <button 
+                      className="job-card-btn btn-shoukai"
+                      onClick={(e) => { e.stopPropagation(); onShoukai && onShoukai(job); }}
+                    >
+                      <Share2 size={13} />
+                      {job.shoukai}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           );
         })}
-        <div style={{ height: '10px' }}></div> {/* Spacer for bottom nav */}
+        {filteredJobs.length === 0 && (
+          <div className="empty-feed">
+            <Search size={40} color="#C7C7CC" />
+            <p>{t('noJobsFound', "Mos e'lon topilmadi")}</p>
+          </div>
+        )}
+        <div style={{ height: '10px' }}></div>
       </div>
     </div>
   );

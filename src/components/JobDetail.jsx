@@ -1,17 +1,37 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Bookmark, Map as MapIcon, Calendar, Clock, Banknote, Share2 } from 'lucide-react';
+import { ArrowLeft, Bookmark, Map as MapIcon, Calendar, Clock, Banknote, Share2, 
+  Shield, Home, Globe, Award, Car, Users, Heart, Building2, CheckCircle2 } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './JobDetail.css';
 
+// ============================================================
+// JobDetail — Ish e'lonining to'liq batafsil sahifasi
+// Yapon ish qidiruvchilari uchun barcha zarur ma'lumotlar:
+// Maosh, ish vaqti, dam olish, bonus, sug'urta, uy-joy, chet elliklar, litsenziya
+// Har bir ma'lumot minimalistik ikonka bilan vizual tarzda ko'rsatiladi
+// ============================================================
 export default function JobDetail({ job, onBack, onApply, onShoukai, applications = [], onToggleSave, profileData, userRole }) {
   const { t } = useTranslation();
-  // only count own applications as alreadyApplied, do not block the user if they referred a friend
   const alreadyApplied = applications.some(a => a.jobId === job.id && !a.isSimulatedReferral);
   const isSaved = profileData?.savedItems?.jobs?.some(j => j.id === job.id);
 
+  // Ma'lumot elementlari ro'yxati — har biri ikonka, kalit va qiymat bilan
+  // Bu tizim kompaniya e'lon yaratganda avtomatik to'ldiriladi
+  const infoItems = [
+    { icon: <Banknote size={18} color="#30D158" />, label: t('salary', 'Maosh'), value: job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : '', show: !!job.salary },
+    { icon: <Clock size={18} color="#0A84FF" />, label: t('workHours', 'Ish vaqti'), value: job.hours === 'shift' ? t('shiftWork', 'Smenali ish') : job.hours, show: !!job.hours },
+    { icon: <Calendar size={18} color="#AF52DE" />, label: t('dayOff', 'Dam olish'), value: t(job.dayOff, job.dayOff), show: !!job.dayOff },
+    { icon: <Award size={18} color="#FF9F0A" />, label: t('bonusLabel', 'Bonus'), value: t(job.bonus, job.bonus), show: !!job.bonus && job.bonus !== 'bonus_none' },
+    { icon: <Shield size={18} color="#5E5CE6" />, label: t('insuranceLabel', "Sug'urta"), value: t(job.insurance, job.insurance), show: !!job.insurance },
+    { icon: <Globe size={18} color="#0A84FF" />, label: t('foreignersLabel', 'Chet elliklar'), value: t(job.foreigners, job.foreigners), show: !!job.foreigners && job.foreigners !== 'foreigners_none' },
+    { icon: <Home size={18} color="#34C759" />, label: t('housingLabel', 'Uy-joy'), value: t(job.housing, job.housing), show: !!job.housing && job.housing !== 'housing_none' },
+    { icon: <Car size={18} color="#E63946" />, label: t('licenseRequired', 'Litsenziya'), value: t(job.license, job.license), show: !!job.license },
+  ].filter(item => item.show);
+
   return (
     <div className="job-detail-container slide-up">
+      {/* ====== SARLAVHA TUGMALARI ====== */}
       <div className="header-actions">
         <button className="icon-btn glass" onClick={onBack}>
           <ArrowLeft size={20} />
@@ -21,6 +41,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
         </button>
       </div>
 
+      {/* ====== KATTA RASM ====== */}
       <div className="detail-header-image">
         <img 
           src={job.image} 
@@ -28,9 +49,15 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           className="bg-img" 
           onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
         />
+        {/* Ish turi belgisi */}
+        <span className={`detail-type-badge type-${job.type || 'fulltime'}`}>
+          {t(`jobType_${job.type || 'fulltime'}`, job.type === 'fulltime' ? '正社員' : job.type === 'parttime' ? 'アルバイト' : '契約')}
+        </span>
       </div>
 
+      {/* ====== ASOSIY KONTENT ====== */}
       <div className="detail-content">
+        {/* Kompaniya + Sarlavha */}
         <div className="company-header">
           <div className="company-title-wrap">
             <img src={job.logo} alt={job.company} className="detail-logo squircle" />
@@ -48,83 +75,73 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           </div>
         </div>
 
-        <div className="info-grid">
-          <div className="info-item glass squircle">
-            <Banknote size={20} color="#34C759" />
-            <div className="info-text">
-              <p>{t('salary')}</p>
-              <strong>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}</strong>
+        {/* ====== MA'LUMOTLAR GRIDI (Ikonkali kartochkalar) ====== 
+            Har bir kartochka minimalistik dizaynda ikonka + qiymat ko'rsatadi.
+            Bu yapon ish qidiruvchilari uchun eng muhim savollarni javob beradi:
+            - Qancha maosh? | Qachon ishlanadi? | Dam olish bormi?
+            - Bonus bormi? | Sug'urta bormi? | Uy-joy bormi?
+            - Chet elliklar qabul qilinadimi? | Qanday litsenziya kerak?
+        */}
+        <div className="detail-info-grid">
+          {infoItems.map((item, idx) => (
+            <div key={idx} className="detail-info-card glass">
+              <div className="info-card-icon">{item.icon}</div>
+              <div className="info-card-text">
+                <span className="info-card-label">{item.label}</span>
+                <strong className="info-card-value">{item.value}</strong>
+              </div>
             </div>
-          </div>
-          <div className="info-item glass squircle">
-            <Clock size={20} color="#0A84FF" />
-            <div className="info-text">
-              <p>{t('workHours')}</p>
-              <strong>08:00 - 17:00</strong>
-            </div>
-          </div>
-          <div className="info-item glass squircle">
-            <Calendar size={20} color="#AF52DE" />
-            <div className="info-text">
-              <p>{t('dayOff')}</p>
-              <strong>{t('dayOffValue')}</strong>
-            </div>
-          </div>
+          ))}
         </div>
 
+        {/* ====== TAVSIF ====== */}
         <div className="description-block">
-          <h3>{t('jobConditions')}</h3>
-          <p>{t('jobDesc')}</p>
+          <h3>{t('jobConditions', 'Ish sharoitlari')}</h3>
+          <p>{job.description || t('jobDesc')}</p>
         </div>
 
+        {/* ====== MANZIL ====== */}
         <div className="map-block">
-          <h3>{t('address')}</h3>
+          <h3>{t('address', 'Manzil')}</h3>
           <div className="map-placeholder squircle glass">
             <MapIcon size={32} color="#8E8E93" />
-            <span style={{textAlign: 'center'}}>{t('viewOnMap')} <br/><small>{job.fullAddress || job.location}</small></span>
+            <span style={{textAlign: 'center'}}>{t('viewOnMap', "Xaritada ko'rish")} <br/><small>{job.fullAddress || job.location}</small></span>
           </div>
         </div>
 
-        
-        {/* 
-          ASOSIY QISM (MAIN BO'LIMI) O'ZGARISHI:
-          Agar korxona tomonidan shoukai summasi kiritilgan bo'lsa va u "0" bo'lmasa,
-          e'lonning eng pastki qismida har bir e'lon uchun o'ziga xos tarzda 
-          shoukai mukofoti haqida ma'lumot ko'rsatiladi.
-          Bu orqali foydalanuvchilar qancha mukofot olishini aniq ko'rishadi.
-        */}
+        {/* ====== SHOUKAI MUKOFOTI ====== */}
         {job.shoukaiAmount && job.shoukaiAmount !== "0" && (
-          <div className="detail-section shoukai-section glass squircle" style={{ marginTop: '24px', padding: '16px' }}>
-            <div className="shoukai-header" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          <div className="shoukai-detail-block glass squircle">
+            <div className="shoukai-detail-header">
               <Share2 size={18} color="#FF9F0A" />
-              <h4 style={{ margin: 0, fontSize: '18px' }}>{t('shoukaiShare', 'Ulashish / Shoukai')}</h4>
+              <h4>{t('shoukaiShare', 'Ulashish / Shoukai')}</h4>
             </div>
-            <p className="shoukai-desc" style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+            <p className="shoukai-detail-desc">
               {t('shoukaiDesc', "Do'stingizni taklif qiling va mukofot oling")}
             </p>
-            <div className="shoukai-amount" style={{ fontSize: '16px', fontWeight: 'bold' }}>
-              {t('shoukaiReward', 'Shoukai mukofoti')}: <span style={{ color: '#FF9F0A' }}>{job.shoukaiAmount}</span>
+            <div className="shoukai-detail-amount">
+              {t('shoukaiReward', 'Shoukai mukofoti')}: <span>{job.shoukaiAmount}</span>
             </div>
           </div>
         )}
         
       </div>
 
-      <div className="sticky-action glass" style={{ display: 'flex', flexDirection: 'row', gap: '10px', padding: '16px 20px' }}>
+      {/* ====== PASTKI TUGMALAR (STICKY) ====== */}
+      <div className="sticky-action glass">
         <button 
           className={`apply-btn squircle ${alreadyApplied ? 'applied' : ''}`}
-          style={{ flex: 1, padding: '14px 10px', fontSize: '15px', whiteSpace: 'nowrap' }}
           onClick={() => !alreadyApplied && onApply(job)}
         >
           {alreadyApplied ? t('applied') : t('applyJob')}
         </button>
-          <button 
-            className="apply-btn squircle" 
-            style={{ flex: 1, background: '#e8f5e9', color: '#2e7d32', border: '1px solid #c8e6c9', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '14px 10px', fontSize: '14px', whiteSpace: 'nowrap' }}
-            onClick={() => onShoukai(job)}
-          >
-            <Share2 size={16} /> {job.shoukaiAmount ? `${t('shoukai', 'Shoukai')} (${job.shoukaiAmount})` : t('shoukai', 'Shoukai')}
-          </button>
+        <button 
+          className="apply-btn squircle shoukai-btn" 
+          onClick={() => onShoukai(job)}
+        >
+          <Share2 size={16} />
+          {job.shoukaiAmount ? `${t('shoukai', 'Shoukai')} (${job.shoukaiAmount})` : t('shoukai', 'Shoukai')}
+        </button>
       </div>
     </div>
   );
