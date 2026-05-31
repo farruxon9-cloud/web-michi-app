@@ -57,22 +57,30 @@ Fayllar loyihaning `/dist` papkasida hosil bo'ladi.
 
 ---
 
-## 🪵 Git Branchlar va Kodlarni Boshqarish
+## 🚀 Ilovani Vercel ga Bepul Joylashtirish (Vercel Online Deployment Guide)
 
-Ushbu loyihada siz yaratgan barcha o'zgarishlar **`main`** va **`c`** branchlarida to'liq birlashtirilgan. 
+Michi ilovasi to'liq mijoz tomonlama (Frontend) React + Vite loyihasi bo'lgani uchun, uni **Vercel** platformasiga 1 daqiqada butunlay bepul joylashtirib, dunyoning istalgan joyidan test qilishda davom etishingiz mumkin. Quyidagi bepul va oson yo'llardan birini tanlang:
 
-* Hozirgi holatni ko'rish buyrug'i:
-  ```bash
-  git branch
-  ```
-* Boshqa branchga o'tish buyrug'i (masalan, `c` branchiga):
-  ```bash
-  git checkout c
-  ```
-* Asosiy `main` branchga o'tish buyrug'i:
-  ```bash
-  git checkout main
-  ```
+### 1-Yo'l: GitHub Orqali (Tavsiya etiladi - Avtomatik yangilanish)
+Kodni har safar yangilab GitHub ga yuklaganingizda, Vercel avtomat yangi kodni o'zi internetga joylab boradi:
+1. **GitHub** shaxsiy profilingizda yangi repository ochib, ushbu loyihani u yerga yuklang (`git push`).
+2. **[vercel.com](https://vercel.com/)** saytiga kirib bepul ro'yxatdan o'ting va GitHub profilingizni bog'lang.
+3. Vercel boshqaruv panelida **"Add New" -> "Project"** tugmasini bosing.
+4. GitHub dagi ushbu loyihangizni ro'yxatdan topib, **"Import"** tugmasini tanlang.
+5. Sozlamalarga tegmasdan, shunchaki **"Deploy"** tugmasini bosing. Vercel loyihani build qilib, sizga bepul **`michi-app.vercel.app`** kabi ishchi domenni taqdim etadi.
+
+### 2-Yo'l: Vercel CLI Orqali (Tezkor terminal orqali joylash)
+GitHub repositoriesiz to'g'ridan-to'g'ri terminal orqali yuklash:
+1. Terminal yoki Buyruqlar satrida Vercel CLI dasturini kompyuterga global o'rnating:
+   ```bash
+   npm install -g vercel
+   ```
+2. Loyihaning asosiy papkasida turib, quyidagi buyruqni bosing:
+   ```bash
+   vercel
+   ```
+3. Terminal beradigan savollarga shunchaki `Enter` (default) yoki `Y` deb javob bering. U sizni bepul hisob ochish yoki avtorizatsiya uchun brauzerga yo'naltiradi.
+4. Bir necha soniyada yuklash (Deploy) yakunlanadi va sizga tayyor internet havolasi (link) taqdim etiladi.
 
 ---
 
