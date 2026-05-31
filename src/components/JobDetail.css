@@ -9,11 +9,14 @@
   bottom: 84px;
   left: 0;
   width: 100%;
+  max-width: 100%;
   background: var(--bg-color);
   z-index: 50;
   overflow-y: auto;
+  overflow-x: hidden; /* Prevent horizontal scroll completely */
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .detail-header-image {
@@ -105,6 +108,11 @@
   gap: 16px;
 }
 
+.company-title-wrap > div {
+  flex: 1;
+  min-width: 0;
+}
+
 .detail-logo {
   width: 60px;
   height: 60px;
@@ -117,12 +125,15 @@
   font-size: 22px;
   line-height: 1.2;
   margin-bottom: 6px;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .company-name-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
   color: var(--text-secondary);
   font-size: 14px;
 }
@@ -349,6 +360,16 @@ html.dark-mode .info-card-icon {
     font-size: 18px !important;
   }
 
+  .company-title-wrap > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .company-name-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
   .detail-info-grid {
     grid-template-columns: 1fr; /* Single column for readable layout without side clipping */
     gap: 8px;
@@ -363,13 +384,14 @@ html.dark-mode .info-card-icon {
   }
 
   .sticky-action {
-    padding: 10px 12px;
-    gap: 8px;
+    padding: 10px 8px;
+    gap: 6px;
   }
 
   .apply-btn {
-    padding: 10px 8px;
-    font-size: 13.5px;
+    padding: 10px 4px;
+    font-size: 11.5px; /* smaller size for long Uzbek & English strings side-by-side */
     height: 38px;
+    letter-spacing: -0.2px;
   }
 }
