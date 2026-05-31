@@ -370,19 +370,6 @@ html.dark-mode .info-card-icon {
     gap: 6px;
   }
 
-  .detail-info-grid {
-    grid-template-columns: 1fr; /* Single column for readable layout without side clipping */
-    gap: 8px;
-  }
-
-  .detail-info-card {
-    padding: 10px 12px;
-  }
-
-  .info-card-value {
-    font-size: 12.5px;
-  }
-
   .sticky-action {
     padding: 10px 8px;
     gap: 6px;
@@ -393,5 +380,242 @@ html.dark-mode .info-card-icon {
     font-size: 11.5px; /* smaller size for long Uzbek & English strings side-by-side */
     height: 38px;
     letter-spacing: -0.2px;
+  }
+}
+
+/* ============================================================
+   NEW PREMIUM DASHBOARD SYSTEM
+   Replaces boring uniform grid with high-end bento/list layout
+   ============================================================ */
+
+.job-dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+/* --- Salary Feature Card --- */
+.db-salary-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(48, 209, 88, 0.08) 0%, rgba(118, 118, 128, 0.05) 100%);
+  border: 1px solid rgba(48, 209, 88, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.db-salary-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(48, 209, 88, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.db-salary-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.db-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 2px;
+}
+
+.db-salary-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: #30D158;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.db-bonus-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(255, 159, 10, 0.1);
+  color: #FF9F0A;
+  font-size: 10.5px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 159, 10, 0.15);
+  align-self: center;
+  white-space: nowrap;
+}
+
+/* --- Group Panel Card --- */
+.db-group-card {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.db-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(142, 142, 147, 0.15);
+}
+
+/* --- Schedule Bento Layout --- */
+.db-schedule-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.db-sub-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  background: rgba(118, 118, 128, 0.04);
+  border-radius: 10px;
+  min-width: 0;
+}
+
+.db-sub-label {
+  font-size: 9px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.db-sub-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.3;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* --- Dashboard List Rows --- */
+.db-list-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.db-list-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(142, 142, 147, 0.08);
+}
+
+.db-list-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.db-row-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.db-row-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.db-row-icon.icon-insurance { background: rgba(94, 92, 230, 0.1); }
+.db-row-icon.icon-globe { background: rgba(10, 132, 255, 0.1); }
+.db-row-icon.icon-home { background: rgba(52, 199, 89, 0.1); }
+.db-row-icon.icon-license { background: rgba(230, 57, 70, 0.1); }
+
+.db-row-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.db-row-value {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  text-align: right;
+  max-width: 60%;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.3;
+}
+
+/* Dark mode adjustments */
+html.dark-mode .db-salary-card {
+  background: linear-gradient(135deg, rgba(48, 209, 88, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+html.dark-mode .db-sub-cell {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Mobile query fine tuning */
+@media (max-width: 480px) {
+  .db-salary-card {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  
+  .db-salary-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+  }
+  
+  .db-salary-value {
+    font-size: 16px;
+  }
+  
+  .db-bonus-badge {
+    padding: 3px 6px;
+    font-size: 9.5px;
+  }
+
+  .db-row-label {
+    font-size: 11.5px;
+  }
+
+  .db-row-value {
+    font-size: 11.5px;
   }
 }

@@ -75,23 +75,119 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           </div>
         </div>
 
-        {/* ====== MA'LUMOTLAR GRIDI (Ikonkali kartochkalar) ====== 
-            Har bir kartochka minimalistik dizaynda ikonka + qiymat ko'rsatadi.
-            Bu yapon ish qidiruvchilari uchun eng muhim savollarni javob beradi:
-            - Qancha maosh? | Qachon ishlanadi? | Dam olish bormi?
-            - Bonus bormi? | Sug'urta bormi? | Uy-joy bormi?
-            - Chet elliklar qabul qilinadimi? | Qanday litsenziya kerak?
-        */}
-        <div className="detail-info-grid">
-          {infoItems.map((item, idx) => (
-            <div key={idx} className="detail-info-card glass">
-              <div className="info-card-icon">{item.icon}</div>
-              <div className="info-card-text">
-                <span className="info-card-label">{item.label}</span>
-                <strong className="info-card-value">{item.value}</strong>
+        {/* ====== PREMIUM DASHBOARD GRUPPALARI ====== */}
+        <div className="job-dashboard-layout">
+          
+          {/* 1. MOLIYAVIY SHAROIT (SALARY FEATURE CARD) */}
+          {job.salary && (
+            <div className="db-salary-card glass squircle fade-in">
+              <div className="db-salary-icon">
+                <Banknote size={24} color="#30D158" />
+              </div>
+              <div className="db-salary-text">
+                <span className="db-label">{t('salary', 'Maosh')}</span>
+                <h3 className="db-salary-value">
+                  {job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`)}
+                </h3>
+              </div>
+              {job.bonus && job.bonus !== 'bonus_none' && (
+                <div className="db-bonus-badge">
+                  <Award size={14} color="#FF9F0A" />
+                  <span>{t(job.bonus, job.bonus)}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 2. ISH GRAFIKI (SCHEDULE CARD GROUP) */}
+          {(job.hours || job.dayOff) && (
+            <div className="db-group-card glass squircle">
+              <div className="db-group-title">
+                <Clock size={16} color="#0A84FF" />
+                <span>{t('workHours', 'Ish tartibi')}</span>
+              </div>
+              <div className="db-schedule-grid">
+                {job.hours && (
+                  <div className="db-sub-cell">
+                    <span className="db-sub-label">{t('workHours', 'Ish vaqti')}</span>
+                    <strong className="db-sub-value">
+                      {job.hours === 'shift' ? t('shiftWork', 'Smenali') : job.hours}
+                    </strong>
+                  </div>
+                )}
+                {job.dayOff && (
+                  <div className="db-sub-cell">
+                    <span className="db-sub-label">{t('dayOff', 'Dam olish')}</span>
+                    <strong className="db-sub-value">
+                      {t(job.dayOff, job.dayOff)}
+                    </strong>
+                  </div>
+                )}
               </div>
             </div>
-          ))}
+          )}
+
+          {/* 3. IJTIMOIY YORDAM & IMTIYOZLAR (BENEFITS & REQUIREMENTS LIST) */}
+          <div className="db-group-card glass squircle">
+            <div className="db-group-title">
+              <Shield size={16} color="#5E5CE6" />
+              <span>{t('jobConditions', 'Imtiyozlar va Talablar')}</span>
+            </div>
+            
+            <div className="db-list-rows">
+              {/* Sug'urta Row */}
+              {job.insurance && (
+                <div className="db-list-row">
+                  <div className="db-row-left">
+                    <div className="db-row-icon icon-insurance">
+                      <Shield size={16} color="#5E5CE6" />
+                    </div>
+                    <span className="db-row-label">{t('insuranceLabel', "Sug'urta")}</span>
+                  </div>
+                  <strong className="db-row-value">{t(job.insurance, job.insurance)}</strong>
+                </div>
+              )}
+
+              {/* Chet elliklar Row */}
+              {job.foreigners && job.foreigners !== 'foreigners_none' && (
+                <div className="db-list-row">
+                  <div className="db-row-left">
+                    <div className="db-row-icon icon-globe">
+                      <Globe size={16} color="#0A84FF" />
+                    </div>
+                    <span className="db-row-label">{t('foreignersLabel', 'Chet elliklar')}</span>
+                  </div>
+                  <strong className="db-row-value">{t(job.foreigners, job.foreigners)}</strong>
+                </div>
+              )}
+
+              {/* Uy-joy Row */}
+              {job.housing && job.housing !== 'housing_none' && (
+                <div className="db-list-row">
+                  <div className="db-row-left">
+                    <div className="db-row-icon icon-home">
+                      <Home size={16} color="#34C759" />
+                    </div>
+                    <span className="db-row-label">{t('housingLabel', 'Uy-joy')}</span>
+                  </div>
+                  <strong className="db-row-value">{t(job.housing, job.housing)}</strong>
+                </div>
+              )}
+
+              {/* Litsenziya Row */}
+              {job.license && (
+                <div className="db-list-row">
+                  <div className="db-row-left">
+                    <div className="db-row-icon icon-license">
+                      <Car size={16} color="#E63946" />
+                    </div>
+                    <span className="db-row-label">{t('licenseRequired', 'Litsenziya')}</span>
+                  </div>
+                  <strong className="db-row-value">{t(job.license, job.license)}</strong>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* ====== TAVSIF ====== */}
