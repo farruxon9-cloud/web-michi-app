@@ -34,7 +34,7 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search } from 'lucide-react';
+import { Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, Banknote } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './DrivingAcademy.css';
 import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinadi
@@ -475,57 +475,70 @@ export default function DrivingAcademy({
           /** showVerified — Maktab tasdiqlangan YOKI shartnoma faol bo'lsa badge ko'rsatiladi */
           const showVerified = school.verified || isContractActive;
           return (
-            <div key={school.id} className="job-card" onClick={() => setSelectedSchool(school)}>
-              
-              {/* Kartochka rasmi */}
-              <div className="job-image-container">
+            <div key={school.id} className="job-card-hz glass squircle" onClick={() => setSelectedSchool(school)}>
+              {/* ---- Chap qism: Maktab rasmi ---- */}
+              <div className="job-card-img">
                 <img 
                   src={school.image} 
                   alt={school.name} 
-                  className="job-image" 
                   onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
                 />
-                {/* Til badge — o'ng yuqori burchakda */}
-                <div className="langs-badge glass">
+                {/* Dars tillari belgisi (rasm ustida) */}
+                <div className="job-type-badge type-fulltime">
                   {school.langs ? school.langs.join(', ') : 'UZ, JP'}
                 </div>
-                {/* Narx tegi — pastki qismda */}
-                <div className="price-tag glass">
-                  {school.price}
-                </div>
               </div>
-              
-              {/* Kartochka ma'lumotlari */}
-              <div className="job-info">
-                {/* Maktab nomi + Verified badge (kichik) */}
-                <p style={{ fontSize: '12px', color: '#8E8E93', margin: '0 0 2px 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  {school.name} {showVerified && <VerifiedBadge size={14} />}
-                </p>
-                <h3 className="job-title" style={{ margin: '0 0 4px 0' }}>{school.name}</h3>
-                <p className="job-location" style={{ margin: '0 0 4px 0' }}>
-                  <MapPin size={14} /> {school.location}
-                </p>
-                
-                {/* 
-                  KARTOCHKA TUGMALARI (PILL SHAKL):
-                  flexWrap: wrap — tugmalar sig'masa pastga tushadi.
-                  gap: 6px — tugmalar orasidagi bo'shliq.
-                  
-                  2 ta tugma:
-                  1. Topshirish (apply-school-btn) — binafsha
-                  2. Shoukai (shoukai-btn) — sariq
-                  
-                  MUHIM: squircle klassi ISHLATILMAYDI — pill shakl CSS da.
-                */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
-                  <button className="apply-school-btn">
+
+              {/* ---- O'ng qism: Batafsil ma'lumotlar ---- */}
+              <div className="job-card-body">
+                {/* Maktab nomi + Verified badge */}
+                <div className="job-card-company">
+                  <span>{school.name}</span>
+                  {showVerified && <VerifiedBadge size={14} />}
+                </div>
+
+                {/* Toifa turi */}
+                <h3 className="job-card-title">{school.type}</h3>
+
+                {/* Narx — yashil rangda */}
+                <div className="job-card-salary">
+                  <Banknote size={15} color="#30D158" />
+                  <span>{school.price || 'Maxsus narx'}</span>
+                  {school.discount && (
+                    <span className="discount-tag" style={{ marginLeft: '4px', fontSize: '9px', padding: '1.5px 4px' }}>
+                      -{school.discount}
+                    </span>
+                  )}
+                </div>
+
+                {/* Ikonkali chiplar (joylashuv, shoukai) */}
+                <div className="job-card-chips">
+                  <span className="job-chip">
+                    <MapPin size={10} />
+                    {school.location}
+                  </span>
+                  {school.shoukaiFee > 0 && (
+                    <span className="job-chip chip-highlight">
+                      <Share2 size={10} />
+                      Shoukai: ¥{school.shoukaiFee.toLocaleString()}
+                    </span>
+                  )}
+                </div>
+
+                {/* Amal tugmalari */}
+                <div className="job-card-actions">
+                  <button className="job-card-btn btn-apply">
                     {t('applyToSchool', 'Topshirish')}
                   </button>
                   <button 
-                    onClick={(e) => { e.stopPropagation(); onShoukai(school); }}
-                    className="shoukai-btn"
+                    className="job-card-btn btn-shoukai"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onShoukai(school);
+                    }}
                   >
-                    <Share2 size={13} /> {t('shoukai', 'Shoukai')}
+                    <Share2 size={12} />
+                    {t('shoukai', 'Shoukai')}
                   </button>
                 </div>
               </div>

@@ -586,3 +586,34 @@
   box-shadow: 0 2px 8px rgba(52, 199, 89, 0.2);
   cursor: default;
 }
+
+/* ====== MOBILE RESPONSIVENESS AND ANTI-OVERFLOW ====== */
+@media (max-width: 480px) {
+  .academy-container {
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  
+  .school-sticky-actions {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  
+  .call-btn,
+  .apply-school-btn,
+  .shoukai-btn {
+    height: 34px;
+    padding: 0 10px;
+    font-size: 11.5px;
+    gap: 4px;
+  }
+
+  .school-detail-body {
+    padding: 16px 14px;
+  }
+
+  .school-name {
+    font-size: 18px !important;
+  }
+}

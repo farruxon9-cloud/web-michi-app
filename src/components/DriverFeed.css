@@ -309,3 +309,67 @@ html.dark-mode .job-chip.chip-highlight {
 html.dark-mode .job-chip.chip-green {
   background: rgba(48, 209, 88, 0.15);
 }
+
+/* ====== MOBILE RESPONSIVENESS AND ANTI-OVERFLOW ====== */
+@media (max-width: 480px) {
+  .feed-container {
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  
+  .jobs-list {
+    padding: 0 8px 16px 8px;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .job-card-hz {
+    min-height: 140px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .job-card-img {
+    width: 105px;
+    min-width: 105px;
+    max-width: 105px;
+  }
+
+  .job-card-body {
+    padding: 10px;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .job-card-company {
+    font-size: 10.5px;
+    gap: 4px;
+  }
+
+  .job-card-title {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  .job-card-salary {
+    font-size: 13px;
+  }
+
+  .job-chip {
+    padding: 1.5px 5px;
+    font-size: 9px;
+    gap: 2px;
+  }
+
+  .job-card-actions {
+    gap: 4px;
+    padding-top: 4px;
+  }
+
+  .job-card-btn {
+    padding: 5px 6px;
+    font-size: 10px;
+  }
+}
