@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload, Clock, Banknote } from 'lucide-react';
+import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload, Clock, Banknote, Share2 } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import { compressImage } from '../utils/imageCompressor';
 import './DriverFeed.css';
