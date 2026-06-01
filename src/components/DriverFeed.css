@@ -263,18 +263,26 @@
 }
 
 .btn-apply {
-  background: #2C2C2E;
+  background: #111113;
   color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .btn-shoukai {
-  background: rgba(255, 159, 10, 0.1);
-  color: #FF9F0A;
-  border: 1px solid rgba(255, 159, 10, 0.2);
+  background: rgba(255, 255, 255, 0.45);
+  color: #c47600;
+  border: 1px solid rgba(255, 159, 10, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(255, 159, 10, 0.08);
 }
 
-.btn-apply:hover { background: #0A84FF; }
-.btn-shoukai:hover { background: rgba(255, 159, 10, 0.2); }
+.btn-apply:hover { background: #1e1e22; }
+.btn-shoukai:hover { background: rgba(255, 159, 10, 0.12); }
+
+.btn-apply:active { transform: scale(0.93); filter: brightness(0.85); box-shadow: inset 0 2px 6px rgba(0,0,0,0.3); }
+.btn-shoukai:active { transform: scale(0.93); filter: brightness(0.9); }
 
 /* ====== BO'SH HOLAT ====== */
 .empty-feed {
@@ -295,7 +303,15 @@
 
 /* ====== DARK MODE MOSLASHUVI ====== */
 html.dark-mode .btn-apply {
-  background: #0A84FF;
+  background: linear-gradient(135deg, #0066cc, #8b5cf6);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 102, 204, 0.3);
+}
+
+html.dark-mode .btn-shoukai {
+  background: rgba(255, 159, 10, 0.12);
+  color: #ffb340;
+  border-color: rgba(255, 159, 10, 0.2);
 }
 
 html.dark-mode .job-chip {

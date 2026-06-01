@@ -399,10 +399,13 @@
    Baza stili pastdagi umumiy tugma bazasida (section 13).
    Bu yerda faqat rang va chegara ko'rsatiladi. */
 .shoukai-btn {
-  background: var(--warning-light);
-  color: var(--warning);
-  border: 1.5px solid var(--warning-light-border);
-  flex-shrink: 0;              /* Bu tugma kichraymaydi */
+  background: rgba(255, 255, 255, 0.45);
+  color: #c47600;
+  border: 1.5px solid rgba(255, 159, 10, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(255, 159, 10, 0.08);
+  flex-shrink: 0;
 }
 
 /* Shoukai input maydoni — do'st ismini kiritish */
@@ -551,38 +554,39 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Bosilgandagi micro-animatsiya — premium touch feedback */
 .call-btn:active,
 .apply-school-btn:active,
 .shoukai-btn:active {
-  transform: scale(0.96);
+  transform: scale(0.93);
+  filter: brightness(0.88);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
 }
 
 /* ---------- Qo'ng'iroq tugmasi (YASHIL, ikkilamchi harakat) ----------
    Maktabga telefon qo'ng'iroq qilish uchun. <a> tag bilan ishlaydi.
    flex-shrink: 0 — boshqa tugmalar kengayganda bu kichraymaydi. */
 .call-btn {
-  background: var(--success-light);
+  background: rgba(255, 255, 255, 0.45);
   color: var(--success);
   border: 1px solid var(--success-light-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(48, 209, 88, 0.08);
   flex-shrink: 0;
 }
 
-/* ---------- Topshirish tugmasi (BINAFSHA, asosiy harakat) ----------
-   Maktabga ariza topshirish — eng muhim harakat.
-   flex: 1 1 0 — qolgan bo'sh joyni to'ldiradi (eng keng tugma).
-   box-shadow — yengil soya premium ko'rinish beradi. */
 .apply-school-btn {
   flex: 1 1 0;
-  min-width: 0;                /* Flex overflow oldini oladi */
-  background: var(--primary);
+  min-width: 0;
+  background: #111113;
   color: #fff;
-  box-shadow: 0 2px 8px rgba(90, 85, 234, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 }
 
-/* Ariza yuborilgan holat — yashilga o'zgaradi */
 .apply-school-btn.applied {
   background: var(--success);
+  border-color: transparent;
   box-shadow: 0 2px 8px rgba(52, 199, 89, 0.2);
   cursor: default;
 }

@@ -268,8 +268,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Animations & Transitions */
 button:active {
-  transform: scale(0.97);
-  transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform: scale(0.95);
+  filter: brightness(0.92);
+  transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.12s ease;
 }
 .icon-btn { width: 40px; height: 40px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; box-shadow: var(--shadow-sm); pointer-events: auto; }
 
@@ -278,13 +279,16 @@ button:active {
 
 /* Premium button with glassmorphism and gradient */
 .premium-btn {
-  background: linear-gradient(135deg, var(--primary), #4338CA);
+  background: linear-gradient(135deg, #0066cc, #8b5cf6);
   color: #fff;
   padding: 8px 16px;
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 16px rgba(0, 102, 204, 0.25);
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
-.premium-btn:hover { transform: scale(1.02); box-shadow: var(--shadow-md); }
+.premium-btn:hover { transform: scale(1.02); box-shadow: 0 6px 24px rgba(0, 102, 204, 0.3); }
+.premium-btn:active { transform: scale(0.95); filter: brightness(0.88); box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2), inset 0 2px 4px rgba(0,0,0,0.15); }
