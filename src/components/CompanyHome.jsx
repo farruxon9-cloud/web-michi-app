@@ -59,8 +59,18 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     shoukaiFee: '', 
     shoukaiConditions: '',
     langs: ['UZ', 'JP'], // Default driving school languages
-    courses: ['Oogata', 'Chugata', 'Futsu'] // Default driving school courses
+    courses: ['Oogata', 'Chugata', 'Futsu'], // Default driving school courses
+    license: [] // Array for regular job licenses if needed
   });
+  const [errors, setErrors] = useState({});
+
+  const WORK_HOURS_OPTIONS = ['08:00 - 17:00 (Kunduzgi)', '20:00 - 05:00 (Tungi)', 'Smenali ish (Jadval)', 'Erkin grafik', 'Boshqa'];
+  const DAY_OFF_OPTIONS = ['Shanba va Yakshanba', 'Haftada 2 kun (Smenali)', 'Haftada 1 kun', 'Boshqa'];
+  const INSURANCE_OPTIONS = ['To\'liq ijtimoiy sug\'urta', 'Koyo Hoken (Bandlik)', 'Yo\'q'];
+  const FOREIGNERS_OPTIONS = ['Viza yordami bor (Sponsorship)', 'Faqat PR / Teijusha', 'Barcha chet elliklar qabul', 'Yapon tilini bilish N3+'];
+  const HOUSING_OPTIONS = ['Yotoqxona mavjud', 'Ijara yordami bor (Yachin hojo)', 'Ko\'chib kelish to\'lanadi', 'Yo\'q'];
+  const LICENSE_OPTIONS = ['Futsu (Oddiy)', 'Chugata (O\'rta yuk)', 'Oogata (Katta yuk)', 'Tokushu (Maxsus)', 'Forklift', 'Talab qilinmaydi'];
+
 
   const companyJobs = (jobs || []).filter(j => j.company === (profileData?.fullName || "Sagawa Express"));
   const companySchools = (schools || []).filter(s => s.name === (profileData?.fullName || "Koyama Driving School"));
@@ -102,23 +112,26 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   };
 
   const handleAddJob = () => {
-    // 1. Mandatory Fields Validation
-    if (!newJob.title || !newJob.salary || !newJob.location || !newJob.fullAddress || !newJob.phone || !newJob.email || !newJob.description) {
-      alert(t('fillRequired', "Iltimos barcha kerakli (*) joylarni to'ldiring"));
-      return;
-    }
+    // 1. Mandatory Fields Validation with inline errors
+    const newErrors = {};
+    if (!newJob.title) newErrors.title = t('reqTitle', 'Sarlavha kiritilishi shart');
+    if (!newJob.salary) newErrors.salary = t('reqSalary', 'Narx/Maosh kiritilishi shart');
+    if (!newJob.location) newErrors.location = t('reqLocation', 'Qisqa manzil kiritilishi shart');
+    if (!newJob.fullAddress) newErrors.fullAddress = t('reqFullAddress', 'To\'liq manzil kiritilishi shart');
+    if (!newJob.phone) newErrors.phone = t('reqPhone', 'Telefon raqam kiritilishi shart');
+    if (!newJob.email) newErrors.email = t('reqEmail', 'Email kiritilishi shart');
+    if (!newJob.description) newErrors.description = t('reqDesc', 'Batafsil ma\'lumot kiritilishi shart');
+    if (newJob.hasShoukai === '') newErrors.hasShoukai = t('reqShoukai', 'Shoukai holatini belgilash shart');
+    if (newJob.hasShoukai === 'yes' && !newJob.shoukaiFee) newErrors.shoukaiFee = t('reqShoukaiSum', 'Shoukai summasini kiritish shart');
 
-    // 2. Mandatory Shoukai Option Selection
-    if (newJob.hasShoukai === '') {
-      alert(t('shoukaiSelectionRequired', "Showkai puli borligi yoki yo'qligini tanlash shart!"));
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Scroll to top smoothly
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-
-    // 3. Shoukai Fee Validation
-    if (newJob.hasShoukai === 'yes' && !newJob.shoukaiFee) {
-      alert(t('shoukaiAmountRequired', "Iltimos shoukai puli summasini kiriting"));
-      return;
-    }
+    
+    setErrors({});
 
     if (isDrivingSchool) {
       const school = {
@@ -196,16 +209,61 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     });
   };
 
-  // ===== ADD NEW JOB FORM (Full Page) =====
+  // ===== ADD NEW JOB FORM (Full Page Premium) =====
   if (showAddForm) {
+    const renderChips = (options, fieldName, isMulti = false) => {
+      const selectedValue = newJob[fieldName];
+      return (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          {options.map(opt => {
+            const isSelected = isMulti ? (selectedValue && selectedValue.includes(opt)) : selectedValue === opt;
+            return (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => {
+                  if (isMulti) {
+                    const current = selectedValue || [];
+                    if (isSelected) {
+                      setNewJob({ ...newJob, [fieldName]: current.filter(v => v !== opt) });
+                    } else {
+                      setNewJob({ ...newJob, [fieldName]: [...current, opt] });
+                    }
+                  } else {
+                    setNewJob({ ...newJob, [fieldName]: isSelected ? '' : opt });
+                  }
+                  if (errors[fieldName]) {
+                    setErrors(prev => ({ ...prev, [fieldName]: null }));
+                  }
+                }}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '20px',
+                  border: isSelected ? '1px solid var(--primary)' : '1px solid var(--glass-border)',
+                  background: isSelected ? 'rgba(90, 85, 234, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                  color: isSelected ? 'var(--primary)' : 'var(--text-main)',
+                  fontSize: '13px',
+                  fontWeight: isSelected ? '600' : '400',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {opt}
+              </button>
+            );
+          })}
+        </div>
+      );
+    };
+
     return (
       <div className="feed-container fade-in" style={{ paddingTop: '10px', paddingBottom: '100px' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
-          <button className="icon-btn glass" onClick={() => { setShowAddForm(false); setJobImage(null); }}>
+          <button className="icon-btn glass" onClick={() => { setShowAddForm(false); setJobImage(null); setErrors({}); }}>
             <ArrowLeft size={20} />
           </button>
-          <h2 style={{ margin: 0, fontSize: '20px' }}>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>
             {isDrivingSchool ? t('addNewSchoolAd', "Yangi avtomaktab e'loni") : t('addNewJob', "Yangi ish e'loni qo'shish")}
           </h2>
         </div>
@@ -222,7 +280,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               alignItems: 'center', 
               justifyContent: 'center', 
               cursor: 'pointer',
-              marginBottom: '20px',
+              marginBottom: '24px',
               overflow: 'hidden',
               position: 'relative',
               border: '2px dashed var(--primary)'
@@ -234,7 +292,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 <div style={{ 
                   position: 'absolute', bottom: '10px', right: '10px', 
                   background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '6px 12px', 
-                  borderRadius: '12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px'
+                  borderRadius: '12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px',
+                  backdropFilter: 'blur(10px)'
                 }}>
                   <Camera size={14} /> {t('changePhoto', "Rasmni o'zgartirish")}
                 </div>
@@ -242,11 +301,11 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             ) : (
               <>
                 <Upload size={32} color="var(--primary)" />
-                <span style={{ marginTop: '8px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                <span style={{ marginTop: '12px', fontSize: '14px', color: 'var(--text-main)', fontWeight: '600' }}>
                   {t('uploadAdImage', "E'lon rasmini yuklang")}
                 </span>
-                <span style={{ fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.7, marginTop: '4px' }}>
-                  {t('optionalField', '(Ixtiyoriy)')}
+                <span style={{ fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.8, marginTop: '4px' }}>
+                  {t('optionalField', '(Ixtiyoriy ammo tavsiya etiladi)')}
                 </span>
               </>
             )}
@@ -259,371 +318,327 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             onChange={handleImageChange}
           />
 
-          {/* Form Fields */}
-          <div className="glass squircle" style={{ padding: '20px', marginBottom: '16px' }}>
-            <h4 style={{ marginBottom: '16px', fontSize: '16px', color: 'var(--primary)' }}>
-              {t('jobBasicInfo', "Asosiy ma'lumotlar")}
-            </h4>
+          {/* BLOCK 1: Asosiy Ma'lumotlar */}
+          <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>1</div>
+              <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-main)', fontWeight: '700' }}>
+                {t('jobBasicInfo', "Asosiy ma'lumotlar")}
+              </h4>
+            </div>
             
-            <div className="input-group" style={{ marginBottom: '14px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
-                {isDrivingSchool ? t('schoolTypeLabel', 'Toifalar / Kategoriya *') : t('jobTitleLabel', 'Sarlavha (Vakansiya) *')}
+            <div className="input-group" style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                {isDrivingSchool ? t('schoolTypeLabel', 'Toifalar / Kategoriya') : t('jobTitleLabel', 'Sarlavha (Vakansiya)')} <span style={{ color: '#FF3B30' }}>*</span>
               </label>
               <input 
                 type="text" 
                 value={newJob.title} 
-                onChange={e => setNewJob({...newJob, title: e.target.value})} 
-                placeholder={isDrivingSchool ? t('schoolTypePlaceholder', "Masalan: Katta yuk va maxsus, Barcha toifalar") : t('jobTitlePlaceholder', "Masalan: Mahalliy yetkazib beruvchi")} 
+                onChange={e => { setNewJob({...newJob, title: e.target.value}); setErrors(prev => ({...prev, title: null})); }} 
+                placeholder={isDrivingSchool ? t('schoolTypePlaceholder', "Masalan: Katta yuk va maxsus, Barcha toifalar") : t('jobTitlePlaceholder', "Masalan: Mahalliy yetkazib beruvchi (4t)")} 
                 className="auth-input"
+                style={{ borderColor: errors.title ? '#FF3B30' : 'var(--glass-border)' }}
                 maxLength={50}
               />
+              {errors.title && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.title}</span>}
             </div>
             
-            <div className="input-group" style={{ marginBottom: '14px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
-                {isDrivingSchool ? t('schoolPriceLabel', 'Boshlang\'ich o\'qish narxi *') : t('salaryLabel', 'Oylik maosh *')}
+            <div className="input-group" style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                {isDrivingSchool ? t('schoolPriceLabel', 'Boshlang\'ich o\'qish narxi') : t('salaryLabel', 'Oylik maosh (O\'rtacha)')} <span style={{ color: '#FF3B30' }}>*</span>
               </label>
               <input 
                 type="text" 
                 value={newJob.salary} 
-                onChange={e => setNewJob({...newJob, salary: e.target.value})} 
-                placeholder={isDrivingSchool ? t('schoolPricePlaceholder', "¥280,000~") : t('salaryPlaceholder', "¥300,000 / oyiga")} 
+                onChange={e => { setNewJob({...newJob, salary: e.target.value}); setErrors(prev => ({...prev, salary: null})); }} 
+                placeholder={isDrivingSchool ? t('schoolPricePlaceholder', "Masalan: ¥280,000~") : t('salaryPlaceholder', "Masalan: ¥300,000 / oyiga")} 
                 className="auth-input"
+                style={{ borderColor: errors.salary ? '#FF3B30' : 'var(--glass-border)' }}
                 maxLength={30}
               />
+              {errors.salary && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.salary}</span>}
             </div>
 
-            <div className="input-group" style={{ marginBottom: '14px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+            <div className="input-group" style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
                 {isDrivingSchool ? t('schoolDiscountLabel', 'A\'zolar uchun chegirma (Ixtiyoriy)') : t('bonusLabel', 'Bonus puli bormi? (Ixtiyoriy)')}
               </label>
               <input 
                 type="text" 
                 value={newJob.bonus} 
                 onChange={e => setNewJob({...newJob, bonus: e.target.value})} 
-                placeholder={isDrivingSchool ? "¥20,000" : t('bonusPlaceholder', "Yiliga 2 marta")} 
+                placeholder={isDrivingSchool ? "Masalan: ¥20,000 chegirma" : t('bonusPlaceholder', "Masalan: Yiliga 2 marta (Yoz va Qish)")} 
                 className="auth-input"
                 maxLength={50}
               />
             </div>
             
-            <div className="input-group" style={{ marginBottom: '14px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
-                {t('locationLabel', 'Qisqa joylashuv (Shahar, tuman) *')}
+            <div className="input-group" style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                {t('locationLabel', 'Qisqa joylashuv (Shahar, prefektura)')} <span style={{ color: '#FF3B30' }}>*</span>
               </label>
               <input 
                 type="text" 
                 value={newJob.location} 
-                onChange={e => setNewJob({...newJob, location: e.target.value})} 
+                onChange={e => { setNewJob({...newJob, location: e.target.value}); setErrors(prev => ({...prev, location: null})); }} 
                 placeholder="Saitama, Omiya" 
                 className="auth-input"
+                style={{ borderColor: errors.location ? '#FF3B30' : 'var(--glass-border)' }}
                 maxLength={80}
               />
+              {errors.location && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.location}</span>}
             </div>
 
-            <div className="input-group" style={{ marginBottom: '14px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
-                {t('fullAddressLabel', 'Batafsil pochta manzili *')}
+            <div className="input-group">
+              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                {t('fullAddressLabel', 'Batafsil pochta manzili')} <span style={{ color: '#FF3B30' }}>*</span>
               </label>
               <input 
                 type="text" 
                 value={newJob.fullAddress} 
-                onChange={e => setNewJob({...newJob, fullAddress: e.target.value})} 
+                onChange={e => { setNewJob({...newJob, fullAddress: e.target.value}); setErrors(prev => ({...prev, fullAddress: null})); }} 
                 placeholder="〒330-0854 Saitama, Omiya-ku, Sakuragicho 2-1" 
                 className="auth-input"
+                style={{ borderColor: errors.fullAddress ? '#FF3B30' : 'var(--glass-border)' }}
                 maxLength={120}
               />
+              {errors.fullAddress && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.fullAddress}</span>}
             </div>
           </div>
 
-          {/* Contact Information */}
-          <div className="glass squircle" style={{ padding: '20px', marginBottom: '16px' }}>
-            <h4 style={{ marginBottom: '16px', fontSize: '16px', color: 'var(--primary)' }}>
-              {t('contactInfo', "Aloqa ma'lumotlari")}
-            </h4>
-            
-            <div className="input-group" style={{ marginBottom: '14px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
-                {t('phoneLabel', 'Aloqa telefon raqami *')}
-              </label>
-              <input 
-                type="text" 
-                value={newJob.phone} 
-                onChange={e => setNewJob({...newJob, phone: e.target.value})} 
-                placeholder="+81 48-555-1234" 
-                className="auth-input"
-                maxLength={25}
-              />
-            </div>
-
-            <div className="input-group" style={{ marginBottom: '14px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
-                {t('emailLabel', 'Aloqa emaili *')}
-              </label>
-              <input 
-                type="email" 
-                value={newJob.email} 
-                onChange={e => setNewJob({...newJob, email: e.target.value})} 
-                placeholder="info@saitama-auto.jp" 
-                className="auth-input"
-                maxLength={50}
-              />
-            </div>
-          </div>
-
-          {/* Conditional Sections */}
-          {isDrivingSchool ? (
-            /* Driving School Courses & Languages */
-            <div className="glass squircle" style={{ padding: '20px', marginBottom: '16px' }}>
-              <h4 style={{ marginBottom: '16px', fontSize: '16px', color: 'var(--primary)' }}>
-                {t('schoolCoursesLanguages', "Kurslar va Dars tillari")}
-              </h4>
-
-              {/* License Courses Checkboxes */}
-              <div className="input-group" style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                  {t('availableCoursesLabel', 'Mavjud toifalar')}
-                </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {['Oogata', 'Chugata', 'Futsu', 'Tokushu', 'Nirin', 'Forklift'].map(course => {
-                    const isSelected = newJob.courses.includes(course);
-                    return (
-                      <button
-                        key={course}
-                        type="button"
-                        onClick={() => handleToggleCourse(course)}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '16px',
-                          border: isSelected ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.1)',
-                          background: isSelected ? 'rgba(90, 85, 234, 0.15)' : 'rgba(255,255,255,0.05)',
-                          color: isSelected ? 'var(--primary)' : 'var(--text-main)',
-                          fontSize: '12px',
-                          fontWeight: 'bold',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {course}
-                      </button>
-                    );
-                  })}
-                </div>
+          {/* BLOCK 2: Ish Sharoitlari (Chips) */}
+          {!isDrivingSchool && (
+            <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>2</div>
+                <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-main)', fontWeight: '700' }}>
+                  {t('jobConditionsTitle', 'Ish sharoitlari')}
+                </h4>
               </div>
-
-              {/* Languages Checkboxes */}
-              <div className="input-group">
-                <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                  {t('availableLangsLabel', 'Dars beriladigan tillar')}
-                </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {['UZ', 'JP', 'EN', 'RU', 'VI', 'ZH'].map(lang => {
-                    const isSelected = newJob.langs.includes(lang);
-                    return (
-                      <button
-                        key={lang}
-                        type="button"
-                        onClick={() => handleToggleLang(lang)}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '16px',
-                          border: isSelected ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.1)',
-                          background: isSelected ? 'rgba(90, 85, 234, 0.15)' : 'rgba(255,255,255,0.05)',
-                          color: isSelected ? 'var(--primary)' : 'var(--text-main)',
-                          fontSize: '12px',
-                          fontWeight: 'bold',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {lang}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* Regular Job Conditions */
-            <div className="glass squircle" style={{ padding: '20px', marginBottom: '16px' }}>
-              <h4 style={{ marginBottom: '16px', fontSize: '16px', color: 'var(--primary)' }}>
-                {t('jobConditionsTitle', 'Ish sharoitlari')}
-              </h4>
               
-              <div className="input-group" style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+              <div className="input-group" style={{ marginBottom: '20px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('workHoursLabel', 'Ish vaqti (Ixtiyoriy)')}
                 </label>
-                <input 
-                  type="text" 
-                  value={newJob.hours} 
-                  onChange={e => setNewJob({...newJob, hours: e.target.value})} 
-                  placeholder="08:00 - 17:00" 
-                  className="auth-input"
-                  maxLength={40}
-                />
+                {renderChips(WORK_HOURS_OPTIONS, 'hours')}
               </div>
               
-              <div className="input-group" style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+              <div className="input-group" style={{ marginBottom: '20px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('dayOffLabel', 'Dam olish kunlari (Ixtiyoriy)')}
                 </label>
-                <input 
-                  type="text" 
-                  value={newJob.dayOff} 
-                  onChange={e => setNewJob({...newJob, dayOff: e.target.value})} 
-                  placeholder={t('dayOffPlaceholder', "Shanba, Yakshanba")} 
-                  className="auth-input"
-                  maxLength={40}
-                />
+                {renderChips(DAY_OFF_OPTIONS, 'dayOff')}
               </div>
               
-              <div className="input-group" style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
-                  {t('insuranceLabel', "Sug'urta to'lovlari bormi? (Ixtiyoriy)")}
+              <div className="input-group" style={{ marginBottom: '20px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
+                  {t('insuranceLabel', "Sug'urta to'lovlari (Ixtiyoriy)")}
                 </label>
-                <input 
-                  type="text" 
-                  value={newJob.insurance} 
-                  onChange={e => setNewJob({...newJob, insurance: e.target.value})} 
-                  placeholder={t('insurancePlaceholder', "To'liq ijtimoiy sug'urta")} 
-                  className="auth-input"
-                  maxLength={50}
-                />
+                {renderChips(INSURANCE_OPTIONS, 'insurance')}
               </div>
 
-              <div className="input-group" style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
-                  {t('foreignersLabel', "Chet elliklarni qabul qilish va Viza yordami (Ixtiyoriy)")}
+              <div className="input-group" style={{ marginBottom: '20px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
+                  {t('foreignersLabel', "Chet elliklar va Viza (Ixtiyoriy)")}
                 </label>
-                <input 
-                  type="text" 
-                  value={newJob.foreigners} 
-                  onChange={e => setNewJob({...newJob, foreigners: e.target.value})} 
-                  placeholder={t('foreignersPlaceholder', "Viza qo'llab-quvvatlovi bor")} 
-                  className="auth-input"
-                  maxLength={80}
-                />
+                {renderChips(FOREIGNERS_OPTIONS, 'foreigners')}
               </div>
               
-              <div className="input-group">
-                <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
-                  {t('housingLabel', "Uy ijarasi uchun qo'shimcha to'lov (Ixtiyoriy)")}
+              <div className="input-group" style={{ marginBottom: '20px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
+                  {t('housingLabel', "Uy-joy / Ijara (Ixtiyoriy)")}
                 </label>
-                <input 
-                  type="text" 
-                  value={newJob.housing} 
-                  onChange={e => setNewJob({...newJob, housing: e.target.value})} 
-                  placeholder={t('housingPlaceholder', "Uy ijarasining 50% to'lanadi")} 
-                  className="auth-input"
-                  maxLength={80}
-                />
+                {renderChips(HOUSING_OPTIONS, 'housing')}
+              </div>
+
+              <div className="input-group">
+                <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
+                  {t('licenseLabel', "Talab qilinadigan guvohnoma (Ixtiyoriy)")}
+                </label>
+                {renderChips(LICENSE_OPTIONS, 'license', true)}
               </div>
             </div>
           )}
 
-          {/* Description & Details Block */}
-          <div className="glass squircle" style={{ padding: '20px', marginBottom: '16px' }}>
-            <h4 style={{ marginBottom: '16px', fontSize: '16px', color: 'var(--primary)' }}>
-              {t('additionalInfo', "Batafsil tavsif")}
-            </h4>
+          {/* Conditional Sections For Driving School */}
+          {isDrivingSchool && (
+            <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>2</div>
+                <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-main)', fontWeight: '700' }}>
+                  {t('schoolCoursesLanguages', "Kurslar va Dars tillari")}
+                </h4>
+              </div>
+
+              <div className="input-group" style={{ marginBottom: '20px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
+                  {t('availableCoursesLabel', 'Mavjud toifalar')}
+                </label>
+                {renderChips(['Oogata', 'Chugata', 'Futsu', 'Tokushu', 'Nirin', 'Forklift'], 'courses', true)}
+              </div>
+
+              <div className="input-group">
+                <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
+                  {t('availableLangsLabel', 'Dars beriladigan tillar')}
+                </label>
+                {renderChips(['UZ', 'JP', 'EN', 'RU', 'VI', 'ZH'], 'langs', true)}
+              </div>
+            </div>
+          )}
+
+          {/* BLOCK 3: Contact & Description */}
+          <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                {isDrivingSchool ? '3' : '3'}
+              </div>
+              <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-main)', fontWeight: '700' }}>
+                {t('contactInfoAndDesc', "Aloqa va Batafsil ma'lumot")}
+              </h4>
+            </div>
             
+            <div className="input-group" style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                {t('phoneLabel', 'Aloqa telefon raqami')} <span style={{ color: '#FF3B30' }}>*</span>
+              </label>
+              <input 
+                type="text" 
+                value={newJob.phone} 
+                onChange={e => { setNewJob({...newJob, phone: e.target.value}); setErrors(prev => ({...prev, phone: null})); }} 
+                placeholder="+81 48-555-1234" 
+                className="auth-input"
+                style={{ borderColor: errors.phone ? '#FF3B30' : 'var(--glass-border)' }}
+                maxLength={25}
+              />
+              {errors.phone && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.phone}</span>}
+            </div>
+
+            <div className="input-group" style={{ marginBottom: '20px' }}>
+              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                {t('emailLabel', 'Aloqa emaili')} <span style={{ color: '#FF3B30' }}>*</span>
+              </label>
+              <input 
+                type="email" 
+                value={newJob.email} 
+                onChange={e => { setNewJob({...newJob, email: e.target.value}); setErrors(prev => ({...prev, email: null})); }} 
+                placeholder="info@saitama-auto.jp" 
+                className="auth-input"
+                style={{ borderColor: errors.email ? '#FF3B30' : 'var(--glass-border)' }}
+                maxLength={50}
+              />
+              {errors.email && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.email}</span>}
+            </div>
+
             <div className="input-group">
-              <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
-                {isDrivingSchool ? t('schoolDescLabel', 'Maktab haqida batafsil ma\'lumot *') : t('jobDescLabel', 'Batafsil tavsif *')}
+              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                {isDrivingSchool ? t('schoolDescLabel', 'Maktab haqida batafsil ma\'lumot') : t('jobDescLabel', 'Batafsil tavsif')} <span style={{ color: '#FF3B30' }}>*</span>
               </label>
               <textarea 
                 value={newJob.description} 
-                onChange={e => setNewJob({...newJob, description: e.target.value})} 
-                placeholder={isDrivingSchool ? "さいたま市中心部に広大な教習コースを持つ自動車学校。宿泊施設（合宿用）も完備。" : t('jobDescPlaceholder', "Ish haqida ma'lumot...")}
+                onChange={e => { setNewJob({...newJob, description: e.target.value}); setErrors(prev => ({...prev, description: null})); }} 
+                placeholder={isDrivingSchool ? "さいたま市中心部に広大な教習コースを持つ自動車学校..." : t('jobDescPlaceholder', "Ish haqida qiziqarli ma'lumotlarni yozing...")}
                 className="auth-input"
-                style={{ minHeight: '100px', resize: 'vertical' }}
-                maxLength={300}
+                style={{ 
+                  minHeight: '120px', 
+                  resize: 'vertical', 
+                  borderColor: errors.description ? '#FF3B30' : 'var(--glass-border)',
+                  lineHeight: '1.5'
+                }}
+                maxLength={800}
               ></textarea>
+              {errors.description && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.description}</span>}
             </div>
           </div>
 
-          {/* ==========================================
-              UNIFIED SHOUKAI (REFERRAL) POSTING SECTION
-              ========================================== */}
-          <div className="glass squircle" style={{ padding: '20px', marginBottom: '20px', border: '1px solid rgba(255, 159, 10, 0.2)' }}>
-            <h4 style={{ marginBottom: '16px', fontSize: '16px', color: '#FF9F0A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Share2 size={18} />
-              {t('shoukaiSettings', "Shoukai (Tavsiya) Sozlamalari")}
-            </h4>
+          {/* BLOCK 4: Shoukai (Referral) */}
+          <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '32px', border: errors.hasShoukai ? '2px solid #FF3B30' : '2px solid rgba(255, 159, 10, 0.3)', background: 'linear-gradient(145deg, rgba(255, 159, 10, 0.05) 0%, rgba(255, 159, 10, 0.01) 100%)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#FF9F0A', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                {isDrivingSchool ? '4' : '4'}
+              </div>
+              <h4 style={{ margin: 0, fontSize: '18px', color: '#FF9F0A', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Share2 size={20} />
+                {t('shoukaiSettings', "Shoukai (Tavsiya) Sozlamalari")}
+              </h4>
+            </div>
 
             {/* Shoukai Choice Selection (Mandatory) */}
-            <div className="input-group" style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '13.5px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                {t('hasShoukaiPrompt', "Ushbu e'londa do'stlarni taklif qilganlik uchun shoukai mukofot puli beriladimi? *")}
+            <div className="input-group" style={{ marginBottom: '20px' }}>
+              <label style={{ fontSize: '14.5px', fontWeight: '600', marginBottom: '12px', display: 'block', color: 'var(--text-main)' }}>
+                {t('hasShoukaiPrompt', "Ushbu e'londa do'stlarni taklif qilganlik uchun shoukai mukofot puli beriladimi?")} <span style={{ color: '#FF3B30' }}>*</span>
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <button
                   type="button"
-                  onClick={() => setNewJob({...newJob, hasShoukai: 'yes'})}
+                  onClick={() => { setNewJob({...newJob, hasShoukai: 'yes'}); setErrors(prev => ({...prev, hasShoukai: null})); }}
                   style={{
-                    padding: '12px',
-                    borderRadius: '14px',
-                    border: newJob.hasShoukai === 'yes' ? '2px solid #FF9F0A' : '1px solid rgba(255,255,255,0.1)',
-                    background: newJob.hasShoukai === 'yes' ? 'rgba(255, 159, 10, 0.15)' : 'rgba(255,255,255,0.03)',
+                    padding: '14px',
+                    borderRadius: '16px',
+                    border: newJob.hasShoukai === 'yes' ? '2px solid #FF9F0A' : '1px solid var(--glass-border)',
+                    background: newJob.hasShoukai === 'yes' ? 'rgba(255, 159, 10, 0.15)' : 'rgba(255,255,255,0.05)',
                     color: newJob.hasShoukai === 'yes' ? '#FF9F0A' : 'var(--text-main)',
-                    fontWeight: 'bold',
+                    fontWeight: '700',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px'
+                    gap: '8px',
+                    boxShadow: newJob.hasShoukai === 'yes' ? '0 4px 12px rgba(255, 159, 10, 0.2)' : 'none'
                   }}
                 >
-                  🎉 {t('yesOption', 'Ha, shoukai puli bor')}
+                  🎉 {t('yesOption', 'Ha, mukofot bor')}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setNewJob({...newJob, hasShoukai: 'no', shoukaiFee: '', shoukaiConditions: ''})}
+                  onClick={() => { setNewJob({...newJob, hasShoukai: 'no', shoukaiFee: '', shoukaiConditions: ''}); setErrors(prev => ({...prev, hasShoukai: null, shoukaiFee: null})); }}
                   style={{
-                    padding: '12px',
-                    borderRadius: '14px',
-                    border: newJob.hasShoukai === 'no' ? '2px solid var(--text-secondary)' : '1px solid rgba(255,255,255,0.1)',
-                    background: newJob.hasShoukai === 'no' ? 'rgba(142, 142, 147, 0.15)' : 'rgba(255,255,255,0.03)',
+                    padding: '14px',
+                    borderRadius: '16px',
+                    border: newJob.hasShoukai === 'no' ? '2px solid var(--text-secondary)' : '1px solid var(--glass-border)',
+                    background: newJob.hasShoukai === 'no' ? 'rgba(142, 142, 147, 0.15)' : 'rgba(255,255,255,0.05)',
                     color: newJob.hasShoukai === 'no' ? 'var(--text-secondary)' : 'var(--text-main)',
-                    fontWeight: 'bold',
+                    fontWeight: '700',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px'
+                    gap: '8px'
                   }}
                 >
                   ❌ {t('noOption', 'Yo\'q, pul berilmaydi')}
                 </button>
               </div>
+              {errors.hasShoukai && <span style={{ color: '#FF3B30', fontSize: '13px', marginTop: '8px', display: 'block', fontWeight: 'bold' }}>{errors.hasShoukai}</span>}
             </div>
 
             {/* If Shoukai is Active, reveal secret fee & conditions fields */}
             {newJob.hasShoukai === 'yes' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div className="input-group" style={{ animation: 'fadeIn 0.3s ease-out' }}>
-                  <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
-                    {t('shoukaiSumLabel', 'Showkai puli summasi (Faqat kompaniya o\'zi eslab qolishi uchun) *')}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', animation: 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+                <div className="input-group">
+                  <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                    {t('shoukaiSumLabel', 'Showkai puli summasi (Faqat kompaniya o\'zi eslab qolishi uchun)')} <span style={{ color: '#FF3B30' }}>*</span>
                   </label>
                   <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }}>¥</span>
+                    <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-main)', fontWeight: 'bold' }}>¥</span>
                     <input 
                       type="number" 
                       value={newJob.shoukaiFee} 
-                      onChange={e => setNewJob({...newJob, shoukaiFee: e.target.value})} 
+                      onChange={e => { setNewJob({...newJob, shoukaiFee: e.target.value}); setErrors(prev => ({...prev, shoukaiFee: null})); }} 
                       placeholder="5000" 
                       className="auth-input"
-                      style={{ paddingLeft: '30px', width: '100%' }}
+                      style={{ paddingLeft: '34px', width: '100%', borderColor: errors.shoukaiFee ? '#FF3B30' : 'var(--glass-border)' }}
                     />
                   </div>
-                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginTop: '4px', opacity: 0.8, lineHeight: '1.3' }}>
+                  {errors.shoukaiFee && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.shoukaiFee}</span>}
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginTop: '6px', opacity: 0.8, lineHeight: '1.4' }}>
                     🔒 {t('shoukaiSecretNote', 'Ushbu summani hech kim ko\'rmaydi, do\'stini taklif qiluvchilar faqat "Puli bor" belgisi hamda quyidagi shartlarni ko\'radi xolos.')}
                   </span>
                 </div>
 
-                <div className="input-group" style={{ animation: 'fadeIn 0.3s ease-out' }}>
-                  <label style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', display: 'block', color: 'var(--text-main)' }}>
+                <div className="input-group">
+                  <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
                     {t('shoukaiConditionsInputLabel', 'Showkai berilish shartlari va izohlari (Batafsil)')}
                   </label>
                   <textarea 
@@ -631,7 +646,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                     onChange={e => setNewJob({...newJob, shoukaiConditions: e.target.value})} 
                     placeholder={t('shoukaiConditionsPlaceholder', 'Masalan: Agar tavsiya qilingan odam kamida 3 oy ishlasa, shoukai puli keyin to\'lab beriladi.')}
                     className="auth-input"
-                    style={{ minHeight: '80px', resize: 'vertical', fontSize: '13px' }}
+                    style={{ minHeight: '90px', resize: 'vertical', fontSize: '13px', lineHeight: '1.4' }}
                     maxLength={250}
                   ></textarea>
                 </div>
@@ -642,9 +657,21 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           {/* Submit Button */}
           <button 
             className="btn-primary squircle" 
-            style={{ width: '100%', padding: '14px', fontSize: '16px', fontWeight: '700', marginBottom: '20px' }} 
+            style={{ 
+              width: '100%', 
+              padding: '16px', 
+              fontSize: '17px', 
+              fontWeight: '700', 
+              marginBottom: '20px',
+              boxShadow: '0 8px 24px rgba(90, 85, 234, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }} 
             onClick={handleAddJob}
           >
+            <Plus size={20} />
             {isDrivingSchool ? t('publishSchoolAd', "Avtomaktab e'lonini joylash") : t('publishJob', "Ish e'lonini joylash")}
           </button>
         </div>
