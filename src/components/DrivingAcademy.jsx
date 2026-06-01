@@ -428,28 +428,28 @@ export default function DrivingAcademy({
                 ============================================================ */}
             <div className="school-sticky-actions glass">
               {/* Qo'ng'iroq tugmasi — <a> tag bilan tel: protokol */}
-              <a href={`tel:${school.phone || '+819012345678'}`} className="call-btn">
+              <a href={`tel:${school.phone || '+819012345678'}`} className="academy-call-btn">
                 <Phone size={15} /> {t('callSchool', 'Qo\'ng\'iroq')}
               </a>
               
               {/* Topshirish tugmasi — hasApplied holatiga qarab o'zgaradi */}
               {!hasApplied ? (
                 <button 
-                  className="apply-school-btn"
+                  className="academy-apply-btn"
                   onClick={() => onApplySchool(school, '')}
                 >
                   {t('applyToSchool', 'Topshirish')}
                 </button>
               ) : (
                 /* Ariza yuborilgan holat — yashil "Topshirilgan" */
-                <button className="apply-school-btn applied" disabled>
+                <button className="academy-apply-btn applied" disabled>
                   <CheckCircle2 size={14} /> {t('appliedToSchool', 'Topshirilgan')}
                 </button>
               )}
               
               {/* Shoukai tugmasi — do'stga ulashish */}
               <button 
-                className="shoukai-btn"
+                className="academy-shoukai-btn"
                 onClick={() => onShoukai(school)}
               >
                 <Share2 size={14} /> {t('shoukai', 'Shoukai')}
