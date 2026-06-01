@@ -11,7 +11,7 @@ import './JobDetail.css';
 // Maosh, ish vaqti, dam olish, bonus, sug'urta, uy-joy, chet elliklar, litsenziya
 // Har bir ma'lumot minimalistik ikonka bilan vizual tarzda ko'rsatiladi
 // ============================================================
-export default function JobDetail({ job, onBack, onApply, onShoukai, applications = [], onToggleSave, profileData, userRole }) {
+export default function JobDetail({ job, onBack, onApply, onShoukai, applications = [], onToggleSave, profileData, userRole, onEditJob }) {
   const { t } = useTranslation();
   const alreadyApplied = applications.some(a => a.jobId === job.id && !a.isSimulatedReferral);
   const isSaved = profileData?.savedItems?.jobs?.some(j => j.id === job.id);
@@ -199,10 +199,20 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
         {/* ====== MANZIL ====== */}
         <div className="map-block">
           <h3>{t('address', 'Manzil')}</h3>
-          <div className="map-placeholder squircle glass">
-            <MapIcon size={32} color="#8E8E93" />
-            <span style={{textAlign: 'center'}}>{t('viewOnMap', "Xaritada ko'rish")} <br/><small>{job.fullAddress || t(`job_${job.id}_location`, job.location)}</small></span>
-          </div>
+          <a 
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.fullAddress || job.location || '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'none' }}
+          >
+            <div className="map-placeholder squircle glass" style={{ cursor: 'pointer', transition: 'all 0.3s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+              <MapIcon size={32} color="#0A84FF" />
+              <span style={{textAlign: 'center', color: 'var(--text-main)', marginTop: '12px', fontWeight: '500'}}>
+                {t('viewOnMap', "Xaritada ko'rish")} <br/>
+                <small style={{ color: 'var(--text-secondary)', display: 'inline-block', marginTop: '6px' }}>{job.fullAddress || t(`job_${job.id}_location`, job.location)}</small>
+              </span>
+            </div>
+          </a>
         </div>
 
         {/* ====== SHOUKAI MUKOFOTI ====== */}
@@ -232,19 +242,31 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
 
       {/* ====== PASTKI TUGMALAR (STICKY) ====== */}
       <div className="sticky-action glass">
-        <button 
-          className={`apply-btn ${alreadyApplied ? 'applied' : ''}`}
-          onClick={() => !alreadyApplied && onApply(job)}
-        >
-          {alreadyApplied ? t('applied') : t('applyJob')}
-        </button>
-        <button 
-          className="apply-btn shoukai-btn" 
-          onClick={() => onShoukai(job)}
-        >
-          <Share2 size={16} />
-          {((job.shoukaiAmount && job.shoukaiAmount !== "0") || job.hasShoukai) ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` : t('shoukai', 'Shoukai')}
-        </button>
+        {userRole === 'company' && profileData?.fullName === job.company ? (
+          <button 
+            className="apply-btn"
+            style={{ width: '100%', background: '#1c1c1e', color: '#fff', fontSize: '16px', fontWeight: 'bold' }}
+            onClick={() => onEditJob && onEditJob(job)}
+          >
+            Tahrirlash (Edit)
+          </button>
+        ) : (
+          <>
+            <button 
+              className={`apply-btn ${alreadyApplied ? 'applied' : ''}`}
+              onClick={() => !alreadyApplied && onApply(job)}
+            >
+              {alreadyApplied ? t('applied') : t('applyJob')}
+            </button>
+            <button 
+              className="apply-btn shoukai-btn" 
+              onClick={() => onShoukai(job)}
+            >
+              <Share2 size={16} />
+              {((job.shoukaiAmount && job.shoukaiAmount !== "0") || job.hasShoukai) ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` : t('shoukai', 'Shoukai')}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

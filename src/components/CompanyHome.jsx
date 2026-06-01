@@ -33,11 +33,20 @@ const INITIAL_COMPANY_JOBS = [
   }
 ];
 
-export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, schools, setSchools, profileData }) {
+export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, schools, setSchools, profileData, jobToEdit, setJobToEdit }) {
   const { t } = useTranslation();
   const [showAddForm, setShowAddForm] = useState(false);
   const [jobImage, setJobImage] = useState(null);
   const fileInputRef = useRef(null);
+
+  React.useEffect(() => {
+    if (jobToEdit) {
+      setNewJob(jobToEdit);
+      setJobImage(jobToEdit.image || null);
+      setShowAddForm(true);
+      if (setJobToEdit) setJobToEdit(null);
+    }
+  }, [jobToEdit, setJobToEdit]);
   
   const isDrivingSchool = profileData?.companyType === 'driving_school';
   
@@ -135,7 +144,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
     if (isDrivingSchool) {
       const school = {
-        id: Date.now(),
+        id: newJob.id || Date.now(),
         name: profileData?.fullName || "Koyama Driving School",
         type: newJob.title,
         price: newJob.salary,
@@ -154,10 +163,14 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         shoukai: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : '0'
       };
 
-      setSchools([school, ...schools]);
+      if (newJob.id) {
+        setSchools(schools.map(s => s.id === newJob.id ? school : s));
+      } else {
+        setSchools([school, ...schools]);
+      }
     } else {
       const job = {
-        id: Date.now(),
+        id: newJob.id || Date.now(),
         company: profileData?.fullName || "Sagawa Express",
         title: newJob.title,
         salary: newJob.salary,
@@ -182,7 +195,11 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         shoukaiConditions: newJob.shoukaiConditions || t('defaultJobShoukaiConditions', 'Tavsiya qilingan nomzod ishga qabul qilinib, kamida 3 oy ishlasa shoukai puli to\'lab beriladi.')
       };
 
-      setJobs([job, ...jobs]);
+      if (newJob.id) {
+        setJobs(jobs.map(j => j.id === newJob.id ? job : j));
+      } else {
+        setJobs([job, ...jobs]);
+      }
     }
 
     setShowAddForm(false);
@@ -412,46 +429,46 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
                 <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>2</div>
                 <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-main)', fontWeight: '700' }}>
-                  {t('jobConditionsTitle', 'Ish sharoitlari')}
+                  {t('jobConditionsTitle', 'Ish sharoitlari va Imtiyozlar')}
                 </h4>
               </div>
               
-              <div className="input-group" style={{ marginBottom: '20px' }}>
+              <div className="input-group" style={{ marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('workHoursLabel', 'Ish vaqti (Ixtiyoriy)')}
                 </label>
                 {renderChips(WORK_HOURS_OPTIONS, 'hours')}
               </div>
               
-              <div className="input-group" style={{ marginBottom: '20px' }}>
+              <div className="input-group" style={{ marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('dayOffLabel', 'Dam olish kunlari (Ixtiyoriy)')}
                 </label>
                 {renderChips(DAY_OFF_OPTIONS, 'dayOff')}
               </div>
               
-              <div className="input-group" style={{ marginBottom: '20px' }}>
+              <div className="input-group" style={{ marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('insuranceLabel', "Sug'urta to'lovlari (Ixtiyoriy)")}
                 </label>
                 {renderChips(INSURANCE_OPTIONS, 'insurance')}
               </div>
 
-              <div className="input-group" style={{ marginBottom: '20px' }}>
+              <div className="input-group" style={{ marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('foreignersLabel', "Chet elliklar va Viza (Ixtiyoriy)")}
                 </label>
                 {renderChips(FOREIGNERS_OPTIONS, 'foreigners')}
               </div>
               
-              <div className="input-group" style={{ marginBottom: '20px' }}>
+              <div className="input-group" style={{ marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('housingLabel', "Uy-joy / Ijara (Ixtiyoriy)")}
                 </label>
                 {renderChips(HOUSING_OPTIONS, 'housing')}
               </div>
 
-              <div className="input-group">
+              <div className="input-group" style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('licenseLabel', "Talab qilinadigan guvohnoma (Ixtiyoriy)")}
                 </label>
@@ -493,7 +510,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 {isDrivingSchool ? '3' : '3'}
               </div>
               <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-main)', fontWeight: '700' }}>
-                {t('contactInfoAndDesc', "Aloqa va Batafsil ma'lumot")}
+                {t('contactInfoAndDesc', "Vakansiya bo'yicha to'liq tavsif (Aloqa)")}
               </h4>
             </div>
             
@@ -544,9 +561,14 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                   borderColor: errors.description ? '#FF3B30' : 'var(--glass-border)',
                   lineHeight: '1.5'
                 }}
-                maxLength={800}
+                maxLength={500}
               ></textarea>
-              {errors.description && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.description}</span>}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
+                {errors.description ? <span style={{ color: '#FF3B30', fontSize: '12px' }}>{errors.description}</span> : <span></span>}
+                <span style={{ fontSize: '12px', color: newJob.description?.length >= 500 ? '#FF3B30' : '#8E8E93', fontWeight: '600' }}>
+                  {newJob.description?.length || 0}/500
+                </span>
+              </div>
             </div>
           </div>
 

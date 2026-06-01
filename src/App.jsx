@@ -156,6 +156,9 @@ function App() {
 
   // Notifications state
   const [notifications, setNotifications] = useState([]);
+  
+  // Edit mode state
+  const [jobToEdit, setJobToEdit] = useState(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -481,7 +484,7 @@ function App() {
     switch (activeTab) {
       case 'home':
         if (userRole === 'company') {
-          return <CompanyHome onJobClick={setSelectedJob} onSchoolClick={handleSchoolClick} jobs={jobs} setJobs={setJobs} schools={schools} setSchools={setSchools} profileData={profileData} />;
+          return <CompanyHome onJobClick={setSelectedJob} onSchoolClick={handleSchoolClick} jobs={jobs} setJobs={setJobs} schools={schools} setSchools={setSchools} profileData={profileData} jobToEdit={jobToEdit} setJobToEdit={setJobToEdit} />;
         }
         return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={isContractActive} verifiedCompanies={verifiedCompanies} onShoukai={handleShoukai} />;
       case 'academy':
@@ -583,6 +586,11 @@ function App() {
             onToggleSave={handleToggleSave}
             profileData={profileData}
             userRole={userRole}
+            onEditJob={(job) => {
+              setSelectedJob(null);
+              setJobToEdit(job);
+              setActiveTab('home');
+            }}
           />
         </Suspense>
       )}
