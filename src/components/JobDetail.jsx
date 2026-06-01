@@ -62,7 +62,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           <div className="company-title-wrap">
             <img src={job.logo} alt={job.company} className="detail-logo squircle" />
             <div>
-              <h2 className="detail-title">{job.title}</h2>
+              <h2 className="detail-title">{t(`job_${job.id}_title`, job.title)}</h2>
               <div className="company-name-row">
                 <span>{job.company}</span>
                 {job.verified && (
@@ -193,7 +193,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
         {/* ====== TAVSIF ====== */}
         <div className="description-block">
           <h3>{t('jobConditions', 'Ish sharoitlari')}</h3>
-          <p>{job.description || t('jobDesc')}</p>
+          <p>{t(`job_${job.id}_description`, job.description || t('jobDesc'))}</p>
         </div>
 
         {/* ====== MANZIL ====== */}
@@ -201,12 +201,12 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           <h3>{t('address', 'Manzil')}</h3>
           <div className="map-placeholder squircle glass">
             <MapIcon size={32} color="#8E8E93" />
-            <span style={{textAlign: 'center'}}>{t('viewOnMap', "Xaritada ko'rish")} <br/><small>{job.fullAddress || job.location}</small></span>
+            <span style={{textAlign: 'center'}}>{t('viewOnMap', "Xaritada ko'rish")} <br/><small>{job.fullAddress || t(`job_${job.id}_location`, job.location)}</small></span>
           </div>
         </div>
 
         {/* ====== SHOUKAI MUKOFOTI ====== */}
-        {job.shoukaiAmount && job.shoukaiAmount !== "0" && (
+        {((job.shoukaiAmount && job.shoukaiAmount !== "0") || job.hasShoukai) && (
           <div className="shoukai-detail-block glass squircle">
             <div className="shoukai-detail-header">
               <Share2 size={18} color="#FF9F0A" />
@@ -215,8 +215,15 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
             <p className="shoukai-detail-desc">
               {t('shoukaiDesc', "Do'stingizni taklif qiling va mukofot oling")}
             </p>
-            <div className="shoukai-detail-amount">
-              {t('shoukaiReward', 'Shoukai mukofoti')}: <span>{job.shoukaiAmount}</span>
+            <div className="shoukai-detail-amount" style={{ color: '#FF9F0A', fontWeight: 'bold' }}>
+              🎉 {t('shoukaiAvailable', 'Shoukai puli bor')}
+            </div>
+            
+            <div style={{ marginTop: '10px', fontSize: '13px', color: 'var(--text-secondary)', background: 'rgba(255,159,10,0.06)', border: '1px solid rgba(255,159,10,0.15)', padding: '10px 14px', borderRadius: '12px', lineHeight: '1.4' }}>
+              <strong style={{ color: 'var(--text-main)', display: 'block', marginBottom: '4px' }}>{t('shoukaiConditionsTitle', 'Shoukai shartlari va izohlari')}:</strong>
+              <div style={{ whiteSpace: 'pre-wrap', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
+                {job.shoukaiConditions || t('defaultJobShoukaiConditions', 'Tavsiya qilingan nomzod ishga qabul qilinib, kamida 3 oy ishlasa shoukai puli to\'lab beriladi.')}
+              </div>
             </div>
           </div>
         )}
@@ -226,17 +233,17 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
       {/* ====== PASTKI TUGMALAR (STICKY) ====== */}
       <div className="sticky-action glass">
         <button 
-          className={`apply-btn squircle ${alreadyApplied ? 'applied' : ''}`}
+          className={`apply-btn ${alreadyApplied ? 'applied' : ''}`}
           onClick={() => !alreadyApplied && onApply(job)}
         >
           {alreadyApplied ? t('applied') : t('applyJob')}
         </button>
         <button 
-          className="apply-btn squircle shoukai-btn" 
+          className="apply-btn shoukai-btn" 
           onClick={() => onShoukai(job)}
         >
           <Share2 size={16} />
-          {job.shoukaiAmount ? `${t('shoukai', 'Shoukai')} (${job.shoukaiAmount})` : t('shoukai', 'Shoukai')}
+          {((job.shoukaiAmount && job.shoukaiAmount !== "0") || job.hasShoukai) ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` : t('shoukai', 'Shoukai')}
         </button>
       </div>
     </div>

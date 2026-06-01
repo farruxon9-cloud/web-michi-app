@@ -58,6 +58,10 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
   const [driverLicenses, setDriverLicenses] = useState([]);
   const [techCertificates, setTechCertificates] = useState([]);
   const [workHistory, setWorkHistory] = useState([]);
+  const [addressHistory, setAddressHistory] = useState([]);
+  const [educationHistory, setEducationHistory] = useState([]);
+  const [address, setAddress] = useState('');
+  const [education, setEducation] = useState('');
 
   // Company-specific Registration
   const [companyType, setCompanyType] = useState('logistics');
@@ -78,13 +82,16 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-    if (loginPassword === 'admin' && !loginEmail) {
+    const trimmedEmail = loginEmail.trim();
+    if (loginPassword === 'admin' && !trimmedEmail) {
       onSelectRole('admin', { fullName: 'Admin' });
-    } else if (loginEmail === 'admin' && loginPassword === 'admin') {
+    } else if (trimmedEmail === 'admin' && loginPassword === 'admin') {
       const mockData = selectedRole === 'company' 
         ? { fullName: 'Sagawa Express', companyType: 'logistics', email: 'admin@sagawa.jp' }
         : { fullName: 'Test Haydovchi', driverLicenses: ['oogata', 'kenin'], techCertificates: ['forklift'], email: 'admin@driver.jp' };
       onSelectRole(selectedRole, mockData);
+    } else if (!trimmedEmail) {
+      alert(t('emailRequired', "Iltimos, elektron pochtangizni kiriting."));
     } else {
       alert(t('loginError', "Login yoki parol noto'g'ri kiritilgan."));
     }
@@ -112,6 +119,12 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
           companyDesc,
         });
       } else {
+        const filteredAddressHistory = addressHistory.filter(a => a.address);
+        const filteredEducationHistory = educationHistory.filter(e => e.school || e.major);
+        // Fallback string values for backward compatibility
+        const fallbackAddress = filteredAddressHistory.map(a => a.address + (a.isCurrent ? ` (${t('currentAddressLabel', 'Hozirgi')})` : '')).join(', ');
+        const fallbackEducation = filteredEducationHistory.map(e => `${e.school}${e.major ? ` (${e.major})` : ''} • ${e.startDate || ''} ~ ${e.isCurrent ? t('currentlyStudyingLabel', 'O\'qiyotgan') : e.endDate || ''}`).join(', ');
+
         onSelectRole(selectedRole, {
           fullName,
           email,
@@ -119,8 +132,12 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
           gender,
           birthDate,
           driverLicenses,
-            techCertificates,
+          techCertificates,
           workHistory: workHistory.filter(w => w.company || w.position),
+          addressHistory: filteredAddressHistory,
+          educationHistory: filteredEducationHistory,
+          address: fallbackAddress || address,
+          education: fallbackEducation || education,
         });
       }
     } else {
@@ -161,6 +178,53 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
     setWorkHistory(prev => prev.map((entry, i) => 
       i === index ? { ...entry, [field]: value } : entry
     ));
+  };
+
+  const addAddressEntry = () => {
+    if (addressHistory.length < 3) {
+      setAddressHistory(prev => [...prev, { address: '', isCurrent: false }]);
+    }
+  };
+
+  const removeAddressEntry = (index) => {
+    setAddressHistory(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateAddressEntry = (index, field, value) => {
+    setAddressHistory(prev => prev.map((entry, i) => {
+      if (i === index) {
+        return { ...entry, [field]: value };
+      } else {
+        if (field === 'isCurrent' && value === true) {
+          // Allow only one current address
+          return { ...entry, isCurrent: false };
+        }
+        return entry;
+      }
+    }));
+  };
+
+  const addEducationEntry = () => {
+    if (educationHistory.length < 3) {
+      setEducationHistory(prev => [...prev, { school: '', major: '', startDate: '', endDate: '', isCurrent: false }]);
+    }
+  };
+
+  const removeEducationEntry = (index) => {
+    setEducationHistory(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateEducationEntry = (index, field, value) => {
+    setEducationHistory(prev => prev.map((entry, i) => {
+      if (i === index) {
+        let updated = { ...entry, [field]: value };
+        if (field === 'isCurrent' && value === true) {
+          updated.endDate = '';
+        }
+        return updated;
+      }
+      return entry;
+    }));
   };
 
   if (authStep === 'verify') {
@@ -386,7 +450,6 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     className="premium-input" 
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    required
                   />
                   <label className="premium-label">{t("emailOrLogin", "Email yoki Login")}</label>
                   <div className="premium-input-border"></div>
@@ -540,6 +603,127 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                       onChange={(e) => setBirthDate(e.target.value)}
                     />
                   </div>
+                  <div className="input-label-wrap" style={{ marginTop: '20px' }}>
+                    <label style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--text-main)' }}>{t('livingAddressTitle', 'Yashash manzillari')}</label>
+                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>{t("addressHistorySub", "Yashagan joylaringiz ro'yxati (Maksimal 3 ta)")}</p>
+                  </div>
+                  {addressHistory.map((entry, index) => (
+                    <div key={index} className="work-entry glass squircle" style={{ marginBottom: '10px', padding: '12px', border: '1px solid var(--glass-border)' }}>
+                      <div className="work-entry-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <span className="work-entry-num" style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '13px' }}>#{index + 1}</span>
+                        <button 
+                          type="button" 
+                          className="remove-work-btn"
+                          style={{ background: 'rgba(255, 59, 48, 0.08)', border: 'none', color: '#FF3B30', cursor: 'pointer', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          onClick={() => removeAddressEntry(index)}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                      <div className="work-entry-fields" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input
+                          type="text"
+                          placeholder={t('livingAddressPlaceholder', 'Manzilingizni kiriting (Prefektura, shahar, ko\'cha)...')}
+                          className="auth-input work-input"
+                          value={entry.address}
+                          onChange={(e) => updateAddressEntry(index, 'address', e.target.value)}
+                          maxLength={120}
+                          required
+                        />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                          <input 
+                            type="checkbox" 
+                            id={`addr-current-${index}`} 
+                            checked={entry.isCurrent || false}
+                            onChange={(e) => updateAddressEntry(index, 'isCurrent', e.target.checked)}
+                            style={{ cursor: 'pointer' }}
+                          />
+                          <label htmlFor={`addr-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentAddressLabel', 'Hozirgi yashash joyim')}</label>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {addressHistory.length < 3 && (
+                    <button type="button" className="add-work-btn" style={{ width: '100%', marginBottom: '16px', background: 'rgba(90, 85, 234, 0.08)', border: '1px dashed rgba(90, 85, 234, 0.3)', color: 'var(--primary)', padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} onClick={addAddressEntry}>
+                      <Plus size={15} /> {addressHistory.length === 0 ? t('addAddressBtn', "Yashash manzili qo'shish") : t('addMore', "Yana qo'shish")}
+                    </button>
+                  )}
+
+                  {/* Dynamic Education History */}
+                  <div className="input-label-wrap" style={{ marginTop: '20px' }}>
+                    <label style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--text-main)' }}>{t('educationTitle', 'Ta\'lim ma\'lumotlari')}</label>
+                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>{t("educationHistorySub", "Tugatgan maktab, kollej yoki universitetlaringiz (Maksimal 3 ta)")}</p>
+                  </div>
+                  {educationHistory.map((entry, index) => (
+                    <div key={index} className="work-entry glass squircle" style={{ marginBottom: '10px', padding: '12px', border: '1px solid var(--glass-border)' }}>
+                      <div className="work-entry-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <span className="work-entry-num" style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '13px' }}>#{index + 1}</span>
+                        <button 
+                          type="button" 
+                          className="remove-work-btn"
+                          style={{ background: 'rgba(255, 59, 48, 0.08)', border: 'none', color: '#FF3B30', cursor: 'pointer', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          onClick={() => removeEducationEntry(index)}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                      <div className="work-entry-fields" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input
+                          type="text"
+                          placeholder={t('educationSchoolPlaceholder', 'O\'quv muassasasi nomi')}
+                          className="auth-input work-input"
+                          value={entry.school}
+                          onChange={(e) => updateEducationEntry(index, 'school', e.target.value)}
+                          maxLength={100}
+                          required
+                        />
+                        <input
+                          type="text"
+                          placeholder={t('educationMajorPlaceholder', 'Yo\'nalishi / Mutaxassisligi')}
+                          className="auth-input work-input"
+                          value={entry.major}
+                          onChange={(e) => updateEducationEntry(index, 'major', e.target.value)}
+                          maxLength={100}
+                        />
+                        <div className="work-dates-row" style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('startDateLabel', 'Kirgan vaqti')}</label>
+                            <input
+                              type="month"
+                              className="auth-input work-input"
+                              value={entry.startDate || ''}
+                              onChange={(e) => updateEducationEntry(index, 'startDate', e.target.value)}
+                            />
+                          </div>
+                          <div style={{ flex: 1, opacity: entry.isCurrent ? 0.5 : 1 }}>
+                            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('endDateLabel', 'Ketgan vaqti')}</label>
+                            <input
+                              type="month"
+                              className="auth-input work-input"
+                              value={entry.endDate || ''}
+                              onChange={(e) => updateEducationEntry(index, 'endDate', e.target.value)}
+                              disabled={entry.isCurrent}
+                            />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                          <input 
+                            type="checkbox" 
+                            id={`edu-current-${index}`} 
+                            checked={entry.isCurrent || false}
+                            onChange={(e) => updateEducationEntry(index, 'isCurrent', e.target.checked)}
+                            style={{ cursor: 'pointer' }}
+                          />
+                          <label htmlFor={`edu-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentlyStudyingLabel', 'Hozir ham o\'qiyman')}</label>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {educationHistory.length < 3 && (
+                    <button type="button" className="add-work-btn" style={{ width: '100%', marginBottom: '16px', background: 'rgba(90, 85, 234, 0.08)', border: '1px dashed rgba(90, 85, 234, 0.3)', color: 'var(--primary)', padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} onClick={addEducationEntry}>
+                      <Plus size={15} /> {educationHistory.length === 0 ? t('addEducationBtn', "O'qish joyi qo'shish") : t('addMore', "Yana qo'shish")}
+                    </button>
+                  )}
                 </div>
 
                 <div className="form-section">

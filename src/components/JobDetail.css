@@ -296,6 +296,7 @@
   background: #2C2C2E;
   color: white;
   border: none;
+  border-radius: 20px; /* Symmetrical, modern pill shape */
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;

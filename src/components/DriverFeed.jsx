@@ -131,13 +131,13 @@ export const MOCK_JOBS = [
 // DriverFeed — Ish e'lonlari ro'yxati (Goo-net uslubida gorizontal kartochkalar)
 // Har bir kartochkada: chapda rasm, o'ngda ma'lumotlar, pastda ikonkali chiplar
 // ============================================================
-export default function DriverFeed({ onJobClick, isContractActive, verifiedCompanies = [], onShoukai }) {
+export default function DriverFeed({ onJobClick, isContractActive, verifiedCompanies = [], onShoukai, jobs = MOCK_JOBS }) {
   const { t } = useTranslation();
   const [activeSegment, setActiveSegment] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filtrlash: segment va qidiruv bo'yicha
-  const filteredJobs = MOCK_JOBS.filter(job => {
+  const filteredJobs = jobs.filter(job => {
     const matchSegment = activeSegment === 'all' 
       || (activeSegment === 'permanent' && job.type === 'fulltime')
       || (activeSegment === 'hourly' && (job.type === 'parttime' || job.type === 'contract'));
@@ -194,7 +194,7 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
               <div className="job-card-img">
                 <img 
                   src={job.image} 
-                  alt={job.title} 
+                  alt={t(`job_${job.id}_title`, job.title)} 
                   onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
                 />
                 {/* Ish turi belgisi (rasm ustida) */}
@@ -213,7 +213,7 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
                 </div>
 
                 {/* E'lon sarlavhasi */}
-                <h3 className="job-card-title">{job.title}</h3>
+                <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
 
                 {/* Maosh — eng muhim ma'lumot */}
                 <div className="job-card-salary">
@@ -225,7 +225,7 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
                 <div className="job-card-chips">
                   <span className="job-chip">
                     <MapPin size={12} />
-                    {job.location}
+                    {t(`job_${job.id}_location`, job.location)}
                   </span>
                   <span className="job-chip">
                     <Clock size={12} />
@@ -251,13 +251,13 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
                     <Briefcase size={13} />
                     {t('applyJob', 'Ariza berish')}
                   </button>
-                  {job.shoukai && job.shoukai !== "0" && (
+                  {((job.shoukai && job.shoukai !== "0") || job.hasShoukai) && (
                     <button 
                       className="job-card-btn btn-shoukai"
                       onClick={(e) => { e.stopPropagation(); onShoukai && onShoukai(job); }}
                     >
                       <Share2 size={13} />
-                      {job.shoukai}
+                      {t('shoukaiAvailableLabel', 'Puli Bor')}
                     </button>
                   )}
                 </div>

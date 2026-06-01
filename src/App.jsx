@@ -5,6 +5,8 @@ import LanguageSelect from './components/LanguageSelect';
 import RoleSelect from './components/RoleSelect';
 import BottomNav from './components/BottomNav';
 import './App.css';
+import { MOCK_JOBS } from './components/DriverFeed';
+import { MOCK_SCHOOLS } from './components/DrivingAcademy';
 
 // Lazy loading heavy components for faster initial load
 const DriverFeed = lazy(() => import('./components/DriverFeed'));
@@ -123,6 +125,10 @@ function App() {
       email: 'michi@example.com',
       avatar: null,
       workHistory: [],
+      addressHistory: [],
+      educationHistory: [],
+      address: '',
+      education: '',
       companyType: '',
       companyAddress: '',
       employeeCount: '',
@@ -137,6 +143,10 @@ function App() {
     // We intentionally don't save to localStorage anymore
     // so the user can test the registration flow on every reload.
   }, [userRole, profileData]);
+
+  // Global Jobs & Driving Schools State
+  const [jobs, setJobs] = useState(MOCK_JOBS);
+  const [schools, setSchools] = useState(MOCK_SCHOOLS);
 
   // Applications state
   const [applications, setApplications] = useState([]);
@@ -154,7 +164,7 @@ function App() {
     const exists = applications.find(a => a.jobId === job.id && !a.isSimulatedReferral);
     if (exists) return;
 
-    const refId = prompt("Havola orqali kirdingizmi? Unday bo'lsa tavsiya qilgan odamning ID raqamini kiriting (Simulyatsiya uchun):\nMasalan: #Michi-A1B2");
+    const refId = prompt(t('referralPrompt', "Havola orqali kirdingizmi? Unday bo'lsa tavsiya qilgan odamning ID raqamini kiriting (Simulyatsiya uchun):\nMasalan: #Michi-A1B2"));
 
     const newApp = {
       id: Date.now(),
@@ -250,7 +260,7 @@ function App() {
     const exists = schoolApplications.find(a => a.schoolId === school.id && !a.isSimulatedReferral);
     if (exists) return;
 
-    const refId = prompt("Havola orqali kirdingizmi? Unday bo'lsa tavsiya qilgan odamning ID raqamini kiriting (Simulyatsiya uchun):\nMasalan: #Michi-A1B2");
+    const refId = prompt(t('referralPrompt', "Havola orqali kirdingizmi? Unday bo'lsa tavsiya qilgan odamning ID raqamini kiriting (Simulyatsiya uchun):\nMasalan: #Michi-A1B2"));
 
     const newApp = {
       id: Date.now(),
@@ -471,9 +481,9 @@ function App() {
     switch (activeTab) {
       case 'home':
         if (userRole === 'company') {
-          return <CompanyHome onJobClick={setSelectedJob} />;
+          return <CompanyHome onJobClick={setSelectedJob} onSchoolClick={handleSchoolClick} jobs={jobs} setJobs={setJobs} schools={schools} setSchools={setSchools} profileData={profileData} />;
         }
-        return <DriverFeed onJobClick={setSelectedJob} isContractActive={isContractActive} verifiedCompanies={verifiedCompanies} onShoukai={handleShoukai} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={isContractActive} verifiedCompanies={verifiedCompanies} onShoukai={handleShoukai} />;
       case 'academy':
         return (
           <DrivingAcademy 
@@ -489,6 +499,8 @@ function App() {
             selectedSchool={selectedSchool}
             setSelectedSchool={setSelectedSchool}
             onBackPress={handleSchoolBack}
+            schools={schools}
+            setSchools={setSchools}
           />
         );
       case 'service':
@@ -528,10 +540,12 @@ function App() {
             setShowProfileBadges={setShowProfileBadges}
             notificationSound={notificationSound}
             setNotificationSound={setNotificationSound}
+            jobs={jobs}
+            schools={schools}
           />
         );
       default:
-        return <DriverFeed onJobClick={setSelectedJob} isContractActive={isContractActive} onShoukai={handleShoukai} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={isContractActive} onShoukai={handleShoukai} />;
     }
   };
 

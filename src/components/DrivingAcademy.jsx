@@ -182,7 +182,7 @@ export const MOCK_SCHOOLS = [
 export default function DrivingAcademy({ 
   isContractActive, onApplySchool, schoolApplications = [], onShoukaiPaid, 
   profileData, onShoukai, verifiedCompanies = [], onToggleSave, userRole,
-  selectedSchool, setSelectedSchool, onBackPress
+  selectedSchool, setSelectedSchool, onBackPress, schools = MOCK_SCHOOLS, setSchools
 }) {
   const { t } = useTranslation();
   
@@ -275,22 +275,23 @@ export default function DrivingAcademy({
             
             {/* ------- SARLAVHA: Nom + Verified Badge ------- */}
             <div className="school-header-row" style={{ marginBottom: '4px' }}>
-              <h2 className="school-name" style={{ fontSize: '22px' }}>{school.name}</h2>
+              <h2 className="school-name" style={{ fontSize: '22px' }}>{t(`school_${school.id}_name`, school.name)}</h2>
               {(school.verified || isContractActive) && <VerifiedBadge size={20} />}
             </div>
             
             {/* ------- JOYLASHUV ------- */}
             <p className="school-location" style={{ marginBottom: '20px' }}>
-              <MapPin size={14} /> {school.location}
+              <MapPin size={14} /> {t(`school_${school.id}_location`, school.location)}
             </p>
 
             {/* ------- KURSLAR BO'LIMI ------- */}
             <div className="detail-section">
               <h4>{t('courseOffered')}</h4>
               <div className="categories-row">
-                {(school.courses || [school.type]).map(course => (
-                  <span key={course} className="category-tag">{course}</span>
-                ))}
+                {(school.courses || [school.type]).map(course => {
+                  const translationKey = course === school.type ? `school_${school.id}_type` : `lic_${course.toLowerCase()}`;
+                  return <span key={course} className="category-tag">{t(translationKey, course)}</span>;
+                })}
               </div>
             </div>
 
@@ -307,7 +308,7 @@ export default function DrivingAcademy({
             {/* ------- TAVSIF BO'LIMI ------- */}
             <div className="detail-section">
               <h4>{t('schoolDesc')}</h4>
-              <p className="school-description">{school.description}</p>
+              <p className="school-description">{t(`school_${school.id}_description`, school.description)}</p>
             </div>
 
             {/* ------- KONTAKT MA'LUMOTLARI ------- 
@@ -343,8 +344,15 @@ export default function DrivingAcademy({
                 <p className="shoukai-desc">{t('shoukaiDesc', "Do'stingizni taklif qiling va mukofot oling")}</p>
                 
                 {/* Mukofot summasi */}
-                <div className="shoukai-amount" style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                  {t('shoukaiReward', 'Shoukai mukofoti')}: <span style={{ color: '#FF9F0A' }}>¥{school.shoukaiFee.toLocaleString()}</span>
+                <div className="shoukai-amount" style={{ fontSize: '16px', fontWeight: 'bold', color: '#FF9F0A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🎉 {t('shoukaiAvailable', 'Shoukai puli bor')}</span>
+                </div>
+                
+                <div style={{ marginTop: '10px', fontSize: '13px', color: 'var(--text-secondary)', background: 'rgba(255,159,10,0.06)', border: '1px solid rgba(255,159,10,0.15)', padding: '10px 14px', borderRadius: '12px', lineHeight: '1.4' }}>
+                  <strong style={{ color: 'var(--text-main)', display: 'block', marginBottom: '4px' }}>{t('shoukaiConditionsTitle', 'Shoukai shartlari va izohlari')}:</strong>
+                  <div style={{ whiteSpace: 'pre-wrap', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
+                    {school.shoukaiConditions || t('defaultSchoolShoukaiConditions', 'Sinov/O\'qish boshlash muddatidan so\'ng tavsiya qiluvchiga mukofot to\'lanadi.')}
+                  </div>
                 </div>
 
                 {/* 
@@ -382,7 +390,7 @@ export default function DrivingAcademy({
                   <div className={`shoukai-track ${existingApp.paid ? 'paid' : 'unpaid'}`}>
                     <div className="shoukai-track-info">
                       <span className="shoukai-referrer">{t('shoukaiBy')}: {existingApp.referrerName}</span>
-                      <span className="shoukai-fee">¥{school.shoukaiFee.toLocaleString()}</span>
+                      <span className="shoukai-fee">{t('shoukaiAvailable', 'Shoukai puli bor')}</span>
                     </div>
                     {!existingApp.paid ? (
                       /* To'lov tugmasi — admin/kompaniya tomonidan bosiladi */
@@ -471,7 +479,7 @@ export default function DrivingAcademy({
 
       {/* ------- MAKTABLAR RO'YXATI ------- */}
       <div className="jobs-list hide-scrollbar">
-        {MOCK_SCHOOLS.map(school => {
+        {schools.map(school => {
           /** showVerified — Maktab tasdiqlangan YOKI shartnoma faol bo'lsa badge ko'rsatiladi */
           const showVerified = school.verified || isContractActive;
           return (
@@ -480,7 +488,7 @@ export default function DrivingAcademy({
               <div className="job-card-img">
                 <img 
                   src={school.image} 
-                  alt={school.name} 
+                  alt={t(`school_${school.id}_name`, school.name)} 
                   onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
                 />
                 {/* Dars tillari belgisi (rasm ustida) */}
@@ -493,12 +501,12 @@ export default function DrivingAcademy({
               <div className="job-card-body">
                 {/* Maktab nomi + Verified badge */}
                 <div className="job-card-company">
-                  <span>{school.name}</span>
+                  <span>{t(`school_${school.id}_name`, school.name)}</span>
                   {showVerified && <VerifiedBadge size={14} />}
                 </div>
 
                 {/* Toifa turi */}
-                <h3 className="job-card-title">{school.type}</h3>
+                <h3 className="job-card-title">{t(`school_${school.id}_type`, school.type)}</h3>
 
                 {/* Narx — yashil rangda */}
                 <div className="job-card-salary">
@@ -515,12 +523,12 @@ export default function DrivingAcademy({
                 <div className="job-card-chips">
                   <span className="job-chip">
                     <MapPin size={10} />
-                    {school.location}
+                    {t(`school_${school.id}_location`, school.location)}
                   </span>
                   {school.shoukaiFee > 0 && (
                     <span className="job-chip chip-highlight">
                       <Share2 size={10} />
-                      Shoukai: ¥{school.shoukaiFee.toLocaleString()}
+                      {t('shoukaiAvailable', 'Shoukai puli bor')}
                     </span>
                   )}
                 </div>

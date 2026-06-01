@@ -67,6 +67,7 @@ export default function Profile({
   const [empInputId, setEmpInputId] = useState('');
   const [empInputName, setEmpInputName] = useState('');
   const [empInputPhone, setEmpInputPhone] = useState('');
+  const [expandedAppId, setExpandedAppId] = useState(null);
   const fileInputRef = useRef(null);
 
   
@@ -124,8 +125,75 @@ const getLicenseLabel = (type) => {
   };
 
   const saveEditing = () => {
-    onUpdateProfile(editData);
+    const filteredAddress = (editData.addressHistory || []).filter(a => a.address);
+    const filteredEdu = (editData.educationHistory || []).filter(e => e.school || e.major);
+
+    const fallbackAddress = filteredAddress.map(a => a.address + (a.isCurrent ? ` (${t('currentAddressLabel', 'Hozirgi')})` : '')).join(', ');
+    const fallbackEducation = filteredEdu.map(e => `${e.school}${e.major ? ` (${e.major})` : ''} • ${e.startDate || ''} ~ ${e.isCurrent ? t('currentlyStudyingLabel', 'O\'qiyotgan') : e.endDate || ''}`).join(', ');
+
+    const finalData = {
+      ...editData,
+      addressHistory: filteredAddress,
+      educationHistory: filteredEdu,
+      address: fallbackAddress || editData.address,
+      education: fallbackEducation || editData.education
+    };
+    onUpdateProfile(finalData);
     setIsEditing(false);
+  };
+
+  const addEditAddressEntry = () => {
+    const list = editData.addressHistory || [];
+    if (list.length < 3) {
+      setEditData({ ...editData, addressHistory: [...list, { address: '', isCurrent: false }] });
+    }
+  };
+
+  const removeEditAddressEntry = (index) => {
+    const list = editData.addressHistory || [];
+    setEditData({ ...editData, addressHistory: list.filter((_, i) => i !== index) });
+  };
+
+  const updateEditAddressEntry = (index, field, value) => {
+    const list = editData.addressHistory || [];
+    const updated = list.map((entry, i) => {
+      if (i === index) {
+        return { ...entry, [field]: value };
+      } else {
+        if (field === 'isCurrent' && value === true) {
+          return { ...entry, isCurrent: false };
+        }
+        return entry;
+      }
+    });
+    setEditData({ ...editData, addressHistory: updated });
+  };
+
+  const addEditEducationEntry = () => {
+    const list = editData.educationHistory || [];
+    if (list.length < 3) {
+      setEditData({ ...editData, educationHistory: [...list, { school: '', major: '', startDate: '', endDate: '', isCurrent: false }] });
+    }
+  };
+
+  const removeEditEducationEntry = (index) => {
+    const list = editData.educationHistory || [];
+    setEditData({ ...editData, educationHistory: list.filter((_, i) => i !== index) });
+  };
+
+  const updateEditEducationEntry = (index, field, value) => {
+    const list = editData.educationHistory || [];
+    const updated = list.map((entry, i) => {
+      if (i === index) {
+        let entryCopy = { ...entry, [field]: value };
+        if (field === 'isCurrent' && value === true) {
+          entryCopy.endDate = '';
+        }
+        return entryCopy;
+      }
+      return entry;
+    });
+    setEditData({ ...editData, educationHistory: updated });
   };
 
   // ===== NOTIFICATIONS PAGE =====
@@ -375,6 +443,177 @@ const getLicenseLabel = (type) => {
                       <span className="field-value">{profileData.birthDate || t('notProvided')}</span>
                     )}
                   </div>
+                  {/* Living Address History */}
+                  <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                    <span className="field-label">{t('livingAddressTitle', 'Yashash manzillari')}</span>
+                    {isEditing ? (
+                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {(editData.addressHistory || []).map((entry, index) => (
+                          <div key={index} className="work-entry glass squircle" style={{ padding: '12px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.01)', width: '100%' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                              <span style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '13px' }}>#{index + 1}</span>
+                              <button 
+                                type="button" 
+                                className="remove-work-btn"
+                                style={{ background: 'rgba(255, 59, 48, 0.08)', border: 'none', color: '#FF3B30', cursor: 'pointer', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                onClick={() => removeEditAddressEntry(index)}
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              <input
+                                type="text"
+                                placeholder={t('livingAddressPlaceholder', 'Yashash manzili')}
+                                className="edit-input"
+                                style={{ width: '100%' }}
+                                value={entry.address}
+                                onChange={(e) => updateEditAddressEntry(index, 'address', e.target.value)}
+                                maxLength={120}
+                              />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                                <input 
+                                  type="checkbox" 
+                                  id={`edit-addr-current-${index}`} 
+                                  checked={entry.isCurrent || false}
+                                  onChange={(e) => updateEditAddressEntry(index, 'isCurrent', e.target.checked)}
+                                  style={{ cursor: 'pointer' }}
+                                />
+                                <label htmlFor={`edit-addr-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentAddressLabel', 'Hozirgi yashash joyim')}</label>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {(editData.addressHistory || []).length < 3 && (
+                          <button type="button" className="add-work-btn" style={{ width: '100%', padding: '10px', borderRadius: '12px', background: 'rgba(10, 132, 255, 0.08)', border: '1px dashed rgba(10, 132, 255, 0.3)', color: '#0A84FF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} onClick={addEditAddressEntry}>
+                            <Plus size={15} /> {t('addAddressBtn', "Yashash manzili qo'shish")}
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {profileData.addressHistory && profileData.addressHistory.length > 0 ? (
+                          profileData.addressHistory.map((a, i) => (
+                            <div key={i} className="glass squircle" style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                              <span style={{ fontSize: '14px', color: 'var(--text-main)' }}>{a.address}</span>
+                              {a.isCurrent && (
+                                <span style={{ fontSize: '11px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '3px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
+                                  {t('currentAddressLabel', 'Hozirgi yashash joyi')}
+                                </span>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <span className="field-value">{profileData.address || t('notProvided')}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Education History */}
+                  <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px', marginTop: '12px' }}>
+                    <span className="field-label">{t('educationTitle', 'Ta\'lim ma\'lumotlari')}</span>
+                    {isEditing ? (
+                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {(editData.educationHistory || []).map((entry, index) => (
+                          <div key={index} className="work-entry glass squircle" style={{ padding: '12px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.01)', width: '100%' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                              <span style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '13px' }}>#{index + 1}</span>
+                              <button 
+                                type="button" 
+                                className="remove-work-btn"
+                                style={{ background: 'rgba(255, 59, 48, 0.08)', border: 'none', color: '#FF3B30', cursor: 'pointer', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                onClick={() => removeEditEducationEntry(index)}
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              <input
+                                type="text"
+                                placeholder={t('educationSchoolPlaceholder', 'O\'quv muassasasi nomi')}
+                                className="edit-input"
+                                style={{ width: '100%' }}
+                                value={entry.school}
+                                onChange={(e) => updateEditEducationEntry(index, 'school', e.target.value)}
+                                maxLength={100}
+                              />
+                              <input
+                                type="text"
+                                placeholder={t('educationMajorPlaceholder', 'Yo\'nalishi / Mutaxassisligi')}
+                                className="edit-input"
+                                style={{ width: '100%' }}
+                                value={entry.major}
+                                onChange={(e) => updateEditEducationEntry(index, 'major', e.target.value)}
+                                maxLength={100}
+                              />
+                              <div className="work-dates-row" style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
+                                <div style={{ flex: 1 }}>
+                                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('startDateLabel', 'Kirgan vaqti')}</label>
+                                  <input
+                                    type="month"
+                                    className="edit-input"
+                                    style={{ width: '100%' }}
+                                    value={entry.startDate || ''}
+                                    onChange={(e) => updateEditEducationEntry(index, 'startDate', e.target.value)}
+                                  />
+                                </div>
+                                <div style={{ flex: 1, opacity: entry.isCurrent ? 0.5 : 1 }}>
+                                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('endDateLabel', 'Ketgan vaqti')}</label>
+                                  <input
+                                    type="month"
+                                    className="edit-input"
+                                    style={{ width: '100%' }}
+                                    value={entry.endDate || ''}
+                                    onChange={(e) => updateEditEducationEntry(index, 'endDate', e.target.value)}
+                                    disabled={entry.isCurrent}
+                                  />
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                                <input 
+                                  type="checkbox" 
+                                  id={`edit-edu-current-${index}`} 
+                                  checked={entry.isCurrent || false}
+                                  onChange={(e) => updateEditEducationEntry(index, 'isCurrent', e.target.checked)}
+                                  style={{ cursor: 'pointer' }}
+                                />
+                                <label htmlFor={`edit-edu-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentlyStudyingLabel', 'Hozir ham o\'qiyman')}</label>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {(editData.educationHistory || []).length < 3 && (
+                          <button type="button" className="add-work-btn" style={{ width: '100%', padding: '10px', borderRadius: '12px', background: 'rgba(10, 132, 255, 0.08)', border: '1px dashed rgba(10, 132, 255, 0.3)', color: '#0A84FF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} onClick={addEditEducationEntry}>
+                            <Plus size={15} /> {t('addEducationBtn', "O'qish joyi qo'shish")}
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {profileData.educationHistory && profileData.educationHistory.length > 0 ? (
+                          profileData.educationHistory.map((edu, i) => (
+                            <div key={i} className="glass squircle" style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--glass-border)', width: '100%', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <strong style={{ fontSize: '15px', color: 'var(--text-main)' }}>{edu.school}</strong>
+                                {edu.isCurrent && (
+                                  <span style={{ fontSize: '11px', background: 'rgba(52, 199, 89, 0.1)', color: '#34C759', padding: '3px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
+                                    {t('currentlyStudyingLabel', 'O\'qiyotgan')}
+                                  </span>
+                                )}
+                              </div>
+                              {edu.major && <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{edu.major}</span>}
+                              <span style={{ fontSize: '12px', color: '#8E8E93', marginTop: '2px' }}>
+                                📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel', 'Hozirgi vaqtda') : edu.endDate || '?'}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <span className="field-value" style={{ whiteSpace: 'pre-wrap' }}>{profileData.education || t('notProvided')}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                                   <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
                   <span className="field-label" style={{marginBottom: '4px'}}>{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}</span>
                   <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
@@ -588,6 +827,113 @@ const getLicenseLabel = (type) => {
                     ))}
                   </div>
                 )}
+                {/* Collapsible Candidate Resume for Company */}
+                {userRole === 'company' && (
+                  <div style={{ width: '100%', marginBottom: '12px' }}>
+                    <button 
+                      className="demo-btn reviewed" 
+                      style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px dashed rgba(10, 132, 255, 0.3)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }}
+                      onClick={() => setExpandedAppId(expandedAppId === app.id ? null : app.id)}
+                    >
+                      <FileText size={15} />
+                      {expandedAppId === app.id ? t('hideResumeBtn', 'Resumeni yopish') : t('viewResumeBtn', 'Nomzod resumesini ko\'rish')}
+                    </button>
+                    
+                    {expandedAppId === app.id && (
+                      <div className="applicant-resume-collapsible slide-down glass" style={{ padding: '16px', borderRadius: '12px', marginTop: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
+                        <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--primary)', fontWeight: 'bold' }}>📄 {t('myResume', 'Rezume (履歴書)')}</h4>
+                        
+                        <div className="resume-grid" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
+                            <span style={{ color: '#8E8E93' }}>{t('namePlaceholder', 'Nomzod ismi').replace(' ✱', '')}:</span>
+                            <strong style={{ color: 'var(--text-main)' }}>{profileData.fullName}</strong>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
+                            <span style={{ color: '#8E8E93' }}>Email:</span>
+                            <strong style={{ color: 'var(--text-main)' }}>{profileData.email}</strong>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
+                            <span style={{ color: '#8E8E93' }}>{t('birthDateLabel', 'Tug\'ilgan sana')}:</span>
+                            <strong style={{ color: 'var(--text-main)' }}>{profileData.birthDate || t('notProvided')}</strong>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
+                            <span style={{ color: '#8E8E93' }}>{t('livingAddressTitle', 'Yashash manzillari')}:</span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', marginTop: '2px' }}>
+                              {profileData.addressHistory && profileData.addressHistory.length > 0 ? (
+                                profileData.addressHistory.map((a, i) => (
+                                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)', width: '100%' }}>
+                                    <span style={{ color: 'var(--text-main)' }}>{a.address}</span>
+                                    {a.isCurrent && <span style={{ fontSize: '9px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{t('currentAddressLabel', 'Hozirgi')}</span>}
+                                  </div>
+                                ))
+                              ) : (
+                                <strong style={{ color: 'var(--text-main)' }}>{profileData.address || t('notProvided')}</strong>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
+                            <span style={{ color: '#8E8E93' }}>{t('educationTitle', 'Ta\'lim ma\'lumotlari')}:</span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', marginTop: '2px' }}>
+                              {profileData.educationHistory && profileData.educationHistory.length > 0 ? (
+                                profileData.educationHistory.map((edu, i) => (
+                                  <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '2px', background: 'rgba(255,255,255,0.01)', padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)', width: '100%' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                      <strong style={{ color: 'var(--text-main)' }}>{edu.school}</strong>
+                                      {edu.isCurrent && <span style={{ fontSize: '9px', background: 'rgba(52, 199, 89, 0.1)', color: '#34C759', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{t('currentlyStudyingLabel', 'O\'qiyotgan')}</span>}
+                                    </div>
+                                    {edu.major && <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{edu.major}</span>}
+                                    <span style={{ fontSize: '10px', color: '#8E8E93' }}>📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel', 'Hozirgi vaqtda') : edu.endDate || '?'}</span>
+                                  </div>
+                                ))
+                              ) : (
+                                <strong style={{ color: 'var(--text-main)', whiteSpace: 'pre-wrap' }}>{profileData.education || t('notProvided')}</strong>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '6px' }}>
+                            <span style={{ color: '#8E8E93' }}>{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}:</span>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
+                              {profileData.driverLicenses && profileData.driverLicenses.length > 0 ? (
+                                profileData.driverLicenses.map(l => (
+                                  <span key={l} className="badge-blue" style={{ background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '3px 8px', borderRadius: '10px', fontSize: '11px' }}>{t(`lic_${l}`)}</span>
+                                ))
+                              ) : (
+                                <span style={{ fontSize: '11px', color: '#8E8E93' }}>{t('notProvided')}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '6px' }}>
+                            <span style={{ color: '#8E8E93' }}>{t('techCertsLabel', 'Maxsus texnika va malaka sertifikatlari')}:</span>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
+                              {profileData.techCertificates && profileData.techCertificates.length > 0 ? (
+                                profileData.techCertificates.map(tc => (
+                                  <span key={tc} className="badge-blue" style={{ background: 'rgba(210, 125, 25, 0.1)', color: '#d27d19', padding: '3px 8px', borderRadius: '10px', fontSize: '11px' }}>{t(`tech_${tc}`)}</span>
+                                ))
+                              ) : (
+                                <span style={{ fontSize: '11px', color: '#8E8E93' }}>{t('notProvided')}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {profileData.workHistory && profileData.workHistory.length > 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', gap: '6px' }}>
+                              <span style={{ color: '#8E8E93' }}>{t('workExperience', 'Ish tajribasi')}:</span>
+                              {profileData.workHistory.map((w, i) => (
+                                <div key={i} style={{ fontSize: '12px', background: 'rgba(255,255,255,0.01)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                                  <strong style={{ color: 'var(--text-main)' }}>{w.company}</strong>
+                                  <span style={{ display: 'block', color: '#8E8E93', fontSize: '11px', marginTop: '2px' }}>{w.position} • {w.startDate} - {w.isCurrent ? t('currentPosition', 'Hozir') : w.endDate}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Company / Demo Action Buttons */}
                 {userRole === 'company' && (
                   <div className="demo-status-btns">
@@ -813,7 +1159,7 @@ const getLicenseLabel = (type) => {
                       <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{app.title} ({t('job', 'Ish')})</h4>
                       <p style={{ margin: 0, fontSize: '13px', color: '#8E8E93' }}>{t('company', 'Kompaniya')}: {app.company}</p>
                     </div>
-                    <span className="shoukai-fee" style={{ fontWeight: 'bold', color: '#34C759' }}>{app.shoukaiAmount}</span>
+                    <span className="shoukai-fee" style={{ fontWeight: 'bold', color: '#FF9F0A', fontSize: '13px' }}>🎉 {t('shoukaiAvailableLabel', 'Puli Bor')}</span>
                   </div>
                   <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '12px', color: '#0A84FF' }}>{t('appStatus', 'Ariza holati')}: {t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`)}</span>
@@ -831,7 +1177,7 @@ const getLicenseLabel = (type) => {
                     <div>
                       <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{app.schoolName} ({t('school', 'Maktab')})</h4>
                     </div>
-                    <span className="shoukai-fee" style={{ fontWeight: 'bold', color: '#34C759' }}>{app.shoukaiAmount}</span>
+                    <span className="shoukai-fee" style={{ fontWeight: 'bold', color: '#FF9F0A', fontSize: '13px' }}>🎉 {t('shoukaiAvailableLabel', 'Puli Bor')}</span>
                   </div>
                   <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '12px', color: '#0A84FF' }}>{t('appStatus', 'Ariza holati')}: {t('statusSubmitted', 'Yuborildi')}</span>
@@ -981,6 +1327,53 @@ const getLicenseLabel = (type) => {
               <div className="resume-field">
                 <span className="field-label">{t('birthDateLabel')}</span>
                 <span className="field-value">{profileData.birthDate || t('notProvided')}</span>
+              </div>
+              {/* Living Address History */}
+              <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                <span className="field-label">{t('livingAddressTitle', 'Yashash manzillari')}</span>
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {profileData.addressHistory && profileData.addressHistory.length > 0 ? (
+                    profileData.addressHistory.map((a, i) => (
+                      <div key={i} className="glass squircle" style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <span style={{ fontSize: '13px', color: 'var(--text-main)' }}>{a.address}</span>
+                        {a.isCurrent && (
+                          <span style={{ fontSize: '10px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '2px 6px', borderRadius: '8px', fontWeight: 'bold' }}>
+                            {t('currentAddressLabel', 'Hozirgi')}
+                          </span>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <span className="field-value">{profileData.address || t('notProvided')}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Education History */}
+              <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                <span className="field-label">{t('educationTitle', 'Ta\'lim ma\'lumotlari')}</span>
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {profileData.educationHistory && profileData.educationHistory.length > 0 ? (
+                    profileData.educationHistory.map((edu, i) => (
+                      <div key={i} className="glass squircle" style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--glass-border)', width: '100%', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <strong style={{ fontSize: '14px', color: 'var(--text-main)' }}>{edu.school}</strong>
+                          {edu.isCurrent && (
+                            <span style={{ fontSize: '10px', background: 'rgba(52, 199, 89, 0.1)', color: '#34C759', padding: '2px 6px', borderRadius: '8px', fontWeight: 'bold' }}>
+                              {t('currentlyStudyingLabel', 'O\'qiyotgan')}
+                            </span>
+                          )}
+                        </div>
+                        {edu.major && <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{edu.major}</span>}
+                        <span style={{ fontSize: '11px', color: '#8E8E93' }}>
+                          📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel', 'Hozirgi vaqtda') : edu.endDate || '?'}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <span className="field-value" style={{ whiteSpace: 'pre-wrap' }}>{profileData.education || t('notProvided')}</span>
+                  )}
+                </div>
               </div>
                               <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
                   <span className="field-label" style={{marginBottom: '4px'}}>{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}</span>
