@@ -70,6 +70,9 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
   const [contactPerson, setContactPerson] = useState('');
   const [companyPhone, setCompanyPhone] = useState('');
   const [companyDesc, setCompanyDesc] = useState('');
+  const [corporateNumber, setCorporateNumber] = useState('');
+  const [website, setWebsite] = useState('');
+  const [establishedYear, setEstablishedYear] = useState('');
 
   // Legal
   const [agreeAllTerms, setAgreeAllTerms] = useState(false);
@@ -117,6 +120,9 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
           contactPerson,
           companyPhone,
           companyDesc,
+          corporateNumber,
+          website,
+          establishedYear,
         });
       } else {
         const filteredAddressHistory = addressHistory.filter(a => a.address);
@@ -880,6 +886,30 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     value={companyAddress}
                     onChange={(e) => setCompanyAddress(e.target.value)}
                     maxLength={120}
+                  />
+                  <input 
+                    type="text" 
+                    placeholder={t("corporateNumberPlaceholder", "Yuridik shaxs raqami (Houjin Bangou)")} 
+                    className="auth-input" 
+                    value={corporateNumber}
+                    onChange={(e) => setCorporateNumber(e.target.value)}
+                    maxLength={13}
+                  />
+                  <input 
+                    type="url" 
+                    placeholder={t("websitePlaceholder", "Kompaniya veb-sayti (ixtiyoriy)")} 
+                    className="auth-input" 
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    maxLength={100}
+                  />
+                  <input 
+                    type="number" 
+                    placeholder={t("establishedYearPlaceholder", "Tashkil etilgan yili (Masalan: 2005)")} 
+                    className="auth-input" 
+                    value={establishedYear}
+                    onChange={(e) => setEstablishedYear(e.target.value)}
+                    maxLength={4}
                   />
                 </div>
 

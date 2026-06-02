@@ -44,7 +44,7 @@ function App() {
   // backTab: Profilning saqlanganlaridan e'longa kirilganda, ortga qaytish manzilini eslab qoluvchi o'zgaruvchi.
   const [backTab, setBackTab] = useState(null);
 
-  const [isContractActive, setIsContractActive] = useState(false);
+  const [contractStatus, setContractStatus] = useState('none');
   const [verifiedCompanies, setVerifiedCompanies] = useState(['Sagawa Express', 'Yamato Transport']);
 
   const handleToggleVerify = (companyId) => {
@@ -457,13 +457,7 @@ function App() {
   }
 
   if (userRole === 'admin') {
-    return (
-      <AdminDashboard 
-        verifiedCompanies={verifiedCompanies}
-        onToggleVerify={handleToggleVerify}
-        onLogout={() => setUserRole(null)}
-      />
-    );
+    return <AdminDashboard verifiedCompanies={verifiedCompanies} onToggleVerify={handleToggleVerify} onLogout={() => setUserRole(null)} contractStatus={contractStatus} setContractStatus={setContractStatus} profileData={profileData} />;
   }
 
   const getUserNameWithHonorific = () => {
@@ -486,11 +480,11 @@ function App() {
         if (userRole === 'company') {
           return <CompanyHome onJobClick={setSelectedJob} onSchoolClick={handleSchoolClick} jobs={jobs} setJobs={setJobs} schools={schools} setSchools={setSchools} profileData={profileData} jobToEdit={jobToEdit} setJobToEdit={setJobToEdit} />;
         }
-        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={isContractActive} verifiedCompanies={verifiedCompanies} onShoukai={handleShoukai} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} verifiedCompanies={verifiedCompanies} onShoukai={handleShoukai} />;
       case 'academy':
         return (
           <DrivingAcademy 
-            isContractActive={isContractActive} 
+            isContractActive={contractStatus === 'active'} 
             onApplySchool={handleApplySchool}
             schoolApplications={schoolApplications}
             onShoukaiPaid={handleShoukaiPaid}
@@ -512,8 +506,8 @@ function App() {
         return (
           <Profile 
             onLogout={() => setUserRole(null)} 
-            isContractActive={isContractActive} 
-            setIsContractActive={setIsContractActive} 
+            contractStatus={contractStatus} 
+            setContractStatus={setContractStatus} 
             profileData={profileData}
             userRole={userRole}
             onChangeLanguage={handleChangeLanguage}
@@ -548,7 +542,7 @@ function App() {
           />
         );
       default:
-        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={isContractActive} onShoukai={handleShoukai} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} />;
     }
   };
 

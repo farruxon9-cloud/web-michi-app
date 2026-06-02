@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ShieldCheck, LogOut, CheckCircle2, Building2 } from 'lucide-react';
 import './AdminDashboard.css';
 
-export default function AdminDashboard({ verifiedCompanies, onToggleVerify, onLogout }) {
+export default function AdminDashboard({ verifiedCompanies, onToggleVerify, onLogout, contractStatus, setContractStatus, profileData }) {
   const { t } = useTranslation();
 
   // Mock list of all companies in the system
@@ -34,9 +34,12 @@ export default function AdminDashboard({ verifiedCompanies, onToggleVerify, onLo
 
         <div className="admin-company-list">
           {MOCK_COMPANIES.map(company => {
-            const isVerified = verifiedCompanies.includes(company.id);
+            const isVerified = verifiedCompanies.includes(company.id) || (company.id === 'Sagawa Express' && contractStatus === 'active');
+            const isPending = company.id === 'Sagawa Express' && contractStatus === 'pending';
+
             return (
-              <div key={company.id} className="admin-company-card glass squircle">
+              <div key={company.id} className="admin-company-card glass squircle" style={{ border: isPending ? '1px solid #FF9500' : '', background: isPending ? 'rgba(255, 149, 0, 0.05)' : '' }}>
+                {isPending && <div style={{ fontSize: '12px', color: '#FF9500', fontWeight: 'bold', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>⏳ Shartnoma imzolangan (Tasdiq kutilmoqda)</div>}
                 <div className="admin-company-info">
                   <img src={company.logo} alt={company.name} className="admin-company-logo" />
                   <div>
@@ -58,11 +61,23 @@ export default function AdminDashboard({ verifiedCompanies, onToggleVerify, onLo
                 </div>
                 
                 <button 
-                  className={`admin-verify-btn squircle ${isVerified ? 'verified' : ''}`}
-                  onClick={() => onToggleVerify(company.id)}
+                  className={`admin-verify-btn squircle ${isVerified ? 'verified' : isPending ? 'pending' : ''}`}
+                  onClick={() => {
+                    onToggleVerify(company.id);
+                    if (company.id === 'Sagawa Express' && setContractStatus) {
+                      if (contractStatus === 'pending' || contractStatus === 'none') {
+                        setContractStatus('active');
+                      } else if (contractStatus === 'active') {
+                        setContractStatus('none');
+                      }
+                    }
+                  }}
+                  style={isPending ? { background: '#FF9500', color: '#fff', borderColor: '#FF9500' } : {}}
                 >
                   {isVerified ? (
                     <><CheckCircle2 size={16} /> {t('verified', 'Tasdiqlangan')}</>
+                  ) : isPending ? (
+                    <><CheckCircle2 size={16} /> Shartnomani tasdiqlash</>
                   ) : (
                     t('verify', 'Tasdiqlash')
                   )}

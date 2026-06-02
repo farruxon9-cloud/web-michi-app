@@ -19,7 +19,7 @@ const STATUS_COLORS = {
 };
 
 export default function Profile({ 
-  onLogout, isContractActive, setIsContractActive, profileData, userRole, 
+  onLogout, contractStatus, setContractStatus, profileData, userRole, 
   onChangeLanguage, onUpdateProfile, applications, onChangeAppStatus,
   notifications, onMarkRead, onMarkAllRead, unreadCount,
   darkMode, setDarkMode, soundSettings, setSoundSettings,
@@ -1443,6 +1443,24 @@ const getLicenseLabel = (type) => {
                   <span className="field-value">{profileData.companyPhone}</span>
                 </div>
               )}
+              {profileData.corporateNumber && (
+                <div className="resume-field icon-row">
+                  <span style={{ fontSize: '14px', marginRight: '4px' }}>🔢</span>
+                  <span className="field-value">{t('corporateNumberLabel', 'Yuridik raqam')}: {profileData.corporateNumber}</span>
+                </div>
+              )}
+              {profileData.website && (
+                <div className="resume-field icon-row">
+                  <span style={{ fontSize: '14px', marginRight: '4px' }}>🌐</span>
+                  <a href={profileData.website} target="_blank" rel="noopener noreferrer" className="field-value" style={{ color: '#0A84FF', textDecoration: 'none' }}>{profileData.website}</a>
+                </div>
+              )}
+              {profileData.establishedYear && (
+                <div className="resume-field icon-row">
+                  <span style={{ fontSize: '14px', marginRight: '4px' }}>📅</span>
+                  <span className="field-value">{t('establishedYearLabel', 'Tashkil topgan yil')}: {profileData.establishedYear}</span>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1451,23 +1469,40 @@ const getLicenseLabel = (type) => {
         {userRole === 'company' && (
           <div className="menu-group glass squircle partner-card">
             <div className="partner-header">
-              <h3>{t('partnerContract')}</h3>
-              <p className="partner-desc">{t('partnerDesc')}</p>
+              <h3>Michi Hamkorlik Shartnomasi</h3>
+              <p className="partner-desc">
+                Michi ilovasi bilan hamkorlik qilish orqali ilovadan to'liq foydalanish funksiyalarini yoqishingiz mumkin buning uchun info@michi.jp.net mail orqali aloqaga chiqing yoki shunchaki ilovadagi shartnoma tugmasini imzosini bossangiz operatorlar siz bilan bog'lanadi va kelajakdagi shartnoma qilish bosqichlarini tushintiradi. Bu kompaniyangizga tasdiqlangan <VerifiedBadge size={16} /> belgisini yoqish imkoniyatini ham beradi.
+              </p>
             </div>
             <div className="contract-status-row">
-              <span>{t('contractStatus')}</span>
-              <span className={`status-badge ${isContractActive ? 'active' : 'inactive'}`}>
-                {isContractActive ? (
-                  <><CheckCircle2 size={14} /> {t('contractSigned')}</>
-                ) : t('contractInactive')}
+              <span>{t('contractStatus', 'Shartnoma holati')}</span>
+              <span className={`status-badge ${contractStatus === 'active' ? 'active' : contractStatus === 'pending' ? 'pending' : 'inactive'}`} style={{ color: contractStatus === 'pending' ? '#FF9500' : '' }}>
+                {contractStatus === 'active' ? (
+                  <><CheckCircle2 size={14} /> Tasdiqlangan</>
+                ) : contractStatus === 'pending' ? (
+                  <>⏳ Imzolangan (Kutilmoqda)</>
+                ) : (
+                  'Imzolanmagan'
+                )}
               </span>
             </div>
-            <button 
-              className={`contract-btn squircle ${isContractActive ? 'active' : ''}`}
-              onClick={() => setIsContractActive(!isContractActive)}
-            >
-              {isContractActive ? t('cancelContract') : t('signContract')}
-            </button>
+            {contractStatus === 'none' && (
+              <button 
+                className="contract-btn squircle"
+                onClick={() => setContractStatus('pending')}
+              >
+                Imzolash
+              </button>
+            )}
+            {contractStatus === 'pending' && (
+              <button 
+                className="contract-btn squircle"
+                disabled
+                style={{ opacity: 0.7, cursor: 'not-allowed', background: 'rgba(255, 149, 0, 0.2)', color: '#FF9500', border: '1px solid rgba(255, 149, 0, 0.4)' }}
+              >
+                Tasdiqlanish kutilmoqda
+              </button>
+            )}
           </div>
         )}
 
