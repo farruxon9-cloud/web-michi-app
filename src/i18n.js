@@ -399,7 +399,17 @@ const resources = {
       addNewSchoolAd: "Yangi avtomaktab e'loni",
       addNewSchoolAdDesc: "Haydovchilarni o'qitish va yangi o'quvchilar jalb etish uchun e'lon joylang.",
       yourSchools: "Sizning avtomaktablaringiz",
-      noSchoolsYet: "Hozircha avtomaktab e'lonlari joylanmagan."
+      noSchoolsYet: "Hozircha avtomaktab e'lonlari joylanmagan.",
+      corporateNumberPlaceholder: "Yuridik shaxs raqami (Houjin Bangou)",
+      websitePlaceholder: "Kompaniya veb-sayti (ixtiyoriy)",
+      establishedYearPlaceholder: "Tashkil etilgan yili (Masalan: 2005)",
+      corporateNumberLabel: "Yuridik raqam",
+      establishedYearLabel: "Tashkil topgan yil",
+      contractMainDesc: "Michi ilovasi bilan hamkorlik qilish orqali ilovadan to'liq foydalanish funksiyalarini yoqishingiz mumkin buning uchun info@michi.jp.net mail orqali aloqaga chiqing yoki shunchaki ilovadagi shartnoma tugmasini imzosini bossangiz operatorlar siz bilan bog'lanadi va kelajakdagi shartnoma qilish bosqichlarini tushintiradi. Bu kompaniyangizga tasdiqlangan belgisini yoqish imkoniyatini ham beradi.",
+      contractAwaitingApproval: "Tasdiqlanish kutilmoqda",
+      contractPending: "Imzolangan (Kutilmoqda)",
+      adminPendingContract: "Shartnoma imzolangan (Tasdiq kutilmoqda)",
+      adminApproveContract: "Shartnomani tasdiqlash"
     }
   },
   ja: {
@@ -780,7 +790,17 @@ const resources = {
       addNewSchoolAd: "新規教習所広告の追加",
       addNewSchoolAdDesc: "新規受講生を募集するための教習所広告を作成し、掲載します。",
       yourSchools: "掲載中の教習所広告",
-      noSchoolsYet: "掲載中の教習所広告はまだありません。"
+      noSchoolsYet: "掲載中の教習所広告はまだありません。",
+      corporateNumberPlaceholder: "法人番号（13桁）",
+      websitePlaceholder: "企業のウェブサイト（任意）",
+      establishedYearPlaceholder: "設立年（例：2005）",
+      corporateNumberLabel: "法人番号",
+      establishedYearLabel: "設立年",
+      contractMainDesc: "Michiアプリと提携することで、すべての機能をご利用いただけます。契約に署名すると、承認バッジが付与されます。",
+      contractAwaitingApproval: "承認待ち",
+      contractPending: "署名済み（承認待ち）",
+      adminPendingContract: "署名済み（承認待ち）",
+      adminApproveContract: "契約を承認する"
     }
   },
   en: {
@@ -1161,7 +1181,17 @@ const resources = {
       addNewSchoolAd: "New Driving School Ad",
       addNewSchoolAdDesc: "Publish a driving school advertisement to train drivers and attract new students.",
       yourSchools: "Your Driving Schools",
-      noSchoolsYet: "No driving school advertisements published yet."
+      noSchoolsYet: "No driving school advertisements published yet.",
+      corporateNumberPlaceholder: "Corporate Number (Houjin Bangou)",
+      websitePlaceholder: "Company Website (Optional)",
+      establishedYearPlaceholder: "Established Year (e.g. 2005)",
+      corporateNumberLabel: "Corporate Number",
+      establishedYearLabel: "Established Year",
+      contractMainDesc: "By partnering with Michi, you can unlock full features. Signing the contract will give you the Verified badge.",
+      contractAwaitingApproval: "Awaiting Approval",
+      contractPending: "Signed (Pending)",
+      adminPendingContract: "Contract Signed (Pending Approval)",
+      adminApproveContract: "Approve Contract"
     }
   },
   vi: {

@@ -39,7 +39,7 @@ export default function AdminDashboard({ verifiedCompanies, onToggleVerify, onLo
 
             return (
               <div key={company.id} className="admin-company-card glass squircle" style={{ border: isPending ? '1px solid #FF9500' : '', background: isPending ? 'rgba(255, 149, 0, 0.05)' : '' }}>
-                {isPending && <div style={{ fontSize: '12px', color: '#FF9500', fontWeight: 'bold', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>⏳ Shartnoma imzolangan (Tasdiq kutilmoqda)</div>}
+                {isPending && <div style={{ fontSize: '12px', color: '#FF9500', fontWeight: 'bold', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>⏳ {t('adminPendingContract', 'Shartnoma imzolangan (Tasdiq kutilmoqda)')}</div>}
                 <div className="admin-company-info">
                   <img src={company.logo} alt={company.name} className="admin-company-logo" />
                   <div>
@@ -77,7 +77,7 @@ export default function AdminDashboard({ verifiedCompanies, onToggleVerify, onLo
                   {isVerified ? (
                     <><CheckCircle2 size={16} /> {t('verified', 'Tasdiqlangan')}</>
                   ) : isPending ? (
-                    <><CheckCircle2 size={16} /> Shartnomani tasdiqlash</>
+                    <><CheckCircle2 size={16} /> {t('adminApproveContract', 'Shartnomani tasdiqlash')}</>
                   ) : (
                     t('verify', 'Tasdiqlash')
                   )}

@@ -1470,20 +1470,20 @@ const getLicenseLabel = (type) => {
         {userRole === 'company' && (
           <div className="menu-group glass squircle partner-card">
             <div className="partner-header">
-              <h3>Michi Hamkorlik Shartnomasi</h3>
+              <h3>{t('partnerContract', 'Michi Hamkorlik Shartnomasi')}</h3>
               <p className="partner-desc">
-                Michi ilovasi bilan hamkorlik qilish orqali ilovadan to'liq foydalanish funksiyalarini yoqishingiz mumkin buning uchun info@michi.jp.net mail orqali aloqaga chiqing yoki shunchaki ilovadagi shartnoma tugmasini imzosini bossangiz operatorlar siz bilan bog'lanadi va kelajakdagi shartnoma qilish bosqichlarini tushintiradi. Bu kompaniyangizga tasdiqlangan <VerifiedBadge size={16} /> belgisini yoqish imkoniyatini ham beradi.
+                {t('contractMainDesc', "Michi ilovasi bilan hamkorlik qilish orqali...")} <VerifiedBadge size={16} />
               </p>
             </div>
             <div className="contract-status-row">
               <span>{t('contractStatus', 'Shartnoma holati')}</span>
               <span className={`status-badge ${contractStatus === 'active' ? 'active' : contractStatus === 'pending' ? 'pending' : 'inactive'}`} style={{ color: contractStatus === 'pending' ? '#FF9500' : '' }}>
                 {contractStatus === 'active' ? (
-                  <><CheckCircle2 size={14} /> Tasdiqlangan</>
+                  <><CheckCircle2 size={14} /> {t('contractSigned', 'Tasdiqlangan')}</>
                 ) : contractStatus === 'pending' ? (
-                  <>⏳ Imzolangan (Kutilmoqda)</>
+                  <>⏳ {t('contractPending', 'Imzolangan (Kutilmoqda)')}</>
                 ) : (
-                  'Imzolanmagan'
+                  t('contractInactive', 'Imzolanmagan')
                 )}
               </span>
             </div>
@@ -1492,7 +1492,7 @@ const getLicenseLabel = (type) => {
                 className="contract-btn squircle"
                 onClick={() => setContractStatus('pending')}
               >
-                Imzolash
+                {t('signContract', 'Imzolash')}
               </button>
             )}
             {contractStatus === 'pending' && (
@@ -1501,7 +1501,7 @@ const getLicenseLabel = (type) => {
                 disabled
                 style={{ opacity: 0.7, cursor: 'not-allowed', background: 'rgba(255, 149, 0, 0.2)', color: '#FF9500', border: '1px solid rgba(255, 149, 0, 0.4)' }}
               >
-                Tasdiqlanish kutilmoqda
+                {t('contractAwaitingApproval', 'Tasdiqlanish kutilmoqda')}
               </button>
             )}
           </div>
