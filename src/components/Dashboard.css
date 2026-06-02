@@ -1,0 +1,226 @@
+.dashboard-container {
+  padding: 16px;
+  padding-bottom: 80px; /* Space for BottomNav */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: var(--bg-main);
+  min-height: 100vh;
+}
+
+/* Header Widget */
+.dashboard-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.greeting-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+.user-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.time-widget {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.time-display {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.date-display {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* Bento Grid */
+.bento-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bento-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+}
+
+.bento-card:active {
+  transform: scale(0.97);
+}
+
+.hero-bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+  transition: transform 0.4s ease;
+}
+
+.bento-card:hover .hero-bg-image {
+  transform: scale(1.05);
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.3) 100%);
+  z-index: 2;
+}
+
+.light-overlay {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.7) 100%);
+}
+
+.card-content {
+  position: relative;
+  z-index: 3;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+}
+
+.vertical-content {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px;
+}
+
+/* Hero Card (Jobs) */
+.hero-card {
+  height: 140px;
+}
+
+.hero-card .card-text-content {
+  flex: 1;
+  color: white;
+}
+
+.hero-card h3 {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hero-card p {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
+}
+
+.card-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  color: white;
+}
+
+/* Secondary Cards Row */
+.bento-row {
+  display: flex;
+  gap: 12px;
+}
+
+.secondary-card {
+  flex: 1;
+  height: 140px;
+}
+
+.secondary-card h3 {
+  margin: 0;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Action Card (Profile) */
+.action-card {
+  padding: 0;
+  background: var(--glass-bg);
+}
+
+.action-card .card-content {
+  padding: 20px;
+  justify-content: space-between;
+}
+
+.action-text h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.action-text p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.outline-btn {
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  padding: 8px 16px;
+  font-size: 13px;
+  box-shadow: none;
+}
+
+/* Dark mode specific adjustments */
+.dark-mode .dashboard-header {
+  background: rgba(30, 30, 30, 0.6);
+}
+
+.dark-mode .action-card {
+  background: rgba(30, 30, 30, 0.6);
+}

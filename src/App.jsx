@@ -9,6 +9,7 @@ import { MOCK_JOBS } from './components/DriverFeed';
 import { MOCK_SCHOOLS } from './components/DrivingAcademy';
 
 // Lazy loading heavy components for faster initial load
+const Dashboard = lazy(() => import('./components/Dashboard'));
 const DriverFeed = lazy(() => import('./components/DriverFeed'));
 const JobDetail = lazy(() => import('./components/JobDetail'));
 const DrivingAcademy = lazy(() => import('./components/DrivingAcademy'));
