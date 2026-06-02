@@ -9,8 +9,8 @@ export default function ServiceComingSoon() {
   return (
     <div className="coming-soon-container fade-in">
       <div className="coming-soon-content">
-        <div className="icon-wrapper">
-          <Wrench size={48} color="#AF52DE" />
+        <div className="service-icon-wrapper">
+          <Wrench size={48} />
         </div>
         <h2>{t('comingSoon')}</h2>
         <p>{t('comingSoonDesc')}</p>
