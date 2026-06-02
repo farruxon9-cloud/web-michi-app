@@ -5,7 +5,8 @@
   flex-direction: column;
   gap: 16px; /* Compacted gap */
   background-color: var(--bg-main); /* Like Bon's beige/light background */
-  min-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
 }
 
 /* Big Hero Banner */
