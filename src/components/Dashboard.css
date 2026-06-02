@@ -1,6 +1,6 @@
 .dashboard-container {
   padding: 16px;
-  padding-bottom: 110px; /* Ensure space for BottomNav so nothing is cut off */
+  padding-bottom: 120px; /* Ensure space for BottomNav so nothing is cut off */
   display: flex;
   flex-direction: column;
   gap: 16px; /* Compacted gap */
