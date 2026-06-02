@@ -516,6 +516,8 @@ function App() {
         if (userRole === 'company') {
           return <CompanyHome onJobClick={setSelectedJob} onSchoolClick={handleSchoolClick} jobs={jobs} setJobs={setJobs} schools={schools} setSchools={setSchools} profileData={profileData} jobToEdit={jobToEdit} setJobToEdit={setJobToEdit} />;
         }
+        return <Dashboard setActiveTab={setActiveTab} profileData={profileData} />;
+      case 'jobs':
         return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} verifiedCompanies={verifiedCompanies} onShoukai={handleShoukai} />;
       case 'academy':
         return (
