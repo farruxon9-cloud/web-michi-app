@@ -384,7 +384,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 type="text" 
                 value={newJob.bonus} 
                 onChange={e => setNewJob({...newJob, bonus: e.target.value})} 
-                placeholder={isDrivingSchool ? "Masalan: ¥20,000 chegirma" : t('bonusPlaceholder', "Masalan: Yiliga 2 marta (Yoz va Qish)")} 
+                placeholder={isDrivingSchool ? t('schoolDiscountPlaceholder', "Masalan: ¥20,000 chegirma") : t('bonusPlaceholder', "Masalan: Yiliga 2 marta (Yoz va Qish)")} 
                 className="auth-input"
                 maxLength={50}
               />
@@ -398,7 +398,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 type="text" 
                 value={newJob.location} 
                 onChange={e => { setNewJob({...newJob, location: e.target.value}); setErrors(prev => ({...prev, location: null})); }} 
-                placeholder="Saitama, Omiya" 
+                placeholder={t('locationPlaceholder', "Saitama, Omiya")} 
                 className="auth-input"
                 style={{ borderColor: errors.location ? '#FF3B30' : 'var(--glass-border)' }}
                 maxLength={80}
@@ -414,7 +414,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 type="text" 
                 value={newJob.fullAddress} 
                 onChange={e => { setNewJob({...newJob, fullAddress: e.target.value}); setErrors(prev => ({...prev, fullAddress: null})); }} 
-                placeholder="〒330-0854 Saitama, Omiya-ku, Sakuragicho 2-1" 
+                placeholder={t('fullAddressPlaceholder', "〒330-0854 Saitama, Omiya-ku, Sakuragicho 2-1")} 
                 className="auth-input"
                 style={{ borderColor: errors.fullAddress ? '#FF3B30' : 'var(--glass-border)' }}
                 maxLength={120}
@@ -522,7 +522,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 type="text" 
                 value={newJob.phone} 
                 onChange={e => { setNewJob({...newJob, phone: e.target.value}); setErrors(prev => ({...prev, phone: null})); }} 
-                placeholder="+81 48-555-1234" 
+                placeholder={t('phonePlaceholder', "+81 48-555-1234")} 
                 className="auth-input"
                 style={{ borderColor: errors.phone ? '#FF3B30' : 'var(--glass-border)' }}
                 maxLength={25}
@@ -538,7 +538,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 type="email" 
                 value={newJob.email} 
                 onChange={e => { setNewJob({...newJob, email: e.target.value}); setErrors(prev => ({...prev, email: null})); }} 
-                placeholder="info@saitama-auto.jp" 
+                placeholder={t('emailContactPlaceholder', "info@saitama-auto.jp")} 
                 className="auth-input"
                 style={{ borderColor: errors.email ? '#FF3B30' : 'var(--glass-border)' }}
                 maxLength={50}
@@ -553,7 +553,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               <textarea 
                 value={newJob.description} 
                 onChange={e => { setNewJob({...newJob, description: e.target.value}); setErrors(prev => ({...prev, description: null})); }} 
-                placeholder={isDrivingSchool ? "さいたま市中心部に広大な教習コースを持つ自動車学校..." : t('jobDescPlaceholder', "Ish haqida qiziqarli ma'lumotlarni yozing...")}
+                placeholder={isDrivingSchool ? t('schoolDescPlaceholder', "さいたま市中心部に広大な教習コースを持つ自動車学校...") : t('jobDescPlaceholder', "Ish haqida qiziqarli ma'lumotlarni yozing...")}
                 className="auth-input"
                 style={{ 
                   minHeight: '120px', 
@@ -648,7 +648,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                       type="number" 
                       value={newJob.shoukaiFee} 
                       onChange={e => { setNewJob({...newJob, shoukaiFee: e.target.value}); setErrors(prev => ({...prev, shoukaiFee: null})); }} 
-                      placeholder="5000" 
+                      placeholder={t('shoukaiFeePlaceholder', "5000")} 
                       className="auth-input"
                       style={{ paddingLeft: '34px', width: '100%', borderColor: errors.shoukaiFee ? '#FF3B30' : 'var(--glass-border)' }}
                     />

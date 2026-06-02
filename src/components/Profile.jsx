@@ -268,7 +268,7 @@ const getLicenseLabel = (type) => {
                           onAcceptEmployeeRequest(notif.michiId, notif.company);
                         }
                         // Alert user
-                        alert('Xodimlik tasdiqlandi!');
+                        alert(t('employeeConfirmed', 'Xodimlik tasdiqlandi!'));
                       }}
                     >
                       {t('confirmBtn', 'Tasdiqlash (Qabul qilish)')}
