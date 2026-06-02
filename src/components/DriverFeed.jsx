@@ -229,7 +229,7 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
                   </span>
                   <span className="job-chip">
                     <Clock size={12} />
-                    {job.hours === 'shift' ? t('shiftWork', 'Smenali') : job.hours}
+                    {job.hours === 'shift' ? t('shiftWork', 'Smenali') : (job.hours ? t(job.hours, job.hours) : '')}
                   </span>
                   {job.foreigners && job.foreigners !== 'foreigners_none' && (
                     <span className="job-chip chip-highlight">

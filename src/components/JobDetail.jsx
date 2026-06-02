@@ -20,12 +20,12 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
   // Bu tizim kompaniya e'lon yaratganda avtomatik to'ldiriladi
   const infoItems = [
     { icon: <Banknote size={18} color="#30D158" />, label: t('salary', 'Maosh'), value: job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : '', show: !!job.salary },
-    { icon: <Clock size={18} color="#0A84FF" />, label: t('workHours', 'Ish vaqti'), value: job.hours === 'shift' ? t('shiftWork', 'Smenali ish') : job.hours, show: !!job.hours },
+    { icon: <Clock size={18} color="#0A84FF" />, label: t('workHours', 'Ish vaqti'), value: job.hours === 'shift' ? t('shiftWork', 'Smenali ish') : (job.hours ? t(job.hours, job.hours) : ''), show: !!job.hours },
     { icon: <Calendar size={18} color="#AF52DE" />, label: t('dayOff', 'Dam olish'), value: t(job.dayOff, job.dayOff), show: !!job.dayOff },
     { icon: <Award size={18} color="#FF9F0A" />, label: t('bonusLabel', 'Bonus'), value: t(job.bonus, job.bonus), show: !!job.bonus && job.bonus !== 'bonus_none' },
     { icon: <Shield size={18} color="#5E5CE6" />, label: t('insuranceLabel', "Sug'urta"), value: t(job.insurance, job.insurance), show: !!job.insurance },
-    { icon: <Globe size={18} color="#0A84FF" />, label: t('foreignersLabel', 'Chet elliklar'), value: t(job.foreigners, job.foreigners), show: !!job.foreigners && job.foreigners !== 'foreigners_none' },
-    { icon: <Home size={18} color="#34C759" />, label: t('housingLabel', 'Uy-joy'), value: t(job.housing, job.housing), show: !!job.housing && job.housing !== 'housing_none' },
+    { icon: <Globe size={18} color="#FF2D55" />, label: t('foreignersLabel', "Chet elliklar"), value: job.foreigners ? t(job.foreigners, job.foreigners) : '', show: !!job.foreigners && job.foreigners !== 'foreigners_none' },
+    { icon: <Home size={18} color="#34C759" />, label: t('housingLabel', "Yashash joyi"), value: job.housing ? t(job.housing, job.housing) : '', show: !!job.housing && job.housing !== 'housing_none' },
     { icon: <Car size={18} color="#E63946" />, label: t('licenseRequired', 'Litsenziya'), value: t(job.license, job.license), show: !!job.license },
   ].filter(item => item.show);
 
@@ -111,7 +111,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
                   <div className="db-sub-cell">
                     <span className="db-sub-label">{t('workHours', 'Ish vaqti')}</span>
                     <strong className="db-sub-value">
-                      {job.hours === 'shift' ? t('shiftWork', 'Smenali') : job.hours}
+                      {job.hours === 'shift' ? t('shiftWork', 'Smenali') : (job.hours ? t(job.hours, job.hours) : '')}
                     </strong>
                   </div>
                 )}
