@@ -6,6 +6,7 @@ import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, Shi
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
+import VerifiedBadge from './VerifiedBadge';
 import './Profile.css';
 
 const STATUS_PIPELINE = ['submitted', 'reviewing', 'reviewed', 'interview', 'rejected', 'accepted'];

@@ -441,8 +441,8 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
             </p>
           </div>
 
-          <form onSubmit={handleLoginSubmit} className="auth-form hide-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div className="form-section" style={{ display: 'flex', flexDirection: 'column', gap: '16px', border: 'none', padding: 0 }}>
+          <form onSubmit={handleLoginSubmit} className="auth-form hide-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="form-section" style={{ display: 'flex', flexDirection: 'column', gap: '12px', border: 'none', padding: 0 }}>
               
               {/* Premium Email/Login Input */}
               <div className="premium-input-group">
@@ -514,12 +514,12 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
             </button>
           </form>
           
-          <div style={{ marginTop: '24px', textAlign: 'center', borderTop: '1px solid var(--glass-border)', paddingTop: '20px' }}>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px', fontWeight: '500' }}>{t("noAccount", "Akkauntingiz yo'qmi?")}</p>
+          <div style={{ marginTop: '16px', textAlign: 'center', borderTop: '1px solid var(--glass-border)', paddingTop: '16px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '500' }}>{t("noAccount", "Akkauntingiz yo'qmi?")}</p>
             <button 
               onClick={() => setAuthStep('register')}
               className="btn-primary squircle"
-              style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px solid rgba(10, 132, 255, 0.15)', padding: '12px', fontSize: '14px', width: '100%', borderRadius: '12px' }}
+              style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px solid rgba(10, 132, 255, 0.15)', padding: '10px', fontSize: '14px', width: '100%', borderRadius: '12px' }}
             >
               {t("registerTitle", "Ro'yxatdan o'tish")}
             </button>
