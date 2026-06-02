@@ -139,6 +139,7 @@
   text-transform: uppercase;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  white-space: nowrap;
 }
 
 .job-type-badge.type-fulltime {
@@ -194,6 +195,9 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 /* Maosh — yashil rang bilan ajralib turadi */

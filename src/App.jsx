@@ -17,6 +17,41 @@ const Profile = lazy(() => import('./components/Profile'));
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const CompanyHome = lazy(() => import('./components/CompanyHome'));
 
+
+class ChunkErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("ChunkErrorBoundary caught an error:", error, errorInfo);
+    // If it's a chunk load error or dynamic import failure, reload the page
+    if (error.name === 'ChunkLoadError' || error.message.includes('Failed to fetch dynamically imported module') || error.message.includes('dynamically imported module') || error.message.includes('fetch')) {
+      if (!sessionStorage.getItem('michi_chunk_reloaded')) {
+        sessionStorage.setItem('michi_chunk_reloaded', 'true');
+        window.location.reload(true);
+      }
+    }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 40, textAlign: 'center', color: '#8E8E93' }}>
+          Yangi versiya mavjud. Iltimos sahifani yangilang (Ctrl+F5 yoki tepadan pastga torting).
+          <br/><br/>
+          <button onClick={() => window.location.reload(true)} style={{ padding: '10px 20px', borderRadius: '20px', background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer' }}>
+            Sahifani Yangilash
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   const { t, i18n } = useTranslation();
   const [showSplash, setShowSplash] = useState(true);
@@ -564,13 +599,13 @@ function App() {
       </header>
 
       <main className="main-content" style={{ zIndex: 10 }}>
-        <Suspense fallback={<div style={{display:'flex', justifyContent:'center', padding:40, color:'#8E8E93'}}>{t('loading', 'Yuklanmoqda...')}</div>}>
+        <ChunkErrorBoundary><Suspense fallback={<div style={{display:'flex', justifyContent:'center', padding:40, color:'#8E8E93'}}>{t('loading', 'Yuklanmoqda...')}</div>}>
           {renderTabContent()}
-        </Suspense>
+        </Suspense></ChunkErrorBoundary>
       </main>
 
       {selectedJob && (
-        <Suspense fallback={<div style={{display:'flex', justifyContent:'center', padding:40, color:'#8E8E93'}}>{t('loading', 'Yuklanmoqda...')}</div>}>
+        <ChunkErrorBoundary><Suspense fallback={<div style={{display:'flex', justifyContent:'center', padding:40, color:'#8E8E93'}}>{t('loading', 'Yuklanmoqda...')}</div>}>
           <JobDetail 
             job={selectedJob} 
             onBack={() => setSelectedJob(null)} 
@@ -586,7 +621,7 @@ function App() {
               setActiveTab('home');
             }}
           />
-        </Suspense>
+        </Suspense></ChunkErrorBoundary>
       )}
 
       <BottomNav 

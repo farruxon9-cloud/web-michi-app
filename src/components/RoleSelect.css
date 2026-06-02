@@ -218,6 +218,9 @@ select.auth-input {
 }
 
 .btn-primary {
+  flex-shrink: 0; /* fix */
+  min-height: 52px; /* fix */
+  display: flex; align-items: center; justify-content: center;
   background: #111113;
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.08);

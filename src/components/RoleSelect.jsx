@@ -534,16 +534,17 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
   if (authStep === 'register') {
     return (
       <div className="role-container slide-up">
-        <div className="auth-card glass squircle">
-          <button className="icon-btn" onClick={() => setAuthStep('login')}>
+        <div className="auth-card glass squircle" style={{ position: 'relative' }}>
+          <button className="icon-btn glass" onClick={() => setAuthStep('login')} style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 10 }}>
             <ArrowLeft size={20} />
           </button>
-          <div className="auth-header">
-            <h2>{t("registerTitle", "Ro'yxatdan o'tish")}</h2>
-            <p>{t("registerSub", "Michi platformasida professional profil yaratish")}</p>
-          </div>
 
           <form onSubmit={handleRegisterSubmit} className="auth-form-scroll hide-scrollbar">
+            <div className="auth-header" style={{ marginTop: '30px' }}>
+              <h2>{t("registerTitle", "Ro'yxatdan o'tish")}</h2>
+              <p>{t("registerSub", "Michi platformasida professional profil yaratish")}</p>
+            </div>
+            
             {/* Avatar Selection */}
             <div className="avatar-upload-section">
               <div 
@@ -1004,7 +1005,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
               type="submit" 
               className={`btn-primary squircle ${!allLegalAccepted ? 'btn-disabled' : ''}`}
               disabled={!allLegalAccepted}
-              style={{ marginTop: '10px' }}
+              style={{ marginTop: '10px', marginBottom: '20px' }}
             >
               {t("registerTitle", "Ro'yxatdan o'tish")}
             </button>

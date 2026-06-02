@@ -34,7 +34,7 @@
 /* Ish turi belgisi (batafsil sahifada) */
 .detail-type-badge {
   position: absolute;
-  bottom: 16px;
+  bottom: 48px;
   left: 16px;
   padding: 5px 14px;
   border-radius: 10px;
@@ -43,6 +43,7 @@
   letter-spacing: 0.4px;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  white-space: nowrap;
 }
 
 .detail-type-badge.type-fulltime {
@@ -125,8 +126,9 @@
   font-size: 22px;
   line-height: 1.2;
   margin-bottom: 6px;
-  word-break: break-word;
-  overflow-wrap: break-word;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .company-name-row {
