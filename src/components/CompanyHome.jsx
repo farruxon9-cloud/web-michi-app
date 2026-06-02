@@ -73,12 +73,44 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   });
   const [errors, setErrors] = useState({});
 
-  const WORK_HOURS_OPTIONS = ['08:00 - 17:00 (Kunduzgi)', '20:00 - 05:00 (Tungi)', 'Smenali ish (Jadval)', 'Erkin grafik', 'Boshqa'];
-  const DAY_OFF_OPTIONS = ['Shanba va Yakshanba', 'Haftada 2 kun (Smenali)', 'Haftada 1 kun', 'Boshqa'];
-  const INSURANCE_OPTIONS = ['To\'liq ijtimoiy sug\'urta', 'Koyo Hoken (Bandlik)', 'Yo\'q'];
-  const FOREIGNERS_OPTIONS = ['Viza yordami bor (Sponsorship)', 'Faqat PR / Teijusha', 'Barcha chet elliklar qabul', 'Yapon tilini bilish N3+'];
-  const HOUSING_OPTIONS = ['Yotoqxona mavjud', 'Ijara yordami bor (Yachin hojo)', 'Ko\'chib kelish to\'lanadi', 'Yo\'q'];
-  const LICENSE_OPTIONS = ['Futsu (Oddiy)', 'Chugata (O\'rta yuk)', 'Oogata (Katta yuk)', 'Tokushu (Maxsus)', 'Forklift', 'Talab qilinmaydi'];
+  const WORK_HOURS_OPTIONS = [
+    { value: '08:00 - 17:00 (Kunduzgi)', key: 'wh_day' },
+    { value: '20:00 - 05:00 (Tungi)', key: 'wh_night' },
+    { value: 'Smenali ish (Jadval)', key: 'wh_shift' },
+    { value: 'Erkin grafik', key: 'wh_flex' },
+    { value: 'Boshqa', key: 'wh_other' }
+  ];
+  const DAY_OFF_OPTIONS = [
+    { value: 'Shanba va Yakshanba', key: 'do_weekend' },
+    { value: 'Haftada 2 kun (Smenali)', key: 'do_2days' },
+    { value: 'Haftada 1 kun', key: 'do_1day' },
+    { value: 'Boshqa', key: 'do_other' }
+  ];
+  const INSURANCE_OPTIONS = [
+    { value: 'To\'liq ijtimoiy sug\'urta', key: 'ins_full' },
+    { value: 'Koyo Hoken (Bandlik)', key: 'ins_koyo' },
+    { value: 'Yo\'q', key: 'ins_none' }
+  ];
+  const FOREIGNERS_OPTIONS = [
+    { value: 'Viza yordami bor (Sponsorship)', key: 'for_visa' },
+    { value: 'Faqat PR / Teijusha', key: 'for_pr' },
+    { value: 'Barcha chet elliklar qabul', key: 'for_all' },
+    { value: 'Yapon tilini bilish N3+', key: 'for_n3' }
+  ];
+  const HOUSING_OPTIONS = [
+    { value: 'Yotoqxona mavjud', key: 'hou_dorm' },
+    { value: 'Ijara yordami bor (Yachin hojo)', key: 'hou_rent' },
+    { value: 'Ko\'chib kelish to\'lanadi', key: 'hou_move' },
+    { value: 'Yo\'q', key: 'hou_none' }
+  ];
+  const LICENSE_OPTIONS = [
+    { value: 'Futsu (Oddiy)', key: 'lic_futsu_opt' },
+    { value: 'Chugata (O\'rta yuk)', key: 'lic_chugata_opt' },
+    { value: 'Oogata (Katta yuk)', key: 'lic_oogata_opt' },
+    { value: 'Tokushu (Maxsus)', key: 'lic_tokushu_opt' },
+    { value: 'Forklift', key: 'lic_forklift_opt' },
+    { value: 'Talab qilinmaydi', key: 'lic_none_opt' }
+  ];
 
 
   const companyJobs = (jobs || []).filter(j => j.company === (profileData?.fullName || "Sagawa Express"));
@@ -232,7 +264,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       const selectedValue = newJob[fieldName];
       return (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-          {options.map(opt => {
+          {options.map(optObj => {
+            const opt = typeof optObj === 'string' ? optObj : optObj.value;
+            const label = typeof optObj === 'string' ? optObj : t(optObj.key, optObj.value);
             const isSelected = isMulti ? (selectedValue && selectedValue.includes(opt)) : selectedValue === opt;
             return (
               <button
@@ -265,7 +299,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                   transition: 'all 0.2s ease',
                 }}
               >
-                {opt}
+                {label}
               </button>
             );
           })}
