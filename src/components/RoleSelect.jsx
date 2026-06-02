@@ -75,8 +75,10 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
   const [establishedYear, setEstablishedYear] = useState('');
 
   // Legal
-  const [agreeAllTerms, setAgreeAllTerms] = useState(false);
-  const allLegalAccepted = agreeAllTerms;
+  const [agreeLabor, setAgreeLabor] = useState(false);
+  const [agreeVisa, setAgreeVisa] = useState(false);
+  const [agreeAd, setAgreeAd] = useState(false);
+  const allLegalAccepted = agreeLabor && agreeVisa && agreeAd;
 
   const handleRoleClick = (role) => {
     setSelectedRole(role);
@@ -976,14 +978,26 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
             {/* Legal Checklist */}
             <div className="form-section legal-section">
               <h4 style={{ color: 'var(--primary)', marginBottom: '8px', fontSize: '12px' }}>{t("legalInfo", "YAPONIYA QONUNIY SHARTLARI")}</h4>
-              <label className="terms-checkbox" style={{ alignItems: 'flex-start', gap: '10px' }}>
-                <input type="checkbox" checked={agreeAllTerms} onChange={(e) => setAgreeAllTerms(e.target.checked)} style={{ marginTop: '3px' }} />
-                <span style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
-                  {t("legalLabor", "Yaponiya Mehnat standarti qonuniga (労働基準法) rioya qilishga roziman.")}<br/><br/>
-                  {t("legalVisa", "Chet el fuqarolari uchun tegishli viza maqomini taqdim etishga roziman.")}<br/><br/>
-                  {t("legalAd", "Ma'lumotlarimdan reklama maqsadida foydalanishga rozilik bildiraman.")}
-                </span>
-              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <label className="terms-checkbox" style={{ alignItems: 'flex-start', gap: '10px' }}>
+                  <input type="checkbox" checked={agreeLabor} onChange={(e) => setAgreeLabor(e.target.checked)} style={{ marginTop: '3px' }} />
+                  <span style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+                    {t("legalLabor", "Yaponiya Mehnat standarti qonuniga rioya qilishga roziman.")}
+                  </span>
+                </label>
+                <label className="terms-checkbox" style={{ alignItems: 'flex-start', gap: '10px' }}>
+                  <input type="checkbox" checked={agreeVisa} onChange={(e) => setAgreeVisa(e.target.checked)} style={{ marginTop: '3px' }} />
+                  <span style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+                    {t("legalVisa", "Chet el fuqarolari uchun tegishli viza maqomini taqdim etishga roziman.")}
+                  </span>
+                </label>
+                <label className="terms-checkbox" style={{ alignItems: 'flex-start', gap: '10px' }}>
+                  <input type="checkbox" checked={agreeAd} onChange={(e) => setAgreeAd(e.target.checked)} style={{ marginTop: '3px' }} />
+                  <span style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+                    {t("legalAd", "Ma'lumotlarimdan reklama maqsadida foydalanishga rozilik bildiraman.")}
+                  </span>
+                </label>
+              </div>
             </div>
 
             <button 
