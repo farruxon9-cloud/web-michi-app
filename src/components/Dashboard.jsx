@@ -75,17 +75,17 @@ export default function Dashboard({ setActiveTab, profileData }) {
       <div className="bento-icons-row">
         
         <div className="bento-icon-card dark-card" onClick={() => setActiveTab('jobs')}>
-          <div className="icon-wrapper">
+          <div className="bento-icon-wrap">
             <Briefcase size={28} />
           </div>
           <div className="bento-text-wrap">
-            <h4>{t('navJobs', 'Ishlar')}</h4>
+            <h4>{t("navJobs", "Ishlar")}</h4>
             <p>Ko'rish</p>
           </div>
         </div>
 
         <div className="bento-icon-card dark-card" onClick={() => setActiveTab('academy')}>
-          <div className="icon-wrapper">
+          <div className="bento-icon-wrap">
             <GraduationCap size={28} />
           </div>
           <div className="bento-text-wrap">
@@ -95,7 +95,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
         </div>
 
         <div className="bento-icon-card light-card" onClick={() => setActiveTab('service')}>
-          <div className="icon-wrapper">
+          <div className="bento-icon-wrap">
             <Wrench size={26} />
           </div>
           <div className="bento-text-wrap">

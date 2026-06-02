@@ -5,7 +5,6 @@
   justify-content: center;
   padding: 40px;
   text-align: center;
-  background-color: var(--bg-main);
 }
 
 .coming-soon-content {
@@ -15,30 +14,31 @@
   gap: 16px;
 }
 
-.service-icon-wrapper {
+.icon-wrapper {
   width: 100px;
   height: 100px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  color: var(--text-main);
-  border-radius: 32px; /* BON squircle style */
+  background: rgba(175, 82, 222, 0.1);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+  animation: pulse 2s infinite ease-in-out;
 }
 
 .coming-soon-content h2 {
   font-size: 28px;
   margin: 0;
-  font-weight: 800;
-  color: var(--text-main);
-  letter-spacing: -0.02em;
 }
 
 .coming-soon-content p {
   color: var(--text-secondary);
   font-size: 16px;
   line-height: 1.5;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(175, 82, 222, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(175, 82, 222, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(175, 82, 222, 0); }
 }
