@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight } from 'lucide-react';
+import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, Car, Rocket } from 'lucide-react';
 import './Dashboard.css';
 
 export default function Dashboard({ setActiveTab, profileData }) {
@@ -14,7 +14,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
       badge: '🔥 Bonus',
       title: 'Shoukai Pulini Oling',
       desc: 'Tanishlaringizni ishga taklif qiling, maxsus shoukai pul mukofotini oling!',
-      icon: '🎁',
+      icon: <Gift size={84} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'profile'
     },
     {
@@ -22,7 +22,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
       badge: '⏳ Tez kunda',
       title: 'Navbatlarsiz Servis',
       desc: "Avtoservislarga oldindan navbat oling va to'lov qiling. Vaqtingizni tejang!",
-      icon: '🚘',
+      icon: <Car size={84} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'service'
     },
     {
@@ -30,7 +30,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
       badge: '💼 Vakansiyalar',
       title: 'Orzuingizdagi Ish',
       desc: "Eng so'nggi va yuqori maoshli vakansiyalarni birinchilardan bo'lib toping.",
-      icon: '🚀',
+      icon: <Rocket size={84} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'jobs'
     }
   ];
