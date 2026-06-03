@@ -60,13 +60,6 @@
   transform: rotate(-10deg) scale(1.1);
   margin-left: 8px;
   z-index: 1;
-  animation: float 4s ease-in-out infinite;
-}
-
-@keyframes float {
-  0% { transform: translateY(0px) rotate(-10deg) scale(1.1); }
-  50% { transform: translateY(-8px) rotate(-5deg) scale(1.15); }
-  100% { transform: translateY(0px) rotate(-10deg) scale(1.1); }
 }
 
 .dash-badge {
