@@ -123,7 +123,6 @@ export default function Dashboard({ setActiveTab, profileData }) {
 
       <div className="dash-greeting-row">
         <div className="greeting-text">
-          <span className="greeting-icon">👋</span>
           <h2>{t('welcomeTitle', 'Xush kelibsiz')}</h2>
         </div>
         <div className="time-pill">

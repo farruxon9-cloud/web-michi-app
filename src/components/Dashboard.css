@@ -3,7 +3,7 @@
   padding-bottom: 120px; /* Ensure space for BottomNav so nothing is cut off */
   display: flex;
   flex-direction: column;
-  gap: 16px; /* Compacted gap */
+  gap: 12px; /* Compacted gap across the whole page */
   background-color: var(--bg-main); /* Like Bon's beige/light background */
   height: 100%;
   overflow-y: auto;
@@ -14,7 +14,7 @@
   position: relative;
   overflow: hidden;
   width: 100%;
-  padding-bottom: 24px; /* Space for dots outside the cards */
+  padding-bottom: 16px; /* Reduced space for dots to tighten layout */
   flex-shrink: 0;
 }
 
@@ -179,9 +179,10 @@
 /* Greeting Header */
 .dash-greeting-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start; /* Bring clock and text together */
   align-items: center;
-  margin: 12px 0 20px 0;
+  gap: 12px; /* Small gap between text and clock */
+  margin: 0; /* Remove huge margins, rely on container gap */
   padding: 0 4px;
 }
 
