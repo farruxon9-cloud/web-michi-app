@@ -130,9 +130,9 @@
 /* Calendar Row */
 .calendar-row {
   display: flex;
-  justify-content: space-between; /* Spread 7 items evenly */
+  justify-content: center; /* Center them to prevent stretching too far apart */
   align-items: center;
-  gap: 6px; /* Small gap for 7 days */
+  gap: 6px; /* Fixed, balanced gap */
   padding: 0;
   flex-shrink: 0;
 }
@@ -142,9 +142,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 42px; /* Reduced from 48px to fit 7 */
-  height: 56px; 
-  border-radius: 12px;
+  width: 46px; /* Increased to make days more visible */
+  height: 62px; /* Increased height */
+  border-radius: 14px;
   border: 1px solid var(--glass-border);
   background: transparent;
   gap: 2px;
