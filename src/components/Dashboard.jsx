@@ -49,7 +49,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
 
   const getDaysArray = () => {
     const days = [];
-    for (let i = -2; i <= 2; i++) {
+    for (let i = -3; i <= 3; i++) {
       const d = new Date();
       d.setDate(d.getDate() + i);
       days.push(d);
@@ -111,7 +111,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
       {/* Calendar Row Widget */}
       <div className="calendar-row">
         {daysArray.map((d, index) => {
-          const isToday = index === 2;
+          const isToday = index === 3;
           return (
             <div key={index} className={`calendar-day ${isToday ? 'active' : ''}`}>
               <span className="day-name">{getDayName(d)}</span>
