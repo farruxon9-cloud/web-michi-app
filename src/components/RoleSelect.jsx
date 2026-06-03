@@ -257,7 +257,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
               onChange={(e) => setVerifyCode(e.target.value)}
               required
             />
-            <button type="submit" className="btn-primary squircle" style={{ marginTop: '20px' }}>
+            <button type="submit" className="btn-primary squircle" style={{ marginTop: '20px', width: '100%' }}>
               {t('verifyAndLogin', 'Tasdiqlash va Kirish')}
             </button>
           </form>

@@ -4,6 +4,11 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   uz: {
     translation: {
+      navHome: "Asosiy",
+      navJobs: "Ishlar",
+      navAcademy: "Maktablar",
+      navService: "Servis",
+      navProfile: "Profil",
       // Bento & Profile
       bentoView: "Ko'rish",
       bentoStudy: "O'qish",
@@ -443,6 +448,11 @@ const resources = {
   },
   ja: {
     translation: {
+      navHome: "ホーム",
+      navJobs: "求人",
+      navAcademy: "教習所",
+      navService: "サービス",
+      navProfile: "プロフィール",
       // Bento & Profile
       bentoView: "見る",
       bentoStudy: "学ぶ",
@@ -980,6 +990,11 @@ const resources = {
   },
   en: {
     translation: {
+      navHome: "Home",
+      navJobs: "Jobs",
+      navAcademy: "Academies",
+      navService: "Service",
+      navProfile: "Profile",
       // Bento & Profile
       bentoView: "View",
       bentoStudy: "Study",
@@ -1400,6 +1415,11 @@ const resources = {
   },
   vi: {
     translation: {
+      navHome: "Trang chủ",
+      navJobs: "Việc làm",
+      navAcademy: "Trường học",
+      navService: "Dịch vụ",
+      navProfile: "Hồ sơ",
       // Bento & Profile
       bentoView: "Xem",
       bentoStudy: "Học",
@@ -1778,6 +1798,11 @@ const resources = {
   },
   zh: {
     translation: {
+      navHome: "首页",
+      navJobs: "工作",
+      navAcademy: "驾校",
+      navService: "服务",
+      navProfile: "个人资料",
       // Bento & Profile
       bentoView: "查看",
       bentoStudy: "学习",
@@ -2156,6 +2181,11 @@ const resources = {
   },
   ne: {
     translation: {
+      navHome: "गृह",
+      navJobs: "काम",
+      navAcademy: "विद्यालय",
+      navService: "सेवा",
+      navProfile: "प्रोफाइल",
       welcomeTitle: "स्वागत छ",
       welcomeSubtitle: "Michi मार्फत आफ्नो बाटो खोज्नुहोस्।",
       roleUser: "प्रयोगकर्ता",
