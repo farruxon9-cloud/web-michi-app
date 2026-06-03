@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2, UserCircle, Plus, X, Camera, MailCheck, ArrowLeft, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Building2, UserCircle, Plus, X, Camera, MailCheck, ArrowLeft, Mail, Lock, Eye, EyeOff, User, Calendar } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import './RoleSelect.css';
 
@@ -574,35 +574,44 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
               <>
                 <div className="form-section">
                   <h4>{t("personalInfo", "Shaxsiy ma'lumotlar")}</h4>
-                  <input 
-                    type="text" 
-                    placeholder={t("namePlaceholder", "To'liq ismingiz")}
-                    required 
-                    className="auth-input" 
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    maxLength={50}
-                  />
+                  
+                  <div className="premium-input-group" style={{ marginBottom: '16px' }}>
+                    <div className={`premium-input-wrapper ${fullName ? 'has-value' : ''}`}>
+                      <span className="premium-input-icon"><User size={20} /></span>
+                      <input 
+                        type="text" 
+                        placeholder=" "
+                        required 
+                        className="premium-input" 
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        maxLength={50}
+                      />
+                      <label className="premium-label">{t("namePlaceholder", "To'liq ismingiz")}</label>
+                      <div className="premium-input-border"></div>
+                    </div>
+                  </div>
 
-                  <div className="input-label-wrap" style={{ marginTop: '16px', marginBottom: '8px' }}>
+                  <div className="input-label-wrap" style={{ marginTop: '4px', marginBottom: '8px' }}>
                     <label>{t('genderLabel', 'Jinsingiz')}</label>
                     <div style={{ display: 'flex', gap: '10px' }}>
                       <button 
                         type="button"
+                        className={`gender-btn ${gender === 'male' ? 'active male' : ''}`}
                         onClick={() => setGender('male')}
-                        style={{ flex: 1, padding: '12px', borderRadius: '12px', border: `2px solid ${gender === 'male' ? 'var(--primary)' : 'var(--glass-border)'}`, background: gender === 'male' ? 'rgba(90, 85, 234, 0.1)' : 'transparent', color: gender === 'male' ? 'var(--primary)' : 'var(--text-main)', cursor: 'pointer', fontWeight: 'bold' }}
                       >
                         {t('male', 'Erkak')}
                       </button>
                       <button 
                         type="button"
+                        className={`gender-btn ${gender === 'female' ? 'active female' : ''}`}
                         onClick={() => setGender('female')}
-                        style={{ flex: 1, padding: '12px', borderRadius: '12px', border: `2px solid ${gender === 'female' ? '#FF2D55' : 'var(--glass-border)'}`, background: gender === 'female' ? 'rgba(255, 45, 85, 0.1)' : 'transparent', color: gender === 'female' ? '#FF2D55' : 'var(--text-main)', cursor: 'pointer', fontWeight: 'bold' }}
                       >
                         {t('female', 'Ayol')}
                       </button>
                     </div>
                   </div>
+                  
                   <div className="input-label-wrap">
                     <label>{t('dobLabel', 'Tug\'ilgan sana')}</label>
                     <input 
@@ -612,24 +621,24 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                       onChange={(e) => setBirthDate(e.target.value)}
                     />
                   </div>
+                  
                   <div className="input-label-wrap" style={{ marginTop: '20px' }}>
                     <label style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--text-main)' }}>{t('livingAddressTitle', 'Yashash manzillari')}</label>
                     <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>{t("addressHistorySub", "Yashagan joylaringiz ro'yxati (Maksimal 3 ta)")}</p>
                   </div>
                   {addressHistory.map((entry, index) => (
-                    <div key={index} className="work-entry glass squircle" style={{ marginBottom: '10px', padding: '12px', border: '1px solid var(--glass-border)' }}>
-                      <div className="work-entry-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span className="work-entry-num" style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '13px' }}>#{index + 1}</span>
+                    <div key={index} className="work-entry glass" style={{ marginBottom: '12px' }}>
+                      <div className="work-entry-header">
+                        <span className="work-entry-num">#{index + 1}</span>
                         <button 
                           type="button" 
                           className="remove-work-btn"
-                          style={{ background: 'rgba(255, 59, 48, 0.08)', border: 'none', color: '#FF3B30', cursor: 'pointer', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                           onClick={() => removeAddressEntry(index)}
                         >
                           <X size={14} />
                         </button>
                       </div>
-                      <div className="work-entry-fields" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div className="work-entry-fields">
                         <input
                           type="text"
                           placeholder={t('livingAddressPlaceholder', 'Manzilingizni kiriting (Prefektura, shahar, ko\'cha)...')}
@@ -639,21 +648,21 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                           maxLength={120}
                           required
                         />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
                           <input 
                             type="checkbox" 
                             id={`addr-current-${index}`} 
                             checked={entry.isCurrent || false}
                             onChange={(e) => updateAddressEntry(index, 'isCurrent', e.target.checked)}
-                            style={{ cursor: 'pointer' }}
+                            style={{ cursor: 'pointer', width: '17px', height: '17px', accentColor: 'var(--primary)' }}
                           />
-                          <label htmlFor={`addr-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentAddressLabel', 'Hozirgi yashash joyim')}</label>
+                          <label htmlFor={`addr-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '600' }}>{t('currentAddressLabel', 'Hozirgi yashash joyim')}</label>
                         </div>
                       </div>
                     </div>
                   ))}
                   {addressHistory.length < 3 && (
-                    <button type="button" className="add-work-btn" style={{ width: '100%', marginBottom: '16px', background: 'rgba(90, 85, 234, 0.08)', border: '1px dashed rgba(90, 85, 234, 0.3)', color: 'var(--primary)', padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} onClick={addAddressEntry}>
+                    <button type="button" className="add-work-btn" onClick={addAddressEntry}>
                       <Plus size={15} /> {addressHistory.length === 0 ? t('addAddressBtn', "Yashash manzili qo'shish") : t('addMore', "Yana qo'shish")}
                     </button>
                   )}
@@ -664,19 +673,18 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>{t("educationHistorySub", "Tugatgan maktab, kollej yoki universitetlaringiz (Maksimal 3 ta)")}</p>
                   </div>
                   {educationHistory.map((entry, index) => (
-                    <div key={index} className="work-entry glass squircle" style={{ marginBottom: '10px', padding: '12px', border: '1px solid var(--glass-border)' }}>
-                      <div className="work-entry-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span className="work-entry-num" style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '13px' }}>#{index + 1}</span>
+                    <div key={index} className="work-entry glass" style={{ marginBottom: '12px' }}>
+                      <div className="work-entry-header">
+                        <span className="work-entry-num">#{index + 1}</span>
                         <button 
                           type="button" 
                           className="remove-work-btn"
-                          style={{ background: 'rgba(255, 59, 48, 0.08)', border: 'none', color: '#FF3B30', cursor: 'pointer', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                           onClick={() => removeEducationEntry(index)}
                         >
                           <X size={14} />
                         </button>
                       </div>
-                      <div className="work-entry-fields" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div className="work-entry-fields">
                         <input
                           type="text"
                           placeholder={t('educationSchoolPlaceholder', 'O\'quv muassasasi nomi')}
@@ -696,7 +704,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                         />
                         <div className="work-dates-row" style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                           <div style={{ flex: 1 }}>
-                            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('startDateLabel', 'Kirgan vaqti')}</label>
+                            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px', fontWeight: '600' }}>{t('startDateLabel', 'Kirgan vaqti')}</label>
                             <input
                               type="month"
                               className="auth-input work-input"
@@ -705,7 +713,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                             />
                           </div>
                           <div style={{ flex: 1, opacity: entry.isCurrent ? 0.5 : 1 }}>
-                            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('endDateLabel', 'Ketgan vaqti')}</label>
+                            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px', fontWeight: '600' }}>{t('endDateLabel', 'Ketgan vaqti')}</label>
                             <input
                               type="month"
                               className="auth-input work-input"
@@ -715,21 +723,21 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                             />
                           </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
                           <input 
                             type="checkbox" 
                             id={`edu-current-${index}`} 
                             checked={entry.isCurrent || false}
                             onChange={(e) => updateEducationEntry(index, 'isCurrent', e.target.checked)}
-                            style={{ cursor: 'pointer' }}
+                            style={{ cursor: 'pointer', width: '17px', height: '17px', accentColor: 'var(--primary)' }}
                           />
-                          <label htmlFor={`edu-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentlyStudyingLabel', 'Hozir ham o\'qiyman')}</label>
+                          <label htmlFor={`edu-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '600' }}>{t('currentlyStudyingLabel', 'Hozir ham o\'qiyman')}</label>
                         </div>
                       </div>
                     </div>
                   ))}
                   {educationHistory.length < 3 && (
-                    <button type="button" className="add-work-btn" style={{ width: '100%', marginBottom: '16px', background: 'rgba(90, 85, 234, 0.08)', border: '1px dashed rgba(90, 85, 234, 0.3)', color: 'var(--primary)', padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} onClick={addEducationEntry}>
+                    <button type="button" className="add-work-btn" onClick={addEducationEntry}>
                       <Plus size={15} /> {educationHistory.length === 0 ? t('addEducationBtn', "O'qish joyi qo'shish") : t('addMore', "Yana qo'shish")}
                     </button>
                   )}
@@ -737,45 +745,45 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
 
                 <div className="form-section">
                   <h4>{t("proInfo", "Kasbiy ma'lumotlar")}</h4>
-                    <div className="input-group">
-                      <label style={{marginBottom: '8px', display: 'block', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-main)'}}>{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}</label>
-                      <div className="checkbox-grid" style={{display: 'grid', gridTemplateColumns: '1fr', gap: '8px', background: 'rgba(255,255,255,0.5)', padding: '12px', borderRadius: '12px'}}>
-                        {DRIVER_LICENSES.map(cert => (
-                          <label key={cert} style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px'}}>
-                            <input 
-                              type="checkbox" 
-                              checked={driverLicenses.includes(cert)}
-                              onChange={(e) => {
-                                if (e.target.checked) setDriverLicenses(prev => [...prev, cert]);
-                                else setDriverLicenses(prev => prev.filter(id => id !== cert));
-                              }}
-                              style={{width: '18px', height: '18px', accentColor: 'var(--primary)'}}
-                            />
-                            {t(`lic_${cert}`)}
-                          </label>
-                        ))}
-                      </div>
+                  <div className="input-group">
+                    <label style={{marginBottom: '8px', display: 'block', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-main)'}}>{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}</label>
+                    <div className="checkbox-grid" style={{display: 'grid', gridTemplateColumns: '1fr', gap: '10px', background: 'rgba(255,255,255,0.25)', padding: '14px', borderRadius: '16px', border: '1px solid var(--glass-border)'}}>
+                      {DRIVER_LICENSES.map(cert => (
+                        <label key={cert} style={{display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', fontWeight: '600', cursor: 'pointer'}}>
+                          <input 
+                            type="checkbox" 
+                            checked={driverLicenses.includes(cert)}
+                            onChange={(e) => {
+                              if (e.target.checked) setDriverLicenses(prev => [...prev, cert]);
+                              else setDriverLicenses(prev => prev.filter(id => id !== cert));
+                            }}
+                            style={{width: '18px', height: '18px', accentColor: 'var(--primary)'}}
+                          />
+                          {t(`lic_${cert}`)}
+                        </label>
+                      ))}
                     </div>
+                  </div>
 
-                    <div className="input-group" style={{marginTop: '16px'}}>
-                      <label style={{marginBottom: '8px', display: 'block', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-main)'}}>{t('techCertsLabel', 'Maxsus texnika va malaka sertifikatlari')}</label>
-                      <div className="checkbox-grid" style={{display: 'grid', gridTemplateColumns: '1fr', gap: '8px', background: 'rgba(255,255,255,0.5)', padding: '12px', borderRadius: '12px'}}>
-                        {TECH_CERTS.map(cert => (
-                          <label key={cert} style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px'}}>
-                            <input 
-                              type="checkbox" 
-                              checked={techCertificates.includes(cert)}
-                              onChange={(e) => {
-                                if (e.target.checked) setTechCertificates(prev => [...prev, cert]);
-                                else setTechCertificates(prev => prev.filter(id => id !== cert));
-                              }}
-                              style={{width: '18px', height: '18px', accentColor: 'var(--primary)'}}
-                            />
-                            {t(`tech_${cert}`)}
-                          </label>
-                        ))}
-                      </div>
+                  <div className="input-group" style={{marginTop: '16px'}}>
+                    <label style={{marginBottom: '8px', display: 'block', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-main)'}}>{t('techCertsLabel', 'Maxsus texnika va malaka sertifikatlari')}</label>
+                    <div className="checkbox-grid" style={{display: 'grid', gridTemplateColumns: '1fr', gap: '10px', background: 'rgba(255,255,255,0.25)', padding: '14px', borderRadius: '16px', border: '1px solid var(--glass-border)'}}>
+                      {TECH_CERTS.map(cert => (
+                        <label key={cert} style={{display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', fontWeight: '600', cursor: 'pointer'}}>
+                          <input 
+                            type="checkbox" 
+                            checked={techCertificates.includes(cert)}
+                            onChange={(e) => {
+                              if (e.target.checked) setTechCertificates(prev => [...prev, cert]);
+                              else setTechCertificates(prev => prev.filter(id => id !== cert));
+                            }}
+                            style={{width: '18px', height: '18px', accentColor: 'var(--primary)'}}
+                          />
+                          {t(`tech_${cert}`)}
+                        </label>
+                      ))}
                     </div>
+                  </div>
                 </div>
 
                 {/* Work Experience Section */}
@@ -785,7 +793,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>{t("expPlaceholder", "Oxirgi ishlagan joylaringizni qo'shishingiz mumkin")}</p>
                   </div>
                   {workHistory.map((entry, index) => (
-                    <div key={index} className="work-entry glass squircle">
+                    <div key={index} className="work-entry glass">
                       <div className="work-entry-header">
                         <span className="work-entry-num">#{index + 1}</span>
                         <button 
@@ -811,9 +819,9 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                           value={entry.position}
                           onChange={(e) => updateWorkEntry(index, 'position', e.target.value)}
                         />
-                        <div className="work-dates-row" style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                        <div className="work-dates-row" style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                           <div style={{ flex: 1 }}>
-                            <label style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('startDateLabel', 'Kirgan vaqti')}</label>
+                            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('startDateLabel', 'Kirgan vaqti')}</label>
                             <input
                               type="month"
                               className="auth-input work-input"
@@ -822,7 +830,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                             />
                           </div>
                           <div style={{ flex: 1, opacity: entry.isCurrent ? 0.5 : 1 }}>
-                            <label style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('endDateLabel', 'Ketgan vaqti')}</label>
+                            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('endDateLabel', 'Ketgan vaqti')}</label>
                             <input
                               type="month"
                               className="auth-input work-input"
@@ -832,14 +840,15 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                             />
                           </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
                           <input 
                             type="checkbox" 
                             id={`current-${index}`} 
                             checked={entry.isCurrent || false}
                             onChange={(e) => updateWorkEntry(index, 'isCurrent', e.target.checked)}
+                            style={{ cursor: 'pointer', width: '17px', height: '17px', accentColor: 'var(--primary)' }}
                           />
-                          <label htmlFor={`current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{t('currentlyWorking', 'Hozir ham ishlayman')}</label>
+                          <label htmlFor={`current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '600' }}>{t('currentlyWorking', 'Hozir ham ishlayman')}</label>
                         </div>
                       </div>
                     </div>
@@ -858,16 +867,25 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
               <>
                 <div className="form-section">
                   <h4>{t("companyInfo", "Kompaniya ma'lumotlari")}</h4>
-                  <input 
-                    type="text" 
-                    placeholder={t("companyNamePlaceholder", "Kompaniya nomi")} 
-                    required 
-                    className="auth-input" 
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    maxLength={50}
-                  />
-                  <div className="input-label-wrap">
+                  
+                  <div className="premium-input-group" style={{ marginBottom: '16px' }}>
+                    <div className={`premium-input-wrapper ${fullName ? 'has-value' : ''}`}>
+                      <span className="premium-input-icon"><Building2 size={20} /></span>
+                      <input 
+                        type="text" 
+                        placeholder=" "
+                        required 
+                        className="premium-input" 
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        maxLength={50}
+                      />
+                      <label className="premium-label">{t("companyNamePlaceholder", "Kompaniya nomi")}</label>
+                      <div className="premium-input-border"></div>
+                    </div>
+                  </div>
+
+                  <div className="input-label-wrap" style={{ marginBottom: '16px' }}>
                     <label>{t('companyTypeLabel', 'Faoliyat turi')}</label>
                     <select 
                       className="auth-input" 
@@ -882,6 +900,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                       <option value="other">{t('typeOther', 'Boshqa')}</option>
                     </select>
                   </div>
+                  
                   <input 
                     type="text" 
                     placeholder={t("companyAddressPlaceholder", "Kompaniya manzili")} 
@@ -889,7 +908,9 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     value={companyAddress}
                     onChange={(e) => setCompanyAddress(e.target.value)}
                     maxLength={120}
+                    style={{ marginBottom: '16px' }}
                   />
+                  
                   <input 
                     type="text" 
                     placeholder={t("corporateNumberPlaceholder", "Yuridik shaxs raqami (Houjin Bangou)")} 
@@ -897,7 +918,9 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     value={corporateNumber}
                     onChange={(e) => setCorporateNumber(e.target.value)}
                     maxLength={13}
+                    style={{ marginBottom: '16px' }}
                   />
+                  
                   <input 
                     type="url" 
                     placeholder={t("websitePlaceholder", "Kompaniya veb-sayti (ixtiyoriy)")} 
@@ -905,7 +928,9 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     value={website}
                     onChange={(e) => setWebsite(e.target.value)}
                     maxLength={100}
+                    style={{ marginBottom: '16px' }}
                   />
+                  
                   <input 
                     type="number" 
                     placeholder={t("establishedYearPlaceholder", "Tashkil etilgan yili (Masalan: 2005)")} 
@@ -925,6 +950,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     value={contactPerson}
                     onChange={(e) => setContactPerson(e.target.value)}
                     maxLength={50}
+                    style={{ marginBottom: '16px' }}
                   />
                   <input 
                     type="tel" 
@@ -933,6 +959,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     value={companyPhone}
                     onChange={(e) => setCompanyPhone(e.target.value)}
                     maxLength={20}
+                    style={{ marginBottom: '16px' }}
                   />
                   <input 
                     type="number" 
@@ -941,6 +968,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
                     value={employeeCount}
                     onInput={(e) => { e.target.value = e.target.value.slice(0, 6) }}
                     onChange={(e) => setEmployeeCount(e.target.value)}
+                    style={{ marginBottom: '16px' }}
                   />
                   <textarea 
                     placeholder={t("companyDescPlaceholder", "Kompaniya haqida qisqacha")}
@@ -956,45 +984,69 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
             {/* Email & Password */}
             <div className="form-section">
               <h4>{t("accInfo", "Hisob ma'lumotlari")}</h4>
-              <input 
-                type="email" 
-                placeholder={t("emailPlaceholder", "Email manzili")} 
-                required 
-                className="auth-input" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                maxLength={80}
-              />
-              <input 
-                type="password" 
-                placeholder={t("passPlaceholder", "Yangi parol")} 
-                required 
-                className="auth-input" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                maxLength={30}
-              />
+              
+              <div className="premium-input-group" style={{ marginBottom: '16px' }}>
+                <div className={`premium-input-wrapper ${email ? 'has-value' : ''}`}>
+                  <span className="premium-input-icon"><Mail size={20} /></span>
+                  <input 
+                    type="email" 
+                    placeholder=" "
+                    required 
+                    className="premium-input" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    maxLength={80}
+                  />
+                  <label className="premium-label">{t("emailPlaceholder", "Email manzili")}</label>
+                  <div className="premium-input-border"></div>
+                </div>
+              </div>
+
+              <div className="premium-input-group" style={{ marginBottom: '16px' }}>
+                <div className={`premium-input-wrapper ${password ? 'has-value' : ''}`}>
+                  <span className="premium-input-icon"><Lock size={20} /></span>
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder=" "
+                    required 
+                    className="premium-input" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    maxLength={30}
+                  />
+                  <label className="premium-label">{t("passPlaceholder", "Yangi parol")}</label>
+                  <button 
+                    type="button" 
+                    className="password-toggle-btn icon-btn" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ position: 'absolute', right: '16px', background: 'none', boxShadow: 'none', border: 'none', padding: 0, width: 'auto', height: 'auto' }}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                  <div className="premium-input-border"></div>
+                </div>
+              </div>
             </div>
 
             {/* Legal Checklist */}
             <div className="form-section legal-section">
               <h4 style={{ color: 'var(--primary)', marginBottom: '8px', fontSize: '12px' }}>{t("legalInfo", "YAPONIYA QONUNIY SHARTLARI")}</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <label className="terms-checkbox" style={{ alignItems: 'flex-start', gap: '10px' }}>
-                  <input type="checkbox" checked={agreeLabor} onChange={(e) => setAgreeLabor(e.target.checked)} style={{ marginTop: '3px' }} />
-                  <span style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+              <div className="legal-card">
+                <label className="terms-checkbox">
+                  <input type="checkbox" checked={agreeLabor} onChange={(e) => setAgreeLabor(e.target.checked)} />
+                  <span>
                     {t("legalLabor", "Yaponiya Mehnat standarti qonuniga rioya qilishga roziman.")}
                   </span>
                 </label>
-                <label className="terms-checkbox" style={{ alignItems: 'flex-start', gap: '10px' }}>
-                  <input type="checkbox" checked={agreeVisa} onChange={(e) => setAgreeVisa(e.target.checked)} style={{ marginTop: '3px' }} />
-                  <span style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+                <label className="terms-checkbox">
+                  <input type="checkbox" checked={agreeVisa} onChange={(e) => setAgreeVisa(e.target.checked)} />
+                  <span>
                     {t("legalVisa", "Chet el fuqarolari uchun tegishli viza maqomini taqdim etishga roziman.")}
                   </span>
                 </label>
-                <label className="terms-checkbox" style={{ alignItems: 'flex-start', gap: '10px' }}>
-                  <input type="checkbox" checked={agreeAd} onChange={(e) => setAgreeAd(e.target.checked)} style={{ marginTop: '3px' }} />
-                  <span style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+                <label className="terms-checkbox">
+                  <input type="checkbox" checked={agreeAd} onChange={(e) => setAgreeAd(e.target.checked)} />
+                  <span>
                     {t("legalAd", "Ma'lumotlarimdan reklama maqsadida foydalanishga rozilik bildiraman.")}
                   </span>
                 </label>
