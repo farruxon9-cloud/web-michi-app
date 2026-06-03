@@ -81,6 +81,10 @@ function App() {
   // backTab: Profilning saqlanganlaridan e'longa kirilganda, ortga qaytish manzilini eslab qoluvchi o'zgaruvchi.
   const [backTab, setBackTab] = useState(null);
 
+  // Guest redirection states
+  const [pendingApply, setPendingApply] = useState(null);
+  const [authInitialStep, setAuthInitialStep] = useState('role');
+
   const [contractStatus, setContractStatus] = useState('none');
   const [verifiedCompanies, setVerifiedCompanies] = useState(['Sagawa Express', 'Yamato Transport']);
 
@@ -181,6 +185,19 @@ function App() {
     // so the user can test the registration flow on every reload.
   }, [userRole, profileData]);
 
+  // Re-apply if a guest registers/logs in
+  useEffect(() => {
+    if (userRole === 'driver' && pendingApply) {
+      if (pendingApply.type === 'job') {
+        handleApplyJob(pendingApply.item);
+      } else if (pendingApply.type === 'school') {
+        handleApplySchool(pendingApply.item);
+      }
+      setPendingApply(null);
+      setAuthInitialStep('role');
+    }
+  }, [userRole, pendingApply]);
+
   // Global Jobs & Driving Schools State
   const [jobs, setJobs] = useState(MOCK_JOBS);
   const [schools, setSchools] = useState(MOCK_SCHOOLS);
@@ -201,6 +218,12 @@ function App() {
 
   // Apply for a job
   const handleApplyJob = (job) => {
+    if (userRole === 'guest') {
+      setPendingApply({ type: 'job', item: job });
+      setAuthInitialStep('register');
+      setUserRole(null);
+      return;
+    }
     const exists = applications.find(a => a.jobId === job.id && !a.isSimulatedReferral);
     if (exists) return;
 
@@ -297,6 +320,12 @@ function App() {
   const [schoolApplications, setSchoolApplications] = useState([]);
 
   const handleApplySchool = (school) => {
+    if (userRole === 'guest') {
+      setPendingApply({ type: 'school', item: school });
+      setAuthInitialStep('register');
+      setUserRole(null);
+      return;
+    }
     const exists = schoolApplications.find(a => a.schoolId === school.id && !a.isSimulatedReferral);
     if (exists) return;
 
@@ -489,6 +518,7 @@ function App() {
       <RoleSelect 
         onSelectRole={handleRoleSelection}
         onGuest={() => handleRoleSelection('guest')}
+        initialStep={authInitialStep}
       />
     );
   }

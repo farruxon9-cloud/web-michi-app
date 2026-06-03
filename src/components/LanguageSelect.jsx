@@ -31,27 +31,29 @@ export default function LanguageSelect({ onFinish }) {
       <div className="lang-blob lang-blob-1"></div>
       <div className="lang-blob lang-blob-2"></div>
 
-      <div className="language-header">
-        <MichiLogo size={56} fontSize={32} borderRadius={16} />
-        <h1 className="lang-title">MICHI</h1>
-        <p className="lang-subtitle">道 — Your Path in Japan</p>
-      </div>
+      <div className="language-content">
+        <div className="language-header">
+          <MichiLogo size={56} fontSize={32} borderRadius={16} />
+          <h1 className="lang-title">MICHI</h1>
+          <p className="lang-subtitle">道 — Your Path in Japan</p>
+        </div>
 
-      <div className="language-grid">
-        {LANGUAGES.map((lang, i) => (
-          <button 
-            key={lang.code} 
-            className={`lang-card glass squircle ${selected === lang.code ? 'selected' : ''}`}
-            onClick={() => handleSelectLanguage(lang.code)}
-            style={{ animationDelay: `${i * 40}ms` }}
-          >
-            <div className="lang-text-group">
-              <span className="lang-native-name">{lang.label}</span>
-              <span className="lang-sub">{lang.native}</span>
-            </div>
-            {selected === lang.code && <Check size={18} color="#0A84FF" className="lang-check" />}
-          </button>
-        ))}
+        <div className="language-grid">
+          {LANGUAGES.map((lang, i) => (
+            <button 
+              key={lang.code} 
+              className={`lang-card glass squircle ${selected === lang.code ? 'selected' : ''}`}
+              onClick={() => handleSelectLanguage(lang.code)}
+              style={{ animationDelay: `${i * 40}ms` }}
+            >
+              <div className="lang-text-group">
+                <span className="lang-native-name">{lang.label}</span>
+                <span className="lang-sub">{lang.native}</span>
+              </div>
+              {selected === lang.code && <Check size={18} color="#0A84FF" className="lang-check" />}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

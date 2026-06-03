@@ -15,11 +15,11 @@ const TECH_CERTS = [
   'aerial_work', 'welding', 'hazardous'
 ];
 
-export default function RoleSelect({ onSelectRole, onGuest }) {
+export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role' }) {
   const { t } = useTranslation();
   
   // Auth flow states: 'role' -> 'login' -> 'register' -> 'verify'
-  const [authStep, setAuthStep] = useState('role');
+  const [authStep, setAuthStep] = useState(initialStep);
   const [selectedRole, setSelectedRole] = useState(null);
 
   // Login credentials
@@ -257,7 +257,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
               onChange={(e) => setVerifyCode(e.target.value)}
               required
             />
-            <button type="submit" className="btn-primary squircle" style={{ marginTop: '20px', width: '100%' }}>
+            <button type="submit" className="btn-primary" style={{ marginTop: '20px', width: '100%' }}>
               {t('verifyAndLogin', 'Tasdiqlash va Kirish')}
             </button>
           </form>
@@ -413,7 +413,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
 
             </div>
             
-            <button type="submit" className="btn-primary squircle" style={{ marginTop: '4px', width: '100%', borderRadius: '14px', background: 'linear-gradient(135deg, var(--primary), #4338CA)', boxShadow: '0 8px 20px rgba(90, 85, 234, 0.25)' }}>
+            <button type="submit" className="btn-primary" style={{ marginTop: '4px', width: '100%' }}>
               {recoveryStep === 'email' && t('sendCodeBtn', 'Kodni yuborish')}
               {recoveryStep === 'code' && t('verifyCodeBtn', 'Kodni tasdiqlash')}
               {recoveryStep === 'new_password' && t('updateAndLoginBtn', 'Parolni yangilash va Kirish')}
@@ -511,7 +511,7 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
 
             </div>
             
-            <button type="submit" className="btn-primary squircle" style={{ marginTop: '4px', width: '100%', borderRadius: '14px', background: 'linear-gradient(135deg, var(--primary), #4338CA)', boxShadow: '0 8px 20px rgba(90, 85, 234, 0.25)' }}>
+            <button type="submit" className="btn-primary" style={{ marginTop: '4px', width: '100%' }}>
               {t('loginBtn', 'Kirish')}
             </button>
           </form>
@@ -520,8 +520,23 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '500' }}>{t("noAccount", "Akkauntingiz yo'qmi?")}</p>
             <button 
               onClick={() => setAuthStep('register')}
-              className="btn-primary squircle"
-              style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px solid rgba(10, 132, 255, 0.15)', padding: '10px', fontSize: '14px', width: '100%', borderRadius: '12px' }}
+              className="btn-primary"
+              style={{ 
+                background: 'rgba(10, 132, 255, 0.08)', 
+                color: '#0A84FF', 
+                border: '1px solid rgba(10, 132, 255, 0.2)', 
+                padding: '14px 16px', 
+                fontSize: '16px', 
+                fontWeight: '700',
+                width: '100%', 
+                borderRadius: '14px',
+                minHeight: '54px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)'
+              }}
             >
               {t("registerTitle", "Ro'yxatdan o'tish")}
             </button>
@@ -1055,9 +1070,9 @@ export default function RoleSelect({ onSelectRole, onGuest }) {
 
             <button 
               type="submit" 
-              className={`btn-primary squircle ${!allLegalAccepted ? 'btn-disabled' : ''}`}
+              className={`btn-primary ${!allLegalAccepted ? 'btn-disabled' : ''}`}
               disabled={!allLegalAccepted}
-              style={{ marginTop: '10px', marginBottom: '20px' }}
+              style={{ marginTop: '10px', marginBottom: '20px', width: '100%' }}
             >
               {t("registerTitle", "Ro'yxatdan o'tish")}
             </button>

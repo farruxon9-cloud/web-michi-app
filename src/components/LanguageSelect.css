@@ -2,17 +2,25 @@
   padding: 24px;
   margin: 0 auto;
   min-height: 100vh;
-  height: 100%;
+  min-height: 100dvh;
   width: 100%;
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding-top: 20px;
+  justify-content: center;
   background: var(--bg-color);
   position: relative;
   overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.language-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  z-index: 1;
+  margin: auto 0;
 }
 
 
