@@ -11,25 +11,25 @@ export default function Dashboard({ setActiveTab, profileData }) {
   const SLIDES = [
     {
       id: 'referral',
-      badge: '🔥 Bonus',
-      title: 'Shoukai Pulini Oling',
-      desc: 'Tanishlaringizni ishga taklif qiling, maxsus shoukai pul mukofotini oling!',
+      badge: t('heroSlide1Badge', '🔥 Bonus'),
+      title: t('heroSlide1Title', 'Shoukai Pulini Oling'),
+      desc: t('heroSlide1Desc', 'Tanishlaringizni ishga taklif qiling, maxsus shoukai pul mukofotini oling!'),
       icon: <Gift size={84} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'profile'
     },
     {
       id: 'service',
-      badge: '⏳ Tez kunda',
-      title: 'Navbatlarsiz Servis',
-      desc: "Avtoservislarga oldindan navbat oling va to'lov qiling. Vaqtingizni tejang!",
+      badge: t('heroSlide2Badge', '⏳ Tez kunda'),
+      title: t('heroSlide2Title', 'Navbatlarsiz Servis'),
+      desc: t('heroSlide2Desc', "Avtoservislarga oldindan navbat oling va to'lov qiling. Vaqtingizni tejang!"),
       icon: <CalendarClock size={84} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'service'
     },
     {
       id: 'jobs',
-      badge: '💼 Vakansiyalar',
-      title: 'Orzuingizdagi Ish',
-      desc: "Eng so'nggi va yuqori maoshli vakansiyalarni birinchilardan bo'lib toping.",
+      badge: t('heroSlide3Badge', '💼 Vakansiyalar'),
+      title: t('heroSlide3Title', 'Orzuingizdagi Ish'),
+      desc: t('heroSlide3Desc', "Eng so'nggi va yuqori maoshli vakansiyalarni birinchilardan bo'lib toping."),
       icon: <Rocket size={84} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'jobs'
     }
