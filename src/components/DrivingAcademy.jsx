@@ -198,6 +198,24 @@ export default function DrivingAcademy({
    */
   const [referrerName, setReferrerName] = useState('');
 
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filtrlash: qidiruv bo'yicha
+  const filteredSchools = schools.filter(school => {
+    const query = searchQuery.toLowerCase();
+    const localizedName = t(`school_${school.id}_name`, school.name).toLowerCase();
+    const localizedLocation = t(`school_${school.id}_location`, school.location).toLowerCase();
+    const localizedType = t(`school_${school.id}_type`, school.type).toLowerCase();
+    
+    return !searchQuery || 
+      localizedName.includes(query) ||
+      school.name.toLowerCase().includes(query) ||
+      localizedLocation.includes(query) ||
+      school.location.toLowerCase().includes(query) ||
+      localizedType.includes(query) ||
+      school.type.toLowerCase().includes(query);
+  });
+
 
   /* ========================================================================
      BATAFSIL SAHIFA (DETAIL VIEW)
@@ -473,13 +491,18 @@ export default function DrivingAcademy({
       <div className="feed-header glass">
         <div className="search-bar">
           <Search size={20} color="#8E8E93" />
-          <input type="text" placeholder="Avtomaktab yoki shahar nomi..." />
+          <input 
+            type="text" 
+            placeholder={t('searchSchoolPlaceholder', "Avtomaktab yoki shahar nomi...")} 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
       {/* ------- MAKTABLAR RO'YXATI ------- */}
       <div className="jobs-list hide-scrollbar">
-        {schools.map(school => {
+        {filteredSchools.map(school => {
           /** showVerified — Maktab tasdiqlangan YOKI shartnoma faol bo'lsa badge ko'rsatiladi */
           const showVerified = school.verified || isContractActive;
           return (
@@ -553,6 +576,12 @@ export default function DrivingAcademy({
             </div>
           );
         })}
+        {filteredSchools.length === 0 && (
+          <div className="empty-feed">
+            <Search size={40} color="#C7C7CC" />
+            <p>{t('noSchoolsFound', "Mos avtomaktab topilmadi")}</p>
+          </div>
+        )}
       </div>
     </div>
   );

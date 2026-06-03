@@ -1,10 +1,37 @@
+/* Custom variables for dashboard elements to ensure highly visible borders and rich contrast */
+:root {
+  --dash-card-bg: rgba(255, 255, 255, 0.65); /* More opaque white in light mode for better contrast */
+  --dash-card-border: rgba(0, 0, 0, 0.08); /* Sophisticated neutral dark border in light mode */
+  --dash-card-shadow: 0 6px 20px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light-mode) {
+    --dash-card-bg: rgba(28, 28, 30, 0.7); /* Premium iOS Elevate dark card */
+    --dash-card-border: rgba(255, 255, 255, 0.1); /* Clean visible light border in dark mode */
+    --dash-card-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  }
+}
+
+html.dark-mode {
+  --dash-card-bg: rgba(28, 28, 30, 0.7);
+  --dash-card-border: rgba(255, 255, 255, 0.1);
+  --dash-card-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+html.light-mode {
+  --dash-card-bg: rgba(255, 255, 255, 0.65);
+  --dash-card-border: rgba(0, 0, 0, 0.08);
+  --dash-card-shadow: 0 6px 20px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
 .dashboard-container {
   padding: 16px;
-  padding-bottom: 120px; /* Ensure space for BottomNav so nothing is cut off */
+  padding-bottom: 106px; /* Optimized exactly to BottomNav height + padding to clear elements without leaving empty space */
   display: flex;
   flex-direction: column;
   gap: 12px; /* Compacted gap across the whole page */
-  background-color: var(--bg-main); /* Like Bon's beige/light background */
+  background-color: var(--bg-color); /* Corrected global background variable */
   height: 100%;
   overflow-y: auto;
 }
@@ -37,12 +64,12 @@
 
 /* Individual Premium Card */
 .dash-hero-card {
-  background: var(--glass-bg);
+  background: var(--dash-card-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--dash-card-border);
   border-radius: 24px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 30px rgba(0,0,0,0.06); /* Premium glowing border and shadow */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), var(--dash-card-shadow);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -51,6 +78,13 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dash-hero-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(94, 92, 230, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), var(--dash-card-shadow);
 }
 
 .dash-hero-content {
@@ -83,12 +117,12 @@
 }
 
 .dash-hero-title {
-  font-size: 32px;
+  font-size: 26px; /* Optimized from 32px to prevent text wrapping/overflow on narrow mobile screens */
   font-weight: 800;
-  line-height: 1.1;
+  line-height: 1.2;
   color: var(--text-main);
-  margin: 0 0 12px 0;
-  letter-spacing: -0.03em;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
 }
 
 .dash-hero-sub {
@@ -118,7 +152,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--glass-border);
+  background: var(--dash-card-border);
 }
 
 .dash-hero-dots .dot.active {
@@ -130,11 +164,12 @@
 /* Calendar Row */
 .calendar-row {
   display: flex;
-  justify-content: center; /* Center them to prevent stretching too far apart */
+  justify-content: space-between;
   align-items: center;
-  gap: 6px; /* Fixed, balanced gap */
-  padding: 0;
+  gap: 6px; /* Fixed premium gap spacing */
+  padding: 0 4px; /* Perfectly aligns with the left and right card edges of the hero carousel */
   flex-shrink: 0;
+  width: 100%;
 }
 
 .calendar-day {
@@ -142,19 +177,34 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 46px; /* Increased to make days more visible */
-  height: 62px; /* Increased height */
-  border-radius: 14px;
-  border: 1px solid var(--glass-border);
-  background: transparent;
-  gap: 2px;
+  flex: 1; /* Automatically stretch to fill the horizontal space */
+  min-width: 0;
+  height: 70px; /* Taller height for a more clear and premium presentation */
+  border-radius: 16px; /* More rounded premium corners */
+  border: 1px solid var(--dash-card-border);
+  background: var(--dash-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  gap: 4px; /* Better internal vertical spacing */
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.calendar-day:hover {
+  transform: translateY(-2px);
+  border-color: rgba(94, 92, 230, 0.3); /* Premium Indigo highlight on hover */
+  box-shadow: var(--dash-card-shadow);
+}
+
+.calendar-day:active {
+  transform: scale(0.95);
 }
 
 .calendar-day.active {
   background: var(--text-main);
-  color: var(--bg-main);
+  color: var(--bg-color); /* Correctly uses global background color for contrast */
   border-color: var(--text-main);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
 }
 
 .day-name {
@@ -162,34 +212,57 @@
   font-weight: 700;
   letter-spacing: 0.5px;
   color: var(--text-secondary);
+  transition: color 0.25s ease, opacity 0.25s ease;
 }
 
-.active .day-name {
-  color: rgba(255, 255, 255, 0.7);
+.calendar-day.active .day-name {
+  color: inherit;
+  opacity: 0.7; /* Semi-transparent color that inherits the active dark/light text color */
 }
 
 .day-num {
-  font-size: 18px; /* Reduced from 20px */
+  font-size: 19px; /* Slightly larger, bold and clear */
   font-weight: 800;
+  color: var(--text-main);
+  transition: color 0.25s ease;
 }
 
-.active .day-num {
-  color: #fff;
+.calendar-day.active .day-num {
+  color: inherit;
 }
 
 /* Greeting Header */
 .dash-greeting-row {
   display: flex;
-  justify-content: space-between; /* Move text left and clock right */
   align-items: center;
+  gap: 12px;
   margin: 0; 
   padding: 0 4px;
 }
 
-.greeting-text {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.greeting-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.greeting-line {
+  flex: 1;
+  height: 1px;
+  border-bottom: 1px dashed var(--text-secondary);
+  opacity: 0.25;
+}
+
+.greeting-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 
 .greeting-icon {
@@ -209,18 +282,10 @@
   100% { transform: rotate( 0.0deg) }
 }
 
-.greeting-text h2 {
-  font-size: 24px;
-  font-weight: 800;
-  margin: 0;
-  color: var(--text-main);
-  letter-spacing: -0.02em;
-}
-
 .time-pill {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  background: var(--dash-card-bg);
+  border: 1px solid var(--dash-card-border);
+  box-shadow: var(--dash-card-shadow);
   padding: 8px 16px;
   border-radius: 24px;
   font-size: 15px;
@@ -230,6 +295,12 @@
   -webkit-backdrop-filter: blur(10px);
   letter-spacing: 0.05em;
   font-variant-numeric: tabular-nums;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.time-pill:hover {
+  transform: translateY(-1px);
+  border-color: rgba(94, 92, 230, 0.2);
 }
 
 /* Bento Icons Row */
@@ -246,19 +317,31 @@
   justify-content: space-between;
   padding: 14px 12px; /* Reduced padding */
   border-radius: 20px; /* Slightly tighter border radius */
-  height: 110px; /* Reduced height */
+  min-height: 115px; /* Set min-height instead of fixed height for full word-wrapping safety */
+  height: auto;
   cursor: pointer;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--dash-card-shadow);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bento-icon-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.bento-icon-card:active {
+  transform: scale(0.96);
 }
 
 .dark-card {
   background: #2D2A26; /* Dark brown/black like BON */
   color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.08); /* Sophisticated subtle border to separate dark cards */
 }
 
 .light-card {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: var(--dash-card-bg);
+  border: 1px solid var(--dash-card-border);
   color: var(--text-main);
 }
 
@@ -273,8 +356,8 @@
 }
 
 .light-card .bento-icon-wrap {
-  background: var(--bg-main);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  background: var(--bg-color); /* Corrected background variable to ensure it has valid values */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
 }
 
 .bento-text-wrap h4 {
@@ -292,8 +375,8 @@
 
 /* Action Card */
 .bento-action-card {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: var(--dash-card-bg);
+  border: 1px solid var(--dash-card-border);
   border-radius: 24px;
   padding: 20px;
   display: flex;
@@ -301,6 +384,18 @@
   align-items: center;
   cursor: pointer;
   flex-shrink: 0;
+  box-shadow: var(--dash-card-shadow);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bento-action-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(94, 92, 230, 0.25);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.bento-action-card:active {
+  transform: scale(0.97);
 }
 
 .action-card-left {
@@ -323,12 +418,18 @@
   margin: 0 0 4px 0;
   font-size: 16px;
   font-weight: 800;
+  word-break: break-word; /* Clean wrapping for very long full names */
 }
 
 .action-info p {
   margin: 0;
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+.action-card-right {
+  flex-shrink: 0;
+  margin-left: 12px;
 }
 
 .arrow-text {
@@ -340,6 +441,8 @@
   gap: 4px;
 }
 
-.dark-mode .dark-card {
+.dark-mode .dark-card,
+html.dark-mode .dark-card {
   background: #1C1C1E;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }

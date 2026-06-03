@@ -425,7 +425,20 @@ const resources = {
       contractAwaitingApproval: "Tasdiqlanish kutilmoqda",
       contractPending: "Imzolangan (Kutilmoqda)",
       adminPendingContract: "Shartnoma imzolangan (Tasdiq kutilmoqda)",
-      adminApproveContract: "Shartnomani tasdiqlash"
+      adminApproveContract: "Shartnomani tasdiqlash",
+      Oogata: "Katta yuk mashinasi (Oogata)",
+      Chugata: "O'rta yuk mashinasi (Chugata)",
+      Futsu: "Oddiy yengil (Futsu)",
+      Tokushu: "Maxsus texnika (Tokushu)",
+      Nirin: "Motosikl (Nirin)",
+      Forklift: "Forklift (Yuklagich)",
+      UZ: "O'zbekcha",
+      JP: "Yaponcha",
+      EN: "Inglizcha",
+      RU: "Ruscha",
+      VI: "Vyetnamcha",
+      ZH: "Xitoycha",
+      searchSchoolPlaceholder: "Avtomaktab yoki shahar nomi..."
     }
   },
   ja: {
@@ -505,7 +518,11 @@ const resources = {
       'UZ': "ウズベク語",
       'JP': "日本語",
       'EN': "英語",
+      'RU': "ロシア語",
+      'VI': "ベトナム語",
+      'ZH': "中国語",
       'shift': "シフト制",
+      searchSchoolPlaceholder: "自動車学校または都市名...",
 
       uploadAdImage: "求人画像をアップロード",
       schoolTypePlaceholder: "例：大型・特殊、全車種",
@@ -1365,7 +1382,20 @@ const resources = {
       contractAwaitingApproval: "Awaiting Approval",
       contractPending: "Signed (Pending)",
       adminPendingContract: "Contract Signed (Pending Approval)",
-      adminApproveContract: "Approve Contract"
+      adminApproveContract: "Approve Contract",
+      Oogata: "Large Truck (Oogata)",
+      Chugata: "Medium Truck (Chugata)",
+      Futsu: "Regular Car (Futsu)",
+      Tokushu: "Special Vehicle (Tokushu)",
+      Nirin: "Motorcycle (Nirin)",
+      Forklift: "Forklift",
+      UZ: "Uzbek",
+      JP: "Japanese",
+      EN: "English",
+      RU: "Russian",
+      VI: "Vietnamese",
+      ZH: "Chinese",
+      searchSchoolPlaceholder: "Driving school or city name..."
     }
   },
   vi: {
@@ -1730,7 +1760,20 @@ const resources = {
       addNewSchoolAd: "Quảng cáo trường lái xe mới",
       addNewSchoolAdDesc: "Đăng quảng cáo trường lái xe để đào tạo học viên và thu hút học viên mới.",
       yourSchools: "Trường lái xe của bạn",
-      noSchoolsYet: "Chưa có quảng cáo trường lái xe nào được đăng."
+      noSchoolsYet: "Chưa có quảng cáo trường lái xe nào được đăng.",
+      Oogata: "Xe tải lớn (Oogata)",
+      Chugata: "Xe tải trung (Chugata)",
+      Futsu: "Xe thường (Futsu)",
+      Tokushu: "Xe đặc chủng (Tokushu)",
+      Nirin: "Xe máy (Nirin)",
+      Forklift: "Xe nâng (Forklift)",
+      UZ: "Tiếng Uzbek",
+      JP: "Tiếng Nhật",
+      EN: "Tiếng Anh",
+      RU: "Tiếng Nga",
+      VI: "Tiếng Việt",
+      ZH: "Tiếng Trung",
+      searchSchoolPlaceholder: "Trường lái xe hoặc tên thành phố..."
     }
   },
   zh: {
@@ -2095,7 +2138,20 @@ const resources = {
       addNewSchoolAd: "新驾校广告",
       addNewSchoolAdDesc: "发布驾校广告以培训司机并吸引新学员。",
       yourSchools: "您的驾校广告",
-      noSchoolsYet: "尚未发布任何驾校广告。"
+      noSchoolsYet: "尚未发布任何驾校广告。",
+      Oogata: "大型卡车 (Oogata)",
+      Chugata: "中型卡车 (Chugata)",
+      Futsu: "普通汽车 (Futsu)",
+      Tokushu: "特殊车辆 (Tokushu)",
+      Nirin: "摩托车 (Nirin)",
+      Forklift: "叉车 (Forklift)",
+      UZ: "乌兹别克语",
+      JP: "日语",
+      EN: "英语",
+      RU: "俄语",
+      VI: "越南语",
+      ZH: "中文",
+      searchSchoolPlaceholder: "驾校或城市名称..."
     }
   },
   ne: {
@@ -2444,7 +2500,20 @@ const resources = {
       addNewSchoolAd: "नयाँ ड्राइभिङ स्कुल विज्ञापन",
       addNewSchoolAdDesc: "चालकहरूलाई तालिम दिन र नयाँ विद्यार्थीहरू आकर्षित गर्न ड्राइभिङ स्कुलको विज्ञापन प्रकाशित गर्नुहोस्।",
       yourSchools: "तपाईंका ड्राइभिङ स्कुलहरू",
-      noSchoolsYet: "अहिलेसम्म कुनै ड्राइभिङ स्कुल विज्ञापन प्रकाशित गरिएको छैन।"
+      noSchoolsYet: "अहिलेसम्म कुनै ड्राइभिङ स्कुल विज्ञापन प्रकाशित गरिएको छैन।",
+      Oogata: "ठूलो ट्रक (Oogata)",
+      Chugata: "मध्यम ट्रक (Chugata)",
+      Futsu: "साधारण कार (Futsu)",
+      Tokushu: "विशेष सवारी साधन (Tokushu)",
+      Nirin: "मोटरसाइकल (Nirin)",
+      Forklift: "फोर्कलिफ्ट (Forklift)",
+      UZ: "उज्बेक",
+      JP: "जापानी",
+      EN: "अंग्रेजी",
+      RU: "रूसी",
+      VI: "भियतनामी",
+      ZH: "चिनियाँ",
+      searchSchoolPlaceholder: "ड्राइभिङ स्कुल वा शहरको नाम..."
     }
   },
 };

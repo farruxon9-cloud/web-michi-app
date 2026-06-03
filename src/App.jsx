@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Splash from './components/Splash';
 import LanguageSelect from './components/LanguageSelect';
@@ -595,6 +596,19 @@ function App() {
           <img src={getAvatarSrc()} alt="User" className="header-avatar" style={{ border: '2px solid var(--primary)', padding: '2px', borderRadius: '50%', background: '#fff' }} />
           <span className="header-username">{getUserNameWithHonorific()}</span>
         </div>
+
+        <button
+          className="theme-toggle-btn"
+          onClick={() => setDarkMode(prev => !prev)}
+          aria-label="Toggle theme"
+        >
+          <div className={`theme-toggle-track ${darkMode ? 'dark' : 'light'}`}>
+            <div className="theme-toggle-thumb">
+              {darkMode ? <Moon size={14} strokeWidth={2.5} /> : <Sun size={14} strokeWidth={2.5} />}
+            </div>
+          </div>
+        </button>
+
         <div className="logo">
           <div className="logo-kanji">道</div>
           MICHI

@@ -64,6 +64,16 @@ export default function Dashboard({ setActiveTab, profileData }) {
     return date.toLocaleDateString(locale, { weekday: 'short' }).toUpperCase();
   };
 
+  const getFormattedDate = () => {
+    let locale = 'uz-UZ';
+    if (i18n.language === 'en') locale = 'en-US';
+    if (i18n.language === 'ja') locale = 'ja-JP';
+    if (i18n.language === 'ru') locale = 'ru-RU';
+    if (i18n.language === 'vi') locale = 'vi-VN';
+    if (i18n.language === 'zh') locale = 'zh-CN';
+    return currentTime.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' });
+  };
+
   const daysArray = getDaysArray();
 
   return (
@@ -122,9 +132,10 @@ export default function Dashboard({ setActiveTab, profileData }) {
       </div>
 
       <div className="dash-greeting-row">
-        <div className="greeting-text">
-          <h2>{t('welcomeTitle', 'Xush kelibsiz')}</h2>
-        </div>
+        <h2 className="greeting-title">{t('welcomeTitle', 'Xush kelibsiz')}</h2>
+        <div className="greeting-line"></div>
+        <span className="greeting-date">{getFormattedDate()}</span>
+        <div className="greeting-line"></div>
         <div className="time-pill">
           {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>

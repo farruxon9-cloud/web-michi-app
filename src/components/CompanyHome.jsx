@@ -266,7 +266,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {options.map(optObj => {
             const opt = typeof optObj === 'string' ? optObj : optObj.value;
-            const label = typeof optObj === 'string' ? optObj : t(optObj.key, optObj.value);
+            const label = typeof optObj === 'string' ? t(optObj, optObj) : t(optObj.key, optObj.value);
             const isSelected = isMulti ? (selectedValue && selectedValue.includes(opt)) : selectedValue === opt;
             return (
               <button
@@ -796,22 +796,22 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 <div className="job-card-img">
                   <img 
                     src={school.image} 
-                    alt={school.name} 
+                    alt={t(`school_${school.id}_name`, school.name)} 
                     onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
                   />
                   <div className="job-type-badge type-fulltime">
-                    {school.langs ? school.langs.join(', ') : 'UZ, JP'}
+                    {school.langs ? school.langs.map(l => t(l, l)).join(', ') : 'UZ, JP'}
                   </div>
                 </div>
 
                 {/* O'ng qism: Ma'lumotlar */}
                 <div className="job-card-body">
                   <div className="job-card-company">
-                    <span>{school.name}</span>
+                    <span>{t(`school_${school.id}_name`, school.name)}</span>
                     <VerifiedBadge size={14} />
                   </div>
 
-                  <h3 className="job-card-title">{school.type}</h3>
+                  <h3 className="job-card-title">{t(`school_${school.id}_type`, school.type)}</h3>
 
                   <div className="job-card-salary">
                     <Banknote size={15} color="#30D158" />
@@ -826,7 +826,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                   <div className="job-card-chips">
                     <span className="job-chip">
                       <MapPin size={10} />
-                      {school.location}
+                      {t(`school_${school.id}_location`, school.location)}
                     </span>
                     {school.shoukaiFee > 0 && (
                       <span className="job-chip chip-highlight">
@@ -866,7 +866,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 <div className="job-card-img">
                   <img 
                     src={job.image} 
-                    alt={job.title} 
+                    alt={t(`job_${job.id}_title`, job.title)} 
                     onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
                   />
                   <span className={`job-type-badge type-${job.type || 'fulltime'}`}>
@@ -882,7 +882,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                     {job.verified && <VerifiedBadge size={14} />}
                   </div>
 
-                  <h3 className="job-card-title">{job.title}</h3>
+                  <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
 
                   <div className="job-card-salary">
                     <Banknote size={15} />
@@ -892,12 +892,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                   <div className="job-card-chips">
                     <span className="job-chip">
                       <MapPin size={12} />
-                      {job.location}
+                      {t(`job_${job.id}_location`, job.location)}
                     </span>
                     {job.hours && (
                       <span className="job-chip">
                         <Clock size={12} />
-                        {job.hours === 'shift' ? t('shiftWork', 'Smenali') : job.hours}
+                        {job.hours === 'shift' ? t('shiftWork', 'Smenali') : t(job.hours, job.hours)}
                       </span>
                     )}
                     {job.shoukaiFee > 0 && (
