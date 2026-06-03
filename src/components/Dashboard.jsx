@@ -69,24 +69,25 @@ export default function Dashboard({ setActiveTab, profileData }) {
   return (
     <div className="dashboard-container hide-scrollbar">
       
-      {/* Top Banner Area (Dynamic Slider Like BON) */}
-      <div className="dash-hero-area">
+      {/* Top Banner Area (Premium Sliding Cards) */}
+      <div className="dash-hero-carousel-container">
         <div 
           className="dash-hero-slider" 
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
           {SLIDES.map((slide) => (
-            <div 
-              key={slide.id} 
-              className="dash-hero-slide" 
-              onClick={() => setActiveTab(slide.tab)}
-            >
-              <div className="dash-hero-content">
-                <span className="dash-badge">{slide.badge}</span>
-                <h1 className="dash-hero-title">{slide.title}</h1>
-                <p className="dash-hero-sub">{slide.desc}</p>
+            <div key={slide.id} className="dash-hero-slide-wrapper">
+              <div 
+                className="dash-hero-card" 
+                onClick={() => setActiveTab(slide.tab)}
+              >
+                <div className="dash-hero-content">
+                  <span className="dash-badge">{slide.badge}</span>
+                  <h1 className="dash-hero-title">{slide.title}</h1>
+                  <p className="dash-hero-sub">{slide.desc}</p>
+                </div>
+                <div className="dash-hero-icon-3d">{slide.icon}</div>
               </div>
-              <div className="dash-hero-icon-3d">{slide.icon}</div>
             </div>
           ))}
         </div>

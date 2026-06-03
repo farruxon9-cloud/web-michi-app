@@ -9,20 +9,13 @@
   overflow-y: auto;
 }
 
-/* Big Hero Banner */
-.dash-hero-area {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-  min-height: 150px;
+/* Carousel Container */
+.dash-hero-carousel-container {
   position: relative;
   overflow: hidden;
+  width: 100%;
+  padding-bottom: 24px; /* Space for dots outside the cards */
   flex-shrink: 0;
-  padding: 0; /* Removing padding from container so slider can stretch */
 }
 
 /* Slider Track */
@@ -30,19 +23,34 @@
   display: flex;
   width: 100%;
   height: 100%;
-  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform;
 }
 
-/* Individual Slide */
-.dash-hero-slide {
+/* Slide Wrapper */
+.dash-hero-slide-wrapper {
   flex: 0 0 100%; /* Take exactly 100% of parent width */
   min-width: 100%;
+  padding: 0 4px; /* Slight gap between cards so borders are visible */
+  box-sizing: border-box;
+}
+
+/* Individual Premium Card */
+.dash-hero-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 30px rgba(0,0,0,0.06); /* Premium glowing border and shadow */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 20px 36px 20px; /* Space for dots at bottom */
+  padding: 20px;
+  min-height: 150px;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 
 .dash-hero-content {
@@ -93,7 +101,7 @@
 
 .dash-hero-footer {
   position: absolute;
-  bottom: 12px;
+  bottom: 0;
   left: 0;
   width: 100%;
   display: flex;
