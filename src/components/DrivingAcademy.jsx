@@ -394,7 +394,7 @@ export default function DrivingAcademy({
                         setShowShoukaiInput(false);
                       }}
                     >
-                      {t('applyToSchool')} + {t('shoukaiShare')}
+                      {userRole === 'company' ? t('recommendEmployee', 'Xodimni tavsiya etish') : `${t('applyToSchool')} + ${t('shoukaiShare')}`}
                     </button>
                   </div>
                 )}
@@ -451,7 +451,7 @@ export default function DrivingAcademy({
               </a>
               
               {/* Topshirish tugmasi — hasApplied holatiga qarab o'zgaradi */}
-              {!hasApplied ? (
+              {userRole !== 'company' && (!hasApplied ? (
                 <button 
                   className="academy-apply-btn"
                   onClick={() => onApplySchool(school, '')}
@@ -463,7 +463,7 @@ export default function DrivingAcademy({
                 <button className="academy-apply-btn applied" disabled>
                   <CheckCircle2 size={14} /> {t('appliedToSchool', 'Topshirilgan')}
                 </button>
-              )}
+              ))}
               
               {/* Shoukai tugmasi — do'stga ulashish */}
               <button 
@@ -558,9 +558,11 @@ export default function DrivingAcademy({
 
                 {/* Amal tugmalari */}
                 <div className="job-card-actions">
-                  <button className="job-card-btn btn-apply">
-                    {t('applyToSchool', 'Topshirish')}
-                  </button>
+                  {userRole !== 'company' && (
+                    <button className="job-card-btn btn-apply">
+                      {t('applyToSchool', 'Topshirish')}
+                    </button>
+                  )}
                   <button 
                     className="job-card-btn btn-shoukai"
                     onClick={(e) => {

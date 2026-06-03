@@ -21,7 +21,8 @@
    Flex ustunli layout, pastdan 90px padding (bottom nav uchun).
    ========================================================================== */
 .academy-container {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow-y: auto;           /* Vertikal scroll imkoniyati */

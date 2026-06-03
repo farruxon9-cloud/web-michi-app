@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Splash from './components/Splash';
@@ -8,6 +8,7 @@ import BottomNav from './components/BottomNav';
 import './App.css';
 import { MOCK_JOBS } from './components/DriverFeed';
 import { MOCK_SCHOOLS } from './components/DrivingAcademy';
+import VoiceAssistant from './components/VoiceAssistant';
 
 // Lazy loading heavy components for faster initial load
 const Dashboard = lazy(() => import('./components/Dashboard'));
@@ -18,6 +19,13 @@ const ServiceComingSoon = lazy(() => import('./components/ServiceComingSoon'));
 const Profile = lazy(() => import('./components/Profile'));
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const CompanyHome = lazy(() => import('./components/CompanyHome'));
+
+const TRACKS = [
+  { id: 1, title: 'Tokyo Rain (東京の雨)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/chill-lofi-background-music-331434.mp3' },
+  { id: 2, title: 'Kyoto Sunset (京都の夕日)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/lofi-chill-background-music-313055.mp3' },
+  { id: 3, title: 'Shibuya Midnight (渋谷の夜中)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/piano-and-beat-120539.mp3' },
+  { id: 4, title: 'Osaka Neon (大阪のネオン)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/bell-fi-broadcasts-181511.mp3' }
+];
 
 
 class ChunkErrorBoundary extends React.Component {
@@ -60,6 +68,32 @@ function App() {
   const [languageSelected, setLanguageSelected] = useState(false);
   const [userRole, setUserRole] = useState(null); // Temporarily disable auto-login
   const [activeTab, setActiveTab] = useState('home');
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const [isVoiceStandby, setIsVoiceStandby] = useState(() => {
+    const saved = localStorage.getItem('michi_voice_standby');
+    return saved === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('michi_voice_standby', isVoiceStandby);
+  }, [isVoiceStandby]);
+
+  const handleVoiceActivate = () => {
+    setIsVoiceActive(true);
+    if (!isVoiceStandby) {
+      setIsVoiceStandby(true);
+    }
+  };
+
+  const handleVoiceToggle = () => {
+    if (isVoiceStandby) {
+      setIsVoiceStandby(false);
+      setIsVoiceActive(false);
+    } else {
+      setIsVoiceStandby(true);
+      setIsVoiceActive(true);
+    }
+  };
   // ==========================================
   // NAVIGATSIYA VA HOLATLARNI BOSHQARISH (LIFTED STATES & UX ENHANCEMENTS)
   // Barcha brauzerlarda va mobil qurilmalarda bir xil, silliq va xatosiz ishlashini ta'minlash maqsadida
@@ -84,6 +118,28 @@ function App() {
   // Guest redirection states
   const [pendingApply, setPendingApply] = useState(null);
   const [authInitialStep, setAuthInitialStep] = useState('role');
+
+  // Music Player states
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(0.7);
+  const audioRef = useRef(null);
+
+  const togglePlay = () => {
+    setIsPlaying(prev => !prev);
+  };
+
+  const nextTrack = () => {
+    setCurrentTrackIndex(prev => (prev + 1) % TRACKS.length);
+    setIsPlaying(true);
+  };
+
+  const prevTrack = () => {
+    setCurrentTrackIndex(prev => (prev - 1 + TRACKS.length) % TRACKS.length);
+    setIsPlaying(true);
+  };
 
   const [contractStatus, setContractStatus] = useState('none');
   const [verifiedCompanies, setVerifiedCompanies] = useState(['Sagawa Express', 'Yamato Transport']);
@@ -197,6 +253,27 @@ function App() {
       setAuthInitialStep('role');
     }
   }, [userRole, pendingApply]);
+
+  // Control audio playback
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.play().catch(err => {
+          console.log("Audio play blocked by browser autoplay policy:", err);
+          setIsPlaying(false);
+        });
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying, currentTrackIndex]);
+
+  // Sync volume with audio element
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
 
   // Global Jobs & Driving Schools State
   const [jobs, setJobs] = useState(MOCK_JOBS);
@@ -541,13 +618,40 @@ function App() {
     return `https://ui-avatars.com/api/?name=${name}&background=${bg}&color=fff`;
   };
 
+  const musicPlayer = {
+    isPlaying,
+    currentTrack: TRACKS[currentTrackIndex],
+    togglePlay,
+    nextTrack,
+    prevTrack,
+    currentTime,
+    duration,
+    volume,
+    setVolume,
+    seek: (time) => {
+      if (audioRef.current) {
+        audioRef.current.currentTime = time;
+        setCurrentTime(time);
+      }
+    }
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'home':
         if (userRole === 'company') {
           return <CompanyHome onJobClick={setSelectedJob} onSchoolClick={handleSchoolClick} jobs={jobs} setJobs={setJobs} schools={schools} setSchools={setSchools} profileData={profileData} jobToEdit={jobToEdit} setJobToEdit={setJobToEdit} />;
         }
-        return <Dashboard setActiveTab={setActiveTab} profileData={profileData} />;
+        return (
+          <Dashboard 
+            setActiveTab={setActiveTab} 
+            profileData={profileData} 
+            musicPlayer={musicPlayer}
+            isVoiceStandby={isVoiceStandby}
+            onVoiceActivate={handleVoiceActivate}
+            onVoiceToggle={handleVoiceToggle}
+          />
+        );
       case 'jobs':
         return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} verifiedCompanies={verifiedCompanies} onShoukai={handleShoukai} />;
       case 'academy':
@@ -621,7 +725,7 @@ function App() {
       <div className="glass-blob blob-2"></div>
       <div className="glass-blob blob-3"></div>
 
-      <header className="global-header" style={{ position: 'sticky', top: 0, zIndex: 100 }}>
+      <header className="global-header">
         <div className="user-profile-corner">
           <img src={getAvatarSrc()} alt="User" className="header-avatar" style={{ border: '2px solid var(--primary)', padding: '2px', borderRadius: '50%', background: '#fff' }} />
           <span className="header-username">{getUserNameWithHonorific()}</span>
@@ -681,6 +785,34 @@ function App() {
         }}
         unreadCount={showProfileBadges ? unreadCount : 0}
         userRole={userRole}
+        isVoiceStandby={isVoiceStandby}
+        isVoiceActive={isVoiceActive}
+      />
+
+      <VoiceAssistant 
+        isActive={isVoiceActive} 
+        onClose={() => setIsVoiceActive(false)} 
+        onStartVoice={() => setIsVoiceActive(true)}
+        isVoiceStandby={isVoiceStandby}
+        setIsVoiceStandby={setIsVoiceStandby}
+        setActiveTab={setActiveTab} 
+        musicPlayer={musicPlayer} 
+      />
+
+      <audio 
+        ref={audioRef}
+        src={TRACKS[currentTrackIndex].url}
+        onTimeUpdate={() => {
+          if (audioRef.current) {
+            setCurrentTime(audioRef.current.currentTime);
+          }
+        }}
+        onLoadedMetadata={() => {
+          if (audioRef.current) {
+            setDuration(audioRef.current.duration);
+          }
+        }}
+        onEnded={nextTrack}
       />
     </div>
   );

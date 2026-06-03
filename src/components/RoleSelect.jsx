@@ -93,7 +93,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
     } else if (trimmedEmail === 'admin' && loginPassword === 'admin') {
       const mockData = selectedRole === 'company' 
         ? { fullName: 'Sagawa Express', companyType: 'logistics', email: 'admin@sagawa.jp' }
-        : { fullName: 'Test Haydovchi', driverLicenses: ['oogata', 'kenin'], techCertificates: ['forklift'], email: 'admin@driver.jp' };
+        : { fullName: t('testDriverName', 'Test Haydovchi'), driverLicenses: ['oogata', 'kenin'], techCertificates: ['forklift'], email: 'admin@driver.jp' };
       onSelectRole(selectedRole, mockData);
     } else if (!trimmedEmail) {
       alert(t('emailRequired', "Iltimos, elektron pochtangizni kiriting."));
@@ -306,7 +306,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
         // [JA] 古いメールアドレス情報を引き継いだ形で即時自動ログインを実行するモックデータ定義
         const mockData = selectedRole === 'company'
           ? { fullName: 'Sagawa Express', companyType: 'logistics', email: forgotEmail }
-          : { fullName: 'Mehmon Haydovchi', driverLicenses: ['oogata', 'kenin'], techCertificates: ['forklift'], email: forgotEmail };
+          : { fullName: t('guestDriverName', 'Mehmon Haydovchi'), driverLicenses: ['oogata', 'kenin'], techCertificates: ['forklift'], email: forgotEmail };
         onSelectRole(selectedRole, mockData);
       }
     };

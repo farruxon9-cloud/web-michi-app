@@ -64,6 +64,15 @@ const resources = {
       roleCompanyLabel: "Kompaniya",
       roleSchool: "AvtoMaktab",
       roleGuest: "Mehmon",
+      testDriverName: "Test Haydovchi",
+      guestDriverName: "Mehmon Haydovchi",
+      voiceAssistantTitle: "Ovozli yordamchi",
+      voiceAssistantDesc: "Ilovani yapon tilida masofaviy ovozda boshqaring",
+      turnOnBtn: "Yoqish",
+      turnOffBtn: "O'chirish",
+      aiListeningLabel: "Tinglamoqda... (Gapiring)",
+      aiThinkingLabel: "Fikrlamoqda...",
+      aiSpeakingLabel: "Javob bermoqda...",
       myResume: "Mening Rezume (履歴書 - Rirekisho)",
       birthDateLabel: "Tug'ilgan sana:",
       licenseTypeLabel: "Guvohnoma turi:",
@@ -443,7 +452,14 @@ const resources = {
       RU: "Ruscha",
       VI: "Vyetnamcha",
       ZH: "Xitoycha",
-      searchSchoolPlaceholder: "Avtomaktab yoki shahar nomi..."
+      searchSchoolPlaceholder: "Avtomaktab yoki shahar nomi...",
+      noInternetTitle: "インターネット接続がありません。",
+      speechNotSupported: "Brauzeringiz ovozli tanishni qo'llab-quvvatlamaydi. Chrome yoki Safari'dan foydalaning.",
+      speechError: "Ovozni eshitishda xatolik yuz berdi. Qayta urinib ko'ring.",
+      aiSystemBusy: "システムが混雑しています。少々お待ちください。",
+      aiError: "申し訳ありません、リクエストを処理できませんでした。少々お待ちください。",
+      changeKeyBtnText: "API kalitni almashtirish",
+      useDefaultKeyBtn: "Tizim kalitidan foydalanish"
     }
   },
   ja: {
@@ -633,6 +649,15 @@ const resources = {
       roleCompanyLabel: "企業",
       roleSchool: "自動車学校",
       roleGuest: "ゲスト",
+      testDriverName: "テストドライバー",
+      guestDriverName: "ゲストドライバー",
+      voiceAssistantTitle: "音声AIアシスタント",
+      voiceAssistantDesc: "アプリを日本語の音声でリモートコントロール",
+      turnOnBtn: "起動する",
+      turnOffBtn: "停止する",
+      aiListeningLabel: "音声入力中... (お話しください)",
+      aiThinkingLabel: "AI考え中...",
+      aiSpeakingLabel: "音声応答中...",
       myResume: "私の履歴書",
       birthDateLabel: "生年月日：",
       licenseTypeLabel: "免許の種類：",
@@ -985,7 +1010,14 @@ const resources = {
       contractAwaitingApproval: "承認待ち",
       contractPending: "署名済み（承認待ち）",
       adminPendingContract: "署名済み（承認待ち）",
-      adminApproveContract: "契約を承認する"
+      adminApproveContract: "契約を承認する",
+      noInternetTitle: "インターネット接続がありません。",
+      speechNotSupported: "お使いのブラウザは音声認識をサポートしていません。ChromeまたはSafariをご使用ください。",
+      speechError: "音声認識エラーが発生しました。もう一度お試しください。",
+      aiSystemBusy: "システムが混雑しています。少々お待ちください。",
+      aiError: "申し訳ありません、リクエストを処理できませんでした。少々お待ちください。",
+      changeKeyBtnText: "APIキーを変更する",
+      useDefaultKeyBtn: "デフォルトのキーを使用する"
     }
   },
   en: {
@@ -1045,6 +1077,15 @@ const resources = {
       roleCompanyLabel: "Company",
       roleSchool: "Driving School",
       roleGuest: "Guest",
+      testDriverName: "Test Driver",
+      guestDriverName: "Guest Driver",
+      voiceAssistantTitle: "Voice AI Assistant",
+      voiceAssistantDesc: "Control the app using Japanese voice commands",
+      turnOnBtn: "Turn On",
+      turnOffBtn: "Turn Off",
+      aiListeningLabel: "Listening... (Please speak)",
+      aiThinkingLabel: "AI Thinking...",
+      aiSpeakingLabel: "AI Speaking...",
       myResume: "My Resume (Rirekisho)",
       birthDateLabel: "Date of Birth:",
       licenseTypeLabel: "License Type:",
@@ -1410,7 +1451,14 @@ const resources = {
       RU: "Russian",
       VI: "Vietnamese",
       ZH: "Chinese",
-      searchSchoolPlaceholder: "Driving school or city name..."
+      searchSchoolPlaceholder: "Driving school or city name...",
+      noInternetTitle: "No internet connection.",
+      speechNotSupported: "Your browser does not support speech recognition. Please use Chrome or Safari.",
+      speechError: "Speech recognition error occurred. Please try again.",
+      aiSystemBusy: "System is busy. Please try again in a moment.",
+      aiError: "Sorry, could not process the request. Please try again in a moment.",
+      changeKeyBtnText: "Change API Key",
+      useDefaultKeyBtn: "Use default key"
     }
   },
   vi: {
@@ -1470,6 +1518,15 @@ const resources = {
       roleCompanyLabel: "Công ty",
       roleSchool: "Trường lái xe",
       roleGuest: "Khách",
+      testDriverName: "Tài xế thử nghiệm",
+      guestDriverName: "Tài xế khách",
+      voiceAssistantTitle: "Trợ lý giọng nói AI",
+      voiceAssistantDesc: "Điều khiển ứng dụng bằng lệnh giọng nói tiếng Nhật",
+      turnOnBtn: "Bật lên",
+      turnOffBtn: "Tắt",
+      aiListeningLabel: "Đang nghe... (Vui lòng nói)",
+      aiThinkingLabel: "AI đang suy nghĩ...",
+      aiSpeakingLabel: "AI đang trả lời...",
       myResume: "Sơ yếu lý lịch của tôi",
       birthDateLabel: "Ngày sinh:",
       licenseTypeLabel: "Loại bằng:",
@@ -1793,7 +1850,14 @@ const resources = {
       RU: "Tiếng Nga",
       VI: "Tiếng Việt",
       ZH: "Tiếng Trung",
-      searchSchoolPlaceholder: "Trường lái xe hoặc tên thành phố..."
+      searchSchoolPlaceholder: "Trường lái xe hoặc tên thành phố...",
+      noInternetTitle: "Không có kết nối internet.",
+      speechNotSupported: "Trình duyệt của bạn không hỗ trợ nhận dạng giọng nói. Vui lòng sử dụng Chrome hoặc Safari.",
+      speechError: "Đã xảy ra lỗi nhận dạng giọng nói. Vui lòng thử lại.",
+      aiSystemBusy: "Hệ thống đang bận. Vui lòng thử lại sau.",
+      aiError: "Không thể xử lý yêu cầu. Vui lòng thử lại sau.",
+      changeKeyBtnText: "Thay đổi khóa API",
+      useDefaultKeyBtn: "Sử dụng khóa mặc định"
     }
   },
   zh: {
@@ -1853,6 +1917,15 @@ const resources = {
       roleCompanyLabel: "公司",
       roleSchool: "驾校",
       roleGuest: "访客",
+      testDriverName: "测试司机",
+      guestDriverName: "访客司机",
+      voiceAssistantTitle: "语音AI助手",
+      voiceAssistantDesc: "使用日语语音命令控制应用程序",
+      turnOnBtn: "开启",
+      turnOffBtn: "关闭",
+      aiListeningLabel: "正在倾听... (请说话)",
+      aiThinkingLabel: "AI正在思考...",
+      aiSpeakingLabel: "AI正在回答...",
       myResume: "我的简历 (履历书)",
       birthDateLabel: "出生日期：",
       licenseTypeLabel: "驾照类型：",
@@ -2176,7 +2249,14 @@ const resources = {
       RU: "俄语",
       VI: "越南语",
       ZH: "中文",
-      searchSchoolPlaceholder: "驾校或城市名称..."
+      searchSchoolPlaceholder: "驾校或城市名称...",
+      noInternetTitle: "无网络连接。",
+      speechNotSupported: "您的浏览器不支持语音识别。请使用 Chrome 或 Safari。",
+      speechError: "语音识别发生错误。请重试。",
+      aiSystemBusy: "系统繁忙。请稍后再试。",
+      aiError: "无法处理请求。请稍后再试。",
+      changeKeyBtnText: "更改 API 密钥",
+      useDefaultKeyBtn: "使用默认密钥"
     }
   },
   ne: {
@@ -2220,6 +2300,15 @@ const resources = {
       roleCompanyLabel: "कम्पनी",
       roleSchool: "ड्राइभिङ स्कुल",
       roleGuest: "अतिथि",
+      testDriverName: "परीक्षण चालक",
+      guestDriverName: "अतिथि चालक",
+      voiceAssistantTitle: "आवाज AI सहायक",
+      voiceAssistantDesc: "जापानी आवाज आदेशहरू प्रयोग गरेर एप नियन्त्रण गर्नुहोस्",
+      turnOnBtn: "खोल्नुहोस्",
+      turnOffBtn: "बन्द गर्नुहोस्",
+      aiListeningLabel: "सुन्दै... (कृपया बोल्नुहोस्)",
+      aiThinkingLabel: "AI सोच्दै...",
+      aiSpeakingLabel: "AI बोल्दै...",
       myResume: "मेरो बायोडाटा (रिरेकिशो)",
       birthDateLabel: "जन्म मिति:",
       licenseTypeLabel: "लाइसेन्स प्रकार:",
@@ -2543,7 +2632,14 @@ const resources = {
       RU: "रूसी",
       VI: "भियतनामी",
       ZH: "चिनियाँ",
-      searchSchoolPlaceholder: "ड्राइभिङ स्कुल वा शहरको नाम..."
+      searchSchoolPlaceholder: "ड्राइभिङ स्कुल वा शहरको नाम...",
+      noInternetTitle: "इन्टरनेट जडान छैन।",
+      speechNotSupported: "तपाईंको ब्राउजरले आवाज पहिचान समर्थन गर्दैन। कृपया Chrome वा Safari प्रयोग गर्नुहोस्।",
+      speechError: "आवाज पहिचानमा त्रुटि भयो। कृपया फेरि प्रयास गर्नुहोस्।",
+      aiSystemBusy: "प्रणाली व्यस्त छ। कृपया केही समय पछि प्रयास गर्नुहोस्।",
+      aiError: "अनुरोध प्रक्रिया गर्न सकिएन। कृपया केही समय पछि प्रयास गर्नुहोस्।",
+      changeKeyBtnText: "API कुञ्जी परिवर्तन गर्नुहोस्",
+      useDefaultKeyBtn: "पूर्वनिर्धारित कुञ्जी प्रयोग गर्नुहोस्"
     }
   },
 };

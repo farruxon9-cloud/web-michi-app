@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket } from 'lucide-react';
+import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, Music, Volume2, VolumeX, Sparkles, X } from 'lucide-react';
 import './Dashboard.css';
 
-export default function Dashboard({ setActiveTab, profileData }) {
+const formatTime = (secs) => {
+  if (isNaN(secs)) return '0:00';
+  const m = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
+};
+
+export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVoiceStandby, onVoiceActivate, onVoiceToggle }) {
   const { t, i18n } = useTranslation();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -14,7 +21,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
       badge: t('heroSlide1Badge', '🔥 Bonus'),
       title: t('heroSlide1Title', 'Shoukai Pulini Oling'),
       desc: t('heroSlide1Desc', 'Tanishlaringizni ishga taklif qiling, maxsus shoukai pul mukofotini oling!'),
-      icon: <Gift size={84} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
+      icon: <Gift size={56} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'profile'
     },
     {
@@ -22,7 +29,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
       badge: t('heroSlide2Badge', '⏳ Tez kunda'),
       title: t('heroSlide2Title', 'Navbatlarsiz Servis'),
       desc: t('heroSlide2Desc', "Avtoservislarga oldindan navbat oling va to'lov qiling. Vaqtingizni tejang!"),
-      icon: <CalendarClock size={84} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
+      icon: <CalendarClock size={56} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'service'
     },
     {
@@ -30,7 +37,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
       badge: t('heroSlide3Badge', '💼 Vakansiyalar'),
       title: t('heroSlide3Title', 'Orzuingizdagi Ish'),
       desc: t('heroSlide3Desc', "Eng so'nggi va yuqori maoshli vakansiyalarni birinchilardan bo'lib toping."),
-      icon: <Rocket size={84} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
+      icon: <Rocket size={56} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'jobs'
     }
   ];
@@ -141,6 +148,38 @@ export default function Dashboard({ setActiveTab, profileData }) {
         </div>
       </div>
 
+      {/* Premium Bento AI Voice Card */}
+      <div className={`bento-ai-card glass squircle ${isVoiceStandby ? 'active' : ''}`} onClick={onVoiceActivate}>
+        <div className="ai-card-left">
+          <div className="ai-gradient-icon">
+            <Sparkles size={20} color="#FFF" fill="currentColor" />
+          </div>
+          <div className="ai-card-info">
+            <span className="ai-card-badge">🗣️ Michi Voice AI (テスト中)</span>
+            <h3 className="ai-card-title">{t('voiceAssistantTitle', 'Ovozli yordamchi')}</h3>
+            <p className="ai-card-sub">{t('voiceAssistantDesc', 'Ilovani yapon tilida masofaviy ovozda boshqaring')}</p>
+          </div>
+        </div>
+        <div className="ai-card-right">
+          {/* Subtle wave visualizer inside card */}
+          <div className="ai-card-visualizer">
+            {[1, 2, 3, 4].map((bar) => (
+              <div key={bar} className={`ai-bar ai-bar-${bar} ${isVoiceStandby ? 'active' : ''}`}></div>
+            ))}
+          </div>
+          <span 
+            className="ai-action-btn"
+            onClick={(e) => {
+              e.stopPropagation(); // Avoid triggering onVoiceActivate (starting speech recognition)
+              onVoiceToggle();
+            }}
+          >
+            {isVoiceStandby ? t('turnOffBtn', "O'chirish") : t('turnOnBtn', 'Yoqish')} 
+            {isVoiceStandby ? <X size={14} style={{ marginLeft: '4px' }} /> : <ArrowRight size={14} />}
+          </span>
+        </div>
+      </div>
+
       {/* Bento Icons Row (Like BON App Store / Google Play / Inst) */}
       <div className="bento-icons-row">
         
@@ -176,21 +215,93 @@ export default function Dashboard({ setActiveTab, profileData }) {
 
       </div>
 
-      {/* Action Card Bottom */}
-      <div className="bento-action-card" onClick={() => setActiveTab('profile')}>
-        <div className="action-card-left">
-          <div className="action-icon circle-bg">
-            <User size={24} color="#0A84FF" />
+      {/* Premium Minimalist Music Player Card */}
+      <div className="bento-music-card glass squircle">
+        <div className="music-player-top">
+          <div className="music-player-info">
+            {/* Elegant visual icon wrapper (glowing pulse when playing) */}
+            <div className={`music-gradient-icon ${musicPlayer.isPlaying ? 'playing-pulse' : ''}`}>
+              <Music size={18} color="#FFF" />
+            </div>
+            
+            <div className="music-track-meta">
+              <span className="music-sub-label">
+                {musicPlayer.isPlaying ? t('playingBackgroundMusic', 'Background Music') : t('musicPaused', 'Background Music')}
+              </span>
+              <h3 className="music-track-title">
+                {musicPlayer.currentTrack.title}
+              </h3>
+            </div>
           </div>
-          <div className="action-info">
-            <h3>{profileData?.fullName || t('guestName', 'Mehmon')}</h3>
-            <p>{t('dashProfileTitle', 'Shaxsiy profil')}</p>
+
+          <div className="music-player-controls">
+            <button 
+              onClick={musicPlayer.togglePlay}
+              className="player-control-btn btn-play-pause"
+              aria-label="Play or Pause"
+            >
+              {musicPlayer.isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" style={{ marginLeft: '2px' }} />}
+            </button>
+            <button 
+              onClick={musicPlayer.nextTrack}
+              className="player-control-btn btn-skip"
+              aria-label="Next track"
+            >
+              <SkipForward size={14} fill="currentColor" />
+            </button>
+            <div className="volume-control">
+              <button 
+                onClick={() => musicPlayer.setVolume(musicPlayer.volume > 0 ? 0 : 0.7)}
+                className="player-control-btn btn-vol"
+                aria-label="Volume"
+              >
+                {musicPlayer.volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+              </button>
+              <input 
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={musicPlayer.volume}
+                onChange={(e) => musicPlayer.setVolume(parseFloat(e.target.value))}
+                className="volume-slider"
+              />
+            </div>
           </div>
         </div>
-        <div className="action-card-right">
-          <span className="arrow-text">{t("viewProfileBtn", "Ko'rish")} <ArrowRight size={16} /></span>
+
+        <div className="music-player-bottom">
+          {/* Waveform Visualizer */}
+          <div className="mini-visualizer">
+            {[1, 2, 3, 4, 5].map((bar) => (
+              <div 
+                key={bar} 
+                className={`vis-bar bar-${bar} ${musicPlayer.isPlaying ? 'playing' : ''}`}
+              ></div>
+            ))}
+          </div>
+
+          {/* Timeline */}
+          <div className="player-timeline-wrapper">
+            <span className="player-time-text">
+              {formatTime(musicPlayer.currentTime)}
+            </span>
+            <input 
+              type="range"
+              min={0}
+              max={musicPlayer.duration || 100}
+              value={musicPlayer.currentTime}
+              onChange={(e) => musicPlayer.seek(parseFloat(e.target.value))}
+              className="player-timeline"
+            />
+            <span className="player-time-text">
+              {formatTime(musicPlayer.duration)}
+            </span>
+          </div>
         </div>
       </div>
+
+
 
     </div>
   );

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Home, Briefcase, GraduationCap, Wrench, User } from 'lucide-react';
 import './BottomNav.css';
 
-export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, userRole }) {
+export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, userRole, isVoiceStandby, isVoiceActive }) {
   const { t } = useTranslation();
   
   const navItems = [
@@ -33,6 +33,12 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
               <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
               {showBadge && (
                 <span className="nav-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+              )}
+              {item.id === 'academy' && isVoiceStandby && (
+                <div className="voice-standby-orb-nav-overlay animate-fade-in">
+                  <div className="voice-standby-orb-glow"></div>
+                  <div className="voice-standby-orb-sphere"></div>
+                </div>
               )}
             </div>
             <span>{item.label}</span>

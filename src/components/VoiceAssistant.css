@@ -1,0 +1,591 @@
+/* ==========================================================
+   Voice Assistant Component CSS - Siri Ambient Redesign
+   ========================================================== */
+
+/* ====== 1. SETUP / ERROR MODALS (FLOATING POPUP) ====== */
+.voice-setup-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 20px;
+}
+
+.voice-setup-modal {
+  width: 100%;
+  max-width: 380px;
+  background: var(--dash-card-bg);
+  border: 1px solid var(--dash-card-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 20px 50px rgba(0, 0, 0, 0.35);
+  border-radius: 28px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.voice-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(118, 118, 128, 0.08);
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.voice-close-btn:hover {
+  background: rgba(118, 118, 128, 0.15);
+  color: var(--text-main);
+}
+
+.voice-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.voice-modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 6px;
+}
+
+.ai-logo-gradient {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #AF52DE, #5E5CE6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(94, 92, 230, 0.25);
+}
+
+.voice-modal-header h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 4px 0 0 0;
+  letter-spacing: -0.02em;
+}
+
+.ai-beta-tag {
+  font-size: 8px;
+  font-weight: 800;
+  background: rgba(255, 149, 0, 0.12);
+  color: #FF9500;
+  padding: 2px 6px;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+}
+
+.voice-sub-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.voice-icon-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.key-bg { background: rgba(255, 149, 0, 0.1); }
+.offline-bg { background: rgba(255, 59, 48, 0.1); }
+.lock-bg { background: rgba(255, 59, 48, 0.1); }
+
+.voice-sub-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 6px 0;
+}
+
+.voice-sub-card p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0 0 14px 0;
+  padding: 0 4px;
+}
+
+.voice-key-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.voice-key-input {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: rgba(118, 118, 128, 0.05);
+  color: var(--text-main);
+  padding: 0 12px;
+  font-size: 13px;
+  box-sizing: border-box;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.voice-key-input:focus {
+  border-color: var(--primary);
+}
+
+.voice-key-btn {
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.voice-link {
+  font-size: 11px;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.voice-link:hover {
+  text-decoration: underline;
+}
+
+.voice-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(94, 92, 230, 0.1);
+  color: var(--primary);
+  border: none;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mic-instructions {
+  width: 100%;
+  text-align: left;
+  background: rgba(118, 118, 128, 0.05);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.mic-instructions p {
+  padding: 0;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.mic-instructions ol {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.mic-instructions li {
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+
+/* ====== 2. FLOATING CHAT PILL (TOP NOTIFICATION STYLE) ====== */
+.voice-chat-bubble-pill {
+  position: absolute;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 380px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0, 0, 0, 0.04);
+  border-radius: 20px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  z-index: 10001;
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light-mode) .voice-chat-bubble-pill {
+    background: rgba(28, 28, 30, 0.8);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+  }
+}
+
+html.dark-mode .voice-chat-bubble-pill {
+  background: rgba(28, 28, 30, 0.8);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+}
+
+.voice-pill-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pill-segment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.user-dot { background: #FF9500; }
+.ai-dot { background: #5E5CE6; }
+.thinking-dot {
+  background: #0A84FF;
+  animation: pulse-slow 1s infinite alternate;
+}
+.error-dot { background: #FF3B30; }
+
+.pill-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-main);
+  word-break: break-word;
+}
+
+.pill-text.ja-text {
+  font-weight: 600;
+}
+
+.pill-text.error-text {
+  color: #FF3B30;
+}
+
+.voice-pill-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px;
+  margin-left: 8px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.voice-pill-close:hover {
+  opacity: 1;
+  color: var(--text-main);
+}
+
+
+/* ====== 3. SIRI-STYLE AMBIENT GLOW CONTAINER (STICKY BOTTOM) ====== */
+.voice-ambient-glow-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 90px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 20px;
+  z-index: 10000;
+  pointer-events: none; /* Let clicks pass through to bottom nav tabs if needed */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light-mode) .voice-ambient-glow-container {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+  }
+}
+
+html.dark-mode .voice-ambient-glow-container {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+/* Background glowing blur behind visualizer */
+.voice-ambient-glow-container::before {
+  content: '';
+  position: absolute;
+  bottom: -30px;
+  width: 250px;
+  height: 80px;
+  border-radius: 50%;
+  filter: blur(35px);
+  opacity: 0.7;
+  z-index: 1;
+  transition: all 0.5s ease;
+}
+
+/* Color glowing shifting based on status */
+.voice-ambient-glow-container.listening::before {
+  background: radial-gradient(circle, rgba(255, 59, 48, 0.6) 0%, rgba(255, 149, 0, 0) 70%);
+  animation: glow-breathe 2s infinite ease-in-out;
+}
+
+.voice-ambient-glow-container.thinking::before {
+  background: radial-gradient(circle, rgba(10, 132, 255, 0.6) 0%, rgba(94, 92, 230, 0) 70%);
+  animation: glow-breathe 1.5s infinite ease-in-out;
+}
+
+.voice-ambient-glow-container.speaking::before {
+  background: radial-gradient(circle, rgba(52, 199, 89, 0.6) 0%, rgba(48, 209, 88, 0) 70%);
+  animation: glow-breathe 1s infinite ease-in-out;
+}
+
+@keyframes glow-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 0.85; }
+}
+
+.voice-ambient-info {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 10px;
+  z-index: 5;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.voice-ambient-stop-btn {
+  position: absolute;
+  right: 20px;
+  bottom: 24px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  pointer-events: auto; /* Active click target */
+  transition: all 0.2s ease;
+}
+
+.voice-ambient-stop-btn:hover {
+  background: rgba(255, 59, 48, 0.8);
+  border-color: #FF3B30;
+}
+
+/* Siri wave lines visualizer */
+.voice-glow-visualizer-wave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 30px;
+  width: 100%;
+  z-index: 5;
+}
+
+.wave-bar {
+  width: 3.5px;
+  height: 4px;
+  border-radius: 2px;
+  transition: height 0.15s ease, background-color 0.4s ease;
+}
+
+/* Dynamic heights/animations depending on voice assistant state */
+.listening .wave-bar {
+  background-color: #FF453A;
+  animation: siri-wave-listening 1.2s infinite ease-in-out;
+}
+
+.thinking .wave-bar {
+  background-color: #0A84FF;
+  animation: siri-wave-thinking 1.4s infinite ease-in-out;
+}
+
+.speaking .wave-bar {
+  background-color: #30D158;
+  animation: siri-wave-speaking 1s infinite ease-in-out;
+}
+
+/* Wave index delays */
+.wave-1  { animation-delay: 0.1s; }
+.wave-2  { animation-delay: 0.25s; }
+.wave-3  { animation-delay: 0.4s; }
+.wave-4  { animation-delay: 0.15s; }
+.wave-5  { animation-delay: 0.3s; }
+.wave-6  { animation-delay: 0.2s; }
+.wave-7  { animation-delay: 0.45s; }
+.wave-8  { animation-delay: 0.1s; }
+.wave-9  { animation-delay: 0.35s; }
+.wave-10 { animation-delay: 0.25s; }
+
+/* Visualizer keyframes representing siri motions */
+@keyframes siri-wave-listening {
+  0%, 100% { height: 6px; transform: scaleY(1); }
+  50% { height: 26px; transform: scaleY(1.15); background-color: #FF9F0A; }
+}
+
+@keyframes siri-wave-thinking {
+  0%, 100% { height: 8px; }
+  50% { height: 16px; background-color: #BF5AF2; }
+}
+
+@keyframes siri-wave-speaking {
+  0%, 100% { height: 4px; }
+  50% { height: 32px; background-color: #64D2FF; }
+}
+
+
+/* ====== 4. MICRO-ANIMATIONS ====== */
+.animate-fade-in {
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in {
+  animation: slideInTop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s infinite ease-in-out;
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInTop {
+  from { opacity: 0; transform: translate(-50%, -20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* ====== 5. ALISA-STYLE FLOATING STANDBY AI ORB ====== */
+.voice-standby-orb-nav-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  z-index: 10;
+  pointer-events: none; /* Let all clicks pass through to the BottomNav tab button underneath! */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: orb-nav-breathe 2.5s infinite ease-in-out;
+}
+
+/* Shifting radial glow light behind the middle tab icon */
+.voice-standby-orb-glow {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #5E5CE6 0%, #AF52DE 35%, #30D158 70%, rgba(94, 92, 230, 0) 100%);
+  filter: blur(8px);
+  opacity: 0.8;
+  z-index: 1;
+  animation: orb-glow-rotate 6s infinite linear;
+}
+
+/* Decorative glass sphere overlaying the icon */
+.voice-standby-orb-sphere {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.2),
+    0 4px 10px rgba(94, 92, 230, 0.2);
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+html.dark-mode .voice-standby-orb-sphere {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    0 4px 12px rgba(94, 92, 230, 0.35);
+}
+
+/* ====== 6. STANDBY KEYFRAMES ====== */
+@keyframes orb-glow-rotate {
+  0% { transform: rotate(0deg) scale(1); filter: hue-rotate(0deg); }
+  50% { transform: rotate(180deg) scale(1.15); filter: hue-rotate(180deg); }
+  100% { transform: rotate(360deg) scale(1); filter: hue-rotate(360deg); }
+}
+
+@keyframes orb-nav-breathe {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -52%) scale(1.04); }
+}
