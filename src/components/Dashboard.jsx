@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, Car, Rocket } from 'lucide-react';
+import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket } from 'lucide-react';
 import './Dashboard.css';
 
 export default function Dashboard({ setActiveTab, profileData }) {
@@ -22,7 +22,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
       badge: '⏳ Tez kunda',
       title: 'Navbatlarsiz Servis',
       desc: "Avtoservislarga oldindan navbat oling va to'lov qiling. Vaqtingizni tejang!",
-      icon: <Car size={84} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
+      icon: <CalendarClock size={84} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'service'
     },
     {
