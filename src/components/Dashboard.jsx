@@ -6,11 +6,46 @@ import './Dashboard.css';
 export default function Dashboard({ setActiveTab, profileData }) {
   const { t, i18n } = useTranslation();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const SLIDES = [
+    {
+      id: 'referral',
+      badge: '🔥 Bonus',
+      title: 'Shoukai Pulini Oling',
+      desc: 'Tanishlaringizni ishga taklif qiling, maxsus shoukai pul mukofotini oling!',
+      icon: '🎁',
+      tab: 'profile'
+    },
+    {
+      id: 'service',
+      badge: '⏳ Tez kunda',
+      title: 'Navbatlarsiz Servis',
+      desc: "Avtoservislarga oldindan navbat oling va to'lov qiling. Vaqtingizni tejang!",
+      icon: '🚘',
+      tab: 'service'
+    },
+    {
+      id: 'jobs',
+      badge: '💼 Vakansiyalar',
+      title: 'Orzuingizdagi Ish',
+      desc: "Eng so'nggi va yuqori maoshli vakansiyalarni birinchilardan bo'lib toping.",
+      icon: '🚀',
+      tab: 'jobs'
+    }
+  ];
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const slideTimer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+    }, 4000);
+    return () => clearInterval(slideTimer);
+  }, [SLIDES.length]);
 
   const getDaysArray = () => {
     const days = [];
@@ -34,21 +69,40 @@ export default function Dashboard({ setActiveTab, profileData }) {
   return (
     <div className="dashboard-container hide-scrollbar">
       
-      {/* Top Banner Area (Like BON) */}
-      <div className="dash-hero-area" onClick={() => setActiveTab('jobs')}>
-        <div className="dash-hero-content">
-          <span className="dash-badge">{t("navJobs", "Ish e'lonlari")}</span>
-          <h1 className="dash-hero-title">
-            Michi<br/>
-            {t("dashJobsDesc", "Yangi vakansiyalar").split(" ")[0]}
-          </h1>
-          <p className="dash-hero-sub">{t("dashJobsDesc", "Eng so'nggi vakansiyalarni ko'rib chiqing")}</p>
+      {/* Top Banner Area (Dynamic Slider Like BON) */}
+      <div className="dash-hero-area">
+        <div 
+          className="dash-hero-slider" 
+          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+        >
+          {SLIDES.map((slide) => (
+            <div 
+              key={slide.id} 
+              className="dash-hero-slide" 
+              onClick={() => setActiveTab(slide.tab)}
+            >
+              <div className="dash-hero-content">
+                <span className="dash-badge">{slide.badge}</span>
+                <h1 className="dash-hero-title">{slide.title}</h1>
+                <p className="dash-hero-sub">{slide.desc}</p>
+              </div>
+              <div className="dash-hero-icon-3d">{slide.icon}</div>
+            </div>
+          ))}
         </div>
+        
         <div className="dash-hero-footer">
           <div className="dash-hero-dots">
-            <span className="dot active"></span>
-            <span className="dot"></span>
-            <span className="dot"></span>
+            {SLIDES.map((_, index) => (
+              <span 
+                key={index}
+                className={`dot ${currentSlide === index ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentSlide(index);
+                }}
+              ></span>
+            ))}
           </div>
         </div>
       </div>
