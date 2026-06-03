@@ -121,9 +121,14 @@ export default function Dashboard({ setActiveTab, profileData }) {
         })}
       </div>
 
-      <div className="dash-section-title">
-        <h2>{t('greeting', 'Xush kelibsiz')}</h2>
-        <span className="time-sub">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+      <div className="dash-greeting-row">
+        <div className="greeting-text">
+          <span className="greeting-icon">👋</span>
+          <h2>{t('welcomeTitle', 'Xush kelibsiz')}</h2>
+        </div>
+        <div className="time-pill">
+          {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </div>
       </div>
 
       {/* Bento Icons Row (Like BON App Store / Google Play / Inst) */}
