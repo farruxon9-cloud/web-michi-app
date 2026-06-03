@@ -134,7 +134,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
           </div>
           <div className="bento-text-wrap">
             <h4>{t("navJobs", "Ishlar")}</h4>
-            <p>Ko'rish</p>
+            <p>{t('bentoView', "Ko'rish")}</p>
           </div>
         </div>
 
@@ -144,7 +144,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
           </div>
           <div className="bento-text-wrap">
             <h4>{t('navAcademy', 'Maktablar')}</h4>
-            <p>O'qish</p>
+            <p>{t('bentoStudy', "O'qish")}</p>
           </div>
         </div>
 
@@ -154,7 +154,7 @@ export default function Dashboard({ setActiveTab, profileData }) {
           </div>
           <div className="bento-text-wrap">
             <h4>{t('navService', 'Servis')}</h4>
-            <p>Xizmatlar</p>
+            <p>{t('bentoServices', 'Xizmatlar')}</p>
           </div>
         </div>
 

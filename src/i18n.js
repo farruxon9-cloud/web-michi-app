@@ -4,6 +4,12 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   uz: {
     translation: {
+      // Bento & Profile
+      bentoView: "Ko'rish",
+      bentoStudy: "O'qish",
+      bentoServices: "Xizmatlar",
+      dashProfileTitle: "Shaxsiy profil",
+      viewProfileBtn: "Ko'rish",
       // Dashboard Banner
       heroSlide1Badge: "🔥 Bonus",
       heroSlide1Title: "Shoukai Pulini Oling",
@@ -424,6 +430,12 @@ const resources = {
   },
   ja: {
     translation: {
+      // Bento & Profile
+      bentoView: "見る",
+      bentoStudy: "学ぶ",
+      bentoServices: "サービス",
+      dashProfileTitle: "マイプロフィール",
+      viewProfileBtn: "見る",
       // Dashboard Banner
       heroSlide1Badge: "🔥 ボーナス",
       heroSlide1Title: "紹介ボーナスをゲット",
@@ -951,6 +963,12 @@ const resources = {
   },
   en: {
     translation: {
+      // Bento & Profile
+      bentoView: "View",
+      bentoStudy: "Study",
+      bentoServices: "Services",
+      dashProfileTitle: "Personal Profile",
+      viewProfileBtn: "View",
       // Dashboard Banner
       heroSlide1Badge: "🔥 Bonus",
       heroSlide1Title: "Get Shoukai Bonus",
@@ -1352,6 +1370,12 @@ const resources = {
   },
   vi: {
     translation: {
+      // Bento & Profile
+      bentoView: "Xem",
+      bentoStudy: "Học",
+      bentoServices: "Dịch vụ",
+      dashProfileTitle: "Hồ sơ cá nhân",
+      viewProfileBtn: "Xem",
       // Dashboard Banner
       heroSlide1Badge: "🔥 Tiền thưởng",
       heroSlide1Title: "Nhận tiền thưởng Shoukai",
@@ -1711,6 +1735,12 @@ const resources = {
   },
   zh: {
     translation: {
+      // Bento & Profile
+      bentoView: "查看",
+      bentoStudy: "学习",
+      bentoServices: "服务",
+      dashProfileTitle: "个人资料",
+      viewProfileBtn: "查看",
       // Dashboard Banner
       heroSlide1Badge: "🔥 奖金",
       heroSlide1Title: "获得介绍奖金",
