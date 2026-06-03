@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Home, Briefcase, GraduationCap, Wrench, User } from 'lucide-react';
 import './BottomNav.css';
 
-export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0 }) {
+export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, userRole }) {
   const { t } = useTranslation();
   
   const navItems = [
@@ -12,7 +12,10 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0 }) 
     { id: 'academy', icon: GraduationCap, label: t('navAcademy', 'Maktablar') },
     { id: 'service', icon: Wrench, label: t('navService', 'Servis') },
     { id: 'profile', icon: User, label: t('navProfile', 'Profil') },
-  ];
+  ].filter(item => {
+    if (userRole === 'company' && item.id === 'jobs') return false;
+    return true;
+  });
 
   return (
     <div className="bottom-nav">

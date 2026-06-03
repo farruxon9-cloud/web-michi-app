@@ -272,6 +272,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               <button
                 key={opt}
                 type="button"
+                className={`form-chip ${isSelected ? 'selected' : ''}`}
                 onClick={() => {
                   if (isMulti) {
                     const current = selectedValue || [];
@@ -286,17 +287,6 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                   if (errors[fieldName]) {
                     setErrors(prev => ({ ...prev, [fieldName]: null }));
                   }
-                }}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: '20px',
-                  border: isSelected ? '1px solid var(--primary)' : '1px solid var(--glass-border)',
-                  background: isSelected ? 'rgba(90, 85, 234, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-                  color: isSelected ? 'var(--primary)' : 'var(--text-main)',
-                  fontSize: '13px',
-                  fontWeight: isSelected ? '600' : '400',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
                 }}
               >
                 {label}
@@ -467,42 +457,42 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 </h4>
               </div>
               
-              <div className="input-group" style={{ marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="input-group chip-group-container">
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('workHoursLabel', 'Ish vaqti (Ixtiyoriy)')}
                 </label>
                 {renderChips(WORK_HOURS_OPTIONS, 'hours')}
               </div>
               
-              <div className="input-group" style={{ marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="input-group chip-group-container">
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('dayOffLabel', 'Dam olish kunlari (Ixtiyoriy)')}
                 </label>
                 {renderChips(DAY_OFF_OPTIONS, 'dayOff')}
               </div>
               
-              <div className="input-group" style={{ marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="input-group chip-group-container">
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('insuranceLabel', "Sug'urta to'lovlari (Ixtiyoriy)")}
                 </label>
                 {renderChips(INSURANCE_OPTIONS, 'insurance')}
               </div>
 
-              <div className="input-group" style={{ marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="input-group chip-group-container">
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('foreignersLabel', "Chet elliklar va Viza (Ixtiyoriy)")}
                 </label>
                 {renderChips(FOREIGNERS_OPTIONS, 'foreigners')}
               </div>
               
-              <div className="input-group" style={{ marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="input-group chip-group-container">
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('housingLabel', "Uy-joy / Ijara (Ixtiyoriy)")}
                 </label>
                 {renderChips(HOUSING_OPTIONS, 'housing')}
               </div>
 
-              <div className="input-group" style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="input-group chip-group-container" style={{ marginBottom: 0 }}>
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('licenseLabel', "Talab qilinadigan guvohnoma (Ixtiyoriy)")}
                 </label>
@@ -521,14 +511,14 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 </h4>
               </div>
 
-              <div className="input-group" style={{ marginBottom: '20px' }}>
+              <div className="input-group chip-group-container">
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('availableCoursesLabel', 'Mavjud toifalar')}
                 </label>
                 {renderChips(['Oogata', 'Chugata', 'Futsu', 'Tokushu', 'Nirin', 'Forklift'], 'courses', true)}
               </div>
 
-              <div className="input-group">
+              <div className="input-group chip-group-container" style={{ marginBottom: 0 }}>
                 <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
                   {t('availableLangsLabel', 'Dars beriladigan tillar')}
                 </label>

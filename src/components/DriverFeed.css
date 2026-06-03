@@ -393,3 +393,66 @@ html.dark-mode .job-chip.chip-green {
     font-size: 10px;
   }
 }
+
+/* ====== NEW CHIPS & SECTION GROUPS FOR JOB CREATION FORM ====== */
+.chip-group-container {
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.65);
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+  transition: all 0.2s ease;
+}
+
+html.dark-mode .chip-group-container {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+}
+
+.form-chip {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(118, 118, 128, 0.15);
+  background: rgba(118, 118, 128, 0.06);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-chip:hover {
+  background: rgba(118, 118, 128, 0.12);
+  color: var(--text-main);
+}
+
+.form-chip.selected {
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.25);
+}
+
+html.dark-mode .form-chip {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  color: #A1A1AA;
+}
+
+html.dark-mode .form-chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+}
+
+html.dark-mode .form-chip.selected {
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(94, 92, 230, 0.35);
+}

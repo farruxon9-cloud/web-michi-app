@@ -650,6 +650,7 @@ function App() {
           setActiveTab(tab);
         }}
         unreadCount={showProfileBadges ? unreadCount : 0}
+        userRole={userRole}
       />
     </div>
   );
