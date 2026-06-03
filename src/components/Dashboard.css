@@ -130,9 +130,10 @@
 /* Calendar Row */
 .calendar-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: center; /* Center the dates instead of spreading them to edges */
   align-items: center;
-  padding: 0 4px;
+  gap: 16px; /* Fixed, balanced gap to prevent them from spreading too far */
+  padding: 0;
   flex-shrink: 0;
 }
 
