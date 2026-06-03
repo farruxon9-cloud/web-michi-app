@@ -179,10 +179,9 @@
 /* Greeting Header */
 .dash-greeting-row {
   display: flex;
-  justify-content: flex-start; /* Bring clock and text together */
+  justify-content: space-between; /* Move text left and clock right */
   align-items: center;
-  gap: 12px; /* Small gap between text and clock */
-  margin: 0; /* Remove huge margins, rely on container gap */
+  margin: 0; 
   padding: 0 4px;
 }
 
