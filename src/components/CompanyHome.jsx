@@ -33,13 +33,19 @@ const INITIAL_COMPANY_JOBS = [
   }
 ];
 
-export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, schools, setSchools, profileData, jobToEdit, setJobToEdit }) {
+export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, schools, setSchools, profileData, jobToEdit, setJobToEdit, onFormToggle }) {
   const { t } = useTranslation();
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAdTypeSelect, setShowAdTypeSelect] = useState(false);
   const [selectedAdType, setSelectedAdType] = useState('job');
   const [jobImage, setJobImage] = useState(null);
   const fileInputRef = useRef(null);
+
+  React.useEffect(() => {
+    if (onFormToggle) {
+      onFormToggle(showAddForm || showAdTypeSelect);
+    }
+  }, [showAddForm, showAdTypeSelect, onFormToggle]);
 
   React.useEffect(() => {
     if (jobToEdit) {
@@ -341,7 +347,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     };
 
     return (
-      <div className="feed-container fade-in" style={{ paddingTop: '10px', paddingBottom: '100px' }}>
+      <div className="feed-container fade-in" style={{ overflowY: 'visible', paddingTop: '10px', paddingBottom: '100px' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
           <button className="icon-btn glass" onClick={() => { setShowAddForm(false); setJobImage(null); setErrors({}); }}>
@@ -771,7 +777,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     // ===== AD TYPE SELECTION SCREEN (FOR DRIVING SCHOOLS) =====
   if (showAdTypeSelect) {
     return (
-      <div className="feed-container fade-in" style={{ paddingTop: '10px', paddingBottom: '100px' }}>
+      <div className="feed-container fade-in" style={{ overflowY: 'visible', paddingTop: '10px', paddingBottom: '100px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
           <button className="icon-btn glass" onClick={() => setShowAdTypeSelect(false)}>
             <ArrowLeft size={20} />
@@ -837,7 +843,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   
   // ===== MAIN JOB LIST =====
   return (
-    <div className="feed-container fade-in" style={{ paddingTop: '10px', paddingBottom: '80px' }}>
+    <div className="feed-container fade-in" style={{ overflowY: 'visible', paddingTop: '10px', paddingBottom: '80px' }}>
       
       {/* ADD ANNOUNCEMENT BUTTON CARD */}
       <div style={{ padding: '0 16px', marginBottom: '24px' }}>

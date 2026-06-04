@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, Music, Volume2, VolumeX, Sparkles, X, Megaphone } from 'lucide-react';
+import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Sparkles, X, Megaphone } from 'lucide-react';
 import './Dashboard.css';
 
 const formatTime = (secs) => {
@@ -220,7 +220,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
         <div className="bento-double-cards-row">
           {/* Music Player (Compact) */}
           <div className="bento-music-card compact-music-card glass squircle">
-            <div className="music-player-top">
+            <div className="compact-music-body">
               <div className="music-player-info">
                 <div className={`music-gradient-icon ${musicPlayer.isPlaying ? 'playing-pulse' : ''}`}>
                   <Music size={18} color="#FFF" />
@@ -230,28 +230,80 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                   <span className="music-sub-label">
                     {musicPlayer.isPlaying ? t('playingBackgroundMusic', 'Music') : t('musicPaused', 'Music')}
                   </span>
-                  <h3 className="music-track-title">
-                    {musicPlayer.currentTrack.title}
-                  </h3>
+                  <div className="music-track-title-container">
+                    <h3 className="music-track-title compact-title">
+                      {musicPlayer.currentTrack.title}
+                    </h3>
+                  </div>
                 </div>
               </div>
 
-              <div className="music-player-controls">
-                <button 
-                  onClick={musicPlayer.togglePlay}
-                  className="player-control-btn btn-play-pause"
-                  aria-label="Play or Pause"
-                >
-                  {musicPlayer.isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '1px' }} />}
-                </button>
-                <button 
-                  onClick={musicPlayer.nextTrack}
-                  className="player-control-btn btn-skip"
-                  aria-label="Next track"
-                >
-                  <SkipForward size={12} fill="currentColor" />
-                </button>
+              <div className="compact-controls-volume">
+                <div className="music-player-controls">
+                  <button 
+                    onClick={musicPlayer.prevTrack}
+                    className="player-control-btn btn-skip"
+                    aria-label="Previous track"
+                  >
+                    <SkipBack size={12} fill="currentColor" />
+                  </button>
+                  <button 
+                    onClick={musicPlayer.togglePlay}
+                    className="player-control-btn btn-play-pause"
+                    aria-label="Play or Pause"
+                  >
+                    {musicPlayer.isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '1px' }} />}
+                  </button>
+                  <button 
+                    onClick={musicPlayer.nextTrack}
+                    className="player-control-btn btn-skip"
+                    aria-label="Next track"
+                  >
+                    <SkipForward size={12} fill="currentColor" />
+                  </button>
+                </div>
+
+                <div className="compact-volume-control">
+                  <button 
+                    onClick={() => musicPlayer.setVolume(musicPlayer.volume > 0 ? 0 : 0.7)}
+                    className="player-control-btn btn-vol"
+                    aria-label="Volume"
+                  >
+                    {musicPlayer.volume === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
+                  </button>
+                  <input 
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={musicPlayer.volume}
+                    onChange={(e) => musicPlayer.setVolume(parseFloat(e.target.value))}
+                    className="volume-slider compact-slider"
+                  />
+                </div>
               </div>
+            </div>
+
+            {/* Dynamic Soundwave Hanging on the Right Wall */}
+            <div className={`compact-side-visualizer ${musicPlayer.isPlaying ? 'animating' : ''}`}>
+              <div className="vis-line line-1"></div>
+              <div className="vis-line line-2"></div>
+              <div className="vis-line line-3"></div>
+              <div className="vis-line line-4"></div>
+              <div className="vis-line line-5"></div>
+              <div className="vis-line line-6"></div>
+              <div className="vis-line line-7"></div>
+              <div className="vis-line line-8"></div>
+              <div className="vis-line line-9"></div>
+              <div className="vis-line line-10"></div>
+              <div className="vis-line line-11"></div>
+              <div className="vis-line line-12"></div>
+              <div className="vis-line line-13"></div>
+              <div className="vis-line line-14"></div>
+              <div className="vis-line line-15"></div>
+              <div className="vis-line line-16"></div>
+              <div className="vis-line line-17"></div>
+              <div className="vis-line line-18"></div>
             </div>
           </div>
 
@@ -264,10 +316,10 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
             }}
           >
             <div className="my-ads-icon">
-              <Megaphone size={18} color="#FFF" />
+              <Megaphone size={24} color="#FFF" />
             </div>
             <div className="my-ads-text">
-              <span className="my-ads-sub">{t('dashProfileTitle', 'Shaxsiy profil')}</span>
+              <span className="my-ads-sub">{t('manageAdsSub', 'E\'lonlarni boshqarish')}</span>
               <h3 className="my-ads-title">{t('myAdsMenu', 'Mening e\'lonlarim')}</h3>
             </div>
           </div>
@@ -293,6 +345,13 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
             </div>
 
             <div className="music-player-controls">
+              <button 
+                onClick={musicPlayer.prevTrack}
+                className="player-control-btn btn-skip"
+                aria-label="Previous track"
+              >
+                <SkipBack size={14} fill="currentColor" />
+              </button>
               <button 
                 onClick={musicPlayer.togglePlay}
                 className="player-control-btn btn-play-pause"

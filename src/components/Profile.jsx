@@ -70,6 +70,7 @@ export default function Profile({
   const employeesCount = (companyEmployees || []).length;
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [acceptingAppId, setAcceptingAppId] = useState(null);
   const [acceptDate, setAcceptDate] = useState('');
   const [empInputId, setEmpInputId] = useState('');
@@ -397,24 +398,42 @@ const getLicenseLabel = (type) => {
   // ===== MY POSTED ADS PAGE (COMPANY) =====
   if (activePage === 'my_ads') {
     return (
-      <div className="profile-container fade-in">
-        <div className="sub-page-header" style={{ marginBottom: '16px' }}>
-          <button className="icon-btn glass" onClick={() => { setActivePage('main'); }}><ArrowLeft size={20} /></button>
-          <h2>{t('myAdsMenu', 'Mening e\'lonlarim')}</h2>
-        </div>
-        <div className="sub-page-body hide-scrollbar" style={{ overflowY: 'auto', height: 'calc(100vh - 110px)', paddingBottom: '40px' }}>
-          <CompanyHome 
-            onJobClick={onJobClick} 
-            onSchoolClick={onSchoolClick} 
-            jobs={jobs} 
-            setJobs={setJobs} 
-            schools={schools} 
-            setSchools={setSchools} 
-            profileData={profileData} 
-            jobToEdit={jobToEdit} 
-            setJobToEdit={setJobToEdit} 
-          />
-        </div>
+      <div className="profile-container fade-in" style={{ paddingBottom: '100px' }}>
+        {/* Sticky Back Button Container */}
+        {!isFormOpen && (
+          <div style={{
+            position: 'sticky',
+            top: 0,
+            background: 'var(--bg-color)',
+            zIndex: 10,
+            padding: '16px 20px 8px 20px',
+            borderBottom: '1px solid rgba(0, 0, 0, 0.02)'
+          }}>
+            <button className="icon-btn glass" onClick={() => { setActivePage('main'); }}><ArrowLeft size={20} /></button>
+          </div>
+        )}
+
+        {/* Scrollable Title */}
+        {!isFormOpen && (
+          <div style={{ padding: '0 20px 16px 20px', marginTop: '8px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>
+              {t('myAdsMenu', 'Mening e\'lonlarim')}
+            </h2>
+          </div>
+        )}
+
+        <CompanyHome 
+          onJobClick={onJobClick} 
+          onSchoolClick={onSchoolClick} 
+          jobs={jobs} 
+          setJobs={setJobs} 
+          schools={schools} 
+          setSchools={setSchools} 
+          profileData={profileData} 
+          jobToEdit={jobToEdit} 
+          setJobToEdit={setJobToEdit} 
+          onFormToggle={setIsFormOpen}
+        />
       </div>
     );
   }
@@ -687,20 +706,146 @@ const getLicenseLabel = (type) => {
               {userRole === 'company' && (
                 <>
                   <div className="resume-field">
-                    <span className="field-label">{t('companyTypeLabel')}</span>
-                    <span className="field-value badge-blue">{profileData.companyType || t('notProvided')}</span>
+                    <span className="field-label">{t('companyTypeLabel', 'Faoliyat turi')}</span>
+                    {isEditing ? (
+                      <select 
+                        className="edit-input" 
+                        value={editData.companyType || 'logistics'}
+                        onChange={(e) => setEditData({...editData, companyType: e.target.value})}
+                      >
+                        <option value="logistics">{t('typeLogistics', 'Logistika / Yuk tashish')}</option>
+                        <option value="driving_school">{t('typeDrivingSchool', 'Avtomaktab')}</option>
+                        <option value="taxi_company">{t('typeTaxiCompany', 'Taksi xizmati / Kompaniyasi')}</option>
+                        <option value="bus_company">{t('typeBusCompany', 'Avtobus xizmati / Yo\'nalishlari')}</option>
+                        <option value="special_machinery">{t('typeSpecialMachinery', 'Maxsus texnika / Qurilish texnikasi')}</option>
+                        <option value="other">{t('typeOther', 'Boshqa')}</option>
+                      </select>
+                    ) : (
+                      <span className="field-value badge-blue">
+                        {profileData.companyType === 'logistics' ? t('typeLogistics', 'Logistika') :
+                         profileData.companyType === 'driving_school' ? t('typeDrivingSchool', 'Avtomaktab') :
+                         profileData.companyType === 'taxi_company' ? t('typeTaxiCompany', 'Taksi') :
+                         profileData.companyType === 'bus_company' ? t('typeBusCompany', 'Avtobus') :
+                         profileData.companyType === 'special_machinery' ? t('typeSpecialMachinery', 'Maxsus texnika') :
+                         profileData.companyType === 'other' ? t('typeOther', 'Boshqa') :
+                         (profileData.companyType || t('notProvided'))}
+                      </span>
+                    )}
                   </div>
                   <div className="resume-field">
-                    <span className="field-label">{t('companyAddressPlaceholder')}</span>
-                    <span className="field-value">{profileData.companyAddress || t('notProvided')}</span>
+                    <span className="field-label">{t('companyAddressPlaceholder', 'Kompaniya manzili')}</span>
+                    {isEditing ? (
+                      <input 
+                        type="text" 
+                        className="edit-input" 
+                        value={editData.companyAddress || ''} 
+                        onChange={(e) => setEditData({...editData, companyAddress: e.target.value})} 
+                        maxLength={120} 
+                      />
+                    ) : (
+                      <span className="field-value">{profileData.companyAddress || t('notProvided')}</span>
+                    )}
                   </div>
                   <div className="resume-field">
-                    <span className="field-label">{t('contactPersonPlaceholder')}</span>
-                    <span className="field-value">{profileData.contactPerson || t('notProvided')}</span>
+                    <span className="field-label">{t('contactPersonPlaceholder', 'Mas\'ul shaxs ismi')}</span>
+                    {isEditing ? (
+                      <input 
+                        type="text" 
+                        className="edit-input" 
+                        value={editData.contactPerson || ''} 
+                        onChange={(e) => setEditData({...editData, contactPerson: e.target.value})} 
+                        maxLength={50} 
+                      />
+                    ) : (
+                      <span className="field-value">{profileData.contactPerson || t('notProvided')}</span>
+                    )}
                   </div>
                   <div className="resume-field">
-                    <span className="field-label">{t('companyPhonePlaceholder')}</span>
-                    <span className="field-value">{profileData.companyPhone || t('notProvided')}</span>
+                    <span className="field-label">{t('companyPhonePlaceholder', 'Telefon raqam')}</span>
+                    {isEditing ? (
+                      <input 
+                        type="tel" 
+                        className="edit-input" 
+                        value={editData.companyPhone || ''} 
+                        onChange={(e) => setEditData({...editData, companyPhone: e.target.value})} 
+                        maxLength={20} 
+                      />
+                    ) : (
+                      <span className="field-value">{profileData.companyPhone || t('notProvided')}</span>
+                    )}
+                  </div>
+                  <div className="resume-field">
+                    <span className="field-label">{t('corporateNumberLabel', 'Yuridik shaxs raqami')}</span>
+                    {isEditing ? (
+                      <input 
+                        type="text" 
+                        className="edit-input" 
+                        value={editData.corporateNumber || ''} 
+                        onChange={(e) => setEditData({...editData, corporateNumber: e.target.value})} 
+                        maxLength={13} 
+                      />
+                    ) : (
+                      <span className="field-value">{profileData.corporateNumber || t('notProvided')}</span>
+                    )}
+                  </div>
+                  <div className="resume-field">
+                    <span className="field-label">{t('websitePlaceholder', 'Kompaniya veb-sayti')}</span>
+                    {isEditing ? (
+                      <input 
+                        type="url" 
+                        className="edit-input" 
+                        value={editData.website || ''} 
+                        onChange={(e) => setEditData({...editData, website: e.target.value})} 
+                        maxLength={100} 
+                      />
+                    ) : (
+                      <span className="field-value">
+                        {profileData.website ? (
+                          <a href={profileData.website} target="_blank" rel="noopener noreferrer" style={{ color: '#0A84FF', textDecoration: 'none' }}>{profileData.website}</a>
+                        ) : t('notProvided')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="resume-field">
+                    <span className="field-label">{t('establishedYearLabel', 'Tashkil etilgan yili')}</span>
+                    {isEditing ? (
+                      <input 
+                        type="number" 
+                        className="edit-input" 
+                        value={editData.establishedYear || ''} 
+                        onChange={(e) => setEditData({...editData, establishedYear: e.target.value})} 
+                        maxLength={4} 
+                      />
+                    ) : (
+                      <span className="field-value">{profileData.establishedYear || t('notProvided')}</span>
+                    )}
+                  </div>
+                  <div className="resume-field">
+                    <span className="field-label">{t('employeeCountPlaceholder', 'Ishchilar soni')}</span>
+                    {isEditing ? (
+                      <input 
+                        type="number" 
+                        className="edit-input" 
+                        value={editData.employeeCount || ''} 
+                        onChange={(e) => setEditData({...editData, employeeCount: e.target.value})} 
+                      />
+                    ) : (
+                      <span className="field-value">{profileData.employeeCount || t('notProvided')}</span>
+                    )}
+                  </div>
+                  <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                    <span className="field-label">{t('companyDescPlaceholder', 'Kompaniya haqida qisqacha')}</span>
+                    {isEditing ? (
+                      <textarea 
+                        className="edit-input" 
+                        style={{ width: '100%', minHeight: '80px', resize: 'vertical', fontFamily: 'inherit' }}
+                        value={editData.companyDesc || ''} 
+                        onChange={(e) => setEditData({...editData, companyDesc: e.target.value})} 
+                        maxLength={300} 
+                      />
+                    ) : (
+                      <span className="field-value" style={{ whiteSpace: 'pre-wrap', width: '100%' }}>{profileData.companyDesc || t('notProvided')}</span>
+                    )}
                   </div>
                 </>
               )}
@@ -1456,7 +1601,15 @@ const getLicenseLabel = (type) => {
             <div className="resume-body">
               <div className="resume-field">
                 <span className="field-label">{t('companyTypeLabel')}</span>
-                <span className="field-value badge-blue">{profileData.companyType || t('notProvided')}</span>
+                <span className="field-value badge-blue">
+                  {profileData.companyType === 'logistics' ? t('typeLogistics', 'Logistika') :
+                   profileData.companyType === 'driving_school' ? t('typeDrivingSchool', 'Avtomaktab') :
+                   profileData.companyType === 'taxi_company' ? t('typeTaxiCompany', 'Taksi') :
+                   profileData.companyType === 'bus_company' ? t('typeBusCompany', 'Avtobus') :
+                   profileData.companyType === 'special_machinery' ? t('typeSpecialMachinery', 'Maxsus texnika') :
+                   profileData.companyType === 'other' ? t('typeOther', 'Boshqa') :
+                   (profileData.companyType || t('notProvided'))}
+                </span>
               </div>
               {profileData.companyAddress && (
                 <div className="resume-field icon-row">
