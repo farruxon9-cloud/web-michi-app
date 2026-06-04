@@ -233,6 +233,15 @@ function App() {
       contactPerson: '',
       companyPhone: '',
       companyDesc: '',
+      // Japanese Resume (Rirekisho) specific fields
+      furigana: '',
+      phone: '',
+      postalCode: '',
+      gender: 'male',
+      motivation: '',
+      selfPR: '',
+      hobbies: '',
+      personalRequests: '貴社規定に従います。'
     };
   });
 

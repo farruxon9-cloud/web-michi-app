@@ -8,6 +8,7 @@ import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
 import VerifiedBadge from './VerifiedBadge';
 import CompanyHome from './CompanyHome';
+import ResumeBuilder from './ResumeBuilder';
 import './Profile.css';
 
 const STATUS_PIPELINE = ['submitted', 'reviewing', 'reviewed', 'interview', 'rejected', 'accepted'];
@@ -206,6 +207,23 @@ const getLicenseLabel = (type) => {
     });
     setEditData({ ...editData, educationHistory: updated });
   };
+
+  // ===== RESUME BUILDER PAGE =====
+  if (activePage === 'resume_builder') {
+    return (
+      <ResumeBuilder 
+        profileData={profileData}
+        onUpdateProfile={onUpdateProfile}
+        onBack={() => {
+          if (profileActivePageSource === 'home') {
+            if (onNavigate) onNavigate('home');
+          } else {
+            setActivePage('main');
+          }
+        }}
+      />
+    );
+  }
 
   // ===== NOTIFICATIONS PAGE =====
   if (activePage === 'notifications') {
@@ -1513,9 +1531,29 @@ const getLicenseLabel = (type) => {
         {/* Resume Card */}
         {userRole === 'driver' && (
           <div className="menu-group glass squircle resume-card">
-            <div className="resume-header">
-              <FileText size={20} color="#0A84FF" />
-              <h3>{t('myResume')}</h3>
+            <div className="resume-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FileText size={20} color="#0A84FF" />
+                <h3>{t('myResume')}</h3>
+              </div>
+              <button 
+                onClick={() => setActivePage('resume_builder')}
+                style={{
+                  background: 'linear-gradient(135deg, #30D158, #28C754)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '6px 12px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 10px rgba(48, 209, 88, 0.2)',
+                  transition: 'all 0.2s ease',
+                  outline: 'none'
+                }}
+              >
+                📝 {t('createResume', 'Tahrirlash / Yuklash')}
+              </button>
             </div>
             <div className="resume-body">
               <div className="resume-field">
@@ -1740,6 +1778,12 @@ const getLicenseLabel = (type) => {
                     {totalSavedCount}
                   </span>
                 )}
+                <ChevronRight size={20} color="#8E8E93" className="chevron" />
+              </div>
+              <div className="menu-divider"></div>
+              <div className="menu-item" onClick={() => setActivePage('resume_builder')}>
+                <div className="menu-icon"><FileText size={20} color="#30D158" /></div>
+                <span>{t('createResume', 'Yapon Rezyumesi (履歴書)')}</span>
                 <ChevronRight size={20} color="#8E8E93" className="chevron" />
               </div>
             </>
