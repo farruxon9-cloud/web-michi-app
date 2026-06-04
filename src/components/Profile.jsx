@@ -29,6 +29,8 @@ export default function Profile({
   schoolApplications = [], onShoukaiPaid, onNavigate,
   activePage = 'main',
   setActivePage,
+  profileActivePageSource,
+  setProfileActivePageSource,
   onJobClick,
   onSchoolClick,
   showProfileBadges = true,
@@ -409,7 +411,14 @@ const getLicenseLabel = (type) => {
             padding: '16px 20px 8px 20px',
             borderBottom: '1px solid rgba(0, 0, 0, 0.02)'
           }}>
-            <button className="icon-btn glass" onClick={() => { setActivePage('main'); }}><ArrowLeft size={20} /></button>
+            <button className="icon-btn glass" onClick={() => {
+              if (profileActivePageSource === 'home') {
+                setActivePage('main');
+                if (onNavigate) onNavigate('home');
+              } else {
+                setActivePage('main');
+              }
+            }}><ArrowLeft size={20} /></button>
           </div>
         )}
 
@@ -882,7 +891,14 @@ const getLicenseLabel = (type) => {
     return (
       <div className="profile-container fade-in">
         <div className="sub-page-header">
-          <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+          <button className="icon-btn glass" onClick={() => {
+            if (profileActivePageSource === 'home') {
+              setActivePage('main');
+              if (onNavigate) onNavigate('home');
+            } else {
+              setActivePage('main');
+            }
+          }}><ArrowLeft size={20} /></button>
           <h2>
             {userRole === 'company' ? t('incomingApps', 'Kelib tushgan arizalar') : t('myApplications', 'Mening arizalarim')}
             <span className="section-header-count">({userRole === 'company' ? applications.length : totalOwnApplications})</span>
@@ -1700,7 +1716,10 @@ const getLicenseLabel = (type) => {
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
           <div className="menu-divider"></div>
-          <div className="menu-item" onClick={() => setActivePage('applications')}>
+          <div className="menu-item" onClick={() => {
+            if (setProfileActivePageSource) setProfileActivePageSource('profile');
+            setActivePage('applications');
+          }}>
             <div className="menu-icon"><Briefcase size={20} /></div>
             <span>{userRole === 'company' ? t('incomingApps', 'Kelib tushgan arizalar') : t('myApplications')}</span>
             {showProfileBadges && totalOwnApplications > 0 && (
@@ -1739,7 +1758,10 @@ const getLicenseLabel = (type) => {
           {userRole === 'company' && (
             <>
               <div className="menu-divider"></div>
-              <div className="menu-item" onClick={() => setActivePage('my_ads')}>
+              <div className="menu-item" onClick={() => {
+                if (setProfileActivePageSource) setProfileActivePageSource('profile');
+                setActivePage('my_ads');
+              }}>
                 <div className="menu-icon"><Megaphone size={20} /></div>
                 <span>{t('myAdsMenu', 'Mening e\'lonlarim')}</span>
                 <ChevronRight size={20} color="#8E8E93" className="chevron" />

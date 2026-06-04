@@ -111,6 +111,7 @@ function App() {
   // profileActivePage: Profil bo'limidagi faol sub-sahifa (masalan: 'main', 'saved_items', 'settings').
   // Brauzerda tablar almashganda (masalan home tabiga o'tib qaytganda) profil reset bo'lmasligi uchun bu holat App.jsx darajasida saqlanadi.
   const [profileActivePage, setProfileActivePage] = useState('main');
+  const [profileActivePageSource, setProfileActivePageSource] = useState('profile');
 
   // backTab: Profilning saqlanganlaridan e'longa kirilganda, ortga qaytish manzilini eslab qoluvchi o'zgaruvchi.
   const [backTab, setBackTab] = useState(null);
@@ -645,9 +646,11 @@ function App() {
             profileData={profileData} 
             musicPlayer={musicPlayer}
             isVoiceStandby={isVoiceStandby}
+            isVoiceActive={isVoiceActive}
             onVoiceActivate={handleVoiceActivate}
             onVoiceToggle={handleVoiceToggle}
             setProfileActivePage={setProfileActivePage}
+            setProfileActivePageSource={setProfileActivePageSource}
             userRole={userRole}
           />
         );
@@ -703,6 +706,8 @@ function App() {
             onNavigate={setActiveTab}
             activePage={profileActivePage}
             setActivePage={setProfileActivePage}
+            profileActivePageSource={profileActivePageSource}
+            setProfileActivePageSource={setProfileActivePageSource}
             onJobClick={setSelectedJob}
             onSchoolClick={handleSchoolClick}
             showProfileBadges={showProfileBadges}

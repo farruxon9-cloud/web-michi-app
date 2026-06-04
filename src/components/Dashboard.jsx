@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Sparkles, X, Megaphone } from 'lucide-react';
+import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck } from 'lucide-react';
 import './Dashboard.css';
 
 const formatTime = (secs) => {
@@ -10,7 +10,7 @@ const formatTime = (secs) => {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
 
-export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVoiceStandby, onVoiceActivate, onVoiceToggle, setProfileActivePage, userRole }) {
+export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVoiceStandby, isVoiceActive, onVoiceActivate, onVoiceToggle, setProfileActivePage, setProfileActivePageSource, userRole }) {
   const { t, i18n } = useTranslation();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -164,7 +164,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
           {/* Subtle wave visualizer inside card */}
           <div className="ai-card-visualizer">
             {[1, 2, 3, 4].map((bar) => (
-              <div key={bar} className={`ai-bar ai-bar-${bar} ${isVoiceStandby ? 'active' : ''}`}></div>
+              <div key={bar} className={`ai-bar ai-bar-${bar} ${isVoiceStandby ? 'active' : ''} ${isVoiceActive ? 'animating' : ''}`}></div>
             ))}
           </div>
           <span 
@@ -215,8 +215,8 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
 
       </div>
 
-      {/* Premium Minimalist Music Player / Company My Ads Shortcut Cards */}
-      {userRole === 'company' ? (
+      {/* Premium Minimalist Music Player / Company My Ads / Driver Applications Shortcut Cards */}
+      {(userRole === 'company' || userRole === 'driver') ? (
         <div className="bento-double-cards-row">
           {/* Music Player (Compact) */}
           <div className="bento-music-card compact-music-card glass squircle">
@@ -245,21 +245,21 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                     className="player-control-btn btn-skip"
                     aria-label="Previous track"
                   >
-                    <SkipBack size={12} fill="currentColor" />
+                    <SkipBack size={18} fill="currentColor" />
                   </button>
                   <button 
                     onClick={musicPlayer.togglePlay}
                     className="player-control-btn btn-play-pause"
                     aria-label="Play or Pause"
                   >
-                    {musicPlayer.isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '1px' }} />}
+                    {musicPlayer.isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" style={{ marginLeft: '2.5px' }} />}
                   </button>
                   <button 
                     onClick={musicPlayer.nextTrack}
                     className="player-control-btn btn-skip"
                     aria-label="Next track"
                   >
-                    <SkipForward size={12} fill="currentColor" />
+                    <SkipForward size={18} fill="currentColor" />
                   </button>
                 </div>
 
@@ -279,50 +279,53 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                     value={musicPlayer.volume}
                     onChange={(e) => musicPlayer.setVolume(parseFloat(e.target.value))}
                     className="volume-slider compact-slider"
+                    style={{
+                      background: `linear-gradient(to right, var(--primary) ${musicPlayer.volume * 100}%, rgba(120, 120, 128, 0.2) ${musicPlayer.volume * 100}%)`
+                    }}
                   />
                 </div>
               </div>
             </div>
-
-            {/* Dynamic Soundwave Hanging on the Right Wall */}
-            <div className={`compact-side-visualizer ${musicPlayer.isPlaying ? 'animating' : ''}`}>
-              <div className="vis-line line-1"></div>
-              <div className="vis-line line-2"></div>
-              <div className="vis-line line-3"></div>
-              <div className="vis-line line-4"></div>
-              <div className="vis-line line-5"></div>
-              <div className="vis-line line-6"></div>
-              <div className="vis-line line-7"></div>
-              <div className="vis-line line-8"></div>
-              <div className="vis-line line-9"></div>
-              <div className="vis-line line-10"></div>
-              <div className="vis-line line-11"></div>
-              <div className="vis-line line-12"></div>
-              <div className="vis-line line-13"></div>
-              <div className="vis-line line-14"></div>
-              <div className="vis-line line-15"></div>
-              <div className="vis-line line-16"></div>
-              <div className="vis-line line-17"></div>
-              <div className="vis-line line-18"></div>
-            </div>
           </div>
 
-          {/* Mening e'lonlarim Card */}
-          <div 
-            className="bento-my-ads-card glass squircle" 
-            onClick={() => {
-              if (setProfileActivePage) setProfileActivePage('my_ads');
-              setActiveTab('profile');
-            }}
-          >
-            <div className="my-ads-icon">
-              <Megaphone size={24} color="#FFF" />
+          {/* Bento Action Card (Megaphone for Company, FileCheck for Driver) */}
+          {userRole === 'company' ? (
+            <div 
+              className="bento-my-ads-card glass squircle" 
+              onClick={() => {
+                if (setProfileActivePageSource) setProfileActivePageSource('home');
+                if (setProfileActivePage) setProfileActivePage('my_ads');
+                setActiveTab('profile');
+              }}
+            >
+              <div className="my-ads-icon">
+                <Megaphone size={24} color="#FFF" />
+              </div>
+              <div className="my-ads-text">
+                <span className="my-ads-sub">{t('manageAdsSub', 'E\'lonlarni boshqarish')}</span>
+                <h3 className="my-ads-title">{t('myAdsMenu', 'Mening e\'lonlarim')}</h3>
+                <p className="my-ads-desc">{t('myAdsDesc', 'Yangi vakansiyalar qo\'shing va arizalarni boshqaring.')}</p>
+              </div>
             </div>
-            <div className="my-ads-text">
-              <span className="my-ads-sub">{t('manageAdsSub', 'E\'lonlarni boshqarish')}</span>
-              <h3 className="my-ads-title">{t('myAdsMenu', 'Mening e\'lonlarim')}</h3>
+          ) : (
+            <div 
+              className="bento-my-ads-card bento-my-apps-card glass squircle" 
+              onClick={() => {
+                if (setProfileActivePageSource) setProfileActivePageSource('home');
+                if (setProfileActivePage) setProfileActivePage('applications');
+                setActiveTab('profile');
+              }}
+            >
+              <div className="my-apps-icon">
+                <FileCheck size={24} color="#FFF" />
+              </div>
+              <div className="my-ads-text">
+                <span className="my-ads-sub">{t('manageAppsSub', 'Arizalar holatini tekshirish')}</span>
+                <h3 className="my-ads-title">{t('myApplications', 'Mening arizalarim')}</h3>
+                <p className="my-ads-desc">{t('myApplicationsDesc', 'Yuborilgan arizalar va javoblar holatini kuzating.')}</p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       ) : (
         /* Original Full-Width Music Player Card */
@@ -382,22 +385,14 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                   value={musicPlayer.volume}
                   onChange={(e) => musicPlayer.setVolume(parseFloat(e.target.value))}
                   className="volume-slider"
+                  style={{
+                    background: `linear-gradient(to right, var(--primary) ${musicPlayer.volume * 100}%, rgba(120, 120, 128, 0.2) ${musicPlayer.volume * 100}%)`
+                  }}
                 />
               </div>
             </div>
           </div>
-
           <div className="music-player-bottom">
-            {/* Waveform Visualizer */}
-            <div className="mini-visualizer">
-              {[1, 2, 3, 4, 5].map((bar) => (
-                <div 
-                  key={bar} 
-                  className={`vis-bar bar-${bar} ${musicPlayer.isPlaying ? 'playing' : ''}`}
-                ></div>
-              ))}
-            </div>
-
             {/* Timeline */}
             <div className="player-timeline-wrapper">
               <span className="player-time-text">
