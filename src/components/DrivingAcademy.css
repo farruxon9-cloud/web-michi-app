@@ -565,11 +565,11 @@
    Maktabga telefon qo'ng'iroq qilish uchun. <a> tag bilan ishlaydi. */
 .academy-call-btn {
   background: rgba(255, 255, 255, 0.5);
-  color: var(--success);
-  border: 1px solid var(--success-light-border);
+  color: #0A84FF;
+  border: 1px solid rgba(10, 132, 255, 0.25);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 2px 10px rgba(48, 209, 88, 0.08);
+  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.08);
 }
 
 .academy-apply-btn {
@@ -588,9 +588,9 @@
 
 /* ====== DARK MODE MOSLASHUVI ====== */
 html.dark-mode .academy-call-btn {
-  background: rgba(48, 209, 88, 0.12);
-  color: #30D158;
-  border-color: rgba(48, 209, 88, 0.25);
+  background: rgba(10, 132, 255, 0.12);
+  color: #0A84FF;
+  border-color: rgba(10, 132, 255, 0.25);
   backdrop-filter: blur(12px);
 }
 

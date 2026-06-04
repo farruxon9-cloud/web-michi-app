@@ -256,10 +256,10 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
               <a 
                 href={`tel:${job.phone || '+81 90-1234-5678'}`} 
                 className="apply-btn"
-                style={{ background: '#30D158', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontWeight: '700' }}
+                style={{ background: '#0A84FF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontWeight: '700' }}
               >
                 <Phone size={16} />
-                {t('callSchool', 'Qo\'ng\'iroq')}
+                {t('callBtn', 'Qo\'ng\'iroq qilish')}
               </a>
               <button 
                 className="apply-btn shoukai-btn" 

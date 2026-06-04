@@ -205,7 +205,7 @@ const resources = {
       // Driving Academy Detail
       schoolDetail: "Maktab haqida",
       courseOffered: "Taklif qilinadigan kurslar",
-      callSchool: "Maktabga qo'ng'iroq",
+      callSchool: "Qo'ng'iroq",
       emailLabel: "Email",
       fullAddress: "To'liq manzil",
       applyToSchool: "Maktabga topshirish",
@@ -796,7 +796,7 @@ const resources = {
       // Driving Academy Detail
       schoolDetail: "学校詳細",
       courseOffered: "提供コース",
-      callSchool: "学校に電話",
+      callSchool: "電話する",
       emailLabel: "メール",
       fullAddress: "住所（詳細）",
       applyToSchool: "学校に応募",
@@ -1242,7 +1242,7 @@ const resources = {
       // Driving Academy Detail
       schoolDetail: "School Details",
       courseOffered: "Courses Offered",
-      callSchool: "Call School",
+      callSchool: "Call",
       emailLabel: "Email",
       fullAddress: "Full Address",
       applyToSchool: "Apply to School",
@@ -1701,7 +1701,7 @@ const resources = {
       // Driving Academy Detail
       schoolDetail: "Chi tiết trường",
       courseOffered: "Khóa học",
-      callSchool: "Gọi trường",
+      callSchool: "Gọi",
       emailLabel: "Email",
       fullAddress: "Địa chỉ đầy đủ",
       applyToSchool: "Đăng ký trường",
@@ -2105,7 +2105,7 @@ const resources = {
       // Driving Academy Detail
       schoolDetail: "学校详情",
       courseOffered: "开设课程",
-      callSchool: "致电学校",
+      callSchool: "致电",
       emailLabel: "邮箱",
       fullAddress: "详细地址",
       applyToSchool: "申请学校",
@@ -2503,7 +2503,7 @@ const resources = {
       // Driving Academy Detail
       schoolDetail: "विद्यालय विवरण",
       courseOffered: "उपलब्ध कोर्सहरू",
-      callSchool: "विद्यालयमा फोन गर्नुहोस्",
+      callSchool: "फोन गर्नुहोस्",
       emailLabel: "इमेल",
       fullAddress: "पूरा ठेगाना",
       applyToSchool: "विद्यालयमा आवेदन दिनुहोस्",

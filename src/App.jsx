@@ -661,7 +661,23 @@ function App() {
           />
         );
       case 'jobs':
-        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} verifiedCompanies={verifiedCompanies} onShoukai={handleShoukai} userRole={userRole} />;
+        return (
+          <DriverFeed 
+            onJobClick={setSelectedJob} 
+            jobs={jobs} 
+            isContractActive={contractStatus === 'active'} 
+            verifiedCompanies={verifiedCompanies} 
+            onShoukai={handleShoukai} 
+            userRole={userRole} 
+            profileData={profileData}
+            onEditJob={(job) => {
+              setSelectedJob(null);
+              setJobToEdit(job);
+              setProfileActivePage('my_ads');
+              setActiveTab('profile');
+            }}
+          />
+        );
       case 'academy':
         return (
           <DrivingAcademy 
@@ -783,7 +799,8 @@ function App() {
             onEditJob={(job) => {
               setSelectedJob(null);
               setJobToEdit(job);
-              setActiveTab('home');
+              setProfileActivePage('my_ads');
+              setActiveTab('profile');
             }}
           />
         </Suspense></ChunkErrorBoundary>

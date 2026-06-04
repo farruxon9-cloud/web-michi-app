@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone } from 'lucide-react';
+import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone, Edit3 } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './DriverFeed.css';
 
@@ -131,7 +131,7 @@ export const MOCK_JOBS = [
 // DriverFeed — Ish e'lonlari ro'yxati (Goo-net uslubida gorizontal kartochkalar)
 // Har bir kartochkada: chapda rasm, o'ngda ma'lumotlar, pastda ikonkali chiplar
 // ============================================================
-export default function DriverFeed({ onJobClick, isContractActive, verifiedCompanies = [], onShoukai, jobs = MOCK_JOBS, userRole }) {
+export default function DriverFeed({ onJobClick, isContractActive, verifiedCompanies = [], onShoukai, jobs = MOCK_JOBS, userRole, profileData, onEditJob }) {
   const { t } = useTranslation();
   const [activeSegment, setActiveSegment] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -247,7 +247,19 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
 
                 {/* Pastki qism: Tugmalar */}
                 <div className="job-card-actions">
-                  {userRole === 'company' ? (
+                  {userRole === 'company' && profileData?.fullName === job.company ? (
+                    <button 
+                      className="job-card-btn btn-apply"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditJob && onEditJob(job);
+                      }}
+                      style={{ flex: 1, background: '#0A84FF', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    >
+                      <Edit3 size={13} />
+                      {t('editJob', 'Tahrirlash')}
+                    </button>
+                  ) : userRole === 'company' ? (
                     <>
                       <button 
                         className="job-card-btn btn-call"
@@ -255,7 +267,7 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
                           e.stopPropagation();
                           window.location.href = `tel:${job.phone || '080-1234-5678'}`;
                         }}
-                        style={{ flex: 1, background: '#30D158', color: '#fff', border: 'none' }}
+                        style={{ flex: 1, background: '#0A84FF', color: '#fff', border: 'none' }}
                       >
                         <Phone size={13} />
                         {t('callBtn', 'Qo\'ng\'iroq qilish')}
