@@ -48,6 +48,22 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Year/Month helpers for numeric date inputs
+  const parseYearMonth = (dateStr) => {
+    if (!dateStr) return { year: '', month: '' };
+    const parts = dateStr.split('-');
+    return { year: parts[0] || '', month: parts[1] ? parseInt(parts[1], 10).toString() : '' };
+  };
+
+  const buildYearMonth = (year, month) => {
+    if (!year && !month) return '';
+    const y = year || '';
+    const m = month ? String(month).padStart(2, '0') : '';
+    if (y && m) return `${y}-${m}`;
+    if (y) return y;
+    return '';
+  };
+
   const handleSaveData = () => {
     onUpdateProfile(formData);
   };
@@ -346,23 +362,44 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
                       className="glass-input"
                     />
                   </div>
-                  <div className="form-row">
-                    <div className="form-group flex-1">
-                      <input 
-                        type="text" 
-                        placeholder={t('degree', 'Mutaxassislik/Daraja (e.g. Bachelor)')}
-                        value={edu.degree} 
-                        onChange={(e) => handleEduChange(idx, 'degree', e.target.value)}
-                        className="glass-input"
+                  <div className="form-group">
+                    <input 
+                      type="text" 
+                      placeholder={t('degree', 'Mutaxassislik/Daraja (e.g. Bachelor)')}
+                      value={edu.degree} 
+                      onChange={(e) => handleEduChange(idx, 'degree', e.target.value)}
+                      className="glass-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="sub-label">{t('gradDateLabel', 'Bitirgan sanasi')}</label>
+                    <div className="date-input-group">
+                      <input
+                        type="number"
+                        placeholder={t('yearPlaceholder', 'Yil')}
+                        value={parseYearMonth(edu.gradDate).year}
+                        onChange={(e) => {
+                          const { month } = parseYearMonth(edu.gradDate);
+                          handleEduChange(idx, 'gradDate', buildYearMonth(e.target.value, month));
+                        }}
+                        className="glass-input date-num-input year-input"
+                        min="1950"
+                        max="2040"
                       />
-                    </div>
-                    <div className="form-group flex-1">
-                      <input 
-                        type="month" 
-                        value={edu.gradDate} 
-                        onChange={(e) => handleEduChange(idx, 'gradDate', e.target.value)}
-                        className="glass-input"
+                      <span className="date-separator">{t('yearSuffix', 'yil')}</span>
+                      <input
+                        type="number"
+                        placeholder={t('monthPlaceholder', 'Oy')}
+                        value={parseYearMonth(edu.gradDate).month}
+                        onChange={(e) => {
+                          const { year } = parseYearMonth(edu.gradDate);
+                          handleEduChange(idx, 'gradDate', buildYearMonth(year, e.target.value));
+                        }}
+                        className="glass-input date-num-input month-input"
+                        min="1"
+                        max="12"
                       />
+                      <span className="date-separator">{t('monthSuffix', 'oy')}</span>
                     </div>
                   </div>
                 </div>
@@ -411,28 +448,70 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
                       className="glass-input"
                     />
                   </div>
-                  <div className="form-row">
-                    <div className="form-group flex-1">
-                      <label className="sub-label">{t('startDate', 'Boshlanish sanasi')}</label>
-                      <input 
-                        type="month" 
-                        value={work.startDate} 
-                        onChange={(e) => handleWorkChange(idx, 'startDate', e.target.value)}
-                        className="glass-input"
+                  <div className="form-group">
+                    <label className="sub-label">{t('startDate', 'Boshlanish sanasi')}</label>
+                    <div className="date-input-group">
+                      <input
+                        type="number"
+                        placeholder={t('yearPlaceholder', 'Yil')}
+                        value={parseYearMonth(work.startDate).year}
+                        onChange={(e) => {
+                          const { month } = parseYearMonth(work.startDate);
+                          handleWorkChange(idx, 'startDate', buildYearMonth(e.target.value, month));
+                        }}
+                        className="glass-input date-num-input year-input"
+                        min="1950"
+                        max="2040"
                       />
+                      <span className="date-separator">{t('yearSuffix', 'yil')}</span>
+                      <input
+                        type="number"
+                        placeholder={t('monthPlaceholder', 'Oy')}
+                        value={parseYearMonth(work.startDate).month}
+                        onChange={(e) => {
+                          const { year } = parseYearMonth(work.startDate);
+                          handleWorkChange(idx, 'startDate', buildYearMonth(year, e.target.value));
+                        }}
+                        className="glass-input date-num-input month-input"
+                        min="1"
+                        max="12"
+                      />
+                      <span className="date-separator">{t('monthSuffix', 'oy')}</span>
                     </div>
-                    {!work.isCurrent && (
-                      <div className="form-group flex-1">
-                        <label className="sub-label">{t('endDate', 'Tugash sanasi')}</label>
-                        <input 
-                          type="month" 
-                          value={work.endDate} 
-                          onChange={(e) => handleWorkChange(idx, 'endDate', e.target.value)}
-                          className="glass-input"
-                        />
-                      </div>
-                    )}
                   </div>
+                  {!work.isCurrent && (
+                    <div className="form-group">
+                      <label className="sub-label">{t('endDate', 'Tugash sanasi')}</label>
+                      <div className="date-input-group">
+                        <input
+                          type="number"
+                          placeholder={t('yearPlaceholder', 'Yil')}
+                          value={parseYearMonth(work.endDate).year}
+                          onChange={(e) => {
+                            const { month } = parseYearMonth(work.endDate);
+                            handleWorkChange(idx, 'endDate', buildYearMonth(e.target.value, month));
+                          }}
+                          className="glass-input date-num-input year-input"
+                          min="1950"
+                          max="2040"
+                        />
+                        <span className="date-separator">{t('yearSuffix', 'yil')}</span>
+                        <input
+                          type="number"
+                          placeholder={t('monthPlaceholder', 'Oy')}
+                          value={parseYearMonth(work.endDate).month}
+                          onChange={(e) => {
+                            const { year } = parseYearMonth(work.endDate);
+                            handleWorkChange(idx, 'endDate', buildYearMonth(year, e.target.value));
+                          }}
+                          className="glass-input date-num-input month-input"
+                          min="1"
+                          max="12"
+                        />
+                        <span className="date-separator">{t('monthSuffix', 'oy')}</span>
+                      </div>
+                    </div>
+                  )}
                   <div className="checkbox-group">
                     <input 
                       type="checkbox" 

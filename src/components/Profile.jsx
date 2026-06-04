@@ -1532,25 +1532,13 @@ const getLicenseLabel = (type) => {
         {userRole === 'driver' && (
           <div className="menu-group glass squircle resume-card">
             <div className="resume-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                 <FileText size={20} color="#0A84FF" />
                 <h3>{t('myResume')}</h3>
               </div>
               <button 
+                className="resume-edit-btn"
                 onClick={() => setActivePage('resume_builder')}
-                style={{
-                  background: 'linear-gradient(135deg, #30D158, #28C754)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '10px',
-                  padding: '6px 12px',
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 10px rgba(48, 209, 88, 0.2)',
-                  transition: 'all 0.2s ease',
-                  outline: 'none'
-                }}
               >
                 📝 {t('createResume', 'Tahrirlash / Yuklash')}
               </button>
@@ -1560,84 +1548,99 @@ const getLicenseLabel = (type) => {
                 <span className="field-label">{t('birthDateLabel')}</span>
                 <span className="field-value">{profileData.birthDate || t('notProvided')}</span>
               </div>
+
               {/* Living Address History */}
               <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-                <span className="field-label">{t('livingAddressTitle', 'Yashash manzillari')}</span>
+                <span className="resume-section-title">{t('livingAddressTitle', 'Yashash manzillari')}</span>
                 <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {profileData.addressHistory && profileData.addressHistory.length > 0 ? (
                     profileData.addressHistory.map((a, i) => (
-                      <div key={i} className="glass squircle" style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <span style={{ fontSize: '13px', color: 'var(--text-main)' }}>{a.address}</span>
+                      <div key={i} className="resume-address-card squircle">
+                        <span className="address-text">{a.address}</span>
                         {a.isCurrent && (
-                          <span style={{ fontSize: '10px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '2px 6px', borderRadius: '8px', fontWeight: 'bold' }}>
+                          <span className="resume-current-tag living">
                             {t('currentAddressLabel', 'Hozirgi')}
                           </span>
                         )}
                       </div>
                     ))
                   ) : (
-                    <span className="field-value">{profileData.address || t('notProvided')}</span>
+                    <span className="resume-empty-state">{profileData.address || t('notProvided')}</span>
                   )}
                 </div>
               </div>
 
               {/* Education History */}
               <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-                <span className="field-label">{t('educationTitle', 'Ta\'lim ma\'lumotlari')}</span>
+                <span className="resume-section-title">{t('educationTitle', 'Ta\'lim ma\'lumotlari')}</span>
                 <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {profileData.educationHistory && profileData.educationHistory.length > 0 ? (
                     profileData.educationHistory.map((edu, i) => (
-                      <div key={i} className="glass squircle" style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--glass-border)', width: '100%', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <strong style={{ fontSize: '14px', color: 'var(--text-main)' }}>{edu.school}</strong>
+                      <div key={i} className="resume-edu-card">
+                        <div className="edu-top">
+                          <span className="edu-school">{edu.school}</span>
                           {edu.isCurrent && (
-                            <span style={{ fontSize: '10px', background: 'rgba(52, 199, 89, 0.1)', color: '#34C759', padding: '2px 6px', borderRadius: '8px', fontWeight: 'bold' }}>
+                            <span className="resume-current-tag studying">
                               {t('currentlyStudyingLabel', 'O\'qiyotgan')}
                             </span>
                           )}
                         </div>
-                        {edu.major && <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{edu.major}</span>}
-                        <span style={{ fontSize: '11px', color: '#8E8E93' }}>
+                        {edu.major && <span className="edu-major">{edu.major}</span>}
+                        <span className="edu-dates">
                           📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel', 'Hozirgi vaqtda') : edu.endDate || '?'}
                         </span>
                       </div>
                     ))
                   ) : (
-                    <span className="field-value" style={{ whiteSpace: 'pre-wrap' }}>{profileData.education || t('notProvided')}</span>
+                    <span className="resume-empty-state" style={{ whiteSpace: 'pre-wrap' }}>{profileData.education || t('notProvided')}</span>
                   )}
                 </div>
               </div>
-                              <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
-                  <span className="field-label" style={{marginBottom: '4px'}}>{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}</span>
-                  <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
-                    {profileData.driverLicenses && profileData.driverLicenses.length > 0 ? 
-                      profileData.driverLicenses.map(l => (
-                        <span key={l} className="badge-blue" style={{background: '#e3f2fd', color: '#1976d2', padding: '4px 10px', borderRadius: '20px', fontSize: '13px'}}>{t(`lic_${l}`)}</span>
-                      )) : 
-                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided', 'Kiritilmagan')}</span>
-                    }
-                  </div>
+
+              {/* Driver Licenses */}
+              <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
+                <span className="resume-section-title">{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}</span>
+                <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
+                  {profileData.driverLicenses && profileData.driverLicenses.length > 0 ? 
+                    profileData.driverLicenses.map(l => (
+                      <span key={l} className="resume-badge-chip license">{t(`lic_${l}`)}</span>
+                    )) : 
+                    <span className="resume-empty-state">{t('notProvided', 'Kiritilmagan')}</span>
+                  }
                 </div>
-                <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
-                  <span className="field-label" style={{marginBottom: '4px'}}>{t('techCertsLabel', 'Maxsus texnika va malaka sertifikatlari')}</span>
-                  <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
-                    {profileData.techCertificates && profileData.techCertificates.length > 0 ? 
-                      profileData.techCertificates.map(tc => (
-                        <span key={tc} className="badge-blue" style={{background: '#fdf3e3', color: '#d27d19', padding: '4px 10px', borderRadius: '20px', fontSize: '13px'}}>{t(`tech_${tc}`)}</span>
-                      )) : 
-                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided', 'Kiritilmagan')}</span>
-                    }
-                  </div>
+              </div>
+
+              {/* Tech Certificates */}
+              <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
+                <span className="resume-section-title">{t('techCertsLabel', 'Maxsus texnika va malaka sertifikatlari')}</span>
+                <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
+                  {profileData.techCertificates && profileData.techCertificates.length > 0 ? 
+                    profileData.techCertificates.map(tc => (
+                      <span key={tc} className="resume-badge-chip cert">{t(`tech_${tc}`)}</span>
+                    )) : 
+                    <span className="resume-empty-state">{t('notProvided', 'Kiritilmagan')}</span>
+                  }
                 </div>
+              </div>
+
+              {/* Work Experience */}
               {profileData.workHistory && profileData.workHistory.length > 0 && (
-                <div className="resume-field">
-                  <span className="field-label">{t('workExperience')}</span>
-                  {profileData.workHistory.map((w, i) => (
-                    <div key={i} className="work-history-item">
-                      <strong>{w.company}</strong>
-                        <span>{w.position} • {w.startDate} - {w.isCurrent ? t('currentPosition', 'Hozir') : w.endDate}</span>
-                    </div>
-                  ))}
+                <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                  <span className="resume-section-title">{t('workExperience')}</span>
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {profileData.workHistory.map((w, i) => (
+                      <div key={i} className="resume-timeline-item">
+                        <span className="work-company">{w.company}</span>
+                        {w.position && <span className="work-position">{w.position}</span>}
+                        <span className="work-dates">
+                          📅 {w.startDate || '?'} ~ {w.isCurrent ? t('currentPosition', 'Hozir') : w.endDate || '?'}
+                        </span>
+                        {w.isCurrent && (
+                          <span className="work-current-badge">{t('currentPosition', 'Hozir ishlayapman')}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
