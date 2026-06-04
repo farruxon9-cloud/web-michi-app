@@ -839,6 +839,12 @@ html.dark-mode .player-timeline {
   display: flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
+}
+
+.ai-badge-text {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .ai-card-title {

@@ -155,7 +155,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
             <Sparkles size={20} color="#FFF" fill="currentColor" />
           </div>
           <div className="ai-card-info">
-            <span className="ai-card-badge">🗣️ Michi Voice AI (テスト中)</span>
+            <span className="ai-card-badge">🗣️ <span className="ai-badge-text">Michi Voice AI (テスト中)</span></span>
             <h3 className="ai-card-title">{t('voiceAssistantTitle', 'Ovozli yordamchi')}</h3>
             <p className="ai-card-sub">{t('voiceAssistantDesc', 'Ilovani yapon tilida masofaviy ovozda boshqaring')}</p>
           </div>
