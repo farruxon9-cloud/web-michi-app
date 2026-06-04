@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, Music, Volume2, VolumeX, Sparkles, X } from 'lucide-react';
+import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, Music, Volume2, VolumeX, Sparkles, X, Megaphone } from 'lucide-react';
 import './Dashboard.css';
 
 const formatTime = (secs) => {
@@ -10,7 +10,7 @@ const formatTime = (secs) => {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
 
-export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVoiceStandby, onVoiceActivate, onVoiceToggle }) {
+export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVoiceStandby, onVoiceActivate, onVoiceToggle, setProfileActivePage, userRole }) {
   const { t, i18n } = useTranslation();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -215,91 +215,150 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
 
       </div>
 
-      {/* Premium Minimalist Music Player Card */}
-      <div className="bento-music-card glass squircle">
-        <div className="music-player-top">
-          <div className="music-player-info">
-            {/* Elegant visual icon wrapper (glowing pulse when playing) */}
-            <div className={`music-gradient-icon ${musicPlayer.isPlaying ? 'playing-pulse' : ''}`}>
-              <Music size={18} color="#FFF" />
-            </div>
-            
-            <div className="music-track-meta">
-              <span className="music-sub-label">
-                {musicPlayer.isPlaying ? t('playingBackgroundMusic', 'Background Music') : t('musicPaused', 'Background Music')}
-              </span>
-              <h3 className="music-track-title">
-                {musicPlayer.currentTrack.title}
-              </h3>
+      {/* Premium Minimalist Music Player / Company My Ads Shortcut Cards */}
+      {userRole === 'company' ? (
+        <div className="bento-double-cards-row">
+          {/* Music Player (Compact) */}
+          <div className="bento-music-card compact-music-card glass squircle">
+            <div className="music-player-top">
+              <div className="music-player-info">
+                <div className={`music-gradient-icon ${musicPlayer.isPlaying ? 'playing-pulse' : ''}`}>
+                  <Music size={18} color="#FFF" />
+                </div>
+                
+                <div className="music-track-meta">
+                  <span className="music-sub-label">
+                    {musicPlayer.isPlaying ? t('playingBackgroundMusic', 'Music') : t('musicPaused', 'Music')}
+                  </span>
+                  <h3 className="music-track-title">
+                    {musicPlayer.currentTrack.title}
+                  </h3>
+                </div>
+              </div>
+
+              <div className="music-player-controls">
+                <button 
+                  onClick={musicPlayer.togglePlay}
+                  className="player-control-btn btn-play-pause"
+                  aria-label="Play or Pause"
+                >
+                  {musicPlayer.isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" style={{ marginLeft: '1px' }} />}
+                </button>
+                <button 
+                  onClick={musicPlayer.nextTrack}
+                  className="player-control-btn btn-skip"
+                  aria-label="Next track"
+                >
+                  <SkipForward size={12} fill="currentColor" />
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="music-player-controls">
-            <button 
-              onClick={musicPlayer.togglePlay}
-              className="player-control-btn btn-play-pause"
-              aria-label="Play or Pause"
-            >
-              {musicPlayer.isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" style={{ marginLeft: '2px' }} />}
-            </button>
-            <button 
-              onClick={musicPlayer.nextTrack}
-              className="player-control-btn btn-skip"
-              aria-label="Next track"
-            >
-              <SkipForward size={14} fill="currentColor" />
-            </button>
-            <div className="volume-control">
+          {/* Mening e'lonlarim Card */}
+          <div 
+            className="bento-my-ads-card glass squircle" 
+            onClick={() => {
+              if (setProfileActivePage) setProfileActivePage('my_ads');
+              setActiveTab('profile');
+            }}
+          >
+            <div className="my-ads-icon">
+              <Megaphone size={18} color="#FFF" />
+            </div>
+            <div className="my-ads-text">
+              <span className="my-ads-sub">{t('dashProfileTitle', 'Shaxsiy profil')}</span>
+              <h3 className="my-ads-title">{t('myAdsMenu', 'Mening e\'lonlarim')}</h3>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Original Full-Width Music Player Card */
+        <div className="bento-music-card glass squircle">
+          <div className="music-player-top">
+            <div className="music-player-info">
+              {/* Elegant visual icon wrapper (glowing pulse when playing) */}
+              <div className={`music-gradient-icon ${musicPlayer.isPlaying ? 'playing-pulse' : ''}`}>
+                <Music size={18} color="#FFF" />
+              </div>
+              
+              <div className="music-track-meta">
+                <span className="music-sub-label">
+                  {musicPlayer.isPlaying ? t('playingBackgroundMusic', 'Background Music') : t('musicPaused', 'Background Music')}
+                </span>
+                <h3 className="music-track-title">
+                  {musicPlayer.currentTrack.title}
+                </h3>
+              </div>
+            </div>
+
+            <div className="music-player-controls">
               <button 
-                onClick={() => musicPlayer.setVolume(musicPlayer.volume > 0 ? 0 : 0.7)}
-                className="player-control-btn btn-vol"
-                aria-label="Volume"
+                onClick={musicPlayer.togglePlay}
+                className="player-control-btn btn-play-pause"
+                aria-label="Play or Pause"
               >
-                {musicPlayer.volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                {musicPlayer.isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" style={{ marginLeft: '2px' }} />}
               </button>
+              <button 
+                onClick={musicPlayer.nextTrack}
+                className="player-control-btn btn-skip"
+                aria-label="Next track"
+              >
+                <SkipForward size={14} fill="currentColor" />
+              </button>
+              <div className="volume-control">
+                <button 
+                  onClick={() => musicPlayer.setVolume(musicPlayer.volume > 0 ? 0 : 0.7)}
+                  className="player-control-btn btn-vol"
+                  aria-label="Volume"
+                >
+                  {musicPlayer.volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                </button>
+                <input 
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={musicPlayer.volume}
+                  onChange={(e) => musicPlayer.setVolume(parseFloat(e.target.value))}
+                  className="volume-slider"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="music-player-bottom">
+            {/* Waveform Visualizer */}
+            <div className="mini-visualizer">
+              {[1, 2, 3, 4, 5].map((bar) => (
+                <div 
+                  key={bar} 
+                  className={`vis-bar bar-${bar} ${musicPlayer.isPlaying ? 'playing' : ''}`}
+                ></div>
+              ))}
+            </div>
+
+            {/* Timeline */}
+            <div className="player-timeline-wrapper">
+              <span className="player-time-text">
+                {formatTime(musicPlayer.currentTime)}
+              </span>
               <input 
                 type="range"
                 min={0}
-                max={1}
-                step={0.05}
-                value={musicPlayer.volume}
-                onChange={(e) => musicPlayer.setVolume(parseFloat(e.target.value))}
-                className="volume-slider"
+                max={musicPlayer.duration || 100}
+                value={musicPlayer.currentTime}
+                onChange={(e) => musicPlayer.seek(parseFloat(e.target.value))}
+                className="player-timeline"
               />
+              <span className="player-time-text">
+                {formatTime(musicPlayer.duration)}
+              </span>
             </div>
           </div>
         </div>
-
-        <div className="music-player-bottom">
-          {/* Waveform Visualizer */}
-          <div className="mini-visualizer">
-            {[1, 2, 3, 4, 5].map((bar) => (
-              <div 
-                key={bar} 
-                className={`vis-bar bar-${bar} ${musicPlayer.isPlaying ? 'playing' : ''}`}
-              ></div>
-            ))}
-          </div>
-
-          {/* Timeline */}
-          <div className="player-timeline-wrapper">
-            <span className="player-time-text">
-              {formatTime(musicPlayer.currentTime)}
-            </span>
-            <input 
-              type="range"
-              min={0}
-              max={musicPlayer.duration || 100}
-              value={musicPlayer.currentTime}
-              onChange={(e) => musicPlayer.seek(parseFloat(e.target.value))}
-              className="player-timeline"
-            />
-            <span className="player-time-text">
-              {formatTime(musicPlayer.duration)}
-            </span>
-          </div>
-        </div>
-      </div>
+      )}
 
 
 

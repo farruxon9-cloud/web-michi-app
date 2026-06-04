@@ -12,10 +12,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
     { id: 'academy', icon: GraduationCap, label: t('navAcademy', 'Maktablar') },
     { id: 'service', icon: Wrench, label: t('navService', 'Servis') },
     { id: 'profile', icon: User, label: t('navProfile', 'Profil') },
-  ].filter(item => {
-    if (userRole === 'company' && item.id === 'jobs') return false;
-    return true;
-  });
+  ];
 
   return (
     <div className="bottom-nav">

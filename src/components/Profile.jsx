@@ -2,11 +2,12 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
 import VerifiedBadge from './VerifiedBadge';
+import CompanyHome from './CompanyHome';
 import './Profile.css';
 
 const STATUS_PIPELINE = ['submitted', 'reviewing', 'reviewed', 'interview', 'rejected', 'accepted'];
@@ -33,7 +34,13 @@ export default function Profile({
   showProfileBadges = true,
   setShowProfileBadges,
   notificationSound = true,
-  setNotificationSound
+  setNotificationSound,
+  jobs,
+  schools,
+  setJobs,
+  setSchools,
+  jobToEdit,
+  setJobToEdit
 }) {
   const { t } = useTranslation();
 
@@ -382,6 +389,31 @@ const getLicenseLabel = (type) => {
               </button>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== MY POSTED ADS PAGE (COMPANY) =====
+  if (activePage === 'my_ads') {
+    return (
+      <div className="profile-container fade-in">
+        <div className="sub-page-header" style={{ marginBottom: '16px' }}>
+          <button className="icon-btn glass" onClick={() => { setActivePage('main'); }}><ArrowLeft size={20} /></button>
+          <h2>{t('myAdsMenu', 'Mening e\'lonlarim')}</h2>
+        </div>
+        <div className="sub-page-body hide-scrollbar" style={{ overflowY: 'auto', height: 'calc(100vh - 110px)', paddingBottom: '40px' }}>
+          <CompanyHome 
+            onJobClick={onJobClick} 
+            onSchoolClick={onSchoolClick} 
+            jobs={jobs} 
+            setJobs={setJobs} 
+            schools={schools} 
+            setSchools={setSchools} 
+            profileData={profileData} 
+            jobToEdit={jobToEdit} 
+            setJobToEdit={setJobToEdit} 
+          />
         </div>
       </div>
     );
@@ -1553,6 +1585,12 @@ const getLicenseLabel = (type) => {
           </div>
           {userRole === 'company' && (
             <>
+              <div className="menu-divider"></div>
+              <div className="menu-item" onClick={() => setActivePage('my_ads')}>
+                <div className="menu-icon"><Megaphone size={20} /></div>
+                <span>{t('myAdsMenu', 'Mening e\'lonlarim')}</span>
+                <ChevronRight size={20} color="#8E8E93" className="chevron" />
+              </div>
               <div className="menu-divider"></div>
               <div className="menu-item" onClick={() => setActivePage('employees')}>
                 <div className="menu-icon"><Users size={20} /></div>

@@ -909,9 +909,9 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
                     >
                       <option value="logistics">{t('typeLogistics', 'Logistika / Yuk tashish')}</option>
                       <option value="driving_school">{t('typeDrivingSchool', 'Avtomaktab')}</option>
-                      <option value="manufacturing">{t('typeManufacturing', 'Ishlab chiqarish')}</option>
-                      <option value="food_service">{t('typeFoodService', 'Oziq-ovqat xizmati')}</option>
-                      <option value="construction">{t('typeConstruction', 'Qurilish')}</option>
+                      <option value="taxi_company">{t('typeTaxiCompany', 'Taksi xizmati / Kompaniyasi')}</option>
+                      <option value="bus_company">{t('typeBusCompany', 'Avtobus xizmati / Yo\'nalishlari')}</option>
+                      <option value="special_machinery">{t('typeSpecialMachinery', 'Maxsus texnika / Qurilish texnikasi')}</option>
                       <option value="other">{t('typeOther', 'Boshqa')}</option>
                     </select>
                   </div>

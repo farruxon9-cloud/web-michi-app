@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Bookmark, Map as MapIcon, Calendar, Clock, Banknote, Share2, 
-  Shield, Home, Globe, Award, Car, Users, Heart, Building2, CheckCircle2 } from 'lucide-react';
+  Shield, Home, Globe, Award, Car, Users, Heart, Building2, CheckCircle2, Phone } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './JobDetail.css';
 
@@ -242,14 +242,34 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
 
       {/* ====== PASTKI TUGMALAR (STICKY) ====== */}
       <div className="sticky-action glass">
-        {userRole === 'company' && profileData?.fullName === job.company ? (
-          <button 
-            className="apply-btn"
-            style={{ width: '100%', background: '#1c1c1e', color: '#fff', fontSize: '16px', fontWeight: 'bold' }}
-            onClick={() => onEditJob && onEditJob(job)}
-          >
-            Tahrirlash (Edit)
-          </button>
+        {userRole === 'company' ? (
+          profileData?.fullName === job.company ? (
+            <button 
+              className="apply-btn"
+              style={{ width: '100%', background: '#1c1c1e', color: '#fff', fontSize: '16px', fontWeight: 'bold' }}
+              onClick={() => onEditJob && onEditJob(job)}
+            >
+              Tahrirlash (Edit)
+            </button>
+          ) : (
+            <>
+              <a 
+                href={`tel:${job.phone || '+81 90-1234-5678'}`} 
+                className="apply-btn"
+                style={{ background: '#30D158', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontWeight: '700' }}
+              >
+                <Phone size={16} />
+                {t('callSchool', 'Qo\'ng\'iroq')}
+              </a>
+              <button 
+                className="apply-btn shoukai-btn" 
+                onClick={() => onShoukai(job)}
+              >
+                <Share2 size={16} />
+                {((job.shoukaiAmount && job.shoukaiAmount !== "0") || job.hasShoukai) ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` : t('shoukai', 'Shoukai')}
+              </button>
+            </>
+          )
         ) : (
           <>
             <button 

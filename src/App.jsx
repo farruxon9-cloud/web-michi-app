@@ -639,9 +639,6 @@ function App() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'home':
-        if (userRole === 'company') {
-          return <CompanyHome onJobClick={setSelectedJob} onSchoolClick={handleSchoolClick} jobs={jobs} setJobs={setJobs} schools={schools} setSchools={setSchools} profileData={profileData} jobToEdit={jobToEdit} setJobToEdit={setJobToEdit} />;
-        }
         return (
           <Dashboard 
             setActiveTab={setActiveTab} 
@@ -650,6 +647,8 @@ function App() {
             isVoiceStandby={isVoiceStandby}
             onVoiceActivate={handleVoiceActivate}
             onVoiceToggle={handleVoiceToggle}
+            setProfileActivePage={setProfileActivePage}
+            userRole={userRole}
           />
         );
       case 'jobs':
@@ -712,6 +711,10 @@ function App() {
             setNotificationSound={setNotificationSound}
             jobs={jobs}
             schools={schools}
+            setJobs={setJobs}
+            setSchools={setSchools}
+            jobToEdit={jobToEdit}
+            setJobToEdit={setJobToEdit}
           />
         );
       default:

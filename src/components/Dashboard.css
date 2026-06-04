@@ -891,3 +891,88 @@ html.dark-mode .player-timeline {
   opacity: 1;
   animation: ai-bar-bounce 0.6s infinite ease-in-out;
 }
+
+/* Double column row for Company homepage layout */
+.bento-double-cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* Compact music card overrides */
+.bento-music-card.compact-music-card {
+  margin-top: 0;
+  min-height: 140px;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+.bento-music-card.compact-music-card .music-player-top {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.bento-music-card.compact-music-card .music-player-controls {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 10px;
+}
+.bento-music-card.compact-music-card .music-player-bottom {
+  display: none !important;
+}
+
+/* My Posted Ads dashboard shortcut card */
+.bento-my-ads-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid var(--dash-card-border);
+  background: var(--dash-card-bg);
+  min-height: 140px;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bento-my-ads-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--dash-card-shadow);
+  border-color: rgba(255, 159, 10, 0.4);
+}
+.bento-my-ads-card:active {
+  transform: scale(0.97);
+}
+.bento-my-ads-card .my-ads-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #FF9F0A, #FF3B30);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(255, 159, 10, 0.25);
+  margin-bottom: 8px;
+}
+.bento-my-ads-card .my-ads-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.bento-my-ads-card .my-ads-sub {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.bento-my-ads-card .my-ads-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

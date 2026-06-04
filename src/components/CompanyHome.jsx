@@ -36,12 +36,54 @@ const INITIAL_COMPANY_JOBS = [
 export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, schools, setSchools, profileData, jobToEdit, setJobToEdit }) {
   const { t } = useTranslation();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showAdTypeSelect, setShowAdTypeSelect] = useState(false);
+  const [selectedAdType, setSelectedAdType] = useState('job');
   const [jobImage, setJobImage] = useState(null);
   const fileInputRef = useRef(null);
 
   React.useEffect(() => {
     if (jobToEdit) {
-      setNewJob(jobToEdit);
+      const isCourse = (jobToEdit.courses || jobToEdit.langs) ? true : false;
+      setSelectedAdType(isCourse ? 'school' : 'job');
+      if (isCourse) {
+        setNewJob({
+          id: jobToEdit.id,
+          title: jobToEdit.type || jobToEdit.title,
+          salary: jobToEdit.price || jobToEdit.salary,
+          bonus: jobToEdit.discount || jobToEdit.bonus || '',
+          location: jobToEdit.location,
+          fullAddress: jobToEdit.fullAddress,
+          phone: jobToEdit.phone,
+          email: jobToEdit.email,
+          description: jobToEdit.description,
+          langs: jobToEdit.langs || ['UZ', 'JP'],
+          courses: jobToEdit.courses || ['Oogata', 'Chugata', 'Futsu'],
+          hasShoukai: (jobToEdit.shoukaiFee > 0 || jobToEdit.hasShoukai === 'yes' || jobToEdit.hasShoukai === true) ? 'yes' : 'no',
+          shoukaiFee: jobToEdit.shoukaiFee ? String(jobToEdit.shoukaiFee) : '',
+          shoukaiConditions: jobToEdit.shoukaiConditions || ''
+        });
+      } else {
+        setNewJob({
+          id: jobToEdit.id,
+          title: jobToEdit.title,
+          salary: jobToEdit.salary,
+          location: jobToEdit.location,
+          fullAddress: jobToEdit.fullAddress,
+          phone: jobToEdit.phone,
+          email: jobToEdit.email,
+          hours: jobToEdit.hours || '',
+          bonus: jobToEdit.bonus || '',
+          insurance: jobToEdit.insurance || '',
+          foreigners: jobToEdit.foreigners || '',
+          housing: jobToEdit.housing || '',
+          description: jobToEdit.description,
+          dayOff: jobToEdit.dayOff || '',
+          hasShoukai: (jobToEdit.hasShoukai === true || jobToEdit.hasShoukai === 'yes' || jobToEdit.shoukaiFee > 0) ? 'yes' : 'no',
+          shoukaiFee: jobToEdit.shoukaiFee ? String(jobToEdit.shoukaiFee) : '',
+          shoukaiConditions: jobToEdit.shoukaiConditions || '',
+          license: jobToEdit.license || []
+        });
+      }
       setJobImage(jobToEdit.image || null);
       setShowAddForm(true);
       if (setJobToEdit) setJobToEdit(null);
@@ -49,6 +91,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   }, [jobToEdit, setJobToEdit]);
   
   const isDrivingSchool = profileData?.companyType === 'driving_school';
+  const isAdCourse = selectedAdType === 'school';
   
   const [newJob, setNewJob] = useState({
     title: '', 
@@ -174,7 +217,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     
     setErrors({});
 
-    if (isDrivingSchool) {
+    if (isAdCourse) {
       const school = {
         id: newJob.id || Date.now(),
         name: profileData?.fullName || "Koyama Driving School",
@@ -305,7 +348,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             <ArrowLeft size={20} />
           </button>
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>
-            {isDrivingSchool ? t('addNewSchoolAd', "Yangi avtomaktab e'loni") : t('addNewJob', "Yangi ish e'loni qo'shish")}
+            {isAdCourse ? t('addNewSchoolAd', "Yangi avtomaktab e'loni") : t('addNewJob', "Yangi ish e'loni qo'shish")}
           </h2>
         </div>
 
@@ -370,13 +413,13 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             
             <div className="input-group" style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                {isDrivingSchool ? t('schoolTypeLabel', 'Toifalar / Kategoriya') : t('jobTitleLabel', 'Sarlavha (Vakansiya)')} <span style={{ color: '#FF3B30' }}>*</span>
+                {isAdCourse ? t('schoolTypeLabel', 'Toifalar / Kategoriya') : t('jobTitleLabel', 'Sarlavha (Vakansiya)')} <span style={{ color: '#FF3B30' }}>*</span>
               </label>
               <input 
                 type="text" 
                 value={newJob.title} 
                 onChange={e => { setNewJob({...newJob, title: e.target.value}); setErrors(prev => ({...prev, title: null})); }} 
-                placeholder={isDrivingSchool ? t('schoolTypePlaceholder', "Masalan: Katta yuk va maxsus, Barcha toifalar") : t('jobTitlePlaceholder', "Masalan: Mahalliy yetkazib beruvchi (4t)")} 
+                placeholder={isAdCourse ? t('schoolTypePlaceholder', "Masalan: Katta yuk va maxsus, Barcha toifalar") : t('jobTitlePlaceholder', "Masalan: Mahalliy yetkazib beruvchi (4t)")} 
                 className="auth-input"
                 style={{ borderColor: errors.title ? '#FF3B30' : 'var(--glass-border)' }}
                 maxLength={50}
@@ -386,13 +429,13 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             
             <div className="input-group" style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                {isDrivingSchool ? t('schoolPriceLabel', 'Boshlang\'ich o\'qish narxi') : t('salaryLabel', 'Oylik maosh (O\'rtacha)')} <span style={{ color: '#FF3B30' }}>*</span>
+                {isAdCourse ? t('schoolPriceLabel', 'Boshlang\'ich o\'qish narxi') : t('salaryLabel', 'Oylik maosh (O\'rtacha)')} <span style={{ color: '#FF3B30' }}>*</span>
               </label>
               <input 
                 type="text" 
                 value={newJob.salary} 
                 onChange={e => { setNewJob({...newJob, salary: e.target.value}); setErrors(prev => ({...prev, salary: null})); }} 
-                placeholder={isDrivingSchool ? t('schoolPricePlaceholder', "Masalan: ¥280,000~") : t('salaryPlaceholder', "Masalan: ¥300,000 / oyiga")} 
+                placeholder={isAdCourse ? t('schoolPricePlaceholder', "Masalan: ¥280,000~") : t('salaryPlaceholder', "Masalan: ¥300,000 / oyiga")} 
                 className="auth-input"
                 style={{ borderColor: errors.salary ? '#FF3B30' : 'var(--glass-border)' }}
                 maxLength={30}
@@ -402,13 +445,13 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
             <div className="input-group" style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                {isDrivingSchool ? t('schoolDiscountLabel', 'A\'zolar uchun chegirma (Ixtiyoriy)') : t('bonusLabel', 'Bonus puli bormi? (Ixtiyoriy)')}
+                {isAdCourse ? t('schoolDiscountLabel', 'A\'zolar uchun chegirma (Ixtiyoriy)') : t('bonusLabel', 'Bonus puli bormi? (Ixtiyoriy)')}
               </label>
               <input 
                 type="text" 
                 value={newJob.bonus} 
                 onChange={e => setNewJob({...newJob, bonus: e.target.value})} 
-                placeholder={isDrivingSchool ? t('schoolDiscountPlaceholder', "Masalan: ¥20,000 chegirma") : t('bonusPlaceholder', "Masalan: Yiliga 2 marta (Yoz va Qish)")} 
+                placeholder={isAdCourse ? t('schoolDiscountPlaceholder', "Masalan: ¥20,000 chegirma") : t('bonusPlaceholder', "Masalan: Yiliga 2 marta (Yoz va Qish)")} 
                 className="auth-input"
                 maxLength={50}
               />
@@ -448,7 +491,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           </div>
 
           {/* BLOCK 2: Ish Sharoitlari (Chips) */}
-          {!isDrivingSchool && (
+          {!isAdCourse && (
             <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
                 <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>2</div>
@@ -502,7 +545,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           )}
 
           {/* Conditional Sections For Driving School */}
-          {isDrivingSchool && (
+          {isAdCourse && (
             <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
                 <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>2</div>
@@ -531,7 +574,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                {isDrivingSchool ? '3' : '3'}
+                {isAdCourse ? '3' : '3'}
               </div>
               <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-main)', fontWeight: '700' }}>
                 {t('contactInfoAndDesc', "Vakansiya bo'yicha to'liq tavsif (Aloqa)")}
@@ -572,12 +615,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
             <div className="input-group">
               <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                {isDrivingSchool ? t('schoolDescLabel', 'Maktab haqida batafsil ma\'lumot') : t('jobDescLabel', 'Batafsil tavsif')} <span style={{ color: '#FF3B30' }}>*</span>
+                {isAdCourse ? t('schoolDescLabel', 'Maktab haqida batafsil ma\'lumot') : t('jobDescLabel', 'Batafsil tavsif')} <span style={{ color: '#FF3B30' }}>*</span>
               </label>
               <textarea 
                 value={newJob.description} 
                 onChange={e => { setNewJob({...newJob, description: e.target.value}); setErrors(prev => ({...prev, description: null})); }} 
-                placeholder={isDrivingSchool ? t('schoolDescPlaceholder', "さいたま市中心部に広大な教習コースを持つ自動車学校...") : t('jobDescPlaceholder', "Ish haqida qiziqarli ma'lumotlarni yozing...")}
+                placeholder={isAdCourse ? t('schoolDescPlaceholder', "さいたま市中心部に広大な教習コースを持つ自動車学校...") : t('jobDescPlaceholder', "Ish haqida qiziqarli ma'lumotlarni yozing...")}
                 className="auth-input"
                 style={{ 
                   minHeight: '120px', 
@@ -600,7 +643,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '32px', border: errors.hasShoukai ? '2px solid #FF3B30' : '2px solid rgba(255, 159, 10, 0.3)', background: 'linear-gradient(145deg, rgba(255, 159, 10, 0.05) 0%, rgba(255, 159, 10, 0.01) 100%)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#FF9F0A', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                {isDrivingSchool ? '4' : '4'}
+                {isAdCourse ? '4' : '4'}
               </div>
               <h4 style={{ margin: 0, fontSize: '18px', color: '#FF9F0A', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Share2 size={20} />
@@ -718,21 +761,95 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             onClick={handleAddJob}
           >
             <Plus size={20} />
-            {isDrivingSchool ? t('publishSchoolAd', "Avtomaktab e'lonini joylash") : t('publishJob', "Ish e'lonini joylash")}
+            {isAdCourse ? t('publishSchoolAd', "Avtomaktab e'lonini joylash") : t('publishJob', "Ish e'lonini joylash")}
           </button>
         </div>
       </div>
     );
   }
 
+    // ===== AD TYPE SELECTION SCREEN (FOR DRIVING SCHOOLS) =====
+  if (showAdTypeSelect) {
+    return (
+      <div className="feed-container fade-in" style={{ paddingTop: '10px', paddingBottom: '100px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
+          <button className="icon-btn glass" onClick={() => setShowAdTypeSelect(false)}>
+            <ArrowLeft size={20} />
+          </button>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>
+            {t('chooseAdTypeTitle', "E'lon turini tanlang")}
+          </h2>
+        </div>
+
+        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <p style={{ fontSize: '14.5px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+            {t('chooseAdTypeDesc', "Qanday turdagi e'lon joylashtirmoqchisiz?")}
+          </p>
+
+          <div 
+            className="glass squircle animate-fade-in"
+            onClick={() => {
+              setSelectedAdType('job');
+              setShowAddForm(true);
+              setShowAdTypeSelect(false);
+            }}
+            style={{ padding: '24px 20px', cursor: 'pointer', transition: 'all 0.3s ease', border: '1px solid var(--glass-border)', display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--glass-bg)' }}
+          >
+            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Plus size={24} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>
+                {t('adTypeJob', "Ish vakansiyasi (Ishga qabul qilish)")}
+              </h3>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                {t('adTypeJobDesc', "Haydovchilar yoki xodimlarni ishga olish uchun e'lon")}
+              </p>
+            </div>
+          </div>
+
+          <div 
+            className="glass squircle animate-fade-in"
+            onClick={() => {
+              setSelectedAdType('school');
+              setShowAddForm(true);
+              setShowAdTypeSelect(false);
+            }}
+            style={{ padding: '24px 20px', cursor: 'pointer', transition: 'all 0.3s ease', border: '1px solid var(--glass-border)', display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--glass-bg)' }}
+          >
+            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(175, 82, 222, 0.1)', color: '#AF52DE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Plus size={24} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>
+                {t('adTypeSchool', "O'quv kursi (Avtomaktab/Sertifikat)")}
+              </h3>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                {t('adTypeSchoolDesc', "Haydovchilarni o'qitish va yangi o'quvchilarni jalb qilish uchun")}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  
   // ===== MAIN JOB LIST =====
   return (
-    <div className="feed-container fade-in" style={{ paddingTop: '20px' }}>
+    <div className="feed-container fade-in" style={{ paddingTop: '10px', paddingBottom: '80px' }}>
       
       {/* ADD ANNOUNCEMENT BUTTON CARD */}
       <div style={{ padding: '0 16px', marginBottom: '24px' }}>
         <div 
-          onClick={() => setShowAddForm(true)}
+          onClick={() => {
+            if (profileData?.companyType === 'driving_school') {
+              setShowAdTypeSelect(true);
+            } else {
+              setSelectedAdType('job');
+              setShowAddForm(true);
+            }
+          }}
           style={{ 
             border: '2px dashed var(--primary)', 
             background: 'var(--glass-bg)',
@@ -741,185 +858,237 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '40px 20px',
+            padding: '32px 20px',
             textAlign: 'center',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
           }}
         >
           <div style={{ 
-            width: '64px', height: '64px', borderRadius: '50%', 
+            width: '56px', height: '56px', borderRadius: '50%', 
             background: 'var(--primary)', color: 'white', 
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginBottom: '16px', boxShadow: '0 4px 12px rgba(90, 85, 234, 0.4)'
+            marginBottom: '12px', boxShadow: '0 4px 12px rgba(90, 85, 234, 0.3)'
           }}>
-            <Plus size={32} />
+            <Plus size={28} />
           </div>
-          <h3 style={{ fontSize: '18px', color: 'var(--primary)', marginBottom: '8px' }}>
-            {isDrivingSchool ? t('addNewSchoolAd', "Yangi avtomaktab e'loni") : t('addNewJob', "Yangi ish e'loni qo'shish")}
+          <h3 style={{ fontSize: '16.5px', color: 'var(--primary)', marginBottom: '4px', fontWeight: '700' }}>
+            {t('addNewJob', "Yangi e'lon qo'shish")}
           </h3>
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-            {isDrivingSchool 
-              ? t('addNewSchoolAdDesc', "Haydovchilarni o'qitish va yangi o'quvchilar jalb etish uchun e'lon joylang.") 
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
+            {profileData?.companyType === 'driving_school' 
+              ? t('addNewSchoolAdDesc', "Haydovchilarni o'qitish yoki ish vakansiyasi e'lonini joylang.") 
               : t('addNewJobDesc', "Haydovchilar yoki xodimlar qidirish uchun yangi vakansiya yarating.")
             }
           </p>
         </div>
       </div>
 
-      {/* EXISTING ANNOUNCEMENTS LIST */}
-      <div style={{ padding: '0 16px', marginBottom: '16px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '700' }}>
-          {isDrivingSchool ? t('yourSchools', "Sizning avtomaktablaringiz") : t('yourJobs', "Sizning e'lonlaringiz")}
+      {/* SECTION 1: JOB VACANCIES LIST (ACTIVE FOR ALL COMPANIES) */}
+      <div style={{ padding: '0 16px', marginBottom: '12px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          💼 {t('yourJobs', "Sizning ish e'lonlaringiz")}
         </h2>
       </div>
 
-      <div className="jobs-list hide-scrollbar">
-        {isDrivingSchool ? (
-          companySchools.length === 0 ? (
-            <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
-              {t('noSchoolsYet', "Hozircha avtomaktab e'lonlari joylanmagan.")}
-            </p>
-          ) : (
-            companySchools.map(school => (
-              <div key={school.id} className="job-card-hz glass squircle" onClick={() => onSchoolClick ? onSchoolClick(school) : onJobClick(school)}>
-                {/* Chap qism: Rasm */}
-                <div className="job-card-img">
-                  <img 
-                    src={school.image} 
-                    alt={t(`school_${school.id}_name`, school.name)} 
-                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
-                  />
-                  <div className="job-type-badge type-fulltime">
-                    {school.langs ? school.langs.map(l => t(l, l)).join(', ') : 'UZ, JP'}
-                  </div>
-                </div>
-
-                {/* O'ng qism: Ma'lumotlar */}
-                <div className="job-card-body">
-                  <div className="job-card-company">
-                    <span>{t(`school_${school.id}_name`, school.name)}</span>
-                    <VerifiedBadge size={14} />
-                  </div>
-
-                  <h3 className="job-card-title">{t(`school_${school.id}_type`, school.type)}</h3>
-
-                  <div className="job-card-salary">
-                    <Banknote size={15} color="#30D158" />
-                    <span>{school.price}</span>
-                    {school.discount && (
-                      <span className="discount-tag" style={{ marginLeft: '4px', fontSize: '9px', padding: '1.5px 4px' }}>
-                        -{school.discount}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="job-card-chips">
-                    <span className="job-chip">
-                      <MapPin size={10} />
-                      {t(`school_${school.id}_location`, school.location)}
-                    </span>
-                    {school.shoukaiFee > 0 && (
-                      <span className="job-chip chip-highlight">
-                        <Share2 size={10} />
-                        {t('shoukaiAvailable', 'Shoukai puli bor')}
-                        {/* Private exact sum view for company record keeping */}
-                        <span style={{ opacity: 0.8, marginLeft: '4px', fontWeight: 'bold' }}>
-                          (¥{school.shoukaiFee.toLocaleString()})
-                        </span>
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="job-card-actions">
-                    <button 
-                      className="job-card-btn btn-apply"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', width: '100%' }}
-                      onClick={(e) => { e.stopPropagation(); }}
-                    >
-                      <Edit3 size={13} />
-                      {t('editJob', 'Tahrirlash')}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )
+      <div className="jobs-list hide-scrollbar" style={{ marginBottom: '24px' }}>
+        {companyJobs.length === 0 ? (
+          <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13.5px' }}>
+            {t('noJobsYet', "Hozircha ish e'lonlari joylanmagan.")}
+          </p>
         ) : (
-          companyJobs.length === 0 ? (
-            <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
-              {t('noJobsYet', "Hozircha ish e'lonlari joylanmagan.")}
-            </p>
-          ) : (
-            companyJobs.map(job => (
-              <div key={job.id} className="job-card-hz glass squircle" onClick={() => onJobClick({...job})}>
-                {/* Chap qism: Rasm */}
-                <div className="job-card-img">
-                  <img 
-                    src={job.image} 
-                    alt={t(`job_${job.id}_title`, job.title)} 
-                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
-                  />
-                  <span className={`job-type-badge type-${job.type || 'fulltime'}`}>
-                    {t(`jobType_${job.type || 'fulltime'}`, (job.type || 'fulltime') === 'fulltime' ? '正社員' : (job.type || 'fulltime') === 'parttime' ? 'アルバイト' : '契約')}
-                  </span>
+          companyJobs.map(job => (
+            <div key={job.id} className="job-card-hz glass squircle" onClick={() => onJobClick({...job})}>
+              <div className="job-card-img">
+                <img 
+                  src={job.image} 
+                  alt={t(`job_${job.id}_title`, job.title)} 
+                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
+                />
+                <span className={`job-type-badge type-${job.type || 'fulltime'}`}>
+                  {t(`jobType_${job.type || 'fulltime'}`, (job.type || 'fulltime') === 'fulltime' ? '正社員' : (job.type || 'fulltime') === 'parttime' ? 'アルバイト' : '契約')}
+                </span>
+              </div>
+
+              <div className="job-card-body">
+                <div className="job-card-company">
+                  <img src={job.logo} alt={job.company} className="job-card-company-logo" />
+                  <span>{job.company}</span>
+                  {job.verified && <VerifiedBadge size={14} />}
                 </div>
 
-                {/* O'ng qism: Ma'lumotlar */}
-                <div className="job-card-body">
-                  <div className="job-card-company">
-                    <img src={job.logo} alt={job.company} className="job-card-company-logo" />
-                    <span>{job.company}</span>
-                    {job.verified && <VerifiedBadge size={14} />}
-                  </div>
+                <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
 
-                  <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
+                <div className="job-card-salary">
+                  <Banknote size={15} />
+                  <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}</span>
+                </div>
 
-                  <div className="job-card-salary">
-                    <Banknote size={15} />
-                    <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}</span>
-                  </div>
-
-                  <div className="job-card-chips">
+                <div className="job-card-chips">
+                  <span className="job-chip">
+                    <MapPin size={12} />
+                    {t(`job_${job.id}_location`, job.location)}
+                  </span>
+                  {job.hours && (
                     <span className="job-chip">
-                      <MapPin size={12} />
-                      {t(`job_${job.id}_location`, job.location)}
+                      <Clock size={12} />
+                      {job.hours === 'shift' ? t('shiftWork', 'Smenali') : t(job.hours, job.hours)}
                     </span>
-                    {job.hours && (
-                      <span className="job-chip">
-                        <Clock size={12} />
-                        {job.hours === 'shift' ? t('shiftWork', 'Smenali') : t(job.hours, job.hours)}
+                  )}
+                  {job.shoukaiFee > 0 && (
+                    <span className="job-chip chip-highlight">
+                      <Share2 size={10} />
+                      {t('shoukaiAvailable', 'Shoukai puli bor')}
+                      <span style={{ opacity: 0.8, marginLeft: '4px', fontWeight: 'bold' }}>
+                        (¥{job.shoukaiFee.toLocaleString()})
                       </span>
-                    )}
-                    {job.shoukaiFee > 0 && (
-                      <span className="job-chip chip-highlight">
-                        <Share2 size={10} />
-                        {t('shoukaiAvailable', 'Shoukai puli bor')}
-                        {/* Private exact sum view for company record keeping */}
-                        <span style={{ opacity: 0.8, marginLeft: '4px', fontWeight: 'bold' }}>
-                          (¥{job.shoukaiFee.toLocaleString()})
-                        </span>
-                      </span>
-                    )}
-                  </div>
+                    </span>
+                  )}
+                </div>
 
-                  <div className="job-card-actions">
-                    <button 
-                      className="job-card-btn btn-apply"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', width: '100%' }}
-                      onClick={(e) => { e.stopPropagation(); }}
-                    >
-                      <Edit3 size={13} />
-                      {t('editJob', 'Tahrirlash')}
-                    </button>
-                  </div>
+                <div className="job-card-actions">
+                  <button 
+                    className="job-card-btn btn-apply"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', width: '100%' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedAdType('job');
+                      setNewJob({
+                        id: job.id,
+                        title: job.title,
+                        salary: job.salary,
+                        bonus: job.bonus || '',
+                        location: job.location,
+                        fullAddress: job.fullAddress,
+                        phone: job.phone,
+                        email: job.email,
+                        hours: job.hours || '',
+                        dayOff: job.dayOff || '',
+                        insurance: job.insurance || '',
+                        foreigners: job.foreigners || '',
+                        housing: job.housing || '',
+                        license: job.license || [],
+                        description: job.description,
+                        hasShoukai: job.hasShoukai ? 'yes' : 'no',
+                        shoukaiFee: job.shoukaiFee > 0 ? String(job.shoukaiFee) : '',
+                        shoukaiConditions: job.shoukaiConditions || ''
+                      });
+                      setJobImage(job.image || null);
+                      setShowAddForm(true);
+                    }}
+                  >
+                    <Edit3 size={13} />
+                    {t('editJob', 'Tahrirlash')}
+                  </button>
                 </div>
               </div>
-            ))
-          )
+            </div>
+          ))
         )}
-        <div style={{ height: '10px' }}></div>
       </div>
-      
+
+      {/* SECTION 2: ACADEMY COURSES LIST (ONLY FOR DRIVING SCHOOLS) */}
+      {profileData?.companyType === 'driving_school' && (
+        <>
+          <div style={{ padding: '0 16px', marginBottom: '12px', marginTop: '16px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              🎓 {t('yourSchools', "Sizning avtomaktab kurslaringiz")}
+            </h2>
+          </div>
+
+          <div className="jobs-list hide-scrollbar">
+            {companySchools.length === 0 ? (
+              <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13.5px' }}>
+                {t('noSchoolsYet', "Hozircha avtomaktab e'lonlari joylanmagan.")}
+              </p>
+            ) : (
+              companySchools.map(school => (
+                <div key={school.id} className="job-card-hz glass squircle" onClick={() => onSchoolClick ? onSchoolClick(school) : onJobClick(school)}>
+                  <div className="job-card-img">
+                    <img 
+                      src={school.image} 
+                      alt={t(`school_${school.id}_name`, school.name)} 
+                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
+                    />
+                    <div className="job-type-badge type-fulltime">
+                      {school.langs ? school.langs.join(', ') : 'UZ, JP'}
+                    </div>
+                  </div>
+
+                  <div className="job-card-body">
+                    <div className="job-card-company">
+                      <span>{t(`school_${school.id}_name`, school.name)}</span>
+                      <VerifiedBadge size={14} />
+                    </div>
+
+                    <h3 className="job-card-title">{t(`school_${school.id}_type`, school.type)}</h3>
+
+                    <div className="job-card-salary">
+                      <Banknote size={15} color="#30D158" />
+                      <span>{school.price}</span>
+                      {school.discount && (
+                        <span className="discount-tag" style={{ marginLeft: '4px', fontSize: '9px', padding: '1.5px 4px' }}>
+                          -{school.discount}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="job-card-chips">
+                      <span className="job-chip">
+                        <MapPin size={10} />
+                        {t(`school_${school.id}_location`, school.location)}
+                      </span>
+                      {school.shoukaiFee > 0 && (
+                        <span className="job-chip chip-highlight">
+                          <Share2 size={10} />
+                          {t('shoukaiAvailable', 'Shoukai puli bor')}
+                          <span style={{ opacity: 0.8, marginLeft: '4px', fontWeight: 'bold' }}>
+                            (¥{school.shoukaiFee.toLocaleString()})
+                          </span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="job-card-actions">
+                      <button 
+                        className="job-card-btn btn-apply"
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', width: '100%' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedAdType('school');
+                          setNewJob({
+                            id: school.id,
+                            title: school.type,
+                            salary: school.price,
+                            bonus: school.discount || '',
+                            location: school.location,
+                            fullAddress: school.fullAddress,
+                            phone: school.phone,
+                            email: school.email,
+                            description: school.description,
+                            langs: school.langs || ['UZ', 'JP'],
+                            courses: school.courses || ['Oogata', 'Chugata', 'Futsu'],
+                            hasShoukai: school.shoukaiFee > 0 ? 'yes' : 'no',
+                            shoukaiFee: school.shoukaiFee > 0 ? String(school.shoukaiFee) : '',
+                            shoukaiConditions: school.shoukaiConditions || ''
+                          });
+                          setJobImage(school.image || null);
+                          setShowAddForm(true);
+                        }}
+                      >
+                        <Edit3 size={13} />
+                        {t('editJob', 'Tahrirlash')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </>
+      )}
+      <div style={{ height: '20px' }}></div>
     </div>
   );
+
 }
