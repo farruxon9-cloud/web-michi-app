@@ -792,10 +792,12 @@ html.dark-mode .player-timeline {
   overflow: hidden;
 }
 
-.bento-ai-card:hover {
-  transform: translateY(-2.5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  border-color: rgba(94, 92, 230, 0.2);
+@media (hover: hover) {
+  .bento-ai-card:hover {
+    transform: translateY(-2.5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    border-color: rgba(94, 92, 230, 0.2);
+  }
 }
 
 .bento-ai-card:active {
@@ -916,17 +918,30 @@ html.dark-mode .player-timeline {
   transition: all 0.2s ease;
 }
 
-.bento-ai-card:hover .ai-action-btn {
-  background: var(--primary);
-  color: #ffffff;
-  border-color: var(--primary);
-  box-shadow: 0 4px 10px rgba(94, 92, 230, 0.15);
+@media (hover: hover) {
+  .bento-ai-card:not(.active):hover .ai-action-btn {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 4px 10px rgba(94, 92, 230, 0.15);
+  }
+  .bento-ai-card.active:hover .ai-action-btn {
+    background: #28b850;
+    border-color: #28b850;
+  }
 }
 
 /* Bento AI Card active state */
 .bento-ai-card.active {
   border-color: rgba(48, 209, 88, 0.3);
   box-shadow: var(--dash-card-shadow), 0 0 8px rgba(48, 209, 88, 0.12);
+}
+
+.bento-ai-card.active .ai-action-btn {
+  background: #30D158;
+  color: #ffffff;
+  border-color: #30D158;
+  box-shadow: 0 4px 10px rgba(48, 209, 88, 0.2);
 }
 
 .bento-ai-card.active .ai-gradient-icon {
