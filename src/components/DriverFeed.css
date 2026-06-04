@@ -431,9 +431,11 @@ html.dark-mode .chip-group-container {
   justify-content: center;
 }
 
-.form-chip:hover {
-  background: rgba(118, 118, 128, 0.12);
-  color: var(--text-main);
+@media (hover: hover) and (pointer: fine) {
+  .form-chip:hover {
+    background: rgba(118, 118, 128, 0.12);
+    color: var(--text-main);
+  }
 }
 
 .form-chip.selected {
@@ -450,9 +452,11 @@ html.dark-mode .form-chip {
   color: #A1A1AA;
 }
 
-html.dark-mode .form-chip:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #FFFFFF;
+@media (hover: hover) and (pointer: fine) {
+  html.dark-mode .form-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+  }
 }
 
 html.dark-mode .form-chip.selected {

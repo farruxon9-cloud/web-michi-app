@@ -792,7 +792,7 @@ html.dark-mode .player-timeline {
   overflow: hidden;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .bento-ai-card:hover {
     transform: translateY(-2.5px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
@@ -918,7 +918,7 @@ html.dark-mode .player-timeline {
   transition: all 0.2s ease;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .bento-ai-card:not(.active):hover .ai-action-btn {
     background: var(--primary);
     color: #ffffff;
