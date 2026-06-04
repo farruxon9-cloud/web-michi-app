@@ -175,7 +175,7 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
     <div className="resume-builder-container fade-in">
       {/* Top Header Navigation */}
       <div className="resume-builder-header">
-        <button onClick={onBack} className="header-back-btn squircle" aria-label="Back">
+        <button onClick={onBack} className="icon-btn glass" aria-label="Back">
           <ArrowLeft size={20} />
         </button>
         <h2>{t('resumeBuilderTitle', 'Yapon Rezyumesi (履歴書)')}</h2>
@@ -202,7 +202,7 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
             </div>
 
             <div className="form-group">
-              <label htmlFor="fullName">{t('namePlaceholder', 'Ism Familya')} ✱</label>
+              <label htmlFor="fullName">{t('namePlaceholder', 'Ism Familya')}</label>
               <input 
                 type="text" 
                 id="fullName"
@@ -440,7 +440,7 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
                       checked={work.isCurrent}
                       onChange={(e) => handleWorkChange(idx, 'isCurrent', e.target.checked)}
                     />
-                    <label htmlFor={`isCurrent-${idx}`}>{t('currentPosition', 'Hozirgi vaqtda ishlayapman')}</label>
+                    <label htmlFor={`isCurrent-${idx}`}>{t('currentPositionCheckbox', 'Hozirgi vaqtda ishlayapman')}</label>
                   </div>
                 </div>
               ))}

@@ -620,10 +620,7 @@ function App() {
 
   const getAvatarSrc = () => {
     if (profileData.avatar) return profileData.avatar;
-    if (profileData.gender === 'female') return 'https://api.dicebear.com/7.x/notionists/svg?seed=Jocelyn&backgroundColor=e2e8f0&hair=long1,long2,bob,curly&hairColor=8E8E93&skinColor=8E8E93';
-    if (profileData.gender === 'male') return 'https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=e2e8f0&hair=short1,short2&hairColor=8E8E93&skinColor=8E8E93';
-    
-    const name = profileData.fullName || 'User';
+    const name = encodeURIComponent(profileData.fullName || 'User');
     const bg = userRole === 'company' ? 'AF52DE' : userRole === 'school' ? '34C759' : userRole === 'driver' ? '0A84FF' : '8E8E93';
     return `https://ui-avatars.com/api/?name=${name}&background=${bg}&color=fff`;
   };
@@ -664,7 +661,7 @@ function App() {
           />
         );
       case 'jobs':
-        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} verifiedCompanies={verifiedCompanies} onShoukai={handleShoukai} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} verifiedCompanies={verifiedCompanies} onShoukai={handleShoukai} userRole={userRole} />;
       case 'academy':
         return (
           <DrivingAcademy 
@@ -732,7 +729,7 @@ function App() {
           />
         );
       default:
-        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} userRole={userRole} />;
     }
   };
 
@@ -792,19 +789,21 @@ function App() {
         </Suspense></ChunkErrorBoundary>
       )}
 
-      <BottomNav 
-        activeTab={activeTab} 
-        setActiveTab={(tab) => {
-          setSelectedJob(null);
-          setSelectedSchool(null);
-          setBackTab(null);
-          setActiveTab(tab);
-        }}
-        unreadCount={showProfileBadges ? unreadCount : 0}
-        userRole={userRole}
-        isVoiceStandby={isVoiceStandby}
-        isVoiceActive={isVoiceActive}
-      />
+      {!(activeTab === 'profile' && profileActivePage === 'resume_builder') && (
+        <BottomNav 
+          activeTab={activeTab} 
+          setActiveTab={(tab) => {
+            setSelectedJob(null);
+            setSelectedSchool(null);
+            setBackTab(null);
+            setActiveTab(tab);
+          }}
+          unreadCount={showProfileBadges ? unreadCount : 0}
+          userRole={userRole}
+          isVoiceStandby={isVoiceStandby}
+          isVoiceActive={isVoiceActive}
+        />
+      )}
 
       <VoiceAssistant 
         isActive={isVoiceActive} 

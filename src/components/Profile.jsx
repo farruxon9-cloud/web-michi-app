@@ -107,7 +107,7 @@ const getLicenseLabel = (type) => {
 
   const getAvatarSrc = () => {
     if (profileData.avatar) return profileData.avatar;
-    const name = profileData.fullName;
+    const name = encodeURIComponent(profileData.fullName || 'User');
     const bg = userRole === 'company' ? 'AF52DE' : '0A84FF';
     return `https://ui-avatars.com/api/?name=${name}&background=${bg}&color=fff`;
   };
