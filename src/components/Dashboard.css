@@ -933,11 +933,13 @@ html.dark-mode .player-timeline {
 }
 
 /* Active Visualizer animation in the card */
-.ai-bar.active {
+.ai-bar.active,
+.ai-bar.animating {
   background: #30D158;
   opacity: 1;
   animation: ai-bar-bounce 0.6s infinite ease-in-out;
 }
+
 
 /* Double column row for Company homepage layout */
 .bento-double-cards-row {
