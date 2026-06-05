@@ -116,6 +116,87 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const dayRef = useRef(null);
+  const monthRef = useRef(null);
+  const yearRef = useRef(null);
+  const scrollTimeout = useRef({});
+
+  // Debounced scroll listener to select nearest snapped item
+  const handleScroll = (type, e, list, handler, currentValue) => {
+    const scrollTop = e.target.scrollTop;
+    const index = Math.round(scrollTop / 36);
+    const val = list[index];
+    if (!val) return;
+
+    if (scrollTimeout.current[type]) {
+      clearTimeout(scrollTimeout.current[type]);
+    }
+
+    scrollTimeout.current[type] = setTimeout(() => {
+      if (val.toString() !== currentValue) {
+        handler(val.toString());
+      }
+    }, 150);
+  };
+
+  useEffect(() => {
+    if (step === 1) {
+      // Wait for DOM layout
+      const timer = setTimeout(() => {
+        if (selectedYear && yearRef.current) {
+          const itemEl = yearRef.current.querySelector(`[data-value="${selectedYear}"]`);
+          if (itemEl) yearRef.current.scrollTop = itemEl.offsetTop - 54;
+        }
+        if (selectedMonth && monthRef.current) {
+          const itemEl = monthRef.current.querySelector(`[data-value="${selectedMonth}"]`);
+          if (itemEl) monthRef.current.scrollTop = itemEl.offsetTop - 54;
+        }
+        if (selectedDay && dayRef.current) {
+          const itemEl = dayRef.current.querySelector(`[data-value="${selectedDay}"]`);
+          if (itemEl) dayRef.current.scrollTop = itemEl.offsetTop - 54;
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
+  // Smooth scroll sync when selections change via clicks/snaps
+  useEffect(() => {
+    if (selectedYear && yearRef.current) {
+      const itemEl = yearRef.current.querySelector(`[data-value="${selectedYear}"]`);
+      if (itemEl) {
+        const targetScroll = itemEl.offsetTop - 54;
+        if (Math.abs(yearRef.current.scrollTop - targetScroll) > 2) {
+          yearRef.current.scrollTo({ top: targetScroll, behavior: 'smooth' });
+        }
+      }
+    }
+  }, [selectedYear]);
+
+  useEffect(() => {
+    if (selectedMonth && monthRef.current) {
+      const itemEl = monthRef.current.querySelector(`[data-value="${selectedMonth}"]`);
+      if (itemEl) {
+        const targetScroll = itemEl.offsetTop - 54;
+        if (Math.abs(monthRef.current.scrollTop - targetScroll) > 2) {
+          monthRef.current.scrollTo({ top: targetScroll, behavior: 'smooth' });
+        }
+      }
+    }
+  }, [selectedMonth]);
+
+  useEffect(() => {
+    if (selectedDay && dayRef.current) {
+      const itemEl = dayRef.current.querySelector(`[data-value="${selectedDay}"]`);
+      if (itemEl) {
+        const targetScroll = itemEl.offsetTop - 54;
+        if (Math.abs(dayRef.current.scrollTop - targetScroll) > 2) {
+          dayRef.current.scrollTo({ top: targetScroll, behavior: 'smooth' });
+        }
+      }
+    }
+  }, [selectedDay]);
+
   // Year/Month helpers for numeric date inputs
   const parseYearMonth = (dateStr) => {
     if (!dateStr) return { year: '', month: '' };
@@ -352,42 +433,70 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
                   <div className="form-input-hint">
                     {t('dobHint', 'Tug\'ilgan kuningizni kun, oy va yaponcha davr (Era) yili ketma-ketligida tanlang.')}
                   </div>
-                  <div className="dob-select-row">
-                    <select
-                      value={selectedDay}
-                      onChange={(e) => handleDayChange(e.target.value)}
-                      className="glass-input dob-select"
-                      required
+                  
+                  <div className="dob-spinner-container glass squircle">
+                    {/* Highlight Selection Bar */}
+                    <div className="dob-spinner-highlight"></div>
+
+                    {/* Day Column */}
+                    <div 
+                      className="dob-spinner-column" 
+                      ref={dayRef}
+                      onScroll={(e) => handleScroll('day', e, days, handleDayChange, selectedDay)}
                     >
-                      <option value="">{t('day', 'Kun')}</option>
+                      <div className="dob-spinner-spacer"></div>
                       {days.map(d => (
-                        <option key={d} value={d}>{d}</option>
+                        <div 
+                          key={d} 
+                          className={`dob-spinner-item ${selectedDay === d.toString() ? 'active' : ''}`}
+                          data-value={d}
+                          onClick={() => handleDayChange(d.toString())}
+                        >
+                          {d} {t('day', 'Kun')}
+                        </div>
                       ))}
-                    </select>
+                      <div className="dob-spinner-spacer"></div>
+                    </div>
 
-                    <select
-                      value={selectedMonth}
-                      onChange={(e) => handleMonthChange(e.target.value)}
-                      className="glass-input dob-select"
-                      required
+                    {/* Month Column */}
+                    <div 
+                      className="dob-spinner-column" 
+                      ref={monthRef}
+                      onScroll={(e) => handleScroll('month', e, months, handleMonthChange, selectedMonth)}
                     >
-                      <option value="">{t('month', 'Oy')}</option>
+                      <div className="dob-spinner-spacer"></div>
                       {months.map(m => (
-                        <option key={m} value={m}>{m}</option>
+                        <div 
+                          key={m} 
+                          className={`dob-spinner-item ${selectedMonth === m.toString() ? 'active' : ''}`}
+                          data-value={m}
+                          onClick={() => handleMonthChange(m.toString())}
+                        >
+                          {m} {t('month', 'Oy')}
+                        </div>
                       ))}
-                    </select>
+                      <div className="dob-spinner-spacer"></div>
+                    </div>
 
-                    <select
-                      value={selectedYear}
-                      onChange={(e) => handleYearChange(e.target.value)}
-                      className="glass-input dob-select"
-                      required
+                    {/* Year Column */}
+                    <div 
+                      className="dob-spinner-column year-column" 
+                      ref={yearRef}
+                      onScroll={(e) => handleScroll('year', e, years, handleYearChange, selectedYear)}
                     >
-                      <option value="">{t('year', 'Yil')}</option>
+                      <div className="dob-spinner-spacer"></div>
                       {years.map(y => (
-                        <option key={y} value={y}>{y} ({getJapaneseEra(y)})</option>
+                        <div 
+                          key={y} 
+                          className={`dob-spinner-item ${selectedYear === y.toString() ? 'active' : ''}`}
+                          data-value={y}
+                          onClick={() => handleYearChange(y.toString())}
+                        >
+                          {y} ({getJapaneseEra(y)})
+                        </div>
                       ))}
-                    </select>
+                      <div className="dob-spinner-spacer"></div>
+                    </div>
                   </div>
                 </div>
               );

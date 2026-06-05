@@ -96,6 +96,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  padding-bottom: 100px; /* Space to scroll content above the sticky footer buttons */
 }
 
 .step-content {
@@ -681,26 +682,95 @@ select.glass-input {
   color: #FF2D55 !important;
 }
 
-.dob-select-row {
+/* Drum Wheel Selector Styling */
+.dob-spinner-container {
   display: flex;
-  gap: 10px;
-  width: 100%;
+  position: relative;
+  height: 144px; /* 4 visible items, height = 36 * 4 */
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
   margin-top: 4px;
 }
 
-.dob-select {
-  flex: 1;
-  min-width: 0;
-  padding: 14px 12px !important;
-  font-size: 15px !important;
-  border-radius: 14px !important;
-  appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg fill='%236E6E73' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'//></svg>");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 30px !important;
+.dark-mode .dob-spinner-container {
+  background: rgba(18, 18, 24, 0.5);
 }
 
-.dark-mode .dob-select {
-  background-image: url("data:image/svg+xml;utf8,<svg fill='%23A1A1AA' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'//></svg>");
+.dob-spinner-highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 54px; /* (144 - 36) / 2 */
+  height: 36px;
+  background: rgba(10, 132, 255, 0.08);
+  border-top: 1px solid rgba(10, 132, 255, 0.25);
+  border-bottom: 1px solid rgba(10, 132, 255, 0.25);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.dark-mode .dob-spinner-highlight {
+  background: rgba(90, 85, 234, 0.15);
+  border-top: 1px solid rgba(90, 85, 234, 0.4);
+  border-bottom: 1px solid rgba(90, 85, 234, 0.4);
+}
+
+.dob-spinner-column {
+  flex: 1;
+  height: 144px;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+  z-index: 1;
+  padding: 0 4px;
+}
+
+.dob-spinner-column::-webkit-scrollbar {
+  display: none; /* Safari/Chrome */
+}
+
+.dob-spinner-column.year-column {
+  flex: 1.8; /* Give more width to the Year + Japanese Era column */
+}
+
+.dob-spinner-item {
+  height: 36px;
+  line-height: 36px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+  color: var(--text-secondary);
+  scroll-snap-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.dob-spinner-item:hover {
+  color: var(--text-main);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.dark-mode .dob-spinner-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.dob-spinner-item.active {
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.dob-spinner-spacer {
+  height: 54px; /* (144 - 36) / 2 */
+  flex-shrink: 0;
 }

@@ -2779,9 +2779,16 @@ const resumeTranslations = {
     addEducation: "Ta'lim qo'shish",
     licensesQualifications: "Guvohnoma va Sertifikatlar",
     otherCertificates: "Maxsus sertifikatlar",
-    motivationPR: "Motivatsiya va O'z-o'zini taqdim",
     finishBtn: "Tugatish",
-    callBtn: "Qo'ng'iroq qilish"
+    callBtn: "Qo'ng'iroq qilish",
+    fullNameLabel: "Ism va familiya",
+    katakanaNameLabel: "Katakanada yozilishi",
+    fullNameHint: "Yapon tilida to'ldirish uchun lotin harflarida (Masalan: ALIMOV ANVAR) yoki kanjida (Masalan: 山田 太郎) yozing.",
+    furiganaHint: "Ismingizning yaponcha katakana talaffuzi (Masalan: アリモフ アンバル yoki ヤマダ タロウ).",
+    dobHint: "Tug'ilgan kuningizni kun, oy va yaponcha davr (Era) yili ketma-ketligida tanlang.",
+    day: "Kun",
+    month: "Oy",
+    year: "Yil"
   },
   ja: {
     createResume: "履歴書作成 (PDF)",
@@ -2824,11 +2831,16 @@ const resumeTranslations = {
     currentPositionCheckbox: "現在も在職中",
     addWork: "職歴を追加",
     addEducation: "学歴を追加",
-    licensesQualifications: "免許・資格",
-    otherCertificates: "その他の資格",
-    motivationPR: "志望動機・自己PR",
     finishBtn: "完了",
-    callBtn: "電話する"
+    callBtn: "電話する",
+    fullNameLabel: "氏名（漢字またはローマ字）",
+    katakanaNameLabel: "ふりがな（カタカナ）",
+    fullNameHint: "ローマ字（例: ALIMOV ANVAR）または漢字（例: 山田 太郎）で入力してください。",
+    furiganaHint: "お名前のカタカナ読みを入力してください（例: アリモフ アンバル または ヤマダ タロウ）。",
+    dobHint: "生年月日を日、月、和暦（年）の順で選択してください。",
+    day: "日",
+    month: "月",
+    year: "年"
   },
   en: {
     createResume: "Japanese Resume (Rirekisho)",
@@ -2870,12 +2882,16 @@ const resumeTranslations = {
     endDate: "End Date",
     currentPositionCheckbox: "Currently working here",
     addWork: "Add Work History",
-    addEducation: "Add Education",
-    licensesQualifications: "Licenses & Qualifications",
-    otherCertificates: "Special Certificates",
-    motivationPR: "Motivation & Self-PR",
     finishBtn: "Finish",
-    callBtn: "Call"
+    callBtn: "Call",
+    fullNameLabel: "Full Name",
+    katakanaNameLabel: "Katakana Pronunciation",
+    fullNameHint: "Enter in English letters (e.g., ALIMOV ANVAR) or Kanji (e.g., 山田 太郎).",
+    furiganaHint: "Enter your name pronunciation in Japanese Katakana (e.g., アリモフ アンバル or ヤマダ タロウ).",
+    dobHint: "Select your birth date in sequence: day, month, and Japanese Era year.",
+    day: "Day",
+    month: "Month",
+    year: "Year"
   },
   ru: {
     createResume: "Японское резюме (履歴書)",
@@ -2917,12 +2933,16 @@ const resumeTranslations = {
     endDate: "Дата окончания",
     currentPositionCheckbox: "Работаю по настоящее время",
     addWork: "Добавить место работы",
-    addEducation: "Добавить образование",
-    licensesQualifications: "Лицензии и квалификации",
-    otherCertificates: "Специальные сертификаты",
-    motivationPR: "Мотивация и самопрезентация",
     finishBtn: "Завершить",
-    callBtn: "Позвонить"
+    callBtn: "Позвонить",
+    fullNameLabel: "Имя и фамилия",
+    katakanaNameLabel: "Запись катаканой",
+    fullNameHint: "Заполните латиницей (например: ALIMOV ANVAR) или японскими иероглифами (например: 山田 太郎) для соответствия японским стандартам.",
+    furiganaHint: "Произношение имени японской катаканой (например: アリモフ アンバル или ヤマダ Таロウ).",
+    dobHint: "Выберите дату рождения последовательно: день, месяц и год японской эры.",
+    day: "День",
+    month: "Месяц",
+    year: "Год"
   },
   vi: {
     createResume: "Tạo sơ yếu lý lịch Nhật",
@@ -2964,12 +2984,16 @@ const resumeTranslations = {
     endDate: "Ngày kết thúc",
     currentPositionCheckbox: "Hiện đang làm việc tại đây",
     addWork: "Thêm kinh nghiệm làm việc",
-    addEducation: "Thêm học vấn",
-    licensesQualifications: "Bằng lái & Chứng chỉ",
-    otherCertificates: "Chứng chỉ đặc biệt",
-    motivationPR: "Động lực & Giới thiệu bản thân",
     finishBtn: "Hoàn tất",
-    callBtn: "Gọi điện"
+    callBtn: "Gọi điện",
+    fullNameLabel: "Họ và tên",
+    katakanaNameLabel: "Cách viết bằng Katakana",
+    fullNameHint: "Nhập bằng chữ Latinh (Ví dụ: ALIMOV ANVAR) hoặc chữ Kanji (Ví dụ: 山田 太郎) để đúng tiêu chuẩn Nhật.",
+    furiganaHint: "Phát âm tên bằng chữ Katakana Nhật Bản (Ví dụ: アリモフ アンバル hoặc ヤマダ タロウ).",
+    dobHint: "Chọn ngày sinh theo thứ tự: ngày, tháng và năm niên hiệu Nhật Bản.",
+    day: "Ngày",
+    month: "Tháng",
+    year: "Năm"
   },
   zh: {
     createResume: "创建日文简历 (履歴書)",
@@ -3011,12 +3035,16 @@ const resumeTranslations = {
     endDate: "结束日期",
     currentPositionCheckbox: "目前在此工作",
     addWork: "添加工作经历",
-    addEducation: "添加教育经历",
-    licensesQualifications: "驾照与资格证书",
-    otherCertificates: "特殊资格证书",
-    motivationPR: "申请动机与自我展示",
     finishBtn: "完成",
-    callBtn: "拨打电话"
+    callBtn: "拨打电话",
+    fullNameLabel: "姓名（罗马字或汉字）",
+    katakanaNameLabel: "片假名读音",
+    fullNameHint: "请输入罗马字（例：ALIMOV ANVAR）或汉字（例：山田 太郎）以符合日本简历标准。",
+    furiganaHint: "请输入您的名字的日文片假名读音（例：アリモフ アンバル 或 ヤマダ タロウ）。",
+    dobHint: "请按日、月、和历（年）的顺序选择您的出生日期。",
+    day: "日",
+    month: "月",
+    year: "年"
   },
   ne: {
     createResume: "जापानी बायोडाटा (Rirekisho)",
@@ -3063,7 +3091,15 @@ const resumeTranslations = {
     otherCertificates: "विशेष प्रमाणपत्रहरू",
     motivationPR: "प्रेरणा र आत्म-प्रचार",
     finishBtn: "समाप्त गर्नुहोस्",
-    callBtn: "फोन गर्नुहोस्"
+    callBtn: "फोन गर्नुहोस्",
+    fullNameLabel: "पूरा नाम",
+    katakanaNameLabel: "काताकाना उच्चारण",
+    fullNameHint: "जापानी मानकों के लिए अंग्रेजी अक्षरों (उदा. ALIMOV ANVAR) या कांजी (उदा. 山田 太郎) में दर्ज करें।",
+    furiganaHint: "जापानी काताकाना में अपने नाम का उच्चारण दर्ज करें (उदा. アリモフ アンバル या ヤマダ ताロウ)।",
+    dobHint: "अनुक्रम में अपनी जन्म तिथि चुनें: दिन, महीना और जापानी युग वर्ष।",
+    day: "दिन",
+    month: "महीना",
+    year: "वर्ष"
   }
 };
 
