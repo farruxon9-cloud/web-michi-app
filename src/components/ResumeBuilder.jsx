@@ -1,8 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, User, Phone, Briefcase, GraduationCap, Award, BookOpen, FileText, CheckCircle, Loader2 } from 'lucide-react';
 import { generateRirekisho } from '../utils/resumeGenerator';
 import './ResumeBuilder.css';
+
+const getJapaneseEra = (year) => {
+  const y = parseInt(year, 10);
+  if (isNaN(y)) return '';
+  if (y >= 2019) {
+    const eraYear = y - 2019 + 1;
+    return `令和${eraYear === 1 ? '元' : eraYear}年`;
+  }
+  if (y >= 1989) {
+    const eraYear = y - 1989 + 1;
+    return `平成${eraYear === 1 ? '元' : eraYear}年`;
+  }
+  if (y >= 1926) {
+    const eraYear = y - 1926 + 1;
+    return `昭和${eraYear === 1 ? '元' : eraYear}年`;
+  }
+  return '';
+};
 
 export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) {
   const { t } = useTranslation();
@@ -29,19 +47,69 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
   const [pdfStatus, setPdfStatus] = useState(null); // null, 'loading_font', 'generating_pdf', 'downloading', 'completed', 'failed'
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
 
+  // Local state for Day, Month, Year select dropdowns
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedDay, setSelectedDay] = useState('');
+
   // Auto-sync initial data
   useEffect(() => {
+    const bDate = profileData.birthDate || '';
     setFormData(prev => ({
       ...prev,
       fullName: profileData.fullName || '',
-      birthDate: profileData.birthDate || '',
+      birthDate: bDate,
       email: profileData.email || '',
       educationHistory: profileData.educationHistory ? [...profileData.educationHistory] : [],
       workHistory: profileData.workHistory ? [...profileData.workHistory] : [],
       driverLicenses: profileData.driverLicenses ? [...profileData.driverLicenses] : [],
       techCertificates: profileData.techCertificates ? [...profileData.techCertificates] : []
     }));
+
+    if (bDate) {
+      const parts = bDate.split('-');
+      if (parts.length === 3) {
+        setSelectedYear(parts[0]);
+        setSelectedMonth(parseInt(parts[1], 10).toString());
+        setSelectedDay(parseInt(parts[2], 10).toString());
+      }
+    }
   }, [profileData]);
+
+  const handleYearChange = (year) => {
+    setSelectedYear(year);
+    if (year && selectedMonth && selectedDay) {
+      const m = String(selectedMonth).padStart(2, '0');
+      const d = String(selectedDay).padStart(2, '0');
+      setFormData(prev => ({ ...prev, birthDate: `${year}-${m}-${d}` }));
+    }
+  };
+
+  const handleMonthChange = (month) => {
+    setSelectedMonth(month);
+    let day = selectedDay;
+    if (selectedYear && month && day) {
+      const maxDays = new Date(parseInt(selectedYear, 10), parseInt(month, 10), 0).getDate();
+      if (parseInt(day, 10) > maxDays) {
+        day = maxDays.toString();
+        setSelectedDay(day);
+      }
+    }
+    if (selectedYear && month && day) {
+      const m = String(month).padStart(2, '0');
+      const d = String(day).padStart(2, '0');
+      setFormData(prev => ({ ...prev, birthDate: `${selectedYear}-${m}-${d}` }));
+    }
+  };
+
+  const handleDayChange = (day) => {
+    setSelectedDay(day);
+    if (selectedYear && selectedMonth && day) {
+      const m = String(selectedMonth).padStart(2, '0');
+      const d = String(day).padStart(2, '0');
+      setFormData(prev => ({ ...prev, birthDate: `${selectedYear}-${m}-${d}` }));
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -218,58 +286,112 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
             </div>
 
             <div className="form-group">
-              <label htmlFor="fullName">{t('namePlaceholder', 'Ism Familya')}</label>
+              <label htmlFor="fullName">{t('fullNameLabel', 'Ism va familiya')}</label>
+              <div className="form-input-hint">
+                {t('fullNameHint', 'Yapon tilida to\'ldirish uchun lotin harflarida (Masalan: ALIMOV ANVAR) yoki kanjida (Masalan: 山田 太郎) yozing.')}
+              </div>
               <input 
                 type="text" 
                 id="fullName"
                 name="fullName" 
                 value={formData.fullName} 
                 onChange={handleChange}
-                placeholder="E.g. ALIMOV ANVAR"
+                placeholder="ALIMOV ANVAR (山田 太郎)"
                 className="glass-input"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="furigana">{t('furiganaLabel', 'Furigana (Ism o\'qilishi in katakana)')}</label>
+              <label htmlFor="furigana">{t('katakanaNameLabel', 'Katakanada yozilishi')}</label>
+              <div className="form-input-hint">
+                {t('furiganaHint', 'Ismingizning yaponcha katakana talaffuzi (Masalan: アリモフ アンバル yoki ヤマダ タロウ).')}
+              </div>
               <input 
                 type="text" 
                 id="furigana"
                 name="furigana" 
                 value={formData.furigana} 
                 onChange={handleChange}
-                placeholder="E.g. アリモフ アンバル"
+                placeholder="アリモフ アンバル (ヤマダ タロウ)"
                 className="glass-input"
               />
             </div>
 
-            <div className="form-row">
-              <div className="form-group flex-1">
-                <label htmlFor="birthDate">{t('dobLabel', 'Tug\'ilgan sana')}</label>
-                <input 
-                  type="date" 
-                  id="birthDate"
-                  name="birthDate" 
-                  value={formData.birthDate} 
-                  onChange={handleChange}
-                  className="glass-input"
-                />
-              </div>
-
-              <div className="form-group" style={{ width: '120px' }}>
-                <label htmlFor="gender">{t('genderLabel', 'Jins')}</label>
-                <select 
-                  id="gender"
-                  name="gender" 
-                  value={formData.gender} 
-                  onChange={handleChange}
-                  className="glass-input"
+            <div className="form-group">
+              <label>{t('genderLabel', 'Jins')}</label>
+              <div className="gender-select-row">
+                <button
+                  type="button"
+                  className={`gender-select-btn male ${formData.gender === 'male' ? 'active' : ''}`}
+                  onClick={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
                 >
-                  <option value="male">{t('male', 'Erkak')}</option>
-                  <option value="female">{t('female', 'Ayol')}</option>
-                </select>
+                  {t('male', 'Erkak')}
+                </button>
+                <button
+                  type="button"
+                  className={`gender-select-btn female ${formData.gender === 'female' ? 'active' : ''}`}
+                  onClick={() => setFormData(prev => ({ ...prev, gender: 'female' }))}
+                >
+                  {t('female', 'Ayol')}
+                </button>
               </div>
             </div>
+
+            {(() => {
+              const years = [];
+              for (let y = 2015; y >= 1950; y--) {
+                years.push(y);
+              }
+              const months = Array.from({ length: 12 }, (_, i) => i + 1);
+              const maxDays = (selectedYear && selectedMonth) ? new Date(parseInt(selectedYear, 10), parseInt(selectedMonth, 10), 0).getDate() : 31;
+              const days = Array.from({ length: maxDays }, (_, i) => i + 1);
+
+              return (
+                <div className="form-group">
+                  <label>{t('dobLabel', "Tug'ilgan sana")}</label>
+                  <div className="form-input-hint">
+                    {t('dobHint', 'Tug\'ilgan kuningizni kun, oy va yaponcha davr (Era) yili ketma-ketligida tanlang.')}
+                  </div>
+                  <div className="dob-select-row">
+                    <select
+                      value={selectedDay}
+                      onChange={(e) => handleDayChange(e.target.value)}
+                      className="glass-input dob-select"
+                      required
+                    >
+                      <option value="">{t('day', 'Kun')}</option>
+                      {days.map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={selectedMonth}
+                      onChange={(e) => handleMonthChange(e.target.value)}
+                      className="glass-input dob-select"
+                      required
+                    >
+                      <option value="">{t('month', 'Oy')}</option>
+                      {months.map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={selectedYear}
+                      onChange={(e) => handleYearChange(e.target.value)}
+                      className="glass-input dob-select"
+                      required
+                    >
+                      <option value="">{t('year', 'Yil')}</option>
+                      {years.map(y => (
+                        <option key={y} value={y}>{y} ({getJapaneseEra(y)})</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
