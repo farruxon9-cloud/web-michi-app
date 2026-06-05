@@ -423,13 +423,18 @@ const getLicenseLabel = (type) => {
         {!isFormOpen && (
           <div style={{
             position: 'sticky',
-            top: 0,
-            background: 'var(--bg-color)',
-            zIndex: 10,
-            padding: '16px 20px 8px 20px',
-            borderBottom: '1px solid rgba(0, 0, 0, 0.02)'
+            top: '16px',
+            left: 0,
+            width: '100%',
+            boxSizing: 'border-box',
+            zIndex: 250,
+            display: 'flex',
+            justifyContent: 'space-between',
+            padding: '0 20px',
+            pointerEvents: 'none',
+            marginBottom: '-56px'
           }}>
-            <button className="icon-btn glass" onClick={() => {
+            <button className="icon-btn glass" style={{ pointerEvents: 'auto' }} onClick={() => {
               if (profileActivePageSource === 'home') {
                 setActivePage('main');
                 if (onNavigate) onNavigate('home');
@@ -442,7 +447,7 @@ const getLicenseLabel = (type) => {
 
         {/* Scrollable Title */}
         {!isFormOpen && (
-          <div style={{ padding: '0 20px 16px 20px', marginTop: '8px' }}>
+          <div style={{ padding: '72px 20px 16px 20px' }}>
             <h2 style={{ fontSize: '24px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>
               {t('myAdsMenu', 'Mening e\'lonlarim')}
             </h2>
