@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck } from 'lucide-react';
 import './Dashboard.css';
@@ -14,6 +14,10 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
   const { t, i18n } = useTranslation();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   const SLIDES = [
     {
@@ -48,11 +52,71 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
   }, []);
 
   useEffect(() => {
+    if (isPaused) return;
     const slideTimer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
     }, 4000);
     return () => clearInterval(slideTimer);
-  }, [SLIDES.length]);
+  }, [isPaused, SLIDES.length]);
+
+  const handleTouchStart = (e) => {
+    setIsPaused(true);
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    setIsPaused(false);
+    const diffX = touchStartX.current - touchEndX.current;
+    const swipeThreshold = 50;
+    if (diffX > swipeThreshold) {
+      setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+    } else if (diffX < -swipeThreshold) {
+      setCurrentSlide((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+    }
+  };
+
+  const handleMouseDown = (e) => {
+    setIsPaused(true);
+    touchStartX.current = e.clientX;
+    touchEndX.current = e.clientX;
+  };
+
+  const handleMouseMove = (e) => {
+    if (isPaused) {
+      touchEndX.current = e.clientX;
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (isPaused) {
+      setIsPaused(false);
+      const diffX = touchStartX.current - touchEndX.current;
+      const swipeThreshold = 50;
+      if (diffX > swipeThreshold) {
+        setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+      } else if (diffX < -swipeThreshold) {
+        setCurrentSlide((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+      }
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isPaused) {
+      setIsPaused(false);
+    }
+  };
+
+  const handleCardClick = (tab) => {
+    const diffX = Math.abs(touchStartX.current - touchEndX.current);
+    if (diffX < 10) {
+      setActiveTab(tab);
+    }
+  };
 
   const getDaysArray = () => {
     const days = [];
@@ -87,7 +151,17 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
     <div className="dashboard-container hide-scrollbar">
       
       {/* Top Banner Area (Premium Sliding Cards) */}
-      <div className="dash-hero-carousel-container">
+      <div 
+        className="dash-hero-carousel-container"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        style={{ cursor: isPaused ? 'grabbing' : 'grab' }}
+      >
         <div 
           className="dash-hero-slider" 
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -96,7 +170,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
             <div key={slide.id} className="dash-hero-slide-wrapper">
               <div 
                 className="dash-hero-card" 
-                onClick={() => setActiveTab(slide.tab)}
+                onClick={() => handleCardClick(slide.tab)}
               >
                 <div className="dash-hero-content">
                   <span className="dash-badge">{slide.badge}</span>
