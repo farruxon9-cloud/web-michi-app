@@ -1,8 +1,8 @@
 .resume-builder-container {
-  padding: 16px;
+  padding: 16px 16px 0 16px; /* No bottom padding so the footer can touch screen edges */
   max-width: 600px;
   margin: 0 auto;
-  height: 100%;
+  flex: 1; /* Stretch to occupy full height of the viewport main-content */
   display: flex;
   flex-direction: column;
   color: var(--text-main);
@@ -393,22 +393,32 @@ select.glass-input {
 .resume-builder-footer {
   position: sticky;
   bottom: 0;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.9); /* Light mode footer background */
+  left: 0;
+  right: 0;
+  padding: 16px 20px;
+  margin: 0 -16px; /* Counteracts the 16px padding on left/right of container */
+  width: calc(100% + 32px); /* Spans full width touching screen edges */
+  background: rgba(255, 255, 255, 0.95); /* Light mode footer background */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   gap: 12px;
-  width: 100%;
   margin-top: auto;
   z-index: 100;
   box-sizing: border-box;
 }
 
 .dark-mode .resume-builder-footer {
-  background: rgba(18, 18, 18, 0.9);
+  background: rgba(18, 18, 18, 0.95);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Placeholder styling to ensure it is light-colored and distinct from user input */
+.glass-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.55;
+  font-weight: 400;
 }
 
 .footer-btn {

@@ -23,7 +23,35 @@ const getJapaneseEra = (year) => {
 };
 
 export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'uz';
+
+  const getFullNamePlaceholder = () => {
+    switch (currentLang) {
+      case 'ja': return '例：山田 太郎 (YAMADA TARO)';
+      case 'uz': return 'Masalan: ALIMOV ANVAR';
+      case 'ru': return 'Например: ALIMOV ANVAR';
+      case 'en': return 'e.g., ALIMOV ANVAR';
+      case 'vi': return 'Ví dụ: ALIMOV ANVAR';
+      case 'zh': return '例如：ALIMOV ANVAR';
+      case 'hi': return 'उदा. ALIMOV ANVAR';
+      default: return 'Masalan: ALIMOV ANVAR';
+    }
+  };
+
+  const getFuriganaPlaceholder = () => {
+    switch (currentLang) {
+      case 'ja': return '例：ヤマダ タロウ';
+      case 'uz': return 'Masalan: アリモフ アンバル';
+      case 'ru': return 'Например: アリモフ アンバル';
+      case 'en': return 'e.g., アリモフ アンバル';
+      case 'vi': return 'Ví dụ: アリモフ アンバル';
+      case 'zh': return '例如：アリモフ アンバル';
+      case 'hi': return 'उदा. アリモフ アンバル';
+      default: return 'Masalan: アリモフ アンバル';
+    }
+  };
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     fullName: profileData.fullName || '',
@@ -377,7 +405,7 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
                 name="fullName" 
                 value={formData.fullName} 
                 onChange={handleChange}
-                placeholder="ALIMOV ANVAR (山田 太郎)"
+                placeholder={getFullNamePlaceholder()}
                 className="glass-input"
               />
             </div>
@@ -393,7 +421,7 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
                 name="furigana" 
                 value={formData.furigana} 
                 onChange={handleChange}
-                placeholder="アリモフ アンバル (ヤマダ タロウ)"
+                placeholder={getFuriganaPlaceholder()}
                 className="glass-input"
               />
             </div>
