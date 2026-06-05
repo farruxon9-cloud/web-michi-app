@@ -347,7 +347,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     };
 
     return (
-      <div className="feed-container fade-in" style={{ overflowY: 'visible', paddingTop: '10px', paddingBottom: '100px' }}>
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
           <button className="icon-btn glass" onClick={() => { setShowAddForm(false); setJobImage(null); setErrors({}); }}>
@@ -777,7 +777,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     // ===== AD TYPE SELECTION SCREEN (FOR DRIVING SCHOOLS) =====
   if (showAdTypeSelect) {
     return (
-      <div className="feed-container fade-in" style={{ overflowY: 'visible', paddingTop: '10px', paddingBottom: '100px' }}>
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
           <button className="icon-btn glass" onClick={() => setShowAdTypeSelect(false)}>
             <ArrowLeft size={20} />
@@ -843,7 +843,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   
   // ===== MAIN JOB LIST =====
   return (
-    <div className="feed-container fade-in" style={{ overflowY: 'visible', paddingTop: '10px', paddingBottom: '80px' }}>
+    <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
       
       {/* ADD ANNOUNCEMENT BUTTON CARD */}
       <div style={{ padding: '0 16px', marginBottom: '24px' }}>
@@ -1093,7 +1093,6 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           </div>
         </>
       )}
-      <div style={{ height: '20px' }}></div>
     </div>
   );
 

@@ -267,7 +267,7 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
                           e.stopPropagation();
                           window.location.href = `tel:${job.phone || '080-1234-5678'}`;
                         }}
-                        style={{ flex: 1, background: '#0A84FF', color: '#fff', border: 'none' }}
+                        style={{ flex: 1 }}
                       >
                         <Phone size={13} />
                         {t('callBtn', 'Qo\'ng\'iroq qilish')}
@@ -312,7 +312,6 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
             <p>{t('noJobsFound', "Mos e'lon topilmadi")}</p>
           </div>
         )}
-        <div style={{ height: '10px' }}></div>
       </div>
     </div>
   );

@@ -418,7 +418,7 @@ const getLicenseLabel = (type) => {
   // ===== MY POSTED ADS PAGE (COMPANY) =====
   if (activePage === 'my_ads') {
     return (
-      <div className="profile-container fade-in" style={{ paddingBottom: '100px' }}>
+      <div className="profile-container fade-in">
         {/* Sticky Back Button Container */}
         {!isFormOpen && (
           <div style={{

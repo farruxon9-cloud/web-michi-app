@@ -446,7 +446,10 @@ export default function DrivingAcademy({
                 ============================================================ */}
             <div className="school-sticky-actions glass">
               {/* Qo'ng'iroq tugmasi — <a> tag bilan tel: protokol */}
-              <a href={`tel:${school.phone || '+819012345678'}`} className="academy-call-btn">
+              <a 
+                href={`tel:${school.phone || '+819012345678'}`} 
+                className={userRole === 'company' ? 'academy-apply-btn' : 'academy-call-btn'}
+              >
                 <Phone size={15} /> {t('callSchool', 'Qo\'ng\'iroq')}
               </a>
               
@@ -558,7 +561,18 @@ export default function DrivingAcademy({
 
                 {/* Amal tugmalari */}
                 <div className="job-card-actions">
-                  {userRole !== 'company' && (
+                  {userRole === 'company' ? (
+                    <button 
+                      className="job-card-btn btn-call"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `tel:${school.phone || '080-1234-5678'}`;
+                      }}
+                    >
+                      <Phone size={12} />
+                      {t('callBtn', 'Qo\'ng\'iroq qilish')}
+                    </button>
+                  ) : (
                     <button className="job-card-btn btn-apply">
                       {t('applyToSchool', 'Topshirish')}
                     </button>
