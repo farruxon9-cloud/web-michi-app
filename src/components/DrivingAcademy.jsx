@@ -509,85 +509,108 @@ export default function DrivingAcademy({
           /** showVerified — Maktab tasdiqlangan YOKI shartnoma faol bo'lsa badge ko'rsatiladi */
           const showVerified = school.verified || isContractActive;
           return (
-            <div key={school.id} className="job-card-hz glass squircle" onClick={() => setSelectedSchool(school)}>
-              {/* ---- Chap qism: Maktab rasmi ---- */}
-              <div className="job-card-img">
-                <img 
-                  src={school.image} 
-                  alt={t(`school_${school.id}_name`, school.name)} 
-                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
-                />
-                {/* Dars tillari belgisi (rasm ustida) */}
-                <div className="job-type-badge type-fulltime">
-                  {school.langs ? school.langs.join(', ') : 'UZ, JP'}
+            <div key={school.id} className="job-card-hz glass" onClick={() => setSelectedSchool(school)}>
+              <div className="job-card-main-layout">
+                {/* ---- Chap qism: Maktab rasmi ---- */}
+                <div className="job-card-img">
+                  <img 
+                    src={school.image} 
+                    alt={t(`school_${school.id}_name`, school.name)} 
+                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
+                  />
+                  {/* Dars tillari belgisi (rasm ustida) */}
+                  <div className="job-type-badge type-fulltime">
+                    {school.langs ? school.langs.join(', ') : 'UZ, JP'}
+                  </div>
+                </div>
+
+                {/* ---- O'ng qism: Batafsil ma'lumotlar ---- */}
+                <div className="job-card-body">
+                  {/* Maktab nomi + Verified badge */}
+                  <div className="job-card-company">
+                    <span>{t(`school_${school.id}_name`, school.name)}</span>
+                    {showVerified && <VerifiedBadge size={14} />}
+                  </div>
+
+                  {/* Toifa turi */}
+                  <h3 className="job-card-title">{t(`school_${school.id}_type`, school.type)}</h3>
+
+                  {/* Narx — yashil rangda */}
+                  <div className="job-card-salary">
+                    <Banknote size={15} color="#30D158" />
+                    <span>{school.price || 'Maxsus narx'}</span>
+                    {school.discount && (
+                      <span className="discount-tag" style={{ marginLeft: '4px', fontSize: '9px', padding: '1.5px 4px' }}>
+                        -{school.discount}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Ikonkali chiplar (joylashuv, shoukai) */}
+                  <div className="job-card-chips">
+                    <span className="job-chip">
+                      <MapPin size={10} />
+                      {t(`school_${school.id}_location`, school.location)}
+                    </span>
+                    {school.shoukaiFee > 0 && (
+                      <span className="job-chip chip-highlight">
+                        <Share2 size={10} />
+                        {t('shoukaiAvailable', 'Shoukai puli bor')}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* ---- O'ng qism: Batafsil ma'lumotlar ---- */}
-              <div className="job-card-body">
-                {/* Maktab nomi + Verified badge */}
-                <div className="job-card-company">
-                  <span>{t(`school_${school.id}_name`, school.name)}</span>
-                  {showVerified && <VerifiedBadge size={14} />}
-                </div>
-
-                {/* Toifa turi */}
-                <h3 className="job-card-title">{t(`school_${school.id}_type`, school.type)}</h3>
-
-                {/* Narx — yashil rangda */}
-                <div className="job-card-salary">
-                  <Banknote size={15} color="#30D158" />
-                  <span>{school.price || 'Maxsus narx'}</span>
-                  {school.discount && (
-                    <span className="discount-tag" style={{ marginLeft: '4px', fontSize: '9px', padding: '1.5px 4px' }}>
-                      -{school.discount}
-                    </span>
-                  )}
-                </div>
-
-                {/* Ikonkali chiplar (joylashuv, shoukai) */}
-                <div className="job-card-chips">
-                  <span className="job-chip">
-                    <MapPin size={10} />
-                    {t(`school_${school.id}_location`, school.location)}
-                  </span>
-                  {school.shoukaiFee > 0 && (
-                    <span className="job-chip chip-highlight">
-                      <Share2 size={10} />
-                      {t('shoukaiAvailable', 'Shoukai puli bor')}
-                    </span>
-                  )}
-                </div>
-
-                {/* Amal tugmalari */}
-                <div className="job-card-actions">
-                  {userRole === 'company' ? (
-                    <button 
-                      className="job-card-btn btn-call"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.location.href = `tel:${school.phone || '080-1234-5678'}`;
-                      }}
-                    >
-                      <Phone size={12} />
-                      {t('callBtn', 'Qo\'ng\'iroq qilish')}
-                    </button>
-                  ) : (
-                    <button className="job-card-btn btn-apply">
-                      {t('applyToSchool', 'Topshirish')}
-                    </button>
-                  )}
+              {/* Amal tugmalari (job-card-main-layout tashqarisida) */}
+              <div className="job-card-actions">
+                {userRole === 'company' ? (
                   <button 
-                    className="job-card-btn btn-shoukai"
+                    className="job-card-btn btn-call"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onShoukai(school);
+                      window.location.href = `tel:${school.phone || '080-1234-5678'}`;
                     }}
                   >
-                    <Share2 size={12} />
-                    {t('shoukai', 'Shoukai')}
+                    <Phone size={12} />
+                    {t('callBtn', 'Qo\'ng\'iroq qilish')}
                   </button>
-                </div>
+                ) : (
+                  (() => {
+                    const alreadyApplied = (schoolApplications || []).some(a => a.schoolId === school.id && !a.isSimulatedReferral);
+                    return alreadyApplied ? (
+                      <button 
+                        className="job-card-btn btn-apply applied" 
+                        disabled
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ flex: 1, background: 'rgba(48, 209, 88, 0.15)', color: '#30D158', border: '1px solid rgba(48, 209, 88, 0.25)', cursor: 'default' }}
+                      >
+                        <CheckCircle2 size={13} />
+                        {t('appliedToSchool', 'Topshirilgan')}
+                      </button>
+                    ) : (
+                      <button 
+                        className="job-card-btn btn-apply"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onApplySchool && onApplySchool(school, '');
+                        }}
+                      >
+                        {t('applyToSchool', 'Topshirish')}
+                      </button>
+                    );
+                  })()
+                )}
+                <button 
+                  className="job-card-btn btn-shoukai"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShoukai(school);
+                  }}
+                >
+                  <Share2 size={12} />
+                  {t('shoukai', 'Shoukai')}
+                </button>
               </div>
             </div>
           );

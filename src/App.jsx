@@ -668,6 +668,8 @@ function App() {
             isContractActive={contractStatus === 'active'} 
             verifiedCompanies={verifiedCompanies} 
             onShoukai={handleShoukai} 
+            onApply={handleApplyJob}
+            applications={applications}
             userRole={userRole} 
             profileData={profileData}
             onEditJob={(job) => {
@@ -709,6 +711,9 @@ function App() {
             userRole={userRole}
             onChangeLanguage={handleChangeLanguage}
             onUpdateProfile={handleUpdateProfile}
+            onApply={handleApplyJob}
+            onApplySchool={handleApplySchool}
+            onShoukai={handleShoukai}
             applications={applications}
             schoolApplications={schoolApplications}
             onChangeAppStatus={handleChangeAppStatus}
@@ -745,7 +750,7 @@ function App() {
           />
         );
       default:
-        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} userRole={userRole} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
     }
   };
 

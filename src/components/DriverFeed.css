@@ -95,7 +95,7 @@
    ============================================================ */
 .job-card-hz {
   display: flex;
-  flex-direction: row;
+  flex-direction: column; /* Changed from row to column to support full-width action buttons at the bottom */
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
@@ -108,6 +108,12 @@
 
 .job-card-hz:active {
   transform: scale(0.98);
+}
+
+.job-card-main-layout {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
 }
 
 /* ---- Chap: Rasm qismi ---- */
@@ -253,9 +259,11 @@
 /* ====== KARTOCHKA PASTIDAGI TUGMALAR ====== */
 .job-card-actions {
   display: flex;
-  gap: 6px;
-  margin-top: auto;
-  padding-top: 6px;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 4px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .job-card-btn {
@@ -263,11 +271,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 6px 8px; /* Tighter button padding */
-  border-radius: 10px;
+  gap: 6px;
+  padding: 8px 12px; /* Unified larger padding for premium feel */
+  border-radius: 12px; /* Slightly more rounded premium border radius */
   border: none;
-  font-size: 10px; /* Reduced button font size */
+  font-size: 11.5px; /* Highly readable font size */
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;

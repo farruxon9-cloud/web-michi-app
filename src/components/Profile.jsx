@@ -43,7 +43,10 @@ export default function Profile({
   setJobs,
   setSchools,
   jobToEdit,
-  setJobToEdit
+  setJobToEdit,
+  onApply,
+  onApplySchool,
+  onShoukai
 }) {
   const { t } = useTranslation();
 
@@ -465,6 +468,11 @@ const getLicenseLabel = (type) => {
           jobToEdit={jobToEdit} 
           setJobToEdit={setJobToEdit} 
           onFormToggle={setIsFormOpen}
+          onApply={onApply}
+          onApplySchool={onApplySchool}
+          onShoukai={onShoukai}
+          applications={applications}
+          schoolApplications={schoolApplications}
         />
       </div>
     );

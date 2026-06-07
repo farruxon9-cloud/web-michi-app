@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload, Clock, Banknote, Share2 } from 'lucide-react';
+import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload, Clock, Banknote, Share2, Briefcase, CheckCircle2 } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import { compressImage } from '../utils/imageCompressor';
 import './DriverFeed.css';
@@ -33,7 +33,7 @@ const INITIAL_COMPANY_JOBS = [
   }
 ];
 
-export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, schools, setSchools, profileData, jobToEdit, setJobToEdit, onFormToggle }) {
+export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, schools, setSchools, profileData, jobToEdit, setJobToEdit, onFormToggle, onApply, onApplySchool, onShoukai, applications = [], schoolApplications = [] }) {
   const { t } = useTranslation();
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAdTypeSelect, setShowAdTypeSelect] = useState(false);
@@ -904,89 +904,97 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           </p>
         ) : (
           companyJobs.map(job => (
-            <div key={job.id} className="job-card-hz glass squircle" onClick={() => onJobClick({...job})}>
-              <div className="job-card-img">
-                <img 
-                  src={job.image} 
-                  alt={t(`job_${job.id}_title`, job.title)} 
-                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
-                />
-                <span className={`job-type-badge type-${job.type || 'fulltime'}`}>
-                  {t(`jobType_${job.type || 'fulltime'}`, (job.type || 'fulltime') === 'fulltime' ? '正社員' : (job.type || 'fulltime') === 'parttime' ? 'アルバイト' : '契約')}
-                </span>
+            <div key={job.id} className="job-card-hz glass" onClick={() => onJobClick({...job})}>
+              <div className="job-card-main-layout">
+                <div className="job-card-img">
+                  <img 
+                    src={job.image} 
+                    alt={t(`job_${job.id}_title`, job.title)} 
+                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
+                  />
+                  <span className={`job-type-badge type-${job.type || 'fulltime'}`}>
+                    {t(`jobType_${job.type || 'fulltime'}`, (job.type || 'fulltime') === 'fulltime' ? '正社員' : (job.type || 'fulltime') === 'parttime' ? 'アルバイト' : '契約')}
+                  </span>
+                </div>
+
+                <div className="job-card-body">
+                  <div className="job-card-company">
+                    <img src={job.logo} alt={job.company} className="job-card-company-logo" />
+                    <span>{job.company}</span>
+                    {job.verified && <VerifiedBadge size={14} />}
+                  </div>
+
+                  <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
+
+                  <div className="job-card-salary">
+                    <Banknote size={15} />
+                    <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}</span>
+                  </div>
+
+                  <div className="job-card-chips">
+                    <span className="job-chip">
+                      <MapPin size={12} />
+                      {t(`job_${job.id}_location`, job.location)}
+                    </span>
+                    {job.hours && (
+                      <span className="job-chip">
+                        <Clock size={12} />
+                        {job.hours === 'shift' ? t('shiftWork', 'Smenali') : t(job.hours, job.hours)}
+                      </span>
+                    )}
+                    {job.shoukaiFee > 0 && (
+                      <span className="job-chip chip-highlight">
+                        <Share2 size={10} />
+                        {t('shoukaiAvailable', 'Shoukai puli bor')}
+                        <span style={{ opacity: 0.8, marginLeft: '4px', fontWeight: 'bold' }}>
+                          (¥{job.shoukaiFee.toLocaleString()})
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <div className="job-card-body">
-                <div className="job-card-company">
-                  <img src={job.logo} alt={job.company} className="job-card-company-logo" />
-                  <span>{job.company}</span>
-                  {job.verified && <VerifiedBadge size={14} />}
-                </div>
-
-                <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
-
-                <div className="job-card-salary">
-                  <Banknote size={15} />
-                  <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}</span>
-                </div>
-
-                <div className="job-card-chips">
-                  <span className="job-chip">
-                    <MapPin size={12} />
-                    {t(`job_${job.id}_location`, job.location)}
-                  </span>
-                  {job.hours && (
-                    <span className="job-chip">
-                      <Clock size={12} />
-                      {job.hours === 'shift' ? t('shiftWork', 'Smenali') : t(job.hours, job.hours)}
-                    </span>
-                  )}
-                  {job.shoukaiFee > 0 && (
-                    <span className="job-chip chip-highlight">
-                      <Share2 size={10} />
-                      {t('shoukaiAvailable', 'Shoukai puli bor')}
-                      <span style={{ opacity: 0.8, marginLeft: '4px', fontWeight: 'bold' }}>
-                        (¥{job.shoukaiFee.toLocaleString()})
-                      </span>
-                    </span>
-                  )}
-                </div>
-
-                <div className="job-card-actions">
+              <div className="job-card-actions">
+                {(() => {
+                  const alreadyApplied = (applications || []).some(a => a.jobId === job.id && !a.isSimulatedReferral);
+                  return alreadyApplied ? (
+                    <button 
+                      className="job-card-btn btn-apply applied" 
+                      disabled
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ flex: 1, background: 'rgba(48, 209, 88, 0.15)', color: '#30D158', border: '1px solid rgba(48, 209, 88, 0.25)', cursor: 'default' }}
+                    >
+                      <CheckCircle2 size={13} />
+                      {t('applied', 'Topshirilgan')}
+                    </button>
+                  ) : (
+                    <button 
+                      className="job-card-btn btn-apply" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onApply && onApply(job);
+                      }}
+                      style={{ flex: 1 }}
+                    >
+                      <Briefcase size={13} />
+                      {t('applyJob', 'Ishga topshirish')}
+                    </button>
+                  );
+                })()}
+                {((job.shoukai && job.shoukai !== "0") || job.hasShoukai || job.shoukaiFee > 0) && (
                   <button 
-                    className="job-card-btn btn-apply"
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', width: '100%' }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedAdType('job');
-                      setNewJob({
-                        id: job.id,
-                        title: job.title,
-                        salary: job.salary,
-                        bonus: job.bonus || '',
-                        location: job.location,
-                        fullAddress: job.fullAddress,
-                        phone: job.phone,
-                        email: job.email,
-                        hours: job.hours || '',
-                        dayOff: job.dayOff || '',
-                        insurance: job.insurance || '',
-                        foreigners: job.foreigners || '',
-                        housing: job.housing || '',
-                        license: job.license || [],
-                        description: job.description,
-                        hasShoukai: job.hasShoukai ? 'yes' : 'no',
-                        shoukaiFee: job.shoukaiFee > 0 ? String(job.shoukaiFee) : '',
-                        shoukaiConditions: job.shoukaiConditions || ''
-                      });
-                      setJobImage(job.image || null);
-                      setShowAddForm(true);
+                    className="job-card-btn btn-shoukai"
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      onShoukai && onShoukai(job); 
                     }}
+                    style={{ flex: 1 }}
                   >
-                    <Edit3 size={13} />
-                    {t('editJob', 'Tahrirlash')}
+                    <Share2 size={13} />
+                    {t('shoukaiAvailableLabel', 'Puli Bor')}
                   </button>
-                </div>
+                )}
               </div>
             </div>
           ))
@@ -1009,83 +1017,98 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               </p>
             ) : (
               companySchools.map(school => (
-                <div key={school.id} className="job-card-hz glass squircle" onClick={() => onSchoolClick ? onSchoolClick(school) : onJobClick(school)}>
-                  <div className="job-card-img">
-                    <img 
-                      src={school.image} 
-                      alt={t(`school_${school.id}_name`, school.name)} 
-                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
-                    />
-                    <div className="job-type-badge type-fulltime">
-                      {school.langs ? school.langs.join(', ') : 'UZ, JP'}
+                <div key={school.id} className="job-card-hz glass" onClick={() => onSchoolClick ? onSchoolClick(school) : onJobClick(school)}>
+                  <div className="job-card-main-layout">
+                    <div className="job-card-img">
+                      <img 
+                        src={school.image} 
+                        alt={t(`school_${school.id}_name`, school.name)} 
+                        onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
+                      />
+                      <div className="job-type-badge type-fulltime">
+                        {school.langs ? school.langs.join(', ') : 'UZ, JP'}
+                      </div>
+                    </div>
+
+                    <div className="job-card-body">
+                      <div className="job-card-company">
+                        <span>{t(`school_${school.id}_name`, school.name)}</span>
+                        <VerifiedBadge size={14} />
+                      </div>
+
+                      <h3 className="job-card-title">{t(`school_${school.id}_type`, school.type)}</h3>
+
+                      <div className="job-card-salary">
+                        <Banknote size={15} color="#30D158" />
+                        <span>{school.price}</span>
+                        {school.discount && (
+                          <span className="discount-tag" style={{ marginLeft: '4px', fontSize: '9px', padding: '1.5px 4px' }}>
+                            -{school.discount}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="job-card-chips">
+                        <span className="job-chip">
+                          <MapPin size={10} />
+                          {t(`school_${school.id}_location`, school.location)}
+                        </span>
+                        {school.shoukaiFee > 0 && (
+                          <span className="job-chip chip-highlight">
+                            <Share2 size={10} />
+                            {t('shoukaiAvailable', 'Shoukai puli bor')}
+                            <span style={{ opacity: 0.8, marginLeft: '4px', fontWeight: 'bold' }}>
+                              (¥{school.shoukaiFee.toLocaleString()})
+                            </span>
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="job-card-body">
-                    <div className="job-card-company">
-                      <span>{t(`school_${school.id}_name`, school.name)}</span>
-                      <VerifiedBadge size={14} />
-                    </div>
-
-                    <h3 className="job-card-title">{t(`school_${school.id}_type`, school.type)}</h3>
-
-                    <div className="job-card-salary">
-                      <Banknote size={15} color="#30D158" />
-                      <span>{school.price}</span>
-                      {school.discount && (
-                        <span className="discount-tag" style={{ marginLeft: '4px', fontSize: '9px', padding: '1.5px 4px' }}>
-                          -{school.discount}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="job-card-chips">
-                      <span className="job-chip">
-                        <MapPin size={10} />
-                        {t(`school_${school.id}_location`, school.location)}
-                      </span>
-                      {school.shoukaiFee > 0 && (
-                        <span className="job-chip chip-highlight">
-                          <Share2 size={10} />
-                          {t('shoukaiAvailable', 'Shoukai puli bor')}
-                          <span style={{ opacity: 0.8, marginLeft: '4px', fontWeight: 'bold' }}>
-                            (¥{school.shoukaiFee.toLocaleString()})
-                          </span>
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="job-card-actions">
+                  <div className="job-card-actions">
+                    {(() => {
+                      const alreadyApplied = (schoolApplications || []).some(a => a.schoolId === school.id && !a.isSimulatedReferral);
+                      return alreadyApplied ? (
+                        <button 
+                          className="job-card-btn btn-apply applied" 
+                          disabled
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ flex: 1, background: 'rgba(48, 209, 88, 0.15)', color: '#30D158', border: '1px solid rgba(48, 209, 88, 0.25)', cursor: 'default' }}
+                        >
+                          <CheckCircle2 size={13} />
+                          {t('appliedToSchool', 'Topshirilgan')}
+                        </button>
+                      ) : (
+                        <button 
+                          className="job-card-btn btn-apply" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onApplySchool && onApplySchool(school);
+                          }}
+                          style={{ flex: 1 }}
+                        >
+                          <Briefcase size={13} />
+                          {t('applyToSchool', 'Topshirish')}
+                        </button>
+                      );
+                    })()}
+                    {((school.shoukai && school.shoukai !== "0") || school.shoukaiFee > 0) && (
                       <button 
-                        className="job-card-btn btn-apply"
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', width: '100%' }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedAdType('school');
-                          setNewJob({
-                            id: school.id,
-                            title: school.type,
-                            salary: school.price,
-                            bonus: school.discount || '',
-                            location: school.location,
-                            fullAddress: school.fullAddress,
-                            phone: school.phone,
-                            email: school.email,
-                            description: school.description,
-                            langs: school.langs || ['UZ', 'JP'],
-                            courses: school.courses || ['Oogata', 'Chugata', 'Futsu'],
-                            hasShoukai: school.shoukaiFee > 0 ? 'yes' : 'no',
-                            shoukaiFee: school.shoukaiFee > 0 ? String(school.shoukaiFee) : '',
-                            shoukaiConditions: school.shoukaiConditions || ''
-                          });
-                          setJobImage(school.image || null);
-                          setShowAddForm(true);
+                        className="job-card-btn btn-shoukai"
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          onShoukai && onShoukai({
+                            ...school,
+                            shoukai: school.shoukai || (school.shoukaiFee ? `¥${Number(school.shoukaiFee).toLocaleString()}` : undefined)
+                          }); 
                         }}
+                        style={{ flex: 1 }}
                       >
-                        <Edit3 size={13} />
-                        {t('editJob', 'Tahrirlash')}
+                        <Share2 size={13} />
+                        {t('shoukai', 'Shoukai')}
                       </button>
-                    </div>
+                    )}
                   </div>
                 </div>
               ))
