@@ -189,7 +189,7 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
         {filteredJobs.map(job => {
           const showVerified = verifiedCompanies.includes(job.company) || isContractActive;
           return (
-            <div key={job.id} className="job-card-hz glass squircle" onClick={() => onJobClick({...job, verified: showVerified})}>
+            <div key={job.id} className="job-card-hz glass" onClick={() => onJobClick({...job, verified: showVerified})}>
               {/* ---- Chap qism: E'lon rasmi ---- */}
               <div className="job-card-img">
                 <img 

@@ -99,7 +99,11 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
-  min-height: 180px;
+  min-height: auto;
+  border-radius: 24px; /* Matches the Home page hero banner border-radius */
+  padding: 12px; /* Inset padding so card has a border/padding around thumbnail */
+  background: var(--card-bg);
+  box-sizing: border-box;
 }
 
 .job-card-hz:active {
@@ -109,17 +113,20 @@
 /* ---- Chap: Rasm qismi ---- */
 .job-card-img {
   position: relative;
-  width: 130px;
-  min-width: 130px;
-  max-width: 130px;
+  width: 95px; /* Compact square thumbnail size */
+  height: 95px;
+  min-width: 95px;
+  max-width: 95px;
   overflow: hidden;
   flex-shrink: 0;
+  border-radius: 16px; /* Slightly rounded/convex thumbnail edges */
 }
 
 .job-card-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 16px;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -130,11 +137,11 @@
 /* Ish turi belgisi (rasm ustida) */
 .job-type-badge {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 10px;
+  top: 6px;
+  left: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 8.5px; /* Scaled down for smaller thumbnail */
   font-weight: 700;
   letter-spacing: 0.3px;
   text-transform: uppercase;
@@ -161,11 +168,11 @@
 /* ---- O'ng: Ma'lumotlar qismi ---- */
 .job-card-body {
   flex: 1;
-  padding: 12px 14px;
+  padding: 0 0 0 12px; /* Cleared horizontal padding, only left gap from image */
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 0; /* overflow-ellipsis uchun */
+  gap: 4px; /* Tighter gap for smaller fonts */
+  min-width: 0; /* for overflow-ellipsis */
 }
 
 /* Kompaniya qatori */
@@ -173,9 +180,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 10px; /* Reduced company font size */
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .job-card-company-logo {
@@ -188,7 +195,7 @@
 
 /* Sarlavha */
 .job-card-title {
-  font-size: 14px;
+  font-size: 12.5px; /* Reduced title font size */
   font-weight: 700;
   line-height: 1.3;
   margin: 0;
@@ -206,7 +213,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 14px;
+  font-size: 13px; /* Reduced salary font size */
   font-weight: 800;
   color: #30D158;
 }
@@ -223,9 +230,9 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 2px 7px;
+  padding: 1px 6px; /* Reduced chip padding */
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 9.5px; /* Reduced chip font size */
   font-weight: 500;
   background: rgba(118, 118, 128, 0.08);
   color: var(--text-secondary);
@@ -257,10 +264,10 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 7px 8px;
+  padding: 6px 8px; /* Tighter button padding */
   border-radius: 10px;
   border: none;
-  font-size: 11px;
+  font-size: 10px; /* Reduced button font size */
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
