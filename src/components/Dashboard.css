@@ -33,7 +33,7 @@ html.light-mode {
   bottom: 0;
   padding: 16px;
   padding-bottom: 106px;
-  background-color: var(--bg-color);
+  background-color: transparent;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
