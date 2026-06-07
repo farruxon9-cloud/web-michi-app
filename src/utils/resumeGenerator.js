@@ -96,6 +96,19 @@ export async function generateRirekisho(profileData, options = {}) {
   const email = profileData.email || '';
   const genderText = profileData.gender === 'female' ? '女' : (profileData.gender === 'male' ? '男' : '');
 
+  // Nationality and Birth Place dynamically added to Personal Requests
+  let personalRequestsText = profileData.personalRequests || '貴社規定に従います。';
+  if (profileData.nationality || profileData.birthPlace) {
+    let extraInfo = '';
+    if (profileData.nationality) {
+      extraInfo += `【国籍】 ${profileData.nationality}\n`;
+    }
+    if (profileData.birthPlace) {
+      extraInfo += `【出生地】 ${profileData.birthPlace}\n`;
+    }
+    personalRequestsText = `${extraInfo}${personalRequestsText}`;
+  }
+
   // Setup Education & Work rows (max 10 rows for page 1/2 balance)
   const eduWorkRows = [];
   
@@ -465,7 +478,7 @@ export async function generateRirekisho(profileData, options = {}) {
                 stack: [
                   { text: '本人希望記入欄（特に給料・職種・勤務時間・勤務地・その他希望があれば記入）', style: 'label', margin: [0, 0, 0, 4] },
                   { 
-                    text: profileData.personalRequests || '貴社規定に従います。', 
+                    text: personalRequestsText, 
                     style: 'inputVal', 
                     minHeight: 30, 
                     margin: [4, 4, 4, 4] 

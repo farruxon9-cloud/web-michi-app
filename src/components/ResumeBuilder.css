@@ -93,10 +93,8 @@
 
 /* Step Layout Content */
 .resume-builder-body {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  padding-bottom: 100px; /* Space to scroll content above the sticky footer buttons */
 }
 
 .step-content {
@@ -108,7 +106,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 24px; /* Space before sticky footer buttons */
+  margin-bottom: 0; /* Footer is separated by margin-top on the footer itself */
 }
 
 .dark-mode .step-content {
@@ -391,27 +389,15 @@ select.glass-input {
 
 /* Navigation Footer styling */
 .resume-builder-footer {
-  position: sticky;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 16px 20px;
-  margin: 0 -16px; /* Counteracts the 16px padding on left/right of container */
-  width: calc(100% + 32px); /* Spans full width touching screen edges */
-  background: rgba(255, 255, 255, 0.95); /* Light mode footer background */
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   gap: 12px;
-  margin-top: auto;
+  margin-top: 16px;
+  padding-bottom: 16px;
   z-index: 100;
-  box-sizing: border-box;
 }
 
 .dark-mode .resume-builder-footer {
-  background: rgba(18, 18, 18, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  /* No special background/border needed in static flow */
 }
 
 /* Placeholder styling to ensure it is light-colored and distinct from user input */
@@ -692,95 +678,63 @@ select.glass-input {
   color: #FF2D55 !important;
 }
 
-/* Drum Wheel Selector Styling */
-.dob-spinner-container {
+/* DOB Numeric inputs styling */
+.dob-inputs-row {
   display: flex;
-  position: relative;
-  height: 144px; /* 4 visible items, height = 36 * 4 */
-  background: rgba(255, 255, 255, 0.45);
-  border: 1px solid var(--glass-border);
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.03);
-  overflow: hidden;
-  margin-top: 4px;
-}
-
-.dark-mode .dob-spinner-container {
-  background: rgba(18, 18, 24, 0.5);
-}
-
-.dob-spinner-highlight {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 54px; /* (144 - 36) / 2 */
-  height: 36px;
-  background: rgba(10, 132, 255, 0.08);
-  border-top: 1px solid rgba(10, 132, 255, 0.25);
-  border-bottom: 1px solid rgba(10, 132, 255, 0.25);
-  pointer-events: none;
-  z-index: 2;
-}
-
-.dark-mode .dob-spinner-highlight {
-  background: rgba(90, 85, 234, 0.15);
-  border-top: 1px solid rgba(90, 85, 234, 0.4);
-  border-bottom: 1px solid rgba(90, 85, 234, 0.4);
-}
-
-.dob-spinner-column {
-  flex: 1;
-  height: 144px;
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE 10+ */
-  z-index: 1;
-  padding: 0 4px;
-}
-
-.dob-spinner-column::-webkit-scrollbar {
-  display: none; /* Safari/Chrome */
-}
-
-.dob-spinner-column.year-column {
-  flex: 1.8; /* Give more width to the Year + Japanese Era column */
-}
-
-.dob-spinner-item {
-  height: 36px;
-  line-height: 36px;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
+  gap: 12px;
   width: 100%;
+  margin-top: 6px;
+}
+
+.dob-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.dob-input-wrapper.year-wrapper {
+  flex: 1.5; /* Give Year input a bit more space for 4 digits */
+}
+
+.dob-input-wrapper .dob-num-input {
+  width: 100%;
+  text-align: center;
+  padding-right: 36px; /* make room for the label suffix */
+}
+
+.dob-input-wrapper.year-wrapper .dob-num-input {
+  padding-right: 32px;
+}
+
+.dob-input-wrapper .dob-input-suffix {
+  position: absolute;
+  right: 12px;
+  font-size: 12.5px;
   color: var(--text-secondary);
-  scroll-snap-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  font-weight: 600;
+  pointer-events: none;
 }
 
-.dob-spinner-item:hover {
-  color: var(--text-main);
-  background: rgba(0, 0, 0, 0.02);
+.dob-era-preview {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  min-height: 24px;
 }
 
-.dark-mode .dob-spinner-item:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.dob-spinner-item.active {
+.dob-era-badge {
+  background: rgba(10, 132, 255, 0.08);
+  border: 1px solid rgba(10, 132, 255, 0.2);
   color: var(--primary);
-  font-size: 16px;
-  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
 }
 
-.dob-spinner-spacer {
-  height: 54px; /* (144 - 36) / 2 */
-  flex-shrink: 0;
+.dark-mode .dob-era-badge {
+  background: rgba(90, 85, 234, 0.15);
+  border: 1px solid rgba(90, 85, 234, 0.3);
 }

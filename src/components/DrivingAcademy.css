@@ -97,10 +97,10 @@
    Kartochkalar ustunli joylashuvda, 16px oraliq bilan.
    ========================================================================== */
 .schools-list {
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   position: relative;
   z-index: 10;
 }

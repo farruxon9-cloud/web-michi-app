@@ -58,6 +58,8 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
     furigana: profileData.furigana || '',
     birthDate: profileData.birthDate || '',
     gender: profileData.gender || 'male',
+    birthPlace: profileData.birthPlace || '',
+    nationality: profileData.nationality || '',
     postalCode: profileData.postalCode || '',
     address: profileData.address || '',
     phone: profileData.phone || '',
@@ -86,6 +88,8 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
     setFormData(prev => ({
       ...prev,
       fullName: profileData.fullName || '',
+      birthPlace: profileData.birthPlace || '',
+      nationality: profileData.nationality || '',
       birthDate: bDate,
       email: profileData.email || '',
       educationHistory: profileData.educationHistory ? [...profileData.educationHistory] : [],
@@ -104,38 +108,51 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
     }
   }, [profileData]);
 
-  const handleYearChange = (year) => {
-    setSelectedYear(year);
-    if (year && selectedMonth && selectedDay) {
-      const m = String(selectedMonth).padStart(2, '0');
-      const d = String(selectedDay).padStart(2, '0');
-      setFormData(prev => ({ ...prev, birthDate: `${year}-${m}-${d}` }));
+  const handleDayInput = (val) => {
+    const clean = val.replace(/\D/g, '').slice(0, 2);
+    setSelectedDay(clean);
+    const y = selectedYear;
+    const m = selectedMonth;
+    if (y && m && clean && parseInt(clean, 10) >= 1 && parseInt(clean, 10) <= 31) {
+      const fm = String(m).padStart(2, '0');
+      const fd = String(clean).padStart(2, '0');
+      setFormData(prev => ({ ...prev, birthDate: `${y}-${fm}-${fd}` }));
+    } else {
+      setFormData(prev => ({ ...prev, birthDate: '' }));
     }
   };
 
-  const handleMonthChange = (month) => {
-    setSelectedMonth(month);
-    let day = selectedDay;
-    if (selectedYear && month && day) {
-      const maxDays = new Date(parseInt(selectedYear, 10), parseInt(month, 10), 0).getDate();
-      if (parseInt(day, 10) > maxDays) {
-        day = maxDays.toString();
-        setSelectedDay(day);
+  const handleMonthInput = (val) => {
+    const clean = val.replace(/\D/g, '').slice(0, 2);
+    setSelectedMonth(clean);
+    const y = selectedYear;
+    const d = selectedDay;
+    if (y && clean && d && parseInt(clean, 10) >= 1 && parseInt(clean, 10) <= 12) {
+      let dayVal = d;
+      const maxDays = new Date(parseInt(y, 10), parseInt(clean, 10), 0).getDate();
+      if (parseInt(d, 10) > maxDays) {
+        dayVal = maxDays.toString();
+        setSelectedDay(dayVal);
       }
-    }
-    if (selectedYear && month && day) {
-      const m = String(month).padStart(2, '0');
-      const d = String(day).padStart(2, '0');
-      setFormData(prev => ({ ...prev, birthDate: `${selectedYear}-${m}-${d}` }));
+      const fm = String(clean).padStart(2, '0');
+      const fd = String(dayVal).padStart(2, '0');
+      setFormData(prev => ({ ...prev, birthDate: `${y}-${fm}-${fd}` }));
+    } else {
+      setFormData(prev => ({ ...prev, birthDate: '' }));
     }
   };
 
-  const handleDayChange = (day) => {
-    setSelectedDay(day);
-    if (selectedYear && selectedMonth && day) {
-      const m = String(selectedMonth).padStart(2, '0');
-      const d = String(day).padStart(2, '0');
-      setFormData(prev => ({ ...prev, birthDate: `${selectedYear}-${m}-${d}` }));
+  const handleYearInput = (val) => {
+    const clean = val.replace(/\D/g, '').slice(0, 4);
+    setSelectedYear(clean);
+    const m = selectedMonth;
+    const d = selectedDay;
+    if (clean && clean.length === 4 && m && d) {
+      const fm = String(m).padStart(2, '0');
+      const fd = String(d).padStart(2, '0');
+      setFormData(prev => ({ ...prev, birthDate: `${clean}-${fm}-${fd}` }));
+    } else {
+      setFormData(prev => ({ ...prev, birthDate: '' }));
     }
   };
 
@@ -143,87 +160,6 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-
-  const dayRef = useRef(null);
-  const monthRef = useRef(null);
-  const yearRef = useRef(null);
-  const scrollTimeout = useRef({});
-
-  // Debounced scroll listener to select nearest snapped item
-  const handleScroll = (type, e, list, handler, currentValue) => {
-    const scrollTop = e.target.scrollTop;
-    const index = Math.round(scrollTop / 36);
-    const val = list[index];
-    if (!val) return;
-
-    if (scrollTimeout.current[type]) {
-      clearTimeout(scrollTimeout.current[type]);
-    }
-
-    scrollTimeout.current[type] = setTimeout(() => {
-      if (val.toString() !== currentValue) {
-        handler(val.toString());
-      }
-    }, 150);
-  };
-
-  useEffect(() => {
-    if (step === 1) {
-      // Wait for DOM layout
-      const timer = setTimeout(() => {
-        if (selectedYear && yearRef.current) {
-          const itemEl = yearRef.current.querySelector(`[data-value="${selectedYear}"]`);
-          if (itemEl) yearRef.current.scrollTop = itemEl.offsetTop - 54;
-        }
-        if (selectedMonth && monthRef.current) {
-          const itemEl = monthRef.current.querySelector(`[data-value="${selectedMonth}"]`);
-          if (itemEl) monthRef.current.scrollTop = itemEl.offsetTop - 54;
-        }
-        if (selectedDay && dayRef.current) {
-          const itemEl = dayRef.current.querySelector(`[data-value="${selectedDay}"]`);
-          if (itemEl) dayRef.current.scrollTop = itemEl.offsetTop - 54;
-        }
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
-
-  // Smooth scroll sync when selections change via clicks/snaps
-  useEffect(() => {
-    if (selectedYear && yearRef.current) {
-      const itemEl = yearRef.current.querySelector(`[data-value="${selectedYear}"]`);
-      if (itemEl) {
-        const targetScroll = itemEl.offsetTop - 54;
-        if (Math.abs(yearRef.current.scrollTop - targetScroll) > 2) {
-          yearRef.current.scrollTo({ top: targetScroll, behavior: 'smooth' });
-        }
-      }
-    }
-  }, [selectedYear]);
-
-  useEffect(() => {
-    if (selectedMonth && monthRef.current) {
-      const itemEl = monthRef.current.querySelector(`[data-value="${selectedMonth}"]`);
-      if (itemEl) {
-        const targetScroll = itemEl.offsetTop - 54;
-        if (Math.abs(monthRef.current.scrollTop - targetScroll) > 2) {
-          monthRef.current.scrollTo({ top: targetScroll, behavior: 'smooth' });
-        }
-      }
-    }
-  }, [selectedMonth]);
-
-  useEffect(() => {
-    if (selectedDay && dayRef.current) {
-      const itemEl = dayRef.current.querySelector(`[data-value="${selectedDay}"]`);
-      if (itemEl) {
-        const targetScroll = itemEl.offsetTop - 54;
-        if (Math.abs(dayRef.current.scrollTop - targetScroll) > 2) {
-          dayRef.current.scrollTo({ top: targetScroll, behavior: 'smooth' });
-        }
-      }
-    }
-  }, [selectedDay]);
 
   // Year/Month helpers for numeric date inputs
   const parseYearMonth = (dateStr) => {
@@ -446,89 +382,91 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
               </div>
             </div>
 
-            {(() => {
-              const years = [];
-              for (let y = 2015; y >= 1950; y--) {
-                years.push(y);
-              }
-              const months = Array.from({ length: 12 }, (_, i) => i + 1);
-              const maxDays = (selectedYear && selectedMonth) ? new Date(parseInt(selectedYear, 10), parseInt(selectedMonth, 10), 0).getDate() : 31;
-              const days = Array.from({ length: maxDays }, (_, i) => i + 1);
-
-              return (
-                <div className="form-group">
-                  <label>{t('dobLabel', "Tug'ilgan sana")}</label>
-                  <div className="form-input-hint">
-                    {t('dobHint', 'Tug\'ilgan kuningizni kun, oy va yaponcha davr (Era) yili ketma-ketligida tanlang.')}
-                  </div>
-                  
-                  <div className="dob-spinner-container glass squircle">
-                    {/* Highlight Selection Bar */}
-                    <div className="dob-spinner-highlight"></div>
-
-                    {/* Day Column */}
-                    <div 
-                      className="dob-spinner-column" 
-                      ref={dayRef}
-                      onScroll={(e) => handleScroll('day', e, days, handleDayChange, selectedDay)}
-                    >
-                      <div className="dob-spinner-spacer"></div>
-                      {days.map(d => (
-                        <div 
-                          key={d} 
-                          className={`dob-spinner-item ${selectedDay === d.toString() ? 'active' : ''}`}
-                          data-value={d}
-                          onClick={() => handleDayChange(d.toString())}
-                        >
-                          {d} {t('day', 'Kun')}
-                        </div>
-                      ))}
-                      <div className="dob-spinner-spacer"></div>
-                    </div>
-
-                    {/* Month Column */}
-                    <div 
-                      className="dob-spinner-column" 
-                      ref={monthRef}
-                      onScroll={(e) => handleScroll('month', e, months, handleMonthChange, selectedMonth)}
-                    >
-                      <div className="dob-spinner-spacer"></div>
-                      {months.map(m => (
-                        <div 
-                          key={m} 
-                          className={`dob-spinner-item ${selectedMonth === m.toString() ? 'active' : ''}`}
-                          data-value={m}
-                          onClick={() => handleMonthChange(m.toString())}
-                        >
-                          {m} {t('month', 'Oy')}
-                        </div>
-                      ))}
-                      <div className="dob-spinner-spacer"></div>
-                    </div>
-
-                    {/* Year Column */}
-                    <div 
-                      className="dob-spinner-column year-column" 
-                      ref={yearRef}
-                      onScroll={(e) => handleScroll('year', e, years, handleYearChange, selectedYear)}
-                    >
-                      <div className="dob-spinner-spacer"></div>
-                      {years.map(y => (
-                        <div 
-                          key={y} 
-                          className={`dob-spinner-item ${selectedYear === y.toString() ? 'active' : ''}`}
-                          data-value={y}
-                          onClick={() => handleYearChange(y.toString())}
-                        >
-                          {y} ({getJapaneseEra(y)})
-                        </div>
-                      ))}
-                      <div className="dob-spinner-spacer"></div>
-                    </div>
-                  </div>
+            <div className="form-group">
+              <label>{t('dobLabel', "Tug'ilgan sana")}</label>
+              <div className="form-input-hint">
+                {t('dobHint', 'Tug\'ilgan kuningizni kun, oy va yil ketma-ketligida faqat sonlar bilan kiriting.')}
+              </div>
+              
+              <div className="dob-inputs-row">
+                <div className="dob-input-wrapper">
+                  <input 
+                    type="text" 
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder="DD"
+                    value={selectedDay} 
+                    onChange={(e) => handleDayInput(e.target.value)}
+                    className="glass-input dob-num-input"
+                  />
+                  <span className="dob-input-suffix">{t('daySuffix', 'kun')}</span>
                 </div>
-              );
-            })()}
+
+                <div className="dob-input-wrapper">
+                  <input 
+                    type="text" 
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder="MM"
+                    value={selectedMonth} 
+                    onChange={(e) => handleMonthInput(e.target.value)}
+                    className="glass-input dob-num-input"
+                  />
+                  <span className="dob-input-suffix">{t('monthSuffix', 'oy')}</span>
+                </div>
+
+                <div className="dob-input-wrapper year-wrapper">
+                  <input 
+                    type="text" 
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder="YYYY"
+                    value={selectedYear} 
+                    onChange={(e) => handleYearInput(e.target.value)}
+                    className="glass-input dob-num-input"
+                  />
+                  <span className="dob-input-suffix">{t('yearSuffix', 'yil')}</span>
+                </div>
+              </div>
+
+              {selectedYear && getJapaneseEra(selectedYear) && (
+                <div className="dob-era-preview">
+                  <span className="dob-era-badge">{getJapaneseEra(selectedYear)}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="birthPlace">{t('birthPlaceLabel', 'Tug\'ilgan joyi')}</label>
+              <div className="form-input-hint">
+                {t('birthPlaceHint', 'Tug\'ilgan mamlakatingiz yoki viloyatingiz (Masalan: O\'zbekiston, Samarqand).')}
+              </div>
+              <input 
+                type="text" 
+                id="birthPlace"
+                name="birthPlace" 
+                value={formData.birthPlace} 
+                onChange={handleChange}
+                placeholder={t('birthPlacePlaceholder', 'Masalan: O\'zbekiston')}
+                className="glass-input"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="nationality">{t('nationalityLabel', 'Millati')}</label>
+              <div className="form-input-hint">
+                {t('nationalityHint', 'Fuqaroligingiz yoki millatingiz (Masalan: O\'zbekiston).')}
+              </div>
+              <input 
+                type="text" 
+                id="nationality"
+                name="nationality" 
+                value={formData.nationality} 
+                onChange={handleChange}
+                placeholder={t('nationalityPlaceholder', 'Masalan: O\'zbekistonlik')}
+                className="glass-input"
+              />
+            </div>
           </div>
         )}
 
@@ -933,12 +871,10 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
 
       {/* Navigation Buttons */}
       <div className="resume-builder-footer">
-        {step > 1 ? (
+        {step > 1 && (
           <button onClick={handlePrev} className="footer-btn prev-btn squircle">
             {t('prevBtn', 'Orqaga')}
           </button>
-        ) : (
-          <div style={{ flex: 1 }}></div>
         )}
         
         {step < 6 ? (

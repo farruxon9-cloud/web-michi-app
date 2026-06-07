@@ -2788,7 +2788,16 @@ const resumeTranslations = {
     dobHint: "Tug'ilgan kuningizni kun, oy va yaponcha davr (Era) yili ketma-ketligida tanlang.",
     day: "Kun",
     month: "Oy",
-    year: "Yil"
+    year: "Yil",
+    daySuffix: "kun",
+    monthSuffix: "oy",
+    yearSuffix: "yil",
+    birthPlaceLabel: "Tug'ilgan joyi",
+    birthPlaceHint: "Tug'ilgan mamlakatingiz yoki viloyatingiz (Masalan: O'zbekiston, Samarqand).",
+    birthPlacePlaceholder: "Masalan: O'zbekiston",
+    nationalityLabel: "Millati",
+    nationalityHint: "Fuqaroligingiz yoki millatingiz (Masalan: O'zbekiston).",
+    nationalityPlaceholder: "Masalan: O'zbekistonlik"
   },
   ja: {
     createResume: "履歴書作成 (PDF)",
@@ -2835,12 +2844,21 @@ const resumeTranslations = {
     callBtn: "電話する",
     fullNameLabel: "氏名（漢字またはローマ字）",
     katakanaNameLabel: "ふりがな（カタカナ）",
-    fullNameHint: "ローマ字（例: ALIMOV ANVAR）または漢字（例: 山田 太郎）で入力してください。",
-    furiganaHint: "お名前のカタカナ読みを入力してください（例: アリモフ アンバル または ヤマダ タロウ）。",
+    fullNameHint: "ローマ字（例: YAMADA TARO）または漢字（例: 山田 太郎）で入力してください。",
+    furiganaHint: "お名前のカタカナ読みを入力してください（例: ヤマダ タロウ）。",
     dobHint: "生年月日を日、月、和暦（年）の順で選択してください。",
     day: "日",
     month: "月",
-    year: "年"
+    year: "年",
+    daySuffix: "日",
+    monthSuffix: "月",
+    yearSuffix: "年",
+    birthPlaceLabel: "出生地",
+    birthPlaceHint: "出生国または出身地を入力してください（例：日本、東京都）。",
+    birthPlacePlaceholder: "例：日本",
+    nationalityLabel: "国籍",
+    nationalityHint: "国籍を入力してください（例：日本）。",
+    nationalityPlaceholder: "例：日本"
   },
   en: {
     createResume: "Japanese Resume (Rirekisho)",
@@ -2891,7 +2909,16 @@ const resumeTranslations = {
     dobHint: "Select your birth date in sequence: day, month, and Japanese Era year.",
     day: "Day",
     month: "Month",
-    year: "Year"
+    year: "Year",
+    daySuffix: "day",
+    monthSuffix: "month",
+    yearSuffix: "year",
+    birthPlaceLabel: "Place of Birth",
+    birthPlaceHint: "Enter your country or place of birth (e.g., United Kingdom, London).",
+    birthPlacePlaceholder: "e.g., United Kingdom",
+    nationalityLabel: "Nationality",
+    nationalityHint: "Enter your nationality (e.g., British).",
+    nationalityPlaceholder: "e.g., British"
   },
   ru: {
     createResume: "Японское резюме (履歴書)",

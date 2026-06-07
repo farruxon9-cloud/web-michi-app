@@ -82,7 +82,7 @@
 
 /* ====== E'LONLAR RO'YXATI ====== */
 .jobs-list {
-  padding: 0 12px 16px 12px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -359,8 +359,8 @@ html.dark-mode .job-chip.chip-green {
   }
   
   .jobs-list {
-    padding: 0 8px 16px 8px;
-    gap: 10px;
+    padding: 12px;
+    gap: 12px;
     width: 100%;
     box-sizing: border-box;
   }

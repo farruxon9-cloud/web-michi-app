@@ -535,6 +535,22 @@ const getLicenseLabel = (type) => {
                       <span className="field-value">{profileData.birthDate || t('notProvided')}</span>
                     )}
                   </div>
+                  <div className="resume-field">
+                    <span className="field-label">{t('birthPlaceLabel', "Tug'ilgan joyi")}</span>
+                    {isEditing ? (
+                      <input type="text" className="edit-input" value={editData.birthPlace || ''} onChange={(e) => setEditData({...editData, birthPlace: e.target.value})} />
+                    ) : (
+                      <span className="field-value">{profileData.birthPlace || t('notProvided')}</span>
+                    )}
+                  </div>
+                  <div className="resume-field">
+                    <span className="field-label">{t('nationalityLabel', "Millati")}</span>
+                    {isEditing ? (
+                      <input type="text" className="edit-input" value={editData.nationality || ''} onChange={(e) => setEditData({...editData, nationality: e.target.value})} />
+                    ) : (
+                      <span className="field-value">{profileData.nationality || t('notProvided')}</span>
+                    )}
+                  </div>
                   {/* Living Address History */}
                   <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
                     <span className="field-label">{t('livingAddressTitle', 'Yashash manzillari')}</span>
@@ -1078,9 +1094,17 @@ const getLicenseLabel = (type) => {
                             <strong style={{ color: 'var(--text-main)' }}>{profileData.email}</strong>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                            <span style={{ color: '#8E8E93' }}>{t('birthDateLabel', 'Tug\'ilgan sana')}:</span>
-                            <strong style={{ color: 'var(--text-main)' }}>{profileData.birthDate || t('notProvided')}</strong>
-                          </div>
+                             <span style={{ color: '#8E8E93' }}>{t('birthDateLabel', 'Tug\'ilgan sana')}:</span>
+                             <strong style={{ color: 'var(--text-main)' }}>{profileData.birthDate || t('notProvided')}</strong>
+                           </div>
+                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
+                             <span style={{ color: '#8E8E93' }}>{t('birthPlaceLabel', 'Tug\'ilgan joyi')}:</span>
+                             <strong style={{ color: 'var(--text-main)' }}>{profileData.birthPlace || t('notProvided')}</strong>
+                           </div>
+                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
+                             <span style={{ color: '#8E8E93' }}>{t('nationalityLabel', 'Millati')}:</span>
+                             <strong style={{ color: 'var(--text-main)' }}>{profileData.nationality || t('notProvided')}</strong>
+                           </div>
                           <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
                             <span style={{ color: '#8E8E93' }}>{t('livingAddressTitle', 'Yashash manzillari')}:</span>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', marginTop: '2px' }}>
@@ -1560,6 +1584,14 @@ const getLicenseLabel = (type) => {
               <div className="resume-field">
                 <span className="field-label">{t('birthDateLabel')}</span>
                 <span className="field-value">{profileData.birthDate || t('notProvided')}</span>
+              </div>
+              <div className="resume-field">
+                <span className="field-label">{t('birthPlaceLabel', "Tug'ilgan joyi")}</span>
+                <span className="field-value">{profileData.birthPlace || t('notProvided')}</span>
+              </div>
+              <div className="resume-field">
+                <span className="field-label">{t('nationalityLabel', "Millati")}</span>
+                <span className="field-value">{profileData.nationality || t('notProvided')}</span>
               </div>
 
               {/* Living Address History */}
