@@ -98,7 +98,7 @@
 }
 
 .step-content {
-  padding: 20px;
+  padding: 16px;
   background: rgba(255, 255, 255, 0.85); /* Clean white background in light mode */
   border: 1px solid rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(20px);
