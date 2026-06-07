@@ -390,7 +390,7 @@ select.glass-input {
 /* Navigation Footer styling */
 .resume-builder-footer {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   margin-top: 16px;
   padding-bottom: 16px;
   z-index: 100;

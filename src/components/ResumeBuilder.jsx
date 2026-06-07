@@ -872,7 +872,7 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
       {/* Navigation Buttons */}
       <div className="resume-builder-footer">
         {step > 1 && (
-          <button onClick={handlePrev} className="footer-btn prev-btn squircle">
+          <button onClick={handlePrev} className="footer-btn prev-btn squircle" style={{ flex: 1 }}>
             {t('prevBtn', 'Orqaga')}
           </button>
         )}
