@@ -1,5 +1,5 @@
 .resume-builder-container {
-  padding: 16px 16px 0 16px; /* No bottom padding so the footer can touch screen edges */
+  padding: 16px;
   max-width: 600px;
   margin: 0 auto;
   flex: 1; /* Stretch to occupy full height of the viewport main-content */
