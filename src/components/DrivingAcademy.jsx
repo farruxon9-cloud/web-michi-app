@@ -366,7 +366,7 @@ export default function DrivingAcademy({
                   <span>🎉 {t('shoukaiAvailable', 'Shoukai puli bor')}</span>
                 </div>
                 
-                <div style={{ marginTop: '10px', fontSize: '13px', color: 'var(--text-secondary)', background: 'rgba(255,159,10,0.06)', border: '1px solid rgba(255,159,10,0.15)', padding: '10px 14px', borderRadius: '12px', lineHeight: '1.4' }}>
+                <div style={{ marginTop: '12px', fontSize: '13px', color: 'var(--text-secondary)', background: 'rgba(255,159,10,0.06)', border: '1px solid rgba(255,159,10,0.15)', padding: '12px', borderRadius: '12px', lineHeight: '1.4' }}>
                   <strong style={{ color: 'var(--text-main)', display: 'block', marginBottom: '4px' }}>{t('shoukaiConditionsTitle', 'Shoukai shartlari va izohlari')}:</strong>
                   <div style={{ whiteSpace: 'pre-wrap', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
                     {school.shoukaiConditions || t('defaultSchoolShoukaiConditions', 'Sinov/O\'qish boshlash muddatidan so\'ng tavsiya qiluvchiga mukofot to\'lanadi.')}
@@ -583,7 +583,7 @@ export default function DrivingAcademy({
                         className="job-card-btn btn-apply applied" 
                         disabled
                         onClick={(e) => e.stopPropagation()}
-                        style={{ flex: 1, background: 'rgba(48, 209, 88, 0.15)', color: '#30D158', border: '1px solid rgba(48, 209, 88, 0.25)', cursor: 'default' }}
+                        style={{ flex: 1, cursor: 'default' }}
                       >
                         <CheckCircle2 size={13} />
                         {t('appliedToSchool', 'Topshirilgan')}

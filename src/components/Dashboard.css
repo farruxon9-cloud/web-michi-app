@@ -904,44 +904,68 @@ html.dark-mode .player-timeline {
   50% { height: 100%; }
 }
 
-.ai-action-btn {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(94, 92, 230, 0.08);
-  border: 1px solid rgba(94, 92, 230, 0.15);
-  padding: 6px 14px;
-  border-radius: 12px;
-  transition: all 0.2s ease;
+/* iOS-Style Premium Toggle Switch (Slide Switch) */
+.ios-switch {
+  position: relative;
+  width: 51px;
+  height: 31px;
+  background-color: rgba(120, 120, 128, 0.16); /* Off state track */
+  border-radius: 16px;
+  transition: background-color 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: inline-block;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 0.5px solid rgba(0, 0, 0, 0.04);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .bento-ai-card:not(.active):hover .ai-action-btn {
-    background: var(--primary);
-    color: #ffffff;
-    border-color: var(--primary);
-    box-shadow: 0 4px 10px rgba(94, 92, 230, 0.15);
-  }
-  .bento-ai-card.active:hover .ai-action-btn {
-    background: #28b850;
-    border-color: #28b850;
-  }
+.ios-switch-thumb {
+  position: absolute;
+  top: 1.5px;
+  left: 1.5px;
+  width: 27px;
+  height: 27px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), width 0.25s ease;
+  will-change: transform, width;
+}
+
+/* Micro-interaction: stretch thumb slightly on click press */
+.ios-switch:active .ios-switch-thumb {
+  width: 31px;
+}
+
+.ios-switch.checked:active .ios-switch-thumb {
+  width: 31px;
+  transform: translateX(16px); /* keeps stretch aligned within the track boundaries */
+}
+
+/* Checked (On) State */
+.ios-switch.checked {
+  background-color: #30D158; /* iOS green */
+  border-color: #30D158;
+}
+
+.ios-switch.checked .ios-switch-thumb {
+  transform: translateX(20px);
+}
+
+/* Dark Mode Adjustments */
+html.dark-mode .ios-switch {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: transparent;
+}
+
+html.dark-mode .ios-switch.checked {
+  background-color: #30D158;
 }
 
 /* Bento AI Card active state */
 .bento-ai-card.active {
   border-color: rgba(48, 209, 88, 0.3);
   box-shadow: var(--dash-card-shadow), 0 0 8px rgba(48, 209, 88, 0.12);
-}
-
-.bento-ai-card.active .ai-action-btn {
-  background: #30D158;
-  color: #ffffff;
-  border-color: #30D158;
-  box-shadow: 0 4px 10px rgba(48, 209, 88, 0.2);
 }
 
 .bento-ai-card.active .ai-gradient-icon {

@@ -68,11 +68,15 @@ function App() {
   const [languageSelected, setLanguageSelected] = useState(false);
   const [userRole, setUserRole] = useState(null); // Temporarily disable auto-login
   const [activeTab, setActiveTab] = useState('home');
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [isVoiceStandby, setIsVoiceStandby] = useState(() => {
     const saved = localStorage.getItem('michi_voice_standby');
     return saved === 'true';
   });
+  const [isVoiceActive, setIsVoiceActive] = useState(() => {
+    const saved = localStorage.getItem('michi_voice_standby');
+    return saved === 'true';
+  });
+  const [voiceStatus, setVoiceStatus] = useState('idle');
 
   useEffect(() => {
     localStorage.setItem('michi_voice_standby', isVoiceStandby);
@@ -528,7 +532,9 @@ function App() {
       ? `Referral link copied successfully:\n\n${link}\n\nShare with friends to earn Shoukai rewards!`
       : `Shoukai havolasi nusxalandi:\n\n${link}\n\nDo'stlaringiz bilan ulashing va mukofot oling!`;
       
-    alert(alertMsg);
+    setTimeout(() => {
+      alert(alertMsg);
+    }, 150);
 
     // 2. Mantiqiy algoritm: Do'stingiz ushbu havola orqali yuklab ariza yuborganligini simulyatsiya qilish.
     if (isActuallyJob) {
@@ -824,6 +830,7 @@ function App() {
           userRole={userRole}
           isVoiceStandby={isVoiceStandby}
           isVoiceActive={isVoiceActive}
+          voiceStatus={voiceStatus}
         />
       )}
 
@@ -835,6 +842,7 @@ function App() {
         setIsVoiceStandby={setIsVoiceStandby}
         setActiveTab={setActiveTab} 
         musicPlayer={musicPlayer} 
+        onStatusChange={setVoiceStatus}
       />
 
       <audio 

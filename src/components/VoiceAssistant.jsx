@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Mic, MicOff, WifiOff, Lock, X, Sparkles, Key, AlertTriangle, RefreshCw, Volume2 } from 'lucide-react';
 import './VoiceAssistant.css';
 
-export default function VoiceAssistant({ isActive, onClose, onStartVoice, isVoiceStandby, setIsVoiceStandby, setActiveTab, musicPlayer }) {
+export default function VoiceAssistant({ isActive, onClose, onStartVoice, isVoiceStandby, setIsVoiceStandby, setActiveTab, musicPlayer, onStatusChange }) {
   const { t } = useTranslation();
   const defaultKey = localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
   const [apiKey, setApiKey] = useState(defaultKey);
@@ -68,6 +68,13 @@ export default function VoiceAssistant({ isActive, onClose, onStartVoice, isVoic
     }
   }, []);
 
+  // Sync voice assistant status to parent
+  useEffect(() => {
+    if (onStatusChange) {
+      onStatusChange(status);
+    }
+  }, [status, onStatusChange]);
+
   // Trigger speech recognition if overlay opens, has key, and has permission
   useEffect(() => {
     let ttsTimeout = null;
@@ -75,13 +82,9 @@ export default function VoiceAssistant({ isActive, onClose, onStartVoice, isVoic
       if (!isOnline) {
         stopAllVoiceActivities();
         setStatus('error');
-        setErrorMessage(t('noInternetTitle', 'インターネット接続がありません。'));
+        setErrorMessage(t('noInternetWait', 'インターネット接続がありません。接続の再開を待っています...'));
         setShowPill(true);
-        speakJapanese('インターネット接続がありません。', () => {
-          ttsTimeout = setTimeout(() => {
-            onClose();
-          }, 1500);
-        });
+        speakJapanese('インターネット接続がありません。接続を待機しています。');
       } else if (apiKey && !showKeyInput) {
         startListeningSequence();
       }
@@ -695,10 +698,11 @@ IMPORTANT RULES:
       {/* Siri-Style Ambient Glow Wave Bar — hidden in standby mode (orb is the indicator) */}
       {status !== 'idle' && !isVoiceStandby && (
         <div className={`voice-ambient-glow-container ${status}`}>
-          <div className="voice-glow-visualizer-wave">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((bar) => (
-              <div key={bar} className={`wave-bar wave-${bar}`}></div>
-            ))}
+          <div className="voice-glow-visualizer-orb">
+            <div className="ai-liquid-orb-glow"></div>
+            <div className="ai-liquid-orb-core">
+              <Sparkles size={16} color="#ffffff" fill="#ffffff" />
+            </div>
           </div>
           <div className="voice-ambient-info">
             {status === 'listening' && <span>{t('aiListeningLabel', 'Tinglamoqda... (Gapiring)')}</span>}

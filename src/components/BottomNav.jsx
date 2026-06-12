@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Home, Briefcase, GraduationCap, Wrench, User } from 'lucide-react';
+import { Home, Briefcase, GraduationCap, Wrench, User, Sparkles } from 'lucide-react';
 import './BottomNav.css';
 
-export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, userRole, isVoiceStandby, isVoiceActive }) {
+export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, userRole, isVoiceStandby, isVoiceActive, voiceStatus }) {
   const { t } = useTranslation();
   
   const navItems = [
@@ -32,9 +32,11 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
                 <span className="nav-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
               )}
               {item.id === 'academy' && isVoiceStandby && (
-                <div className="voice-standby-orb-nav-overlay animate-fade-in">
+                <div className={`voice-standby-orb-nav-overlay ${voiceStatus || 'idle'} animate-fade-in`}>
                   <div className="voice-standby-orb-glow"></div>
-                  <div className="voice-standby-orb-sphere"></div>
+                  <div className="voice-standby-orb-sphere">
+                    <Sparkles size={11} color="#ffffff" fill="#ffffff" style={{ opacity: 0.95 }} />
+                  </div>
                 </div>
               )}
             </div>

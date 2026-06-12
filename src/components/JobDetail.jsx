@@ -22,8 +22,8 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
     { icon: <Banknote size={18} color="#30D158" />, label: t('salary', 'Maosh'), value: job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : '', show: !!job.salary },
     { icon: <Clock size={18} color="#0A84FF" />, label: t('workHours', 'Ish vaqti'), value: job.hours === 'shift' ? t('shiftWork', 'Smenali ish') : (job.hours ? t(job.hours, job.hours) : ''), show: !!job.hours },
     { icon: <Calendar size={18} color="#AF52DE" />, label: t('dayOff', 'Dam olish'), value: t(job.dayOff, job.dayOff), show: !!job.dayOff },
-    { icon: <Award size={18} color="#FF9F0A" />, label: t('bonusLabel', 'Bonus'), value: t(job.bonus, job.bonus), show: !!job.bonus && job.bonus !== 'bonus_none' },
-    { icon: <Shield size={18} color="#5E5CE6" />, label: t('insuranceLabel', "Sug'urta"), value: t(job.insurance, job.insurance), show: !!job.insurance },
+    { icon: <Award size={18} color="#FF9F0A" />, label: t('bonusDetail', 'Bonus'), value: t(job.bonus, job.bonus), show: !!job.bonus && job.bonus !== 'bonus_none' },
+    { icon: <Shield size={18} color="#5E5CE6" />, label: t('insurance', "Sug'urta"), value: t(job.insurance, job.insurance), show: !!job.insurance },
     { icon: <Globe size={18} color="#FF2D55" />, label: t('foreignersLabel', "Chet elliklar"), value: job.foreigners ? t(job.foreigners, job.foreigners) : '', show: !!job.foreigners && job.foreigners !== 'foreigners_none' },
     { icon: <Home size={18} color="#34C759" />, label: t('housingLabel', "Yashash joyi"), value: job.housing ? t(job.housing, job.housing) : '', show: !!job.housing && job.housing !== 'housing_none' },
     { icon: <Car size={18} color="#E63946" />, label: t('licenseRequired', 'Litsenziya'), value: t(job.license, job.license), show: !!job.license },
@@ -84,18 +84,22 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
               <div className="db-salary-icon">
                 <Banknote size={24} color="#30D158" />
               </div>
-              <div className="db-salary-text">
-                <span className="db-label">{t('salary', 'Maosh')}</span>
-                <h3 className="db-salary-value">
-                  {job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`)}
-                </h3>
-              </div>
-              {job.bonus && job.bonus !== 'bonus_none' && (
-                <div className="db-bonus-badge">
-                  <Award size={14} color="#FF9F0A" />
-                  <span>{t(job.bonus, job.bonus)}</span>
+              <div style={{ display: 'flex', flex: 1, gap: '20px', flexWrap: 'wrap' }}>
+                <div className="db-salary-text">
+                  <span className="db-label">{t('salary', 'Maosh')}</span>
+                  <h3 className="db-salary-value">
+                    {job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`)}
+                  </h3>
                 </div>
-              )}
+                {job.bonus && job.bonus !== 'bonus_none' && (
+                  <div className="db-salary-text">
+                    <span className="db-label">{t('bonusDetail', 'Bonus')}</span>
+                    <h3 className="db-salary-value" style={{ color: '#FF9F0A' }}>
+                      {t(job.bonus, job.bonus)}
+                    </h3>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -142,7 +146,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
                     <div className="db-row-icon icon-insurance">
                       <Shield size={16} color="#5E5CE6" />
                     </div>
-                    <span className="db-row-label">{t('insuranceLabel', "Sug'urta")}</span>
+                    <span className="db-row-label">{t('insurance', "Sug'urta")}</span>
                   </div>
                   <strong className="db-row-value">{t(job.insurance, job.insurance)}</strong>
                 </div>
@@ -205,11 +209,11 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
             rel="noopener noreferrer"
             style={{ textDecoration: 'none' }}
           >
-            <div className="map-placeholder squircle glass" style={{ cursor: 'pointer', transition: 'all 0.3s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <div className="map-placeholder squircle glass" style={{ cursor: 'pointer', transition: 'all 0.3s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '12px' }}>
               <MapIcon size={32} color="#0A84FF" />
               <span style={{textAlign: 'center', color: 'var(--text-main)', marginTop: '12px', fontWeight: '500'}}>
                 {t('viewOnMap', "Xaritada ko'rish")} <br/>
-                <small style={{ color: 'var(--text-secondary)', display: 'inline-block', marginTop: '6px' }}>{job.fullAddress || t(`job_${job.id}_location`, job.location)}</small>
+                <small style={{ color: 'var(--text-secondary)', display: 'inline-block', marginTop: '12px' }}>{job.fullAddress || t(`job_${job.id}_location`, job.location)}</small>
               </span>
             </div>
           </a>
@@ -229,7 +233,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
               🎉 {t('shoukaiAvailable', 'Shoukai puli bor')}
             </div>
             
-            <div style={{ marginTop: '10px', fontSize: '13px', color: 'var(--text-secondary)', background: 'rgba(255,159,10,0.06)', border: '1px solid rgba(255,159,10,0.15)', padding: '10px 14px', borderRadius: '12px', lineHeight: '1.4' }}>
+            <div style={{ marginTop: '12px', fontSize: '13px', color: 'var(--text-secondary)', background: 'rgba(255,159,10,0.06)', border: '1px solid rgba(255,159,10,0.15)', padding: '12px', borderRadius: '12px', lineHeight: '1.4' }}>
               <strong style={{ color: 'var(--text-main)', display: 'block', marginBottom: '4px' }}>{t('shoukaiConditionsTitle', 'Shoukai shartlari va izohlari')}:</strong>
               <div style={{ whiteSpace: 'pre-wrap', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
                 {job.shoukaiConditions || t('defaultJobShoukaiConditions', 'Tavsiya qilingan nomzod ishga qabul qilinib, kamida 3 oy ishlasa shoukai puli to\'lab beriladi.')}

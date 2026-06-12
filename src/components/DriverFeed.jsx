@@ -257,7 +257,7 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
                       className="job-card-btn btn-apply applied" 
                       disabled
                       onClick={(e) => e.stopPropagation()}
-                      style={{ flex: 1, background: 'rgba(48, 209, 88, 0.15)', color: '#30D158', border: '1px solid rgba(48, 209, 88, 0.25)', cursor: 'default' }}
+                      style={{ flex: 1, cursor: 'default' }}
                     >
                       <CheckCircle2 size={13} />
                       {t('applied', 'Topshirilgan')}
@@ -276,19 +276,19 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
                     </button>
                   );
                 })()}
-                {((job.shoukai && job.shoukai !== "0") || job.hasShoukai) && (
-                  <button 
-                    className="job-card-btn btn-shoukai"
-                    onClick={(e) => { 
-                      e.stopPropagation(); 
-                      onShoukai && onShoukai(job); 
-                    }}
-                    style={{ flex: 1 }}
-                  >
-                    <Share2 size={13} />
-                    {t('shoukaiAvailableLabel', 'Puli Bor')}
-                  </button>
-                )}
+                <button 
+                  className="job-card-btn btn-shoukai"
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    onShoukai && onShoukai(job); 
+                  }}
+                  style={{ flex: 1 }}
+                >
+                  <Share2 size={13} />
+                  {((job.shoukai && job.shoukai !== "0") || job.hasShoukai) 
+                    ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` 
+                    : t('shoukai', 'Shoukai')}
+                </button>
               </div>
             </div>
           );

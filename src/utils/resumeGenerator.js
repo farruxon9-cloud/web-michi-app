@@ -116,16 +116,36 @@ export async function generateRirekisho(profileData, options = {}) {
   if (profileData.educationHistory && profileData.educationHistory.length > 0) {
     eduWorkRows.push({ year: '', month: '', detail: '学　　歴', align: 'center' });
     profileData.educationHistory.forEach(edu => {
-      if (edu.gradDate) {
-        const dateObj = new Date(edu.gradDate);
-        const year = dateObj.getFullYear();
-        const month = dateObj.getMonth() + 1;
-        const eraYear = toJapaneseEraYear(year).replace('年', '');
-        eduWorkRows.push({
-          year: eraYear,
-          month: `${month}`,
-          detail: `${edu.school || ''}　${edu.degree || '卒業'}`
-        });
+      // Admission row
+      const admissionDate = edu.startDate;
+      if (admissionDate) {
+        const dateObj = new Date(admissionDate);
+        if (!isNaN(dateObj.getTime())) {
+          const year = dateObj.getFullYear();
+          const month = dateObj.getMonth() + 1;
+          const eraYear = toJapaneseEraYear(year).replace('年', '');
+          eduWorkRows.push({
+            year: eraYear,
+            month: `${month}`,
+            detail: `${edu.school || ''}　入学`
+          });
+        }
+      }
+      // Graduation row
+      const gradDate = edu.endDate || edu.gradDate;
+      if (gradDate) {
+        const dateObj = new Date(gradDate);
+        if (!isNaN(dateObj.getTime())) {
+          const year = dateObj.getFullYear();
+          const month = dateObj.getMonth() + 1;
+          const eraYear = toJapaneseEraYear(year).replace('年', '');
+          const degreeText = edu.major || edu.degree || '卒業';
+          eduWorkRows.push({
+            year: eraYear,
+            month: `${month}`,
+            detail: `${edu.school || ''}　${degreeText}`
+          });
+        }
       }
     });
   }
@@ -501,25 +521,21 @@ export async function generateRirekisho(profileData, options = {}) {
   if (onProgress) onProgress('downloading');
 
   // Trigger PDF Download or open preview
-  return new Promise((resolve, reject) => {
-    try {
-      const pdf = pdfMake.createPdf(docDefinition);
-      if (download) {
-        const filename = `Rirekisho_${profileData.fullName.replace(/\s+/g, '_')}.pdf`;
-        pdf.download(filename, () => {
-          if (onProgress) onProgress('completed');
-          resolve();
-        });
-      } else {
-        pdf.getDataUrl((dataUrl) => {
-          if (onProgress) onProgress('completed');
-          resolve(dataUrl);
-        });
-      }
-    } catch (e) {
-      console.error('Error generating PDF:', e);
-      if (onProgress) onProgress('failed');
-      reject(e);
+  try {
+    const pdf = pdfMake.createPdf(docDefinition);
+    if (download) {
+      const filename = `Rirekisho_${profileData.fullName.replace(/\s+/g, '_')}.pdf`;
+      await pdf.download(filename);
+      if (onProgress) onProgress('completed');
+    } else {
+      const blob = await pdf.getBlob();
+      const blobUrl = URL.createObjectURL(blob);
+      if (onProgress) onProgress('completed');
+      return blobUrl;
     }
-  });
+  } catch (e) {
+    console.error('Error generating PDF:', e);
+    if (onProgress) onProgress('failed');
+    throw e;
+  }
 }

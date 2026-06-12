@@ -241,16 +241,17 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
               <div key={bar} className={`ai-bar ai-bar-${bar} ${isVoiceStandby ? 'active' : ''} ${isVoiceActive ? 'animating' : ''}`}></div>
             ))}
           </div>
-          <span 
-            className="ai-action-btn"
+          <div 
+            className={`ios-switch ${isVoiceStandby ? 'checked' : ''}`}
             onClick={(e) => {
               e.stopPropagation(); // Avoid triggering onVoiceActivate (starting speech recognition)
               onVoiceToggle();
             }}
+            role="switch"
+            aria-checked={isVoiceStandby}
           >
-            {isVoiceStandby ? t('turnOffBtn', "O'chirish") : t('turnOnBtn', 'Yoqish')} 
-            {isVoiceStandby ? <X size={14} style={{ marginLeft: '4px' }} /> : <ArrowRight size={14} />}
-          </span>
+            <span className="ios-switch-thumb"></span>
+          </div>
         </div>
       </div>
 

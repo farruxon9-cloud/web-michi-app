@@ -1,5 +1,5 @@
 .resume-builder-container {
-  padding: 16px;
+  padding: 12px;
   max-width: 600px;
   margin: 0 auto;
   flex: 1; /* Stretch to occupy full height of the viewport main-content */
@@ -11,39 +11,28 @@
   overflow-y: auto;
 }
 
-.resume-builder-header {
+.resume-builder-sticky-back {
+  position: sticky;
+  top: 0;
+  z-index: 150;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  justify-content: flex-start;
+  pointer-events: none;
+  margin-bottom: -44px; /* Pull the title and body content up into the same row */
+  padding-top: 4px;
 }
 
-.header-back-btn {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  color: var(--text-main);
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  transition: all 0.2s ease;
+.resume-builder-sticky-back button {
+  pointer-events: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.header-back-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
-}
-
-.resume-builder-header h2 {
+.resume-builder-title {
   font-size: 16px;
   font-weight: 700;
-  margin: 0;
-  flex: 1;
-  text-align: center;
+  margin: 10px 0 16px 44px; /* Shift to the right to clear the back button, align vertically */
   color: var(--text-main);
+  text-align: left;
 }
 
 .step-badge {
@@ -98,15 +87,15 @@
 }
 
 .step-content {
-  padding: 16px;
+  padding: 12px;
   background: rgba(255, 255, 255, 0.85); /* Clean white background in light mode */
   border: 1px solid rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(20px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 0; /* Footer is separated by margin-top on the footer itself */
+  gap: 12px;
+  margin-bottom: 12px; /* Space out the sequential cards */
 }
 
 .dark-mode .step-content {
@@ -119,10 +108,10 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 4px;
+  margin-bottom: 8px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  padding-bottom: 16px;
+  padding-bottom: 10px;
 }
 
 .dark-mode .step-intro {
@@ -130,19 +119,19 @@
 }
 
 .step-icon {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .step-intro h3 {
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 700;
   margin: 0;
   color: var(--text-main);
 }
 
 .step-intro p {
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 11px;
+  line-height: 1.35;
   color: #555558;
   margin: 0;
 }
@@ -155,12 +144,12 @@
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
 }
 
 .form-group label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #555558;
   text-transform: uppercase;
@@ -185,9 +174,9 @@
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.15); /* Faint gray border for light mode */
   color: #1c1c1e;
-  padding: 10px 14px;
-  font-size: 14px;
-  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 10px;
   outline: none;
   transition: all 0.25s ease;
   width: 100%;
@@ -238,13 +227,13 @@ select.glass-input {
 }
 
 .history-card {
-  padding: 14px;
+  padding: 10px 12px;
   background: rgba(0, 0, 0, 0.015);
   border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 14px;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .dark-mode .history-card {
@@ -285,14 +274,14 @@ select.glass-input {
   background: rgba(10, 132, 255, 0.08);
   border: 1px solid rgba(10, 132, 255, 0.18);
   color: #0A84FF;
-  padding: 10px;
-  font-size: 13px;
+  padding: 8px 12px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
   text-align: center;
-  margin-top: 8px;
+  margin-top: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -357,8 +346,8 @@ select.glass-input {
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.08);
   color: #555558;
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: 6px 10px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -367,6 +356,7 @@ select.glass-input {
   white-space: nowrap;
   max-width: 100%;
   box-sizing: border-box;
+  border-radius: 8px;
 }
 
 .dark-mode .badge-select-btn {
@@ -499,10 +489,10 @@ select.glass-input {
 
 .pdf-preview-box {
   width: 100%;
-  height: 280px;
-  margin-top: 16px;
+  height: 160px;
+  margin-top: 12px;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
   position: relative;
 }
@@ -520,15 +510,15 @@ select.glass-input {
 
 .pdf-preview-placeholder {
   width: 100%;
-  height: 280px;
-  margin-top: 16px;
+  height: 160px;
+  margin-top: 12px;
   background: rgba(0, 0, 0, 0.01);
   border: 1px dashed rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #555558;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .dark-mode .pdf-preview-placeholder {
@@ -581,12 +571,12 @@ select.glass-input {
 }
 
 .date-input-group .year-input {
-  width: 72px;
+  width: 120px;
   flex-shrink: 0;
 }
 
 .date-input-group .month-input {
-  width: 52px;
+  width: 60px;
   flex-shrink: 0;
 }
 
@@ -632,11 +622,11 @@ select.glass-input {
 
 /* Resume Builder Hint & Dynamic Inputs */
 .form-input-hint {
-  font-size: 12.5px;
+  font-size: 11px;
   color: var(--text-secondary);
-  margin-top: -6px;
-  margin-bottom: 10px;
-  line-height: 1.45;
+  margin-top: -2px;
+  margin-bottom: 6px;
+  line-height: 1.35;
   font-weight: 500;
 }
 
@@ -649,14 +639,14 @@ select.glass-input {
 
 .gender-select-btn {
   flex: 1;
-  padding: 14px;
-  border-radius: 14px;
+  padding: 10px;
+  border-radius: 10px;
   border: 1px solid var(--glass-border);
   background: rgba(255, 255, 255, 0.45);
   color: var(--text-main);
   cursor: pointer;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 13px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   box-shadow: var(--shadow-sm);
 }
@@ -682,9 +672,9 @@ select.glass-input {
 .dob-inputs-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .dob-input-wrapper {
@@ -701,17 +691,17 @@ select.glass-input {
 .dob-input-wrapper .dob-num-input {
   width: 100%;
   text-align: center;
-  padding-right: 36px; /* make room for the label suffix */
+  padding-right: 28px; /* make room for the label suffix */
 }
 
 .dob-input-wrapper.year-wrapper .dob-num-input {
-  padding-right: 32px;
+  padding-right: 24px;
 }
 
 .dob-input-wrapper .dob-input-suffix {
   position: absolute;
-  right: 12px;
-  font-size: 12.5px;
+  right: 10px;
+  font-size: 11px;
   color: var(--text-secondary);
   font-weight: 600;
   pointer-events: none;
@@ -738,3 +728,62 @@ select.glass-input {
   background: rgba(90, 85, 234, 0.15);
   border: 1px solid rgba(90, 85, 234, 0.3);
 }
+
+/* Action buttons in PDF preview card at bottom */
+.action-buttons-group {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.action-buttons-group button,
+.action-buttons-group a {
+  flex: 1;
+  min-width: 120px;
+  max-width: 220px;
+  min-height: 44px !important;
+  height: 44px !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  text-decoration: none;
+  box-sizing: border-box;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.download-pdf-btn {
+  background: linear-gradient(135deg, #30D158, #28C754);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px rgba(48, 209, 88, 0.2);
+}
+
+.download-pdf-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(48, 209, 88, 0.3);
+}
+
+.open-pdf-tab-btn {
+  background: rgba(94, 92, 230, 0.08);
+  border: 1px solid rgba(94, 92, 230, 0.18) !important;
+  color: var(--primary) !important;
+}
+
+.open-pdf-tab-btn:hover {
+  background: rgba(94, 92, 230, 0.15);
+}
+

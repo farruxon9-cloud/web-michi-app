@@ -331,160 +331,207 @@ html.dark-mode .voice-chat-bubble-pill {
 /* ====== 3. SIRI-STYLE AMBIENT GLOW CONTAINER (STICKY BOTTOM) ====== */
 .voice-ambient-glow-container {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 90px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
+  bottom: 96px; /* Sits perfectly above the bottom navigation bar */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 340px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12), 0 4px 6px rgba(0, 0, 0, 0.04);
+  border-radius: 20px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  padding-bottom: 20px;
+  justify-content: space-between;
+  padding: 0 16px;
   z-index: 10000;
-  pointer-events: none; /* Let clicks pass through to bottom nav tabs if needed */
+  box-sizing: border-box;
+  pointer-events: auto; /* Active click target */
+  animation: float-pill 3s infinite ease-in-out;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not(.light-mode) .voice-ambient-glow-container {
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
-  }
+@keyframes float-pill {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, -4px); }
 }
 
 html.dark-mode .voice-ambient-glow-container {
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+  background: rgba(28, 28, 30, 0.75);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
 
-/* Background glowing blur behind visualizer */
+/* Background glowing blur behind visualizer - Unified Siri/Gemini purple-indigo backlighting */
 .voice-ambient-glow-container::before {
   content: '';
   position: absolute;
-  bottom: -30px;
-  width: 250px;
-  height: 80px;
-  border-radius: 50%;
-  filter: blur(35px);
-  opacity: 0.7;
-  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 280px;
+  height: 70px;
+  border-radius: 20px;
+  filter: blur(25px);
+  opacity: 0.65;
+  z-index: -1;
   transition: all 0.5s ease;
+  background: radial-gradient(circle, rgba(94, 92, 230, 0.75) 0%, rgba(175, 82, 222, 0.35) 50%, rgba(94, 92, 230, 0) 80%);
 }
 
-/* Color glowing shifting based on status */
 .voice-ambient-glow-container.listening::before {
-  background: radial-gradient(circle, rgba(255, 59, 48, 0.6) 0%, rgba(255, 149, 0, 0) 70%);
-  animation: glow-breathe 2s infinite ease-in-out;
+  animation: glow-breathe 1.2s infinite ease-in-out;
 }
 
 .voice-ambient-glow-container.thinking::before {
-  background: radial-gradient(circle, rgba(10, 132, 255, 0.6) 0%, rgba(94, 92, 230, 0) 70%);
-  animation: glow-breathe 1.5s infinite ease-in-out;
+  animation: glow-breathe 1.8s infinite ease-in-out;
 }
 
 .voice-ambient-glow-container.speaking::before {
-  background: radial-gradient(circle, rgba(52, 199, 89, 0.6) 0%, rgba(48, 209, 88, 0) 70%);
-  animation: glow-breathe 1s infinite ease-in-out;
+  animation: glow-breathe 0.8s infinite ease-in-out;
 }
 
 @keyframes glow-breathe {
-  0%, 100% { transform: scale(1); opacity: 0.6; }
-  50% { transform: scale(1.15); opacity: 0.85; }
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.85; }
 }
 
 .voice-ambient-info {
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.75);
-  margin-top: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.2px;
   z-index: 5;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  flex: 1;
+  margin: 0 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .voice-ambient-stop-btn {
-  position: absolute;
-  right: 20px;
-  bottom: 24px;
+  position: relative;
+  right: auto;
+  bottom: auto;
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: rgba(118, 118, 128, 0.08);
+  border: none;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  pointer-events: auto; /* Active click target */
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .voice-ambient-stop-btn:hover {
-  background: rgba(255, 59, 48, 0.8);
-  border-color: #FF3B30;
+  background: rgba(255, 59, 48, 0.12);
+  color: #FF3B30;
 }
 
-/* Siri wave lines visualizer */
-.voice-glow-visualizer-wave {
+/* Futuristic Morphing AI Liquid Orb */
+.voice-glow-visualizer-orb {
+  position: relative;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  height: 30px;
-  width: 100%;
+  flex-shrink: 0;
   z-index: 5;
 }
 
-.wave-bar {
-  width: 3.5px;
-  height: 4px;
-  border-radius: 2px;
-  transition: height 0.15s ease, background-color 0.4s ease;
+.ai-liquid-orb-glow {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #5E5CE6 0%, #AF52DE 40%, #00F0FF 70%, rgba(94, 92, 230, 0) 100%);
+  filter: blur(8px);
+  opacity: 0.8;
+  animation: orb-glow-pulse 2s infinite ease-in-out;
 }
 
-/* Dynamic heights/animations depending on voice assistant state */
-.listening .wave-bar {
-  background-color: #FF453A;
-  animation: siri-wave-listening 1.2s infinite ease-in-out;
+.ai-liquid-orb-core {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #5E5CE6 0%, #AF52DE 50%, #00F0FF 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.2),
+    0 4px 12px rgba(94, 92, 230, 0.4);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: liquid-morph 4s infinite linear, orb-rotate 8s infinite linear;
+  will-change: border-radius, transform;
 }
 
-.thinking .wave-bar {
-  background-color: #0A84FF;
-  animation: siri-wave-thinking 1.4s infinite ease-in-out;
+/* Status-specific animation characteristics - Single unified color theme, different motion profiles */
+.listening .ai-liquid-orb-core {
+  animation: liquid-morph 2s infinite linear, orb-rotate 4s infinite linear, listening-pulse 1s infinite ease-in-out;
 }
 
-.speaking .wave-bar {
-  background-color: #30D158;
-  animation: siri-wave-speaking 1s infinite ease-in-out;
+.listening .ai-liquid-orb-glow {
+  animation: orb-glow-pulse 1.2s infinite ease-in-out;
 }
 
-/* Wave index delays */
-.wave-1  { animation-delay: 0.1s; }
-.wave-2  { animation-delay: 0.25s; }
-.wave-3  { animation-delay: 0.4s; }
-.wave-4  { animation-delay: 0.15s; }
-.wave-5  { animation-delay: 0.3s; }
-.wave-6  { animation-delay: 0.2s; }
-.wave-7  { animation-delay: 0.45s; }
-.wave-8  { animation-delay: 0.1s; }
-.wave-9  { animation-delay: 0.35s; }
-.wave-10 { animation-delay: 0.25s; }
-
-/* Visualizer keyframes representing siri motions */
-@keyframes siri-wave-listening {
-  0%, 100% { height: 6px; transform: scaleY(1); }
-  50% { height: 26px; transform: scaleY(1.15); background-color: #FF9F0A; }
+.thinking .ai-liquid-orb-core {
+  animation: liquid-morph 3s infinite linear, orb-rotate 6s infinite linear, thinking-pulse 1.5s infinite ease-in-out;
 }
 
-@keyframes siri-wave-thinking {
-  0%, 100% { height: 8px; }
-  50% { height: 16px; background-color: #BF5AF2; }
+.thinking .ai-liquid-orb-glow {
+  animation: orb-glow-pulse 1.8s infinite ease-in-out;
 }
 
-@keyframes siri-wave-speaking {
-  0%, 100% { height: 4px; }
-  50% { height: 32px; background-color: #64D2FF; }
+.speaking .ai-liquid-orb-core {
+  animation: liquid-morph 2.5s infinite linear, orb-rotate 5s infinite linear, speaking-pulse 0.8s infinite ease-in-out;
+}
+
+.speaking .ai-liquid-orb-glow {
+  animation: orb-glow-pulse 0.8s infinite ease-in-out;
+}
+
+/* Keyframes */
+@keyframes liquid-morph {
+  0% { border-radius: 42% 56% 72% 28% / 45% 65% 35% 55%; }
+  33% { border-radius: 70% 30% 52% 48% / 60% 40% 60% 40%; }
+  66% { border-radius: 30% 70% 40% 60% / 40% 60% 30% 70%; }
+  100% { border-radius: 42% 56% 72% 28% / 45% 65% 35% 55%; }
+}
+
+@keyframes orb-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes orb-glow-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.25); opacity: 0.95; }
+}
+
+@keyframes listening-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+@keyframes thinking-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+
+@keyframes speaking-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
 }
 
 
@@ -532,60 +579,139 @@ html.dark-mode .voice-ambient-glow-container {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
   z-index: 10;
   pointer-events: none; /* Let all clicks pass through to the BottomNav tab button underneath! */
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: orb-nav-breathe 2.5s infinite ease-in-out;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Shifting radial glow light behind the middle tab icon */
 .voice-standby-orb-glow {
   position: absolute;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #5E5CE6 0%, #AF52DE 35%, #30D158 70%, rgba(94, 92, 230, 0) 100%);
-  filter: blur(8px);
-  opacity: 0.8;
-  z-index: 1;
-  animation: orb-glow-rotate 6s infinite linear;
-}
-
-/* Decorative glass sphere overlaying the icon */
-.voice-standby-orb-sphere {
-  position: relative;
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.2),
-    0 4px 10px rgba(94, 92, 230, 0.2);
-  z-index: 2;
+  filter: blur(6px);
+  opacity: 0.85;
+  z-index: 1;
   transition: all 0.3s ease;
 }
 
-html.dark-mode .voice-standby-orb-sphere {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.08);
+.voice-standby-orb-sphere {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+/* Idle Standby State */
+.voice-standby-orb-nav-overlay.idle {
+  animation: orb-nav-breathe-idle 3s infinite ease-in-out;
+}
+.voice-standby-orb-nav-overlay.idle .voice-standby-orb-glow {
+  background: radial-gradient(circle, rgba(161, 51, 255, 0.9) 0%, rgba(138, 43, 226, 0.45) 50%, rgba(138, 43, 226, 0) 75%);
+  animation: orb-glow-pulse 3s infinite ease-in-out;
+}
+.voice-standby-orb-nav-overlay.idle .voice-standby-orb-sphere {
+  background: rgba(161, 51, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.1),
-    0 4px 12px rgba(94, 92, 230, 0.35);
+    inset 0 1px 1px rgba(255, 255, 255, 0.25),
+    0 4px 10px rgba(138, 43, 226, 0.35);
+  animation: liquid-morph 4s infinite linear;
+}
+
+/* Listening Standby State */
+.voice-standby-orb-nav-overlay.listening {
+  animation: orb-nav-breathe-listening 1s infinite ease-in-out;
+}
+.voice-standby-orb-nav-overlay.listening .voice-standby-orb-glow {
+  background: radial-gradient(circle, rgba(255, 45, 85, 0.95) 0%, rgba(161, 51, 255, 0.5) 55%, rgba(161, 51, 255, 0) 75%);
+  animation: orb-glow-pulse 0.8s infinite ease-in-out;
+}
+.voice-standby-orb-nav-overlay.listening .voice-standby-orb-sphere {
+  background: rgba(255, 45, 85, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    0 4px 12px rgba(255, 45, 85, 0.5);
+  animation: liquid-morph 1.5s infinite linear, orb-rotate 3s infinite linear;
+}
+
+/* Thinking Standby State */
+.voice-standby-orb-nav-overlay.thinking {
+  animation: orb-nav-breathe-thinking 1.8s infinite ease-in-out;
+}
+.voice-standby-orb-nav-overlay.thinking .voice-standby-orb-glow {
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.9) 0%, rgba(94, 92, 230, 0.5) 55%, rgba(94, 92, 230, 0) 75%);
+  animation: orb-glow-pulse 1.5s infinite ease-in-out;
+}
+.voice-standby-orb-nav-overlay.thinking .voice-standby-orb-sphere {
+  background: rgba(0, 199, 190, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    0 4px 12px rgba(0, 240, 255, 0.4);
+  animation: liquid-morph 2.5s infinite linear, orb-rotate 5s infinite linear;
+}
+
+/* Speaking Standby State */
+.voice-standby-orb-nav-overlay.speaking {
+  animation: orb-nav-breathe-speaking 0.8s infinite ease-in-out;
+}
+.voice-standby-orb-nav-overlay.speaking .voice-standby-orb-glow {
+  background: radial-gradient(circle, rgba(161, 51, 255, 0.95) 0%, rgba(94, 92, 230, 0.5) 50%, rgba(94, 92, 230, 0) 75%);
+  animation: orb-glow-pulse 0.6s infinite ease-in-out;
+}
+.voice-standby-orb-nav-overlay.speaking .voice-standby-orb-sphere {
+  background: rgba(161, 51, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    0 4px 14px rgba(161, 51, 255, 0.55);
+  animation: liquid-morph 2s infinite linear, orb-rotate 4s infinite linear, speaking-pulse 0.8s infinite ease-in-out;
+}
+
+/* Error Standby State */
+.voice-standby-orb-nav-overlay.error {
+  animation: shake 0.4s ease-in-out;
+}
+.voice-standby-orb-nav-overlay.error .voice-standby-orb-glow {
+  background: radial-gradient(circle, rgba(255, 59, 48, 0.95) 0%, rgba(255, 59, 48, 0.4) 50%, rgba(255, 59, 48, 0) 75%);
+}
+.voice-standby-orb-nav-overlay.error .voice-standby-orb-sphere {
+  background: rgba(255, 59, 48, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    0 4px 12px rgba(255, 59, 48, 0.5);
 }
 
 /* ====== 6. STANDBY KEYFRAMES ====== */
-@keyframes orb-glow-rotate {
-  0% { transform: rotate(0deg) scale(1); filter: hue-rotate(0deg); }
-  50% { transform: rotate(180deg) scale(1.15); filter: hue-rotate(180deg); }
-  100% { transform: rotate(360deg) scale(1); filter: hue-rotate(360deg); }
+@keyframes orb-nav-breathe-idle {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.06); }
 }
 
-@keyframes orb-nav-breathe {
+@keyframes orb-nav-breathe-listening {
   0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -52%) scale(1.04); }
+  50% { transform: translate(-50%, -50%) scale(1.16); }
+}
+
+@keyframes orb-nav-breathe-thinking {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.08); }
+}
+
+@keyframes orb-nav-breathe-speaking {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.24); }
 }

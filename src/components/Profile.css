@@ -561,25 +561,57 @@
 .contract-btn {
   width: 100%;
   padding: 14px;
-  background: #111113;
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #8E9492;
+  color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease, filter 0.15s ease;
 }
 
+.contract-btn:hover {
+  background: #9aa09e;
+}
+
 .contract-btn:active {
-  transform: scale(0.95);
-  filter: brightness(0.85);
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+  transform: scale(0.93);
+  background: #ffffff;
+  filter: none;
+  box-shadow: inset 0 3px 8px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.04);
+}
+
+html.light-mode .contract-btn:active {
+  background: #ffffff !important;
+  color: #1c1c1e !important;
+  filter: none !important;
+  box-shadow: inset 0 3px 8px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.05) !important;
 }
 
 .contract-btn.active {
+  background: var(--danger) !important;
+  color: white !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 12px rgba(255, 69, 58, 0.15) !important;
+}
+
+.dark-mode .contract-btn {
+  background: linear-gradient(135deg, #0066cc, #8b5cf6);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 102, 204, 0.3);
+}
+
+.dark-mode .contract-btn:active {
+  transform: scale(0.93);
+  filter: brightness(0.82);
+  box-shadow: inset 0 3px 8px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.dark-mode .contract-btn.active {
   background: var(--danger);
-  border-color: transparent;
+  color: #fff;
   box-shadow: 0 4px 12px rgba(255, 69, 58, 0.15);
 }
 
