@@ -204,10 +204,22 @@ export async function generateRirekisho(profileData, options = {}) {
       // Maps to Japanese name
       let licName = '';
       switch(lic) {
-        case 'futsu': licName = '普通自動車運転免許'; break;
-        case 'chugata': licName = '中型自動車運転免許'; break;
-        case 'oogata': licName = '大型自動車運転免許'; break;
-        case 'tokushu': licName = '特殊自動車運転免許'; break;
+        case 'futsu': licName = '普通自動車第一種免許'; break;
+        case 'junchugata': licName = '準中型自動車免許'; break;
+        case 'chugata': licName = '中型自動車第一種免許'; break;
+        case 'oogata': licName = '大型自動車第一種免許'; break;
+        case 'oogata_tokushu': licName = '大型特殊自動車免許'; break;
+        case 'kogata_tokushu': licName = '小型特殊自動車免許'; break;
+        case 'kenin': licName = '牽引第一種免許'; break;
+        case 'motorcycle': licName = '普通自動二輪車免許'; break;
+        case 'oogata_motorcycle': licName = '大型自動二輪車免許'; break;
+        case 'gentsuki': licName = '原動機付自転車免許'; break;
+        case 'futsu_nishu': licName = '普通自動車第二種免許'; break;
+        case 'junchugata_nishu': licName = '準中型自動車第二種免許'; break;
+        case 'chugata_nishu': licName = '中型自動車第二種免許'; break;
+        case 'oogata_nishu': licName = '大型自動車第二種免許'; break;
+        case 'oogata_tokushu_nishu': licName = '大型特殊自動車第二種免許'; break;
+        case 'kenin_nishu': licName = '牽引第二種免許'; break;
         default: licName = `${lic.toUpperCase()} 運転免許`;
       }
       licenseRows.push({

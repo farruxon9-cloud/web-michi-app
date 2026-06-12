@@ -805,17 +805,49 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
           </div>
           
           <div className="licenses-grid">
-            <span className="section-label">{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}</span>
-            <div className="badges-select-group">
-              {['futsu', 'chugata', 'oogata', 'tokushu'].map(lic => (
-                <button 
-                  key={lic}
-                  onClick={() => handleToggleLicense(lic)}
-                  className={`badge-select-btn squircle ${formData.driverLicenses.includes(lic) ? 'selected' : ''}`}
-                >
-                  {t(`lic_${lic}`)}
-                </button>
-              ))}
+            <div className="license-group-container">
+              <span className="license-group-title">{t('class1Licenses', 'Birinchi toifa (Class 1 - Shaxsiy)')}</span>
+              <div className="badges-select-group">
+                {['futsu', 'junchugata', 'chugata', 'oogata'].map(lic => (
+                  <button 
+                    key={lic}
+                    onClick={() => handleToggleLicense(lic)}
+                    className={`badge-select-btn squircle ${formData.driverLicenses.includes(lic) ? 'selected' : ''}`}
+                  >
+                    {t(`lic_${lic}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="license-group-container">
+              <span className="license-group-title">{t('class2Licenses', 'Ikkinchi toifa (Class 2 - Tijorat/Taksi/Avtobus)')}</span>
+              <div className="badges-select-group">
+                {['futsu_nishu', 'junchugata_nishu', 'chugata_nishu', 'oogata_nishu'].map(lic => (
+                  <button 
+                    key={lic}
+                    onClick={() => handleToggleLicense(lic)}
+                    className={`badge-select-btn squircle ${formData.driverLicenses.includes(lic) ? 'selected' : ''}`}
+                  >
+                    {t(`lic_${lic}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="license-group-container">
+              <span className="license-group-title">{t('specialLicenses', 'Maxsus texnika, Tirkama va Motosikllar')}</span>
+              <div className="badges-select-group">
+                {['oogata_tokushu', 'kogata_tokushu', 'kenin', 'oogata_tokushu_nishu', 'kenin_nishu', 'motorcycle', 'oogata_motorcycle', 'gentsuki'].map(lic => (
+                  <button 
+                    key={lic}
+                    onClick={() => handleToggleLicense(lic)}
+                    className={`badge-select-btn squircle ${formData.driverLicenses.includes(lic) ? 'selected' : ''}`}
+                  >
+                    {t(`lic_${lic}`)}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <span className="section-label" style={{ marginTop: '10px', display: 'block' }}>{t('otherCertificates', 'Maxsus sertifikatlar')}</span>

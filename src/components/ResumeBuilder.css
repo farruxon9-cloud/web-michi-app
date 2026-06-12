@@ -321,8 +321,40 @@ select.glass-input {
 .licenses-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
+  box-sizing: border-box;
+}
+
+.license-group-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.015);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.25s ease;
+}
+
+.dark-mode .license-group-container {
+  background: rgba(255, 255, 255, 0.01);
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+.license-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0A84FF;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.dark-mode .license-group-title {
+  color: #5E5CE6;
 }
 
 .section-label {
@@ -339,42 +371,73 @@ select.glass-input {
 .badges-select-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+  width: 100%;
 }
 
 .badge-select-btn {
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(255, 255, 255, 0.6);
   border: 1px solid rgba(0, 0, 0, 0.08);
-  color: #555558;
+  color: #444446;
   padding: 6px 10px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
   box-sizing: border-box;
   border-radius: 8px;
+  user-select: none;
 }
 
 .dark-mode .badge-select-btn {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  color: #8E8E93;
+  color: #C7C7CC;
+}
+
+.badge-select-btn:hover {
+  background: rgba(10, 132, 255, 0.05);
+  border-color: rgba(10, 132, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.dark-mode .badge-select-btn:hover {
+  background: rgba(94, 92, 230, 0.08);
+  border-color: rgba(94, 92, 230, 0.3);
 }
 
 .badge-select-btn.selected {
-  background: rgba(10, 132, 255, 0.1);
-  border-color: #0A84FF;
-  color: #0A84FF;
+  background: rgba(10, 132, 255, 0.12) !important;
+  border-color: #0A84FF !important;
+  color: #0A84FF !important;
   box-shadow: 0 0 10px rgba(10, 132, 255, 0.06);
+  font-weight: 700;
 }
 
 .dark-mode .badge-select-btn.selected {
-  background: rgba(10, 132, 255, 0.15);
-  box-shadow: 0 0 10px rgba(10, 132, 255, 0.12);
+  background: rgba(94, 92, 230, 0.16) !important;
+  border-color: #5E5CE6 !important;
+  color: #9A98F0 !important;
+  box-shadow: 0 0 10px rgba(94, 92, 230, 0.12);
+}
+
+.badge-select-btn:active {
+  transform: scale(0.96) translateY(0);
+}
+
+/* Responsive adjustment for extra small devices */
+@media (max-width: 380px) {
+  .badge-select-btn {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+  .license-group-container {
+    padding: 8px 10px;
+  }
 }
 
 /* Navigation Footer styling */
