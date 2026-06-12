@@ -525,7 +525,7 @@ const getLicenseLabel = (type) => {
                 )}
               </div>
               {/* Driver fields */}
-              {userRole === 'driver' && (
+              {(userRole === 'driver' || userRole === 'guest') && (
                 <>
                   <div className="resume-field">
                     <span className="field-label">{t('birthDateLabel')}</span>
@@ -1566,7 +1566,7 @@ const getLicenseLabel = (type) => {
 
       <div className="profile-menu">
         {/* Resume Card */}
-        {userRole === 'driver' && (
+        {(userRole === 'driver' || userRole === 'guest') && (
           <div className="menu-group glass squircle resume-card">
             <div className="resume-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
@@ -1815,7 +1815,7 @@ const getLicenseLabel = (type) => {
             )}
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
-          {userRole === 'driver' && (
+          {(userRole === 'driver' || userRole === 'guest') && (
             <>
               <div className="menu-divider"></div>
               <div className="menu-item" onClick={() => setActivePage('saved_items')}>

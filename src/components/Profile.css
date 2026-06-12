@@ -991,3 +991,27 @@ html.light-mode .contract-btn:active {
   border-color: rgba(10, 132, 255, 0.3);
   box-shadow: 0 0 10px rgba(10, 132, 255, 0.1);
 }
+
+/* Sub-page back button pointer safety and positioning */
+.sub-page-header {
+  position: relative;
+  z-index: 10;
+}
+
+.sub-page-header .icon-btn {
+  position: relative;
+  z-index: 20;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+/* Ensure the button is fully clickable with proper spacing and touch target */
+.sub-page-header .icon-btn:hover {
+  background: var(--glass-bg);
+  opacity: 0.9;
+}
