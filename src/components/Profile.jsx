@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
@@ -46,7 +46,8 @@ export default function Profile({
   setJobToEdit,
   onApply,
   onApplySchool,
-  onShoukai
+  onShoukai,
+  onTriggerRegister
 }) {
   const { t } = useTranslation();
 
@@ -482,25 +483,18 @@ const getLicenseLabel = (type) => {
   if (activePage === 'personalInfo') {
     return (
       <div className="profile-container fade-in">
-        <div className="sub-page-header">
-          <button className="icon-btn glass" onClick={() => { setActivePage('main'); setIsEditing(false); }}><ArrowLeft size={20} /></button>
+        <div className="personal-info-sticky-back">
+          <button className="icon-btn glass" onClick={() => { setActivePage('main'); setIsEditing(false); }}>
+            <ArrowLeft size={20} />
+          </button>
+        </div>
+        <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <div className="sub-header-row">
             <h2>{userRole === 'company' ? t('companyInfoTitle', "Kompaniya ma'lumotlari") : t('personalData')}</h2>
             <span style={{ color: '#0A84FF', fontSize: '14px', fontWeight: 'bold', marginLeft: '10px' }}>ID: {profileData.userId}</span>
-            {!isEditing ? (
-              <button className="edit-btn" onClick={startEditing}>
-                <Edit3 size={16} /> {t('editInfo')}
-              </button>
-            ) : (
-              <div className="edit-actions">
-                <button className="save-btn" onClick={saveEditing}>
-                  <Save size={16} /> {t('saveChanges')}
-                </button>
-                <button className="cancel-btn" onClick={() => setIsEditing(false)}>
-                  <X size={16} />
-                </button>
-              </div>
-            )}
+            <button className="edit-btn" onClick={() => setActivePage('resume_builder')}>
+              <Edit3 size={16} /> {t('editInfo')}
+            </button>
           </div>
         </div>
         <div className="profile-menu" style={{ paddingTop: '16px' }}>
@@ -1565,6 +1559,46 @@ const getLicenseLabel = (type) => {
       </div>
 
       <div className="profile-menu">
+        {/* Guest Register Banner */}
+        {userRole === 'guest' && (
+          <div className="guest-register-banner glass squircle" style={{
+            padding: '20px',
+            marginBottom: '20px',
+            background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.15), rgba(90, 85, 234, 0.15))',
+            border: '1px solid rgba(10, 132, 255, 0.3)',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-main)' }}>
+              {t('guestRegisterBannerTitle', "Barcha imkoniyatlardan foydalanish uchun ro'yxatdan o'ting")}
+            </h4>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+              {t('guestRegisterBannerDesc', "Ro'yxatdan o'tib, rezyume yaratishingiz va ish e'lonlariga ariza topshirishingiz mumkin.")}
+            </p>
+            <button 
+              className="btn-primary squircle guest-register-trigger-btn"
+              style={{
+                padding: '12px 24px',
+                fontSize: '15px',
+                fontWeight: 'bold',
+                background: 'var(--primary)',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(90, 85, 234, 0.3)',
+                width: 'auto',
+                minWidth: '160px'
+              }}
+              onClick={onTriggerRegister}
+            >
+              {t('registerTitle', "Ro'yxatdan o'tish")}
+            </button>
+          </div>
+        )}
+
         {/* Resume Card */}
         {(userRole === 'driver' || userRole === 'guest') && (
           <div className="menu-group glass squircle resume-card">

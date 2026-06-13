@@ -1015,3 +1015,28 @@ html.light-mode .contract-btn:active {
   background: var(--glass-bg);
   opacity: 0.9;
 }
+
+/* Personal Info sticky back button without header background pin */
+.personal-info-sticky-back {
+  position: sticky;
+  top: 16px;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  pointer-events: none;
+  background: transparent;
+  padding: 0 20px;
+  box-sizing: border-box;
+  display: flex;
+  margin-bottom: -40px;
+}
+
+.personal-info-sticky-back .icon-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}

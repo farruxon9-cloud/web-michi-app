@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Splash from './components/Splash';
 import LanguageSelect from './components/LanguageSelect';
@@ -123,6 +123,7 @@ function App() {
   // Guest redirection states
   const [pendingApply, setPendingApply] = useState(null);
   const [authInitialStep, setAuthInitialStep] = useState('role');
+  const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
 
   // Music Player states
   const [isPlaying, setIsPlaying] = useState(false);
@@ -353,6 +354,13 @@ function App() {
       setUserRole(null);
       return;
     }
+    
+    // Check if resume is complete
+    if (!isProfileComplete()) {
+      setShowCompleteProfileModal(true);
+      return;
+    }
+
     const exists = applications.find(a => a.jobId === job.id && !a.isSimulatedReferral);
     if (exists) return;
 
@@ -455,6 +463,13 @@ function App() {
       setUserRole(null);
       return;
     }
+
+    // Check if resume is complete
+    if (!isProfileComplete()) {
+      setShowCompleteProfileModal(true);
+      return;
+    }
+
     const exists = schoolApplications.find(a => a.schoolId === school.id && !a.isSimulatedReferral);
     if (exists) return;
 
@@ -538,6 +553,27 @@ function App() {
       localStorage.setItem('michi_profile_data', JSON.stringify(updated));
       return updated;
     });
+  };
+
+  const handleTriggerRegister = () => {
+    setUserRole(null);
+    setAuthInitialStep('register');
+  };
+
+  const isProfileComplete = () => {
+    // If it's the admin test profile, it's always complete (bypass check)
+    if (profileData && (profileData.email === 'admin@driver.jp' || profileData.email === 'admin@sagawa.jp')) {
+      return true;
+    }
+    
+    // Required fields: fullName, birthDate, phone, address (or addressHistory), education (or educationHistory)
+    const hasFullName = !!(profileData.fullName && profileData.fullName.trim() !== '' && profileData.fullName !== 'Mehmon');
+    const hasBirthDate = !!profileData.birthDate;
+    const hasPhone = !!(profileData.phone && profileData.phone.trim() !== '');
+    const hasAddress = !!((profileData.address && profileData.address.trim() !== '') || (profileData.addressHistory && profileData.addressHistory.length > 0));
+    const hasEducation = !!((profileData.education && profileData.education.trim() !== '') || (profileData.educationHistory && profileData.educationHistory.length > 0));
+    
+    return !!(hasFullName && hasBirthDate && hasPhone && hasAddress && hasEducation);
   };
 
   // ==========================================
@@ -795,6 +831,7 @@ function App() {
             setSchools={setSchools}
             jobToEdit={jobToEdit}
             setJobToEdit={setJobToEdit}
+            onTriggerRegister={handleTriggerRegister}
           />
         );
       default:
@@ -902,6 +939,98 @@ function App() {
         }}
         onEnded={nextTrack}
       />
+
+      {showCompleteProfileModal && (
+        <div className="complete-profile-modal-overlay" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999,
+          padding: '20px',
+          boxSizing: 'border-box'
+        }}>
+          <div className="glass squircle slide-up" style={{
+            maxWidth: '350px',
+            width: '100%',
+            padding: '24px',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '16px',
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.25)',
+            border: '1px solid rgba(255, 255, 255, 0.15)'
+          }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: 'rgba(10, 132, 255, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#0A84FF'
+            }}>
+              <FileText size={32} />
+            </div>
+            <div>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>
+                {t('completeResumeModalTitle', 'Rezyumeni to\'ldiring')}
+              </h3>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                {t('completeResumeModalDesc', 'Ushbu vakansiyaga ariza topshirish uchun oldindan rezyume ma\'lumotlaringizni to\'liq to\'ldirishingiz lozim.')}
+              </p>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '8px', marginTop: '8px' }}>
+              <button 
+                className="btn-primary squircle"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontWeight: '700',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  border: 'none',
+                  background: 'var(--primary)',
+                  color: 'white'
+                }}
+                onClick={() => {
+                  setShowCompleteProfileModal(false);
+                  setProfileActivePage('resume_builder');
+                  setProfileActivePageSource('profile');
+                  setActiveTab('profile');
+                }}
+              >
+                {t('completeResumeBtn', 'Rezyume to\'ldirish')}
+              </button>
+              <button 
+                className="btn-secondary squircle"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  border: '1px solid var(--glass-border)',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  color: 'var(--text-main)',
+                  borderRadius: '12px'
+                }}
+                onClick={() => setShowCompleteProfileModal(false)}
+              >
+                {t('cancelEdit', 'Bekor qilish')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

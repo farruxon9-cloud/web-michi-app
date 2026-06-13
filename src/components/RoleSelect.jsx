@@ -19,7 +19,13 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
   const { t } = useTranslation();
   
   // Auth flow states: 'role' -> 'login' -> 'register' -> 'verify'
-  const [authStep, setAuthStep] = useState(initialStep);
+  const [authStep, setAuthStep] = useState(() => {
+    if (initialStep === 'register') {
+      return 'role';
+    }
+    return initialStep;
+  });
+  const [registerDirectly, setRegisterDirectly] = useState(initialStep === 'register');
   const [selectedRole, setSelectedRole] = useState(null);
 
   // Login credentials
@@ -82,7 +88,11 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
 
   const handleRoleClick = (role) => {
     setSelectedRole(role);
-    setAuthStep('login');
+    if (registerDirectly) {
+      setAuthStep('register');
+    } else {
+      setAuthStep('login');
+    }
   };
 
   const handleLoginSubmit = (e) => {
@@ -550,7 +560,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
     return (
       <div className="role-container slide-up">
         <div className="auth-card glass squircle" style={{ position: 'relative' }}>
-          <button className="icon-btn glass" onClick={() => setAuthStep('login')} style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 10 }}>
+          <button className="icon-btn glass" onClick={() => setAuthStep(registerDirectly ? 'role' : 'login')} style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 10 }}>
             <ArrowLeft size={20} />
           </button>
 
