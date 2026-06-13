@@ -250,6 +250,49 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
 
               {/* Pastki qism: Tugmalar (job-card-main-layout tashqarisida) */}
               <div className="job-card-actions">
+                {userRole === 'company' ? (
+                  // KOMPANIYA: O'z e'lonlarida "Tahrirlash", boshqalarda "Tel" va "Shoukai"
+                  profileData?.fullName === job.company ? (
+                    <button 
+                      className="job-card-btn btn-apply"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditJob && onEditJob(job);
+                      }}
+                      style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
+                    >
+                      <Edit3 size={13} />
+                      {t('editJob', 'Tahrirlash')}
+                    </button>
+                  ) : (
+                    <>
+                      <a 
+                        href={`tel:${job.phone || '+81 90-1234-5678'}`}
+                        className="job-card-btn btn-apply"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', fontWeight: '700' }}
+                      >
+                        <Phone size={13} />
+                        {t('callSchool', "Qo'ng'iroq")}
+                      </a>
+                      <button 
+                        className="job-card-btn btn-shoukai"
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          onShoukai && onShoukai(job); 
+                        }}
+                        style={{ flex: 1 }}
+                      >
+                        <Share2 size={13} />
+                        {((job.shoukai && job.shoukai !== "0") || job.hasShoukai) 
+                          ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` 
+                          : t('shoukai', 'Shoukai')}
+                      </button>
+                    </>
+                  )
+                ) : (
+                  // HAYDOVCHI / MEHMON: Ariza topshirish + Shoukai
+                  <>
                 {(() => {
                   const alreadyApplied = (applications || []).some(a => a.jobId === job.id && !a.isSimulatedReferral);
                   return alreadyApplied ? (
@@ -289,6 +332,8 @@ export default function DriverFeed({ onJobClick, isContractActive, verifiedCompa
                     ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` 
                     : t('shoukai', 'Shoukai')}
                 </button>
+                  </>
+                )}
               </div>
             </div>
           );

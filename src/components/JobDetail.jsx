@@ -253,7 +253,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
               style={{ width: '100%', background: '#1c1c1e', color: '#fff', fontSize: '16px', fontWeight: 'bold' }}
               onClick={() => onEditJob && onEditJob(job)}
             >
-              Tahrirlash (Edit)
+              {t('editJob', 'Tahrirlash')}
             </button>
           ) : (
             <>

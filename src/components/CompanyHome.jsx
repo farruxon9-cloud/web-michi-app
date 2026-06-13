@@ -956,32 +956,17 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               </div>
 
               <div className="job-card-actions">
-                {(() => {
-                  const alreadyApplied = (applications || []).some(a => a.jobId === job.id && !a.isSimulatedReferral);
-                  return alreadyApplied ? (
-                    <button 
-                      className="job-card-btn btn-apply applied" 
-                      disabled
-                      onClick={(e) => e.stopPropagation()}
-                      style={{ flex: 1, cursor: 'default' }}
-                    >
-                      <CheckCircle2 size={13} />
-                      {t('applied', 'Topshirilgan')}
-                    </button>
-                  ) : (
-                    <button 
-                      className="job-card-btn btn-apply" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onApply && onApply(job);
-                      }}
-                      style={{ flex: 1 }}
-                    >
-                      <Briefcase size={13} />
-                      {t('applyJob', 'Ishga topshirish')}
-                    </button>
-                  );
-                })()}
+                <button 
+                  className="job-card-btn btn-apply"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setJobToEdit(job);
+                  }}
+                  style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
+                >
+                  <Edit3 size={13} />
+                  {t('editJob', 'Tahrirlash')}
+                </button>
                 {((job.shoukai && job.shoukai !== "0") || job.hasShoukai || job.shoukaiFee > 0) && (
                   <button 
                     className="job-card-btn btn-shoukai"
@@ -1067,32 +1052,17 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                   </div>
 
                   <div className="job-card-actions">
-                    {(() => {
-                      const alreadyApplied = (schoolApplications || []).some(a => a.schoolId === school.id && !a.isSimulatedReferral);
-                      return alreadyApplied ? (
-                        <button 
-                          className="job-card-btn btn-apply applied" 
-                          disabled
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ flex: 1, cursor: 'default' }}
-                        >
-                          <CheckCircle2 size={13} />
-                          {t('appliedToSchool', 'Topshirilgan')}
-                        </button>
-                      ) : (
-                        <button 
-                          className="job-card-btn btn-apply" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onApplySchool && onApplySchool(school);
-                          }}
-                          style={{ flex: 1 }}
-                        >
-                          <Briefcase size={13} />
-                          {t('applyToSchool', 'Topshirish')}
-                        </button>
-                      );
-                    })()}
+                    <button 
+                      className="job-card-btn btn-apply"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setJobToEdit(school);
+                      }}
+                      style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
+                    >
+                      <Edit3 size={13} />
+                      {t('editJob', 'Tahrirlash')}
+                    </button>
                     {((school.shoukai && school.shoukai !== "0") || school.shoukaiFee > 0) && (
                       <button 
                         className="job-card-btn btn-shoukai"
@@ -1106,7 +1076,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                         style={{ flex: 1 }}
                       >
                         <Share2 size={13} />
-                        {t('shoukai', 'Shoukai')}
+                        {t('shoukaiAvailableLabel', 'Puli Bor')}
                       </button>
                     )}
                   </div>

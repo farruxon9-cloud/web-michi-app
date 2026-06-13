@@ -233,8 +233,10 @@ const getLicenseLabel = (type) => {
   if (activePage === 'notifications') {
     return (
       <div className="profile-container fade-in">
-        <div className="sub-page-header">
+        <div className="profile-sticky-back">
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+        </div>
+        <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <div className="sub-header-row">
             <h2>
               {t('notifications')}
@@ -323,8 +325,10 @@ const getLicenseLabel = (type) => {
   if (activePage === 'settings') {
     return (
       <div className="profile-container fade-in">
-        <div className="sub-page-header">
+        <div className="profile-sticky-back">
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+        </div>
+        <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <h2>{t('settings')}</h2>
         </div>
         <div className="profile-menu" style={{ paddingTop: '16px' }}>
@@ -425,20 +429,8 @@ const getLicenseLabel = (type) => {
       <div className="profile-container fade-in">
         {/* Sticky Back Button Container */}
         {!isFormOpen && (
-          <div style={{
-            position: 'sticky',
-            top: '16px',
-            left: 0,
-            width: '100%',
-            boxSizing: 'border-box',
-            zIndex: 250,
-            display: 'flex',
-            justifyContent: 'space-between',
-            padding: '0 20px',
-            pointerEvents: 'none',
-            marginBottom: '-56px'
-          }}>
-            <button className="icon-btn glass" style={{ pointerEvents: 'auto' }} onClick={() => {
+          <div className="profile-sticky-back" style={{ zIndex: 250 }}>
+            <button className="icon-btn glass" onClick={() => {
               if (profileActivePageSource === 'home') {
                 setActivePage('main');
                 if (onNavigate) onNavigate('home');
@@ -451,7 +443,7 @@ const getLicenseLabel = (type) => {
 
         {/* Scrollable Title */}
         {!isFormOpen && (
-          <div style={{ padding: '72px 20px 16px 20px' }}>
+          <div className="sub-page-header" style={{ paddingTop: '56px' }}>
             <h2 style={{ fontSize: '24px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>
               {t('myAdsMenu', 'Mening e\'lonlarim')}
             </h2>
@@ -483,7 +475,7 @@ const getLicenseLabel = (type) => {
   if (activePage === 'personalInfo') {
     return (
       <div className="profile-container fade-in">
-        <div className="personal-info-sticky-back">
+        <div className="profile-sticky-back">
           <button className="icon-btn glass" onClick={() => { setActivePage('main'); setIsEditing(false); }}>
             <ArrowLeft size={20} />
           </button>
@@ -492,9 +484,26 @@ const getLicenseLabel = (type) => {
           <div className="sub-header-row">
             <h2>{userRole === 'company' ? t('companyInfoTitle', "Kompaniya ma'lumotlari") : t('personalData')}</h2>
             <span style={{ color: '#0A84FF', fontSize: '14px', fontWeight: 'bold', marginLeft: '10px' }}>ID: {profileData.userId}</span>
-            <button className="edit-btn" onClick={() => setActivePage('resume_builder')}>
-              <Edit3 size={16} /> {t('editInfo')}
-            </button>
+            {userRole === 'company' ? (
+              isEditing ? (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="edit-btn save-btn" style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={saveEditing}>
+                    <CheckCircle2 size={16} /> {t('saveChanges')}
+                  </button>
+                  <button className="edit-btn cancel-btn" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 59, 48, 0.1)', color: '#FF3B30' }} onClick={() => setIsEditing(false)}>
+                    <X size={16} /> {t('cancelEdit')}
+                  </button>
+                </div>
+              ) : (
+                <button className="edit-btn" style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={startEditing}>
+                  <Edit3 size={16} /> {t('editInfo')}
+                </button>
+              )
+            ) : (
+              <button className="edit-btn" style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={() => setActivePage('resume_builder')}>
+                <Edit3 size={16} /> {t('editInfo')}
+              </button>
+            )}
           </div>
         </div>
         <div className="profile-menu" style={{ paddingTop: '16px' }}>
@@ -931,7 +940,7 @@ const getLicenseLabel = (type) => {
 
     return (
       <div className="profile-container fade-in">
-        <div className="sub-page-header">
+        <div className="profile-sticky-back">
           <button className="icon-btn glass" onClick={() => {
             if (profileActivePageSource === 'home') {
               setActivePage('main');
@@ -940,6 +949,8 @@ const getLicenseLabel = (type) => {
               setActivePage('main');
             }
           }}><ArrowLeft size={20} /></button>
+        </div>
+        <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <h2>
             {userRole === 'company' ? t('incomingApps', 'Kelib tushgan arizalar') : t('myApplications', 'Mening arizalarim')}
             <span className="section-header-count">({userRole === 'company' ? applications.length : totalOwnApplications})</span>
@@ -970,255 +981,274 @@ const getLicenseLabel = (type) => {
               )}
             </div>
           ) : (
-            combinedApps.map(app => (
-              <div key={app.id} className="application-card glass squircle">
-                <div className="app-card-header">
-                  <img src={app.logo} alt={app.company} className="app-company-logo" />
-                  <div className="app-card-info">
-                    <h4>{app.title}</h4>
-                    <p>{app.company}</p>
-                    <span className="app-date">{t('appliedOn')}: {app.appliedDate}</span>
-                  </div>
-                </div>
-                {/* Shoukai Banner for Company */}
-                {userRole === 'company' && app.shoukaiId && (
-                  <div style={{ background: '#FFF5E5', border: '1px solid #FF9F0A', padding: '10px', borderRadius: '8px', margin: '12px 0', fontSize: '13px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#D97706', fontWeight: 'bold', marginBottom: '4px' }}>
-                      <Share2 size={16} />
-                      {t('referredBy', 'Bu xodimni sizga')} {app.shoukaiId} {t('referredById', 'tavsiya qildi')}!
-                    </div>
-                    {app.shoukaiAmount && (
-                      <div style={{ color: '#8E8E93' }}>{t('shoukaiFee', 'Shoukai puli')}: <strong style={{ color: '#34C759' }}>{app.shoukaiAmount}</strong></div>
-                    )}
-                    {app.status === 'accepted' && (
-                      <div style={{ marginTop: '8px' }}>
-                        {!app.shoukaiPaid ? (
-                          <>
-                            <button 
-                              className="demo-btn accepted" 
-                              style={{ width: '100%', marginBottom: '4px' }}
-                              onClick={() => onShoukaiPaid && onShoukaiPaid(app.id)}
-                            >
-                              {t('payShoukai', 'Shoukai pulini to\'lash')}
-                            </button>
-                            <p style={{ fontSize: '11px', color: '#8E8E93', margin: 0, lineHeight: 1.2 }}>
-                              {t('shoukaiPayNote', "To'lov tizimi ilova ichida mavjud emas. To'lovni tashqaridan amalga oshirgach, bu tugmani bosing.")}
-                            </p>
-                          </>
-                        ) : (
-                          <div className="shoukai-paid-badge" style={{ display: 'inline-flex' }}>
-                            <CheckCircle2 size={16} /> {t('shoukaiPaidLabel', 'Shoukai to\'langan')}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-                {/* Status Pipeline or Sleek Notification-like Badge for Driver */}
-                {userRole !== 'company' ? (
-                  <div className="driver-app-status-box glass squircle" style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '12px', 
-                    padding: '12px 16px', 
-                    marginTop: '12px', 
-                    borderLeft: `4px solid ${STATUS_COLORS[app.status] || '#0A84FF'}`,
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)'
-                  }}>
-                    <div className="status-indicator-dot" style={{ 
-                      width: '10px', 
-                      height: '10px', 
-                      borderRadius: '50%', 
-                      background: STATUS_COLORS[app.status] || '#0A84FF',
-                      boxShadow: `0 0 10px ${STATUS_COLORS[app.status] || '#0A84FF'}`
-                    }}></div>
-                    <div style={{ flex: 1 }}>
-                      <span style={{ fontSize: '12px', color: '#8E8E93', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
-                        {t('applicationStatus', 'Ariza holati')}
-                      </span>
-                      <strong style={{ fontSize: '15px', color: STATUS_COLORS[app.status] || '#0A84FF', fontWeight: '600' }}>
-                        {t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`)}
-                      </strong>
+            combinedApps.map(app => {
+              const resumeInfo = app.applicantInfo || profileData;
+              return (
+                <div key={app.id} className="application-card glass squircle">
+                  <div className="app-card-header">
+                    <img src={app.logo} alt={app.company} className="app-company-logo" />
+                    <div className="app-card-info">
+                      <h4>{app.title}</h4>
+                      <p>{app.company}</p>
+                      <span className="app-date">{t('appliedOn')}: {app.appliedDate}</span>
                     </div>
                   </div>
-                ) : (
-                  <div className="status-pipeline">
-                    {STATUS_PIPELINE.map(status => (
-                      <div 
-                        key={status} 
-                        className={`pipeline-step ${app.status === status ? 'active' : ''}`}
-                        style={{ 
-                          color: app.status === status ? STATUS_COLORS[status] : '#C7C7CC',
-                          borderColor: app.status === status ? STATUS_COLORS[status] : 'transparent',
-                        }}
-                      >
-                        <div 
-                          className="pipeline-dot" 
-                          style={{ background: app.status === status ? STATUS_COLORS[status] : '#C7C7CC' }}
-                        ></div>
-                        <span>{t(`status${status.charAt(0).toUpperCase() + status.slice(1)}`)}</span>
+                  {/* Shoukai Banner for Company */}
+                  {userRole === 'company' && app.shoukaiId && (
+                    <div style={{ background: '#FFF5E5', border: '1px solid #FF9F0A', padding: '10px', borderRadius: '8px', margin: '12px 0', fontSize: '13px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#D97706', fontWeight: 'bold', marginBottom: '4px' }}>
+                        <Share2 size={16} />
+                        {t('referredBy', 'Bu xodimni sizga')} {app.shoukaiId} {t('referredById', 'tavsiya qildi')}!
                       </div>
-                    ))}
-                  </div>
-                )}
-                {/* Collapsible Candidate Resume for Company */}
-                {userRole === 'company' && (
-                  <div style={{ width: '100%', marginBottom: '12px' }}>
-                    <button 
-                      className="demo-btn reviewed" 
-                      style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px dashed rgba(10, 132, 255, 0.3)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }}
-                      onClick={() => setExpandedAppId(expandedAppId === app.id ? null : app.id)}
-                    >
-                      <FileText size={15} />
-                      {expandedAppId === app.id ? t('hideResumeBtn', 'Resumeni yopish') : t('viewResumeBtn', 'Nomzod resumesini ko\'rish')}
-                    </button>
-                    
-                    {expandedAppId === app.id && (
-                      <div className="applicant-resume-collapsible slide-down glass" style={{ padding: '16px', borderRadius: '12px', marginTop: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
-                        <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--primary)', fontWeight: 'bold' }}>📄 {t('myResume', 'Rezume (履歴書)')}</h4>
-                        
-                        <div className="resume-grid" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                            <span style={{ color: '#8E8E93' }}>{t('namePlaceholder', 'Nomzod ismi').replace(' ✱', '')}:</span>
-                            <strong style={{ color: 'var(--text-main)' }}>{profileData.fullName}</strong>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                            <span style={{ color: '#8E8E93' }}>Email:</span>
-                            <strong style={{ color: 'var(--text-main)' }}>{profileData.email}</strong>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                             <span style={{ color: '#8E8E93' }}>{t('birthDateLabel', 'Tug\'ilgan sana')}:</span>
-                             <strong style={{ color: 'var(--text-main)' }}>{profileData.birthDate || t('notProvided')}</strong>
-                           </div>
-                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                             <span style={{ color: '#8E8E93' }}>{t('birthPlaceLabel', 'Tug\'ilgan joyi')}:</span>
-                             <strong style={{ color: 'var(--text-main)' }}>{profileData.birthPlace || t('notProvided')}</strong>
-                           </div>
-                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                             <span style={{ color: '#8E8E93' }}>{t('nationalityLabel', 'Millati')}:</span>
-                             <strong style={{ color: 'var(--text-main)' }}>{profileData.nationality || t('notProvided')}</strong>
-                           </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
-                            <span style={{ color: '#8E8E93' }}>{t('livingAddressTitle', 'Yashash manzillari')}:</span>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', marginTop: '2px' }}>
-                              {profileData.addressHistory && profileData.addressHistory.length > 0 ? (
-                                profileData.addressHistory.map((a, i) => (
-                                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)', width: '100%' }}>
-                                    <span style={{ color: 'var(--text-main)' }}>{a.address}</span>
-                                    {a.isCurrent && <span style={{ fontSize: '9px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{t('currentAddressLabel', 'Hozirgi')}</span>}
-                                  </div>
-                                ))
-                              ) : (
-                                <strong style={{ color: 'var(--text-main)' }}>{profileData.address || t('notProvided')}</strong>
-                              )}
-                            </div>
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
-                            <span style={{ color: '#8E8E93' }}>{t('educationTitle', 'Ta\'lim ma\'lumotlari')}:</span>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', marginTop: '2px' }}>
-                              {profileData.educationHistory && profileData.educationHistory.length > 0 ? (
-                                profileData.educationHistory.map((edu, i) => (
-                                  <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '2px', background: 'rgba(255,255,255,0.01)', padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)', width: '100%' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                      <strong style={{ color: 'var(--text-main)' }}>{edu.school}</strong>
-                                      {edu.isCurrent && <span style={{ fontSize: '9px', background: 'rgba(52, 199, 89, 0.1)', color: '#34C759', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{t('currentlyStudyingLabel', 'O\'qiyotgan')}</span>}
-                                    </div>
-                                    {edu.major && <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{edu.major}</span>}
-                                    <span style={{ fontSize: '10px', color: '#8E8E93' }}>📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel', 'Hozirgi vaqtda') : edu.endDate || '?'}</span>
-                                  </div>
-                                ))
-                              ) : (
-                                <strong style={{ color: 'var(--text-main)', whiteSpace: 'pre-wrap' }}>{profileData.education || t('notProvided')}</strong>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '6px' }}>
-                            <span style={{ color: '#8E8E93' }}>{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}:</span>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
-                              {profileData.driverLicenses && profileData.driverLicenses.length > 0 ? (
-                                profileData.driverLicenses.map(l => (
-                                  <span key={l} className="badge-blue" style={{ background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '3px 8px', borderRadius: '10px', fontSize: '11px' }}>{t(`lic_${l}`)}</span>
-                                ))
-                              ) : (
-                                <span style={{ fontSize: '11px', color: '#8E8E93' }}>{t('notProvided')}</span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '6px' }}>
-                            <span style={{ color: '#8E8E93' }}>{t('techCertsLabel', 'Maxsus texnika va malaka sertifikatlari')}:</span>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
-                              {profileData.techCertificates && profileData.techCertificates.length > 0 ? (
-                                profileData.techCertificates.map(tc => (
-                                  <span key={tc} className="badge-blue" style={{ background: 'rgba(210, 125, 25, 0.1)', color: '#d27d19', padding: '3px 8px', borderRadius: '10px', fontSize: '11px' }}>{t(`tech_${tc}`)}</span>
-                                ))
-                              ) : (
-                                <span style={{ fontSize: '11px', color: '#8E8E93' }}>{t('notProvided')}</span>
-                              )}
-                            </div>
-                          </div>
-
-                          {profileData.workHistory && profileData.workHistory.length > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', gap: '6px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('workExperience', 'Ish tajribasi')}:</span>
-                              {profileData.workHistory.map((w, i) => (
-                                <div key={i} style={{ fontSize: '12px', background: 'rgba(255,255,255,0.01)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                                  <strong style={{ color: 'var(--text-main)' }}>{w.company}</strong>
-                                  <span style={{ display: 'block', color: '#8E8E93', fontSize: '11px', marginTop: '2px' }}>{w.position} • {w.startDate} - {w.isCurrent ? t('currentPosition', 'Hozir') : w.endDate}</span>
-                                </div>
-                              ))}
+                      {app.shoukaiAmount && (
+                        <div style={{ color: '#8E8E93' }}>{t('shoukaiFee', 'Shoukai puli')}: <strong style={{ color: '#34C759' }}>{app.shoukaiAmount}</strong></div>
+                      )}
+                      {app.status === 'accepted' && (
+                        <div style={{ marginTop: '8px' }}>
+                          {!app.shoukaiPaid ? (
+                            <>
+                              <button 
+                                className="demo-btn accepted" 
+                                style={{ width: '100%', marginBottom: '4px' }}
+                                onClick={() => onShoukaiPaid && onShoukaiPaid(app.id)}
+                              >
+                                {t('payShoukai', 'Shoukai pulini to\'lash')}
+                              </button>
+                              <p style={{ fontSize: '11px', color: '#8E8E93', margin: 0, lineHeight: 1.2 }}>
+                                {t('shoukaiPayNote', "To'lov tizimi ilova ichida mavjud emas. To'lovni tashqaridan amalga oshirgach, bu tugmani bosing.")}
+                              </p>
+                            </>
+                          ) : (
+                            <div className="shoukai-paid-badge" style={{ display: 'inline-flex' }}>
+                              <CheckCircle2 size={16} /> {t('shoukaiPaidLabel', 'Shoukai to\'langan')}
                             </div>
                           )}
                         </div>
+                      )}
+                    </div>
+                  )}
+                  {/* Status Pipeline or Sleek Notification-like Badge for Driver */}
+                  {userRole !== 'company' ? (
+                    <div className="driver-app-status-box glass squircle" style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '12px', 
+                      padding: '12px 16px', 
+                      marginTop: '12px', 
+                      borderLeft: `4px solid ${STATUS_COLORS[app.status] || '#0A84FF'}`,
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)'
+                    }}>
+                      <div className="status-indicator-dot" style={{ 
+                        width: '10px', 
+                        height: '10px', 
+                        borderRadius: '50%', 
+                        background: STATUS_COLORS[app.status] || '#0A84FF',
+                        boxShadow: `0 0 10px ${STATUS_COLORS[app.status] || '#0A84FF'}`
+                      }}></div>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontSize: '12px', color: '#8E8E93', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
+                          {t('applicationStatus', 'Ariza holati')}
+                        </span>
+                        <strong style={{ fontSize: '15px', color: STATUS_COLORS[app.status] || '#0A84FF', fontWeight: '600' }}>
+                          {t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`)}
+                        </strong>
                       </div>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  ) : (
+                    <div className="status-pipeline">
+                      {STATUS_PIPELINE.map(status => (
+                        <div 
+                          key={status} 
+                          className={`pipeline-step ${app.status === status ? 'active' : ''}`}
+                          style={{ 
+                            color: app.status === status ? STATUS_COLORS[status] : '#C7C7CC',
+                            borderColor: app.status === status ? STATUS_COLORS[status] : 'transparent',
+                          }}
+                        >
+                          <div 
+                            className="pipeline-dot" 
+                            style={{ background: app.status === status ? STATUS_COLORS[status] : '#C7C7CC' }}
+                          ></div>
+                          <span>{t(`status${status.charAt(0).toUpperCase() + status.slice(1)}`)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* Collapsible Candidate Resume for Company */}
+                  {userRole === 'company' && (
+                    <div style={{ width: '100%', marginBottom: '12px' }}>
+                      <button 
+                        className="demo-btn reviewed" 
+                        style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px dashed rgba(10, 132, 255, 0.3)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }}
+                        onClick={() => setExpandedAppId(expandedAppId === app.id ? null : app.id)}
+                      >
+                        <FileText size={15} />
+                        {expandedAppId === app.id ? t('hideResumeBtn', 'Resumeni yopish') : t('viewResumeBtn', 'Nomzod resumesini ko\'rish')}
+                      </button>
+                      
+                      {expandedAppId === app.id && (
+                        <div className="applicant-resume-collapsible slide-down glass" style={{ padding: '16px', borderRadius: '12px', marginTop: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--primary)', fontWeight: 'bold' }}>📄 {t('myResume', 'Rezume (履歴書)')}</h4>
+                          
+                          <div className="resume-grid" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
+                              <span style={{ color: '#8E8E93' }}>{t('namePlaceholder', 'Nomzod ismi').replace(' ✱', '')}:</span>
+                              <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.fullName}</strong>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
+                              <span style={{ color: '#8E8E93' }}>Email:</span>
+                              <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.email}</strong>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
+                               <span style={{ color: '#8E8E93' }}>{t('birthDateLabel', 'Tug\'ilgan sana')}:</span>
+                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.birthDate || t('notProvided')}</strong>
+                             </div>
+                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
+                               <span style={{ color: '#8E8E93' }}>{t('birthPlaceLabel', 'Tug\'ilgan joyi')}:</span>
+                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.birthPlace || t('notProvided')}</strong>
+                             </div>
+                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
+                               <span style={{ color: '#8E8E93' }}>{t('nationalityLabel', 'Millati')}:</span>
+                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.nationality || t('notProvided')}</strong>
+                             </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
+                              <span style={{ color: '#8E8E93' }}>{t('livingAddressTitle', 'Yashash manzillari')}:</span>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', marginTop: '2px' }}>
+                                {resumeInfo.addressHistory && resumeInfo.addressHistory.length > 0 ? (
+                                  resumeInfo.addressHistory.map((a, i) => (
+                                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)', width: '100%' }}>
+                                      <span style={{ color: 'var(--text-main)' }}>{a.address}</span>
+                                      {a.isCurrent && <span style={{ fontSize: '9px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{t('currentAddressLabel', 'Hozirgi')}</span>}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.address || t('notProvided')}</strong>
+                                )}
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
+                              <span style={{ color: '#8E8E93' }}>{t('educationTitle', 'Ta\'lim ma\'lumotlari')}:</span>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', marginTop: '2px' }}>
+                                {resumeInfo.educationHistory && resumeInfo.educationHistory.length > 0 ? (
+                                  resumeInfo.educationHistory.map((edu, i) => (
+                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '2px', background: 'rgba(255,255,255,0.01)', padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)', width: '100%' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <strong style={{ color: 'var(--text-main)' }}>{edu.school}</strong>
+                                        {edu.isCurrent && <span style={{ fontSize: '9px', background: 'rgba(52, 199, 89, 0.1)', color: '#34C759', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{t('currentlyStudyingLabel', 'O\'qiyotgan')}</span>}
+                                      </div>
+                                      {edu.major && <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{edu.major}</span>}
+                                      <span style={{ fontSize: '10px', color: '#8E8E93' }}>📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel', 'Hozirgi vaqtda') : edu.endDate || '?'}</span>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <strong style={{ color: 'var(--text-main)', whiteSpace: 'pre-wrap' }}>{resumeInfo.education || t('notProvided')}</strong>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '6px' }}>
+                              <span style={{ color: '#8E8E93' }}>{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}:</span>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
+                                {resumeInfo.driverLicenses && resumeInfo.driverLicenses.length > 0 ? (
+                                  resumeInfo.driverLicenses.map(l => (
+                                    <span key={l} className="badge-blue" style={{ background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '3px 8px', borderRadius: '10px', fontSize: '11px' }}>{t(`lic_${l}`)}</span>
+                                  ))
+                                ) : (
+                                  <span style={{ fontSize: '11px', color: '#8E8E93' }}>{t('notProvided')}</span>
+                                )}
+                              </div>
+                            </div>
 
-                {/* Company / Demo Action Buttons */}
-                {userRole === 'company' && (
-                  <div className="demo-status-btns">
-                    {app.status === 'submitted' && (
-                      <button className="demo-btn reviewed" style={{ background: '#0A84FF', color: '#fff' }} onClick={() => onChangeAppStatus(app.id, 'reviewed')}>
+                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '6px' }}>
+                              <span style={{ color: '#8E8E93' }}>{t('techCertsLabel', 'Maxsus texnika va malaka sertifikatlari')}:</span>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
+                                {resumeInfo.techCertificates && resumeInfo.techCertificates.length > 0 ? (
+                                  resumeInfo.techCertificates.map(tc => (
+                                    <span key={tc} className="badge-blue" style={{ background: 'rgba(210, 125, 25, 0.1)', color: '#d27d19', padding: '3px 8px', borderRadius: '10px', fontSize: '11px' }}>{t(`tech_${tc}`)}</span>
+                                  ))
+                                ) : (
+                                  <span style={{ fontSize: '11px', color: '#8E8E93' }}>{t('notProvided')}</span>
+                                )}
+                              </div>
+                            </div>
+
+                            {resumeInfo.workHistory && resumeInfo.workHistory.length > 0 && (
+                              <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', gap: '6px' }}>
+                                <span style={{ color: '#8E8E93' }}>{t('workExperience', 'Ish tajribasi')}:</span>
+                                {resumeInfo.workHistory.map((w, i) => (
+                                  <div key={i} style={{ fontSize: '12px', background: 'rgba(255,255,255,0.01)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                                    <strong style={{ color: 'var(--text-main)' }}>{w.company}</strong>
+                                    <span style={{ display: 'block', color: '#8E8E93', fontSize: '11px', marginTop: '2px' }}>{w.position} • {w.startDate} - {w.isCurrent ? t('currentPosition', 'Hozir') : w.endDate}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Company / Demo Action Buttons */}
+                  {userRole === 'company' && (
+                    <div className="demo-status-btns" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                      <button 
+                        className={`demo-btn reviewed ${app.status === 'reviewed' ? 'active' : ''}`} 
+                        style={{ 
+                          flex: '1 1 calc(50% - 4px)', 
+                          background: app.status === 'reviewed' ? '#0A84FF' : 'rgba(10, 132, 255, 0.08)', 
+                          color: app.status === 'reviewed' ? '#fff' : '#0A84FF',
+                          border: '1px solid rgba(10, 132, 255, 0.2)'
+                        }} 
+                        onClick={() => onChangeAppStatus(app.id, 'reviewed')}
+                      >
                         ✓ {t('simulateReviewed')}
                       </button>
-                    )}
-                    {app.status === 'reviewed' && (
-                      <>
-                        <button className="demo-btn interview" style={{ background: '#AF52DE', color: '#fff' }} onClick={() => onChangeAppStatus(app.id, 'interview')}>
-                          📅 {t('simulateInterview')}
-                        </button>
-                        <button className="demo-btn rejected" onClick={() => onChangeAppStatus(app.id, 'rejected')}>
-                          ✗ {t('simulateReject')}
-                        </button>
-                      </>
-                    )}
-                    {app.status === 'interview' && acceptingAppId !== app.id && (
-                      <button className="demo-btn accepted" onClick={() => setAcceptingAppId(app.id)}>
+                      
+                      <button 
+                        className={`demo-btn interview ${app.status === 'interview' ? 'active' : ''}`} 
+                        style={{ 
+                          flex: '1 1 calc(50% - 4px)', 
+                          background: app.status === 'interview' ? '#AF52DE' : 'rgba(175, 82, 222, 0.08)', 
+                          color: app.status === 'interview' ? '#fff' : '#AF52DE',
+                          border: '1px solid rgba(175, 82, 222, 0.2)'
+                        }} 
+                        onClick={() => onChangeAppStatus(app.id, 'interview')}
+                      >
+                        📅 {t('simulateInterview')}
+                      </button>
+
+                      <button 
+                        className={`demo-btn accepted ${app.status === 'accepted' ? 'active' : ''}`} 
+                        style={{ 
+                          flex: '1 1 calc(50% - 4px)', 
+                          background: app.status === 'accepted' ? '#34C759' : 'rgba(52, 199, 89, 0.08)', 
+                          color: app.status === 'accepted' ? '#fff' : '#34C759',
+                          border: '1px solid rgba(52, 199, 89, 0.2)'
+                        }} 
+                        onClick={() => onChangeAppStatus(app.id, 'accepted')}
+                      >
                         🎉 {t('simulateAccept')}
                       </button>
-                    )}
-                    {acceptingAppId === app.id && (
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px', width: '100%' }}>
-                        <input 
-                          type="date" 
-                          value={acceptDate} 
-                          onChange={e => setAcceptDate(e.target.value)} 
-                          className="edit-input" 
-                          style={{ padding: '8px', flex: 1 }}
-                        />
-                        <button className="demo-btn accepted" onClick={() => {
-                          onChangeAppStatus(app.id, 'accepted');
-                          setAcceptingAppId(null);
-                        }}>{t('save', 'Saqlash')}</button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))
+
+                      <button 
+                        className={`demo-btn rejected ${app.status === 'rejected' ? 'active' : ''}`} 
+                        style={{ 
+                          flex: '1 1 calc(50% - 4px)', 
+                          background: app.status === 'rejected' ? '#FF3B30' : 'rgba(255, 59, 48, 0.08)', 
+                          color: app.status === 'rejected' ? '#fff' : '#FF3B30',
+                          border: '1px solid rgba(255, 59, 48, 0.2)'
+                        }} 
+                        onClick={() => onChangeAppStatus(app.id, 'rejected')}
+                      >
+                        ✗ {t('simulateReject')}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
           )}
         </div>
       </div>
@@ -1242,9 +1272,11 @@ const getLicenseLabel = (type) => {
 
     return (
       <div className="profile-container fade-in">
-        <div className="sub-page-header">
+        <div className="profile-sticky-back">
           {/* Ortga qaytish: Profil bosh sahifasiga ('main') qaytaradi */}
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+        </div>
+        <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <h2>
             {t('savedItemsTitle', 'Saqlanganlar')}
             <span className="section-header-count">({savedJobs.length + savedSchools.length})</span>
@@ -1326,8 +1358,10 @@ const getLicenseLabel = (type) => {
       const shoukaiApps = applications.filter(a => a.company === profileData.fullName && a.shoukaiId);
       return (
         <div className="profile-container fade-in">
-          <div className="sub-page-header">
+          <div className="profile-sticky-back">
             <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+          </div>
+          <div className="sub-page-header" style={{ paddingTop: '56px' }}>
             <h2>
               {t('shoukaiViaApps', 'Shoukai orqali kelganlar')}
               <span className="section-header-count">({shoukaiApps.length})</span>
@@ -1376,8 +1410,10 @@ const getLicenseLabel = (type) => {
 
     return (
       <div className="profile-container fade-in">
-        <div className="sub-page-header">
+        <div className="profile-sticky-back">
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+        </div>
+        <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <h2>
             {t('myShoukai', 'Mening Shoukai\'larim')}
             <span className="section-header-count">({totalRefs})</span>
@@ -1443,8 +1479,10 @@ const getLicenseLabel = (type) => {
   if (activePage === 'employees') {
     return (
       <div className="profile-container fade-in">
-        <div className="sub-page-header">
+        <div className="profile-sticky-back">
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+        </div>
+        <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <h2>
             {t('employeesHR', 'Xodimlar (HR)')}
             <span className="section-header-count">({companyEmployees.length})</span>

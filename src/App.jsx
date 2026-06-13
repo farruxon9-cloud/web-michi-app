@@ -27,6 +27,79 @@ const TRACKS = [
   { id: 4, title: 'Osaka Neon (大阪のネオン)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/bell-fi-broadcasts-181511.mp3' }
 ];
 
+const mockIncomingApplications = [
+  {
+    id: 101,
+    jobId: 1,
+    company: 'Sagawa Express',
+    title: 'Mahalliy yetkazib berish (Local Delivery)',
+    logo: 'https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100',
+    status: 'submitted',
+    appliedDate: '2026-06-10',
+    shoukaiId: '#Michi-REF1',
+    shoukaiAmount: '¥10,000',
+    shoukaiPaid: false,
+    applicantInfo: {
+      fullName: 'Farrux Alimov',
+      email: 'farrux.alimov@gmail.com',
+      birthDate: '1996-08-24',
+      birthPlace: 'Toshkent',
+      nationality: 'O\'zbekiston',
+      gender: 'male',
+      phone: '+81 90-8888-9999',
+      postalCode: '160-0022',
+      address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1',
+      addressHistory: [
+        { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
+        { address: 'Chiba, Matsudo 2-12', isCurrent: false }
+      ],
+      educationHistory: [
+        { school: 'Toshkent Axborot Texnologiyalari Universiteti', major: 'Kompyuter muhandisligi', startDate: '2014-09', endDate: '2018-06', isCurrent: false }
+      ],
+      driverLicenses: ['oogata', 'kenin', 'futsu'],
+      techCertificates: ['forklift'],
+      workHistory: [
+        { company: 'Yamato Transport Tokyo', position: 'Driver', startDate: '2022-10', endDate: '2025-12', isCurrent: false },
+        { company: 'Toshkent Express', position: 'Kuryer', startDate: '2018-07', endDate: '2022-09', isCurrent: false }
+      ]
+    }
+  },
+  {
+    id: 102,
+    jobId: 2,
+    company: 'Sagawa Express',
+    title: 'Xalqaro yuk tashish (Trailer)',
+    logo: 'https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100',
+    status: 'reviewed',
+    appliedDate: '2026-06-11',
+    shoukaiId: null,
+    shoukaiAmount: null,
+    shoukaiPaid: false,
+    applicantInfo: {
+      fullName: 'Jaloliddin Tursunov',
+      email: 'jaloliddin.t@gmail.com',
+      birthDate: '1993-04-15',
+      birthPlace: 'Samarqand',
+      nationality: 'O\'zbekiston',
+      gender: 'male',
+      phone: '+81 80-1111-2222',
+      postalCode: '220-0012',
+      address: 'Kanagawa, Yokohama, Nishi-ku, Minatomirai 2-1',
+      addressHistory: [
+        { address: 'Kanagawa, Yokohama, Nishi-ku, Minatomirai 2-1', isCurrent: true }
+      ],
+      educationHistory: [
+        { school: 'Samarqand Davlat Universiteti', major: 'Iqtisodiyot', startDate: '2011-09', endDate: '2015-06', isCurrent: false }
+      ],
+      driverLicenses: ['oogata', 'kenin'],
+      techCertificates: ['forklift', 'tamakake'],
+      workHistory: [
+        { company: 'Yokohama Marine Logistics', position: 'Trailer Driver', startDate: '2020-05', endDate: '2026-03', isCurrent: false }
+      ]
+    }
+  }
+];
+
 
 class ChunkErrorBoundary extends React.Component {
   constructor(props) {
@@ -376,7 +449,8 @@ function App() {
       appliedDate: new Date().toLocaleDateString(),
       shoukaiId: refId || null,
       shoukaiAmount: job.shoukaiAmount || null,
-      shoukaiPaid: false
+      shoukaiPaid: false,
+      applicantInfo: { ...profileData }
     };
     setApplications(prev => [...prev, newApp]);
   };
@@ -483,6 +557,7 @@ function App() {
       shoukaiAmount: school.shoukaiAmount || null,
       paid: false,
       appliedDate: new Date().toLocaleDateString(),
+      applicantInfo: { ...profileData }
     };
     setSchoolApplications(prev => [...prev, newApp]);
   };
@@ -527,6 +602,9 @@ function App() {
 
   const handleRoleSelection = (role, data) => {
     setUserRole(role);
+    if (role === 'company') {
+      setApplications(mockIncomingApplications);
+    }
     if (data) {
       setProfileData(prev => ({
         ...prev,
@@ -631,7 +709,31 @@ function App() {
           shoukaiAmount: amount,
           shoukaiPaid: false,
           friendName: 'Do\'stingiz (Simulyatsiya)',
-          isSimulatedReferral: true // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
+          isSimulatedReferral: true, // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
+          applicantInfo: {
+            fullName: 'Farrux Alimov',
+            email: 'farrux.alimov@gmail.com',
+            birthDate: '1996-08-24',
+            birthPlace: 'Toshkent',
+            nationality: 'O\'zbekiston',
+            gender: 'male',
+            phone: '+81 90-8888-9999',
+            postalCode: '160-0022',
+            address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1',
+            addressHistory: [
+              { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
+              { address: 'Chiba, Matsudo 2-12', isCurrent: false }
+            ],
+            educationHistory: [
+              { school: 'Toshkent Axborot Texnologiyalari Universiteti', major: 'Kompyuter muhandisligi', startDate: '2014-09', endDate: '2018-06', isCurrent: false }
+            ],
+            driverLicenses: ['oogata', 'kenin', 'futsu'],
+            techCertificates: ['forklift'],
+            workHistory: [
+              { company: 'Yamato Transport Tokyo', position: 'Driver', startDate: '2022-10', endDate: '2025-12', isCurrent: false },
+              { company: 'Toshkent Express', position: 'Kuryer', startDate: '2018-07', endDate: '2022-09', isCurrent: false }
+            ]
+          }
         };
         setApplications(prev => [...prev, newApp]);
       }
@@ -649,7 +751,31 @@ function App() {
           shoukaiAmount: item.shoukai || '¥10,000',
           paid: false,
           friendName: 'Do\'stingiz (Simulyatsiya)',
-          isSimulatedReferral: true // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
+          isSimulatedReferral: true, // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
+          applicantInfo: {
+            fullName: 'Farrux Alimov',
+            email: 'farrux.alimov@gmail.com',
+            birthDate: '1996-08-24',
+            birthPlace: 'Toshkent',
+            nationality: 'O\'zbekiston',
+            gender: 'male',
+            phone: '+81 90-8888-9999',
+            postalCode: '160-0022',
+            address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1',
+            addressHistory: [
+              { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
+              { address: 'Chiba, Matsudo 2-12', isCurrent: false }
+            ],
+            educationHistory: [
+              { school: 'Toshkent Axborot Texnologiyalari Universiteti', major: 'Kompyuter muhandisligi', startDate: '2014-09', endDate: '2018-06', isCurrent: false }
+            ],
+            driverLicenses: ['oogata', 'kenin', 'futsu'],
+            techCertificates: ['forklift'],
+            workHistory: [
+              { company: 'Yamato Transport Tokyo', position: 'Driver', startDate: '2022-10', endDate: '2025-12', isCurrent: false },
+              { company: 'Toshkent Express', position: 'Kuryer', startDate: '2018-07', endDate: '2022-09', isCurrent: false }
+            ]
+          }
         };
         setSchoolApplications(prev => [...prev, newApp]);
       }
@@ -781,6 +907,12 @@ function App() {
             onBackPress={handleSchoolBack}
             schools={schools}
             setSchools={setSchools}
+            onEditJob={(school) => {
+              setSelectedSchool(null);
+              setJobToEdit(school);
+              setProfileActivePage('my_ads');
+              setActiveTab('profile');
+            }}
           />
         );
       case 'service':

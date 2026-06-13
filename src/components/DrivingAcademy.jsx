@@ -34,7 +34,7 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, Banknote } from 'lucide-react';
+import { Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, Banknote, Edit3 } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './DrivingAcademy.css';
 import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinadi
@@ -182,7 +182,8 @@ export const MOCK_SCHOOLS = [
 export default function DrivingAcademy({ 
   isContractActive, onApplySchool, schoolApplications = [], onShoukaiPaid, 
   profileData, onShoukai, verifiedCompanies = [], onToggleSave, userRole,
-  selectedSchool, setSelectedSchool, onBackPress, schools = MOCK_SCHOOLS, setSchools
+  selectedSchool, setSelectedSchool, onBackPress, schools = MOCK_SCHOOLS, setSchools,
+  onEditJob
 }) {
   const { t } = useTranslation();
   
@@ -445,36 +446,61 @@ export default function DrivingAcademy({
                 - Bosilganda scale(0.96) micro-animatsiya
                 ============================================================ */}
             <div className="school-sticky-actions glass">
-              {/* Qo'ng'iroq tugmasi — <a> tag bilan tel: protokol */}
-              <a 
-                href={`tel:${school.phone || '+819012345678'}`} 
-                className={userRole === 'company' ? 'academy-apply-btn' : 'academy-call-btn'}
-              >
-                <Phone size={15} /> {t('callSchool', 'Qo\'ng\'iroq')}
-              </a>
-              
-              {/* Topshirish tugmasi — hasApplied holatiga qarab o'zgaradi */}
-              {userRole !== 'company' && (!hasApplied ? (
-                <button 
-                  className="academy-apply-btn"
-                  onClick={() => onApplySchool(school, '')}
-                >
-                  {t('applyToSchool', 'Topshirish')}
-                </button>
+              {userRole === 'company' ? (
+                profileData?.fullName === school.name ? (
+                  <button 
+                    className="academy-apply-btn"
+                    style={{ width: '100%', background: '#1c1c1e', color: '#fff', fontSize: '15px', fontWeight: 'bold', border: 'none', borderRadius: '20px', height: '38px', cursor: 'pointer' }}
+                    onClick={() => onEditJob && onEditJob(school)}
+                  >
+                    <Edit3 size={15} style={{ marginRight: '6px' }} />
+                    {t('editJob', 'Tahrirlash')}
+                  </button>
+                ) : (
+                  <>
+                    <a 
+                      href={`tel:${school.phone || '+819012345678'}`} 
+                      className="academy-apply-btn"
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', fontWeight: '700' }}
+                    >
+                      <Phone size={15} /> {t('callSchool', 'Qo\'ng\'iroq')}
+                    </a>
+                    <button 
+                      className="academy-shoukai-btn"
+                      onClick={() => onShoukai(school)}
+                    >
+                      <Share2 size={14} /> {t('shoukai', 'Shoukai')}
+                    </button>
+                  </>
+                )
               ) : (
-                /* Ariza yuborilgan holat — yashil "Topshirilgan" */
-                <button className="academy-apply-btn applied" disabled>
-                  <CheckCircle2 size={14} /> {t('appliedToSchool', 'Topshirilgan')}
-                </button>
-              ))}
-              
-              {/* Shoukai tugmasi — do'stga ulashish */}
-              <button 
-                className="academy-shoukai-btn"
-                onClick={() => onShoukai(school)}
-              >
-                <Share2 size={14} /> {t('shoukai', 'Shoukai')}
-              </button>
+                <>
+                  <a 
+                    href={`tel:${school.phone || '+819012345678'}`} 
+                    className="academy-call-btn"
+                  >
+                    <Phone size={15} /> {t('callSchool', 'Qo\'ng\'iroq')}
+                  </a>
+                  {!hasApplied ? (
+                    <button 
+                      className="academy-apply-btn"
+                      onClick={() => onApplySchool(school, '')}
+                    >
+                      {t('applyToSchool', 'Topshirish')}
+                    </button>
+                  ) : (
+                    <button className="academy-apply-btn applied" disabled>
+                      <CheckCircle2 size={14} /> {t('appliedToSchool', 'Topshirilgan')}
+                    </button>
+                  )}
+                  <button 
+                    className="academy-shoukai-btn"
+                    onClick={() => onShoukai(school)}
+                  >
+                    <Share2 size={14} /> {t('shoukai', 'Shoukai')}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -565,16 +591,30 @@ export default function DrivingAcademy({
               {/* Amal tugmalari (job-card-main-layout tashqarisida) */}
               <div className="job-card-actions">
                 {userRole === 'company' ? (
-                  <button 
-                    className="job-card-btn btn-call"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.location.href = `tel:${school.phone || '080-1234-5678'}`;
-                    }}
-                  >
-                    <Phone size={12} />
-                    {t('callBtn', 'Qo\'ng\'iroq qilish')}
-                  </button>
+                  profileData?.fullName === school.name ? (
+                    <button 
+                      className="job-card-btn btn-apply"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditJob && onEditJob(school);
+                      }}
+                      style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
+                    >
+                      <Edit3 size={12} />
+                      {t('editJob', 'Tahrirlash')}
+                    </button>
+                  ) : (
+                    <button 
+                      className="job-card-btn btn-call"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `tel:${school.phone || '080-1234-5678'}`;
+                      }}
+                    >
+                      <Phone size={12} />
+                      {t('callBtn', 'Qo\'ng\'iroq qilish')}
+                    </button>
+                  )
                 ) : (
                   (() => {
                     const alreadyApplied = (schoolApplications || []).some(a => a.schoolId === school.id && !a.isSimulatedReferral);
