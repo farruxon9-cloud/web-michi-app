@@ -1054,6 +1054,7 @@ function App() {
         setActiveTab={setActiveTab} 
         musicPlayer={musicPlayer} 
         onStatusChange={setVoiceStatus}
+        activeTab={activeTab}
       />
 
       <audio 
