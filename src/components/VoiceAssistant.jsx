@@ -5,7 +5,11 @@ import './VoiceAssistant.css';
 
 export default function VoiceAssistant({ 
   isActive, onClose, onStartVoice, isVoiceStandby, setIsVoiceStandby, 
-  setActiveTab, musicPlayer, onStatusChange, activeTab 
+  setActiveTab, musicPlayer, onStatusChange, activeTab,
+  jobs = [], schools = [], profileData = {}, applications = [],
+  selectedJob, selectedSchool,
+  setJobSearchQuery, setJobActiveSegment, setAcademySearchQuery,
+  handleApplyJob, handleApplySchool, handleShoukai, userRole
 }) {
   const { t, i18n } = useTranslation();
   const defaultKey = localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
@@ -379,6 +383,14 @@ export default function VoiceAssistant({
     recognition.continuous = true;
     recognition.maxAlternatives = 5;
 
+    // AUDIO INTERRUPTION: If user starts speaking while AI is speaking, cancel TTS immediately!
+    recognition.onspeechstart = () => {
+      if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        setStatus('listening');
+      }
+    };
+
     recognition.onresult = (event) => {
       try {
         recognition.stop();
@@ -474,6 +486,47 @@ export default function VoiceAssistant({
     const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
     const currentLang = i18n.language || 'uz';
 
+    // Inject dynamic data context for full content awareness
+    const dataContext = `
+CURRENT USER PROFILE:
+- Name: ${profileData?.fullName || 'Unknown'}
+- Selected Role: ${userRole || 'driver'}
+- Nationality: ${profileData?.nationality || 'Unknown'}
+- Driver Licenses: ${JSON.stringify(profileData?.driverLicenses || [])}
+- Technical Certificates: ${JSON.stringify(profileData?.techCertificates || [])}
+
+CURRENT USER JOB APPLICATIONS:
+${JSON.stringify((applications || []).map(app => ({
+  company: app.company,
+  jobTitle: app.title,
+  status: app.status,
+  appliedDate: app.appliedDate
+})))}
+
+AVAILABLE DRIVER JOBS IN APP:
+${JSON.stringify((jobs || []).map(job => ({
+  id: job.id,
+  company: job.company,
+  title: job.title,
+  location: job.location,
+  salary: job.salary,
+  licenseRequired: job.licenseRequired || job.license || []
+})))}
+
+AVAILABLE DRIVING ACADEMIES IN APP:
+${JSON.stringify((schools || []).map(school => ({
+  id: school.id,
+  name: school.name,
+  location: school.location,
+  languages: school.languages || school.langs || [],
+  price: school.price
+})))}
+
+CURRENT USER VIEWING CONTEXT:
+- Currently viewing job detail: ${selectedJob ? `Yes, viewing job "${selectedJob.title}" at "${selectedJob.company}"` : 'No'}
+- Currently viewing driving academy detail: ${selectedSchool ? `Yes, viewing school "${selectedSchool.name}"` : 'No'}
+`;
+
     const systemPrompt = `
 You are "Michi AI" — the smart voice assistant for the Michi app (a premium Japanese platform for truck driver jobs and driving academy courses).
 The user speaks to you in JAPANESE, UZBEK, ENGLISH, or a mix of these languages. Speech recognition is set to Japanese, so Uzbek/English words will appear as Japanese phonetic transcriptions.
@@ -481,6 +534,7 @@ The user speaks to you in JAPANESE, UZBEK, ENGLISH, or a mix of these languages.
 Your task: analyze the user's speech and return a JSON object:
 {
   "command": "<COMMAND or NONE>",
+  "parameters": <optional JSON object with parameters for FILTER_JOBS or FILTER_ACADEMIES>,
   "response": "<short natural response in user's language confirming the action or answering the question>",
   "language": "<detected language: uz, ja, or en>"
 }
@@ -489,6 +543,7 @@ CRITICAL FOR SPEED AND VOICE UX:
 1. Keep the "response" EXTREMELY short and concise (under 2 sentences). This speeds up both generation and text-to-speech.
 2. Answer general questions, translate words, provide helpful driving license/visa info for Japan.
 3. DETECT the language the user speaks and respond in THAT language. If user asks in Uzbek, respond in Uzbek.
+4. You have access to real-time APP DATA. Answer user questions about jobs, schools, user applications, and profile details using the provided context.
 
 CRITICAL: Uzbek words transcribed as Japanese phonetics:
 - "ish" (work) → いし, イシ, いっし, 石, 意思
@@ -498,16 +553,16 @@ CRITICAL: Uzbek words transcribed as Japanese phonetics:
 - "profil" → ぷろふぃる, プロフィル, プロフィール
 - "uy" / "uyga" (home) → うい, ういが, ウイ, ウイガ
 - "bosh sahifa" → ぼしさひふぁ, ボシサヒファ
-- "musiqa" → むしか, ムシカ, むすいか, ムスイカ
+- "musiqa" → むしか, ムシカ, むすいか, ムスイка
 - "qo'shiq" → こしく, コシク, こしっく
 - "keyingi" → けいんぎ, ケインギ
 - "to'xtat" → とふたっと, トフタット
 - "salom" → さらむ, サラム
 - "rezyume" (resume) → れじゅめ, レジュメ
 - "yorug'" → よるぐ, ヨルグ
-- "qorong'i" → こるんぐい, コルングイ
+- "qorong'i" → こるんgui, コルングイ
 - "tilni o'zgartir" → ちるに おずがるちる
-- "qidirish" → きでぃりし
+- "qidirish" → き deiry shi
 
 COMMAND RULES:
 - NAVIGATE_TO_HOME: home, dashboard, main page
@@ -521,6 +576,11 @@ COMMAND RULES:
 - TOGGLE_THEME: change/toggle dark mode or light mode
 - CHANGE_LANGUAGE: change language (Uzbek, Japanese, English)
 - OPEN_RESUME: open resume builder
+- FILTER_JOBS: search or filter jobs. Must return parameter inside json: "parameters": {"searchQuery": "<location or company>", "segment": "all|permanent|hourly"}
+- FILTER_ACADEMIES: search or filter schools. Must return parameter inside json: "parameters": {"searchQuery": "<location or school name>"}
+- APPLY_TO_CURRENT: apply to the current active job or school that the user is currently viewing. Only use this if user explicitly asks to apply or register to the one they are viewing.
+- SHARE_CURRENT: share or refer the current job/school. Only use this if user asks to refer, share or do shoukai.
+- CALL_COMPANY: call the company of the current job/school.
 - NONE: general conversation, questions, greetings
 
 Return ONLY the raw JSON object, no markdown.
@@ -695,6 +755,46 @@ Return ONLY the raw JSON object, no markdown.
         break;
       case 'OPEN_RESUME':
         setActiveTab('profile');
+        if (shouldClose) onClose();
+        break;
+      case 'FILTER_JOBS':
+        if (setJobSearchQuery && setJobActiveSegment) {
+          const params = result.parameters || {};
+          setJobSearchQuery(params.searchQuery || '');
+          setJobActiveSegment(params.segment || 'all');
+          setActiveTab('jobs');
+        }
+        if (shouldClose) onClose();
+        break;
+      case 'FILTER_ACADEMIES':
+        if (setAcademySearchQuery) {
+          const params = result.parameters || {};
+          setAcademySearchQuery(params.searchQuery || '');
+          setActiveTab('academy');
+        }
+        if (shouldClose) onClose();
+        break;
+      case 'APPLY_TO_CURRENT':
+        if (selectedJob && handleApplyJob) {
+          handleApplyJob(selectedJob);
+        } else if (selectedSchool && handleApplySchool) {
+          handleApplySchool(selectedSchool);
+        }
+        if (shouldClose) onClose();
+        break;
+      case 'SHARE_CURRENT':
+        if (selectedJob && handleShoukai) {
+          handleShoukai(selectedJob.id);
+        } else if (selectedSchool && handleShoukai) {
+          handleShoukai(selectedSchool.id);
+        }
+        if (shouldClose) onClose();
+        break;
+      case 'CALL_COMPANY':
+        const activeItem = selectedJob || selectedSchool;
+        if (activeItem && activeItem.phone) {
+          window.open(`tel:${activeItem.phone}`);
+        }
         if (shouldClose) onClose();
         break;
       default:

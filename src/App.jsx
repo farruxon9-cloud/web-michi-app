@@ -206,6 +206,11 @@ function App() {
   const [volume, setVolume] = useState(0.7);
   const audioRef = useRef(null);
 
+  // Lifted Search and Filter States (For AI voice query control)
+  const [jobSearchQuery, setJobSearchQuery] = useState('');
+  const [jobActiveSegment, setJobActiveSegment] = useState('all');
+  const [academySearchQuery, setAcademySearchQuery] = useState('');
+
   const togglePlay = () => {
     setIsPlaying(prev => !prev);
   };
@@ -888,6 +893,10 @@ function App() {
               setProfileActivePage('my_ads');
               setActiveTab('profile');
             }}
+            searchQuery={jobSearchQuery}
+            setSearchQuery={setJobSearchQuery}
+            activeSegment={jobActiveSegment}
+            setActiveSegment={setJobActiveSegment}
           />
         );
       case 'academy':
@@ -913,6 +922,8 @@ function App() {
               setProfileActivePage('my_ads');
               setActiveTab('profile');
             }}
+            searchQuery={academySearchQuery}
+            setSearchQuery={setAcademySearchQuery}
           />
         );
       case 'service':
@@ -1055,6 +1066,19 @@ function App() {
         musicPlayer={musicPlayer} 
         onStatusChange={setVoiceStatus}
         activeTab={activeTab}
+        jobs={jobs}
+        schools={schools}
+        profileData={profileData}
+        applications={applications}
+        selectedJob={selectedJob}
+        selectedSchool={selectedSchool}
+        setJobSearchQuery={setJobSearchQuery}
+        setJobActiveSegment={setJobActiveSegment}
+        setAcademySearchQuery={setAcademySearchQuery}
+        handleApplyJob={handleApplyJob}
+        handleApplySchool={handleApplySchool}
+        handleShoukai={handleShoukai}
+        userRole={userRole}
       />
 
       <audio 

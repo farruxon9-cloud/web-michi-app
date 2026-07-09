@@ -183,7 +183,7 @@ export default function DrivingAcademy({
   isContractActive, onApplySchool, schoolApplications = [], onShoukaiPaid, 
   profileData, onShoukai, verifiedCompanies = [], onToggleSave, userRole,
   selectedSchool, setSelectedSchool, onBackPress, schools = MOCK_SCHOOLS, setSchools,
-  onEditJob
+  onEditJob, searchQuery = '', setSearchQuery
 }) {
   const { t } = useTranslation();
   
@@ -199,7 +199,6 @@ export default function DrivingAcademy({
    */
   const [referrerName, setReferrerName] = useState('');
 
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Filtrlash: qidiruv bo'yicha
   const filteredSchools = schools.filter(school => {

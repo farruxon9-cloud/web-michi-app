@@ -131,10 +131,13 @@ export const MOCK_JOBS = [
 // DriverFeed — Ish e'lonlari ro'yxati (Goo-net uslubida gorizontal kartochkalar)
 // Har bir kartochkada: chapda rasm, o'ngda ma'lumotlar, pastda ikonkali chiplar
 // ============================================================
-export default function DriverFeed({ onJobClick, isContractActive, verifiedCompanies = [], onShoukai, jobs = MOCK_JOBS, userRole, profileData, onEditJob, onApply, applications = [] }) {
+export default function DriverFeed({ 
+  onJobClick, isContractActive, verifiedCompanies = [], onShoukai, 
+  jobs = MOCK_JOBS, userRole, profileData, onEditJob, onApply, applications = [],
+  searchQuery = '', setSearchQuery, activeSegment = 'all', setActiveSegment
+}) {
   const { t } = useTranslation();
-  const [activeSegment, setActiveSegment] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+
 
   // Filtrlash: segment va qidiruv bo'yicha
   const filteredJobs = jobs.filter(job => {
