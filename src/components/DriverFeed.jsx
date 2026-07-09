@@ -538,7 +538,7 @@ export default function DriverFeed({
             </div>
           </div>
         </div>,
-        document.body
+        document.getElementById('root') || document.body
       )}
     </div>
   );
