@@ -1,7 +1,7 @@
 import pdfMake from 'pdfmake/build/pdfmake';
 import { toJapaneseEra, calculateAge, toJapaneseEraYear } from './japaneseEra';
 
-const FONT_URL = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/sawarabigothic/SawarabiGothic-Regular.ttf';
+const FONT_URL = '/SawarabiGothic-Regular.ttf';
 
 // Convert ArrayBuffer to Base64 (needed for pdfMake in-browser vfs)
 function arrayBufferToBase64(buffer) {
