@@ -9,6 +9,7 @@ import './App.css';
 import { MOCK_JOBS } from './components/DriverFeed';
 import { MOCK_SCHOOLS } from './components/DrivingAcademy';
 import VoiceAssistant from './components/VoiceAssistant';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy loading heavy components for faster initial load
 const Dashboard = lazy(() => import('./components/Dashboard'));
@@ -997,7 +998,8 @@ function App() {
   };
 
   return (
-    <div className="app-layout">
+    <ErrorBoundary>
+      <div className="app-layout">
       <div className="glass-blob blob-1"></div>
       <div className="glass-blob blob-2"></div>
       <div className="glass-blob blob-3"></div>
@@ -1210,7 +1212,8 @@ function App() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
 
