@@ -6,10 +6,10 @@ These rules govern the behavior, quality controls, and coding style of all AI ag
 - **NO REMOTE PUSH ON BRANCHES:** Never run `git push` while working on development/experimental branches (such as `b`). All commits must be made **locally** to preserve remote branch cleanliness.
 - **MAIN-ONLY PUSH:** Remote pushing is only permitted when explicitly requested or when deploying changes directly to the `main` branch.
 
-## 📱 2. Desktop Phone Simulator Constraints
-- The web application is wrapped inside a phone mockup container (`#root` styled to `max-width: 480px; height: 90vh; border: 8px solid #1c1c1e`) on desktop views.
-- **Portal Containment:** When rendering full-screen modals, drawers, or floating notifications inside a React Portal, always mount the portal to `document.getElementById('root')` instead of `document.body`.
-- **Absolute Overlay Position:** Use `position: absolute` for overlay containers so they stay locked within the simulated phone frame boundaries on desktop monitors, rather than floating outside.
+## 📱 2. Mobile-First Viewport Strategy
+- **Focus on Mobile Only:** Focus exclusively on mobile screens (viewport widths <= 480px) to keep code simple, fast, and easy to build.
+- **Direct Viewport Styles:** Write standard mobile styles (e.g. `position: fixed` overlays, bottom action sheets, safe area padding).
+- **No Desktop Adapters:** Do not write extra responsive layers, helper margins, or container wrapper hacks for desktop monitor simulation unless requested. Assume viewport matches mobile.
 
 ## 🧪 3. Quality & Verification Protocols
 - **Always Test Before Finishing:** After completing any major feature or utility change, run `npm run build` to ensure there are no compilation errors, and `npm run test` to execute all Vitest unit tests.
