@@ -554,6 +554,7 @@ html.dark-mode .form-chip.selected {
   gap: 8px;
   align-items: center;
   width: 100%;
+  margin-bottom: 16px; /* Spacing between search bar and segmented control tabs */
 }
 
 .search-row .search-bar {
@@ -734,7 +735,7 @@ html.dark-mode .filter-badge {
 
 /* Bottom Action bar */
 .filter-drawer-actions {
-  padding: 16px 24px env(safe-area-inset-bottom);
+  padding: 16px 24px calc(18px + env(safe-area-inset-bottom)); /* Add extra safety padding at bottom */
   border-top: 1px solid var(--glass-border);
   display: flex;
   gap: 12px;

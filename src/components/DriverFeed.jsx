@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone, Edit3, CheckCircle2, SlidersHorizontal, X } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
@@ -408,7 +409,7 @@ export default function DriverFeed({
       </div>
 
       {/* ====== PREMIUM FILTER DRAWER ====== */}
-      {isFilterDrawerOpen && (
+      {isFilterDrawerOpen && createPortal(
         <div className="filter-drawer-overlay animate-fade-in" onClick={() => setIsFilterDrawerOpen(false)}>
           <div className="filter-drawer glass animate-slide-up" onClick={(e) => e.stopPropagation()}>
             <div className="filter-drawer-header">
@@ -536,7 +537,8 @@ export default function DriverFeed({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
