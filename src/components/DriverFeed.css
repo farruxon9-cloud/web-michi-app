@@ -613,32 +613,43 @@ html.dark-mode .filter-badge {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.4); /* Slightly darker for better focus */
+  backdrop-filter: blur(16px);    /* Enhanced glass blur */
+  -webkit-backdrop-filter: blur(16px);
   z-index: 12000;
   display: flex;
-  align-items: flex-end;
+  align-items: center;            /* Centered in the middle of simulator/phone viewport */
   justify-content: center;
+  padding: 20px;
   box-sizing: border-box;
 }
 
-/* Sliding Drawer Sheet */
+/* Sliding Drawer Sheet - Redesigned as a Centered Premium Card */
 .filter-drawer {
-  width: 100%;
-  max-width: 440px;
+  width: 95%;
+  max-width: 400px;
   background: var(--bg-color);
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
+  border-radius: 28px;            /* Fully rounded corners for floating style */
   border: 1px solid var(--glass-border);
-  border-bottom: none;
-  box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  max-height: 85vh;
+  max-height: 80vh;
   box-sizing: border-box;
   overflow: hidden;
   background-color: var(--bg-color);
+  animation: filterModalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes filterModalScaleUp {
+  from {
+    transform: scale(0.93) translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
 }
 
 .filter-drawer-header {
@@ -733,9 +744,8 @@ html.dark-mode .filter-badge {
   box-shadow: 0 4px 12px rgba(94, 92, 230, 0.25);
 }
 
-/* Bottom Action bar */
 .filter-drawer-actions {
-  padding: 16px 24px calc(18px + env(safe-area-inset-bottom)); /* Add extra safety padding at bottom */
+  padding: 16px 24px; /* Centered modal doesn't need bottom-sheet safe area padding */
   border-top: 1px solid var(--glass-border);
   display: flex;
   gap: 12px;

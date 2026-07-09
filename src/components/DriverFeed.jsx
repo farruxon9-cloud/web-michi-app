@@ -139,7 +139,8 @@ export default function DriverFeed({
   selectedLicenses = [], setSelectedLicenses,
   selectedLangLevel = 'all', setSelectedLangLevel,
   selectedBenefits = [], setSelectedBenefits,
-  minSalary = 0, setMinSalary
+  minSalary = 0, setMinSalary,
+  selectedPrefecture = 'all', setSelectedPrefecture
 }) {
   const { t } = useTranslation();
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
@@ -150,13 +151,14 @@ export default function DriverFeed({
     return isNaN(num) ? 0 : num;
   };
 
-  const hasActiveFilters = selectedLicenses.length > 0 || selectedLangLevel !== 'all' || selectedBenefits.length > 0 || minSalary > 0;
+  const hasActiveFilters = selectedLicenses.length > 0 || selectedLangLevel !== 'all' || selectedBenefits.length > 0 || minSalary > 0 || selectedPrefecture !== 'all';
 
   const handleResetFilters = () => {
     setSelectedLicenses([]);
     setSelectedLangLevel('all');
     setSelectedBenefits([]);
     setMinSalary(0);
+    setSelectedPrefecture('all');
   };
 
   // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
@@ -197,7 +199,12 @@ export default function DriverFeed({
     // 4. Salary filter
     const matchSalary = minSalary === 0 || getSalaryNumber(job.salary) >= minSalary;
 
-    return matchSegment && matchSearch && matchLicense && matchLang && matchBenefits && matchSalary;
+    // 5. Prefecture location filter
+    const matchPrefecture = selectedPrefecture === 'all' || 
+      (job.location && job.location.toLowerCase().includes(selectedPrefecture.toLowerCase())) ||
+      (job.fullAddress && job.fullAddress.toLowerCase().includes(selectedPrefecture.toLowerCase()));
+
+    return matchSegment && matchSearch && matchLicense && matchLang && matchBenefits && matchSalary && matchPrefecture;
   });
 
   return (
@@ -420,7 +427,36 @@ export default function DriverFeed({
             </div>
 
             <div className="filter-drawer-content hide-scrollbar">
-              {/* Category 1: Licenses */}
+              {/* Category 1: Location (Prefecture) */}
+              <div className="filter-section">
+                <h4>{t('filterLocation', 'Hudud bo\'yicha qidiruv')}</h4>
+                <div className="filter-tags">
+                  {[
+                    { id: 'all', label: t('lang_all', 'Barchasi') },
+                    { id: 'Tokyo', label: 'Tokyo (東京)' },
+                    { id: 'Kanagawa', label: 'Kanagawa (神奈川)' },
+                    { id: 'Saitama', label: 'Saitama (埼玉)' },
+                    { id: 'Chiba', label: 'Chiba (千葉)' },
+                    { id: 'Osaka', label: 'Osaka (大阪)' },
+                    { id: 'Kyoto', label: 'Kyoto (京都)' },
+                    { id: 'Aichi', label: 'Aichi (愛知)' },
+                    { id: 'Fukuoka', label: 'Fukuoka (福岡)' }
+                  ].map(item => {
+                    const isSelected = selectedPrefecture === item.id;
+                    return (
+                      <button 
+                        key={item.id} 
+                        className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
+                        onClick={() => setSelectedPrefecture(item.id)}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Category 2: Licenses */}
               <div className="filter-section">
                 <h4>{t('filterLicenses', 'Haydovchilik guvohnomasi')}</h4>
                 <div className="filter-tags">
@@ -449,7 +485,7 @@ export default function DriverFeed({
                 </div>
               </div>
 
-              {/* Category 2: Japanese Level */}
+              {/* Category 3: Japanese Level */}
               <div className="filter-section">
                 <h4>{t('filterJapanese', 'Yapon tili darajasi')}</h4>
                 <div className="filter-tags">
@@ -474,7 +510,7 @@ export default function DriverFeed({
                 </div>
               </div>
 
-              {/* Category 3: Benefits */}
+              {/* Category 4: Benefits */}
               <div className="filter-section">
                 <h4>{t('filterBenefits', 'Imtiyozlar va Sharoitlar')}</h4>
                 <div className="filter-tags">
@@ -502,7 +538,7 @@ export default function DriverFeed({
                 </div>
               </div>
 
-              {/* Category 4: Minimum Salary */}
+              {/* Category 5: Minimum Salary */}
               <div className="filter-section">
                 <h4>{t('filterSalary', 'Minimal oylik maosh')}</h4>
                 <div className="filter-tags">

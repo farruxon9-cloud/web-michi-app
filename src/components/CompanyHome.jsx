@@ -33,6 +33,43 @@ const INITIAL_COMPANY_JOBS = [
   }
 ];
 
+const parseAddress = (fullAddress = '') => {
+  if (!fullAddress) return { postalCode: '', prefecture: '', detailAddress: '' };
+  
+  // Extract postal code (e.g. 330-0854 or 〒330-0854)
+  const pcMatch = fullAddress.match(/(\d{3}-\d{4})/);
+  const postalCode = pcMatch ? pcMatch[1] : '';
+  
+  // Prefecture list (English/Japanese matching)
+  const prefectures = [
+    'Tokyo', 'Saitama', 'Chiba', 'Kanagawa', 'Osaka', 'Kyoto', 
+    'Aichi', 'Fukuoka', 'Hyogo', 'Shizuoka', 'Hiroshima', 'Hokkaido',
+    '東京', '埼玉', '千葉', '神奈川', '大阪', '京都', '愛知', '福岡', '兵庫', '静岡', '広島', '北海道'
+  ];
+  
+  let prefecture = '';
+  for (const pref of prefectures) {
+    if (fullAddress.includes(pref)) {
+      prefecture = pref;
+      break;
+    }
+  }
+  
+  // Remaining part is detail address
+  let detailAddress = fullAddress;
+  if (postalCode) {
+    detailAddress = detailAddress.replace(`〒${postalCode}`, '').replace(postalCode, '');
+  }
+  if (prefecture) {
+    detailAddress = detailAddress.replace(prefecture, '');
+  }
+  
+  // Clean punctuation
+  detailAddress = detailAddress.trim().replace(/^,/, '').replace(/^[，、]/, '').trim();
+  
+  return { postalCode, prefecture, detailAddress };
+};
+
 export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, schools, setSchools, profileData, jobToEdit, setJobToEdit, onFormToggle, onApply, onApplySchool, onShoukai, applications = [], schoolApplications = [] }) {
   const { t } = useTranslation();
   const [showAddForm, setShowAddForm] = useState(false);
@@ -51,6 +88,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     if (jobToEdit) {
       const isCourse = (jobToEdit.courses || jobToEdit.langs) ? true : false;
       setSelectedAdType(isCourse ? 'school' : 'job');
+      
+      const parsed = parseAddress(jobToEdit.fullAddress);
+      const postalCode = jobToEdit.postalCode || parsed.postalCode;
+      const prefecture = jobToEdit.prefecture || parsed.prefecture;
+      const detailAddress = jobToEdit.detailAddress || parsed.detailAddress;
+
       if (isCourse) {
         setNewJob({
           id: jobToEdit.id,
@@ -59,6 +102,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           bonus: jobToEdit.discount || jobToEdit.bonus || '',
           location: jobToEdit.location,
           fullAddress: jobToEdit.fullAddress,
+          postalCode,
+          prefecture,
+          detailAddress,
           phone: jobToEdit.phone,
           email: jobToEdit.email,
           description: jobToEdit.description,
@@ -75,6 +121,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           salary: jobToEdit.salary,
           location: jobToEdit.location,
           fullAddress: jobToEdit.fullAddress,
+          postalCode,
+          prefecture,
+          detailAddress,
           phone: jobToEdit.phone,
           email: jobToEdit.email,
           hours: jobToEdit.hours || '',
@@ -104,6 +153,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     salary: '', 
     location: '', 
     fullAddress: '', 
+    postalCode: '',
+    prefecture: '',
+    detailAddress: '',
     phone: '', 
     email: '', 
     hours: '', 
@@ -206,13 +258,24 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     const newErrors = {};
     if (!newJob.title) newErrors.title = t('reqTitle', 'Sarlavha kiritilishi shart');
     if (!newJob.salary) newErrors.salary = t('reqSalary', 'Narx/Maosh kiritilishi shart');
-    if (!newJob.location) newErrors.location = t('reqLocation', 'Qisqa manzil kiritilishi shart');
-    if (!newJob.fullAddress) newErrors.fullAddress = t('reqFullAddress', 'To\'liq manzil kiritilishi shart');
     if (!newJob.phone) newErrors.phone = t('reqPhone', 'Telefon raqam kiritilishi shart');
     if (!newJob.email) newErrors.email = t('reqEmail', 'Email kiritilishi shart');
     if (!newJob.description) newErrors.description = t('reqDesc', 'Batafsil ma\'lumot kiritilishi shart');
     if (newJob.hasShoukai === '') newErrors.hasShoukai = t('reqShoukai', 'Shoukai holatini belgilash shart');
     if (newJob.hasShoukai === 'yes' && !newJob.shoukaiFee) newErrors.shoukaiFee = t('reqShoukaiSum', 'Shoukai summasini kiritish shart');
+
+    // Structured address validations
+    if (!newJob.postalCode) {
+      newErrors.postalCode = t('reqPostalCode', 'Pochta indeksi kiritilishi shart');
+    } else if (!/^\d{3}-\d{4}$/.test(newJob.postalCode)) {
+      newErrors.postalCode = t('invalidPostalCode', 'Pochta indeksi xxx-xxxx formatida bo\'lishi shart');
+    }
+    if (!newJob.prefecture) {
+      newErrors.prefecture = t('reqPrefecture', 'Prefektura tanlanishi shart');
+    }
+    if (!newJob.detailAddress) {
+      newErrors.detailAddress = t('reqDetailAddress', 'Batafsil manzil kiritilishi shart');
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -223,6 +286,11 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     
     setErrors({});
 
+    // Compute short location and full address from 3 fields
+    const cityPart = newJob.detailAddress.split(',')[0].split(' ')[0].trim();
+    const generatedLocation = `${newJob.prefecture}, ${cityPart || newJob.prefecture}`;
+    const generatedFullAddress = `〒${newJob.postalCode} ${newJob.prefecture}, ${newJob.detailAddress}`;
+
     if (isAdCourse) {
       const school = {
         id: newJob.id || Date.now(),
@@ -232,8 +300,11 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         discount: newJob.bonus || "¥10,000",
         image: jobImage || "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
         verified: true,
-        location: newJob.location,
-        fullAddress: newJob.fullAddress,
+        location: generatedLocation,
+        fullAddress: generatedFullAddress,
+        postalCode: newJob.postalCode,
+        prefecture: newJob.prefecture,
+        detailAddress: newJob.detailAddress,
         description: newJob.description,
         courses: newJob.courses,
         phone: newJob.phone,
@@ -255,8 +326,11 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         company: profileData?.fullName || "Sagawa Express",
         title: newJob.title,
         salary: newJob.salary,
-        location: newJob.location,
-        fullAddress: newJob.fullAddress,
+        location: generatedLocation,
+        fullAddress: generatedFullAddress,
+        postalCode: newJob.postalCode,
+        prefecture: newJob.prefecture,
+        detailAddress: newJob.detailAddress,
         phone: newJob.phone,
         email: newJob.email,
         hours: newJob.hours,
@@ -290,6 +364,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       salary: '', 
       location: '', 
       fullAddress: '', 
+      postalCode: '',
+      prefecture: '',
+      detailAddress: '',
       phone: '', 
       email: '', 
       hours: '', 
@@ -463,36 +540,73 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               />
             </div>
             
+            {/* 3-Part Structured Address Questionnaire */}
             <div className="input-group" style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                {t('locationLabel', 'Qisqa joylashuv (Shahar, prefektura)')} <span style={{ color: '#FF3B30' }}>*</span>
+                {t('postalCodeLabel', 'Pochta indeksi')} <span style={{ color: '#FF3B30' }}>*</span>
               </label>
               <input 
                 type="text" 
-                value={newJob.location} 
-                onChange={e => { setNewJob({...newJob, location: e.target.value}); setErrors(prev => ({...prev, location: null})); }} 
-                placeholder={t('locationPlaceholder', "Saitama, Omiya")} 
+                value={newJob.postalCode} 
+                onChange={e => {
+                  let val = e.target.value.replace(/[^0-9-]/g, '');
+                  if (val.length === 3 && !val.includes('-')) {
+                    val = val + '-';
+                  }
+                  setNewJob({...newJob, postalCode: val}); 
+                  setErrors(prev => ({...prev, postalCode: null})); 
+                }} 
+                placeholder="100-0001" 
                 className="auth-input"
-                style={{ borderColor: errors.location ? '#FF3B30' : 'var(--glass-border)' }}
-                maxLength={80}
+                style={{ borderColor: errors.postalCode ? '#FF3B30' : 'var(--glass-border)' }}
+                maxLength={8}
               />
-              {errors.location && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.location}</span>}
+              {errors.postalCode && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.postalCode}</span>}
+            </div>
+
+            <div className="input-group" style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                {t('prefectureLabel', 'Prefektura (Viloyat)')} <span style={{ color: '#FF3B30' }}>*</span>
+              </label>
+              <select
+                value={newJob.prefecture}
+                onChange={e => {
+                  setNewJob({...newJob, prefecture: e.target.value});
+                  setErrors(prev => ({...prev, prefecture: null}));
+                }}
+                className="auth-input"
+                style={{ 
+                  borderColor: errors.prefecture ? '#FF3B30' : 'var(--glass-border)',
+                  background: 'var(--card-bg)',
+                  color: 'var(--text-main)',
+                  padding: '12px'
+                }}
+              >
+                <option value="">-- {t('selectPrefecture', 'Prefekturani tanlang')} --</option>
+                {['Tokyo', 'Kanagawa', 'Saitama', 'Chiba', 'Osaka', 'Kyoto', 'Aichi', 'Fukuoka', 'Hokkaido', 'Boshqa'].map(pref => (
+                  <option key={pref} value={pref}>{t(pref, pref)}</option>
+                ))}
+              </select>
+              {errors.prefecture && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.prefecture}</span>}
             </div>
 
             <div className="input-group">
               <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                {t('fullAddressLabel', 'Batafsil pochta manzili')} <span style={{ color: '#FF3B30' }}>*</span>
+                {t('detailAddressLabel', 'Batafsil ko\'cha va bino raqami')} <span style={{ color: '#FF3B30' }}>*</span>
               </label>
               <input 
                 type="text" 
-                value={newJob.fullAddress} 
-                onChange={e => { setNewJob({...newJob, fullAddress: e.target.value}); setErrors(prev => ({...prev, fullAddress: null})); }} 
-                placeholder={t('fullAddressPlaceholder', "〒330-0854 Saitama, Omiya-ku, Sakuragicho 2-1")} 
+                value={newJob.detailAddress} 
+                onChange={e => {
+                  setNewJob({...newJob, detailAddress: e.target.value}); 
+                  setErrors(prev => ({...prev, detailAddress: null})); 
+                }} 
+                placeholder="Chiyoda-ku, Marunouchi 1-1" 
                 className="auth-input"
-                style={{ borderColor: errors.fullAddress ? '#FF3B30' : 'var(--glass-border)' }}
-                maxLength={120}
+                style={{ borderColor: errors.detailAddress ? '#FF3B30' : 'var(--glass-border)' }}
+                maxLength={100}
               />
-              {errors.fullAddress && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.fullAddress}</span>}
+              {errors.detailAddress && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.detailAddress}</span>}
             </div>
           </div>
 

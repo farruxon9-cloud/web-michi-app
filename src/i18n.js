@@ -4,6 +4,29 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   uz: {
     translation: {
+      advancedFilters: "Kengaytirilgan filtrlar",
+      filterLicenses: "Haydovchilik guvohnomasi",
+      filterJapanese: "Yapon tili darajasi",
+      filterBenefits: "Imtiyozlar va Sharoitlar",
+      filterSalary: "Minimal oylik maosh",
+      clearFilters: "Tozalash",
+      applyFilters: "Filtrni qo'llash",
+      lang_all: "Barchasi",
+      lang_none: "Talab etilmaydi",
+      lang_n5_n4: "N5 / N4 (Boshlang'ich)",
+      lang_n3: "N3 (Suhbat)",
+      lang_n2_n1: "N2 / N1 (Erkin)",
+      salary_all: "Barchasi",
+      postalCodeLabel: "Pochta indeksi",
+      prefectureLabel: "Prefektura (Viloyat)",
+      detailAddressLabel: "Batafsil ko'cha va bino raqami",
+      selectPrefecture: "Prefekturani tanlang",
+      reqPostalCode: "Pochta indeksi kiritilishi shart",
+      invalidPostalCode: "Pochta indeksi xxx-xxxx formatida bo'lishi shart",
+      reqPrefecture: "Prefektura tanlanishi shart",
+      reqDetailAddress: "Batafsil manzil kiritilishi shart",
+      filterLocation: "Hudud bo'yicha qidiruv",
+
       navHome: "Asosiy",
       navJobs: "Ishlar",
       navAcademy: "Maktablar",
@@ -495,6 +518,7 @@ const resources = {
   },
   ja: {
     translation: {
+
       navHome: "ホーム",
       navJobs: "求人",
       navAcademy: "教習所",
@@ -1092,6 +1116,7 @@ const resources = {
   },
   en: {
     translation: {
+
       navHome: "Home",
       navJobs: "Jobs",
       navAcademy: "Academies",

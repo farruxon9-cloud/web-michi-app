@@ -217,6 +217,7 @@ function App() {
   const [selectedLangLevel, setSelectedLangLevel] = useState('all');
   const [selectedBenefits, setSelectedBenefits] = useState([]);
   const [minSalary, setMinSalary] = useState(0);
+  const [selectedPrefecture, setSelectedPrefecture] = useState('all');
 
   const togglePlay = () => {
     setIsPlaying(prev => !prev);
@@ -912,6 +913,8 @@ function App() {
             setSelectedBenefits={setSelectedBenefits}
             minSalary={minSalary}
             setMinSalary={setMinSalary}
+            selectedPrefecture={selectedPrefecture}
+            setSelectedPrefecture={setSelectedPrefecture}
           />
         );
       case 'academy':
@@ -1103,6 +1106,8 @@ function App() {
         setSelectedBenefits={setSelectedBenefits}
         minSalary={minSalary}
         setMinSalary={setMinSalary}
+        selectedPrefecture={selectedPrefecture}
+        setSelectedPrefecture={setSelectedPrefecture}
       />
 
       <audio 
