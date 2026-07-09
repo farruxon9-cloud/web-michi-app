@@ -545,3 +545,245 @@ html.dark-mode .form-chip.selected {
   color: #ffffff;
   box-shadow: 0 4px 16px rgba(94, 92, 230, 0.35);
 }
+
+/* ============================================================
+   ADVANCED FILTER DRAWER & CHIPS STYLING
+   ============================================================ */
+.search-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.search-row .search-bar {
+  flex: 1;
+  margin-bottom: 0 !important; /* Override layout margin since it is inside row */
+}
+
+.filter-toggle-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+  outline: none;
+}
+
+.filter-toggle-btn:active {
+  transform: scale(0.96);
+}
+
+.filter-toggle-btn.active {
+  color: #FFFFFF;
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.3);
+}
+
+.filter-badge {
+  width: 7px;
+  height: 7px;
+  background: #FF3B30;
+  border: 1.5px solid #FFF;
+  border-radius: 50%;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+html.dark-mode .filter-badge {
+  border-color: #1C1C1E;
+}
+
+/* Drawer overlay screen */
+.filter-drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 12000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* Sliding Drawer Sheet */
+.filter-drawer {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-color);
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  border: 1px solid var(--glass-border);
+  border-bottom: none;
+  box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  box-sizing: border-box;
+  overflow: hidden;
+  background-color: var(--bg-color);
+}
+
+.filter-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.filter-drawer-header h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.filter-close-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(118, 118, 128, 0.08);
+  border: none;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-close-btn:hover {
+  background: rgba(118, 118, 128, 0.15);
+  color: var(--text-main);
+}
+
+.filter-drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  box-sizing: border-box;
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-section h4 {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Tag Chips */
+.filter-tag-chip {
+  padding: 8px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--glass-border);
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
+}
+
+.filter-tag-chip:active {
+  transform: scale(0.95);
+}
+
+.filter-tag-chip.active {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.25);
+}
+
+/* Bottom Action bar */
+.filter-drawer-actions {
+  padding: 16px 24px env(safe-area-inset-bottom);
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  gap: 12px;
+  background: var(--bg-color);
+  box-sizing: border-box;
+}
+
+.filter-action-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.filter-action-btn:active {
+  transform: scale(0.97);
+}
+
+.filter-action-btn.btn-reset {
+  background: rgba(118, 118, 128, 0.08);
+  color: var(--text-secondary);
+}
+
+.filter-action-btn.btn-reset:hover {
+  background: rgba(118, 118, 128, 0.12);
+  color: var(--text-main);
+}
+
+.filter-action-btn.btn-apply {
+  background: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(94, 92, 230, 0.3);
+}
+
+/* Animations */
+.animate-slide-up {
+  animation: slideUpSheet 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+

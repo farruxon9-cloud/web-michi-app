@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone, Edit3, CheckCircle2 } from 'lucide-react';
+import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone, Edit3, CheckCircle2, SlidersHorizontal, X } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './DriverFeed.css';
 
@@ -134,35 +134,93 @@ export const MOCK_JOBS = [
 export default function DriverFeed({ 
   onJobClick, isContractActive, verifiedCompanies = [], onShoukai, 
   jobs = MOCK_JOBS, userRole, profileData, onEditJob, onApply, applications = [],
-  searchQuery = '', setSearchQuery, activeSegment = 'all', setActiveSegment
+  searchQuery = '', setSearchQuery, activeSegment = 'all', setActiveSegment,
+  selectedLicenses = [], setSelectedLicenses,
+  selectedLangLevel = 'all', setSelectedLangLevel,
+  selectedBenefits = [], setSelectedBenefits,
+  minSalary = 0, setMinSalary
 }) {
   const { t } = useTranslation();
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
+  const getSalaryNumber = (salaryStr) => {
+    if (!salaryStr) return 0;
+    const num = parseInt(salaryStr.replace(/[^0-9]/g, ''), 10);
+    return isNaN(num) ? 0 : num;
+  };
 
-  // Filtrlash: segment va qidiruv bo'yicha
+  const hasActiveFilters = selectedLicenses.length > 0 || selectedLangLevel !== 'all' || selectedBenefits.length > 0 || minSalary > 0;
+
+  const handleResetFilters = () => {
+    setSelectedLicenses([]);
+    setSelectedLangLevel('all');
+    setSelectedBenefits([]);
+    setMinSalary(0);
+  };
+
+  // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
   const filteredJobs = jobs.filter(job => {
     const matchSegment = activeSegment === 'all' 
       || (activeSegment === 'permanent' && job.type === 'fulltime')
       || (activeSegment === 'hourly' && (job.type === 'parttime' || job.type === 'contract'));
+      
     const matchSearch = !searchQuery || 
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchSegment && matchSearch;
+      job.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // 1. License filter
+    const matchLicense = selectedLicenses.length === 0 || selectedLicenses.includes(job.license);
+
+    // 2. Japanese level filter (visible if user level >= job required level)
+    const userVal = { 'all': 4, 'none': 0, 'n5_n4': 1, 'n3': 2, 'n2_n1': 3 }[selectedLangLevel];
+    const jobVal = {
+      'foreigners_nolang': 0,
+      'foreigners_ok': 0,
+      'foreigners_visa': 1,
+      'foreigners_n3': 2,
+      'foreigners_n2': 3
+    }[job.foreigners] || 0;
+    const matchLang = userVal >= jobVal;
+
+    // 3. Benefits filter (all selected benefits must match)
+    const matchBenefits = selectedBenefits.every(benefit => {
+      if (benefit === 'housing') return job.housing && job.housing !== 'housing_none';
+      if (benefit === 'foreigner') return job.foreigners && job.foreigners !== 'foreigners_none';
+      if (benefit === 'bonus') return job.bonus && job.bonus !== 'bonus_none';
+      if (benefit === 'insurance') return job.insurance && job.insurance.startsWith('insurance_');
+      return true;
+    });
+
+    // 4. Salary filter
+    const matchSalary = minSalary === 0 || getSalaryNumber(job.salary) >= minSalary;
+
+    return matchSegment && matchSearch && matchLicense && matchLang && matchBenefits && matchSalary;
   });
 
   return (
     <div className="feed-container fade-in">
       {/* ====== QIDIRUV VA SEGMENT BOSHQARUVI ====== */}
       <div className="feed-header glass">
-        <div className="search-bar">
-          <Search size={20} color="#8E8E93" />
-          <input 
-            type="text" 
-            placeholder={t('searchPlaceholder', "Shahar yoki kompaniya nomi...")} 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="search-row">
+          <div className="search-bar">
+            <Search size={20} color="#8E8E93" />
+            <input 
+              type="text" 
+              placeholder={t('searchPlaceholder', "Shahar yoki kompaniya nomi...")} 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <button 
+            className={`filter-toggle-btn ${hasActiveFilters ? 'active' : ''}`}
+            onClick={() => setIsFilterDrawerOpen(true)}
+            title={t('advancedFilters', 'Kengaytirilgan filtrlar')}
+          >
+            <SlidersHorizontal size={20} />
+            {hasActiveFilters && <span className="filter-badge"></span>}
+          </button>
         </div>
 
         <div className="segmented-control">
@@ -348,6 +406,138 @@ export default function DriverFeed({
           </div>
         )}
       </div>
+
+      {/* ====== PREMIUM FILTER DRAWER ====== */}
+      {isFilterDrawerOpen && (
+        <div className="filter-drawer-overlay animate-fade-in" onClick={() => setIsFilterDrawerOpen(false)}>
+          <div className="filter-drawer glass animate-slide-up" onClick={(e) => e.stopPropagation()}>
+            <div className="filter-drawer-header">
+              <h3>{t('advancedFilters', 'Kengaytirilgan filtrlar')}</h3>
+              <button className="filter-close-btn" onClick={() => setIsFilterDrawerOpen(false)} aria-label="Close">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="filter-drawer-content hide-scrollbar">
+              {/* Category 1: Licenses */}
+              <div className="filter-section">
+                <h4>{t('filterLicenses', 'Haydovchilik guvohnomasi')}</h4>
+                <div className="filter-tags">
+                  {[
+                    { id: 'lic_futsu', label: t('lic_futsu', 'Futsu (Yengil)') },
+                    { id: 'lic_chugata', label: t('lic_chugata', 'Chugata (O\'rta)') },
+                    { id: 'lic_oogata', label: t('lic_oogata', 'Oogata (Katta)') },
+                    { id: 'lic_kenin', label: t('lic_kenin', 'Ken\'in (Trailer)') },
+                    { id: 'tech_forklift', label: t('tech_forklift', 'Forklift') }
+                  ].map(item => {
+                    const isSelected = selectedLicenses.includes(item.id);
+                    return (
+                      <button 
+                        key={item.id} 
+                        className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
+                        onClick={() => {
+                          setSelectedLicenses(prev => 
+                            prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]
+                          );
+                        }}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Category 2: Japanese Level */}
+              <div className="filter-section">
+                <h4>{t('filterJapanese', 'Yapon tili darajasi')}</h4>
+                <div className="filter-tags">
+                  {[
+                    { id: 'all', label: t('lang_all', 'Barchasi') },
+                    { id: 'none', label: t('lang_none', 'Talab etilmaydi') },
+                    { id: 'n5_n4', label: t('lang_n5_n4', 'N5 / N4 (Boshlang\'ich)') },
+                    { id: 'n3', label: t('lang_n3', 'N3 (Suhbat)') },
+                    { id: 'n2_n1', label: t('lang_n2_n1', 'N2 / N1 (Erkin)') }
+                  ].map(item => {
+                    const isSelected = selectedLangLevel === item.id;
+                    return (
+                      <button 
+                        key={item.id} 
+                        className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
+                        onClick={() => setSelectedLangLevel(item.id)}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Category 3: Benefits */}
+              <div className="filter-section">
+                <h4>{t('filterBenefits', 'Imtiyozlar va Sharoitlar')}</h4>
+                <div className="filter-tags">
+                  {[
+                    { id: 'housing', label: t('housing_dorm', 'Yotoqxona / Uy-joy') },
+                    { id: 'foreigner', label: t('foreigners_ok', 'Chet elliklarga mos') },
+                    { id: 'bonus', label: t('bonus_2', 'Bonuslar bor') },
+                    { id: 'insurance', label: t('insurance_full', 'Sug\'urta mavjud') }
+                  ].map(item => {
+                    const isSelected = selectedBenefits.includes(item.id);
+                    return (
+                      <button 
+                        key={item.id} 
+                        className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
+                        onClick={() => {
+                          setSelectedBenefits(prev => 
+                            prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]
+                          );
+                        }}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Category 4: Minimum Salary */}
+              <div className="filter-section">
+                <h4>{t('filterSalary', 'Minimal oylik maosh')}</h4>
+                <div className="filter-tags">
+                  {[
+                    { id: 0, label: t('salary_all', 'Barchasi') },
+                    { id: 250000, label: '¥250,000+' },
+                    { id: 350000, label: '¥350,000+' },
+                    { id: 450000, label: '¥450,000+' }
+                  ].map(item => {
+                    const isSelected = minSalary === item.id;
+                    return (
+                      <button 
+                        key={item.id} 
+                        className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
+                        onClick={() => setMinSalary(item.id)}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="filter-drawer-actions">
+              <button className="filter-action-btn btn-reset" onClick={handleResetFilters}>
+                {t('clearFilters', 'Tozalash')}
+              </button>
+              <button className="filter-action-btn btn-apply" onClick={() => setIsFilterDrawerOpen(false)}>
+                {t('applyFilters', 'Filtrni qo\'llash')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

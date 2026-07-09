@@ -9,7 +9,11 @@ export default function VoiceAssistant({
   jobs = [], schools = [], profileData = {}, applications = [],
   selectedJob, selectedSchool,
   setJobSearchQuery, setJobActiveSegment, setAcademySearchQuery,
-  handleApplyJob, handleApplySchool, handleShoukai, userRole
+  handleApplyJob, handleApplySchool, handleShoukai, userRole,
+  selectedLicenses, setSelectedLicenses,
+  selectedLangLevel, setSelectedLangLevel,
+  selectedBenefits, setSelectedBenefits,
+  minSalary, setMinSalary
 }) {
   const { t, i18n } = useTranslation();
   const defaultKey = localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
@@ -576,7 +580,7 @@ COMMAND RULES:
 - TOGGLE_THEME: change/toggle dark mode or light mode
 - CHANGE_LANGUAGE: change language (Uzbek, Japanese, English)
 - OPEN_RESUME: open resume builder
-- FILTER_JOBS: search or filter jobs. Must return parameter inside json: "parameters": {"searchQuery": "<location or company>", "segment": "all|permanent|hourly"}
+- FILTER_JOBS: search or filter jobs. Must return parameter inside json: "parameters": {"searchQuery": "<location or company>", "segment": "all|permanent|hourly", "licenses": ["lic_futsu"|"lic_chugata"|"lic_oogata"|"lic_kenin"|"tech_forklift"], "langLevel": "all"|"none"|"n5_n4"|"n3"|"n2_n1", "benefits": ["housing"|"foreigner"|"bonus"|"insurance"], "minSalary": 0|250000|350000|450000}
 - FILTER_ACADEMIES: search or filter schools. Must return parameter inside json: "parameters": {"searchQuery": "<location or school name>"}
 - APPLY_TO_CURRENT: apply to the current active job or school that the user is currently viewing. Only use this if user explicitly asks to apply or register to the one they are viewing.
 - SHARE_CURRENT: share or refer the current job/school. Only use this if user asks to refer, share or do shoukai.
@@ -762,6 +766,20 @@ Return ONLY the raw JSON object, no markdown.
           const params = result.parameters || {};
           setJobSearchQuery(params.searchQuery || '');
           setJobActiveSegment(params.segment || 'all');
+          
+          if (setSelectedLicenses && params.licenses) {
+            setSelectedLicenses(Array.isArray(params.licenses) ? params.licenses : [params.licenses]);
+          }
+          if (setSelectedLangLevel && params.langLevel) {
+            setSelectedLangLevel(params.langLevel);
+          }
+          if (setSelectedBenefits && params.benefits) {
+            setSelectedBenefits(Array.isArray(params.benefits) ? params.benefits : [params.benefits]);
+          }
+          if (setMinSalary && params.minSalary !== undefined) {
+            setMinSalary(Number(params.minSalary));
+          }
+          
           setActiveTab('jobs');
         }
         if (shouldClose) onClose();

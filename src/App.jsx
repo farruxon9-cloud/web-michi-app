@@ -211,6 +211,12 @@ function App() {
   const [jobActiveSegment, setJobActiveSegment] = useState('all');
   const [academySearchQuery, setAcademySearchQuery] = useState('');
 
+  // Advanced Filter States (For premium filter drawer and AI control)
+  const [selectedLicenses, setSelectedLicenses] = useState([]);
+  const [selectedLangLevel, setSelectedLangLevel] = useState('all');
+  const [selectedBenefits, setSelectedBenefits] = useState([]);
+  const [minSalary, setMinSalary] = useState(0);
+
   const togglePlay = () => {
     setIsPlaying(prev => !prev);
   };
@@ -897,6 +903,14 @@ function App() {
             setSearchQuery={setJobSearchQuery}
             activeSegment={jobActiveSegment}
             setActiveSegment={setJobActiveSegment}
+            selectedLicenses={selectedLicenses}
+            setSelectedLicenses={setSelectedLicenses}
+            selectedLangLevel={selectedLangLevel}
+            setSelectedLangLevel={setSelectedLangLevel}
+            selectedBenefits={selectedBenefits}
+            setSelectedBenefits={setSelectedBenefits}
+            minSalary={minSalary}
+            setMinSalary={setMinSalary}
           />
         );
       case 'academy':
@@ -1079,6 +1093,14 @@ function App() {
         handleApplySchool={handleApplySchool}
         handleShoukai={handleShoukai}
         userRole={userRole}
+        selectedLicenses={selectedLicenses}
+        setSelectedLicenses={setSelectedLicenses}
+        selectedLangLevel={selectedLangLevel}
+        setSelectedLangLevel={setSelectedLangLevel}
+        selectedBenefits={selectedBenefits}
+        setSelectedBenefits={setSelectedBenefits}
+        minSalary={minSalary}
+        setMinSalary={setMinSalary}
       />
 
       <audio 
