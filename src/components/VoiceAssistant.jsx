@@ -208,91 +208,142 @@ export default function VoiceAssistant({
     setHasStarted(false);
   };
 
-  // Speaks response text back to the driver using premium neural ElevenLabs or browser fallback
+  // Helper to convert base64 to ArrayBuffer
+  const base64ToArrayBuffer = (base64) => {
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  };
+
+  // Speaks response text back to the driver using a cascading fallback hierarchy:
+  // 1. ElevenLabs Neural Voice (if VITE_ELEVENLABS_API_KEY is configured and quota permits)
+  // 2. Google Cloud Wavenet TTS (utilizes the universal Gemini API key, offers 1M chars/month free)
+  // 3. Azure Neural TTS (if VITE_AZURE_TTS_KEY is configured)
+  // 4. Standard Browser Web Speech Synthesis (100% free and offline fallback)
   const speakResponse = async (text, lang = 'ja', onEndCallback) => {
     if (!isActiveRef.current) return;
     setStatus('speaking');
 
-    // 1. Premium Neural TTS via ElevenLabs
-    const elevenKey = localStorage.getItem('michi_elevenlabs_api_key') || import.meta.env.VITE_ELEVENLABS_API_KEY || '';
-    const elevenVoiceId = localStorage.getItem('michi_elevenlabs_voice_id') || '21m00Tcm4TlvDq8ikWAM'; // Rachel multilingual
+    // Cancel any previous buffer audio source immediately
+    if (activeAudioSourceRef.current) {
+      try { activeAudioSourceRef.current.stop(); } catch(e){}
+    }
 
+    const langMap = { 'ja': 'ja-JP', 'uz': 'uz-UZ', 'en': 'en-US' };
+    const targetLang = langMap[lang] || 'ja-JP';
+
+    // 1. Try ElevenLabs
+    const elevenKey = localStorage.getItem('michi_elevenlabs_api_key') || import.meta.env.VITE_ELEVENLABS_API_KEY || '';
+    const elevenVoiceId = localStorage.getItem('michi_elevenlabs_voice_id') || '21m00Tcm4TlvDq8ikWAM';
     if (elevenKey) {
       try {
-        if (activeAudioSourceRef.current) {
-          try { activeAudioSourceRef.current.stop(); } catch(e){}
-        }
-
+        console.log("Cascading TTS: Trying ElevenLabs...");
         const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'xi-api-key': elevenKey
-          },
+          headers: { 'Content-Type': 'application/json', 'xi-api-key': elevenKey },
           body: JSON.stringify({
             text: text,
-            model_id: 'eleven_multilingual_v2', // Supports Uzbek, Japanese, English
-            voice_settings: {
-              stability: 0.5,
-              similarity_boost: 0.75
-            }
+            model_id: 'eleven_multilingual_v2',
+            voice_settings: { stability: 0.5, similarity_boost: 0.75 }
           })
         });
-
-        if (!response.ok) {
-          throw new Error('ElevenLabs TTS call failed');
+        if (response.ok) {
+          const arrayBuffer = await response.arrayBuffer();
+          await playWebAudio(arrayBuffer, onEndCallback);
+          return;
         }
-
-        const arrayBuffer = await response.arrayBuffer();
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        audioContextRef.current = audioCtx;
-        
-        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-        const source = audioCtx.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(audioCtx.destination);
-        activeAudioSourceRef.current = source;
-
-        let resolved = false;
-        const cleanUpEleven = () => {
-          if (resolved) return;
-          resolved = true;
-          setStatus('idle');
-          if (onEndCallback) onEndCallback();
-        };
-
-        source.onended = () => {
-          cleanUpEleven();
-        };
-
-        source.start(0);
-        return; // Success!
-
-      } catch (err) {
-        console.warn('ElevenLabs Premium TTS failed, falling back to Web Speech Synthesis:', err);
+        console.warn("ElevenLabs TTS failed or rate-limited. Cascading to Google Cloud TTS...");
+      } catch (e) {
+        console.warn("ElevenLabs error:", e);
       }
     }
 
-    // 2. Fallback Speech Synthesis
+    // 2. Try Google Cloud Wavenet TTS (uses same universal Gemini Key!)
+    if (apiKey) {
+      try {
+        console.log("Cascading TTS: Trying Google Cloud TTS...");
+        const googleVoiceMap = {
+          'ja-JP': 'ja-JP-Wavenet-A',
+          'uz-UZ': 'uz-UZ-Wavenet-A',
+          'en-US': 'en-US-Wavenet-C'
+        };
+        const voiceName = googleVoiceMap[targetLang] || 'ja-JP-Wavenet-A';
+
+        const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            input: { text },
+            voice: { languageCode: targetLang, name: voiceName },
+            audioConfig: { audioEncoding: 'MP3' }
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.audioContent) {
+            const arrayBuffer = base64ToArrayBuffer(data.audioContent);
+            await playWebAudio(arrayBuffer, onEndCallback);
+            return;
+          }
+        }
+        console.warn("Google Cloud TTS failed or rate-limited. Cascading to Microsoft Azure TTS...");
+      } catch (e) {
+        console.warn("Google Cloud TTS error:", e);
+      }
+    }
+
+    // 3. Try Microsoft Azure TTS (if VITE_AZURE_TTS_KEY is set)
+    const azureKey = localStorage.getItem('michi_azure_tts_key') || import.meta.env.VITE_AZURE_TTS_KEY || '';
+    const azureRegion = localStorage.getItem('michi_azure_tts_region') || import.meta.env.VITE_AZURE_TTS_REGION || 'eastus';
+    if (azureKey) {
+      try {
+        console.log("Cascading TTS: Trying Azure TTS...");
+        const azureVoiceMap = {
+          'ja-JP': 'ja-JP-NanamiNeural',
+          'uz-UZ': 'uz-UZ-MadinaNeural',
+          'en-US': 'en-US-JennyNeural'
+        };
+        const voiceName = azureVoiceMap[targetLang] || 'ja-JP-NanamiNeural';
+
+        const response = await fetch(`https://${azureRegion}.tts.speech.microsoft.com/cognitiveservices/v1`, {
+          method: 'POST',
+          headers: {
+            'Ocp-Apim-Subscription-Key': azureKey,
+            'Content-Type': 'application/ssml+xml',
+            'X-Microsoft-OutputFormat': 'audio-16khz-128kbitrate-mono-mp3',
+            'User-Agent': 'MichiApp'
+          },
+          body: `<speak version='1.0' xml:lang='${targetLang}'><voice xml:lang='${targetLang}' xml:gender='Female' name='${voiceName}'>${text}</voice></speak>`
+        });
+        if (response.ok) {
+          const arrayBuffer = await response.arrayBuffer();
+          await playWebAudio(arrayBuffer, onEndCallback);
+          return;
+        }
+        console.warn("Azure TTS failed. Cascading to native device synthesis...");
+      } catch (e) {
+        console.warn("Azure TTS error:", e);
+      }
+    }
+
+    // 4. Default Offline Fallback: Web Speech Synthesis
+    console.log("Cascading TTS: Falling back to device Web Speech Synthesis...");
     if (!('speechSynthesis' in window)) {
       if (onEndCallback) onEndCallback();
       setStatus('idle');
       return;
     }
 
-    window.speechSynthesis.cancel(); // Cancel any ongoing speech
-
+    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Map language code to BCP-47
-    const langMap = {
-      'ja': 'ja-JP',
-      'uz': 'en-US', // Fallback to English if Uzbek is not supported by device's TTS
-      'en': 'en-US'
-    };
-    utterance.lang = langMap[lang] || 'ja-JP';
+    const standardLangMap = { 'ja': 'ja-JP', 'uz': 'en-US', 'en': 'en-US' };
+    utterance.lang = standardLangMap[lang] || 'ja-JP';
 
-    // Find native voice
     const voices = window.speechSynthesis.getVoices();
     const jaVoice = voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
     if (jaVoice) {
@@ -307,9 +358,7 @@ export default function VoiceAssistant({
       setStatus('idle');
     };
 
-    // Safety timer to prevent speech engine getting stuck
     const safetyTimer = setTimeout(() => {
-      console.warn('Speech synthesis safety timer fired.');
       window.speechSynthesis.cancel();
       cleanUp();
       if (onEndCallback) onEndCallback();
@@ -328,6 +377,38 @@ export default function VoiceAssistant({
 
     synthesisUtteranceRef.current = utterance;
     window.speechSynthesis.speak(utterance);
+  };
+
+  // Helper to decode and play audio buffer with Web Audio API
+  const playWebAudio = async (arrayBuffer, onEndCallback) => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioContextRef.current = audioCtx;
+      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      
+      const source = audioCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioCtx.destination);
+      activeAudioSourceRef.current = source;
+
+      let resolved = false;
+      const cleanUpAudio = () => {
+        if (resolved) return;
+        resolved = true;
+        setStatus('idle');
+        if (onEndCallback) onEndCallback();
+      };
+
+      source.onended = () => {
+        cleanUpAudio();
+      };
+
+      source.start(0);
+    } catch (e) {
+      console.error("playWebAudio failed:", e);
+      if (onEndCallback) onEndCallback();
+      setStatus('idle');
+    }
   };
 
   // Get screen context for READ_SCREEN
