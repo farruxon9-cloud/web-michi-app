@@ -29,6 +29,7 @@ export default function VoiceAssistant({
   const [showPill, setShowPill] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [conversationHistory, setConversationHistory] = useState([]); // Array of { role, parts }
+  const [textInput, setTextInput] = useState('');
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -37,6 +38,7 @@ export default function VoiceAssistant({
   const synthesisUtteranceRef = useRef(null);
   const pillTimeoutRef = useRef(null);
   const relistenTimeoutRef = useRef(null);
+  const chatEndRef = useRef(null);
 
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
@@ -377,6 +379,174 @@ export default function VoiceAssistant({
     return null;
   };
 
+  // Scroll conversation log to bottom on updates
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [conversationHistory, status]);
+
+  // Handle manual typing input submit
+  const handleSendText = (e) => {
+    e.preventDefault();
+    if (!textInput.trim()) return;
+    const userText = textInput.trim();
+    setTextInput('');
+
+    setTranscript(userText);
+    setStatus('thinking');
+    processTextWithGemini(userText);
+  };
+
+  // Process manual text query with Gemini 2.0 Flash (with system instructions and structured app data)
+  const processTextWithGemini = async (text) => {
+    if (!isActiveRef.current) return;
+    setStatus('thinking');
+
+    const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
+    
+    // Inject dynamic data context for full content awareness
+    const dataContext = `
+CURRENT USER PROFILE:
+- Name: ${profileData?.fullName || 'Unknown'}
+- Selected Role: ${userRole || 'driver'}
+- Nationality: ${profileData?.nationality || 'Unknown'}
+- Driver Licenses: ${JSON.stringify(profileData?.driverLicenses || [])}
+- Technical Certificates: ${JSON.stringify(profileData?.techCertificates || [])}
+
+CURRENT USER JOB APPLICATIONS:
+${JSON.stringify((applications || []).map(app => ({
+  company: app.company,
+  jobTitle: app.title,
+  status: app.status,
+  appliedDate: app.appliedDate
+})))}
+
+AVAILABLE DRIVER JOBS IN APP:
+${JSON.stringify((jobs || []).map(job => ({
+  id: job.id,
+  company: job.company,
+  title: job.title,
+  location: job.location,
+  salary: job.salary,
+  licenseRequired: job.licenseRequired || job.license || []
+})))}
+
+AVAILABLE DRIVING ACADEMIES IN APP:
+${JSON.stringify((schools || []).map(school => ({
+  id: school.id,
+  name: school.name,
+  location: school.location,
+  languages: school.languages || school.langs || [],
+  price: school.price
+})))}
+
+CURRENT USER VIEWING CONTEXT:
+- Currently viewing job detail: ${selectedJob ? `Yes, viewing job "${selectedJob.title}" at "${selectedJob.company}"` : 'No'}
+- Currently viewing driving academy detail: ${selectedSchool ? `Yes, viewing school "${selectedSchool.name}"` : 'No'}
+`;
+
+    const systemPrompt = `
+You are "Michi AI" — the smart voice assistant for the Michi app (a premium Japanese platform for truck driver jobs and driving academy courses).
+The user is sending you a text message. You must analyze the message and return a JSON structure.
+
+Your task: analyze the user's message and return a JSON object:
+{
+  "userTranscription": "${text}",
+  "command": "<COMMAND or NONE>",
+  "parameters": <optional JSON object with parameters for FILTER_JOBS or FILTER_ACADEMIES>,
+  "response": "<short natural response in user's language confirming the action or answering the question>",
+  "language": "<detected language: uz, ja, or en>"
+}
+
+CRITICAL FOR CONVERSATION UX:
+1. Always populate "userTranscription" with the exact query text: "${text}".
+2. Keep the "response" EXTREMELY short and concise (under 2 sentences).
+3. If user writes in Uzbek, respond in Uzbek. If Japanese, respond in Japanese. Same for English.
+4. You have access to real-time APP DATA. Answer user questions about jobs, schools, user applications, and profile details using the provided context.
+
+COMMAND RULES:
+- NAVIGATE_TO_HOME: home, dashboard, main page
+- NAVIGATE_TO_JOBS: jobs, vacancies, work
+- NAVIGATE_TO_ACADEMY: driving school, license, academy, courses
+- NAVIGATE_TO_PROFILE: profile, my page, settings
+- MUSIC_PLAY: play music, resume song
+- MUSIC_PAUSE: stop/pause music
+- MUSIC_NEXT: next track, skip
+- READ_SCREEN: read what's on screen
+- TOGGLE_THEME: change/toggle dark mode or light mode
+- CHANGE_LANGUAGE: change language (Uzbek, Japanese, English)
+- OPEN_RESUME: open resume builder
+- FILTER_JOBS: search or filter jobs. Must return parameter inside json: "parameters": {"searchQuery": "<location or company>", "segment": "all|permanent|hourly", "licenses": ["lic_futsu"|"lic_chugata"|"lic_oogata"|"lic_kenin"|"tech_forklift"], "langLevel": "all"|"none"|"n5_n4"|"n3"|"n2_n1", "benefits": ["housing"|"foreigner"|"bonus"|"insurance"], "minSalary": 0|250000|350000|450000}
+- FILTER_ACADEMIES: search or filter schools. Must return parameter inside json: "parameters": {"searchQuery": "<location or school name>"}
+- APPLY_TO_CURRENT: apply to the current active job or school that the user is currently viewing.
+- SHARE_CURRENT: share or refer the current job/school.
+- CALL_COMPANY: call the company of the current job/school.
+- NONE: general conversation, questions, greetings
+
+Return ONLY the raw JSON object, no markdown wrappers.
+`;
+
+    const recentHistory = conversationHistory.slice(-4);
+    const contents = [
+      ...recentHistory,
+      {
+        role: 'user',
+        parts: [
+          { text: text }
+        ]
+      }
+    ];
+
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents,
+            systemInstruction: {
+              parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
+            },
+            generationConfig: {
+              responseMimeType: "application/json"
+            }
+          })
+        }
+      );
+
+      if (!isActiveRef.current) return;
+
+      if (!response.ok) {
+        throw new Error('api_failed');
+      }
+
+      const data = await response.json();
+      const rawText = data.candidates[0].content.parts[0].text;
+      const aiResult = JSON.parse(rawText.trim());
+
+      handleGeminiSuccess(aiResult, text);
+
+    } catch (error) {
+      if (!isActiveRef.current) return;
+      console.error('Gemini API Text Error:', error);
+      setStatus('error');
+      
+      const errorText = t('aiError', 'Tushunib bo\'lmadi. Qaytadan urinib ko\'ring.');
+      setErrorMessage(errorText);
+      speakResponse(errorText, 'uz', () => {
+        if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+        pillTimeoutRef.current = setTimeout(() => {
+          setShowPill(false);
+          if (isVoiceStandbyRef.current) scheduleRelisten();
+        }, 4000);
+      });
+    }
+  };
+
   // Start speech recording sequence (MediaRecorder Audio Mode)
   const startListeningSequence = () => {
     if (!isActiveRef.current) return;
@@ -591,12 +761,6 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
     const recentHistory = conversationHistory.slice(-4);
     const contents = [
-      {
-        role: 'user',
-        parts: [
-          { text: `System Instruction: ${systemPrompt}\n${screenContext}\n${dataContext}` }
-        ]
-      },
       ...recentHistory,
       {
         role: 'user',
@@ -621,6 +785,9 @@ Return ONLY the raw JSON object, no markdown wrappers.
           },
           body: JSON.stringify({
             contents,
+            systemInstruction: {
+              parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
+            },
             generationConfig: {
               responseMimeType: "application/json"
             }
@@ -903,64 +1070,133 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
   // Render ambient voice control interface
   return (
-    <>
-      {/* Floating subtitle bubble (shows spoken inputs and AI responses briefly) */}
-      {showPill && (
-        <div className="voice-chat-bubble-pill animate-slide-in">
-          <div className="voice-pill-content">
-            {transcript && (
-              <div className="pill-segment user-segment">
-                <span className="pill-dot user-dot"></span>
-                <p className="pill-text"><strong>{t('userSaid', 'Siz')}:</strong> {transcript}</p>
-              </div>
-            )}
-            
-            {aiResponseText && (
-              <div className="pill-segment ai-segment">
-                <span className="pill-dot ai-dot"></span>
-                <p className="pill-text ja-text"><strong>AI:</strong> {aiResponseText}</p>
-              </div>
-            )}
-
-            {status === 'thinking' && !aiResponseText && (
-              <div className="pill-segment thinking-segment">
-                <span className="pill-dot thinking-dot"></span>
-                <p className="pill-text italic">{t('aiThinking', 'AI fikrlamoqda...')}</p>
-              </div>
-            )}
-
-            {errorMessage && (
-              <div className="pill-segment error-segment">
-                <span className="pill-dot error-dot"></span>
-                <p className="pill-text error-text">{errorMessage}</p>
-              </div>
-            )}
+    <div className="voice-assistant-panel-overlay animate-fade-in">
+      <div className="voice-panel-card glass">
+        
+        {/* Panel Header */}
+        <div className="voice-panel-header">
+          <div className="voice-header-left">
+            <div className={`voice-status-dot ${status === 'listening' ? 'pulse-green' : status === 'thinking' ? 'pulse-purple' : status === 'speaking' ? 'pulse-blue' : ''}`}></div>
+            <h3>Michi AI Assistant</h3>
           </div>
-          <button className="voice-pill-close" onClick={() => setShowPill(false)}>
-            <X size={12} />
-          </button>
+          <div className="voice-header-right">
+            <button className="voice-settings-icon-btn" onClick={clearApiKey} title={t('clearApiKey', 'API Kalitni o\'chirish')}>
+              <Key size={16} />
+            </button>
+            <button className="voice-panel-close-btn" onClick={onClose} aria-label="Close Assistant">
+              <X size={18} />
+            </button>
+          </div>
         </div>
-      )}
 
-      {/* Siri-Style Ambient Glow Wave Bar (shown bottom center, above nav bar) */}
-      {status !== 'idle' && !isVoiceStandby && (
-        <div className={`voice-ambient-glow-container ${status}`}>
-          <div className="voice-glow-visualizer-orb">
-            <div className="ai-liquid-orb-glow"></div>
-            <div className="ai-liquid-orb-core">
-              <Sparkles size={16} color="#ffffff" fill="#ffffff" />
+        {/* Conversation Log & Scroll container */}
+        <div className="voice-conversation-log">
+          {conversationHistory.length === 0 ? (
+            <div className="voice-welcome-container animate-fade-in">
+              <div className="voice-welcome-orb animate-pulse-slow">
+                <Sparkles size={32} color="#5E5CE6" fill="#5E5CE6" />
+              </div>
+              <h4>{t('aiWelcomeTitle', 'Qanday yordam bera olaman?')}</h4>
+              <p>{t('aiWelcomeSubtitle', 'Menga ovozli buyruq bering yoki quyidagi takliflardan birini tanlang.')}</p>
+              
+              {/* Suggestion Chips */}
+              <div className="voice-suggestion-chips">
+                <button className="suggestion-chip" onClick={() => { setTextInput("Tokyodagi ishlarni ko'rsat"); setTranscript("Tokyodagi ishlarni ko'rsat"); setStatus('thinking'); processTextWithGemini("Tokyodagi ishlarni ko'rsat"); }}>
+                  📍 Tokyo ishlari
+                </button>
+                <button className="suggestion-chip" onClick={() => { setTextInput("Yapon tiliga o'zgartir"); setTranscript("Yapon tiliga o'zgartir"); setStatus('thinking'); processTextWithGemini("Yapon tiliga o'zgartir"); }}>
+                  🇯🇵 日本語にする
+                </button>
+                <button className="suggestion-chip" onClick={() => { setTextInput("Musiqani qo'y"); setTranscript("Musiqani qo'y"); setStatus('thinking'); processTextWithGemini("Musiqani qo'y"); }}>
+                  🎵 Musiqa qo'yish
+                </button>
+                <button className="suggestion-chip" onClick={() => { setTextInput("Profilimni ochib ber"); setTranscript("Profilimni ochib ber"); setStatus('thinking'); processTextWithGemini("Profilimni ochib ber"); }}>
+                  👤 Profilni ochish
+                </button>
+                <button className="suggestion-chip" onClick={() => { setTextInput("Tungi rejimga o't"); setTranscript("Tungi rejimga o't"); setStatus('thinking'); processTextWithGemini("Tungi rejimga o't"); }}>
+                  🌙 Tungi rejim
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="voice-messages-list">
+              {conversationHistory.map((msg, index) => (
+                <div key={index} className={`voice-message-bubble ${msg.role === 'user' ? 'user-bubble' : 'ai-bubble'}`}>
+                  <div className="bubble-content">
+                    <p>{msg.parts[0].text}</p>
+                  </div>
+                </div>
+              ))}
+              
+              {status === 'thinking' && (
+                <div className="voice-message-bubble ai-bubble thinking-bubble animate-pulse-slow">
+                  <div className="bubble-content">
+                    <div className="typing-dots">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div ref={chatEndRef} />
+            </div>
+          )}
+        </div>
+
+        {/* Ambient Wave orb visualizer */}
+        <div className={`voice-visualizer-orb-section ${status}`}>
+          <div className="voice-orb-glow-backdrop"></div>
+          <div className="voice-orb-core-container" onClick={status === 'listening' ? stopAudioRecording : startListeningSequence}>
+            <div className="voice-orb-liquid"></div>
+            <div className="voice-orb-icon">
+              {status === 'listening' ? (
+                <Mic size={24} color="#ffffff" className="animate-scale-pulse" />
+              ) : (
+                <MicOff size={24} color="#ffffff" />
+              )}
             </div>
           </div>
-          <div className="voice-ambient-info">
-            {status === 'listening' && <span>{t('aiListeningLabel', 'Tinglamoqda... (Gapiring)')}</span>}
-            {status === 'thinking' && <span>{t('aiThinkingLabel', 'Fikrlamoqda...')}</span>}
-            {status === 'speaking' && <span>{t('aiSpeakingLabel', 'Javob bermoqda...')}</span>}
-          </div>
-          <button className="voice-ambient-stop-btn" onClick={stopAllVoiceActivities} title="To'xtatish">
-            <X size={14} />
-          </button>
+          <span className="voice-status-label-text">
+            {status === 'listening' && t('aiListeningLabel', 'Tinglamoqda... (Gapiring)')}
+            {status === 'thinking' && t('aiThinkingLabel', 'Fikrlamoqda...')}
+            {status === 'speaking' && t('aiSpeakingLabel', 'Javob bermoqda...')}
+            {status === 'idle' && t('aiIdleLabel', 'Mikrofonni yoqish uchun bosing')}
+            {status === 'error' && (errorMessage || t('speechError', 'Xatolik yuz berdi.'))}
+          </span>
         </div>
-      )}
-    </>
+
+        {/* Controls footer */}
+        <div className="voice-panel-footer">
+          <form onSubmit={handleSendText} className="voice-manual-input-form">
+            <input 
+              type="text" 
+              placeholder={t('aiTypePlaceholder', 'Yozma buyruq yuborish...')} 
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              className="voice-manual-input-field"
+            />
+            <button type="submit" className="voice-manual-send-btn" disabled={!textInput.trim()}>
+              <Sparkles size={16} />
+            </button>
+          </form>
+          
+          <div className="voice-standby-control">
+            <label className="standby-switch-label">
+              <input 
+                type="checkbox" 
+                checked={isVoiceStandby}
+                onChange={(e) => setIsVoiceStandby(e.target.checked)}
+                className="standby-checkbox"
+              />
+              <span className="standby-switch-slider"></span>
+            </label>
+            <span className="standby-text-label">{t('continuousStandby', 'Uzluksiz tinglash')}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
   );
 }
