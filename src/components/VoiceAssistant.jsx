@@ -40,6 +40,9 @@ export default function VoiceAssistant({
   const pillTimeoutRef = useRef(null);
   const relistenTimeoutRef = useRef(null);
   const chatEndRef = useRef(null);
+  const activeAudioSourceRef = useRef(null);
+
+  const [elevenKeyTemp, setElevenKeyTemp] = useState(localStorage.getItem('michi_elevenlabs_api_key') || '');
 
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
@@ -130,6 +133,11 @@ export default function VoiceAssistant({
         mediaRecorderRef.current.stop();
       } catch (e) {}
     }
+    if (activeAudioSourceRef.current) {
+      try {
+        activeAudioSourceRef.current.stop();
+      } catch (e) {}
+    }
     if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
       try {
         audioContextRef.current.close();
@@ -172,17 +180,26 @@ export default function VoiceAssistant({
 
   const saveApiKey = (e) => {
     e.preventDefault();
-    if (!inputKeyTemp.trim()) return;
-    const cleanKey = inputKeyTemp.trim();
-    localStorage.setItem('michi_gemini_api_key', cleanKey);
-    setApiKey(cleanKey);
+    if (inputKeyTemp.trim()) {
+      const cleanKey = inputKeyTemp.trim();
+      localStorage.setItem('michi_gemini_api_key', cleanKey);
+      setApiKey(cleanKey);
+    }
+    const cleanElevenKey = elevenKeyTemp.trim();
+    if (cleanElevenKey) {
+      localStorage.setItem('michi_elevenlabs_api_key', cleanElevenKey);
+    } else {
+      localStorage.removeItem('michi_elevenlabs_api_key');
+    }
     setShowKeyInput(false);
   };
 
   const clearApiKey = () => {
     localStorage.removeItem('michi_gemini_api_key');
+    localStorage.removeItem('michi_elevenlabs_api_key');
     setApiKey('');
     setInputKeyTemp('');
+    setElevenKeyTemp('');
     setShowKeyInput(true);
     if (pillTimeoutRef.current) {
       clearTimeout(pillTimeoutRef.current);
@@ -191,16 +208,79 @@ export default function VoiceAssistant({
     setHasStarted(false);
   };
 
-  // Speaks response text back to the driver
-  const speakResponse = (text, lang = 'ja', onEndCallback) => {
+  // Speaks response text back to the driver using premium neural ElevenLabs or browser fallback
+  const speakResponse = async (text, lang = 'ja', onEndCallback) => {
     if (!isActiveRef.current) return;
+    setStatus('speaking');
+
+    // 1. Premium Neural TTS via ElevenLabs
+    const elevenKey = localStorage.getItem('michi_elevenlabs_api_key') || import.meta.env.VITE_ELEVENLABS_API_KEY || '';
+    const elevenVoiceId = localStorage.getItem('michi_elevenlabs_voice_id') || '21m00Tcm4TlvDq8ikWAM'; // Rachel multilingual
+
+    if (elevenKey) {
+      try {
+        if (activeAudioSourceRef.current) {
+          try { activeAudioSourceRef.current.stop(); } catch(e){}
+        }
+
+        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'xi-api-key': elevenKey
+          },
+          body: JSON.stringify({
+            text: text,
+            model_id: 'eleven_multilingual_v2', // Supports Uzbek, Japanese, English
+            voice_settings: {
+              stability: 0.5,
+              similarity_boost: 0.75
+            }
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('ElevenLabs TTS call failed');
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioContextRef.current = audioCtx;
+        
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioCtx.destination);
+        activeAudioSourceRef.current = source;
+
+        let resolved = false;
+        const cleanUpEleven = () => {
+          if (resolved) return;
+          resolved = true;
+          setStatus('idle');
+          if (onEndCallback) onEndCallback();
+        };
+
+        source.onended = () => {
+          cleanUpEleven();
+        };
+
+        source.start(0);
+        return; // Success!
+
+      } catch (err) {
+        console.warn('ElevenLabs Premium TTS failed, falling back to Web Speech Synthesis:', err);
+      }
+    }
+
+    // 2. Fallback Speech Synthesis
     if (!('speechSynthesis' in window)) {
       if (onEndCallback) onEndCallback();
+      setStatus('idle');
       return;
     }
 
     window.speechSynthesis.cancel(); // Cancel any ongoing speech
-    setStatus('speaking');
 
     const utterance = new SpeechSynthesisUtterance(text);
     
@@ -1035,15 +1115,28 @@ Return ONLY the raw JSON object, no markdown wrappers.
                   {t('apiRequiredDesc', 'Ovozli yordamchini ishlatish uchun bepul Google Gemini API kalitini kiriting. Kalit faqat brauzeringiz xotirasida xavfsiz saqlanadi.')}
                 </p>
                 <form onSubmit={saveApiKey} className="voice-key-form">
-                  <input 
-                    type="password" 
-                    placeholder="AIzaSy..." 
-                    value={inputKeyTemp} 
-                    onChange={(e) => setInputKeyTemp(e.target.value)}
-                    className="voice-key-input"
-                    required
-                  />
-                  <button type="submit" className="voice-key-btn btn-primary">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', textAlign: 'left' }}>
+                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Google Gemini API Key:</label>
+                    <input 
+                      type="password" 
+                      placeholder="AIzaSy..." 
+                      value={inputKeyTemp} 
+                      onChange={(e) => setInputKeyTemp(e.target.value)}
+                      className="voice-key-input"
+                      required
+                    />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', textAlign: 'left', marginTop: '6px' }}>
+                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>ElevenLabs API Key (Optional):</label>
+                    <input 
+                      type="password" 
+                      placeholder="Optional ElevenLabs key..." 
+                      value={elevenKeyTemp} 
+                      onChange={(e) => setElevenKeyTemp(e.target.value)}
+                      className="voice-key-input"
+                    />
+                  </div>
+                  <button type="submit" className="voice-key-btn btn-primary" style={{ marginTop: '8px' }}>
                     {t('saveKeyBtn', 'Saqlash')}
                   </button>
                 </form>
