@@ -461,77 +461,81 @@ export default function VoiceAssistant({
     return contexts[tab] || contexts['home'];
   };
 
-  // ===== Local Instant Interceptor for Voice Commands =====
+  const statusRef = useRef(status);
+  statusRef.current = status;
+
+  // ===== Local Instant Interceptor for Voice/Text Commands =====
+  // Matches local patterns in Uzbek, Japanese, and English to execute immediately on-device
   const interceptLocalCommand = (text) => {
     const cleanText = text.toLowerCase().trim();
     
     const matchers = [
       {
         command: 'NAVIGATE_TO_HOME',
-        regex: /(bosh sahifa|asosiy|uyga|uy|ホーム|メイン|トップ|dashboard|home)/i,
+        regex: /(bosh sahifa|asosiy|uyga|uy|boshiga|bosh sahifani|asosiy sahifaga|home|dashboard|go home|ホーム|メイン|トップ|ダッシュボード)/i,
         responses: {
           uz: "Bosh sahifaga o'tilmoqda.",
-          ja: "ホーム画面 ga o'taman.",
+          ja: "ホーム画面に移動します。",
           en: "Navigating to home page."
         }
       },
       {
         command: 'NAVIGATE_TO_JOBS',
-        regex: /(ish qidir|ishlar|ish|求人|仕事|vacancy|jobs|job)/i,
+        regex: /(ish qidir|ishlar|ish|vakansiyalar|ishlarni ko'rsat|ishlar bo'limi|求人|仕事|ワーク|トラックの仕事|vacancy|jobs|job|find jobs|work)/i,
         responses: {
           uz: "Ish e'lonlari sahifasiga o'tilmoqda.",
-          ja: "求人情報ページ ga o'taman.",
+          ja: "求人情報ページに移動します。",
           en: "Opening job listings."
         }
       },
       {
         command: 'NAVIGATE_TO_ACADEMY',
-        regex: /(maktab|avtomaktab|kurs|prava|免許|教習所|学校|academy|school)/i,
+        regex: /(maktab|avtomaktab|kurs|prava|guvohnoma|haydovchilik maktabi|免許|教習所|学校|アカデミー|ドライビングスクール|academy|school|driving school)/i,
         responses: {
           uz: "Avtomaktablar sahifasiga o'tilmoqda.",
-          ja: "自動車学校のページ ga o'taman.",
+          ja: "自動車学校のページに移動します。",
           en: "Opening driving schools page."
         }
       },
       {
         command: 'NAVIGATE_TO_PROFILE',
-        regex: /(sozlamalar|kabinet|プロフィール|マイページ|profile)/i,
+        regex: /(sozlamalar|kabinet|profilim|profilni och|mening sahifam|kabinetga|プロフィール|マイページ|設定|profile|my page|settings)/i,
         responses: {
           uz: "Profil sahifasiga o'tilmoqda.",
-          ja: "マイページ ga o'taman.",
+          ja: "マイページに移動します。",
           en: "Navigating to profile."
         }
       },
       {
         command: 'MUSIC_PLAY',
-        regex: /(musiqa qo'y|musiqa|qo'shiq qo'y|qo'shiq|play|music|音楽|曲|かけて|流して)/i,
+        regex: /(musiqa qo'y|musiqani|qo'shiq qo'y|qo'shiqni|yoq|boshla|ijro|chal|pusk|play|music|resume|turn on|音楽|曲|かけて|流して|再生|プレイ|オン|スタート)/i,
         responses: {
-          uz: "Musiqani boshlayman.",
+          uz: "Musiqa qo'yilmoqda.",
           ja: "音楽を再生します。",
           en: "Playing music."
         }
       },
       {
         command: 'MUSIC_PAUSE',
-        regex: /(to'xtat|pauza|jim|stop|pause|止めて|停止|ストップ)/i,
+        regex: /(to'xtat|toxtat|uchir|o'chir|pauza|jim|stop|pause|mute|turn off|止めて|停止|ストップ|消して|オフ|静かに)/i,
         responses: {
-          uz: "Musiqani to'xtataman.",
+          uz: "Musiqa to'xtatildi.",
           ja: "音楽を停止します。",
           en: "Pausing music."
         }
       },
       {
         command: 'MUSIC_NEXT',
-        regex: /(keyingi|next|skip|次の曲|次へ)/i,
+        regex: /(keyingi|next|skip|oldinga|o'tkaz|otkaz|keyingisi|almashtir|次の曲|次へ|ネクスト|スキップ|変えて|かえて)/i,
         responses: {
-          uz: "Keyingi musiqa.",
+          uz: "Keyingi qo'shiqni qo'yaman.",
           ja: "次の曲を再生します。",
           en: "Playing next track."
         }
       },
       {
         command: 'TOGGLE_THEME',
-        regex: /(tema|tungi rejim|qorong'i|yorug'|ダーク|ライト|dark mode|light mode|theme)/i,
+        regex: /(tema|tungi rejim|qorong'i|yorug'|tun|kun|mavzu|rang|ダーク|ライト|dark mode|light mode|theme|switch theme|change colors)/i,
         responses: {
           uz: "Mavzuni o'zgartiraman.",
           ja: "テーマを切り替えます。",
@@ -540,7 +544,7 @@ export default function VoiceAssistant({
       },
       {
         command: 'OPEN_RESUME',
-        regex: /(rezyume|anketa|履歴書|resume)/i,
+        regex: /(rezyume|anketa|rezume|hujjat|履歴書|レジュメ|resume|cv|curriculum vitae)/i,
         responses: {
           uz: "Rezyume yaratish bo'limini ochaman.",
           ja: "履歴書作成画面を開きます。",
@@ -576,6 +580,70 @@ export default function VoiceAssistant({
     }
 
     return null;
+  };
+
+  // Local Speech-to-Text Fallback (Web Speech API) for offline utility usage
+  const startLocalSpeechRecognition = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setStatus('error');
+      setErrorMessage(t('offlineSpeechNotSupported', "Qurilmada oflayn ovoz tanish imkoniyati yo'q."));
+      setShowPill(true);
+      return;
+    }
+
+    setStatus('listening');
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+
+    const currentLang = i18n.language || 'uz';
+    const langCodeMap = { 'uz': 'uz-UZ', 'ja': 'ja-JP', 'en': 'en-US' };
+    recognition.lang = langCodeMap[currentLang] || 'ja-JP';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onresult = (event) => {
+      const text = event.results[0][0].transcript;
+      console.log(`Local STT result: "${text}"`);
+      setTranscript(text);
+      setShowPill(true);
+      setStatus('thinking');
+
+      // Intercept local commands locally
+      const localResult = interceptLocalCommand(text);
+      if (localResult) {
+        console.log(`Local NLP matched command offline: ${localResult.command}`);
+        handleGeminiSuccess(localResult, text);
+      } else {
+        // Handle unmatched complex query during offline mode
+        const offlineWarning = t('offlineWarningMsg', "Kechirasiz, oflayn rejimda faqat musiqani boshqarish yoki profilni ochish mumkin.");
+        setAiResponseText(offlineWarning);
+        speakResponse(offlineWarning, currentLang, () => {
+          if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+          pillTimeoutRef.current = setTimeout(() => {
+            setShowPill(false);
+            if (isVoiceStandbyRef.current) scheduleRelisten();
+          }, 4500);
+        });
+      }
+    };
+
+    recognition.onerror = (e) => {
+      console.error("Local STT error:", e);
+      setStatus('error');
+      setErrorMessage(t('speechError', 'Xatolik yuz berdi.'));
+      if (isVoiceStandbyRef.current) {
+        scheduleRelisten();
+      }
+    };
+
+    recognition.onend = () => {
+      if (statusRef.current === 'listening') {
+        setStatus('idle');
+      }
+    };
+
+    recognition.start();
   };
 
   // Scroll conversation log to bottom on updates
@@ -709,14 +777,20 @@ ${viewingContext}
 `;
   };
 
-  // Process manual text query with Gemini 2.0 Flash (with system instructions and structured app data)
   const processTextWithGemini = async (text) => {
     if (!isActiveRef.current) return;
     setStatus('thinking');
 
+    // Fast-path: Check local intent interceptor first to save API tokens and get 0ms response time
+    const localResult = interceptLocalCommand(text);
+    if (localResult) {
+      console.log(`Hybrid routing: Intercepted local command "${localResult.command}" for text "${text}"`);
+      handleGeminiSuccess(localResult, text);
+      return;
+    }
+
     const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
     const dataContext = generateDataContext();
-// Context generated via generateDataContext
 
     const systemPrompt = `
 You are "Michi AI" — the smart voice assistant for the Michi app (a premium Japanese platform for truck driver jobs and driving academy courses).
@@ -806,7 +880,17 @@ Return ONLY the raw JSON object, no markdown wrappers.
       window.speechSynthesis.cancel();
     }
 
-    startAudioRecording();
+    if (activeAudioSourceRef.current) {
+      try { activeAudioSourceRef.current.stop(); } catch(e){}
+    }
+
+    // Check if offline
+    if (!navigator.onLine) {
+      console.log("App is offline. Initiating Web Speech Recognition (Local STT fallback)...");
+      startLocalSpeechRecognition();
+    } else {
+      startAudioRecording();
+    }
   };
 
   // Web Audio downsampling helper to convert audio Blob to 16kHz Mono 16-bit WAV PCM
