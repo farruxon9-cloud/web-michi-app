@@ -13,7 +13,8 @@ export default function VoiceAssistant({
   selectedLicenses, setSelectedLicenses,
   selectedLangLevel, setSelectedLangLevel,
   selectedBenefits, setSelectedBenefits,
-  minSalary, setMinSalary
+  minSalary, setMinSalary,
+  selectedPrefecture, setSelectedPrefecture
 }) {
   const { t, i18n } = useTranslation();
   const defaultKey = localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
@@ -477,7 +478,7 @@ COMMAND RULES:
 - TOGGLE_THEME: change/toggle dark mode or light mode
 - CHANGE_LANGUAGE: change language (Uzbek, Japanese, English)
 - OPEN_RESUME: open resume builder
-- FILTER_JOBS: search or filter jobs. Must return parameter inside json: "parameters": {"searchQuery": "<location or company>", "segment": "all|permanent|hourly", "licenses": ["lic_futsu"|"lic_chugata"|"lic_oogata"|"lic_kenin"|"tech_forklift"], "langLevel": "all"|"none"|"n5_n4"|"n3"|"n2_n1", "benefits": ["housing"|"foreigner"|"bonus"|"insurance"], "minSalary": 0|250000|350000|450000}
+- FILTER_JOBS: search or filter jobs. Must return parameter inside json: "parameters": {"searchQuery": "<location or company>", "prefecture": "all|Tokyo|Kanagawa|Saitama|Chiba|Osaka|Kyoto|Aichi|Fukuoka", "segment": "all|permanent|hourly", "licenses": ["lic_futsu"|"lic_chugata"|"lic_oogata"|"lic_kenin"|"tech_forklift"], "langLevel": "all"|"none"|"n5_n4"|"n3"|"n2_n1", "benefits": ["housing"|"foreigner"|"bonus"|"insurance"], "minSalary": 0|250000|350000|450000}
 - FILTER_ACADEMIES: search or filter schools. Must return parameter inside json: "parameters": {"searchQuery": "<location or school name>"}
 - APPLY_TO_CURRENT: apply to the current active job or school that the user is currently viewing.
 - SHARE_CURRENT: share or refer the current job/school.
@@ -771,7 +772,7 @@ COMMAND RULES:
 - TOGGLE_THEME: change/toggle dark mode or light mode
 - CHANGE_LANGUAGE: change language (Uzbek, Japanese, English)
 - OPEN_RESUME: open resume builder
-- FILTER_JOBS: search or filter jobs. Must return parameter inside json: "parameters": {"searchQuery": "<location or company>", "segment": "all|permanent|hourly", "licenses": ["lic_futsu"|"lic_chugata"|"lic_oogata"|"lic_kenin"|"tech_forklift"], "langLevel": "all"|"none"|"n5_n4"|"n3"|"n2_n1", "benefits": ["housing"|"foreigner"|"bonus"|"insurance"], "minSalary": 0|250000|350000|450000}
+- FILTER_JOBS: search or filter jobs. Must return parameter inside json: "parameters": {"searchQuery": "<location or company>", "prefecture": "all|Tokyo|Kanagawa|Saitama|Chiba|Osaka|Kyoto|Aichi|Fukuoka", "segment": "all|permanent|hourly", "licenses": ["lic_futsu"|"lic_chugata"|"lic_oogata"|"lic_kenin"|"tech_forklift"], "langLevel": "all"|"none"|"n5_n4"|"n3"|"n2_n1", "benefits": ["housing"|"foreigner"|"bonus"|"insurance"], "minSalary": 0|250000|350000|450000}
 - FILTER_ACADEMIES: search or filter schools. Must return parameter inside json: "parameters": {"searchQuery": "<location or school name>"}
 - APPLY_TO_CURRENT: apply to the current active job or school that the user is currently viewing.
 - SHARE_CURRENT: share or refer the current job/school.
@@ -959,6 +960,9 @@ Return ONLY the raw JSON object, no markdown wrappers.
           }
           if (setMinSalary && params.minSalary !== undefined) {
             setMinSalary(Number(params.minSalary));
+          }
+          if (setSelectedPrefecture && params.prefecture !== undefined) {
+            setSelectedPrefecture(params.prefecture);
           }
           
           setActiveTab('jobs');
