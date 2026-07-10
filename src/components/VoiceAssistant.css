@@ -458,6 +458,18 @@ html.dark-mode .voice-ambient-glow-container {
   animation: orb-glow-pulse 2s infinite ease-in-out;
 }
 
+.ai-liquid-orb-glow-canvas {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  left: -38px;
+  top: -38px;
+  pointer-events: none;
+  z-index: 1;
+  filter: blur(3px);
+  opacity: 0.9;
+}
+
 .ai-liquid-orb-core {
   position: relative;
   width: 32px;

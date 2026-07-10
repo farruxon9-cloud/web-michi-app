@@ -42,6 +42,9 @@ export default function VoiceAssistant({
   const relistenTimeoutRef = useRef(null);
   const chatEndRef = useRef(null);
   const activeAudioSourceRef = useRef(null);
+  const canvasRef = useRef(null);
+  const analyserRef = useRef(null);
+  const localStreamRef = useRef(null);
 
   const [elevenKeyTemp, setElevenKeyTemp] = useState(localStorage.getItem('michi_elevenlabs_api_key') || '');
 
@@ -129,6 +132,14 @@ export default function VoiceAssistant({
   }, [status, showPill, isActive, hasStarted, showKeyInput, isOnline, micPermission, onClose, isVoiceStandby]);
 
   const stopAllVoiceActivities = () => {
+    if (localStreamRef.current) {
+      try {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+      } catch(e){}
+      localStreamRef.current = null;
+    }
+    analyserRef.current = null;
+
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       try {
         mediaRecorderRef.current.stop();
@@ -444,10 +455,18 @@ export default function VoiceAssistant({
       
       const source = audioCtx.createBufferSource();
       source.buffer = audioBuffer;
+      
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      analyserRef.current = analyser;
+      
       const gainNode = audioCtx.createGain();
       gainNode.gain.value = 1.6; // Boost volume level by 60% for clear audition
-      source.connect(gainNode);
+      
+      source.connect(analyser);
+      analyser.connect(gainNode);
       gainNode.connect(audioCtx.destination);
+      
       activeAudioSourceRef.current = source;
 
       let resolved = false;
@@ -494,13 +513,28 @@ export default function VoiceAssistant({
   };
 
   // Local-First Speech-to-Text Recognition for instant local matching and online fallback
-  const startLocalSpeechRecognition = () => {
+  const startLocalSpeechRecognition = async () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setStatus('error');
       setErrorMessage(t('offlineSpeechNotSupported', "Qurilmada ovoz tanish imkoniyati yo'q."));
       setShowPill(true);
       return;
+    }
+
+    // Expose mic stream and analyser node for real-time visualizer canvas waves
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      localStreamRef.current = stream;
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioContextRef.current = audioCtx;
+      const source = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      analyserRef.current = analyser;
+    } catch (e) {
+      console.warn("Failed to create visualizer analyser for local recognition:", e);
     }
 
     setStatus('listening');
@@ -527,6 +561,14 @@ export default function VoiceAssistant({
       setTranscript(text);
       setShowPill(true);
       setStatus('thinking');
+
+      // Stop mic stream tracks to release microphone resource instantly
+      if (localStreamRef.current) {
+        try {
+          localStreamRef.current.getTracks().forEach(track => track.stop());
+        } catch(e){}
+        localStreamRef.current = null;
+      }
 
       // 1. First check: Intercept local commands immediately (0-token, 0ms latency)
       const localResult = interceptLocalCommand(text);
@@ -555,6 +597,13 @@ export default function VoiceAssistant({
 
     recognition.onerror = (e) => {
       console.error("Speech Recognition error:", e);
+      if (localStreamRef.current) {
+        try {
+          localStreamRef.current.getTracks().forEach(track => track.stop());
+        } catch(e){}
+        localStreamRef.current = null;
+      }
+
       if (e.error === 'no-speech') {
         setStatus('idle');
         if (isVoiceStandbyRef.current) scheduleRelisten();
@@ -568,6 +617,12 @@ export default function VoiceAssistant({
     };
 
     recognition.onend = () => {
+      if (localStreamRef.current && !gotResult) {
+        try {
+          localStreamRef.current.getTracks().forEach(track => track.stop());
+        } catch(e){}
+        localStreamRef.current = null;
+      }
       if (statusRef.current === 'listening' && !gotResult) {
         setStatus('idle');
         if (isVoiceStandbyRef.current) scheduleRelisten();
@@ -816,6 +871,91 @@ Return ONLY the raw JSON object, no markdown wrappers.
       });
     }
   };
+
+  // Real-time canvas visualizer loop for Siri-style glowing liquid orb
+  useEffect(() => {
+    if (status === 'idle' || isVoiceStandby) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let animationId;
+    const bufferLength = analyserRef.current ? analyserRef.current.frequencyBinCount : 128;
+    const dataArray = new Uint8Array(bufferLength);
+
+    canvas.width = 120;
+    canvas.height = 120;
+
+    let phase = 0;
+
+    const draw = () => {
+      animationId = requestAnimationFrame(draw);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let volume = 0;
+      if (analyserRef.current) {
+        analyserRef.current.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          sum += dataArray[i];
+        }
+        volume = sum / bufferLength;
+      } else {
+        // Soft pulsing fallback in case no mic/speaker stream is active
+        volume = 30 + Math.sin(phase * 4) * 8;
+      }
+
+      const amplitude = Math.max(0.1, Math.min(1.3, volume / 70));
+
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      // Overlapping glowing paths with colors matched to the Michi theme
+      const colors = [
+        'rgba(59, 130, 246, 0.4)',  // Blue
+        'rgba(168, 85, 247, 0.4)',  // Purple
+        'rgba(16, 185, 129, 0.35)'  // Green
+      ];
+
+      phase += 0.08;
+      ctx.globalCompositeOperation = 'screen';
+
+      for (let w = 0; w < 3; w++) {
+        ctx.beginPath();
+        const baseRadius = 38 - w * 4;
+        const color = colors[w];
+
+        for (let angle = 0; angle <= 360; angle += 5) {
+          const rad = (angle * Math.PI) / 180;
+          const offset = Math.sin(angle * 4 * Math.PI / 180 + phase + w) * 9 * amplitude;
+          const radius = baseRadius + offset;
+
+          const x = cx + Math.cos(rad) * radius;
+          const y = cy + Math.sin(rad) * radius;
+
+          if (angle === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        ctx.strokeStyle = color.replace('0.4', '0.85').replace('0.35', '0.75');
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+      }
+    };
+
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [status, isVoiceStandby]);
 
   // Start speech recording sequence (Local-First Speech Recognition, falls back to MediaRecorder)
   const startListeningSequence = () => {
@@ -1479,7 +1619,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
       {status !== 'idle' && !isVoiceStandby && (
         <div className={`voice-ambient-glow-container ${status}`}>
           <div className="voice-glow-visualizer-orb">
-            <div className="ai-liquid-orb-glow"></div>
+            <canvas ref={canvasRef} className="ai-liquid-orb-glow-canvas" />
             <div className="ai-liquid-orb-core">
               <Sparkles size={16} color="#ffffff" fill="#ffffff" />
             </div>
