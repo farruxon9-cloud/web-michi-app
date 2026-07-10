@@ -561,6 +561,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
   // Web Audio VAD & MediaRecorder based recording
   const startAudioRecording = async () => {
+    let hasSpoken = false;
     try {
       // 1. Request microphone permissions
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -604,6 +605,15 @@ Return ONLY the raw JSON object, no markdown wrappers.
         // Release tracks
         stream.getTracks().forEach(track => track.stop());
 
+        if (!hasSpoken) {
+          console.log("No speech detected. Aborting API request to save traffic and prevent loops.");
+          setStatus('idle');
+          if (isVoiceStandbyRef.current) {
+            scheduleRelisten();
+          }
+          return;
+        }
+
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/wav' });
         
         // Convert Blob to Base64
@@ -642,6 +652,9 @@ Return ONLY the raw JSON object, no markdown wrappers.
         // If sound volume exceeds threshold, reset silence timer
         if (average > silenceThreshold) {
           silenceStart = Date.now();
+          if (average > silenceThreshold + 6) {
+            hasSpoken = true;
+          }
         }
 
         // Auto-stop after 1.6s silence or 15s max recording duration
