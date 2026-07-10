@@ -560,6 +560,66 @@ export default function VoiceAssistant({
     processTextWithGemini(userText);
   };
 
+  // Fetch from Gemini API utilizing a pool of keys to balance load and prevent rate limit (429) errors
+  const fetchGeminiWithPool = async (contents, systemPrompt, screenContext, dataContext, attempt = 1) => {
+    const localKey = localStorage.getItem('michi_gemini_api_key');
+    const pool = [
+      import.meta.env.VITE_GEMINI_API_KEY,
+      import.meta.env.VITE_GEMINI_API_KEY_2,
+      import.meta.env.VITE_GEMINI_API_KEY_3,
+      import.meta.env.VITE_GEMINI_API_KEY_4,
+      import.meta.env.VITE_GEMINI_API_KEY_5
+    ].filter(Boolean);
+
+    let selectedKey = '';
+    if (localKey) {
+      selectedKey = localKey;
+    } else if (pool.length > 0) {
+      const index = (Math.floor(Math.random() * pool.length) + attempt - 1) % pool.length;
+      selectedKey = pool[index];
+    } else {
+      throw new Error('No API key configured');
+    }
+
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${selectedKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents,
+            systemInstruction: {
+              parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
+            },
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        }
+      );
+
+      if (response.status === 429 && !localKey && pool.length > 1 && attempt < pool.length) {
+        console.warn(`Gemini API Key pool index rate-limited (429). Retrying with key attempt ${attempt + 1}...`);
+        return await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext, attempt + 1);
+      }
+
+      if (!response.ok) {
+        const errBody = await response.text();
+        if (errBody.includes('API_KEY_INVALID')) {
+          throw new Error('invalid_key');
+        }
+        throw new Error('api_failed');
+      }
+
+      return await response.json();
+    } catch (err) {
+      if (!localKey && pool.length > 1 && attempt < pool.length) {
+        console.warn(`Gemini fetch error. Retrying with key attempt ${attempt + 1}...`, err);
+        return await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext, attempt + 1);
+      }
+      throw err;
+    }
+  };
+
   // Process manual text query with Gemini 2.0 Flash (with system instructions and structured app data)
   const processTextWithGemini = async (text) => {
     if (!isActiveRef.current) return;
@@ -661,32 +721,10 @@ Return ONLY the raw JSON object, no markdown wrappers.
     ];
 
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents,
-            systemInstruction: {
-              parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
-            },
-            generationConfig: {
-              responseMimeType: "application/json"
-            }
-          })
-        }
-      );
+      const data = await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext);
 
       if (!isActiveRef.current) return;
 
-      if (!response.ok) {
-        throw new Error('api_failed');
-      }
-
-      const data = await response.json();
       const rawText = data.candidates[0].content.parts[0].text;
       const aiResult = JSON.parse(rawText.trim());
 
@@ -960,32 +998,10 @@ Return ONLY the raw JSON object, no markdown wrappers.
     ];
 
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents,
-            systemInstruction: {
-              parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
-            },
-            generationConfig: {
-              responseMimeType: "application/json"
-            }
-          })
-        }
-      );
+      const data = await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext);
 
       if (!isActiveRef.current) return;
 
-      if (!response.ok) {
-        throw new Error('api_failed');
-      }
-
-      const data = await response.json();
       const rawText = data.candidates[0].content.parts[0].text;
       const aiResult = JSON.parse(rawText.trim());
 
