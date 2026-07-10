@@ -670,6 +670,15 @@ Return ONLY the raw JSON object, no markdown wrappers.
     }
   };
 
+  // Stop audio recording ref manually
+  const stopAudioRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (e) {}
+    }
+  };
+
   // Process Multimodal Audio directly with Gemini 2.0 Flash (Zero-roundtrip STT+LLM)
   const processAudioWithGemini = async (base64Audio, mimeType) => {
     if (!isActiveRef.current) return;
@@ -1070,133 +1079,64 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
   // Render ambient voice control interface
   return (
-    <div className="voice-assistant-panel-overlay animate-fade-in">
-      <div className="voice-panel-card glass">
-        
-        {/* Panel Header */}
-        <div className="voice-panel-header">
-          <div className="voice-header-left">
-            <div className={`voice-status-dot ${status === 'listening' ? 'pulse-green' : status === 'thinking' ? 'pulse-purple' : status === 'speaking' ? 'pulse-blue' : ''}`}></div>
-            <h3>Michi AI Assistant</h3>
-          </div>
-          <div className="voice-header-right">
-            <button className="voice-settings-icon-btn" onClick={clearApiKey} title={t('clearApiKey', 'API Kalitni o\'chirish')}>
-              <Key size={16} />
-            </button>
-            <button className="voice-panel-close-btn" onClick={onClose} aria-label="Close Assistant">
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* Conversation Log & Scroll container */}
-        <div className="voice-conversation-log">
-          {conversationHistory.length === 0 ? (
-            <div className="voice-welcome-container animate-fade-in">
-              <div className="voice-welcome-orb animate-pulse-slow">
-                <Sparkles size={32} color="#5E5CE6" fill="#5E5CE6" />
+    <>
+      {/* Floating subtitle bubble (shows spoken inputs and AI responses briefly) */}
+      {showPill && (
+        <div className="voice-chat-bubble-pill animate-slide-in">
+          <div className="voice-pill-content">
+            {transcript && (
+              <div className="pill-segment user-segment">
+                <span className="pill-dot user-dot"></span>
+                <p className="pill-text"><strong>{t('userSaid', 'Siz')}:</strong> {transcript}</p>
               </div>
-              <h4>{t('aiWelcomeTitle', 'Qanday yordam bera olaman?')}</h4>
-              <p>{t('aiWelcomeSubtitle', 'Menga ovozli buyruq bering yoki quyidagi takliflardan birini tanlang.')}</p>
-              
-              {/* Suggestion Chips */}
-              <div className="voice-suggestion-chips">
-                <button className="suggestion-chip" onClick={() => { setTextInput("Tokyodagi ishlarni ko'rsat"); setTranscript("Tokyodagi ishlarni ko'rsat"); setStatus('thinking'); processTextWithGemini("Tokyodagi ishlarni ko'rsat"); }}>
-                  📍 Tokyo ishlari
-                </button>
-                <button className="suggestion-chip" onClick={() => { setTextInput("Yapon tiliga o'zgartir"); setTranscript("Yapon tiliga o'zgartir"); setStatus('thinking'); processTextWithGemini("Yapon tiliga o'zgartir"); }}>
-                  🇯🇵 日本語にする
-                </button>
-                <button className="suggestion-chip" onClick={() => { setTextInput("Musiqani qo'y"); setTranscript("Musiqani qo'y"); setStatus('thinking'); processTextWithGemini("Musiqani qo'y"); }}>
-                  🎵 Musiqa qo'yish
-                </button>
-                <button className="suggestion-chip" onClick={() => { setTextInput("Profilimni ochib ber"); setTranscript("Profilimni ochib ber"); setStatus('thinking'); processTextWithGemini("Profilimni ochib ber"); }}>
-                  👤 Profilni ochish
-                </button>
-                <button className="suggestion-chip" onClick={() => { setTextInput("Tungi rejimga o't"); setTranscript("Tungi rejimga o't"); setStatus('thinking'); processTextWithGemini("Tungi rejimga o't"); }}>
-                  🌙 Tungi rejim
-                </button>
+            )}
+            
+            {aiResponseText && (
+              <div className="pill-segment ai-segment">
+                <span className="pill-dot ai-dot"></span>
+                <p className="pill-text ja-text"><strong>AI:</strong> {aiResponseText}</p>
               </div>
-            </div>
-          ) : (
-            <div className="voice-messages-list">
-              {conversationHistory.map((msg, index) => (
-                <div key={index} className={`voice-message-bubble ${msg.role === 'user' ? 'user-bubble' : 'ai-bubble'}`}>
-                  <div className="bubble-content">
-                    <p>{msg.parts[0].text}</p>
-                  </div>
-                </div>
-              ))}
-              
-              {status === 'thinking' && (
-                <div className="voice-message-bubble ai-bubble thinking-bubble animate-pulse-slow">
-                  <div className="bubble-content">
-                    <div className="typing-dots">
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              <div ref={chatEndRef} />
-            </div>
-          )}
-        </div>
+            )}
 
-        {/* Ambient Wave orb visualizer */}
-        <div className={`voice-visualizer-orb-section ${status}`}>
-          <div className="voice-orb-glow-backdrop"></div>
-          <div className="voice-orb-core-container" onClick={status === 'listening' ? stopAudioRecording : startListeningSequence}>
-            <div className="voice-orb-liquid"></div>
-            <div className="voice-orb-icon">
-              {status === 'listening' ? (
-                <Mic size={24} color="#ffffff" className="animate-scale-pulse" />
-              ) : (
-                <MicOff size={24} color="#ffffff" />
-              )}
+            {status === 'thinking' && !aiResponseText && (
+              <div className="pill-segment thinking-segment">
+                <span className="pill-dot thinking-dot"></span>
+                <p className="pill-text italic">{t('aiThinking', 'AI fikrlamoqda...')}</p>
+              </div>
+            )}
+
+            {errorMessage && (
+              <div className="pill-segment error-segment">
+                <span className="pill-dot error-dot"></span>
+                <p className="pill-text error-text">{errorMessage}</p>
+              </div>
+            )}
+          </div>
+          <button className="voice-pill-close" onClick={() => setShowPill(false)}>
+            <X size={12} />
+          </button>
+        </div>
+      )}
+
+      {/* Siri-Style Ambient Glow Wave Bar (shown bottom center, above nav bar) */}
+      {status !== 'idle' && !isVoiceStandby && (
+        <div className={`voice-ambient-glow-container ${status}`}>
+          <div className="voice-glow-visualizer-orb">
+            <div className="ai-liquid-orb-glow"></div>
+            <div className="ai-liquid-orb-core">
+              <Sparkles size={16} color="#ffffff" fill="#ffffff" />
             </div>
           </div>
-          <span className="voice-status-label-text">
-            {status === 'listening' && t('aiListeningLabel', 'Tinglamoqda... (Gapiring)')}
-            {status === 'thinking' && t('aiThinkingLabel', 'Fikrlamoqda...')}
-            {status === 'speaking' && t('aiSpeakingLabel', 'Javob bermoqda...')}
-            {status === 'idle' && t('aiIdleLabel', 'Mikrofonni yoqish uchun bosing')}
-            {status === 'error' && (errorMessage || t('speechError', 'Xatolik yuz berdi.'))}
-          </span>
-        </div>
-
-        {/* Controls footer */}
-        <div className="voice-panel-footer">
-          <form onSubmit={handleSendText} className="voice-manual-input-form">
-            <input 
-              type="text" 
-              placeholder={t('aiTypePlaceholder', 'Yozma buyruq yuborish...')} 
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              className="voice-manual-input-field"
-            />
-            <button type="submit" className="voice-manual-send-btn" disabled={!textInput.trim()}>
-              <Sparkles size={16} />
-            </button>
-          </form>
-          
-          <div className="voice-standby-control">
-            <label className="standby-switch-label">
-              <input 
-                type="checkbox" 
-                checked={isVoiceStandby}
-                onChange={(e) => setIsVoiceStandby(e.target.checked)}
-                className="standby-checkbox"
-              />
-              <span className="standby-switch-slider"></span>
-            </label>
-            <span className="standby-text-label">{t('continuousStandby', 'Uzluksiz tinglash')}</span>
+          <div className="voice-ambient-info">
+            {status === 'listening' && <span>{t('aiListeningLabel', 'Tinglamoqda... (Gapiring)')}</span>}
+            {status === 'thinking' && <span>{t('aiThinkingLabel', 'Fikrlamoqda...')}</span>}
+            {status === 'speaking' && <span>{t('aiSpeakingLabel', 'Javob bermoqda...')}</span>}
           </div>
+          <button className="voice-ambient-stop-btn" onClick={stopAllVoiceActivities} title="To'xtatish">
+            <X size={14} />
+          </button>
         </div>
-
-      </div>
-    </div>
+      )}
+    </>
   );
 }
