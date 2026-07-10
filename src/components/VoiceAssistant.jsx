@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Mic, MicOff, WifiOff, Lock, X, Sparkles, Key, AlertTriangle, RefreshCw } from 'lucide-react';
 import './VoiceAssistant.css';
+import { matchLexiconCommand } from '../utils/voiceLexicon';
 
 export default function VoiceAssistant({ 
   isActive, onClose, onStartVoice, isVoiceStandby, setIsVoiceStandby, 
@@ -488,122 +489,8 @@ export default function VoiceAssistant({
   const apiKeyRef = useRef(apiKey);
   apiKeyRef.current = apiKey;
 
-  // ===== Local Instant Interceptor for Voice/Text Commands =====
-  // Matches local patterns in Uzbek, Japanese, and English to execute immediately on-device
   const interceptLocalCommand = (text) => {
-    const cleanText = text.toLowerCase().trim();
-    
-    const matchers = [
-      {
-        command: 'NAVIGATE_TO_HOME',
-        regex: /(bosh sahifa|asosiy|uyga|uy|boshiga|bosh sahifani|asosiy sahifaga|home|dashboard|go home|ホーム|メイン|トップ|ダッシュボード)/i,
-        responses: {
-          uz: "Bosh sahifaga o'tilmoqda.",
-          ja: "ホーム画面に移動します。",
-          en: "Navigating to home page."
-        }
-      },
-      {
-        command: 'NAVIGATE_TO_JOBS',
-        regex: /(ish qidir|ishlar|ish|vakansiyalar|ishlarni ko'rsat|ishlar bo'limi|求人|仕事|ワーク|トラックの仕事|vacancy|jobs|job|find jobs|work)/i,
-        responses: {
-          uz: "Ish e'lonlari sahifasiga o'tilmoqda.",
-          ja: "求人情報ページに移動します。",
-          en: "Opening job listings."
-        }
-      },
-      {
-        command: 'NAVIGATE_TO_ACADEMY',
-        regex: /(maktab|avtomaktab|kurs|prava|guvohnoma|haydovchilik maktabi|免許|教習所|学校|アカデミー|ドライビングスクール|academy|school|driving school)/i,
-        responses: {
-          uz: "Avtomaktablar sahifasiga o'tilmoqda.",
-          ja: "自動車学校のページに移動します。",
-          en: "Opening driving schools page."
-        }
-      },
-      {
-        command: 'NAVIGATE_TO_PROFILE',
-        regex: /(sozlamalar|kabinet|profilim|profilni och|mening sahifam|kabinetga|プロフィール|マイページ|設定|profile|my page|settings)/i,
-        responses: {
-          uz: "Profil sahifasiga o'tilmoqda.",
-          ja: "マイページに移動します。",
-          en: "Navigating to profile."
-        }
-      },
-      {
-        command: 'MUSIC_PLAY',
-        regex: /(musiqa qo'y|musiqani|qo'shiq qo'y|qo'shiqni|yoq|boshla|ijro|chal|pusk|play|music|resume|turn on|音楽|曲|かけて|流して|再生|プレイ|オン|スタート)/i,
-        responses: {
-          uz: "Musiqa qo'yilmoqda.",
-          ja: "音楽を再生します。",
-          en: "Playing music."
-        }
-      },
-      {
-        command: 'MUSIC_PAUSE',
-        regex: /(to'xtat|toxtat|uchir|o'chir|pauza|jim|stop|pause|mute|turn off|止めて|停止|ストップ|消して|オフ|静かに)/i,
-        responses: {
-          uz: "Musiqa to'xtatildi.",
-          ja: "音楽を停止します。",
-          en: "Pausing music."
-        }
-      },
-      {
-        command: 'MUSIC_NEXT',
-        regex: /(keyingi|next|skip|oldinga|o'tkaz|otkaz|keyingisi|almashtir|次の曲|次へ|ネクスト|スキップ|変えて|かえて)/i,
-        responses: {
-          uz: "Keyingi qo'shiqni qo'yaman.",
-          ja: "次の曲を再生します。",
-          en: "Playing next track."
-        }
-      },
-      {
-        command: 'TOGGLE_THEME',
-        regex: /(tema|tungi rejim|qorong'i|yorug'|tun|kun|mavzu|rang|ダーク|ライト|dark mode|light mode|theme|switch theme|change colors)/i,
-        responses: {
-          uz: "Mavzuni o'zgartiraman.",
-          ja: "テーマを切り替えます。",
-          en: "Switching app theme."
-        }
-      },
-      {
-        command: 'OPEN_RESUME',
-        regex: /(rezyume|anketa|rezume|hujjat|履歴書|レジュメ|resume|cv|curriculum vitae)/i,
-        responses: {
-          uz: "Rezyume yaratish bo'limini ochaman.",
-          ja: "履歴書作成画面を開きます。",
-          en: "Opening resume builder."
-        }
-      }
-    ];
-
-    // Determine current user language
-    const currentLang = i18n.language || 'uz';
-    const lang = currentLang.startsWith('uz') ? 'uz' : currentLang.startsWith('ja') ? 'ja' : 'en';
-
-    for (const matcher of matchers) {
-      if (matcher.regex.test(cleanText)) {
-        const responseText = matcher.responses[lang] || matcher.responses['en'];
-        return {
-          command: matcher.command,
-          response: responseText,
-          language: lang
-        };
-      }
-    }
-
-    // Special language switches
-    if (/(yaponchaga|日本語に|japanese)/i.test(cleanText)) {
-      return { command: 'CHANGE_LANGUAGE', response: "日本語に変更します。", language: 'ja', targetLang: 'ja' };
-    }
-    if (/(o'zbekchaga|ウズベク|uzbek)/i.test(cleanText)) {
-      return { command: 'CHANGE_LANGUAGE', response: "O'zbek tiliga o'zgartiraman.", language: 'uz', targetLang: 'uz' };
-    }
-    if (/(inglizchaga|英語に|english)/i.test(cleanText)) {
-      return { command: 'CHANGE_LANGUAGE', response: "Switching to English.", language: 'en', targetLang: 'en' };
-    }
-
-    return null;
+    return matchLexiconCommand(text, i18n.language || 'uz');
   };
 
   // Local-First Speech-to-Text Recognition for instant local matching and online fallback
