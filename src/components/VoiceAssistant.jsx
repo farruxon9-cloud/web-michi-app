@@ -606,17 +606,22 @@ export default function VoiceAssistant({
     return null;
   };
 
-  // Local Speech-to-Text Fallback (Web Speech API) for offline utility usage
+  // Local-First Speech-to-Text Recognition for instant local matching and online fallback
   const startLocalSpeechRecognition = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setStatus('error');
-      setErrorMessage(t('offlineSpeechNotSupported', "Qurilmada oflayn ovoz tanish imkoniyati yo'q."));
+      setErrorMessage(t('offlineSpeechNotSupported', "Qurilmada ovoz tanish imkoniyati yo'q."));
       setShowPill(true);
       return;
     }
 
     setStatus('listening');
+    setHasStarted(true);
+    setTranscript('');
+    setAiResponseText('');
+    setShowPill(false);
+
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
 
@@ -626,34 +631,48 @@ export default function VoiceAssistant({
     recognition.continuous = false;
     recognition.interimResults = false;
 
+    let gotResult = false;
+
     recognition.onresult = (event) => {
+      gotResult = true;
       const text = event.results[0][0].transcript;
-      console.log(`Local STT result: "${text}"`);
+      console.log(`STT transcription: "${text}"`);
       setTranscript(text);
       setShowPill(true);
       setStatus('thinking');
 
-      // Intercept local commands locally
+      // 1. First check: Intercept local commands immediately (0-token, 0ms latency)
       const localResult = interceptLocalCommand(text);
       if (localResult) {
-        console.log(`Local NLP matched command offline: ${localResult.command}`);
+        console.log(`Local NLP matched command: ${localResult.command}`);
         handleGeminiSuccess(localResult, text);
       } else {
-        // Handle unmatched complex query during offline mode
-        const offlineWarning = t('offlineWarningMsg', "Kechirasiz, oflayn rejimda faqat musiqani boshqarish yoki profilni ochish mumkin.");
-        setAiResponseText(offlineWarning);
-        speakResponse(offlineWarning, currentLang, () => {
-          if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-          pillTimeoutRef.current = setTimeout(() => {
-            setShowPill(false);
-            if (isVoiceStandbyRef.current) scheduleRelisten();
-          }, 4500);
-        });
+        // 2. Second check: If online, delegate complex/conversational queries to Gemini Cloud
+        if (navigator.onLine) {
+          console.log("No local command matched. Delegating to Gemini Cloud...");
+          processTextWithGemini(text);
+        } else {
+          // Unmatched complex query during offline mode
+          const offlineWarning = t('offlineWarningMsg', "Kechirasiz, oflayn rejimda faqat musiqani boshqarish yoki profilni ochish mumkin.");
+          setAiResponseText(offlineWarning);
+          speakResponse(offlineWarning, currentLang, () => {
+            if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+            pillTimeoutRef.current = setTimeout(() => {
+              setShowPill(false);
+              if (isVoiceStandbyRef.current) scheduleRelisten();
+            }, 4500);
+          });
+        }
       }
     };
 
     recognition.onerror = (e) => {
-      console.error("Local STT error:", e);
+      console.error("Speech Recognition error:", e);
+      if (e.error === 'no-speech') {
+        setStatus('idle');
+        if (isVoiceStandbyRef.current) scheduleRelisten();
+        return;
+      }
       setStatus('error');
       setErrorMessage(t('speechError', 'Xatolik yuz berdi.'));
       if (isVoiceStandbyRef.current) {
@@ -662,8 +681,9 @@ export default function VoiceAssistant({
     };
 
     recognition.onend = () => {
-      if (statusRef.current === 'listening') {
+      if (statusRef.current === 'listening' && !gotResult) {
         setStatus('idle');
+        if (isVoiceStandbyRef.current) scheduleRelisten();
       }
     };
 
@@ -910,7 +930,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
     }
   };
 
-  // Start speech recording sequence (MediaRecorder Audio Mode)
+  // Start speech recording sequence (Local-First Speech Recognition, falls back to MediaRecorder)
   const startListeningSequence = () => {
     if (!isActiveRef.current) return;
     
@@ -923,11 +943,12 @@ Return ONLY the raw JSON object, no markdown wrappers.
       try { activeAudioSourceRef.current.stop(); } catch(e){}
     }
 
-    // Check if offline
-    if (!navigator.onLine) {
-      console.log("App is offline. Initiating Web Speech Recognition (Local STT fallback)...");
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      console.log("Using Local-First Speech Recognition path...");
       startLocalSpeechRecognition();
     } else {
+      console.log("Local SpeechRecognition not supported. Using Audio Recording fallback...");
       startAudioRecording();
     }
   };
