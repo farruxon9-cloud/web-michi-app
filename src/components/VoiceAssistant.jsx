@@ -219,7 +219,26 @@ export default function VoiceAssistant({
     return bytes.buffer;
   };
 
+  // Dictionary mapping common static responses to pre-rendered local audio files
+  const LOCAL_AUDIO_CACHE = {
+    "musiqani qo'yaman.": "/audio/music_play_uz.mp3",
+    "musiqani to'xtataman.": "/audio/music_pause_uz.mp3",
+    "keyingi qo'shiqni qo'yaman.": "/audio/music_next_uz.mp3",
+    "musiqa qo'yilmoqda.": "/audio/music_play_uz.mp3",
+    "musiqa to'xtatildi.": "/audio/music_pause_uz.mp3",
+    "yapon tiliga o'zgartiraman.": "/audio/lang_ja_uz.mp3",
+    "mavzuni o'zgartiraman.": "/audio/theme_change_uz.mp3",
+    
+    // Japanese equivalents
+    "音楽を再生します。": "/audio/music_play_ja.mp3",
+    "音楽を一時停止します。": "/audio/music_pause_ja.mp3",
+    "次の曲を再生します。": "/audio/music_next_ja.mp3",
+    "日本語に変更します。": "/audio/lang_ja_ja.mp3",
+    "テーマを切り替えます。": "/audio/theme_change_ja.mp3"
+  };
+
   // Speaks response text back to the driver using a cascading fallback hierarchy:
+  // 0. Local Cached Audio (if response is a standard static UI phrase)
   // 1. ElevenLabs Neural Voice (if VITE_ELEVENLABS_API_KEY is configured and quota permits)
   // 2. Google Cloud Wavenet TTS (utilizes the universal Gemini API key, offers 1M chars/month free)
   // 3. Azure Neural TTS (if VITE_AZURE_TTS_KEY is configured)
@@ -231,6 +250,24 @@ export default function VoiceAssistant({
     // Cancel any previous buffer audio source immediately
     if (activeAudioSourceRef.current) {
       try { activeAudioSourceRef.current.stop(); } catch(e){}
+    }
+
+    // A. Check Local Audio Cache for instant playback to save traffic and eliminate latency
+    const normalizedText = text.trim().toLowerCase();
+    const cachedAudioPath = LOCAL_AUDIO_CACHE[normalizedText];
+    if (cachedAudioPath) {
+      try {
+        console.log(`Cascading TTS: Local cache hit for "${normalizedText}". Loading instantly...`);
+        const response = await fetch(cachedAudioPath);
+        if (response.ok) {
+          const arrayBuffer = await response.arrayBuffer();
+          await playWebAudio(arrayBuffer, onEndCallback);
+          return; // Instant playback successful!
+        }
+        console.warn("Local cache file not found in public assets. Cascading to Cloud TTS...");
+      } catch (e) {
+        console.warn("Local cache playback failed. Cascading to Cloud TTS:", e);
+      }
     }
 
     const langMap = { 'ja': 'ja-JP', 'uz': 'uz-UZ', 'en': 'en-US' };
@@ -620,15 +657,34 @@ export default function VoiceAssistant({
     }
   };
 
-  // Process manual text query with Gemini 2.0 Flash (with system instructions and structured app data)
-  const processTextWithGemini = async (text) => {
-    if (!isActiveRef.current) return;
-    setStatus('thinking');
+  // Generates compact, optimized data context to save tokens and speed up API responses
+  const generateDataContext = () => {
+    const compactJobs = (jobs || []).slice(0, 12).map(job => ({
+      id: job.id,
+      title: job.title,
+      company: job.company,
+      loc: job.location,
+      sal: job.salary,
+      lic: job.licenseRequired || job.license || [],
+      pref: job.prefecture,
+      benefits: job.benefits || []
+    }));
 
-    const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
-    
-    // Inject dynamic data context for full content awareness
-    const dataContext = `
+    const compactSchools = (schools || []).slice(0, 8).map(school => ({
+      id: school.id,
+      name: school.name,
+      loc: school.location,
+      langs: school.languages || school.langs || [],
+      price: school.price
+    }));
+
+    const viewingContext = `
+CURRENT USER VIEWING CONTEXT:
+- Currently viewing job detail: ${selectedJob ? `Yes, viewing job details: ${JSON.stringify(selectedJob)}` : 'No'}
+- Currently viewing driving academy detail: ${selectedSchool ? `Yes, viewing school details: ${JSON.stringify(selectedSchool)}` : 'No'}
+`;
+
+    return `
 CURRENT USER PROFILE:
 - Name: ${profileData?.fullName || 'Unknown'}
 - Selected Role: ${userRole || 'driver'}
@@ -640,33 +696,27 @@ CURRENT USER JOB APPLICATIONS:
 ${JSON.stringify((applications || []).map(app => ({
   company: app.company,
   jobTitle: app.title,
-  status: app.status,
-  appliedDate: app.appliedDate
+  status: app.status
 })))}
 
-AVAILABLE DRIVER JOBS IN APP:
-${JSON.stringify((jobs || []).map(job => ({
-  id: job.id,
-  company: job.company,
-  title: job.title,
-  location: job.location,
-  salary: job.salary,
-  licenseRequired: job.licenseRequired || job.license || []
-})))}
+AVAILABLE DRIVER JOBS IN APP (COMPACT METADATA):
+${JSON.stringify(compactJobs)}
 
-AVAILABLE DRIVING ACADEMIES IN APP:
-${JSON.stringify((schools || []).map(school => ({
-  id: school.id,
-  name: school.name,
-  location: school.location,
-  languages: school.languages || school.langs || [],
-  price: school.price
-})))}
+AVAILABLE DRIVING ACADEMIES IN APP (COMPACT METADATA):
+${JSON.stringify(compactSchools)}
 
-CURRENT USER VIEWING CONTEXT:
-- Currently viewing job detail: ${selectedJob ? `Yes, viewing job "${selectedJob.title}" at "${selectedJob.company}"` : 'No'}
-- Currently viewing driving academy detail: ${selectedSchool ? `Yes, viewing school "${selectedSchool.name}"` : 'No'}
+${viewingContext}
 `;
+  };
+
+  // Process manual text query with Gemini 2.0 Flash (with system instructions and structured app data)
+  const processTextWithGemini = async (text) => {
+    if (!isActiveRef.current) return;
+    setStatus('thinking');
+
+    const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
+    const dataContext = generateDataContext();
+// Context generated via generateDataContext
 
     const systemPrompt = `
 You are "Michi AI" — the smart voice assistant for the Michi app (a premium Japanese platform for truck driver jobs and driving academy courses).
@@ -759,6 +809,85 @@ Return ONLY the raw JSON object, no markdown wrappers.
     startAudioRecording();
   };
 
+  // Web Audio downsampling helper to convert audio Blob to 16kHz Mono 16-bit WAV PCM
+  const downsampleToWav = async (audioBlob, targetSampleRate = 16000) => {
+    const arrayBuffer = await audioBlob.arrayBuffer();
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    
+    // OfflineAudioContext for downsampling
+    const offlineCtx = new OfflineAudioContext(
+      1, // Mono channel
+      Math.round(audioBuffer.duration * targetSampleRate),
+      targetSampleRate
+    );
+
+    const bufferSource = offlineCtx.createBufferSource();
+    bufferSource.buffer = audioBuffer;
+    bufferSource.connect(offlineCtx.destination);
+    bufferSource.start();
+    
+    const renderedBuffer = await offlineCtx.startRendering();
+    audioCtx.close();
+
+    return audioBufferToWav(renderedBuffer);
+  };
+
+  const audioBufferToWav = (buffer) => {
+    const numOfChan = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const format = 1; // PCM
+    const bitDepth = 16;
+    
+    let result;
+    if (numOfChan === 1) {
+      result = buffer.getChannelData(0);
+    } else {
+      const chan0 = buffer.getChannelData(0);
+      const chan1 = buffer.getChannelData(1);
+      const len = chan0.length;
+      result = new Float32Array(len);
+      for (let i = 0; i < len; i++) {
+        result[i] = (chan0[i] + chan1[i]) / 2;
+      }
+    }
+
+    const bufferLen = result.length * 2;
+    const wavBuffer = new ArrayBuffer(44 + bufferLen);
+    const view = new DataView(wavBuffer);
+
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + bufferLen, true);
+    writeString(view, 8, 'WAVE');
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, format, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, bitDepth, true);
+    writeString(view, 36, 'data');
+    view.setUint32(40, bufferLen, true);
+
+    floatTo16BitPCM(view, 44, result);
+
+    return new Blob([wavBuffer], { type: 'audio/wav' });
+  };
+
+  const floatTo16BitPCM = (output, offset, input) => {
+    for (let i = 0; i < input.length; i++, offset += 2) {
+      let s = Math.max(-1, Math.min(1, input[i]));
+      output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+  };
+
+  const writeString = (view, offset, string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
+
   // Web Audio VAD & MediaRecorder based recording
   const startAudioRecording = async () => {
     let hasSpoken = false;
@@ -790,7 +919,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
         mimeType = ''; // Let browser choose default
       }
 
-      const options = mimeType ? { mimeType } : {};
+      const options = mimeType ? { mimeType, audioBitsPerSecond: 24000 } : { audioBitsPerSecond: 24000 };
       const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
@@ -816,14 +945,27 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/wav' });
         
-        // Convert Blob to Base64
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        reader.onloadend = () => {
-          const base64Data = reader.result.split(',')[1];
-          const actualMime = audioBlob.type || 'audio/wav';
-          processAudioWithGemini(base64Data, actualMime);
-        };
+        try {
+          setStatus('thinking');
+          const wavBlob = await downsampleToWav(audioBlob);
+          console.log(`Original Audio size: ${Math.round(audioBlob.size / 1024)}KB, Compressed WAV size: ${Math.round(wavBlob.size / 1024)}KB`);
+
+          const reader = new FileReader();
+          reader.readAsDataURL(wavBlob);
+          reader.onloadend = () => {
+            const base64Data = reader.result.split(',')[1];
+            processAudioWithGemini(base64Data, 'audio/wav');
+          };
+        } catch (e) {
+          console.error("Downsampling failed, falling back to original blob:", e);
+          const reader = new FileReader();
+          reader.readAsDataURL(audioBlob);
+          reader.onloadend = () => {
+            const base64Data = reader.result.split(',')[1];
+            const actualMime = audioBlob.type || 'audio/wav';
+            processAudioWithGemini(base64Data, actualMime);
+          };
+        }
       };
 
       // 4. Set up Client-Side Voice Activity Detection (VAD) via AnalyserNode
@@ -899,46 +1041,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
     const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
     
-    // Inject dynamic data context for full content awareness
-    const dataContext = `
-CURRENT USER PROFILE:
-- Name: ${profileData?.fullName || 'Unknown'}
-- Selected Role: ${userRole || 'driver'}
-- Nationality: ${profileData?.nationality || 'Unknown'}
-- Driver Licenses: ${JSON.stringify(profileData?.driverLicenses || [])}
-- Technical Certificates: ${JSON.stringify(profileData?.techCertificates || [])}
-
-CURRENT USER JOB APPLICATIONS:
-${JSON.stringify((applications || []).map(app => ({
-  company: app.company,
-  jobTitle: app.title,
-  status: app.status,
-  appliedDate: app.appliedDate
-})))}
-
-AVAILABLE DRIVER JOBS IN APP:
-${JSON.stringify((jobs || []).map(job => ({
-  id: job.id,
-  company: job.company,
-  title: job.title,
-  location: job.location,
-  salary: job.salary,
-  licenseRequired: job.licenseRequired || job.license || []
-})))}
-
-AVAILABLE DRIVING ACADEMIES IN APP:
-${JSON.stringify((schools || []).map(school => ({
-  id: school.id,
-  name: school.name,
-  location: school.location,
-  languages: school.languages || school.langs || [],
-  price: school.price
-})))}
-
-CURRENT USER VIEWING CONTEXT:
-- Currently viewing job detail: ${selectedJob ? `Yes, viewing job "${selectedJob.title}" at "${selectedJob.company}"` : 'No'}
-- Currently viewing driving academy detail: ${selectedSchool ? `Yes, viewing school "${selectedSchool.name}"` : 'No'}
-`;
+    const dataContext = generateDataContext();
 
     const systemPrompt = `
 You are "Michi AI" — the smart voice assistant for the Michi app (a premium Japanese platform for truck driver jobs and driving academy courses).
