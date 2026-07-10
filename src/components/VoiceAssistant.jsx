@@ -300,7 +300,8 @@ export default function VoiceAssistant({
     }
 
     // 2. Try Google Cloud Wavenet TTS (uses same universal Gemini Key!)
-    if (apiKey) {
+    const currentApiKey = apiKeyRef.current;
+    if (currentApiKey) {
       try {
         console.log("Cascading TTS: Trying Google Cloud TTS...");
         const googleVoiceMap = {
@@ -310,7 +311,7 @@ export default function VoiceAssistant({
         };
         const voiceName = googleVoiceMap[targetLang] || 'ja-JP-Wavenet-A';
 
-        const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
+        const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${currentApiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -463,6 +464,9 @@ export default function VoiceAssistant({
 
   const statusRef = useRef(status);
   statusRef.current = status;
+
+  const apiKeyRef = useRef(apiKey);
+  apiKeyRef.current = apiKey;
 
   // ===== Local Instant Interceptor for Voice/Text Commands =====
   // Matches local patterns in Uzbek, Japanese, and English to execute immediately on-device
@@ -1219,6 +1223,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
     }
   };
 
+  // Handle successful Gemini JSON parsing and routing
   const handleGeminiSuccess = (aiResult, userText) => {
     setAiResponseText(aiResult.response);
     const detectedLang = aiResult.language || 'ja';
@@ -1230,8 +1235,10 @@ Return ONLY the raw JSON object, no markdown wrappers.
       { role: 'model', parts: [{ text: aiResult.response }] }
     ]);
 
+    // Execute the command immediately for instant UX feedback
+    executeVoiceCommand(aiResult.command, aiResult);
+
     speakResponse(aiResult.response, detectedLang, () => {
-      executeVoiceCommand(aiResult.command, aiResult);
       if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
       pillTimeoutRef.current = setTimeout(() => {
         setShowPill(false);
@@ -1242,7 +1249,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
   // Execute UI commands in React
   const executeVoiceCommand = (command, result = {}) => {
-    const shouldClose = !isVoiceStandby;
+    const shouldClose = !isVoiceStandbyRef.current;
     switch (command) {
       case 'NAVIGATE_TO_HOME':
         setActiveTab('home');
