@@ -369,6 +369,23 @@ export default function VoiceAssistant({
       }
     }
 
+    // 3.5. Try Free Public Google Translate TTS (Zero Keys, high-quality neural Uzbek/Japanese voices)
+    try {
+      console.log(`Cascading TTS: Trying Google Translate Free Neural TTS for lang "${lang}"...`);
+      const translateLang = lang === 'uz' ? 'uz' : lang === 'ja' ? 'ja' : 'en';
+      const translateUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${translateLang}&client=tw-ob&q=${encodeURIComponent(text)}`;
+      
+      const response = await fetch(translateUrl);
+      if (response.ok) {
+        const arrayBuffer = await response.arrayBuffer();
+        await playWebAudio(arrayBuffer, onEndCallback);
+        return; // Neural Translate TTS successful!
+      }
+      console.warn("Google Translate TTS failed. Cascading to native device synthesis...");
+    } catch (e) {
+      console.warn("Google Translate TTS fetch error (possibly CORS, will fallback):", e);
+    }
+
     // 4. Default Offline Fallback: Web Speech Synthesis
     console.log("Cascading TTS: Falling back to device Web Speech Synthesis...");
     if (!('speechSynthesis' in window)) {
@@ -426,7 +443,10 @@ export default function VoiceAssistant({
       
       const source = audioCtx.createBufferSource();
       source.buffer = audioBuffer;
-      source.connect(audioCtx.destination);
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = 1.6; // Boost volume level by 60% for clear audition
+      source.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
       activeAudioSourceRef.current = source;
 
       let resolved = false;
@@ -729,6 +749,20 @@ export default function VoiceAssistant({
     }
   };
 
+  // Helper to strip markdown formatting wrappers from Gemini JSON responses
+  const cleanJsonText = (rawText) => {
+    let clean = rawText.trim();
+    if (clean.startsWith('```json')) {
+      clean = clean.substring(7);
+    } else if (clean.startsWith('```')) {
+      clean = clean.substring(3);
+    }
+    if (clean.endsWith('```')) {
+      clean = clean.slice(0, -3);
+    }
+    return clean.trim();
+  };
+
   // Generates compact, optimized data context to save tokens and speed up API responses
   const generateDataContext = () => {
     const compactJobs = (jobs || []).slice(0, 12).map(job => ({
@@ -854,7 +888,8 @@ Return ONLY the raw JSON object, no markdown wrappers.
       if (!isActiveRef.current) return;
 
       const rawText = data.candidates[0].content.parts[0].text;
-      const aiResult = JSON.parse(rawText.trim());
+      const cleanJson = cleanJsonText(rawText);
+      const aiResult = JSON.parse(cleanJson);
 
       handleGeminiSuccess(aiResult, text);
 
@@ -1194,10 +1229,23 @@ Return ONLY the raw JSON object, no markdown wrappers.
       if (!isActiveRef.current) return;
 
       const rawText = data.candidates[0].content.parts[0].text;
-      const aiResult = JSON.parse(rawText.trim());
+      const cleanJson = cleanJsonText(rawText);
+      const aiResult = JSON.parse(cleanJson);
+
+      // Fail-safe: Override command using local NLP parser if transcription matches local patterns
+      const finalTranscription = aiResult.userTranscription || '';
+      if (finalTranscription) {
+        const localOverride = interceptLocalCommand(finalTranscription);
+        if (localOverride) {
+          console.log(`Local fail-safe override: Changing command "${aiResult.command}" to "${localOverride.command}" for transcription "${finalTranscription}"`);
+          aiResult.command = localOverride.command;
+          if (localOverride.response) {
+            aiResult.response = localOverride.response;
+          }
+        }
+      }
 
       // Update transcription in UI
-      const finalTranscription = aiResult.userTranscription || '';
       setTranscript(finalTranscription);
       setShowPill(true);
 
