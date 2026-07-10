@@ -30,6 +30,9 @@ export default function VoiceAssistant({
   const [hasStarted, setHasStarted] = useState(false);
   const [conversationHistory, setConversationHistory] = useState([]); // Array of { role, parts }
 
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const audioContextRef = useRef(null);
   const recognitionRef = useRef(null);
   const synthesisUtteranceRef = useRef(null);
   const pillTimeoutRef = useRef(null);
@@ -119,6 +122,16 @@ export default function VoiceAssistant({
   }, [status, showPill, isActive, hasStarted, showKeyInput, isOnline, micPermission, onClose, isVoiceStandby]);
 
   const stopAllVoiceActivities = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (e) {}
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      try {
+        audioContextRef.current.close();
+      } catch (e) {}
+    }
     if (recognitionRef.current) {
       try {
         recognitionRef.current.abort();
@@ -364,132 +377,136 @@ export default function VoiceAssistant({
     return null;
   };
 
-  // Start speech recognition
+  // Start speech recording sequence (MediaRecorder Audio Mode)
   const startListeningSequence = () => {
     if (!isActiveRef.current) return;
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setStatus('error');
-      setErrorMessage(t('speechNotSupported', 'お使いのブラウザは音声認識をサポートしていません。'));
-      return;
+    
+    // Stop synthesis if speaking, before starting listening
+    if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
     }
 
-    stopAllVoiceActivities();
-    setTranscript('');
-    setAiResponseText('');
-    setStatus('listening');
-    setHasStarted(true);
-    setShowPill(false); // Hide the subtitle bubble initially
+    startAudioRecording();
+  };
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'ja-JP'; // Set Japanese for phonetic capturing of mixed language
-    recognition.interimResults = false;
-    recognition.continuous = true;
-    recognition.maxAlternatives = 5;
-
-    // AUDIO INTERRUPTION: If user starts speaking while AI is speaking, cancel TTS immediately!
-    recognition.onspeechstart = () => {
-      if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-        setStatus('listening');
-      }
-    };
-
-    recognition.onresult = (event) => {
-      try {
-        recognition.stop();
-      } catch (e) {}
-
-      const resultIndex = event.resultIndex;
-      const alternatives = [];
-      if (event.results[resultIndex]) {
-        for (let i = 0; i < event.results[resultIndex].length; i++) {
-          alternatives.push(event.results[resultIndex][i].transcript);
-        }
-      }
-      const bestTranscript = alternatives[0] || '';
-      if (!bestTranscript) return;
-
-      setTranscript(bestTranscript);
-      setShowPill(true);
-
-      // ===== SPEED OPTIMIZATION: Check for instant local command match first =====
-      const localMatch = interceptLocalCommand(bestTranscript);
-      if (localMatch) {
-        setAiResponseText(localMatch.response);
-        speakResponse(localMatch.response, localMatch.language, () => {
-          executeVoiceCommand(localMatch.command, localMatch);
-          if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-          pillTimeoutRef.current = setTimeout(() => {
-            setShowPill(false);
-            if (isVoiceStandbyRef.current) scheduleRelisten();
-          }, 3000);
-        });
-      } else {
-        // Fallback to Gemini 2.0 Flash for general conversational queries
-        processSpeechWithGemini(bestTranscript, alternatives);
-      }
-    };
-
-    recognition.onerror = (event) => {
-      console.error('Speech Recognition Error:', event.error);
-      if (event.error === 'not-allowed') {
-        setMicPermission('denied');
-        setStatus('error');
-      } else if (event.error === 'no-speech' || event.error === 'aborted') {
-        if (isVoiceStandby) {
-          setStatus('idle');
-          setShowPill(false);
-          scheduleRelisten();
-        } else {
-          setStatus('idle');
-          setShowPill(false);
-        }
-      } else {
-        setStatus('error');
-        setErrorMessage(t('speechError', '音声認識エラーが発生しました。'));
-        setShowPill(true);
-        if (isVoiceStandby) {
-          pillTimeoutRef.current = setTimeout(() => {
-            setShowPill(false);
-            scheduleRelisten();
-          }, 4000);
-        }
-      }
-    };
-
-    recognition.onend = () => {
-      setStatus(prev => {
-        if (prev === 'listening') {
-          if (isVoiceStandby) {
-            scheduleRelisten();
-          }
-          return 'idle';
-        }
-        return prev;
-      });
-    };
-
-    recognitionRef.current = recognition;
+  // Web Audio VAD & MediaRecorder based recording
+  const startAudioRecording = async () => {
     try {
-      recognition.start();
-    } catch (e) {
-      console.error(e);
+      // 1. Request microphone permissions
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setMicPermission('granted');
+
+      // 2. Stop ongoing voice activities before starting new session
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try { mediaRecorderRef.current.stop(); } catch(e){}
+      }
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        try { audioContextRef.current.close(); } catch(e){}
+      }
+
+      setTranscript('');
+      setAiResponseText('');
+      setStatus('listening');
+      setHasStarted(true);
+      setShowPill(false);
+
+      // 3. Determine supported MIME type
+      let mimeType = 'audio/webm';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'audio/mp4'; // Fallback for Safari/iOS
+      }
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = ''; // Let browser choose default
+      }
+
+      const options = mimeType ? { mimeType } : {};
+      const mediaRecorder = new MediaRecorder(stream, options);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        // Release tracks
+        stream.getTracks().forEach(track => track.stop());
+
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/wav' });
+        
+        // Convert Blob to Base64
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+          const base64Data = reader.result.split(',')[1];
+          const actualMime = audioBlob.type || 'audio/wav';
+          processAudioWithGemini(base64Data, actualMime);
+        };
+      };
+
+      // 4. Set up Client-Side Voice Activity Detection (VAD) via AnalyserNode
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      audioContextRef.current = audioContext;
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      source.connect(analyser);
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      let silenceStart = Date.now();
+      const silenceThreshold = 12; // Audio level threshold
+      const maxSilenceTime = 1600;  // Auto stop after 1.6s of silence
+
+      const checkSilence = () => {
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+        analyser.getByteFrequencyData(dataArray);
+
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          sum += dataArray[i];
+        }
+        const average = sum / dataArray.length;
+
+        // If sound volume exceeds threshold, reset silence timer
+        if (average > silenceThreshold) {
+          silenceStart = Date.now();
+        }
+
+        // Auto-stop after 1.6s silence or 15s max recording duration
+        if (Date.now() - silenceStart > maxSilenceTime) {
+          try {
+            mediaRecorder.stop();
+          } catch (e) {}
+        } else if (Date.now() - silenceStart > 15000) { // Safety limit: max 15 seconds
+          try {
+            mediaRecorder.stop();
+          } catch (e) {}
+        } else {
+          requestAnimationFrame(checkSilence);
+        }
+      };
+
+      mediaRecorder.start(100); // chunk every 100ms
+      requestAnimationFrame(checkSilence);
+
+    } catch (err) {
+      console.error('Audio recording init error:', err);
+      setStatus('error');
+      setMicPermission('denied');
+      setErrorMessage(t('micDeniedTitle', 'Mikrofon ruxsati rad etilgan'));
+      setShowPill(true);
     }
   };
 
-  // Process text with Gemini 2.0 Flash API (Optimized for speed and brevity)
-  const processSpeechWithGemini = async (text, alternatives = []) => {
+  // Process Multimodal Audio directly with Gemini 2.0 Flash (Zero-roundtrip STT+LLM)
+  const processAudioWithGemini = async (base64Audio, mimeType) => {
     if (!isActiveRef.current) return;
     setStatus('thinking');
-    
-    const alternativesText = alternatives.length > 1 
-      ? `\n\nSpeech recognition alternatives (ordered by confidence):\n${alternatives.map((a, i) => `${i + 1}. "${a}"`).join('\n')}\n\nAnalyze ALL alternatives to determine the best matching command.`
-      : '';
-    
-    const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
-    const currentLang = i18n.language || 'uz';
 
+    const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
+    
     // Inject dynamic data context for full content awareness
     const dataContext = `
 CURRENT USER PROFILE:
@@ -533,40 +550,22 @@ CURRENT USER VIEWING CONTEXT:
 
     const systemPrompt = `
 You are "Michi AI" — the smart voice assistant for the Michi app (a premium Japanese platform for truck driver jobs and driving academy courses).
-The user speaks to you in JAPANESE, UZBEK, ENGLISH, or a mix of these languages. Speech recognition is set to Japanese, so Uzbek/English words will appear as Japanese phonetic transcriptions.
+The user is speaking to you directly via recorded audio. You must listen to the audio data, transcribe it, and return a JSON structure.
 
 Your task: analyze the user's speech and return a JSON object:
 {
+  "userTranscription": "<transcribed text of the user's speech in the language they spoke>",
   "command": "<COMMAND or NONE>",
   "parameters": <optional JSON object with parameters for FILTER_JOBS or FILTER_ACADEMIES>,
   "response": "<short natural response in user's language confirming the action or answering the question>",
   "language": "<detected language: uz, ja, or en>"
 }
 
-CRITICAL FOR SPEED AND VOICE UX:
-1. Keep the "response" EXTREMELY short and concise (under 2 sentences). This speeds up both generation and text-to-speech.
-2. Answer general questions, translate words, provide helpful driving license/visa info for Japan.
-3. DETECT the language the user speaks and respond in THAT language. If user asks in Uzbek, respond in Uzbek.
+CRITICAL FOR VOICE UX:
+1. Always populate "userTranscription" with a high-fidelity transcription of the spoken audio (in Uzbek, Japanese, or English).
+2. Keep the "response" EXTREMELY short and concise (under 2 sentences).
+3. If user speaks in Uzbek, transcribe/respond in Uzbek. If Japanese, transcribe/respond in Japanese. Same for English.
 4. You have access to real-time APP DATA. Answer user questions about jobs, schools, user applications, and profile details using the provided context.
-
-CRITICAL: Uzbek words transcribed as Japanese phonetics:
-- "ish" (work) → いし, イシ, いっし, 石, 意思
-- "ishlar" → いしらる, イシラル, いしゅらる
-- "maktab" (school) → まくたぶ, マクタブ, まくたぶ, 真久多部, まくた
-- "maktablar" → まくたぶらる, マクタブラル
-- "profil" → ぷろふぃる, プロフィル, プロフィール
-- "uy" / "uyga" (home) → うい, ういが, ウイ, ウイガ
-- "bosh sahifa" → ぼしさひふぁ, ボシサヒファ
-- "musiqa" → むしか, ムシカ, むすいか, ムスイка
-- "qo'shiq" → こしく, コシク, こしっく
-- "keyingi" → けいんぎ, ケインギ
-- "to'xtat" → とふたっと, トフタット
-- "salom" → さらむ, サラム
-- "rezyume" (resume) → れじゅめ, レジュメ
-- "yorug'" → よるぐ, ヨルグ
-- "qorong'i" → こるんgui, コルングイ
-- "tilni o'zgartir" → ちるに おずがるちる
-- "qidirish" → き deiry shi
 
 COMMAND RULES:
 - NAVIGATE_TO_HOME: home, dashboard, main page
@@ -582,28 +581,36 @@ COMMAND RULES:
 - OPEN_RESUME: open resume builder
 - FILTER_JOBS: search or filter jobs. Must return parameter inside json: "parameters": {"searchQuery": "<location or company>", "segment": "all|permanent|hourly", "licenses": ["lic_futsu"|"lic_chugata"|"lic_oogata"|"lic_kenin"|"tech_forklift"], "langLevel": "all"|"none"|"n5_n4"|"n3"|"n2_n1", "benefits": ["housing"|"foreigner"|"bonus"|"insurance"], "minSalary": 0|250000|350000|450000}
 - FILTER_ACADEMIES: search or filter schools. Must return parameter inside json: "parameters": {"searchQuery": "<location or school name>"}
-- APPLY_TO_CURRENT: apply to the current active job or school that the user is currently viewing. Only use this if user explicitly asks to apply or register to the one they are viewing.
-- SHARE_CURRENT: share or refer the current job/school. Only use this if user asks to refer, share or do shoukai.
+- APPLY_TO_CURRENT: apply to the current active job or school that the user is currently viewing.
+- SHARE_CURRENT: share or refer the current job/school.
 - CALL_COMPANY: call the company of the current job/school.
 - NONE: general conversation, questions, greetings
 
-Return ONLY the raw JSON object, no markdown.
-    `;
+Return ONLY the raw JSON object, no markdown wrappers.
+`;
 
-    // Incorporate short conversation history (last 4 interactions) for context
     const recentHistory = conversationHistory.slice(-4);
     const contents = [
       {
         role: 'user',
-        parts: [{ text: `System Instruction: ${systemPrompt}\n${screenContext}` }]
+        parts: [
+          { text: `System Instruction: ${systemPrompt}\n${screenContext}\n${dataContext}` }
+        ]
       },
       ...recentHistory,
       {
         role: 'user',
-        parts: [{ text: `User speech: "${text}"${alternativesText}` }]
+        parts: [
+          {
+            inlineData: {
+              mimeType: mimeType,
+              data: base64Audio
+            }
+          }
+        ]
       }
     ];
- 
+
     try {
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
@@ -623,35 +630,20 @@ Return ONLY the raw JSON object, no markdown.
 
       if (!isActiveRef.current) return;
 
-      if (response.status === 429) {
-        // Try once more after a short delay
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        if (!isActiveRef.current) return;
-        const retryResponse = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents, generationConfig: { responseMimeType: "application/json" } })
-          }
-        );
-        if (!retryResponse.ok) throw new Error('quota_exceeded');
-        const retryData = await retryResponse.json();
-        const retryRaw = retryData.candidates[0].content.parts[0].text;
-        const retryResult = JSON.parse(retryRaw.trim());
-        handleGeminiSuccess(retryResult, text);
-        return;
-      }
-
       if (!response.ok) {
         throw new Error('api_failed');
       }
 
       const data = await response.json();
-      if (!isActiveRef.current) return;
       const rawText = data.candidates[0].content.parts[0].text;
       const aiResult = JSON.parse(rawText.trim());
-      handleGeminiSuccess(aiResult, text);
+
+      // Update transcription in UI
+      const finalTranscription = aiResult.userTranscription || '';
+      setTranscript(finalTranscription);
+      setShowPill(true);
+
+      handleGeminiSuccess(aiResult, finalTranscription);
 
     } catch (error) {
       if (!isActiveRef.current) return;
