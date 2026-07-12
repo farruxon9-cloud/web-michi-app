@@ -159,6 +159,32 @@ export const VOICE_LEXICON = [
       ja: "履歴書作成画面を開きます。",
       en: "Opening resume builder."
     }
+  },
+  {
+    command: 'CLEAR_RESUME_FORM',
+    patterns: {
+      uz: ["rezyumeni o'chir", "formani o'chir", "tozala", "rezyumeni tozalash", "anketani o'chirish", "yozuvlarni o'chirish", "yozuvlarni tozalash", "rezyumeni tozalash"],
+      ja: ["履歴書消去", "リセット", "入力内容を消去", "データを消去", "レジュメ消去"],
+      en: ["clear resume", "reset resume", "clear form", "delete inputs", "reset form"]
+    },
+    responses: {
+      uz: "Rezyume ma'lumotlari butunlay tozalandi.",
+      ja: "履歴書データをすべて消去しました。",
+      en: "Resume form inputs have been cleared."
+    }
+  },
+  {
+    command: 'CLEAR_APPLICATIONS',
+    patterns: {
+      uz: ["arizalarni o'chir", "arizalarni tozalash", "bajarilgan ishlarni o'chirish", "arizalarni o'chirish", "ishlarni o'chirish", "arizalar ro'yxatini tozalash"],
+      ja: ["応募履歴消去", "応募をクリア", "実績を消去", "応募一覧を消去"],
+      en: ["clear applications", "delete applications", "clear applied jobs", "clear history"]
+    },
+    responses: {
+      uz: "Bajarilgan arizalar ro'yxati tozalandi.",
+      ja: "応募履歴をすべて消去しました。",
+      en: "Applied jobs list has been cleared."
+    }
   }
 ];
 

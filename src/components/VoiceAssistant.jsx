@@ -16,7 +16,8 @@ export default function VoiceAssistant({
   selectedLangLevel, setSelectedLangLevel,
   selectedBenefits, setSelectedBenefits,
   minSalary, setMinSalary,
-  selectedPrefecture, setSelectedPrefecture
+  selectedPrefecture, setSelectedPrefecture,
+  setApplications
 }) {
   const { t, i18n } = useTranslation();
   const defaultKey = localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
@@ -102,6 +103,9 @@ export default function VoiceAssistant({
 
   const setProfileActivePageRef = useRef(setProfileActivePage);
   setProfileActivePageRef.current = setProfileActivePage;
+
+  const setApplicationsRef = useRef(setApplications);
+  setApplicationsRef.current = setApplications;
 
   const isFillingResumeRef = useRef(isFillingResume);
   isFillingResumeRef.current = isFillingResume;
@@ -1805,6 +1809,16 @@ Return ONLY the raw JSON object, no markdown wrappers.
           // Start Speech Recognition automatically so user can answer without pressing anything!
           startLocalSpeechRecognition();
         });
+        break;
+      case 'CLEAR_RESUME_FORM':
+        window.dispatchEvent(new CustomEvent('michi-voice-resume-reset'));
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
+      case 'CLEAR_APPLICATIONS':
+        if (setApplicationsRef.current) {
+          setApplicationsRef.current([]);
+        }
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'FILTER_JOBS':
         if (setJobSearchQuery && setJobActiveSegment) {

@@ -1111,6 +1111,7 @@ function App() {
         selectedPrefecture={selectedPrefecture}
         setSelectedPrefecture={setSelectedPrefecture}
         setProfileActivePage={setProfileActivePage}
+        setApplications={setApplications}
       />
 
       <audio 

@@ -171,9 +171,39 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
       });
     };
 
+    const handleVoiceReset = () => {
+      const emptyData = {
+        fullName: '',
+        furigana: '',
+        birthDate: '',
+        gender: 'male',
+        birthPlace: '',
+        nationality: '',
+        postalCode: '',
+        address: '',
+        phone: '',
+        email: '',
+        motivation: '',
+        selfPR: '',
+        hobbies: '',
+        personalRequests: '貴社規定に従います。',
+        educationHistory: [],
+        workHistory: [],
+        driverLicenses: [],
+        techCertificates: []
+      };
+      setFormData(emptyData);
+      handlePreviewPDF(emptyData);
+      if (onUpdateProfile) {
+        onUpdateProfile(emptyData);
+      }
+    };
+
     window.addEventListener('michi-voice-resume-update', handleVoiceUpdate);
+    window.addEventListener('michi-voice-resume-reset', handleVoiceReset);
     return () => {
       window.removeEventListener('michi-voice-resume-update', handleVoiceUpdate);
+      window.removeEventListener('michi-voice-resume-reset', handleVoiceReset);
     };
   }, [onUpdateProfile]);
 
