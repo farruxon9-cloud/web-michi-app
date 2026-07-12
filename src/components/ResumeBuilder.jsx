@@ -133,6 +133,50 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
     };
   }, []);
 
+  // Handle voice updates from Voice Assistant questionnaire
+  useEffect(() => {
+    const handleVoiceUpdate = (e) => {
+      const { field, value } = e.detail;
+      setFormData(prev => {
+        let updated;
+        if (field === 'driverLicenses' || field === 'techCertificates') {
+          const arr = Array.isArray(value) ? value : [value];
+          const current = prev[field] || [];
+          const merged = Array.from(new Set([...current, ...arr]));
+          updated = { ...prev, [field]: merged };
+        } else {
+          updated = { ...prev, [field]: value };
+        }
+        
+        // Auto scroll and highlight the updated field
+        setTimeout(() => {
+          const inputEl = document.getElementById(field);
+          if (inputEl) {
+            inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            inputEl.focus();
+            inputEl.classList.add('voice-highlight');
+            setTimeout(() => inputEl.classList.remove('voice-highlight'), 3000);
+          }
+        }, 100);
+
+        // Instantly generate new PDF preview with updated data
+        handlePreviewPDF(updated);
+        
+        // Sync with global profile state
+        if (onUpdateProfile) {
+          onUpdateProfile(updated);
+        }
+
+        return updated;
+      });
+    };
+
+    window.addEventListener('michi-voice-resume-update', handleVoiceUpdate);
+    return () => {
+      window.removeEventListener('michi-voice-resume-update', handleVoiceUpdate);
+    };
+  }, [onUpdateProfile]);
+
   // Debounced auto-preview generation on form edits
   useEffect(() => {
     if (debounceTimeoutRef.current) {

@@ -1110,6 +1110,7 @@ function App() {
         setMinSalary={setMinSalary}
         selectedPrefecture={selectedPrefecture}
         setSelectedPrefecture={setSelectedPrefecture}
+        setProfileActivePage={setProfileActivePage}
       />
 
       <audio 

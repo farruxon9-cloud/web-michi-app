@@ -9,7 +9,7 @@ export default function VoiceAssistant({
   setActiveTab, musicPlayer, onStatusChange, activeTab,
   jobs = [], schools = [], profileData = {}, applications = [],
   selectedJob, selectedSchool,
-  setSelectedJob, setSelectedSchool,
+  setSelectedJob, setSelectedSchool, setProfileActivePage,
   setJobSearchQuery, setJobActiveSegment, setAcademySearchQuery,
   handleApplyJob, handleApplySchool, handleShoukai, userRole,
   selectedLicenses, setSelectedLicenses,
@@ -33,6 +33,9 @@ export default function VoiceAssistant({
   const [hasStarted, setHasStarted] = useState(false);
   const [conversationHistory, setConversationHistory] = useState([]); // Array of { role, parts }
   const [textInput, setTextInput] = useState('');
+  const [isFillingResume, setIsFillingResume] = useState(false);
+  const [resumeStep, setResumeStep] = useState('idle');
+  const [tempResumeData, setTempResumeData] = useState({});
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -72,6 +75,18 @@ export default function VoiceAssistant({
 
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+
+  const setProfileActivePageRef = useRef(setProfileActivePage);
+  setProfileActivePageRef.current = setProfileActivePage;
+
+  const isFillingResumeRef = useRef(isFillingResume);
+  isFillingResumeRef.current = isFillingResume;
+
+  const resumeStepRef = useRef(resumeStep);
+  resumeStepRef.current = resumeStep;
+
+  const tempResumeDataRef = useRef(tempResumeData);
+  tempResumeDataRef.current = tempResumeData;
 
   // Monitor network status
   useEffect(() => {
@@ -155,6 +170,10 @@ export default function VoiceAssistant({
       localStreamRef.current = null;
     }
     analyserRef.current = null;
+
+    // Reset voice resume questionnaire flow on stop
+    setIsFillingResume(false);
+    setResumeStep('idle');
 
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       try {
@@ -586,6 +605,13 @@ export default function VoiceAssistant({
         localStreamRef.current = null;
       }
 
+      // Check if we are currently filling the voice resume questionnaire
+      if (isFillingResumeRef.current) {
+        console.log(`Voice resume questionnaire flow intercept: "${text}" (step: ${resumeStepRef.current})`);
+        processResumeFlow(text);
+        return;
+      }
+
       // 1. First check: Intercept local commands immediately (0-token, 0ms latency)
       const localResult = interceptLocalCommand(text);
       if (localResult) {
@@ -655,6 +681,287 @@ export default function VoiceAssistant({
     }
   }, [conversationHistory, status]);
 
+  // State machine loop for filling the Rirekisho resume step-by-step
+  const processResumeFlow = (text) => {
+    const cleanText = text.trim();
+    const lowerText = cleanText.toLowerCase();
+    const lang = i18n.language || 'uz';
+    const isUz = lang.startsWith('uz');
+    const isJa = lang.startsWith('ja');
+
+    // Cancel checks
+    const cancelPatterns = ['bekor qil', 'to\'xtat', 'chiqish', 'cancel', 'stop', 'キャンセル', '中止'];
+    if (cancelPatterns.some(p => lowerText.includes(p))) {
+      setIsFillingResume(false);
+      setResumeStep('idle');
+      const cancelMsg = isUz ? "Ovozli to'ldirish to'xtatildi." : isJa ? "入力を中止しました。" : "Form input cancelled.";
+      setAiResponseText(cancelMsg);
+      setStatus('speaking');
+      speakResponse(cancelMsg, lang, () => {
+        setStatus('idle');
+      });
+      return;
+    }
+
+    const currentStep = resumeStepRef.current;
+
+    // Helper to trigger custom window event
+    const triggerUpdate = (field, val) => {
+      window.dispatchEvent(new CustomEvent('michi-voice-resume-update', {
+        detail: { field, value: val }
+      }));
+    };
+
+    const positivePatterns = ['ha', 'yes', 'tasdiq', 'ok', 'togri', 'to\'g\'ri', 'shunday', 'yoz', 'belgila', 'はい', 'そうです', 'オッケー'];
+    const isPositive = positivePatterns.some(p => lowerText.includes(p) || p.includes(lowerText));
+
+    const negativePatterns = ['yo\'q', 'yoq', 'no', 'xato', 'notogri', 'noto\'g\'ri', 'emas', 'いいえ', 'ちがいます', '違う', 'だめ'];
+    const isNegative = negativePatterns.some(p => lowerText.includes(p) || p.includes(lowerText));
+
+    switch (currentStep) {
+      case 'ask_name':
+        setTempResumeData(prev => ({ ...prev, fullName: cleanText }));
+        setResumeStep('confirm_name');
+        const nameConfirmMsg = isUz 
+          ? `Ismingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `お名前は「${cleanText}」でよろしいですか？` 
+          : `Is your name "${cleanText}"? Confirm?`;
+        speakStepMsg(nameConfirmMsg);
+        break;
+
+      case 'confirm_name':
+        if (isPositive) {
+          triggerUpdate('fullName', tempResumeDataRef.current.fullName);
+          setResumeStep('ask_birthplace');
+          const birthplaceAskMsg = isUz 
+            ? "Tug'ilgan joyingizni ayting (Masalan: O'zbekiston yoki Toshkent)." 
+            : isJa ? "出身地（または出生地）を教えてください。" 
+            : "Please state your place of birth.";
+          speakStepMsg(birthplaceAskMsg);
+        } else if (isNegative) {
+          setResumeStep('ask_name');
+          const repeatNameMsg = isUz 
+            ? "Tushunarli. Qaytadan ism va familiyangizni ayting." 
+            : isJa ? "失礼しました。もう一度お名前をフルネームで教えてください。" 
+            : "Let's try again. What is your full name?";
+          speakStepMsg(repeatNameMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Tushunarsiz javob. Ismingizni "${tempResumeDataRef.current.fullName}" deb yozaymi? Ha yoki Yo'q deb javob bering.` 
+            : isJa ? `お名前は「${tempResumeDataRef.current.fullName}」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Please answer Yes or No. Confirm name "${tempResumeDataRef.current.fullName}"?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_birthplace':
+        setTempResumeData(prev => ({ ...prev, birthPlace: cleanText }));
+        setResumeStep('confirm_birthplace');
+        const birthplaceConfirmMsg = isUz 
+          ? `Tug'ilgan joyingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `出身地は「${cleanText}」でよろしいですか？` 
+          : `Is your place of birth "${cleanText}"? Confirm?`;
+        speakStepMsg(birthplaceConfirmMsg);
+        break;
+
+      case 'confirm_birthplace':
+        if (isPositive) {
+          triggerUpdate('birthPlace', tempResumeDataRef.current.birthPlace);
+          setResumeStep('ask_nationality');
+          const nationalityAskMsg = isUz 
+            ? "Millatingizni ayting (Masalan: O'zbek)." 
+            : isJa ? "国籍（または民族）を教えてください。" 
+            : "What is your nationality?";
+          speakStepMsg(nationalityAskMsg);
+        } else if (isNegative) {
+          setResumeStep('ask_birthplace');
+          const repeatBirthplaceMsg = isUz 
+            ? "Qaytadan ayting, tug'ilgan joyingiz qayer?" 
+            : isJa ? "もう一度出身地を教えてください。" 
+            : "What is your place of birth?";
+          speakStepMsg(repeatBirthplaceMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Tug'ilgan joyingizni "${tempResumeDataRef.current.birthPlace}" deb yozaymi? Ha yoki Yo'q deb javob bering.` 
+            : isJa ? `出身地は「${tempResumeDataRef.current.birthPlace}」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Confirm place of birth "${tempResumeDataRef.current.birthPlace}"?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_nationality':
+        setTempResumeData(prev => ({ ...prev, nationality: cleanText }));
+        setResumeStep('confirm_nationality');
+        const nationalityConfirmMsg = isUz 
+          ? `Millatingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `国籍は「${cleanText}」でよろしいですか？` 
+          : `Is your nationality "${cleanText}"? Confirm?`;
+        speakStepMsg(nationalityConfirmMsg);
+        break;
+
+      case 'confirm_nationality':
+        if (isPositive) {
+          triggerUpdate('nationality', tempResumeDataRef.current.nationality);
+          setResumeStep('ask_phone');
+          const phoneAskMsg = isUz 
+            ? "Telefon raqamingizni ayting (Masalan: 080 1234 5678)." 
+            : isJa ? "電話番号を教えてください。" 
+            : "Please state your phone number.";
+          speakStepMsg(phoneAskMsg);
+        } else if (isNegative) {
+          setResumeStep('ask_nationality');
+          const repeatNationalityMsg = isUz 
+            ? "Qaytadan ayting, millatingiz nima?" 
+            : isJa ? "もう一度国籍を教えてください。" 
+            : "What is your nationality?";
+          speakStepMsg(repeatNationalityMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Millatingizni "${tempResumeDataRef.current.nationality}" deb yozaymi? Ha yoki Yo'q deb javob bering.` 
+            : isJa ? `国籍は「${tempResumeDataRef.current.nationality}」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Confirm nationality "${tempResumeDataRef.current.nationality}"?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_phone':
+        const formattedPhone = cleanText.replace(/[^\d-]/g, '');
+        setTempResumeData(prev => ({ ...prev, phone: formattedPhone || cleanText }));
+        setResumeStep('confirm_phone');
+        const phoneConfirmMsg = isUz 
+          ? `Telefon raqamingizni "${formattedPhone || cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `電話番号は「${formattedPhone || cleanText}」でよろしいですか？` 
+          : `Is your phone "${formattedPhone || cleanText}"? Confirm?`;
+        speakStepMsg(phoneConfirmMsg);
+        break;
+
+      case 'confirm_phone':
+        if (isPositive) {
+          triggerUpdate('phone', tempResumeDataRef.current.phone);
+          setResumeStep('ask_licenses');
+          const licensesAskMsg = isUz 
+            ? "Qanday yuk mashinasi guvohnomangiz bor? (Katta, o'rta yoki forklift sertifikati)" 
+            : isJa ? "お持ちの運転免許の種類を教えてください（大型、中型、フォークリフトなど）。" 
+            : "Which driving licenses do you hold? (e.g., Oogata, Chugata, Forklift)";
+          speakStepMsg(licensesAskMsg);
+        } else if (isNegative) {
+          setResumeStep('ask_phone');
+          const repeatPhoneMsg = isUz 
+            ? "Qaytadan ayting, telefon raqamingiz nima?" 
+            : isJa ? "もう一度電話番号を教えてください。" 
+            : "What is your phone number?";
+          speakStepMsg(repeatPhoneMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Telefon raqamingizni "${tempResumeDataRef.current.phone}" deb yozaymi? Ha yoki Yo'q deb javob bering.` 
+            : isJa ? `電話番号は「${tempResumeDataRef.current.phone}」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Confirm phone "${tempResumeDataRef.current.phone}"?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_licenses':
+        const licenseMatches = [];
+        const licenseLabels = [];
+
+        if (/(katta|oogata|大型)/i.test(lowerText)) {
+          licenseMatches.push('lic_oogata');
+          licenseLabels.push(isUz ? "Katta yuk mashinasi (Oogata)" : "大型免許");
+        }
+        if (/(o'rta|chugata|中型)/i.test(lowerText)) {
+          licenseMatches.push('lic_chugata');
+          licenseLabels.push(isUz ? "O'rta yuk mashinasi (Chugata)" : "中型免許");
+        }
+        if (/(engil|kichik|futsu|ordinary|普通)/i.test(lowerText)) {
+          licenseMatches.push('lic_futsu');
+          licenseLabels.push(isUz ? "Yengil mashina (Futsu)" : "普通免許");
+        }
+        if (/(kenin|tirkama|shatak|牽引)/i.test(lowerText)) {
+          licenseMatches.push('lic_kenin');
+          licenseLabels.push(isUz ? "Shatakchi tirkama (Kenin)" : "牽引免許");
+        }
+        if (/(forklift|pogruzchik|kar|フォークリフト)/i.test(lowerText)) {
+          licenseMatches.push('tech_forklift');
+          licenseLabels.push(isUz ? "Forklift (Pogruzchik)" : "フォークリフト運転資格");
+        }
+
+        if (licenseMatches.length === 0) {
+          setTempResumeData(prev => ({ ...prev, licenses: [cleanText], licenseLabels: [cleanText] }));
+          setResumeStep('confirm_licenses');
+          const noMatchConfirmMsg = isUz
+            ? `"${cleanText}" guvohnomasini belgilaymi? Tasdiqlaysizmi?`
+            : isJa ? `「${cleanText}」を登録しますか？`
+            : `Confirm license "${cleanText}"?`;
+          speakStepMsg(noMatchConfirmMsg);
+        } else {
+          setTempResumeData(prev => ({ ...prev, licenses: licenseMatches, licenseLabels: licenseLabels }));
+          setResumeStep('confirm_licenses');
+          const matchedListText = licenseLabels.join(isUz ? " va " : "、");
+          const matchConfirmMsg = isUz
+            ? `Sizda ${matchedListText} bor. Buni belgilaymi? Tasdiqlaysizmi?`
+            : isJa ? `お持ちの免許は「${matchedListText}」ですね。登録しますか？`
+            : `You hold: ${matchedListText}. Confirm?`;
+          speakStepMsg(matchConfirmMsg);
+        }
+        break;
+
+      case 'confirm_licenses':
+        if (isPositive) {
+          const lics = tempResumeDataRef.current.licenses || [];
+          const driverLics = lics.filter(l => l.startsWith('lic_'));
+          const techCerts = lics.filter(l => l.startsWith('tech_'));
+          
+          if (driverLics.length > 0) triggerUpdate('driverLicenses', driverLics);
+          if (techCerts.length > 0) triggerUpdate('techCertificates', techCerts);
+
+          setIsFillingResume(false);
+          setResumeStep('idle');
+          const finishedMsg = isUz 
+            ? "Ajoyib! Shaxsiy ma'lumotlaringiz muvaffaqiyatli to'ldirildi va Rirekisho PDF hujjati yaratildi. Tekshirib ko'rishingiz mumkin." 
+            : isJa ? "ありがとうございました！履歴書データの入力がすべて完了しました。PDFプレビューを確認してください。" 
+            : "Great! Your personal details are complete. Please inspect your generated PDF Rirekisho.";
+          
+          setAiResponseText(finishedMsg);
+          setStatus('speaking');
+          speakResponse(finishedMsg, lang, () => {
+            setStatus('idle');
+          });
+        } else if (isNegative) {
+          setResumeStep('ask_licenses');
+          const repeatLicensesMsg = isUz 
+            ? "Qaytadan ayting, qanday guvohnomalaringiz bor?" 
+            : isJa ? "もう一度お持ちの運転免許の種類を教えてください。" 
+            : "Which driving licenses do you hold?";
+          speakStepMsg(repeatLicensesMsg);
+        } else {
+          const matchedListText = (tempResumeDataRef.current.licenseLabels || []).join(isUz ? " va " : "、");
+          const reconfirmMsg = isUz 
+            ? `${matchedListText} guvohnomalarini belgilaymi? Ha yoki Yo'q deb javob bering.` 
+            : isJa ? `「${matchedListText}」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Confirm: ${matchedListText}?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      default:
+        setIsFillingResume(false);
+        setResumeStep('idle');
+        setStatus('idle');
+        break;
+    }
+  };
+
+  const speakStepMsg = (msg) => {
+    const lang = i18n.language || 'uz';
+    setAiResponseText(msg);
+    setTranscript('');
+    setStatus('speaking');
+    speakResponse(msg, lang, () => {
+      setStatus('idle');
+      startLocalSpeechRecognition();
+    });
+  };
+
   // Handle manual typing input submit
   const handleSendText = (e) => {
     e.preventDefault();
@@ -664,7 +971,12 @@ export default function VoiceAssistant({
 
     setTranscript(userText);
     setStatus('thinking');
-    processTextWithGemini(userText);
+    
+    if (isFillingResume) {
+      processResumeFlow(userText);
+    } else {
+      processTextWithGemini(userText);
+    }
   };
 
   // Fetch from Gemini API utilizing a pool of keys to balance load and prevent rate limit (429) errors
@@ -1446,7 +1758,29 @@ Return ONLY the raw JSON object, no markdown wrappers.
         break;
       case 'OPEN_RESUME':
         if (setActiveTabRef.current) setActiveTabRef.current('profile');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        if (setProfileActivePageRef.current) setProfileActivePageRef.current('resume_builder');
+        
+        setIsFillingResume(true);
+        setResumeStep('ask_name');
+        
+        const welcomeLang = i18n.language || 'uz';
+        const welcomeMsgs = {
+          uz: "Qani boshladik! Yaponcha rezyumengizni birgalikda to'ldiramiz. Ismingiz va familiyangizni ayting.",
+          ja: "履歴書の作成を開始します。まず、お名前をフルネームで教えてください。",
+          en: "Let's build your Japanese resume. Please state your full name."
+        };
+        const welcomeMsg = welcomeMsgs[welcomeLang.startsWith('uz') ? 'uz' : welcomeLang.startsWith('ja') ? 'ja' : 'en'] || welcomeMsgs['uz'];
+        
+        setAiResponseText(welcomeMsg);
+        setTranscript('');
+        setShowPill(true);
+        setStatus('speaking');
+        
+        speakResponse(welcomeMsg, welcomeLang, () => {
+          setStatus('idle');
+          // Start Speech Recognition automatically so user can answer without pressing anything!
+          startLocalSpeechRecognition();
+        });
         break;
       case 'FILTER_JOBS':
         if (setJobSearchQuery && setJobActiveSegment) {
