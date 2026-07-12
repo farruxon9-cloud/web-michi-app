@@ -9,6 +9,7 @@ export default function VoiceAssistant({
   setActiveTab, musicPlayer, onStatusChange, activeTab,
   jobs = [], schools = [], profileData = {}, applications = [],
   selectedJob, selectedSchool,
+  setSelectedJob, setSelectedSchool,
   setJobSearchQuery, setJobActiveSegment, setAcademySearchQuery,
   handleApplyJob, handleApplySchool, handleShoukai, userRole,
   selectedLicenses, setSelectedLicenses,
@@ -56,6 +57,21 @@ export default function VoiceAssistant({
 
   const activeTabRef = useRef(activeTab);
   activeTabRef.current = activeTab;
+
+  const musicPlayerRef = useRef(musicPlayer);
+  musicPlayerRef.current = musicPlayer;
+
+  const setSelectedJobRef = useRef(setSelectedJob);
+  setSelectedJobRef.current = setSelectedJob;
+
+  const setSelectedSchoolRef = useRef(setSelectedSchool);
+  setSelectedSchoolRef.current = setSelectedSchool;
+
+  const setActiveTabRef = useRef(setActiveTab);
+  setActiveTabRef.current = setActiveTab;
+
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   // Monitor network status
   useEffect(() => {
@@ -1343,43 +1359,65 @@ Return ONLY the raw JSON object, no markdown wrappers.
     });
   };
 
-  // Execute UI commands in React
+  // Execute UI commands in React using refs to avoid stale closures
   const executeVoiceCommand = (command, result = {}) => {
     const shouldClose = !isVoiceStandbyRef.current;
+    const activeMusicPlayer = musicPlayerRef.current;
+
+    // List of navigation commands that require closing modal overlays for tab visibility
+    const isNavigationCommand = [
+      'NAVIGATE_TO_HOME', 'NAVIGATE_TO_JOBS', 'NAVIGATE_TO_ACADEMY',
+      'NAVIGATE_TO_SERVICE', 'NAVIGATE_TO_PROFILE', 'OPEN_RESUME',
+      'FILTER_JOBS', 'FILTER_ACADEMIES'
+    ].includes(command);
+
+    if (isNavigationCommand) {
+      if (setSelectedJobRef.current) setSelectedJobRef.current(null);
+      if (setSelectedSchoolRef.current) setSelectedSchoolRef.current(null);
+    }
+
     switch (command) {
       case 'NAVIGATE_TO_HOME':
-        setActiveTab('home');
-        if (shouldClose) onClose();
+        if (setActiveTabRef.current) setActiveTabRef.current('home');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_JOBS':
-        setActiveTab('jobs');
-        if (shouldClose) onClose();
+        if (setActiveTabRef.current) setActiveTabRef.current('jobs');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_ACADEMY':
-        setActiveTab('academy');
-        if (shouldClose) onClose();
+        if (setActiveTabRef.current) setActiveTabRef.current('academy');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
+      case 'NAVIGATE_TO_SERVICE':
+        if (setActiveTabRef.current) setActiveTabRef.current('service');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_PROFILE':
-        setActiveTab('profile');
-        if (shouldClose) onClose();
+        if (setActiveTabRef.current) setActiveTabRef.current('profile');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'MUSIC_PLAY':
-        if (musicPlayer && !musicPlayer.isPlaying) {
-          musicPlayer.togglePlay();
+        if (activeMusicPlayer) {
+          if (!activeMusicPlayer.isPlaying) {
+            activeMusicPlayer.togglePlay();
+          }
         }
-        if (shouldClose) onClose();
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'MUSIC_PAUSE':
-        if (musicPlayer && musicPlayer.isPlaying) {
-          musicPlayer.togglePlay();
+        if (activeMusicPlayer) {
+          if (activeMusicPlayer.isPlaying) {
+            activeMusicPlayer.togglePlay();
+          }
         }
-        if (shouldClose) onClose();
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'MUSIC_NEXT':
-        if (musicPlayer) {
-          musicPlayer.nextTrack();
+        if (activeMusicPlayer) {
+          activeMusicPlayer.nextTrack();
         }
-        if (shouldClose) onClose();
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'READ_SCREEN':
         // Prompt covers screen context organically
@@ -1393,7 +1431,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
           document.documentElement.classList.remove('light-mode');
           document.documentElement.classList.add('dark-mode');
         }
-        if (shouldClose) onClose();
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'CHANGE_LANGUAGE':
         const targetLang = result.targetLang || result.language || 'ja';
@@ -1404,11 +1442,11 @@ Return ONLY the raw JSON object, no markdown wrappers.
         } else {
           i18n.changeLanguage('ja');
         }
-        if (shouldClose) onClose();
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'OPEN_RESUME':
-        setActiveTab('profile');
-        if (shouldClose) onClose();
+        if (setActiveTabRef.current) setActiveTabRef.current('profile');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'FILTER_JOBS':
         if (setJobSearchQuery && setJobActiveSegment) {
@@ -1432,17 +1470,17 @@ Return ONLY the raw JSON object, no markdown wrappers.
             setSelectedPrefecture(params.prefecture);
           }
           
-          setActiveTab('jobs');
+          if (setActiveTabRef.current) setActiveTabRef.current('jobs');
         }
-        if (shouldClose) onClose();
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'FILTER_ACADEMIES':
         if (setAcademySearchQuery) {
           const params = result.parameters || {};
           setAcademySearchQuery(params.searchQuery || '');
-          setActiveTab('academy');
+          if (setActiveTabRef.current) setActiveTabRef.current('academy');
         }
-        if (shouldClose) onClose();
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'APPLY_TO_CURRENT':
         if (selectedJob && handleApplyJob) {
@@ -1450,7 +1488,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
         } else if (selectedSchool && handleApplySchool) {
           handleApplySchool(selectedSchool);
         }
-        if (shouldClose) onClose();
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'SHARE_CURRENT':
         if (selectedJob && handleShoukai) {
@@ -1458,14 +1496,14 @@ Return ONLY the raw JSON object, no markdown wrappers.
         } else if (selectedSchool && handleShoukai) {
           handleShoukai(selectedSchool.id);
         }
-        if (shouldClose) onClose();
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'CALL_COMPANY':
         const activeItem = selectedJob || selectedSchool;
         if (activeItem && activeItem.phone) {
           window.open(`tel:${activeItem.phone}`);
         }
-        if (shouldClose) onClose();
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       default:
         break;

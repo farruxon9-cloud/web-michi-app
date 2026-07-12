@@ -1091,6 +1091,8 @@ function App() {
         applications={applications}
         selectedJob={selectedJob}
         selectedSchool={selectedSchool}
+        setSelectedJob={setSelectedJob}
+        setSelectedSchool={setSelectedSchool}
         setJobSearchQuery={setJobSearchQuery}
         setJobActiveSegment={setJobActiveSegment}
         setAcademySearchQuery={setAcademySearchQuery}

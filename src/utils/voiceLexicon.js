@@ -70,6 +70,19 @@ export const VOICE_LEXICON = [
     }
   },
   {
+    command: 'NAVIGATE_TO_SERVICE',
+    patterns: {
+      uz: ['servis', 'xizmat', 'xizmatlar', 'servislar', 'coming soon', 'tez kunda', 'service', 'services'],
+      ja: ['サービス', 'その他'],
+      en: ['service', 'services', 'coming soon']
+    },
+    responses: {
+      uz: "Xizmatlar bo'limiga o'tilmoqda.",
+      ja: "サービスページに移動します。",
+      en: "Opening services page."
+    }
+  },
+  {
     command: 'NAVIGATE_TO_PROFILE',
     patterns: {
       uz: ['profilim', 'profilni och', 'mening sahifam', 'kabinetim', 'sozlamalar', 'shaxsiy kabinet', 'kabinetga', 'profile', 'my page', 'settings'],
