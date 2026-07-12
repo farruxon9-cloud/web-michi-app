@@ -36,6 +36,30 @@ export default function VoiceAssistant({
   const [isFillingResume, setIsFillingResume] = useState(false);
   const [resumeStep, setResumeStep] = useState('idle');
   const [tempResumeData, setTempResumeData] = useState({});
+  const [speechLang, setSpeechLang] = useState(localStorage.getItem('michi_speech_lang') || i18n.language || 'uz');
+
+  const speechLangRef = useRef(speechLang);
+  speechLangRef.current = speechLang;
+
+  const cycleSpeechLanguage = (e) => {
+    if (e) e.stopPropagation();
+    const languages = ['uz', 'ja', 'en'];
+    const cleanLang = speechLang.substring(0, 2).toLowerCase();
+    const nextIdx = (languages.indexOf(cleanLang) + 1) % languages.length;
+    const nextLang = languages[nextIdx];
+    setSpeechLang(nextLang);
+    localStorage.setItem('michi_speech_lang', nextLang);
+    
+    // Restart recognition if listening so it applies the new language instantly
+    if (recognitionRef.current && statusRef.current === 'listening') {
+      try {
+        recognitionRef.current.abort();
+      } catch(err){}
+      setTimeout(() => {
+        startLocalSpeechRecognition();
+      }, 150);
+    }
+  };
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -544,7 +568,7 @@ export default function VoiceAssistant({
   apiKeyRef.current = apiKey;
 
   const interceptLocalCommand = (text) => {
-    return matchLexiconCommand(text, i18n.language || 'uz');
+    return matchLexiconCommand(text, speechLangRef.current || 'uz');
   };
 
   // Local-First Speech-to-Text Recognition for instant local matching and online fallback
@@ -581,9 +605,9 @@ export default function VoiceAssistant({
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
 
-    const currentLang = i18n.language || 'uz';
+    const currentLang = speechLangRef.current || 'uz';
     const langCodeMap = { 'uz': 'uz-UZ', 'ja': 'ja-JP', 'en': 'en-US' };
-    recognition.lang = langCodeMap[currentLang] || 'ja-JP';
+    recognition.lang = langCodeMap[currentLang.substring(0, 2).toLowerCase()] || 'ja-JP';
     recognition.continuous = false;
     recognition.interimResults = false;
 
@@ -1996,10 +2020,35 @@ Return ONLY the raw JSON object, no markdown wrappers.
               <Sparkles size={16} color="#ffffff" fill="#ffffff" />
             </div>
           </div>
-          <div className="voice-ambient-info">
+          <div className="voice-ambient-info" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             {status === 'listening' && <span>{t('aiListeningLabel', 'Tinglamoqda... (Gapiring)')}</span>}
             {status === 'thinking' && <span>{t('aiThinkingLabel', 'Fikrlamoqda...')}</span>}
             {status === 'speaking' && <span>{t('aiSpeakingLabel', 'Javob bermoqda...')}</span>}
+            
+            <button 
+              className="voice-lang-toggle" 
+              onClick={cycleSpeechLanguage}
+              title="Ovozli tilni o'zgartirish"
+              style={{
+                background: 'rgba(255, 255, 255, 0.15)',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                color: '#fff',
+                fontSize: '10px',
+                fontWeight: '700',
+                padding: '2px 8px',
+                borderRadius: '20px',
+                marginLeft: '8px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.2s ease',
+                backdropFilter: 'blur(5px)',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+              }}
+            >
+              {speechLang === 'uz' ? '🇺🇿 UZ' : speechLang === 'ja' ? '🇯🇵 JA' : '🇬🇧 EN'}
+            </button>
           </div>
           <button className="voice-ambient-stop-btn" onClick={stopAllVoiceActivities} title="To'xtatish">
             <X size={14} />
