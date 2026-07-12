@@ -621,6 +621,27 @@ export default function VoiceAssistant({
       gotResult = true;
       const text = event.results[0][0].transcript;
       console.log(`STT transcription: "${text}"`);
+
+      // Standby background mode wake word filtering to avoid false positives from background noise
+      if (!isActiveRef.current) {
+        const lowerText = text.toLowerCase();
+        const hasWakeWord = /(michi|miki|miti|hey michi|ミチ|みち)/i.test(lowerText);
+        if (!hasWakeWord) {
+          console.log(`Standby background listening ignored text without wake word: "${text}"`);
+          setStatus('idle');
+          if (localStreamRef.current) {
+            try {
+              localStreamRef.current.getTracks().forEach(track => track.stop());
+            } catch(e){}
+            localStreamRef.current = null;
+          }
+          if (isVoiceStandbyRef.current) {
+            scheduleRelisten();
+          }
+          return;
+        }
+      }
+
       setTranscript(text);
       setShowPill(true);
       setStatus('thinking');
