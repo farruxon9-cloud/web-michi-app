@@ -1163,7 +1163,7 @@ Your task: analyze the user's message and return a JSON object:
 
 CRITICAL FOR CONVERSATION UX:
 1. Always populate "userTranscription" with the exact query text: "${text}".
-2. Keep the "response" EXTREMELY short and concise (under 2 sentences).
+2. For UI action commands (any command other than "NONE"), keep the "response" very short and concise (under 2 sentences). For general questions, information queries, or casual conversations (where command is "NONE"), provide a rich, complete, highly informative, and helpful response (can be longer, up to 1-2 paragraphs) in a natural conversational tone.
 3. If user writes in Uzbek, respond in Uzbek. If Japanese, respond in Japanese. Same for English.
 4. You have access to real-time APP DATA. Answer user questions about jobs, schools, user applications, and profile details using the provided context.
 
@@ -1585,7 +1585,7 @@ Your task: analyze the user's speech and return a JSON object:
 
 CRITICAL FOR VOICE UX:
 1. Always populate "userTranscription" with a high-fidelity transcription of the spoken audio (in Uzbek, Japanese, or English).
-2. Keep the "response" EXTREMELY short and concise (under 2 sentences).
+2. For UI action commands (any command other than "NONE"), keep the "response" very short and concise (under 2 sentences). For general questions, information queries, or casual conversations (where command is "NONE"), provide a rich, complete, highly informative, and helpful response (can be longer, up to 1-2 paragraphs) in a natural conversational tone.
 3. If user speaks in Uzbek, transcribe/respond in Uzbek. If Japanese, transcribe/respond in Japanese. Same for English.
 4. You have access to real-time APP DATA. Answer user questions about jobs, schools, user applications, and profile details using the provided context.
 
