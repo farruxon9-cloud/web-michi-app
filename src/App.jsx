@@ -956,6 +956,10 @@ function App() {
             setContractStatus={setContractStatus} 
             profileData={profileData}
             userRole={userRole}
+            isVoiceActive={isVoiceActive}
+            setIsVoiceActive={setIsVoiceActive}
+            isVoiceStandby={isVoiceStandby}
+            setIsVoiceStandby={setIsVoiceStandby}
             onChangeLanguage={handleChangeLanguage}
             onUpdateProfile={handleUpdateProfile}
             onApply={handleApplyJob}

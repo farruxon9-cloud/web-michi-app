@@ -974,18 +974,12 @@ export default function VoiceAssistant({
           if (driverLics.length > 0) triggerUpdate('driverLicenses', driverLics);
           if (techCerts.length > 0) triggerUpdate('techCertificates', techCerts);
 
-          setIsFillingResume(false);
-          setResumeStep('idle');
-          const finishedMsg = isUz 
-            ? "Ajoyib! Shaxsiy ma'lumotlaringiz muvaffaqiyatli to'ldirildi va Rirekisho PDF hujjati yaratildi. Tekshirib ko'rishingiz mumkin." 
-            : isJa ? "ありがとうございました！履歴書データの入力がすべて完了しました。PDFプレビューを確認してください。" 
-            : "Great! Your personal details are complete. Please inspect your generated PDF Rirekisho.";
-          
-          setAiResponseText(finishedMsg);
-          setStatus('speaking');
-          speakResponse(finishedMsg, lang, () => {
-            setStatus('idle');
-          });
+          setResumeStep('ask_edu_school');
+          const eduSchoolAskMsg = isUz 
+            ? "Ta'lim olgan maktab yoki universitet nomini ayting." 
+            : isJa ? "卒業または在籍した学校名（高校や大学など）を教えてください。" 
+            : "Please state the name of your school or university.";
+          speakStepMsg(eduSchoolAskMsg);
         } else if (isNegative) {
           setResumeStep('ask_licenses');
           const repeatLicensesMsg = isUz 
@@ -999,6 +993,346 @@ export default function VoiceAssistant({
             ? `${matchedListText} guvohnomalarini belgilaymi? Ha yoki Yo'q deb javob bering.` 
             : isJa ? `「${matchedListText}」でよろしいですか？はい、か、いいえ、で教えてください。` 
             : `Confirm: ${matchedListText}?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_edu_school':
+        setTempResumeData(prev => ({ ...prev, eduSchool: cleanText }));
+        setResumeStep('confirm_edu_school');
+        const eduSchoolConfirmMsg = isUz 
+          ? `Ta'lim muassasasi nomini "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `学校名は「${cleanText}」でよろしいですか？` 
+          : `Is the school name "${cleanText}"? Confirm?`;
+        speakStepMsg(eduSchoolConfirmMsg);
+        break;
+
+      case 'confirm_edu_school':
+        if (isPositive) {
+          setResumeStep('ask_edu_major');
+          const eduMajorAskMsg = isUz 
+            ? "Mutaxassisligingiz yoki darajangizni ayting (Masalan: Bakalavr yoki Haydovchi)." 
+            : isJa ? "専攻または学位（例：学士、自動車整備など）を教えてください。" 
+            : "Please state your major or degree.";
+          speakStepMsg(eduMajorAskMsg);
+        } else if (isNegative) {
+          setResumeStep('ask_edu_school');
+          const repeatEduSchoolMsg = isUz 
+            ? "Qaytadan ayting, maktabingiz nomi nima?" 
+            : isJa ? "もう一度学校名を教えてください。" 
+            : "What is your school name?";
+          speakStepMsg(repeatEduSchoolMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Maktab nomini "${tempResumeDataRef.current.eduSchool}" deb yozaymi? Ha yoki Yo'q.` 
+            : isJa ? `学校名は「${tempResumeDataRef.current.eduSchool}」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Confirm school "${tempResumeDataRef.current.eduSchool}"?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_edu_major':
+        setTempResumeData(prev => ({ ...prev, eduMajor: cleanText }));
+        setResumeStep('confirm_edu_major');
+        const eduMajorConfirmMsg = isUz 
+          ? `Mutaxassisligingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `専攻は「${cleanText}」でよろしいですか？` 
+          : `Is your major "${cleanText}"? Confirm?`;
+        speakStepMsg(eduMajorConfirmMsg);
+        break;
+
+      case 'confirm_edu_major':
+        if (isPositive) {
+          setResumeStep('ask_edu_start_year');
+          const eduStartYearAskMsg = isUz 
+            ? "O'qishga kirgan yilingizni ayting (Masalan: 2020)." 
+            : isJa ? "入学した年（西暦）を教えてください（例：2020年）。" 
+            : "Please state the year you entered (e.g., 2020).";
+          speakStepMsg(eduStartYearAskMsg);
+        } else if (isNegative) {
+          setResumeStep('ask_edu_major');
+          const repeatEduMajorMsg = isUz 
+            ? "Qaytadan ayting, mutaxassisligingiz nima?" 
+            : isJa ? "もう一度専攻を教えてください。" 
+            : "What is your major?";
+          speakStepMsg(repeatEduMajorMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Mutaxassislikni "${tempResumeDataRef.current.eduMajor}" deb yozaymi? Ha yoki Yo'q.` 
+            : isJa ? `専攻は「${tempResumeDataRef.current.eduMajor}」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Confirm major "${tempResumeDataRef.current.eduMajor}"?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_edu_start_year':
+        const parsedEduStartYear = cleanText.match(/\d{4}/)?.[0] || cleanText;
+        setTempResumeData(prev => ({ ...prev, eduStartYear: parsedEduStartYear }));
+        setResumeStep('confirm_edu_start_year');
+        const eduStartYearConfirmMsg = isUz 
+          ? `O'qishga kirgan yilingizni "${parsedEduStartYear}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `入学年は「${parsedEduStartYear}年」でよろしいですか？` 
+          : `Is the admission year "${parsedEduStartYear}"? Confirm?`;
+        speakStepMsg(eduStartYearConfirmMsg);
+        break;
+
+      case 'confirm_edu_start_year':
+        if (isPositive) {
+          setResumeStep('ask_edu_end_year');
+          const eduEndYearAskMsg = isUz 
+            ? "O'qishni tamomlagan yilingizni ayting (Masalan: 2024)." 
+            : isJa ? "卒業した年（または卒業予定の年）を教えてください（例：2024年）。" 
+            : "Please state the graduation year (e.g., 2024).";
+          speakStepMsg(eduEndYearAskMsg);
+        } else if (isNegative) {
+          setResumeStep('ask_edu_start_year');
+          const repeatEduStartYearMsg = isUz 
+            ? "Qaytadan ayting, qaysi yilda o'qishga kirgansiz?" 
+            : isJa ? "もう一度入学した年を教えてください。" 
+            : "What is your admission year?";
+          speakStepMsg(repeatEduStartYearMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Kirgan yilingizni "${tempResumeDataRef.current.eduStartYear}" deb yozaymi? Ha yoki Yo'q.` 
+            : isJa ? `入学年は「${tempResumeDataRef.current.eduStartYear}年」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Confirm admission year "${tempResumeDataRef.current.eduStartYear}"?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_edu_end_year':
+        const parsedEduEndYear = cleanText.match(/\d{4}/)?.[0] || cleanText;
+        setTempResumeData(prev => ({ ...prev, eduEndYear: parsedEduEndYear }));
+        setResumeStep('confirm_edu_end_year');
+        const eduEndYearConfirmMsg = isUz 
+          ? `O'qishni tamomlagan yilingizni "${parsedEduEndYear}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `卒業年は「${parsedEduEndYear}年」でよろしいですか？` 
+          : `Is the graduation year "${parsedEduEndYear}"? Confirm?`;
+        speakStepMsg(eduEndYearConfirmMsg);
+        break;
+
+      case 'confirm_edu_end_year':
+        if (isPositive) {
+          // Trigger Education update
+          const eduObj = {
+            school: tempResumeDataRef.current.eduSchool,
+            major: tempResumeDataRef.current.eduMajor,
+            startDate: `${tempResumeDataRef.current.eduStartYear}-09`,
+            endDate: `${tempResumeDataRef.current.eduEndYear}-06`
+          };
+          triggerUpdate('educationHistory', [eduObj]);
+
+          setResumeStep('ask_work_company');
+          const workCompanyAskMsg = isUz 
+            ? "Avvalgi yoki hozirgi ishlagan kompaniyangiz nomini ayting." 
+            : isJa ? "お勤め先（または過去に勤務した会社名）を教えてください。" 
+            : "Please state your company or employer name.";
+          speakStepMsg(workCompanyAskMsg);
+        } else if (isNegative) {
+          setResumeStep('ask_edu_end_year');
+          const repeatEduEndYearMsg = isUz 
+            ? "Qaytadan ayting, qaysi yilda o'qishni tamomlagansiz?" 
+            : isJa ? "もう一度卒業した年を教えてください。" 
+            : "What is your graduation year?";
+          speakStepMsg(repeatEduEndYearMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Tugatgan yilingizni "${tempResumeDataRef.current.eduEndYear}" deb yozaymi? Ha yoki Yo'q.` 
+            : isJa ? `卒業年は「${tempResumeDataRef.current.eduEndYear}年」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Confirm graduation year "${tempResumeDataRef.current.eduEndYear}"?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_work_company':
+        setTempResumeData(prev => ({ ...prev, workCompany: cleanText }));
+        setResumeStep('confirm_work_company');
+        const workCompanyConfirmMsg = isUz 
+          ? `Kompaniya nomini "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `会社名は「${cleanText}」でよろしいですか？` 
+          : `Is the company name "${cleanText}"? Confirm?`;
+        speakStepMsg(workCompanyConfirmMsg);
+        break;
+
+      case 'confirm_work_company':
+        if (isPositive) {
+          setResumeStep('ask_work_position');
+          const workPositionAskMsg = isUz 
+            ? "Ushbu kompaniyadagi lavozimingizni ayting (Masalan: Yuk mashinasi haydovchisi)." 
+            : isJa ? "職種や役職（例：トラック運転手など）を教えてください。" 
+            : "Please state your position or job title.";
+          speakStepMsg(workPositionAskMsg);
+        } else if (isNegative) {
+          setResumeStep('ask_work_company');
+          const repeatWorkCompanyMsg = isUz 
+            ? "Qaytadan ayting, ishlagan kompaniyangiz nomi nima?" 
+            : isJa ? "もう一度会社名を教えてください。" 
+            : "What is your company name?";
+          speakStepMsg(repeatWorkCompanyMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Kompaniya nomini "${tempResumeDataRef.current.workCompany}" deb yozaymi? Ha yoki Yo'q.` 
+            : isJa ? `会社名は「${tempResumeDataRef.current.workCompany}」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Confirm company "${tempResumeDataRef.current.workCompany}"?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_work_position':
+        setTempResumeData(prev => ({ ...prev, workPosition: cleanText }));
+        setResumeStep('confirm_work_position');
+        const workPositionConfirmMsg = isUz 
+          ? `Lavozimingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `職種は「${cleanText}」でよろしいですか？` 
+          : `Is your position "${cleanText}"? Confirm?`;
+        speakStepMsg(workPositionConfirmMsg);
+        break;
+
+      case 'confirm_work_position':
+        if (isPositive) {
+          setResumeStep('ask_work_start_year');
+          const workStartYearAskMsg = isUz 
+            ? "Ushbu ishda qaysi yildan boshlab ishlagansiz (Masalan: 2022)?" 
+            : isJa ? "その仕事を開始した年を教えてください（例：2022年）。" 
+            : "Please state the year you started this job (e.g., 2022).";
+          speakStepMsg(workStartYearAskMsg);
+        } else if (isNegative) {
+          setResumeStep('ask_work_position');
+          const repeatWorkPositionMsg = isUz 
+            ? "Qaytadan ayting, lavozimingiz nima edi?" 
+            : isJa ? "もう一度職種を教えてください。" 
+            : "What is your position?";
+          speakStepMsg(repeatWorkPositionMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Lavozimingizni "${tempResumeDataRef.current.workPosition}" deb yozaymi? Ha yoki Yo'q.` 
+            : isJa ? `職種は「${tempResumeDataRef.current.workPosition}」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Confirm position "${tempResumeDataRef.current.workPosition}"?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_work_start_year':
+        const parsedWorkStartYear = cleanText.match(/\d{4}/)?.[0] || cleanText;
+        setTempResumeData(prev => ({ ...prev, workStartYear: parsedWorkStartYear }));
+        setResumeStep('confirm_work_start_year');
+        const workStartYearConfirmMsg = isUz 
+          ? `Ish boshlagan yilingizni "${parsedWorkStartYear}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `勤務開始年は「${parsedWorkStartYear}年」でよろしいですか？` 
+          : `Is the start year "${parsedWorkStartYear}"? Confirm?`;
+        speakStepMsg(workStartYearConfirmMsg);
+        break;
+
+      case 'confirm_work_start_year':
+        if (isPositive) {
+          setResumeStep('ask_work_current');
+          const workCurrentAskMsg = isUz 
+            ? "Ushbu ish joyida hali ham ishlaysizmi? Ha yoki Yo'q deb javob bering." 
+            : isJa ? "現在もその仕事に在籍していますか？はい、か、いいえ、で教えてください。" 
+            : "Are you still working at this company? Please answer Yes or No.";
+          speakStepMsg(workCurrentAskMsg);
+        } else if (isNegative) {
+          setResumeStep('ask_work_start_year');
+          const repeatWorkStartYearMsg = isUz 
+            ? "Qaytadan ayting, qaysi yilda ish boshlagansiz?" 
+            : isJa ? "もう一度開始年を教えてください。" 
+            : "What is the start year?";
+          speakStepMsg(repeatWorkStartYearMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Boshlagan yilingizni "${tempResumeDataRef.current.workStartYear}" deb yozaymi? Ha yoki Yo'q.` 
+            : isJa ? `勤務開始年は「${tempResumeDataRef.current.workStartYear}年」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Confirm start year "${tempResumeDataRef.current.workStartYear}"?`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_work_current':
+        if (isPositive) {
+          // Still working there: set current = true and endDate = ''
+          const workObj = {
+            company: tempResumeDataRef.current.workCompany,
+            position: tempResumeDataRef.current.workPosition,
+            startDate: `${tempResumeDataRef.current.workStartYear}-01`,
+            endDate: '',
+            current: true
+          };
+          triggerUpdate('workHistory', [workObj]);
+
+          setIsFillingResume(false);
+          setResumeStep('idle');
+          const finishedMsg = isUz 
+            ? "Ajoyib! Rezyume tayyor." 
+            : isJa ? "素晴らしい！履歴書が完成しました。" 
+            : "Excellent! Your resume is ready.";
+          
+          setAiResponseText(finishedMsg);
+          setStatus('speaking');
+          speakResponse(finishedMsg, lang, () => {
+            setStatus('idle');
+          });
+        } else if (isNegative) {
+          setResumeStep('ask_work_end_year');
+          const workEndYearAskMsg = isUz 
+            ? "Ushbu ishdan qaysi yilda bo'shagansiz (Masalan: 2024)?" 
+            : isJa ? "その退職した年を教えてください（例：2024年）。" 
+            : "Please state the year you left this job (e.g., 2024).";
+          speakStepMsg(workEndYearAskMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Ushbu ishda hali ham ishlaysizmi? Ha yoki Yo'q deb javob bering.` 
+            : isJa ? `現在もそのお仕事に在籍していますか？はい、か、いいえ、で教えてください。` 
+            : `Are you still working there? Yes or No.`;
+          speakStepMsg(reconfirmMsg);
+        }
+        break;
+
+      case 'ask_work_end_year':
+        const parsedWorkEndYear = cleanText.match(/\d{4}/)?.[0] || cleanText;
+        setTempResumeData(prev => ({ ...prev, workEndYear: parsedWorkEndYear }));
+        setResumeStep('confirm_work_end_year');
+        const workEndYearConfirmMsg = isUz 
+          ? `Bo'shagan yilingizni "${parsedWorkEndYear}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `退職年は「${parsedWorkEndYear}年」でよろしいですか？` 
+          : `Is the end year "${parsedWorkEndYear}"? Confirm?`;
+        speakStepMsg(workEndYearConfirmMsg);
+        break;
+
+      case 'confirm_work_end_year':
+        if (isPositive) {
+          const workObj = {
+            company: tempResumeDataRef.current.workCompany,
+            position: tempResumeDataRef.current.workPosition,
+            startDate: `${tempResumeDataRef.current.workStartYear}-01`,
+            endDate: `${tempResumeDataRef.current.workEndYear}-12`,
+            current: false
+          };
+          triggerUpdate('workHistory', [workObj]);
+
+          setIsFillingResume(false);
+          setResumeStep('idle');
+          const finishedMsg = isUz 
+            ? "Ajoyib! Rezyume tayyor." 
+            : isJa ? "素晴らしい！履歴書が完成しました。" 
+            : "Excellent! Your resume is ready.";
+          
+          setAiResponseText(finishedMsg);
+          setStatus('speaking');
+          speakResponse(finishedMsg, lang, () => {
+            setStatus('idle');
+          });
+        } else if (isNegative) {
+          setResumeStep('ask_work_end_year');
+          const repeatWorkEndYearMsg = isUz 
+            ? "Qaytadan ayting, qaysi yilda ishdan bo'shagansiz?" 
+            : isJa ? "もう一度退職した年を教えてください。" 
+            : "What is the end year?";
+          speakStepMsg(repeatWorkEndYearMsg);
+        } else {
+          const reconfirmMsg = isUz 
+            ? `Tugatgan yilingizni "${tempResumeDataRef.current.workEndYear}" deb yozaymi? Ha yoki Yo'q.` 
+            : isJa ? `退職年は「${tempResumeDataRef.current.workEndYear}年」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            : `Confirm end year "${tempResumeDataRef.current.workEndYear}"?`;
           speakStepMsg(reconfirmMsg);
         }
         break;

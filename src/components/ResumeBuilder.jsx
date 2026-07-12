@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, User, Phone, Briefcase, GraduationCap, Award, BookOpen, FileText, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Phone, Briefcase, GraduationCap, Award, BookOpen, FileText, Loader2, Sparkles } from 'lucide-react';
 import { generateRirekisho } from '../utils/resumeGenerator';
 import './ResumeBuilder.css';
 
@@ -22,7 +22,15 @@ const getJapaneseEra = (year) => {
   return '';
 };
 
-export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) {
+export default function ResumeBuilder({ 
+  profileData, 
+  onUpdateProfile, 
+  onBack,
+  isVoiceActive,
+  setIsVoiceActive,
+  isVoiceStandby,
+  setIsVoiceStandby
+}) {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'uz';
 
@@ -433,10 +441,31 @@ export default function ResumeBuilder({ profileData, onUpdateProfile, onBack }) 
   return (
     <div className="resume-builder-container fade-in">
       {/* Floating Sticky Back Button */}
-      <div className="resume-builder-sticky-back">
+      <div className="resume-builder-sticky-back" style={{ display: 'flex', width: '92%', justifyContent: 'space-between', alignItems: 'center' }}>
         <button onClick={handleBackWithSave} className="icon-btn glass" aria-label="Back">
           <ArrowLeft size={20} />
         </button>
+
+        {setIsVoiceActive && setIsVoiceStandby && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>AI VOICE</span>
+            <button
+              className="theme-toggle-btn"
+              onClick={() => {
+                const nextVal = !isVoiceStandby;
+                setIsVoiceStandby(nextVal);
+                setIsVoiceActive(nextVal);
+              }}
+              aria-label="Toggle AI Assistant"
+            >
+              <div className={`theme-toggle-track ${isVoiceStandby ? 'dark' : 'light'}`} style={{ width: '48px', height: '24px', borderRadius: '12px' }}>
+                <div className="theme-toggle-thumb" style={{ width: '18px', height: '18px', left: isVoiceStandby ? 'calc(100% - 20px)' : '2px', top: '2px', background: isVoiceStandby ? 'linear-gradient(135deg, #a133ff, #8b5cf6)' : 'linear-gradient(135deg, #e5e5ea, #8e8e93)', boxShadow: isVoiceStandby ? '0 2px 6px rgba(138, 43, 226, 0.4)' : 'none' }}>
+                  <Sparkles size={10} color="#ffffff" fill="#ffffff" style={{ opacity: 0.95 }} />
+                </div>
+              </div>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Main Content Area */}

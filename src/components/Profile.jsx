@@ -47,7 +47,11 @@ export default function Profile({
   onApply,
   onApplySchool,
   onShoukai,
-  onTriggerRegister
+  onTriggerRegister,
+  isVoiceActive,
+  setIsVoiceActive,
+  isVoiceStandby,
+  setIsVoiceStandby
 }) {
   const { t } = useTranslation();
 
@@ -218,6 +222,10 @@ const getLicenseLabel = (type) => {
       <ResumeBuilder 
         profileData={profileData}
         onUpdateProfile={onUpdateProfile}
+        isVoiceActive={isVoiceActive}
+        setIsVoiceActive={setIsVoiceActive}
+        isVoiceStandby={isVoiceStandby}
+        setIsVoiceStandby={setIsVoiceStandby}
         onBack={() => {
           if (profileActivePageSource === 'home') {
             if (onNavigate) onNavigate('home');
