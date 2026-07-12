@@ -852,6 +852,8 @@ function App() {
     isPlaying,
     currentTrack: TRACKS[currentTrackIndex],
     togglePlay,
+    play: () => setIsPlaying(true),
+    pause: () => setIsPlaying(false),
     nextTrack,
     prevTrack,
     currentTime,

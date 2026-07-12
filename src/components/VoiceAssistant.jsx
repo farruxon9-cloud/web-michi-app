@@ -1708,7 +1708,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
     const isNavigationCommand = [
       'NAVIGATE_TO_HOME', 'NAVIGATE_TO_JOBS', 'NAVIGATE_TO_ACADEMY',
       'NAVIGATE_TO_SERVICE', 'NAVIGATE_TO_PROFILE', 'OPEN_RESUME',
-      'FILTER_JOBS', 'FILTER_ACADEMIES'
+      'FILTER_JOBS', 'FILTER_ACADEMIES', 'GO_BACK'
     ].includes(command);
 
     if (isNavigationCommand) {
@@ -1717,6 +1717,12 @@ Return ONLY the raw JSON object, no markdown wrappers.
     }
 
     switch (command) {
+      case 'GO_BACK':
+        if (setSelectedJobRef.current) setSelectedJobRef.current(null);
+        if (setSelectedSchoolRef.current) setSelectedSchoolRef.current(null);
+        if (setProfileActivePageRef.current) setProfileActivePageRef.current('main');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
       case 'NAVIGATE_TO_HOME':
         if (setActiveTabRef.current) setActiveTabRef.current('home');
         if (shouldClose && onCloseRef.current) onCloseRef.current();
@@ -1739,7 +1745,9 @@ Return ONLY the raw JSON object, no markdown wrappers.
         break;
       case 'MUSIC_PLAY':
         if (activeMusicPlayer) {
-          if (!activeMusicPlayer.isPlaying) {
+          if (typeof activeMusicPlayer.play === 'function') {
+            activeMusicPlayer.play();
+          } else if (!activeMusicPlayer.isPlaying) {
             activeMusicPlayer.togglePlay();
           }
         }
@@ -1747,7 +1755,9 @@ Return ONLY the raw JSON object, no markdown wrappers.
         break;
       case 'MUSIC_PAUSE':
         if (activeMusicPlayer) {
-          if (activeMusicPlayer.isPlaying) {
+          if (typeof activeMusicPlayer.pause === 'function') {
+            activeMusicPlayer.pause();
+          } else if (activeMusicPlayer.isPlaying) {
             activeMusicPlayer.togglePlay();
           }
         }

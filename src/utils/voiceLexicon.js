@@ -33,7 +33,7 @@ export const VOICE_LEXICON = [
   {
     command: 'NAVIGATE_TO_HOME',
     patterns: {
-      uz: ['bosh sahifa', 'asosiy sahifa', 'uyga o\'tish', 'uy sahifa', 'boshiga', 'dashboard', 'home', 'go home'],
+      uz: ['bosh sahifa', 'asosiy sahifa', 'uyga o\'tish', 'uyga otish', 'uy sahifa', 'boshiga', 'dashboard', 'home', 'go home', 'bosh sahifaga o\'tish', 'bosh sahifaga otish'],
       ja: ['ホーム', 'メイン画面', 'トップページ', 'メイン', 'トップ', 'ダッシュボード'],
       en: ['home', 'go home', 'dashboard', 'main page']
     },
@@ -46,7 +46,7 @@ export const VOICE_LEXICON = [
   {
     command: 'NAVIGATE_TO_JOBS',
     patterns: {
-      uz: ['ish top', 'ish qidir', 'ishlar', 'ish e\'lonlari', 'vakansiyalar', 'rabota', 'ishlarni ko\'rsat', 'ishlar bo\'limi', 'jobs', 'find jobs', 'work'],
+      uz: ['ish top', 'ish qidir', 'ishlar', 'ish e\'lonlari', 'ish elonlari', 'vakansiyalar', 'rabota', 'ishlarni ko\'rsat', 'ishlarni korsat', 'ishlar bo\'limi', 'ishlar bolimi', 'jobs', 'find jobs', 'work', 'ish e\'lonlariga o\'tish', 'ish elonlariga otish'],
       ja: ['求人', '仕事', 'ワーク', '求人検索', '仕事を探して', '求人情報'],
       en: ['jobs', 'job listings', 'find jobs', 'vacancies', 'work']
     },
@@ -59,7 +59,7 @@ export const VOICE_LEXICON = [
   {
     command: 'NAVIGATE_TO_ACADEMY',
     patterns: {
-      uz: ['maktab', 'avtomaktab', 'avto maktab', 'haydovchilik maktabi', 'kurslar', 'prava kurslari', 'prava', 'guvohnoma', 'academy', 'school', 'driving school'],
+      uz: ['maktab', 'avtomaktab', 'avto maktab', 'haydovchilik maktabi', 'kurslar', 'prava kurslari', 'prava', 'guvohnoma', 'academy', 'school', 'driving school', 'avtomaktabga o\'tish', 'avtomaktabga otish'],
       ja: ['免許', '教習所', '学校', '自動車学校', 'アカデミー', 'ドライビングスクール'],
       en: ['academy', 'driving school', 'license school', 'courses']
     },
@@ -72,7 +72,7 @@ export const VOICE_LEXICON = [
   {
     command: 'NAVIGATE_TO_SERVICE',
     patterns: {
-      uz: ['servis', 'xizmat', 'xizmatlar', 'servislar', 'coming soon', 'tez kunda', 'service', 'services'],
+      uz: ['servis', 'xizmat', 'xizmatlar', 'servislar', 'coming soon', 'tez kunda', 'service', 'services', 'servis bo\'limiga o\'tish', 'servis bolimiga otish'],
       ja: ['サービス', 'その他'],
       en: ['service', 'services', 'coming soon']
     },
@@ -85,7 +85,7 @@ export const VOICE_LEXICON = [
   {
     command: 'NAVIGATE_TO_PROFILE',
     patterns: {
-      uz: ['profilim', 'profilni och', 'mening sahifam', 'kabinetim', 'sozlamalar', 'shaxsiy kabinet', 'kabinetga', 'profile', 'my page', 'settings'],
+      uz: ['profilim', 'profilni och', 'mening sahifam', 'kabinetim', 'sozlamalar', 'shaxsiy kabinet', 'kabinetga', 'profile', 'my page', 'settings', 'profilimga o\'tish', 'profilimga otish'],
       ja: ['マイページ', 'プロフィール', '設定', 'マイアカウント'],
       en: ['profile', 'my page', 'settings', 'account']
     },
@@ -96,9 +96,22 @@ export const VOICE_LEXICON = [
     }
   },
   {
+    command: 'GO_BACK',
+    patterns: {
+      uz: ['orqaga', 'orqaga qaytish', 'back', 'go back', 'yop', 'yopish'],
+      ja: ['戻る', 'もどる', 'バック', '閉じる'],
+      en: ['back', 'go back', 'return', 'close']
+    },
+    responses: {
+      uz: "Orqaga qaytilmoqda.",
+      ja: "前に戻ります。",
+      en: "Going back."
+    }
+  },
+  {
     command: 'MUSIC_PLAY',
     patterns: {
-      uz: ['musiqa qo\'y', 'musiqani yoq', 'qo\'shiq qo\'y', 'yoq', 'boshla', 'ijro et', 'ijro', 'chal', 'pusk', 'pleyni bos', 'play', 'music on', 'turn on music'],
+      uz: ['musiqa qo\'y', 'musiqa qoy', 'musiqani yoq', 'qo\'shiq qo\'y', 'qoshiq qoy', 'qo\'shiqni qo\'y', 'qoshiqni qoy', 'yoq', 'boshla', 'ijro et', 'ijro', 'chal', 'pusk', 'play', 'music on', 'turn on music', 'musiqani boshla'],
       ja: ['音楽', '曲', 'かけて', '流して', '再生', 'プレイ', 'スタート', 'ミュージック'],
       en: ['play', 'music', 'play music', 'resume music', 'turn on music']
     },
@@ -111,7 +124,7 @@ export const VOICE_LEXICON = [
   {
     command: 'MUSIC_PAUSE',
     patterns: {
-      uz: ['to\'xtat', 'toxtat', 'o\'chir', 'uchir', 'pauza', 'jim', 'stop', 'pause', 'mute', 'turn off music'],
+      uz: ['to\'xtat', 'toxtat', 'o\'chir', 'ochir', 'uchir', 'pauza', 'jim', 'stop', 'pause', 'mute', 'turn off music', 'musiqani o\'chir', 'musiqani ochir', 'qo\'shiqni o\'chir', 'qoshiqni ochir', 'o\'chirish', 'ochirish', 'musiqani to\'xtat', 'musiqani toxtat'],
       ja: ['止めて', '停止', 'ストップ', '消して', 'オフ', '静かに', '一時停止'],
       en: ['pause', 'stop', 'mute', 'turn off music', 'quiet']
     },
@@ -124,7 +137,7 @@ export const VOICE_LEXICON = [
   {
     command: 'MUSIC_NEXT',
     patterns: {
-      uz: ['keyingi', 'oldinga', 'skip', 'o\'tkaz', 'otkaz', 'keyingisi', 'almashtir', 'boshqa qo\'shiq', 'next track', 'next song'],
+      uz: ['keyingi', 'oldinga', 'skip', 'o\'tkaz', 'otkaz', 'keyingisi', 'almashtir', 'boshqa qo\'shiq', 'next track', 'next song', 'boshqasi'],
       ja: ['次の曲', '次へ', 'ネクスト', 'スキップ', '変えて', 'かえて'],
       en: ['next', 'skip', 'forward', 'another song', 'next song']
     },
@@ -137,7 +150,7 @@ export const VOICE_LEXICON = [
   {
     command: 'TOGGLE_THEME',
     patterns: {
-      uz: ['tema', 'tungi rejim', 'mavzu', 'rang', 'qorong\'i', 'yorug\'', 'tun', 'kun', 'switch theme', 'dark mode', 'light mode'],
+      uz: ['tema', 'tungi rejim', 'mavzu', 'rang', 'qorong\'i', 'yorug\'', 'tun', 'kun', 'switch theme', 'dark mode', 'light mode', 'temani almashtir'],
       ja: ['テーマ', 'ダークモード', 'ライトモード', '黒', '白', '明るく', '暗く', 'モード切り替え'],
       en: ['theme', 'dark mode', 'light mode', 'change theme', 'colors']
     },
