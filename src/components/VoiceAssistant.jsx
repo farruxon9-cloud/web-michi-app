@@ -135,6 +135,38 @@ export default function VoiceAssistant({
     }
   }, []);
 
+  // Listen for auto-start resume flow from ResumeBuilder toggle
+  useEffect(() => {
+    const handleResumeStart = () => {
+      // Agar allaqachon rezyume to'ldirilayotgan bo'lsa, qayta boshlamaymiz
+      if (isFillingResumeRef.current) return;
+      
+      setIsFillingResume(true);
+      setResumeStep('ask_name');
+      
+      const lang = i18n.language || 'uz';
+      const greetings = {
+        uz: "Assalomu alaykum! Men sizning shaxsiy yordamchingizman. Rezyumengizni to'ldirishda sizga yordam beraman. Savollarimga javob bersangiz, sizning o'rningizga rezyumeni mukammal tarzda to'ldirib beraman. Xo'sh, boshlaymizmi? Ismingiz va familiyangizni ayting, iltimos.",
+        ja: "こんにちは！私はあなたの履歴書作成アシスタントです。ご質問にお答えいただければ、あなたに代わって履歴書を丁寧に作成いたします。それでは、始めましょう。まず、お名前をフルネームでお聞かせください。",
+        en: "Hello! I am your personal resume assistant. I will help you fill out your resume. Just answer my questions and I will complete it for you perfectly. Let's begin! Please tell me your full name."
+      };
+      const greeting = greetings[lang.startsWith('uz') ? 'uz' : lang.startsWith('ja') ? 'ja' : 'en'] || greetings['uz'];
+      
+      setAiResponseText(greeting);
+      setTranscript('');
+      setShowPill(true);
+      setStatus('speaking');
+      
+      speakResponse(greeting, lang, () => {
+        setStatus('idle');
+        startLocalSpeechRecognition();
+      });
+    };
+    
+    window.addEventListener('michi-voice-resume-start', handleResumeStart);
+    return () => window.removeEventListener('michi-voice-resume-start', handleResumeStart);
+  }, []);
+
   // Check initial permission status if supported
   useEffect(() => {
     if (navigator.permissions && navigator.permissions.query) {
