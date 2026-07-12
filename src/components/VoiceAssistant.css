@@ -349,7 +349,6 @@ html.dark-mode .voice-chat-bubble-pill {
   z-index: 10000;
   box-sizing: border-box;
   pointer-events: auto;
-  animation: float-pill 3s infinite ease-in-out;
 }
 
 @keyframes float-pill {

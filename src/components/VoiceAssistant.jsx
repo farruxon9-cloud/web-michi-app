@@ -1039,7 +1039,12 @@ export default function VoiceAssistant({
             systemInstruction: {
               parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
             },
-            generationConfig: { responseMimeType: "application/json" }
+            generationConfig: { responseMimeType: "application/json" },
+            tools: [
+              {
+                googleSearch: {}
+              }
+            ]
           })
         }
       );
