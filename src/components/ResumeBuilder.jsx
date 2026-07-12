@@ -475,7 +475,7 @@ export default function ResumeBuilder({
         {/* SECTION 1: Shaxsiy ma'lumotlar */}
         <div className="step-content glass squircle">
           <div className="step-intro">
-            <User className="step-icon text-blue" size={24} />
+            <User className="step-icon text-purple" size={24} />
             <h3>{t('personalInfo', 'Shaxsiy ma\'lumotlar')}</h3>
             <p>{t('step1Desc', 'Rirekisho rezyumesi uchun shaxsiy ma\'lumotlaringizni to\'g\'rilang. Ismlar katakana va yapon formatida yozilishi maqsadga muvofiq.')}</p>
           </div>
@@ -622,7 +622,7 @@ export default function ResumeBuilder({
         {/* SECTION 2: Aloqa va Manzil */}
         <div className="step-content glass squircle">
           <div className="step-intro">
-            <Phone className="step-icon text-green" size={24} />
+            <Phone className="step-icon text-purple" size={24} />
             <h3>{t('contactInfo', 'Aloqa va Manzil')}</h3>
             <p>{t('step2Desc', 'Yaponiyadagi manzilingiz va aloqa ma\'lumotlari. Pochta indeksini to\'g\'ri kiritsangiz kompaniyalar sizni tez topishadi.')}</p>
           </div>
@@ -788,7 +788,7 @@ export default function ResumeBuilder({
         {/* SECTION 4: Ish tajribasi va Guvohnomalar */}
         <div className="step-content glass squircle">
           <div className="step-intro">
-            <Briefcase className="step-icon text-orange" size={24} />
+            <Briefcase className="step-icon text-purple" size={24} />
             <h3>{t('workExperience', 'Ish tajribasi')}</h3>
             <p>{t('step4Desc', 'Avvalgi ishlagan kompaniyalaringiz, lavozimingiz va boshlanish/tugash sanalari. Haydovchilik tajribalaringizni yoritish muhim.')}</p>
           </div>
@@ -903,7 +903,7 @@ export default function ResumeBuilder({
 
           {/* Guvohnomalar & Sertifikatlar section */}
           <div className="step-intro" style={{ marginTop: '20px' }}>
-            <Award className="step-icon text-blue" size={24} />
+            <Award className="step-icon text-purple" size={24} />
             <h3>{t('licensesQualifications', 'Guvohnoma va Sertifikatlar')}</h3>
           </div>
           
@@ -971,7 +971,7 @@ export default function ResumeBuilder({
         {/* SECTION 5: Motivatsiya, Hobbies, va Maxsus Istaklar */}
         <div className="step-content glass squircle">
           <div className="step-intro">
-            <BookOpen className="step-icon text-yellow" size={24} />
+            <BookOpen className="step-icon text-purple" size={24} />
             <h3>{t('motivationPR', 'Motivatsiya va O\'z-o\'zini taqdim')}</h3>
             <p>{t('step5Desc', 'Yapon firmalarida eng ko\'p e\'tibor qaratiladigan bo\'lim. "Nima sababdan ushbu ishga topshiryapsiz?" va "O\'z kuchli taraflaringiz (Self-PR)" haqida yozing.')}</p>
           </div>

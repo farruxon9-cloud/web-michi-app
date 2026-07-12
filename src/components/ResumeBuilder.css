@@ -192,9 +192,9 @@
 }
 
 .glass-input:focus {
-  border-color: #0A84FF;
+  border-color: #8B5CF6;
   background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
 }
 
 .dark-mode .glass-input {
@@ -204,7 +204,7 @@
 }
 
 .dark-mode .glass-input:focus {
-  border-color: #0A84FF;
+  border-color: #8B5CF6;
   background: rgba(255, 255, 255, 0.06);
 }
 

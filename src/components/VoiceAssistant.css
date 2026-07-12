@@ -473,11 +473,11 @@ html.dark-mode .voice-ambient-glow-container {
   position: relative;
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, #5E5CE6 0%, #AF52DE 50%, #00F0FF 100%);
+  background: linear-gradient(135deg, #a133ff 0%, #8b5cf6 50%, #af52de 100%);
   border: 1px solid rgba(255, 255, 255, 0.25);
   box-shadow: 
     inset 0 1px 1px rgba(255, 255, 255, 0.2),
-    0 4px 12px rgba(94, 92, 230, 0.4);
+    0 4px 12px rgba(161, 51, 255, 0.45);
   z-index: 2;
   display: flex;
   align-items: center;
