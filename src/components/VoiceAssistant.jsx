@@ -324,7 +324,13 @@ export default function VoiceAssistant({
 
     // Cancel any previous buffer audio source immediately
     if (activeAudioSourceRef.current) {
-      try { activeAudioSourceRef.current.stop(); } catch(e){}
+      try {
+        if (typeof activeAudioSourceRef.current.stop === 'function') {
+          activeAudioSourceRef.current.stop();
+        } else if (typeof activeAudioSourceRef.current.pause === 'function') {
+          activeAudioSourceRef.current.pause();
+        }
+      } catch(e){}
     }
 
     // A. Check Local Audio Cache for instant playback to save traffic and eliminate latency
@@ -446,19 +452,24 @@ export default function VoiceAssistant({
 
     // 3.5. Try Free Public Google Translate TTS (Zero Keys, high-quality neural Uzbek/Japanese voices)
     try {
-      console.log(`Cascading TTS: Trying Google Translate Free Neural TTS for lang "${lang}"...`);
+      console.log(`Cascading TTS: Trying Google Translate Free Neural TTS for lang "${lang}" via direct Audio Element...`);
       const translateLang = lang === 'uz' ? 'uz' : lang === 'ja' ? 'ja' : 'en';
       const translateUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${translateLang}&client=tw-ob&q=${encodeURIComponent(text)}`;
       
-      const response = await fetch(translateUrl);
-      if (response.ok) {
-        const arrayBuffer = await response.arrayBuffer();
-        await playWebAudio(arrayBuffer, onEndCallback);
-        return; // Neural Translate TTS successful!
+      const audio = new Audio(translateUrl);
+      activeAudioSourceRef.current = audio;
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        await playPromise;
+        audio.onended = () => {
+          setStatus('idle');
+          if (onEndCallback) onEndCallback();
+        };
+        return; // Play started successfully!
       }
-      console.warn("Google Translate TTS failed. Cascading to native device synthesis...");
     } catch (e) {
-      console.warn("Google Translate TTS fetch error (possibly CORS, will fallback):", e);
+      console.warn("Google Translate direct Audio playback failed, cascading to native synthesis:", e);
     }
 
     // 4. Default Offline Fallback: Web Speech Synthesis
