@@ -99,7 +99,7 @@ export const VOICE_LEXICON = [
     command: 'GO_BACK',
     patterns: {
       uz: ['orqaga', 'orqaga qaytish', 'back', 'go back', 'yop', 'yopish'],
-      ja: ['戻る', 'もどる', 'バック', '閉じる'],
+      ja: ['戻る', 'もどる', 'バック', '閉じる', '戻って', '戻れ', 'とじる', '戻り', '閉じて'],
       en: ['back', 'go back', 'return', 'close']
     },
     responses: {
@@ -112,7 +112,7 @@ export const VOICE_LEXICON = [
     command: 'MUSIC_PLAY',
     patterns: {
       uz: ['musiqa qo\'y', 'musiqa qoy', 'musiqani yoq', 'qo\'shiq qo\'y', 'qoshiq qoy', 'qo\'shiqni qo\'y', 'qoshiqni qoy', 'yoq', 'boshla', 'ijro et', 'ijro', 'chal', 'pusk', 'play', 'music on', 'turn on music', 'musiqani boshla'],
-      ja: ['音楽', '曲', 'かけて', '流して', '再生', 'プレイ', 'スタート', 'ミュージック'],
+      ja: ['音楽', '曲', 'かけて', '流して', '再生', 'プレイ', 'スタート', 'ミュージック', '音楽をかけて', '曲をかけて', '音楽再生'],
       en: ['play', 'music', 'play music', 'resume music', 'turn on music']
     },
     responses: {
@@ -125,7 +125,7 @@ export const VOICE_LEXICON = [
     command: 'MUSIC_PAUSE',
     patterns: {
       uz: ['to\'xtat', 'toxtat', 'o\'chir', 'ochir', 'uchir', 'pauza', 'jim', 'stop', 'pause', 'mute', 'turn off music', 'musiqani o\'chir', 'musiqani ochir', 'qo\'shiqni o\'chir', 'qoshiqni ochir', 'o\'chirish', 'ochirish', 'musiqani to\'xtat', 'musiqani toxtat'],
-      ja: ['止めて', '停止', 'ストップ', '消して', 'オフ', '静かに', '一時停止'],
+      ja: ['止めて', '停止', 'ストップ', '消して', 'オフ', '静かに', '一時停止', '曲を止めて', '音楽を止めて', '音楽停止', 'ミュート', '音楽オフ', 'とめろ', 'とめて'],
       en: ['pause', 'stop', 'mute', 'turn off music', 'quiet']
     },
     responses: {
@@ -138,7 +138,7 @@ export const VOICE_LEXICON = [
     command: 'MUSIC_NEXT',
     patterns: {
       uz: ['keyingi', 'oldinga', 'skip', 'o\'tkaz', 'otkaz', 'keyingisi', 'almashtir', 'boshqa qo\'shiq', 'next track', 'next song', 'boshqasi'],
-      ja: ['次の曲', '次へ', 'ネクスト', 'スキップ', '変えて', 'かえて'],
+      ja: ['次の曲', '次へ', 'ネクスト', 'スキップ', '変えて', 'かえて', '次のトラック', '次'],
       en: ['next', 'skip', 'forward', 'another song', 'next song']
     },
     responses: {
@@ -151,7 +151,7 @@ export const VOICE_LEXICON = [
     command: 'TOGGLE_THEME',
     patterns: {
       uz: ['tema', 'tungi rejim', 'mavzu', 'rang', 'qorong\'i', 'yorug\'', 'tun', 'kun', 'switch theme', 'dark mode', 'light mode', 'temani almashtir'],
-      ja: ['テーマ', 'ダークモード', 'ライトモード', '黒', '白', '明るく', '暗く', 'モード切り替え'],
+      ja: ['テーマ', 'ダークモード', 'ライトモード', '黒', '白', '明るく', '暗く', 'モード切り替え', 'カラーテーマ', 'テーマ切り替え'],
       en: ['theme', 'dark mode', 'light mode', 'change theme', 'colors']
     },
     responses: {
@@ -164,7 +164,7 @@ export const VOICE_LEXICON = [
     command: 'OPEN_RESUME',
     patterns: {
       uz: ['rezyume', 'anketa', 'rezume', 'hujjat', 'cv', 'resume', 'curriculum vitae'],
-      ja: ['履歴書', 'レジュメ', '履歴書作成'],
+      ja: ['履歴書', 'レジュメ', '履歴書作成', 'プロフィール作成'],
       en: ['resume', 'cv', 'resume builder', 'curriculum vitae']
     },
     responses: {
@@ -177,7 +177,7 @@ export const VOICE_LEXICON = [
     command: 'CLEAR_RESUME_FORM',
     patterns: {
       uz: ["rezyumeni o'chir", "formani o'chir", "tozala", "rezyumeni tozalash", "anketani o'chirish", "yozuvlarni o'chirish", "yozuvlarni tozalash", "rezyumeni tozalash"],
-      ja: ["履歴書消去", "リセット", "入力内容を消去", "データを消去", "レジュメ消去"],
+      ja: ["履歴書消去", "リセット", "入力内容を消去", "データを消去", "レジュメ消去", "履歴書を消す", "履歴書クリア", "消去", "クリア", "りせっと", "履歴書リセット", "レジュメリセット"],
       en: ["clear resume", "reset resume", "clear form", "delete inputs", "reset form"]
     },
     responses: {
@@ -190,7 +190,7 @@ export const VOICE_LEXICON = [
     command: 'CLEAR_APPLICATIONS',
     patterns: {
       uz: ["arizalarni o'chir", "arizalarni tozalash", "bajarilgan ishlarni o'chirish", "arizalarni o'chirish", "ishlarni o'chirish", "arizalar ro'yxatini tozalash"],
-      ja: ["応募履歴消去", "応募をクリア", "実績を消去", "応募一覧を消去"],
+      ja: ["応募履歴消去", "応募をクリア", "実績を消去", "応募一覧を消去", "応募を消す", "履歴を消す", "履歴消去", "履歴クリア"],
       en: ["clear applications", "delete applications", "clear applied jobs", "clear history"]
     },
     responses: {
