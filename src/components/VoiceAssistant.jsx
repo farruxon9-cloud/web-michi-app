@@ -1129,11 +1129,24 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
       }));
     };
 
-    const positivePatterns = ['ha', 'yes', 'tasdiq', 'ok', 'togri', 'to\'g\'ri', 'shunday', 'yoz', 'belgila', 'はい', 'そうです', 'オッケー'];
-    const isPositive = positivePatterns.some(p => lowerText.includes(p) || p.includes(lowerText));
+    const positivePatterns = ['ha', 'xa', 'yes', 'tasdiq', 'ok', 'togri', 'to\'g\'ri', 'shunday', 'yoz', 'belgila', 'はい', 'そうです', 'オッケー', 'うん'];
+    const isPositive = positivePatterns.some(p => {
+      // For short patterns (<=3 chars), require exact word match to avoid false positives (e.g. "Shahzod" → "ha")
+      if (p.length <= 3) {
+        const wordRegex = new RegExp(`(^|\\s|,|\\.)${p}($|\\s|,|\\.|!|\\?)`, 'i');
+        return wordRegex.test(lowerText) || lowerText === p;
+      }
+      return lowerText.includes(p);
+    });
 
     const negativePatterns = ['yo\'q', 'yoq', 'no', 'xato', 'notogri', 'noto\'g\'ri', 'emas', 'いいえ', 'ちがいます', '違う', 'だめ'];
-    const isNegative = negativePatterns.some(p => lowerText.includes(p) || p.includes(lowerText));
+    const isNegative = negativePatterns.some(p => {
+      if (p.length <= 3) {
+        const wordRegex = new RegExp(`(^|\\s|,|\\.)${p}($|\\s|,|\\.|!|\\?)`, 'i');
+        return wordRegex.test(lowerText) || lowerText === p;
+      }
+      return lowerText.includes(p);
+    });
 
     switch (currentStep) {
       case 'ask_name':
@@ -2105,14 +2118,25 @@ COMMAND RULES:
 - NAVIGATE_TO_HOME: home, dashboard, main page
 - NAVIGATE_TO_JOBS: jobs, vacancies, work
 - NAVIGATE_TO_ACADEMY: driving school, license, academy, courses
-- NAVIGATE_TO_PROFILE: profile, my page, settings
+- NAVIGATE_TO_PROFILE: profile, my page
+- NAVIGATE_TO_NOTIFICATIONS: notifications, alerts, bildirishnomalar, 通知
+- NAVIGATE_TO_SETTINGS: settings, sozlamalar, 設定
+- NAVIGATE_TO_APPLICATIONS: my applications, arizalar, 応募一覧
+- NAVIGATE_TO_SAVED: saved items, saqlangan, 保存した求人
+- NAVIGATE_TO_SHOUKAI: referrals, shoukai, tavsiyalar, 紹介
+- NAVIGATE_TO_MY_ADS: my job ads, e'lonlarim, 求人広告
+- NAVIGATE_TO_EMPLOYEES: employees, xodimlar, 従業員
+- NAVIGATE_TO_PERSONAL_INFO: personal info, shaxsiy ma'lumotlar, 個人情報
 - MUSIC_PLAY: play music, resume song
-- MUSIC_PAUSE: stop/pause music
-- MUSIC_NEXT: next track, skip
+- MUSIC_PAUSE: stop/pause music, mute
+- MUSIC_NEXT: next track, skip song
+- MUSIC_PREV: previous track, oldingi qo'shiq, 前の曲
+- GO_BACK: go back, ortga, 戻る
 - READ_SCREEN: read what's on screen
 - TOGGLE_THEME: change/toggle dark mode or light mode
 - CHANGE_LANGUAGE: change language (Uzbek, Japanese, English)
 - OPEN_RESUME: open resume builder
+- SELECT_JOB_BY_NAME: select/show a specific job by company or title name. Must return parameter: "parameters": {"name": "<job title or company name>"}
 - FILTER_JOBS: search or filter jobs. Must return parameter inside json: "parameters": {"searchQuery": "<location or company>", "prefecture": "all|Tokyo|Kanagawa|Saitama|Chiba|Osaka|Kyoto|Aichi|Fukuoka", "segment": "all|permanent|hourly", "licenses": ["lic_futsu"|"lic_chugata"|"lic_oogata"|"lic_kenin"|"tech_forklift"], "langLevel": "all"|"none"|"n5_n4"|"n3"|"n2_n1", "benefits": ["housing"|"foreigner"|"bonus"|"insurance"], "minSalary": 0|250000|350000|450000}
 - FILTER_ACADEMIES: search or filter schools. Must return parameter inside json: "parameters": {"searchQuery": "<location or school name>"}
 - APPLY_TO_CURRENT: apply to the current active job or school that the user is currently viewing.
@@ -2527,14 +2551,25 @@ COMMAND RULES:
 - NAVIGATE_TO_HOME: home, dashboard, main page
 - NAVIGATE_TO_JOBS: jobs, vacancies, work
 - NAVIGATE_TO_ACADEMY: driving school, license, academy, courses
-- NAVIGATE_TO_PROFILE: profile, my page, settings
+- NAVIGATE_TO_PROFILE: profile, my page
+- NAVIGATE_TO_NOTIFICATIONS: notifications, alerts, bildirishnomalar, 通知
+- NAVIGATE_TO_SETTINGS: settings, sozlamalar, 設定
+- NAVIGATE_TO_APPLICATIONS: my applications, arizalar, 応募一覧
+- NAVIGATE_TO_SAVED: saved items, saqlangan, 保存した求人
+- NAVIGATE_TO_SHOUKAI: referrals, shoukai, tavsiyalar, 紹介
+- NAVIGATE_TO_MY_ADS: my job ads, e'lonlarim, 求人広告
+- NAVIGATE_TO_EMPLOYEES: employees, xodimlar, 従業員
+- NAVIGATE_TO_PERSONAL_INFO: personal info, shaxsiy ma'lumotlar, 個人情報
 - MUSIC_PLAY: play music, resume song
-- MUSIC_PAUSE: stop/pause music
-- MUSIC_NEXT: next track, skip
+- MUSIC_PAUSE: stop/pause music, mute
+- MUSIC_NEXT: next track, skip song
+- MUSIC_PREV: previous track, oldingi qo'shiq, 前の曲
+- GO_BACK: go back, ortga, 戻る
 - READ_SCREEN: read what's on screen
 - TOGGLE_THEME: change/toggle dark mode or light mode
 - CHANGE_LANGUAGE: change language (Uzbek, Japanese, English)
 - OPEN_RESUME: open resume builder
+- SELECT_JOB_BY_NAME: select/show a specific job by company or title name. Must return parameter: "parameters": {"name": "<job title or company name>"}
 - FILTER_JOBS: search or filter jobs. Must return parameter inside json: "parameters": {"searchQuery": "<location or company>", "prefecture": "all|Tokyo|Kanagawa|Saitama|Chiba|Osaka|Kyoto|Aichi|Fukuoka", "segment": "all|permanent|hourly", "licenses": ["lic_futsu"|"lic_chugata"|"lic_oogata"|"lic_kenin"|"tech_forklift"], "langLevel": "all"|"none"|"n5_n4"|"n3"|"n2_n1", "benefits": ["housing"|"foreigner"|"bonus"|"insurance"], "minSalary": 0|250000|350000|450000}
 - FILTER_ACADEMIES: search or filter schools. Must return parameter inside json: "parameters": {"searchQuery": "<location or school name>"}
 - APPLY_TO_CURRENT: apply to the current active job or school that the user is currently viewing.
