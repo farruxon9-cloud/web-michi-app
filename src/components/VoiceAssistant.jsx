@@ -2610,6 +2610,18 @@ Return ONLY the raw JSON object, no markdown wrappers.
     const shouldClose = !isVoiceStandbyRef.current;
     const activeMusicPlayer = musicPlayerRef.current;
 
+    const checkIsProfileComplete = () => {
+      if (profileData && (profileData.email === 'admin@driver.jp' || profileData.email === 'admin@sagawa.jp')) {
+        return true;
+      }
+      const hasFullName = !!(profileData.fullName && profileData.fullName.trim() !== '' && profileData.fullName !== 'Mehmon');
+      const hasBirthDate = !!profileData.birthDate;
+      const hasPhone = !!(profileData.phone && profileData.phone.trim() !== '');
+      const hasAddress = !!((profileData.address && profileData.address.trim() !== '') || (profileData.addressHistory && profileData.addressHistory.length > 0));
+      const hasEducation = !!((profileData.education && profileData.education.trim() !== '') || (profileData.educationHistory && profileData.educationHistory.length > 0));
+      return !!(hasFullName && hasBirthDate && hasPhone && hasAddress && hasEducation);
+    };
+
     // List of navigation commands that require closing modal overlays for tab visibility
     const isNavigationCommand = [
       'NAVIGATE_TO_HOME', 'NAVIGATE_TO_JOBS', 'NAVIGATE_TO_ACADEMY',
@@ -2824,6 +2836,27 @@ Return ONLY the raw JSON object, no markdown wrappers.
         if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'APPLY_TO_CURRENT':
+        if (!checkIsProfileComplete()) {
+          const lCode = i18n.language || 'uz';
+          const errorMsg = lCode.startsWith('uz')
+            ? "Kechirasiz, rezyumengiz hali to'liq emas. Arizangizni topshirish uchun avval uni to'ldirishimiz kerak. Keling boshlaymiz: ismingiz va familiyangizni ayting."
+            : lCode.startsWith('ja')
+            ? "申し訳ありません。応募を完了するにはプロフィールが不十分です。まず履歴書を作成しましょう。お名前をフルネームで教えてください。"
+            : "Sorry, your profile is incomplete. We need to fill in your resume first. Let's start: please state your full name.";
+          
+          setAiResponseText(errorMsg);
+          setShowPill(true);
+          setStatus('speaking');
+          speakResponse(errorMsg, lCode, () => {
+            if (setActiveTabRef.current) setActiveTabRef.current('profile');
+            if (setProfileActivePageRef.current) setProfileActivePageRef.current('resume_builder');
+            setIsFillingResume(true);
+            setResumeStep('ask_name');
+            setStatus('idle');
+            startLocalSpeechRecognition();
+          });
+          break;
+        }
         if (selectedJob && handleApplyJob) {
           handleApplyJob(selectedJob);
         } else if (selectedSchool && handleApplySchool) {
