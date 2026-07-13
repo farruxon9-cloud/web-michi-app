@@ -304,74 +304,33 @@ function App() {
   }, [notificationSound]);
 
   // Profile Data
-  const [profileData, setProfileData] = useState(() => {
-    const saved = localStorage.getItem('michi_profile_data');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        // Ensure necessary default fields exist
-        return {
-          userId: '#Michi-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
-          fullName: 'Mehmon',
-          birthDate: '',
-          licenseType: 'Oogata',
-          experience: '',
-          email: 'michi@example.com',
-          avatar: null,
-          workHistory: [],
-          addressHistory: [],
-          educationHistory: [],
-          address: '',
-          education: '',
-          companyType: '',
-          companyAddress: '',
-          employeeCount: '',
-          contactPerson: '',
-          companyPhone: '',
-          companyDesc: '',
-          furigana: '',
-          phone: '',
-          postalCode: '',
-          gender: 'male',
-          motivation: '',
-          selfPR: '',
-          hobbies: '',
-          personalRequests: '貴社規定に従います。',
-          ...parsed
-        };
-      } catch (e) {
-        console.error("Failed to parse saved profile data:", e);
-      }
-    }
-    return {
-      userId: '#Michi-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
-      fullName: 'Mehmon',
-      birthDate: '',
-      licenseType: 'Oogata',
-      experience: '',
-      email: 'michi@example.com',
-      avatar: null,
-      workHistory: [],
-      addressHistory: [],
-      educationHistory: [],
-      address: '',
-      education: '',
-      companyType: '',
-      companyAddress: '',
-      employeeCount: '',
-      contactPerson: '',
-      companyPhone: '',
-      companyDesc: '',
-      // Japanese Resume (Rirekisho) specific fields
-      furigana: '',
-      phone: '',
-      postalCode: '',
-      gender: 'male',
-      motivation: '',
-      selfPR: '',
-      hobbies: '',
-      personalRequests: '貴社規定に従います。'
-    };
+  const [profileData, setProfileData] = useState({
+    userId: '#Michi-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+    fullName: 'Mehmon',
+    birthDate: '',
+    licenseType: 'Oogata',
+    experience: '',
+    email: 'michi@example.com',
+    avatar: null,
+    workHistory: [],
+    addressHistory: [],
+    educationHistory: [],
+    address: '',
+    education: '',
+    companyType: '',
+    companyAddress: '',
+    employeeCount: '',
+    contactPerson: '',
+    companyPhone: '',
+    companyDesc: '',
+    furigana: '',
+    phone: '',
+    postalCode: '',
+    gender: 'male',
+    motivation: '',
+    selfPR: '',
+    hobbies: '',
+    personalRequests: '貴社規定に従います。'
   });
 
   // Disabled auto-save logic for role and profile
@@ -639,11 +598,7 @@ function App() {
   };
 
   const handleUpdateProfile = (newData) => {
-    setProfileData(prev => {
-      const updated = { ...prev, ...newData };
-      localStorage.setItem('michi_profile_data', JSON.stringify(updated));
-      return updated;
-    });
+    setProfileData(prev => ({ ...prev, ...newData }));
   };
 
   const handleTriggerRegister = () => {
