@@ -17,7 +17,7 @@ export default function VoiceAssistant({
   selectedBenefits, setSelectedBenefits,
   minSalary, setMinSalary,
   selectedPrefecture, setSelectedPrefecture,
-  setApplications
+  setApplications, toggleDarkMode
 }) {
   const { t, i18n } = useTranslation();
   const defaultKey = localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
@@ -107,6 +107,9 @@ export default function VoiceAssistant({
   const setApplicationsRef = useRef(setApplications);
   setApplicationsRef.current = setApplications;
 
+  const toggleDarkModeRef = useRef(toggleDarkMode);
+  toggleDarkModeRef.current = toggleDarkMode;
+
   const isFillingResumeRef = useRef(isFillingResume);
   isFillingResumeRef.current = isFillingResume;
 
@@ -115,6 +118,8 @@ export default function VoiceAssistant({
 
   const tempResumeDataRef = useRef(tempResumeData);
   tempResumeDataRef.current = tempResumeData;
+
+  const hasGreetedRef = useRef(false);
 
   // Monitor network status
   useEffect(() => {
@@ -198,10 +203,46 @@ export default function VoiceAssistant({
         setShowPill(true);
         speakResponse('インターネット接続がありません。接続を待機しています。', 'ja');
       } else if (apiKey && !showKeyInput) {
-        startListeningSequence();
+        if (!hasGreetedRef.current && !isFillingResumeRef.current) {
+          hasGreetedRef.current = true;
+          
+          const hour = new Date().getHours();
+          let greeting = '';
+          const lang = speechLang || i18n.language || 'uz';
+          const isUz = lang.startsWith('uz');
+          const isJa = lang.startsWith('ja');
+          
+          if (isUz) {
+            if (hour >= 6 && hour < 12) greeting = "Xayrli tong! Men Michi — sizning shaxsiy yordamchingizman. Sizga qanday yordam bera olaman?";
+            else if (hour >= 12 && hour < 18) greeting = "Assalomu alaykum! Men Michi — sizning shaxsiy yordamchingizman. Sizga qanday yordam bera olaman?";
+            else if (hour >= 18 && hour < 22) greeting = "Xayrli kech! Men Michi — sizning shaxsiy yordamchingizman. Sizga qanday yordam bera olaman?";
+            else greeting = "Kech soatlarda ham sizga yordam berishdan xursandman! Men Michi, sizning shaxsiy yordamchingizman. Qanday yordam kerak?";
+          } else if (isJa) {
+            if (hour >= 6 && hour < 12) greeting = "おはようございます！ミチと申します。お手伝いできることがございましたら、お気軽にお申し付けください。";
+            else if (hour >= 12 && hour < 18) greeting = "こんにちは！ミチと申します。お手伝いできることがございましたら、お気軽にお申し付けください。";
+            else if (hour >= 18 && hour < 22) greeting = "こんばんは！ミチと申します。お手伝いできることがございましたら、お気軽にお申し付けください。";
+            else greeting = "夜遅くまでお疲れ様です！ミチと申します。何かお手伝いできることはございますか？";
+          } else { // en
+            if (hour >= 6 && hour < 12) greeting = "Good morning! I'm Michi, your personal assistant. How can I help you today?";
+            else if (hour >= 12 && hour < 18) greeting = "Hello! I'm Michi, your personal assistant. How can I help you today?";
+            else if (hour >= 18 && hour < 22) greeting = "Good evening! I'm Michi, your personal assistant. How can I help you today?";
+            else greeting = "Working late? I'm Michi, your personal assistant. How can I help you today?";
+          }
+          
+          setAiResponseText(greeting);
+          setShowPill(true);
+          setStatus('speaking');
+          speakResponse(greeting, lang, () => {
+            setStatus('idle');
+            startListeningSequence();
+          });
+        } else {
+          startListeningSequence();
+        }
       }
     } else {
       stopAllVoiceActivities();
+      hasGreetedRef.current = false;
     }
 
     return () => {
@@ -774,6 +815,139 @@ export default function VoiceAssistant({
   }, [conversationHistory, status]);
 
   // State machine loop for filling the Rirekisho resume step-by-step
+  // Helper to map previous step for static go back operations
+  const getPreviousStep = (step) => {
+    switch (step) {
+      case 'ask_name': return null;
+      case 'confirm_name': return 'ask_name';
+      
+      case 'ask_furigana': return 'confirm_name';
+      case 'confirm_furigana': return 'ask_furigana';
+      
+      case 'ask_birthdate': return 'confirm_furigana';
+      case 'confirm_birthdate': return 'ask_birthdate';
+      
+      case 'ask_gender': return 'confirm_birthdate';
+      case 'confirm_gender': return 'ask_gender';
+      
+      case 'ask_birthplace': return 'confirm_gender';
+      case 'confirm_birthplace': return 'ask_birthplace';
+      
+      case 'ask_nationality': return 'confirm_birthplace';
+      case 'confirm_nationality': return 'ask_nationality';
+      
+      case 'ask_postalcode': return 'confirm_nationality';
+      case 'confirm_postalcode': return 'ask_postalcode';
+      
+      case 'ask_address': return 'confirm_postalcode';
+      case 'confirm_address': return 'ask_address';
+      
+      case 'ask_phone': return 'confirm_address';
+      case 'confirm_phone': return 'ask_phone';
+      
+      case 'ask_email': return 'confirm_phone';
+      case 'confirm_email': return 'ask_email';
+      
+      case 'ask_licenses': return 'confirm_email';
+      case 'confirm_licenses': return 'ask_licenses';
+      
+      case 'ask_edu_school': return 'confirm_licenses';
+      case 'confirm_edu_school': return 'ask_edu_school';
+      
+      case 'ask_edu_major': return 'confirm_edu_school';
+      case 'confirm_edu_major': return 'ask_edu_major';
+      
+      case 'ask_edu_start_year': return 'confirm_edu_major';
+      case 'confirm_edu_start_year': return 'ask_edu_start_year';
+      
+      case 'ask_edu_end_year': return 'confirm_edu_start_year';
+      case 'confirm_edu_end_year': return 'ask_edu_end_year';
+      
+      case 'ask_work_company': return 'confirm_edu_end_year';
+      case 'confirm_work_company': return 'ask_work_company';
+      
+      case 'ask_work_position': return 'confirm_work_company';
+      case 'confirm_work_position': return 'ask_work_position';
+      
+      case 'ask_work_start_year': return 'confirm_work_position';
+      case 'confirm_work_start_year': return 'ask_work_start_year';
+      
+      case 'ask_work_current': return 'confirm_work_start_year';
+      case 'ask_work_end_year': return 'ask_work_current';
+      case 'confirm_work_end_year': return 'ask_work_end_year';
+      
+      case 'ask_motivation': return 'ask_work_current';
+      case 'confirm_motivation': return 'ask_motivation';
+      
+      case 'ask_selfpr': return 'confirm_motivation';
+      case 'confirm_selfpr': return 'ask_selfpr';
+      
+      case 'ask_hobbies': return 'confirm_selfpr';
+      case 'confirm_hobbies': return 'ask_hobbies';
+      
+      case 'ask_personalrequests': return 'confirm_hobbies';
+      case 'confirm_personalrequests': return 'ask_personalrequests';
+      default: return null;
+    }
+  };
+
+  // Helper to fetch question text when repeating or moving backward
+  const getQuestionPrompt = (step, isUz, isJa) => {
+    switch (step) {
+      case 'ask_name':
+        return isUz ? "Ismingiz va familiyangizni ayting." : isJa ? "お名前をフルネームで教えてください。" : "Please state your full name.";
+      case 'ask_furigana':
+        return isUz ? "Ismingizning yaponcha o'qilishini (furigana) ayting." : isJa ? "お名前のフリガナを教えてください。" : "Please state the furigana for your name.";
+      case 'ask_birthdate':
+        return isUz ? "Tug'ilgan kuningizni ayting (Masalan: 1995-yil 15-may)." : isJa ? "生年月日を教えてください。" : "Please state your date of birth.";
+      case 'ask_gender':
+        return isUz ? "Jinsingizni ayting: Erkakmi yoki Ayol?" : isJa ? "性別を教えてください（男性、または女性）。" : "Please state your gender (Male or Female).";
+      case 'ask_birthplace':
+        return isUz ? "Tug'ilgan joyingizni ayting." : isJa ? "出身地を教えてください。" : "Please state your place of birth.";
+      case 'ask_nationality':
+        return isUz ? "Millatingizni ayting." : isJa ? "国籍を教えてください。" : "What is your nationality?";
+      case 'ask_postalcode':
+        return isUz ? "Pochta indeksingizni ayting (yetti xonali son)." : isJa ? "郵便番号を教えてください。" : "Please state your postal code.";
+      case 'ask_address':
+        return isUz ? "Hozirgi yashash manzilingizni to'liq ayting." : isJa ? "現住所を教えてください。" : "Please state your full address.";
+      case 'ask_phone':
+        return isUz ? "Telefon raqamingizni ayting." : isJa ? "電話番号を教えてください。" : "Please state your phone number.";
+      case 'ask_email':
+        return isUz ? "Email manzilingizni ayting." : isJa ? "メールアドレスを教えてください。" : "Please state your email address.";
+      case 'ask_licenses':
+        return isUz ? "Qanday yuk mashinasi guvohnomangiz bor? (Katta, o'rta yoki forklift sertifikati)" : isJa ? "運転免許の種類を教えてください（大型、中型、フォークリフトなど）。" : "Which driving licenses do you hold?";
+      case 'ask_edu_school':
+        return isUz ? "Ta'lim olgan maktab yoki universitet nomini ayting." : isJa ? "在籍した学校名（高校や大学など）を教えてください。" : "Please state your school name.";
+      case 'ask_edu_major':
+        return isUz ? "Mutaxassisligingiz yoki darajangizni ayting." : isJa ? "専攻または学位を教えてください。" : "Please state your major.";
+      case 'ask_edu_start_year':
+        return isUz ? "O'qishga kirgan yilingizni ayting." : isJa ? "入学年を教えてください。" : "What year did you enter?";
+      case 'ask_edu_end_year':
+        return isUz ? "O'qishni tugatgan yilingizni ayting." : isJa ? "卒業年を教えてください。" : "What year did you graduate?";
+      case 'ask_work_company':
+        return isUz ? "Ishlagan kompaniyangiz nomini ayting." : isJa ? "会社名を教えてください。" : "What company did you work for?";
+      case 'ask_work_position':
+        return isUz ? "Kompaniyadagi lavozimingizni ayting." : isJa ? "職種または役職を教えてください。" : "What was your position?";
+      case 'ask_work_start_year':
+        return isUz ? "Ish boshlagan yilingizni ayting." : isJa ? "勤務開始年を教えてください。" : "What year did you start?";
+      case 'ask_work_current':
+        return isUz ? "Hali ham shu joyda ishlaysizmi? Ha yoki Yo'q deb javob bering." : isJa ? "現在もその仕事に在籍していますか？はい、か、いいえ、で教えてください。" : "Are you still working there?";
+      case 'ask_work_end_year':
+        return isUz ? "Ishdan bo'shagan yilingizni ayting." : isJa ? "退職年を教えてください。" : "What year did you leave?";
+      case 'ask_motivation':
+        return isUz ? "Ishga kirishdan maqsadingiz (motivatsiya) nima?" : isJa ? "志望動機を教えてください。" : "What is your job motivation?";
+      case 'ask_selfpr':
+        return isUz ? "O'zingiz haqingizda qisqacha ma'lumot (Self-PR) bering." : isJa ? "自己PRを教えてください。" : "Please share your self-PR.";
+      case 'ask_hobbies':
+        return isUz ? "Qiziqishlaringiz va hobbilarini ayting." : isJa ? "趣味や特技を教えてください。" : "What are your hobbies?";
+      case 'ask_personalrequests':
+        return isUz ? "Kompaniyaga shaxsiy iltimoslaringiz bormi? (Bo'lmasa, Yo'q deb ayting)" : isJa ? "本人希望記入欄について教えてください（特になければ、特になしと教えてください）。" : "Any personal requests?";
+      default:
+        return "";
+    }
+  };
+
+  // State machine loop for filling the Rirekisho resume step-by-step
   const processResumeFlow = (text) => {
     const cleanText = text.trim();
     const lowerText = cleanText.toLowerCase();
@@ -781,7 +955,7 @@ export default function VoiceAssistant({
     const isUz = lang.startsWith('uz');
     const isJa = lang.startsWith('ja');
 
-    // Cancel checks
+    // 1. Cancel Checks
     const cancelPatterns = ['bekor qil', 'to\'xtat', 'chiqish', 'cancel', 'stop', 'キャンセル', '中止'];
     if (cancelPatterns.some(p => lowerText.includes(p))) {
       setIsFillingResume(false);
@@ -796,6 +970,103 @@ export default function VoiceAssistant({
     }
 
     const currentStep = resumeStepRef.current;
+
+    // 2. Go Back Checks
+    const backPatterns = ['ortga', 'orqaga', 'qayt', 'qaytar', 'back', 'go back', '戻る', 'もどる', '戻って'];
+    if (backPatterns.some(p => lowerText.includes(p))) {
+      const prevStep = getPreviousStep(currentStep);
+      if (prevStep) {
+        setResumeStep(prevStep);
+        const backConfirmMsg = isUz ? "Orqaga qaytildi. " : isJa ? "前に戻りました。" : "Went back. ";
+        const nextPrompt = backConfirmMsg + getQuestionPrompt(prevStep, isUz, isJa);
+        speakStepMsg(nextPrompt);
+      } else {
+        const noBackMsg = isUz ? "Bundan ortga qaytib bo'lmaydi." : isJa ? "これ以上戻ることはできません。" : "Cannot go back further.";
+        speakStepMsg(noBackMsg);
+      }
+      return;
+    }
+
+    // 3. Skip Checks
+    const skipPatterns = ['o\'tkaz', 'otkaz', 'skip', 'スキップ', '次へ', 'つぎへ'];
+    if (skipPatterns.some(p => lowerText.includes(p))) {
+      // Advance to the next logical step without saving
+      let nextStep = '';
+      switch (currentStep) {
+        case 'ask_name': nextStep = 'ask_furigana'; break;
+        case 'confirm_name': nextStep = 'ask_furigana'; break;
+        case 'ask_furigana': nextStep = 'ask_birthdate'; break;
+        case 'confirm_furigana': nextStep = 'ask_birthdate'; break;
+        case 'ask_birthdate': nextStep = 'ask_gender'; break;
+        case 'confirm_birthdate': nextStep = 'ask_gender'; break;
+        case 'ask_gender': nextStep = 'ask_birthplace'; break;
+        case 'confirm_gender': nextStep = 'ask_birthplace'; break;
+        case 'ask_birthplace': nextStep = 'ask_nationality'; break;
+        case 'confirm_birthplace': nextStep = 'ask_nationality'; break;
+        case 'ask_nationality': nextStep = 'ask_postalcode'; break;
+        case 'confirm_nationality': nextStep = 'ask_postalcode'; break;
+        case 'ask_postalcode': nextStep = 'ask_address'; break;
+        case 'confirm_postalcode': nextStep = 'ask_address'; break;
+        case 'ask_address': nextStep = 'ask_phone'; break;
+        case 'confirm_address': nextStep = 'ask_phone'; break;
+        case 'ask_phone': nextStep = 'ask_email'; break;
+        case 'confirm_phone': nextStep = 'ask_email'; break;
+        case 'ask_email': nextStep = 'ask_licenses'; break;
+        case 'confirm_email': nextStep = 'ask_licenses'; break;
+        case 'ask_licenses': nextStep = 'ask_edu_school'; break;
+        case 'confirm_licenses': nextStep = 'ask_edu_school'; break;
+        case 'ask_edu_school': nextStep = 'ask_work_company'; break; // skip entire education
+        case 'confirm_edu_school': nextStep = 'ask_edu_major'; break;
+        case 'ask_edu_major': nextStep = 'ask_edu_start_year'; break;
+        case 'confirm_edu_major': nextStep = 'ask_edu_start_year'; break;
+        case 'ask_edu_start_year': nextStep = 'ask_edu_end_year'; break;
+        case 'confirm_edu_start_year': nextStep = 'ask_edu_end_year'; break;
+        case 'ask_edu_end_year': nextStep = 'ask_work_company'; break;
+        case 'confirm_edu_end_year': nextStep = 'ask_work_company'; break;
+        case 'ask_work_company': nextStep = 'ask_motivation'; break; // skip entire work history
+        case 'confirm_work_company': nextStep = 'ask_work_position'; break;
+        case 'ask_work_position': nextStep = 'ask_work_start_year'; break;
+        case 'confirm_work_position': nextStep = 'ask_work_start_year'; break;
+        case 'ask_work_start_year': nextStep = 'ask_work_current'; break;
+        case 'confirm_work_start_year': nextStep = 'ask_work_current'; break;
+        case 'ask_work_current': nextStep = 'ask_motivation'; break;
+        case 'ask_work_end_year': nextStep = 'ask_motivation'; break;
+        case 'confirm_work_end_year': nextStep = 'ask_motivation'; break;
+        case 'ask_motivation': nextStep = 'ask_selfpr'; break;
+        case 'confirm_motivation': nextStep = 'ask_selfpr'; break;
+        case 'ask_selfpr': nextStep = 'ask_hobbies'; break;
+        case 'confirm_selfpr': nextStep = 'ask_hobbies'; break;
+        case 'ask_hobbies': nextStep = 'ask_personalrequests'; break;
+        case 'confirm_hobbies': nextStep = 'ask_personalrequests'; break;
+        case 'ask_personalrequests': nextStep = 'finish_resume'; break;
+        case 'confirm_personalrequests': nextStep = 'finish_resume'; break;
+        default: nextStep = 'idle';
+      }
+
+      if (nextStep === 'finish_resume') {
+        finishResumeFlow(lang, isUz, isJa);
+      } else if (nextStep !== 'idle') {
+        setResumeStep(nextStep);
+        const skipConfirmMsg = (isUz ? "O'tkazib yuborildi. " : isJa ? "スキップしました。" : "Skipped. ") + getQuestionPrompt(nextStep, isUz, isJa);
+        speakStepMsg(skipConfirmMsg);
+      } else {
+        setIsFillingResume(false);
+        setStatus('idle');
+      }
+      return;
+    }
+
+    // 4. Repeat Checks
+    const repeatPatterns = ['qayta', 'yana', 'repeat', 'qaytadan', 'もう一度', 'もういっかい', 'リピート'];
+    if (repeatPatterns.some(p => lowerText.includes(p))) {
+      const repeatMsg = getQuestionPrompt(currentStep, isUz, isJa);
+      if (repeatMsg) {
+        speakStepMsg(repeatMsg);
+      } else {
+        startLocalSpeechRecognition();
+      }
+      return;
+    }
 
     // Helper to trigger custom window event
     const triggerUpdate = (field, val) => {
@@ -814,105 +1085,250 @@ export default function VoiceAssistant({
       case 'ask_name':
         setTempResumeData(prev => ({ ...prev, fullName: cleanText }));
         setResumeStep('confirm_name');
-        const nameConfirmMsg = isUz 
+        speakStepMsg(isUz 
           ? `Ismingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
           : isJa ? `お名前は「${cleanText}」でよろしいですか？` 
-          : `Is your name "${cleanText}"? Confirm?`;
-        speakStepMsg(nameConfirmMsg);
+          : `Is your name "${cleanText}"? Confirm?`);
         break;
 
       case 'confirm_name':
         if (isPositive) {
           triggerUpdate('fullName', tempResumeDataRef.current.fullName);
-          setResumeStep('ask_birthplace');
-          const birthplaceAskMsg = isUz 
-            ? "Tug'ilgan joyingizni ayting (Masalan: O'zbekiston yoki Toshkent)." 
-            : isJa ? "出身地（または出生地）を教えてください。" 
-            : "Please state your place of birth.";
-          speakStepMsg(birthplaceAskMsg);
+          setResumeStep('ask_furigana');
+          speakStepMsg(isUz 
+            ? "Tushunarli. Endi ismingizning yaponcha o'qilishini (furigana) ayting." 
+            : isJa ? "ありがとうございます。次にお名前のフリガナ（カタカナ）を教えてください。" 
+            : "Great. Now please state the furigana pronunciation of your name in Katakana.");
         } else if (isNegative) {
           setResumeStep('ask_name');
-          const repeatNameMsg = isUz 
-            ? "Tushunarli. Qaytadan ism va familiyangizni ayting." 
-            : isJa ? "失礼しました。もう一度お名前をフルネームで教えてください。" 
-            : "Let's try again. What is your full name?";
-          speakStepMsg(repeatNameMsg);
+          speakStepMsg(isUz 
+            ? "Qaytadan ism va familiyangizni ayting." 
+            : isJa ? "もう一度お名前をフルネームで教えてください。" 
+            : "Please state your full name again.");
         } else {
-          const reconfirmMsg = isUz 
-            ? `Tushunarsiz javob. Ismingizni "${tempResumeDataRef.current.fullName}" deb yozaymi? Ha yoki Yo'q deb javob bering.` 
+          speakStepMsg(isUz 
+            ? `Ismingizni "${tempResumeDataRef.current.fullName}" deb yozaymi? Ha yoki Yo'q deb javob bering.` 
             : isJa ? `お名前は「${tempResumeDataRef.current.fullName}」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Please answer Yes or No. Confirm name "${tempResumeDataRef.current.fullName}"?`;
-          speakStepMsg(reconfirmMsg);
+            : `Confirm name "${tempResumeDataRef.current.fullName}"? Yes or No.`);
+        }
+        break;
+
+      case 'ask_furigana':
+        setTempResumeData(prev => ({ ...prev, furigana: cleanText }));
+        setResumeStep('confirm_furigana');
+        speakStepMsg(isUz
+          ? `Furigana talaffuzini "${cleanText}" deb yozaymi? Tasdiqlaysizmi?`
+          : isJa ? `フリガナは「${cleanText}」でよろしいですか？`
+          : `Is the furigana "${cleanText}"? Confirm?`);
+        break;
+
+      case 'confirm_furigana':
+        if (isPositive) {
+          triggerUpdate('furigana', tempResumeDataRef.current.furigana);
+          setResumeStep('ask_birthdate');
+          speakStepMsg(isUz
+            ? "Tug'ilgan kuningizni ayting (Masalan: 1995-yil 15-may)."
+            : isJa ? "生年月日を西暦で教えてください（例：1995年5月15日）。"
+            : "Please state your date of birth (e.g. May 15th, 1995).");
+        } else if (isNegative) {
+          setResumeStep('ask_furigana');
+          speakStepMsg(isUz ? "Qaytadan furiganani ayting." : isJa ? "もう一度フリガナを教えてください。" : "What is the furigana?");
+        } else {
+          speakStepMsg(isUz 
+            ? `Furigana "${tempResumeDataRef.current.furigana}"? Ha yoki Yo'q.` 
+            : isJa ? `フリガナは「${tempResumeDataRef.current.furigana}」でよろしいですか？` 
+            : `Confirm furigana "${tempResumeDataRef.current.furigana}"?`);
+        }
+        break;
+
+      case 'ask_birthdate':
+        const dates = cleanText.match(/\d+/g);
+        let parsedDate = '';
+        if (dates && dates.length >= 3) {
+          parsedDate = `${dates[0]}-${String(dates[1]).padStart(2, '0')}-${String(dates[2]).padStart(2, '0')}`;
+        } else if (dates && dates.length === 2) {
+          // Default current century if year is 2 digits
+          const year = dates[0].length === 2 ? `19${dates[0]}` : dates[0];
+          parsedDate = `${year}-${String(dates[1]).padStart(2, '0')}-01`;
+        } else {
+          parsedDate = cleanText;
+        }
+
+        setTempResumeData(prev => ({ ...prev, birthDate: parsedDate }));
+        setResumeStep('confirm_birthdate');
+        speakStepMsg(isUz
+          ? `Tug'ilgan kuningizni "${parsedDate}" deb yozaymi? Tasdiqlaysizmi?`
+          : isJa ? `生年月日は「${parsedDate}」でよろしいですか？`
+          : `Is your date of birth "${parsedDate}"? Confirm?`);
+        break;
+
+      case 'confirm_birthdate':
+        if (isPositive) {
+          triggerUpdate('birthDate', tempResumeDataRef.current.birthDate);
+          setResumeStep('ask_gender');
+          speakStepMsg(isUz
+            ? "Jinsingizni ayting: Erkakmi yoki Ayol?"
+            : isJa ? "性別を教えてください（男性、または女性）。"
+            : "Please state your gender (Male or Female).");
+        } else if (isNegative) {
+          setResumeStep('ask_birthdate');
+          speakStepMsg(isUz ? "Qaytadan tug'ilgan kuningizni ayting." : isJa ? "もう一度生年月日を教えてください。" : "What is your date of birth?");
+        } else {
+          speakStepMsg(isUz 
+            ? `Tug'ilgan kuningiz "${tempResumeDataRef.current.birthDate}"? Ha yoki Yo'q.` 
+            : isJa ? `生年月日は「${tempResumeDataRef.current.birthDate}」でよろしいですか？` 
+            : `Confirm date "${tempResumeDataRef.current.birthDate}"?`);
+        }
+        break;
+
+      case 'ask_gender':
+        let selectedGender = 'male';
+        let genderLabel = isUz ? "Erkak" : isJa ? "男性" : "Male";
+        if (/(ayol|female|josei|女性|woman|qiz)/i.test(lowerText)) {
+          selectedGender = 'female';
+          genderLabel = isUz ? "Ayol" : isJa ? "女性" : "Female";
+        }
+        setTempResumeData(prev => ({ ...prev, gender: selectedGender, genderLabel }));
+        setResumeStep('confirm_gender');
+        speakStepMsg(isUz
+          ? `Jinsingiz "${genderLabel}"? Tasdiqlaysizmi?`
+          : isJa ? `性別は「${genderLabel}」でよろしいですか？`
+          : `Is your gender "${genderLabel}"? Confirm?`);
+        break;
+
+      case 'confirm_gender':
+        if (isPositive) {
+          triggerUpdate('gender', tempResumeDataRef.current.gender);
+          setResumeStep('ask_birthplace');
+          speakStepMsg(isUz 
+            ? "Tug'ilgan joyingizni ayting (Masalan: O'zbekiston yoki Toshkent)." 
+            : isJa ? "出身地（または出生地）を教えてください。" 
+            : "Please state your place of birth.");
+        } else if (isNegative) {
+          setResumeStep('ask_gender');
+          speakStepMsg(isUz ? "Qaytadan jinsingizni ayting." : isJa ? "もう一度性別を教えてください。" : "What is your gender?");
+        } else {
+          speakStepMsg(isUz 
+            ? `Jinsingiz "${tempResumeDataRef.current.genderLabel}"? Ha yoki Yo'q.` 
+            : isJa ? `性別は「${tempResumeDataRef.current.genderLabel}」でよろしいですか？` 
+            : `Confirm gender "${tempResumeDataRef.current.genderLabel}"?`);
         }
         break;
 
       case 'ask_birthplace':
         setTempResumeData(prev => ({ ...prev, birthPlace: cleanText }));
         setResumeStep('confirm_birthplace');
-        const birthplaceConfirmMsg = isUz 
+        speakStepMsg(isUz 
           ? `Tug'ilgan joyingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
           : isJa ? `出身地は「${cleanText}」でよろしいですか？` 
-          : `Is your place of birth "${cleanText}"? Confirm?`;
-        speakStepMsg(birthplaceConfirmMsg);
+          : `Is your place of birth "${cleanText}"? Confirm?`);
         break;
 
       case 'confirm_birthplace':
         if (isPositive) {
           triggerUpdate('birthPlace', tempResumeDataRef.current.birthPlace);
           setResumeStep('ask_nationality');
-          const nationalityAskMsg = isUz 
+          speakStepMsg(isUz 
             ? "Millatingizni ayting (Masalan: O'zbek)." 
             : isJa ? "国籍（または民族）を教えてください。" 
-            : "What is your nationality?";
-          speakStepMsg(nationalityAskMsg);
+            : "What is your nationality?");
         } else if (isNegative) {
           setResumeStep('ask_birthplace');
-          const repeatBirthplaceMsg = isUz 
-            ? "Qaytadan ayting, tug'ilgan joyingiz qayer?" 
-            : isJa ? "もう一度出身地を教えてください。" 
-            : "What is your place of birth?";
-          speakStepMsg(repeatBirthplaceMsg);
+          speakStepMsg(isUz ? "Qaytadan tug'ilgan joyingizni ayting." : isJa ? "もう一度出身地を教えてください。" : "What is your place of birth?");
         } else {
-          const reconfirmMsg = isUz 
-            ? `Tug'ilgan joyingizni "${tempResumeDataRef.current.birthPlace}" deb yozaymi? Ha yoki Yo'q deb javob bering.` 
-            : isJa ? `出身地は「${tempResumeDataRef.current.birthPlace}」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Confirm place of birth "${tempResumeDataRef.current.birthPlace}"?`;
-          speakStepMsg(reconfirmMsg);
+          speakStepMsg(isUz 
+            ? `Tug'ilgan joyingiz "${tempResumeDataRef.current.birthPlace}"? Ha yoki Yo'q.` 
+            : isJa ? `出身地は「${tempResumeDataRef.current.birthPlace}」でよろしいですか？` 
+            : `Confirm place of birth "${tempResumeDataRef.current.birthPlace}"?`);
         }
         break;
 
       case 'ask_nationality':
         setTempResumeData(prev => ({ ...prev, nationality: cleanText }));
         setResumeStep('confirm_nationality');
-        const nationalityConfirmMsg = isUz 
+        speakStepMsg(isUz 
           ? `Millatingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
           : isJa ? `国籍は「${cleanText}」でよろしいですか？` 
-          : `Is your nationality "${cleanText}"? Confirm?`;
-        speakStepMsg(nationalityConfirmMsg);
+          : `Is your nationality "${cleanText}"? Confirm?`);
         break;
 
       case 'confirm_nationality':
         if (isPositive) {
           triggerUpdate('nationality', tempResumeDataRef.current.nationality);
-          setResumeStep('ask_phone');
-          const phoneAskMsg = isUz 
-            ? "Telefon raqamingizni ayting (Masalan: 080 1234 5678)." 
-            : isJa ? "電話番号を教えてください。" 
-            : "Please state your phone number.";
-          speakStepMsg(phoneAskMsg);
+          setResumeStep('ask_postalcode');
+          speakStepMsg(isUz
+            ? "Yaponiyadagi pochta indeksingizni ayting (Masalan: 123-4567)."
+            : isJa ? "郵便番号（7桁）を教えてください。"
+            : "Please state your 7-digit Japanese postal code.");
         } else if (isNegative) {
           setResumeStep('ask_nationality');
-          const repeatNationalityMsg = isUz 
-            ? "Qaytadan ayting, millatingiz nima?" 
-            : isJa ? "もう一度国籍を教えてください。" 
-            : "What is your nationality?";
-          speakStepMsg(repeatNationalityMsg);
+          speakStepMsg(isUz ? "Qaytadan millatingizni ayting." : isJa ? "もう一度国籍を教えてください。" : "What is your nationality?");
         } else {
-          const reconfirmMsg = isUz 
-            ? `Millatingizni "${tempResumeDataRef.current.nationality}" deb yozaymi? Ha yoki Yo'q deb javob bering.` 
-            : isJa ? `国籍は「${tempResumeDataRef.current.nationality}」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Confirm nationality "${tempResumeDataRef.current.nationality}"?`;
-          speakStepMsg(reconfirmMsg);
+          speakStepMsg(isUz 
+            ? `Millatingiz "${tempResumeDataRef.current.nationality}"? Ha yoki Yo'q.` 
+            : isJa ? `国籍は「${tempResumeDataRef.current.nationality}」でよろしいですか？` 
+            : `Confirm nationality "${tempResumeDataRef.current.nationality}"?`);
+        }
+        break;
+
+      case 'ask_postalcode':
+        const postal = cleanText.replace(/[^\d]/g, '');
+        let formattedPostal = postal;
+        if (postal.length === 7) {
+          formattedPostal = `${postal.substring(0, 3)}-${postal.substring(3)}`;
+        }
+        setTempResumeData(prev => ({ ...prev, postalCode: formattedPostal }));
+        setResumeStep('confirm_postalcode');
+        speakStepMsg(isUz
+          ? `Pochta indeksingizni "${formattedPostal}" deb yozaymi? Tasdiqlaysizmi?`
+          : isJa ? `郵便番号は「${formattedPostal}」でよろしいですか？`
+          : `Is your postal code "${formattedPostal}"? Confirm?`);
+        break;
+
+      case 'confirm_postalcode':
+        if (isPositive) {
+          triggerUpdate('postalCode', tempResumeDataRef.current.postalCode);
+          setResumeStep('ask_address');
+          speakStepMsg(isUz
+            ? "Hozirgi manzilingizni to'liq ayting (Prefektura, shahar, ko'cha)."
+            : isJa ? "次に、現住所を都道府県から詳しく教えてください。"
+            : "Please state your full current address, starting from prefecture.");
+        } else if (isNegative) {
+          setResumeStep('ask_postalcode');
+          speakStepMsg(isUz ? "Qaytadan pochta indeksini ayting." : isJa ? "もう一度郵便番号を教えてください。" : "What is your postal code?");
+        } else {
+          speakStepMsg(isUz 
+            ? `Pochta indeksi "${tempResumeDataRef.current.postalCode}"? Ha yoki Yo'q.` 
+            : isJa ? `郵便番号は「${tempResumeDataRef.current.postalCode}」でよろしいですか？` 
+            : `Confirm postal code "${tempResumeDataRef.current.postalCode}"?`);
+        }
+        break;
+
+      case 'ask_address':
+        setTempResumeData(prev => ({ ...prev, address: cleanText }));
+        setResumeStep('confirm_address');
+        speakStepMsg(isUz
+          ? `Manzilingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?`
+          : isJa ? `ご住所は「${cleanText}」でよろしいですか？`
+          : `Is your address "${cleanText}"? Confirm?`);
+        break;
+
+      case 'confirm_address':
+        if (isPositive) {
+          triggerUpdate('address', tempResumeDataRef.current.address);
+          setResumeStep('ask_phone');
+          speakStepMsg(isUz 
+            ? "Telefon raqamingizni ayting (Masalan: 080 1234 5678)." 
+            : isJa ? "電話番号を教えてください。" 
+            : "Please state your phone number.");
+        } else if (isNegative) {
+          setResumeStep('ask_address');
+          speakStepMsg(isUz ? "Qaytadan yashash manzilingizni ayting." : isJa ? "もう一度住所を教えてください。" : "What is your address?");
+        } else {
+          speakStepMsg(isUz 
+            ? `Manzilingiz "${tempResumeDataRef.current.address}"? Ha yoki Yo'q.` 
+            : isJa ? `ご住所は「${tempResumeDataRef.current.address}」でよろしいですか？` 
+            : `Confirm address "${tempResumeDataRef.current.address}"?`);
         }
         break;
 
@@ -920,35 +1336,58 @@ export default function VoiceAssistant({
         const formattedPhone = cleanText.replace(/[^\d-]/g, '');
         setTempResumeData(prev => ({ ...prev, phone: formattedPhone || cleanText }));
         setResumeStep('confirm_phone');
-        const phoneConfirmMsg = isUz 
+        speakStepMsg(isUz 
           ? `Telefon raqamingizni "${formattedPhone || cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
           : isJa ? `電話番号は「${formattedPhone || cleanText}」でよろしいですか？` 
-          : `Is your phone "${formattedPhone || cleanText}"? Confirm?`;
-        speakStepMsg(phoneConfirmMsg);
+          : `Is your phone "${formattedPhone || cleanText}"? Confirm?`);
         break;
 
       case 'confirm_phone':
         if (isPositive) {
           triggerUpdate('phone', tempResumeDataRef.current.phone);
-          setResumeStep('ask_licenses');
-          const licensesAskMsg = isUz 
-            ? "Qanday yuk mashinasi guvohnomangiz bor? (Katta, o'rta yoki forklift sertifikati)" 
-            : isJa ? "お持ちの運転免許の種類を教えてください（大型、中型、フォークリフトなど）。" 
-            : "Which driving licenses do you hold? (e.g., Oogata, Chugata, Forklift)";
-          speakStepMsg(licensesAskMsg);
+          setResumeStep('ask_email');
+          speakStepMsg(isUz
+            ? "Elektron pochta (email) manzilingizni ayting."
+            : isJa ? "メールアドレスを教えてください。"
+            : "Please state your email address.");
         } else if (isNegative) {
           setResumeStep('ask_phone');
-          const repeatPhoneMsg = isUz 
-            ? "Qaytadan ayting, telefon raqamingiz nima?" 
-            : isJa ? "もう一度電話番号を教えてください。" 
-            : "What is your phone number?";
-          speakStepMsg(repeatPhoneMsg);
+          speakStepMsg(isUz ? "Qaytadan telefon raqamingizni ayting." : isJa ? "もう一度電話番号を教えてください。" : "What is your phone number?");
         } else {
-          const reconfirmMsg = isUz 
-            ? `Telefon raqamingizni "${tempResumeDataRef.current.phone}" deb yozaymi? Ha yoki Yo'q deb javob bering.` 
-            : isJa ? `電話番号は「${tempResumeDataRef.current.phone}」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Confirm phone "${tempResumeDataRef.current.phone}"?`;
-          speakStepMsg(reconfirmMsg);
+          speakStepMsg(isUz 
+            ? `Telefon raqami "${tempResumeDataRef.current.phone}"? Ha yoki Yo'q.` 
+            : isJa ? `電話番号は「${tempResumeDataRef.current.phone}」でよろしいですか？` 
+            : `Confirm phone "${tempResumeDataRef.current.phone}"?`);
+        }
+        break;
+
+      case 'ask_email':
+        // Replace spaces or common voice spelling errors for emails
+        const emailClean = cleanText.replace(/\s+/g, '').toLowerCase().replace(/at/g, '@').replace(/dot/g, '.');
+        setTempResumeData(prev => ({ ...prev, email: emailClean }));
+        setResumeStep('confirm_email');
+        speakStepMsg(isUz
+          ? `Email manzilingizni "${emailClean}" deb yozaymi? Tasdiqlaysizmi?`
+          : isJa ? `メールアドレスは「${emailClean}」でよろしいですか？`
+          : `Is your email "${emailClean}"? Confirm?`);
+        break;
+
+      case 'confirm_email':
+        if (isPositive) {
+          triggerUpdate('email', tempResumeDataRef.current.email);
+          setResumeStep('ask_licenses');
+          speakStepMsg(isUz 
+            ? "Qanday yuk mashinasi guvohnomangiz bor? (Katta, o'rta yoki forklift sertifikati)" 
+            : isJa ? "お持ちの運転免許の種類を教えてください（大型、中型、フォークリフトなど）。" 
+            : "Which driving licenses do you hold? (e.g., Oogata, Chugata, Forklift)");
+        } else if (isNegative) {
+          setResumeStep('ask_email');
+          speakStepMsg(isUz ? "Qaytadan email manzilingizni ayting." : isJa ? "もう一度メールアドレスを教えてください。" : "What is your email address?");
+        } else {
+          speakStepMsg(isUz 
+            ? `Email "${tempResumeDataRef.current.email}"? Ha yoki Yo'q.` 
+            : isJa ? `メールアドレスは「${tempResumeDataRef.current.email}」でよろしいですか？` 
+            : `Confirm email "${tempResumeDataRef.current.email}"?`);
         }
         break;
 
@@ -980,20 +1419,18 @@ export default function VoiceAssistant({
         if (licenseMatches.length === 0) {
           setTempResumeData(prev => ({ ...prev, licenses: [cleanText], licenseLabels: [cleanText] }));
           setResumeStep('confirm_licenses');
-          const noMatchConfirmMsg = isUz
+          speakStepMsg(isUz
             ? `"${cleanText}" guvohnomasini belgilaymi? Tasdiqlaysizmi?`
             : isJa ? `「${cleanText}」を登録しますか？`
-            : `Confirm license "${cleanText}"?`;
-          speakStepMsg(noMatchConfirmMsg);
+            : `Confirm license "${cleanText}"?`);
         } else {
           setTempResumeData(prev => ({ ...prev, licenses: licenseMatches, licenseLabels: licenseLabels }));
           setResumeStep('confirm_licenses');
           const matchedListText = licenseLabels.join(isUz ? " va " : "、");
-          const matchConfirmMsg = isUz
+          speakStepMsg(isUz
             ? `Sizda ${matchedListText} bor. Buni belgilaymi? Tasdiqlaysizmi?`
             : isJa ? `お持ちの免許は「${matchedListText}」ですね。登録しますか？`
-            : `You hold: ${matchedListText}. Confirm?`;
-          speakStepMsg(matchConfirmMsg);
+            : `You hold: ${matchedListText}. Confirm?`);
         }
         break;
 
@@ -1007,93 +1444,73 @@ export default function VoiceAssistant({
           if (techCerts.length > 0) triggerUpdate('techCertificates', techCerts);
 
           setResumeStep('ask_edu_school');
-          const eduSchoolAskMsg = isUz 
+          speakStepMsg(isUz 
             ? "Ta'lim olgan maktab yoki universitet nomini ayting." 
             : isJa ? "卒業または在籍した学校名（高校や大学など）を教えてください。" 
-            : "Please state the name of your school or university.";
-          speakStepMsg(eduSchoolAskMsg);
+            : "Please state the name of your school or university.");
         } else if (isNegative) {
           setResumeStep('ask_licenses');
-          const repeatLicensesMsg = isUz 
-            ? "Qaytadan ayting, qanday guvohnomalaringiz bor?" 
-            : isJa ? "もう一度お持ちの運転免許の種類を教えてください。" 
-            : "Which driving licenses do you hold?";
-          speakStepMsg(repeatLicensesMsg);
+          speakStepMsg(isUz ? "Qaytadan guvohnomalaringizni ayting." : isJa ? "もう一度お持ちの運転免許の種類を教えてください。" : "Which driving licenses do you hold?");
         } else {
           const matchedListText = (tempResumeDataRef.current.licenseLabels || []).join(isUz ? " va " : "、");
-          const reconfirmMsg = isUz 
-            ? `${matchedListText} guvohnomalarini belgilaymi? Ha yoki Yo'q deb javob bering.` 
+          speakStepMsg(isUz 
+            ? `${matchedListText} guvohnomalarini belgilaymi? Ha yoki Yo'q.` 
             : isJa ? `「${matchedListText}」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Confirm: ${matchedListText}?`;
-          speakStepMsg(reconfirmMsg);
+            : `Confirm: ${matchedListText}?`);
         }
         break;
 
       case 'ask_edu_school':
         setTempResumeData(prev => ({ ...prev, eduSchool: cleanText }));
         setResumeStep('confirm_edu_school');
-        const eduSchoolConfirmMsg = isUz 
+        speakStepMsg(isUz 
           ? `Ta'lim muassasasi nomini "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
           : isJa ? `学校名は「${cleanText}」でよろしいですか？` 
-          : `Is the school name "${cleanText}"? Confirm?`;
-        speakStepMsg(eduSchoolConfirmMsg);
+          : `Is the school name "${cleanText}"? Confirm?`);
         break;
 
       case 'confirm_edu_school':
         if (isPositive) {
           setResumeStep('ask_edu_major');
-          const eduMajorAskMsg = isUz 
+          speakStepMsg(isUz 
             ? "Mutaxassisligingiz yoki darajangizni ayting (Masalan: Bakalavr yoki Haydovchi)." 
             : isJa ? "専攻または学位（例：学士、自動車整備など）を教えてください。" 
-            : "Please state your major or degree.";
-          speakStepMsg(eduMajorAskMsg);
+            : "Please state your major or degree.");
         } else if (isNegative) {
           setResumeStep('ask_edu_school');
-          const repeatEduSchoolMsg = isUz 
-            ? "Qaytadan ayting, maktabingiz nomi nima?" 
-            : isJa ? "もう一度学校名を教えてください。" 
-            : "What is your school name?";
-          speakStepMsg(repeatEduSchoolMsg);
+          speakStepMsg(isUz ? "Qaytadan maktab nomini ayting." : isJa ? "もう一度学校名を教えてください。" : "What is your school name?");
         } else {
-          const reconfirmMsg = isUz 
+          speakStepMsg(isUz 
             ? `Maktab nomini "${tempResumeDataRef.current.eduSchool}" deb yozaymi? Ha yoki Yo'q.` 
-            : isJa ? `学校名は「${tempResumeDataRef.current.eduSchool}」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Confirm school "${tempResumeDataRef.current.eduSchool}"?`;
-          speakStepMsg(reconfirmMsg);
+            : isJa ? `学校名は「${tempResumeDataRef.current.eduSchool}」でよろしいですか？` 
+            : `Confirm school "${tempResumeDataRef.current.eduSchool}"?`);
         }
         break;
 
       case 'ask_edu_major':
         setTempResumeData(prev => ({ ...prev, eduMajor: cleanText }));
         setResumeStep('confirm_edu_major');
-        const eduMajorConfirmMsg = isUz 
+        speakStepMsg(isUz 
           ? `Mutaxassisligingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
           : isJa ? `専攻は「${cleanText}」でよろしいですか？` 
-          : `Is your major "${cleanText}"? Confirm?`;
-        speakStepMsg(eduMajorConfirmMsg);
+          : `Is your major "${cleanText}"? Confirm?`);
         break;
 
       case 'confirm_edu_major':
         if (isPositive) {
           setResumeStep('ask_edu_start_year');
-          const eduStartYearAskMsg = isUz 
+          speakStepMsg(isUz 
             ? "O'qishga kirgan yilingizni ayting (Masalan: 2020)." 
             : isJa ? "入学した年（西暦）を教えてください（例：2020年）。" 
-            : "Please state the year you entered (e.g., 2020).";
-          speakStepMsg(eduStartYearAskMsg);
+            : "Please state the year you entered (e.g., 2020).");
         } else if (isNegative) {
           setResumeStep('ask_edu_major');
-          const repeatEduMajorMsg = isUz 
-            ? "Qaytadan ayting, mutaxassisligingiz nima?" 
-            : isJa ? "もう一度専攻を教えてください。" 
-            : "What is your major?";
-          speakStepMsg(repeatEduMajorMsg);
+          speakStepMsg(isUz ? "Qaytadan mutaxassislikni ayting." : isJa ? "もう一度専攻を教えてください。" : "What is your major?");
         } else {
-          const reconfirmMsg = isUz 
+          speakStepMsg(isUz 
             ? `Mutaxassislikni "${tempResumeDataRef.current.eduMajor}" deb yozaymi? Ha yoki Yo'q.` 
-            : isJa ? `専攻は「${tempResumeDataRef.current.eduMajor}」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Confirm major "${tempResumeDataRef.current.eduMajor}"?`;
-          speakStepMsg(reconfirmMsg);
+            : isJa ? `専攻は「${tempResumeDataRef.current.eduMajor}」でよろしいですか？` 
+            : `Confirm major "${tempResumeDataRef.current.eduMajor}"?`);
         }
         break;
 
@@ -1101,34 +1518,27 @@ export default function VoiceAssistant({
         const parsedEduStartYear = cleanText.match(/\d{4}/)?.[0] || cleanText;
         setTempResumeData(prev => ({ ...prev, eduStartYear: parsedEduStartYear }));
         setResumeStep('confirm_edu_start_year');
-        const eduStartYearConfirmMsg = isUz 
+        speakStepMsg(isUz 
           ? `O'qishga kirgan yilingizni "${parsedEduStartYear}" deb yozaymi? Tasdiqlaysizmi?` 
           : isJa ? `入学年は「${parsedEduStartYear}年」でよろしいですか？` 
-          : `Is the admission year "${parsedEduStartYear}"? Confirm?`;
-        speakStepMsg(eduStartYearConfirmMsg);
+          : `Is the admission year "${parsedEduStartYear}"? Confirm?`);
         break;
 
       case 'confirm_edu_start_year':
         if (isPositive) {
           setResumeStep('ask_edu_end_year');
-          const eduEndYearAskMsg = isUz 
+          speakStepMsg(isUz 
             ? "O'qishni tamomlagan yilingizni ayting (Masalan: 2024)." 
             : isJa ? "卒業した年（または卒業予定の年）を教えてください（例：2024年）。" 
-            : "Please state the graduation year (e.g., 2024).";
-          speakStepMsg(eduEndYearAskMsg);
+            : "Please state the graduation year (e.g., 2024).");
         } else if (isNegative) {
           setResumeStep('ask_edu_start_year');
-          const repeatEduStartYearMsg = isUz 
-            ? "Qaytadan ayting, qaysi yilda o'qishga kirgansiz?" 
-            : isJa ? "もう一度入学した年を教えてください。" 
-            : "What is your admission year?";
-          speakStepMsg(repeatEduStartYearMsg);
+          speakStepMsg(isUz ? "Qaytadan kirgan yilingizni ayting." : isJa ? "もう一度入学した年を教えてください。" : "What is your admission year?");
         } else {
-          const reconfirmMsg = isUz 
+          speakStepMsg(isUz 
             ? `Kirgan yilingizni "${tempResumeDataRef.current.eduStartYear}" deb yozaymi? Ha yoki Yo'q.` 
-            : isJa ? `入学年は「${tempResumeDataRef.current.eduStartYear}年」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Confirm admission year "${tempResumeDataRef.current.eduStartYear}"?`;
-          speakStepMsg(reconfirmMsg);
+            : isJa ? `入学年は「${tempResumeDataRef.current.eduStartYear}年」でよろしいですか？` 
+            : `Confirm admission year "${tempResumeDataRef.current.eduStartYear}"?`);
         }
         break;
 
@@ -1136,16 +1546,14 @@ export default function VoiceAssistant({
         const parsedEduEndYear = cleanText.match(/\d{4}/)?.[0] || cleanText;
         setTempResumeData(prev => ({ ...prev, eduEndYear: parsedEduEndYear }));
         setResumeStep('confirm_edu_end_year');
-        const eduEndYearConfirmMsg = isUz 
+        speakStepMsg(isUz 
           ? `O'qishni tamomlagan yilingizni "${parsedEduEndYear}" deb yozaymi? Tasdiqlaysizmi?` 
           : isJa ? `卒業年は「${parsedEduEndYear}年」でよろしいですか？` 
-          : `Is the graduation year "${parsedEduEndYear}"? Confirm?`;
-        speakStepMsg(eduEndYearConfirmMsg);
+          : `Is the graduation year "${parsedEduEndYear}"? Confirm?`);
         break;
 
       case 'confirm_edu_end_year':
         if (isPositive) {
-          // Trigger Education update
           const eduObj = {
             school: tempResumeDataRef.current.eduSchool,
             major: tempResumeDataRef.current.eduMajor,
@@ -1155,92 +1563,72 @@ export default function VoiceAssistant({
           triggerUpdate('educationHistory', [eduObj]);
 
           setResumeStep('ask_work_company');
-          const workCompanyAskMsg = isUz 
-            ? "Avvalgi yoki hozirgi ishlagan kompaniyangiz nomini ayting." 
-            : isJa ? "お勤め先（または過去に勤務した会社名）を教えてください。" 
-            : "Please state your company or employer name.";
-          speakStepMsg(workCompanyAskMsg);
+          speakStepMsg(isUz 
+            ? "Tushunarli. Endi, ishlagan yoki hozirgi kompaniyangiz nomini ayting." 
+            : isJa ? "ありがとうございます。次に、お勤め先（または過去に勤務した会社名）を教えてください。" 
+            : "Got it. Next, please state your company or employer name.");
         } else if (isNegative) {
           setResumeStep('ask_edu_end_year');
-          const repeatEduEndYearMsg = isUz 
-            ? "Qaytadan ayting, qaysi yilda o'qishni tamomlagansiz?" 
-            : isJa ? "もう一度卒業した年を教えてください。" 
-            : "What is your graduation year?";
-          speakStepMsg(repeatEduEndYearMsg);
+          speakStepMsg(isUz ? "Qaytadan tamomlagan yilingizni ayting." : isJa ? "もう一度卒業した年を教えてください。" : "What is your graduation year?");
         } else {
-          const reconfirmMsg = isUz 
+          speakStepMsg(isUz 
             ? `Tugatgan yilingizni "${tempResumeDataRef.current.eduEndYear}" deb yozaymi? Ha yoki Yo'q.` 
-            : isJa ? `卒業年は「${tempResumeDataRef.current.eduEndYear}年」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Confirm graduation year "${tempResumeDataRef.current.eduEndYear}"?`;
-          speakStepMsg(reconfirmMsg);
+            : isJa ? `卒業年は「${tempResumeDataRef.current.eduEndYear}年」でよろしいですか？` 
+            : `Confirm graduation year "${tempResumeDataRef.current.eduEndYear}"?`);
         }
         break;
 
       case 'ask_work_company':
         setTempResumeData(prev => ({ ...prev, workCompany: cleanText }));
         setResumeStep('confirm_work_company');
-        const workCompanyConfirmMsg = isUz 
+        speakStepMsg(isUz 
           ? `Kompaniya nomini "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
           : isJa ? `会社名は「${cleanText}」でよろしいですか？` 
-          : `Is the company name "${cleanText}"? Confirm?`;
-        speakStepMsg(workCompanyConfirmMsg);
+          : `Is the company name "${cleanText}"? Confirm?`);
         break;
 
       case 'confirm_work_company':
         if (isPositive) {
           setResumeStep('ask_work_position');
-          const workPositionAskMsg = isUz 
+          speakStepMsg(isUz 
             ? "Ushbu kompaniyadagi lavozimingizni ayting (Masalan: Yuk mashinasi haydovchisi)." 
             : isJa ? "職種や役職（例：トラック運転手など）を教えてください。" 
-            : "Please state your position or job title.";
-          speakStepMsg(workPositionAskMsg);
+            : "Please state your position or job title.");
         } else if (isNegative) {
           setResumeStep('ask_work_company');
-          const repeatWorkCompanyMsg = isUz 
-            ? "Qaytadan ayting, ishlagan kompaniyangiz nomi nima?" 
-            : isJa ? "もう一度会社名を教えてください。" 
-            : "What is your company name?";
-          speakStepMsg(repeatWorkCompanyMsg);
+          speakStepMsg(isUz ? "Qaytadan kompaniya nomini ayting." : isJa ? "もう一度会社名を教えてください。" : "What is your company name?");
         } else {
-          const reconfirmMsg = isUz 
+          speakStepMsg(isUz 
             ? `Kompaniya nomini "${tempResumeDataRef.current.workCompany}" deb yozaymi? Ha yoki Yo'q.` 
-            : isJa ? `会社名は「${tempResumeDataRef.current.workCompany}」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Confirm company "${tempResumeDataRef.current.workCompany}"?`;
-          speakStepMsg(reconfirmMsg);
+            : isJa ? `会社名は「${tempResumeDataRef.current.workCompany}」でよろしいですか？` 
+            : `Confirm company "${tempResumeDataRef.current.workCompany}"?`);
         }
         break;
 
       case 'ask_work_position':
         setTempResumeData(prev => ({ ...prev, workPosition: cleanText }));
         setResumeStep('confirm_work_position');
-        const workPositionConfirmMsg = isUz 
+        speakStepMsg(isUz 
           ? `Lavozimingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
           : isJa ? `職種は「${cleanText}」でよろしいですか？` 
-          : `Is your position "${cleanText}"? Confirm?`;
-        speakStepMsg(workPositionConfirmMsg);
+          : `Is your position "${cleanText}"? Confirm?`);
         break;
 
       case 'confirm_work_position':
         if (isPositive) {
           setResumeStep('ask_work_start_year');
-          const workStartYearAskMsg = isUz 
+          speakStepMsg(isUz 
             ? "Ushbu ishda qaysi yildan boshlab ishlagansiz (Masalan: 2022)?" 
             : isJa ? "その仕事を開始した年を教えてください（例：2022年）。" 
-            : "Please state the year you started this job (e.g., 2022).";
-          speakStepMsg(workStartYearAskMsg);
+            : "Please state the year you started this job (e.g., 2022).");
         } else if (isNegative) {
           setResumeStep('ask_work_position');
-          const repeatWorkPositionMsg = isUz 
-            ? "Qaytadan ayting, lavozimingiz nima edi?" 
-            : isJa ? "もう一度職種を教えてください。" 
-            : "What is your position?";
-          speakStepMsg(repeatWorkPositionMsg);
+          speakStepMsg(isUz ? "Qaytadan lavozimingizni ayting." : isJa ? "もう一度職種を教えてください。" : "What is your position?");
         } else {
-          const reconfirmMsg = isUz 
+          speakStepMsg(isUz 
             ? `Lavozimingizni "${tempResumeDataRef.current.workPosition}" deb yozaymi? Ha yoki Yo'q.` 
-            : isJa ? `職種は「${tempResumeDataRef.current.workPosition}」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Confirm position "${tempResumeDataRef.current.workPosition}"?`;
-          speakStepMsg(reconfirmMsg);
+            : isJa ? `職種は「${tempResumeDataRef.current.workPosition}」でよろしいですか？` 
+            : `Confirm position "${tempResumeDataRef.current.workPosition}"?`);
         }
         break;
 
@@ -1248,40 +1636,32 @@ export default function VoiceAssistant({
         const parsedWorkStartYear = cleanText.match(/\d{4}/)?.[0] || cleanText;
         setTempResumeData(prev => ({ ...prev, workStartYear: parsedWorkStartYear }));
         setResumeStep('confirm_work_start_year');
-        const workStartYearConfirmMsg = isUz 
+        speakStepMsg(isUz 
           ? `Ish boshlagan yilingizni "${parsedWorkStartYear}" deb yozaymi? Tasdiqlaysizmi?` 
           : isJa ? `勤務開始年は「${parsedWorkStartYear}年」でよろしいですか？` 
-          : `Is the start year "${parsedWorkStartYear}"? Confirm?`;
-        speakStepMsg(workStartYearConfirmMsg);
+          : `Is the start year "${parsedWorkStartYear}"? Confirm?`);
         break;
 
       case 'confirm_work_start_year':
         if (isPositive) {
           setResumeStep('ask_work_current');
-          const workCurrentAskMsg = isUz 
+          speakStepMsg(isUz 
             ? "Ushbu ish joyida hali ham ishlaysizmi? Ha yoki Yo'q deb javob bering." 
             : isJa ? "現在もその仕事に在籍していますか？はい、か、いいえ、で教えてください。" 
-            : "Are you still working at this company? Please answer Yes or No.";
-          speakStepMsg(workCurrentAskMsg);
+            : "Are you still working at this company? Please answer Yes or No.");
         } else if (isNegative) {
           setResumeStep('ask_work_start_year');
-          const repeatWorkStartYearMsg = isUz 
-            ? "Qaytadan ayting, qaysi yilda ish boshlagansiz?" 
-            : isJa ? "もう一度開始年を教えてください。" 
-            : "What is the start year?";
-          speakStepMsg(repeatWorkStartYearMsg);
+          speakStepMsg(isUz ? "Qaytadan ish boshlagan yilingizni ayting." : isJa ? "もう一度開始年を教えてください。" : "What is the start year?");
         } else {
-          const reconfirmMsg = isUz 
+          speakStepMsg(isUz 
             ? `Boshlagan yilingizni "${tempResumeDataRef.current.workStartYear}" deb yozaymi? Ha yoki Yo'q.` 
-            : isJa ? `勤務開始年は「${tempResumeDataRef.current.workStartYear}年」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Confirm start year "${tempResumeDataRef.current.workStartYear}"?`;
-          speakStepMsg(reconfirmMsg);
+            : isJa ? `勤務開始年は「${tempResumeDataRef.current.workStartYear}年」でよろしいですか？` 
+            : `Confirm start year "${tempResumeDataRef.current.workStartYear}"?`);
         }
         break;
 
       case 'ask_work_current':
         if (isPositive) {
-          // Still working there: set current = true and endDate = ''
           const workObj = {
             company: tempResumeDataRef.current.workCompany,
             position: tempResumeDataRef.current.workPosition,
@@ -1291,31 +1671,22 @@ export default function VoiceAssistant({
           };
           triggerUpdate('workHistory', [workObj]);
 
-          setIsFillingResume(false);
-          setResumeStep('idle');
-          const finishedMsg = isUz 
-            ? "Ajoyib! Rezyume tayyor." 
-            : isJa ? "素晴らしい！履歴書が完成しました。" 
-            : "Excellent! Your resume is ready.";
-          
-          setAiResponseText(finishedMsg);
-          setStatus('speaking');
-          speakResponse(finishedMsg, lang, () => {
-            setStatus('idle');
-          });
+          setResumeStep('ask_motivation');
+          speakStepMsg(isUz
+            ? "Kompaniyaga ishga kirishdan maqsadingiz (motivatsiya) nima?"
+            : isJa ? "次に、この求人を志望する動機（志望動機）を教えてください。"
+            : "Excellent. Next, please state your job motivation.");
         } else if (isNegative) {
           setResumeStep('ask_work_end_year');
-          const workEndYearAskMsg = isUz 
+          speakStepMsg(isUz 
             ? "Ushbu ishdan qaysi yilda bo'shagansiz (Masalan: 2024)?" 
             : isJa ? "その退職した年を教えてください（例：2024年）。" 
-            : "Please state the year you left this job (e.g., 2024).";
-          speakStepMsg(workEndYearAskMsg);
+            : "Please state the year you left this job (e.g., 2024).");
         } else {
-          const reconfirmMsg = isUz 
+          speakStepMsg(isUz 
             ? `Ushbu ishda hali ham ishlaysizmi? Ha yoki Yo'q deb javob bering.` 
             : isJa ? `現在もそのお仕事に在籍していますか？はい、か、いいえ、で教えてください。` 
-            : `Are you still working there? Yes or No.`;
-          speakStepMsg(reconfirmMsg);
+            : `Are you still working there? Yes or No.`);
         }
         break;
 
@@ -1323,11 +1694,10 @@ export default function VoiceAssistant({
         const parsedWorkEndYear = cleanText.match(/\d{4}/)?.[0] || cleanText;
         setTempResumeData(prev => ({ ...prev, workEndYear: parsedWorkEndYear }));
         setResumeStep('confirm_work_end_year');
-        const workEndYearConfirmMsg = isUz 
+        speakStepMsg(isUz 
           ? `Bo'shagan yilingizni "${parsedWorkEndYear}" deb yozaymi? Tasdiqlaysizmi?` 
           : isJa ? `退職年は「${parsedWorkEndYear}年」でよろしいですか？` 
-          : `Is the end year "${parsedWorkEndYear}"? Confirm?`;
-        speakStepMsg(workEndYearConfirmMsg);
+          : `Is the end year "${parsedWorkEndYear}"? Confirm?`);
         break;
 
       case 'confirm_work_end_year':
@@ -1341,31 +1711,131 @@ export default function VoiceAssistant({
           };
           triggerUpdate('workHistory', [workObj]);
 
-          setIsFillingResume(false);
-          setResumeStep('idle');
-          const finishedMsg = isUz 
-            ? "Ajoyib! Rezyume tayyor." 
-            : isJa ? "素晴らしい！履歴書が完成しました。" 
-            : "Excellent! Your resume is ready.";
-          
-          setAiResponseText(finishedMsg);
-          setStatus('speaking');
-          speakResponse(finishedMsg, lang, () => {
-            setStatus('idle');
-          });
+          setResumeStep('ask_motivation');
+          speakStepMsg(isUz
+            ? "Tushunarli. Kompaniyaga ishga kirishdan maqsadingiz (motivatsiya) nima?"
+            : isJa ? "ありがとうございます。次に、志望動機を教えてください。"
+            : "Got it. Next, please state your job motivation.");
         } else if (isNegative) {
           setResumeStep('ask_work_end_year');
-          const repeatWorkEndYearMsg = isUz 
-            ? "Qaytadan ayting, qaysi yilda ishdan bo'shagansiz?" 
-            : isJa ? "もう一度退職した年を教えてください。" 
-            : "What is the end year?";
-          speakStepMsg(repeatWorkEndYearMsg);
+          speakStepMsg(isUz ? "Qaytadan ishdan bo'shagan yilingizni ayting." : isJa ? "もう一度退職した年を教えてください。" : "What is the end year?");
         } else {
-          const reconfirmMsg = isUz 
+          speakStepMsg(isUz 
             ? `Tugatgan yilingizni "${tempResumeDataRef.current.workEndYear}" deb yozaymi? Ha yoki Yo'q.` 
-            : isJa ? `退職年は「${tempResumeDataRef.current.workEndYear}年」でよろしいですか？はい、か、いいえ、で教えてください。` 
-            : `Confirm end year "${tempResumeDataRef.current.workEndYear}"?`;
-          speakStepMsg(reconfirmMsg);
+            : isJa ? `退職年は「${tempResumeDataRef.current.workEndYear}年」でよろしいですか？` 
+            : `Confirm end year "${tempResumeDataRef.current.workEndYear}"?`);
+        }
+        break;
+
+      case 'ask_motivation':
+        setTempResumeData(prev => ({ ...prev, motivation: cleanText }));
+        setResumeStep('confirm_motivation');
+        speakStepMsg(isUz
+          ? `Ishga kirish maqsadingizni "${cleanText}" deb yozaymi?`
+          : isJa ? `志望動機は「${cleanText}」で登録しますか？`
+          : `Confirm motivation "${cleanText}"?`);
+        break;
+
+      case 'confirm_motivation':
+        if (isPositive) {
+          triggerUpdate('motivation', tempResumeDataRef.current.motivation);
+          setResumeStep('ask_selfpr');
+          speakStepMsg(isUz
+            ? "O'zingiz haqingizda qisqacha ma'lumot (Self-PR) bering."
+            : isJa ? "次に、ご自身の自己PRを教えてください。"
+            : "Got it. Next, please share your self-PR.");
+        } else if (isNegative) {
+          setResumeStep('ask_motivation');
+          speakStepMsg(isUz ? "Qaytadan motivatsiyani ayting." : isJa ? "もう一度志望動機を教えてください。" : "What is your motivation?");
+        } else {
+          speakStepMsg(isUz 
+            ? `Motivatsiyangiz "${tempResumeDataRef.current.motivation}"?` 
+            : isJa ? `志望動機は「${tempResumeDataRef.current.motivation}」でよろしいですか？` 
+            : `Confirm motivation?`);
+        }
+        break;
+
+      case 'ask_selfpr':
+        setTempResumeData(prev => ({ ...prev, selfPR: cleanText }));
+        setResumeStep('confirm_selfpr');
+        speakStepMsg(isUz
+          ? `O'ziz haqingizdagi ma'lumotni "${cleanText}" deb yozaymi?`
+          : isJa ? `自己PRは「${cleanText}」で登録しますか？`
+          : `Confirm self-PR "${cleanText}"?`);
+        break;
+
+      case 'confirm_selfpr':
+        if (isPositive) {
+          triggerUpdate('selfPR', tempResumeDataRef.current.selfPR);
+          setResumeStep('ask_hobbies');
+          speakStepMsg(isUz
+            ? "Qiziqishlaringiz va hobbilarini ayting."
+            : isJa ? "次に、趣味や特技を教えてください。"
+            : "Great. Next, what are your hobbies and interests?");
+        } else if (isNegative) {
+          setResumeStep('ask_selfpr');
+          speakStepMsg(isUz ? "Qaytadan o'zingiz haqingizda gapiring." : isJa ? "もう一度自己PRを教えてください。" : "What is your self-PR?");
+        } else {
+          speakStepMsg(isUz 
+            ? `Self-PR: "${tempResumeDataRef.current.selfPR}"?` 
+            : isJa ? `自己PRは「${tempResumeDataRef.current.selfPR}」でよろしいですか？` 
+            : `Confirm self-PR?`);
+        }
+        break;
+
+      case 'ask_hobbies':
+        setTempResumeData(prev => ({ ...prev, hobbies: cleanText }));
+        setResumeStep('confirm_hobbies');
+        speakStepMsg(isUz
+          ? `Hobbilarizni "${cleanText}" deb yozaymi?`
+          : isJa ? `趣味は「${cleanText}」で登録しますか？`
+          : `Confirm hobbies "${cleanText}"?`);
+        break;
+
+      case 'confirm_hobbies':
+        if (isPositive) {
+          triggerUpdate('hobbies', tempResumeDataRef.current.hobbies);
+          setResumeStep('ask_personalrequests');
+          speakStepMsg(isUz
+            ? "Kompaniyaga shaxsiy iltimoslaringiz bormi? (Bo'lmasa, Yo'q deb javob bering)"
+            : isJa ? "最後に、本人希望記入欄について教えてください（特になければ、特になしと教えてください）。"
+            : "Lastly, do you have any personal requests for the company?");
+        } else if (isNegative) {
+          setResumeStep('ask_hobbies');
+          speakStepMsg(isUz ? "Qaytadan hobbilarizni ayting." : isJa ? "もう一度趣味を教えてください。" : "What are your hobbies?");
+        } else {
+          speakStepMsg(isUz 
+            ? `Hobbilar: "${tempResumeDataRef.current.hobbies}"?` 
+            : isJa ? `趣味は「${tempResumeDataRef.current.hobbies}」でよろしいですか？` 
+            : `Confirm hobbies?`);
+        }
+        break;
+
+      case 'ask_personalrequests':
+        let personalReq = cleanText;
+        if (/(yo'q|yoq|no|なし|特になし|none|nothing)/i.test(lowerText)) {
+          personalReq = '貴社規定に従います。';
+        }
+        setTempResumeData(prev => ({ ...prev, personalRequests: personalReq }));
+        setResumeStep('confirm_personalrequests');
+        speakStepMsg(isUz
+          ? `Shaxsiy iltimoslarni "${personalReq}" deb belgilaymi?`
+          : isJa ? `本人希望記入欄は「${personalReq}」で登録しますか？`
+          : `Confirm requests "${personalReq}"?`);
+        break;
+
+      case 'confirm_personalrequests':
+        if (isPositive) {
+          triggerUpdate('personalRequests', tempResumeDataRef.current.personalRequests);
+          finishResumeFlow(lang, isUz, isJa);
+        } else if (isNegative) {
+          setResumeStep('ask_personalrequests');
+          speakStepMsg(isUz ? "Qaytadan iltimoslaringizni ayting." : isJa ? "もう一度希望条件を教えてください。" : "What are your requests?");
+        } else {
+          speakStepMsg(isUz 
+            ? `Iltimoslar "${tempResumeDataRef.current.personalRequests}"?` 
+            : isJa ? `希望欄は「${tempResumeDataRef.current.personalRequests}」でよろしいですか？` 
+            : `Confirm requests?`);
         }
         break;
 
@@ -1375,6 +1845,21 @@ export default function VoiceAssistant({
         setStatus('idle');
         break;
     }
+  };
+
+  const finishResumeFlow = (lang, isUz, isJa) => {
+    setIsFillingResume(false);
+    setResumeStep('idle');
+    const finishedMsg = isUz 
+      ? "Ajoyib! Rezyume tayyor." 
+      : isJa ? "素晴らしい！履歴書が完成しました。" 
+      : "Excellent! Your resume is ready.";
+    
+    setAiResponseText(finishedMsg);
+    setStatus('speaking');
+    speakResponse(finishedMsg, lang, () => {
+      setStatus('idle');
+    });
   };
 
   const speakStepMsg = (msg) => {
@@ -2090,15 +2575,33 @@ Return ONLY the raw JSON object, no markdown wrappers.
       { role: 'model', parts: [{ text: aiResult.response }] }
     ]);
 
-    // Execute the command immediately for instant UX feedback
-    executeVoiceCommand(aiResult.command, aiResult);
+    const isDelayedCommand = [
+      'NAVIGATE_TO_HOME', 'NAVIGATE_TO_JOBS', 'NAVIGATE_TO_ACADEMY',
+      'NAVIGATE_TO_SERVICE', 'NAVIGATE_TO_PROFILE', 'OPEN_RESUME',
+      'FILTER_JOBS', 'FILTER_ACADEMIES', 'GO_BACK', 'TOGGLE_THEME',
+      'NAVIGATE_TO_NOTIFICATIONS', 'NAVIGATE_TO_SETTINGS', 'NAVIGATE_TO_APPLICATIONS',
+      'NAVIGATE_TO_SAVED', 'NAVIGATE_TO_SHOUKAI', 'NAVIGATE_TO_MY_ADS',
+      'NAVIGATE_TO_EMPLOYEES', 'NAVIGATE_TO_PERSONAL_INFO', 'SELECT_JOB_BY_NAME'
+    ].includes(aiResult.command);
+
+    if (!isDelayedCommand) {
+      // Execute the command immediately for instant UX feedback (e.g. music play/pause)
+      executeVoiceCommand(aiResult.command, aiResult);
+    }
 
     speakResponse(aiResult.response, detectedLang, () => {
+      if (isDelayedCommand) {
+        // Wait 500ms after speaking finishes before executing navigation/close commands
+        setTimeout(() => {
+          executeVoiceCommand(aiResult.command, aiResult);
+        }, 500);
+      }
+      
       if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
       pillTimeoutRef.current = setTimeout(() => {
         setShowPill(false);
         if (isVoiceStandbyRef.current) scheduleRelisten();
-      }, 3500);
+      }, isDelayedCommand ? 1200 : 3500);
     });
   };
 
@@ -2111,11 +2614,14 @@ Return ONLY the raw JSON object, no markdown wrappers.
     const isNavigationCommand = [
       'NAVIGATE_TO_HOME', 'NAVIGATE_TO_JOBS', 'NAVIGATE_TO_ACADEMY',
       'NAVIGATE_TO_SERVICE', 'NAVIGATE_TO_PROFILE', 'OPEN_RESUME',
-      'FILTER_JOBS', 'FILTER_ACADEMIES', 'GO_BACK'
+      'FILTER_JOBS', 'FILTER_ACADEMIES', 'GO_BACK',
+      'NAVIGATE_TO_NOTIFICATIONS', 'NAVIGATE_TO_SETTINGS', 'NAVIGATE_TO_APPLICATIONS',
+      'NAVIGATE_TO_SAVED', 'NAVIGATE_TO_SHOUKAI', 'NAVIGATE_TO_MY_ADS',
+      'NAVIGATE_TO_EMPLOYEES', 'NAVIGATE_TO_PERSONAL_INFO', 'SELECT_JOB_BY_NAME'
     ].includes(command);
 
     if (isNavigationCommand) {
-      if (setSelectedJobRef.current) setSelectedJobRef.current(null);
+      if (setSelectedJobRef.current && command !== 'SELECT_JOB_BY_NAME') setSelectedJobRef.current(null);
       if (setSelectedSchoolRef.current) setSelectedSchoolRef.current(null);
     }
 
@@ -2144,6 +2650,47 @@ Return ONLY the raw JSON object, no markdown wrappers.
         break;
       case 'NAVIGATE_TO_PROFILE':
         if (setActiveTabRef.current) setActiveTabRef.current('profile');
+        if (setProfileActivePageRef.current) setProfileActivePageRef.current('main');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
+      case 'NAVIGATE_TO_NOTIFICATIONS':
+        if (setActiveTabRef.current) setActiveTabRef.current('profile');
+        if (setProfileActivePageRef.current) setProfileActivePageRef.current('notifications');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
+      case 'NAVIGATE_TO_SETTINGS':
+        if (setActiveTabRef.current) setActiveTabRef.current('profile');
+        if (setProfileActivePageRef.current) setProfileActivePageRef.current('settings');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
+      case 'NAVIGATE_TO_APPLICATIONS':
+        if (setActiveTabRef.current) setActiveTabRef.current('profile');
+        if (setProfileActivePageRef.current) setProfileActivePageRef.current('applications');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
+      case 'NAVIGATE_TO_SAVED':
+        if (setActiveTabRef.current) setActiveTabRef.current('profile');
+        if (setProfileActivePageRef.current) setProfileActivePageRef.current('saved_items');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
+      case 'NAVIGATE_TO_SHOUKAI':
+        if (setActiveTabRef.current) setActiveTabRef.current('profile');
+        if (setProfileActivePageRef.current) setProfileActivePageRef.current('my_shoukai');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
+      case 'NAVIGATE_TO_MY_ADS':
+        if (setActiveTabRef.current) setActiveTabRef.current('profile');
+        if (setProfileActivePageRef.current) setProfileActivePageRef.current('my_ads');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
+      case 'NAVIGATE_TO_EMPLOYEES':
+        if (setActiveTabRef.current) setActiveTabRef.current('profile');
+        if (setProfileActivePageRef.current) setProfileActivePageRef.current('employees');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
+      case 'NAVIGATE_TO_PERSONAL_INFO':
+        if (setActiveTabRef.current) setActiveTabRef.current('profile');
+        if (setProfileActivePageRef.current) setProfileActivePageRef.current('personalInfo');
         if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'MUSIC_PLAY':
@@ -2172,17 +2719,27 @@ Return ONLY the raw JSON object, no markdown wrappers.
         }
         if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
+      case 'MUSIC_PREV':
+        if (activeMusicPlayer && typeof activeMusicPlayer.prevTrack === 'function') {
+          activeMusicPlayer.prevTrack();
+        }
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
       case 'READ_SCREEN':
         // Prompt covers screen context organically
         break;
       case 'TOGGLE_THEME':
-        const isDark = document.documentElement.classList.contains('dark-mode');
-        if (isDark) {
-          document.documentElement.classList.remove('dark-mode');
-          document.documentElement.classList.add('light-mode');
+        if (toggleDarkModeRef.current) {
+          toggleDarkModeRef.current();
         } else {
-          document.documentElement.classList.remove('light-mode');
-          document.documentElement.classList.add('dark-mode');
+          const isDark = document.documentElement.classList.contains('dark-mode');
+          if (isDark) {
+            document.documentElement.classList.remove('dark-mode');
+            document.documentElement.classList.add('light-mode');
+          } else {
+            document.documentElement.classList.remove('light-mode');
+            document.documentElement.classList.add('dark-mode');
+          }
         }
         if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
@@ -2219,7 +2776,6 @@ Return ONLY the raw JSON object, no markdown wrappers.
         
         speakResponse(welcomeMsg, welcomeLang, () => {
           setStatus('idle');
-          // Start Speech Recognition automatically so user can answer without pressing anything!
           startLocalSpeechRecognition();
         });
         break;
@@ -2277,9 +2833,9 @@ Return ONLY the raw JSON object, no markdown wrappers.
         break;
       case 'SHARE_CURRENT':
         if (selectedJob && handleShoukai) {
-          handleShoukai(selectedJob.id);
+          handleShoukai(selectedJob);
         } else if (selectedSchool && handleShoukai) {
-          handleShoukai(selectedSchool.id);
+          handleShoukai(selectedSchool);
         }
         if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
@@ -2287,6 +2843,19 @@ Return ONLY the raw JSON object, no markdown wrappers.
         const activeItem = selectedJob || selectedSchool;
         if (activeItem && activeItem.phone) {
           window.open(`tel:${activeItem.phone}`);
+        }
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
+      case 'SELECT_JOB_BY_NAME':
+        const searchVal = (result.parameters?.name || '').toLowerCase();
+        if (searchVal && jobs && setSelectedJobRef.current) {
+          const found = jobs.find(j => 
+            j.title.toLowerCase().includes(searchVal) || 
+            j.companyName.toLowerCase().includes(searchVal)
+          );
+          if (found) {
+            setSelectedJobRef.current(found);
+          }
         }
         if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;

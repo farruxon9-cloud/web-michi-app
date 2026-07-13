@@ -1073,6 +1073,7 @@ function App() {
         setSelectedPrefecture={setSelectedPrefecture}
         setProfileActivePage={setProfileActivePage}
         setApplications={setApplications}
+        toggleDarkMode={() => setDarkMode(prev => !prev)}
       />
 
       <audio 

@@ -38,9 +38,9 @@ export const VOICE_LEXICON = [
       en: ['home', 'go home', 'dashboard', 'main page']
     },
     responses: {
-      uz: "Bosh sahifaga o'tilmoqda.",
-      ja: "ホーム画面に移動します。",
-      en: "Navigating to home page."
+      uz: "Xo'p, bosh sahifaga o'tkazaman!",
+      ja: "はい、ホーム画面に移動いたします！",
+      en: "Sure, navigating to home page!"
     }
   },
   {
@@ -51,9 +51,9 @@ export const VOICE_LEXICON = [
       en: ['jobs', 'job listings', 'find jobs', 'vacancies', 'work']
     },
     responses: {
-      uz: "Ish e'lonlari sahifasiga o'tilmoqda.",
-      ja: "求人情報ページに移動します。",
-      en: "Opening job listings."
+      uz: "Xo'p, ish e'lonlari sahifasiga o'tkazaman!",
+      ja: "はい、求人情報ページに移動いたします！",
+      en: "Sure, opening job listings!"
     }
   },
   {
@@ -64,9 +64,9 @@ export const VOICE_LEXICON = [
       en: ['academy', 'driving school', 'license school', 'courses']
     },
     responses: {
-      uz: "Avtomaktablar sahifasiga o'tilmoqda.",
-      ja: "自動車学校のページに移動します。",
-      en: "Opening driving schools page."
+      uz: "Xo'p, avtomaktablar sahifasiga o'tkazaman!",
+      ja: "はい、自動車学校のページに移動いたします！",
+      en: "Sure, opening driving schools page!"
     }
   },
   {
@@ -77,22 +77,22 @@ export const VOICE_LEXICON = [
       en: ['service', 'services', 'coming soon']
     },
     responses: {
-      uz: "Xizmatlar bo'limiga o'tilmoqda.",
-      ja: "サービスページに移動します。",
-      en: "Opening services page."
+      uz: "Xo'p, xizmatlar bo'limiga o'tkazaman!",
+      ja: "はい、サービスページに移動いたします！",
+      en: "Sure, opening services page!"
     }
   },
   {
     command: 'NAVIGATE_TO_PROFILE',
     patterns: {
-      uz: ['profilim', 'profilni och', 'mening sahifam', 'kabinetim', 'sozlamalar', 'shaxsiy kabinet', 'kabinetga', 'profile', 'my page', 'settings', 'profilimga o\'tish', 'profilimga otish'],
-      ja: ['マイページ', 'プロフィール', '設定', 'マイアカウント'],
-      en: ['profile', 'my page', 'settings', 'account']
+      uz: ['profilim', 'profilni och', 'mening sahifam', 'kabinetim', 'shaxsiy kabinet', 'kabinetga', 'profile', 'my page', 'profilimga o\'tish', 'profilimga otish'],
+      ja: ['マイページ', 'プロフィール', 'マイアカウント'],
+      en: ['profile', 'my page', 'account']
     },
     responses: {
-      uz: "Profil sahifasiga o'tilmoqda.",
-      ja: "マイページに移動します。",
-      en: "Navigating to profile."
+      uz: "Xo'p, profil sahifasiga o'tkazaman!",
+      ja: "はい、マイページに移動いたします！",
+      en: "Sure, navigating to profile!"
     }
   },
   {
@@ -103,63 +103,79 @@ export const VOICE_LEXICON = [
       en: ['back', 'go back', 'return', 'close']
     },
     responses: {
-      uz: "Orqaga qaytilmoqda.",
-      ja: "前に戻ります。",
-      en: "Going back."
+      uz: "Xo'p, orqaga qaytaraman!",
+      ja: "はい、前に戻ります！",
+      en: "Sure, going back!"
     }
   },
+  // ==================== MUSIC CONTROLS ====================
   {
     command: 'MUSIC_PLAY',
     patterns: {
-      uz: ['musiqa qo\'y', 'musiqa qoy', 'musiqani yoq', 'qo\'shiq qo\'y', 'qoshiq qoy', 'qo\'shiqni qo\'y', 'qoshiqni qoy', 'yoq', 'boshla', 'ijro et', 'ijro', 'chal', 'pusk', 'play', 'music on', 'turn on music', 'musiqani boshla'],
+      uz: ['musiqa qo\'y', 'musiqa qoy', 'musiqani yoq', 'qo\'shiq qo\'y', 'qoshiq qoy', 'qo\'shiqni qo\'y', 'qoshiqni qoy', 'ijro et', 'ijro', 'chal', 'pusk', 'play', 'music on', 'turn on music', 'musiqani boshla'],
       ja: ['音楽', '曲', 'かけて', '流して', '再生', 'プレイ', 'スタート', 'ミュージック', '音楽をかけて', '曲をかけて', '音楽再生'],
-      en: ['play', 'music', 'play music', 'resume music', 'turn on music']
+      en: ['play', 'play music', 'resume music', 'turn on music']
     },
     responses: {
-      uz: "Musiqa qo'yilmoqda.",
-      ja: "音楽を再生します。",
-      en: "Playing music."
+      uz: "Musiqa qo'yaman!",
+      ja: "音楽を再生いたします！",
+      en: "Playing music!"
     }
   },
   {
     command: 'MUSIC_PAUSE',
     patterns: {
-      uz: ['to\'xtat', 'toxtat', 'o\'chir', 'ochir', 'uchir', 'pauza', 'jim', 'stop', 'pause', 'mute', 'turn off music', 'musiqani o\'chir', 'musiqani ochir', 'qo\'shiqni o\'chir', 'qoshiqni ochir', 'o\'chirish', 'ochirish', 'musiqani to\'xtat', 'musiqani toxtat'],
+      uz: ['to\'xtat', 'toxtat', 'pauza', 'jim', 'stop', 'pause', 'mute', 'turn off music', 'musiqani o\'chir', 'musiqani ochir', 'qo\'shiqni o\'chir', 'qoshiqni ochir', 'musiqani to\'xtat', 'musiqani toxtat'],
       ja: ['止めて', '停止', 'ストップ', '消して', 'オフ', '静かに', '一時停止', '曲を止めて', '音楽を止めて', '音楽停止', 'ミュート', '音楽オフ', 'とめろ', 'とめて'],
       en: ['pause', 'stop', 'mute', 'turn off music', 'quiet']
     },
     responses: {
-      uz: "Musiqa to'xtatildi.",
-      ja: "音楽を停止します。",
-      en: "Pausing music."
+      uz: "Musiqani to'xtataman!",
+      ja: "音楽を停止いたします！",
+      en: "Pausing music!"
     }
   },
   {
     command: 'MUSIC_NEXT',
     patterns: {
-      uz: ['keyingi', 'oldinga', 'skip', 'o\'tkaz', 'otkaz', 'keyingisi', 'almashtir', 'boshqa qo\'shiq', 'next track', 'next song', 'boshqasi'],
+      uz: ['keyingi', 'oldinga', 'keyingisi', 'almashtir', 'boshqa qo\'shiq', 'next track', 'next song', 'boshqasi', 'keyingi qo\'shiq'],
       ja: ['次の曲', '次へ', 'ネクスト', 'スキップ', '変えて', 'かえて', '次のトラック', '次'],
-      en: ['next', 'skip', 'forward', 'another song', 'next song']
+      en: ['next', 'skip', 'forward', 'another song', 'next song', 'next track']
     },
     responses: {
-      uz: "Keyingi qo'shiqni qo'yaman.",
-      ja: "次の曲を再生します。",
-      en: "Playing next track."
+      uz: "Keyingi qo'shiqni qo'yaman!",
+      ja: "次の曲を再生いたします！",
+      en: "Playing next track!"
     }
   },
   {
+    command: 'MUSIC_PREV',
+    patterns: {
+      uz: ['oldingi', 'oldingisi', 'oldingi qo\'shiq', 'avvalgi', 'avvalgi qo\'shiq', 'orqaga qo\'shiq', 'previous'],
+      ja: ['前の曲', '前へ', '前のトラック', '戻して', 'もどして'],
+      en: ['previous', 'previous song', 'previous track', 'go back song']
+    },
+    responses: {
+      uz: "Oldingi qo'shiqni qo'yaman!",
+      ja: "前の曲を再生いたします！",
+      en: "Playing previous track!"
+    }
+  },
+  // ==================== THEME & LANGUAGE ====================
+  {
     command: 'TOGGLE_THEME',
     patterns: {
-      uz: ['tema', 'tungi rejim', 'mavzu', 'rang', 'qorong\'i', 'yorug\'', 'tun', 'kun', 'switch theme', 'dark mode', 'light mode', 'temani almashtir'],
+      uz: ['tema', 'tungi rejim', 'mavzu', 'qorong\'i', 'yorug\'', 'tun', 'kun', 'switch theme', 'dark mode', 'light mode', 'temani almashtir'],
       ja: ['テーマ', 'ダークモード', 'ライトモード', '黒', '白', '明るく', '暗く', 'モード切り替え', 'カラーテーマ', 'テーマ切り替え'],
       en: ['theme', 'dark mode', 'light mode', 'change theme', 'colors']
     },
     responses: {
-      uz: "Mavzuni o'zgartiraman.",
-      ja: "テーマを切り替えます。",
-      en: "Switching app theme."
+      uz: "Mavzuni o'zgartiraman!",
+      ja: "テーマを切り替えます！",
+      en: "Switching app theme!"
     }
   },
+  // ==================== RESUME ====================
   {
     command: 'OPEN_RESUME',
     patterns: {
@@ -168,9 +184,9 @@ export const VOICE_LEXICON = [
       en: ['resume', 'cv', 'resume builder', 'curriculum vitae']
     },
     responses: {
-      uz: "Rezyume yaratish bo'limini ochaman.",
-      ja: "履歴書作成画面を開きます。",
-      en: "Opening resume builder."
+      uz: "Rezyume yaratish bo'limini ochaman!",
+      ja: "履歴書作成画面を開きます！",
+      en: "Opening resume builder!"
     }
   },
   {
@@ -181,9 +197,9 @@ export const VOICE_LEXICON = [
       en: ["clear resume", "reset resume", "clear form", "delete inputs", "reset form"]
     },
     responses: {
-      uz: "Rezyume ma'lumotlari butunlay tozalandi.",
-      ja: "履歴書データをすべて消去しました。",
-      en: "Resume form inputs have been cleared."
+      uz: "Rezyume ma'lumotlari butunlay tozalandi!",
+      ja: "履歴書データをすべて消去いたしました！",
+      en: "Resume form inputs have been cleared!"
     }
   },
   {
@@ -194,9 +210,114 @@ export const VOICE_LEXICON = [
       en: ["clear applications", "delete applications", "clear applied jobs", "clear history"]
     },
     responses: {
-      uz: "Bajarilgan arizalar ro'yxati tozalandi.",
-      ja: "応募履歴をすべて消去しました。",
-      en: "Applied jobs list has been cleared."
+      uz: "Arizalar ro'yxati tozalandi!",
+      ja: "応募履歴をすべて消去いたしました！",
+      en: "Applied jobs list has been cleared!"
+    }
+  },
+  // ==================== PROFILE SUB-PAGE NAVIGATION ====================
+  {
+    command: 'NAVIGATE_TO_NOTIFICATIONS',
+    patterns: {
+      uz: ['bildirishnomalar', 'bildirishnoma', 'xabarlar', 'xabarnomalar', 'notifications', 'bildirishnomalarni och', 'xabarlarni ko\'rsat'],
+      ja: ['通知', 'お知らせ', '通知一覧', 'お知らせを見せて', '通知を開いて'],
+      en: ['notifications', 'alerts', 'show notifications', 'open notifications']
+    },
+    responses: {
+      uz: "Xo'p, bildirishnomalarni ochaman!",
+      ja: "はい、通知一覧を開きます！",
+      en: "Sure, opening notifications!"
+    }
+  },
+  {
+    command: 'NAVIGATE_TO_SETTINGS',
+    patterns: {
+      uz: ['sozlamalar', 'sozlash', 'settings', 'sozlamalarni och', 'sozlamalarni ko\'rsat'],
+      ja: ['設定', '設定を開いて', '設定画面'],
+      en: ['settings', 'open settings', 'preferences']
+    },
+    responses: {
+      uz: "Xo'p, sozlamalarni ochaman!",
+      ja: "はい、設定画面を開きます！",
+      en: "Sure, opening settings!"
+    }
+  },
+  {
+    command: 'NAVIGATE_TO_APPLICATIONS',
+    patterns: {
+      uz: ['arizalarim', 'arizalar', 'yuborgan arizalar', 'mening arizalarim', 'ariza holati', 'my applications'],
+      ja: ['応募一覧', '応募履歴', '応募状況', '私の応募', '応募を見せて'],
+      en: ['my applications', 'applications', 'applied jobs', 'application status']
+    },
+    responses: {
+      uz: "Xo'p, arizalaringizni ko'rsataman!",
+      ja: "はい、応募一覧を開きます！",
+      en: "Sure, showing your applications!"
+    }
+  },
+  {
+    command: 'NAVIGATE_TO_SAVED',
+    patterns: {
+      uz: ['saqlangan', 'saqlangan ishlar', 'sevimlilar', 'bookmarklar', 'saqlanganlar', 'saqlangan ishlarni ko\'rsat'],
+      ja: ['保存した求人', 'お気に入り', 'ブックマーク', '保存一覧', 'お気に入りを見せて'],
+      en: ['saved', 'saved jobs', 'bookmarks', 'favorites', 'show saved']
+    },
+    responses: {
+      uz: "Xo'p, saqlangan ishlaringizni ko'rsataman!",
+      ja: "はい、保存した求人を開きます！",
+      en: "Sure, showing your saved items!"
+    }
+  },
+  {
+    command: 'NAVIGATE_TO_SHOUKAI',
+    patterns: {
+      uz: ['shoukai', 'tavsiya', 'tavsiyalar', 'do\'stlarga ulashish', 'do\'stlarga tavsiya', 'mening tavsiyalarim'],
+      ja: ['紹介', '紹介ページ', '紹介一覧', '紹介を見せて', 'しょうかい'],
+      en: ['shoukai', 'referrals', 'my referrals', 'referral page']
+    },
+    responses: {
+      uz: "Xo'p, Shoukai sahifasini ochaman!",
+      ja: "はい、紹介ページを開きます！",
+      en: "Sure, opening your referrals page!"
+    }
+  },
+  {
+    command: 'NAVIGATE_TO_MY_ADS',
+    patterns: {
+      uz: ['e\'lonlarim', 'elanlarim', 'mening e\'lonlarim', 'joylagan ishlarim', 'ishlarimni ko\'rsat'],
+      ja: ['求人広告', '掲載中の求人', '私の求人', '求人管理'],
+      en: ['my ads', 'posted jobs', 'my job listings', 'manage ads']
+    },
+    responses: {
+      uz: "Xo'p, e'lonlaringizni ko'rsataman!",
+      ja: "はい、掲載中の求人を開きます！",
+      en: "Sure, showing your posted ads!"
+    }
+  },
+  {
+    command: 'NAVIGATE_TO_EMPLOYEES',
+    patterns: {
+      uz: ['xodimlar', 'ishchilar', 'xodimlarni ko\'rsat', 'hr', 'kadrlar'],
+      ja: ['従業員', '従業員一覧', 'スタッフ', '人事', '従業員を見せて'],
+      en: ['employees', 'staff', 'hr', 'show employees', 'manage employees']
+    },
+    responses: {
+      uz: "Xo'p, xodimlar ro'yxatini ochaman!",
+      ja: "はい、従業員一覧を開きます！",
+      en: "Sure, opening employee list!"
+    }
+  },
+  {
+    command: 'NAVIGATE_TO_PERSONAL_INFO',
+    patterns: {
+      uz: ['shaxsiy ma\'lumotlar', 'shaxsiy ma\'lumotlarim', 'mening ma\'lumotlarim', 'personal info'],
+      ja: ['個人情報', '個人情報を開いて', '基本情報'],
+      en: ['personal info', 'personal information', 'my info', 'basic info']
+    },
+    responses: {
+      uz: "Xo'p, shaxsiy ma'lumotlaringizni ochaman!",
+      ja: "はい、個人情報を開きます！",
+      en: "Sure, opening your personal information!"
     }
   }
 ];
