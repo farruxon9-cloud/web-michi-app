@@ -120,6 +120,7 @@ export default function VoiceAssistant({
   tempResumeDataRef.current = tempResumeData;
 
   const hasGreetedRef = useRef(false);
+  const originalVolumeRef = useRef(null);
 
   // Monitor network status
   useEffect(() => {
@@ -132,6 +133,24 @@ export default function VoiceAssistant({
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  // Manage audio ducking based on voice assistant active status
+  useEffect(() => {
+    const activeMusicPlayer = musicPlayerRef.current;
+    if (!activeMusicPlayer || typeof activeMusicPlayer.setVolume !== 'function') return;
+
+    if (isActive && (status === 'listening' || status === 'speaking' || status === 'thinking')) {
+      if (originalVolumeRef.current === null) {
+        originalVolumeRef.current = activeMusicPlayer.volume !== undefined ? activeMusicPlayer.volume : 0.5;
+      }
+      activeMusicPlayer.setVolume(0.01); // Duck volume to 1% to eliminate background noise completely
+    } else {
+      if (originalVolumeRef.current !== null) {
+        activeMusicPlayer.setVolume(originalVolumeRef.current);
+        originalVolumeRef.current = null;
+      }
+    }
+  }, [isActive, status]);
 
   // Warm up synthesis voices
   useEffect(() => {
@@ -814,6 +833,41 @@ export default function VoiceAssistant({
     }
   }, [conversationHistory, status]);
 
+  // Helper to standardise conversational date/year/phone inputs using Gemini AI parsing
+  const parseResumeFieldWithGemini = async (step, text, isUz, isJa) => {
+    try {
+      let prompt = '';
+      if (step === 'ask_birthdate') {
+        prompt = `Foydalanuvchi o'zining tug'ilgan sanasini og'zaki aytdi: "${text}".
+Ushbu matndan tug'ilgan yil, oy va kunni aniqlab, faqat "YYYY-MM-DD" formatidagi sanani qaytaring. 
+Agar faqat yil aytilgan bo'lsa, Oyni 01, Kunni 01 qiling.
+Hech qanday boshqa so'z, izoh yoki tushuntirish yozmang. Faqat YYYY-MM-DD formatidagi qiymatni o'zini qaytaring. 
+Masalan, agar "to'qson beshinchi yil o'n beshinchi may" desa, javob: 1995-05-15`;
+      } else if (step === 'ask_postalcode') {
+        prompt = `Foydalanuvchi pochta indeksini aytdi: "${text}".
+Matndan faqat yaponcha pochta indeksini (7 ta raqam, masalan: 123-4567) aniqlab, faqat "XXX-XXXX" formatida qaytaring. Boshqa hech narsa yozmang.`;
+      } else if (step === 'ask_phone') {
+        prompt = `Foydalanuvchi telefon raqamini aytdi: "${text}".
+Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida qaytaring. Masalan: 080-1234-5678`;
+      } else if (step === 'ask_edu_start_year' || step === 'ask_edu_end_year' || step === 'ask_work_start_year' || step === 'ask_work_end_year') {
+        prompt = `Foydalanuvchi yilni aytdi: "${text}". Matndan faqat 4 xonali yilni aniqlab (masalan: 2020) qaytaring. Boshqa hech narsa yozmang.`;
+      } else {
+        return text;
+      }
+
+      const response = await fetchGeminiWithPool(
+        [{ role: 'user', parts: [{ text: prompt }] }],
+        "Siz yaponcha rezyume maydonlarini tozalovchi va formatlovchi yordamchisiz. Faqat so'ralgan formatlangan qiymatni qaytaring.",
+        "", ""
+      );
+      const cleaned = response.candidates[0].content.parts[0].text.trim();
+      return cleaned;
+    } catch (e) {
+      console.warn("Gemini birthdate helper parsing failed, using fallback:", e);
+      return text;
+    }
+  };
+
   // State machine loop for filling the Rirekisho resume step-by-step
   // Helper to map previous step for static go back operations
   const getPreviousStep = (step) => {
@@ -948,7 +1002,7 @@ export default function VoiceAssistant({
   };
 
   // State machine loop for filling the Rirekisho resume step-by-step
-  const processResumeFlow = (text) => {
+  const processResumeFlow = async (text) => {
     const cleanText = text.trim();
     const lowerText = cleanText.toLowerCase();
     const lang = i18n.language || 'uz';
@@ -1142,18 +1196,8 @@ export default function VoiceAssistant({
         break;
 
       case 'ask_birthdate':
-        const dates = cleanText.match(/\d+/g);
-        let parsedDate = '';
-        if (dates && dates.length >= 3) {
-          parsedDate = `${dates[0]}-${String(dates[1]).padStart(2, '0')}-${String(dates[2]).padStart(2, '0')}`;
-        } else if (dates && dates.length === 2) {
-          // Default current century if year is 2 digits
-          const year = dates[0].length === 2 ? `19${dates[0]}` : dates[0];
-          parsedDate = `${year}-${String(dates[1]).padStart(2, '0')}-01`;
-        } else {
-          parsedDate = cleanText;
-        }
-
+        setStatus('thinking');
+        const parsedDate = await parseResumeFieldWithGemini('ask_birthdate', cleanText, isUz, isJa);
         setTempResumeData(prev => ({ ...prev, birthDate: parsedDate }));
         setResumeStep('confirm_birthdate');
         speakStepMsg(isUz
@@ -1272,11 +1316,8 @@ export default function VoiceAssistant({
         break;
 
       case 'ask_postalcode':
-        const postal = cleanText.replace(/[^\d]/g, '');
-        let formattedPostal = postal;
-        if (postal.length === 7) {
-          formattedPostal = `${postal.substring(0, 3)}-${postal.substring(3)}`;
-        }
+        setStatus('thinking');
+        const formattedPostal = await parseResumeFieldWithGemini('ask_postalcode', cleanText, isUz, isJa);
         setTempResumeData(prev => ({ ...prev, postalCode: formattedPostal }));
         setResumeStep('confirm_postalcode');
         speakStepMsg(isUz
@@ -1333,13 +1374,14 @@ export default function VoiceAssistant({
         break;
 
       case 'ask_phone':
-        const formattedPhone = cleanText.replace(/[^\d-]/g, '');
-        setTempResumeData(prev => ({ ...prev, phone: formattedPhone || cleanText }));
+        setStatus('thinking');
+        const formattedPhone = await parseResumeFieldWithGemini('ask_phone', cleanText, isUz, isJa);
+        setTempResumeData(prev => ({ ...prev, phone: formattedPhone }));
         setResumeStep('confirm_phone');
         speakStepMsg(isUz 
-          ? `Telefon raqamingizni "${formattedPhone || cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
-          : isJa ? `電話番号は「${formattedPhone || cleanText}」でよろしいですか？` 
-          : `Is your phone "${formattedPhone || cleanText}"? Confirm?`);
+          ? `Telefon raqamingizni "${formattedPhone}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `電話番号は「${formattedPhone}」でよろしいですか？` 
+          : `Is your phone "${formattedPhone}"? Confirm?`);
         break;
 
       case 'confirm_phone':
@@ -1515,7 +1557,8 @@ export default function VoiceAssistant({
         break;
 
       case 'ask_edu_start_year':
-        const parsedEduStartYear = cleanText.match(/\d{4}/)?.[0] || cleanText;
+        setStatus('thinking');
+        const parsedEduStartYear = await parseResumeFieldWithGemini('ask_edu_start_year', cleanText, isUz, isJa);
         setTempResumeData(prev => ({ ...prev, eduStartYear: parsedEduStartYear }));
         setResumeStep('confirm_edu_start_year');
         speakStepMsg(isUz 
@@ -1543,7 +1586,8 @@ export default function VoiceAssistant({
         break;
 
       case 'ask_edu_end_year':
-        const parsedEduEndYear = cleanText.match(/\d{4}/)?.[0] || cleanText;
+        setStatus('thinking');
+        const parsedEduEndYear = await parseResumeFieldWithGemini('ask_edu_end_year', cleanText, isUz, isJa);
         setTempResumeData(prev => ({ ...prev, eduEndYear: parsedEduEndYear }));
         setResumeStep('confirm_edu_end_year');
         speakStepMsg(isUz 
@@ -1633,7 +1677,8 @@ export default function VoiceAssistant({
         break;
 
       case 'ask_work_start_year':
-        const parsedWorkStartYear = cleanText.match(/\d{4}/)?.[0] || cleanText;
+        setStatus('thinking');
+        const parsedWorkStartYear = await parseResumeFieldWithGemini('ask_work_start_year', cleanText, isUz, isJa);
         setTempResumeData(prev => ({ ...prev, workStartYear: parsedWorkStartYear }));
         setResumeStep('confirm_work_start_year');
         speakStepMsg(isUz 
@@ -1691,7 +1736,8 @@ export default function VoiceAssistant({
         break;
 
       case 'ask_work_end_year':
-        const parsedWorkEndYear = cleanText.match(/\d{4}/)?.[0] || cleanText;
+        setStatus('thinking');
+        const parsedWorkEndYear = await parseResumeFieldWithGemini('ask_work_end_year', cleanText, isUz, isJa);
         setTempResumeData(prev => ({ ...prev, workEndYear: parsedWorkEndYear }));
         setResumeStep('confirm_work_end_year');
         speakStepMsg(isUz 
