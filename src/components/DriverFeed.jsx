@@ -272,7 +272,7 @@ export default function DriverFeed({
         {filteredJobs.map(job => {
           const showVerified = verifiedCompanies.includes(job.company) || isContractActive;
           return (
-            <div key={job.id} className="job-card-hz glass" onClick={() => onJobClick({...job, verified: showVerified})}>
+            <div key={job.id} className={`job-card-hz glass ${job.isInternational ? 'job-card-international' : ''}`} onClick={() => onJobClick({...job, verified: showVerified})}>
               <div className="job-card-main-layout">
                 {/* ---- Chap qism: E'lon rasmi ---- */}
                 <div className="job-card-img">
@@ -289,6 +289,12 @@ export default function DriverFeed({
 
                 {/* ---- O'ng qism: Ma'lumotlar ---- */}
                 <div className="job-card-body">
+                  {job.isInternational && (
+                    <div className="international-card-tag">
+                      <span className="airplane-icon">✈️</span>
+                      <span>{t('foreigners_visa', 'Chet eldan qabul / Visa support')}</span>
+                    </div>
+                  )}
                   {/* Kompaniya nomi va tasdiqlash belgisi */}
                   <div className="job-card-company">
                     <img src={job.logo} alt={job.company} className="job-card-company-logo" />
