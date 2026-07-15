@@ -415,6 +415,31 @@ html.light-mode {
   transform: scale(0.97);
 }
 
+/* Premium International Job Card with bulge pop-out and neon glow */
+.bento-international-card {
+  background: linear-gradient(135deg, rgba(94, 92, 230, 0.1), rgba(175, 82, 222, 0.1)) !important;
+  border: 1px solid rgba(175, 82, 222, 0.25) !important;
+  box-shadow: 0 8px 32px rgba(94, 92, 230, 0.04) !important;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.bento-international-card:hover {
+  transform: translateY(-5px) scale(1.02) !important; /* Bulge / pop out scale and translation */
+  border-color: rgba(175, 82, 222, 0.5) !important;
+  box-shadow: 0 20px 45px rgba(94, 92, 230, 0.2), 0 0 15px rgba(175, 82, 222, 0.15) !important;
+}
+
+.bento-international-card:active {
+  transform: scale(0.97) translateY(-1px) !important;
+}
+
+/* Dark mode overrides for bento international card */
+html.dark-mode .bento-international-card {
+  background: linear-gradient(135deg, rgba(94, 92, 230, 0.18), rgba(175, 82, 222, 0.18)) !important;
+  border-color: rgba(175, 82, 222, 0.35) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
 .action-card-left {
   display: flex;
   align-items: center;

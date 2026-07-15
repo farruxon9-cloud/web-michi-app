@@ -292,24 +292,41 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
 
       {/* Xalqaro Rekruting & Tokutei Ginou Visa Card */}
       <div 
-        className="bento-action-card glass squircle" 
+        className="bento-action-card bento-international-card glass squircle" 
         onClick={onNavigateToInternational}
-        style={{ cursor: 'pointer', padding: '16px 20px', background: 'linear-gradient(135deg, rgba(94, 92, 230, 0.15), rgba(175, 82, 222, 0.15))', border: '1px solid rgba(175, 82, 222, 0.25)' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
           <div style={{ flex: 1, paddingRight: '8px' }}>
-            <span style={{ fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--primary)', marginBottom: '4px', display: 'block' }}>
-              GLOBAL CAREER
-            </span>
-            <h3 style={{ fontSize: '18px', fontWeight: '800', margin: '0 0 4px 0', color: 'var(--text-main)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+              <span style={{ fontSize: '9px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', color: '#FFF', background: '#FF453A', padding: '2px 6px', borderRadius: '4px', display: 'inline-block' }}>
+                🇯🇵 JAPAN WORK
+              </span>
+              <span style={{ fontSize: '9px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', color: '#5E5CE6', background: 'rgba(94, 92, 230, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-block' }}>
+                VISA SUPPORT
+              </span>
+            </div>
+            <h3 style={{ fontSize: '19px', fontWeight: '900', margin: '0 0 6px 0', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
               {t('bentoInternationalTitle', 'Xalqaro Ishlar')}
             </h3>
-            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, opacity: 0.85 }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 10px 0', opacity: 0.85, lineHeight: '1.3' }}>
               {t('bentoInternationalSub', 'Tokutei Ginou viza beruvchi e\'lonlar')}
             </p>
+            
+            {/* Quick badges (batafsil lekin qisqa) */}
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '10px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                特定技能 (SSW)
+              </span>
+              <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '10px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                🏠 Uy-joy bor
+              </span>
+              <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '10px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                最小 N4 Level
+              </span>
+            </div>
           </div>
-          <div className="music-gradient-icon" style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, #5E5CE6, #AF52DE)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 20px rgba(94, 92, 230, 0.3)', flexShrink: 0 }}>
-            <Globe size={22} color="#FFF" />
+          <div className="music-gradient-icon" style={{ width: '54px', height: '54px', borderRadius: '50%', background: 'linear-gradient(135deg, #5E5CE6, #AF52DE)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 22px rgba(94, 92, 230, 0.35)', flexShrink: 0, marginLeft: '8px' }}>
+            <Globe size={24} color="#FFF" />
           </div>
         </div>
       </div>
