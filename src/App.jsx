@@ -262,7 +262,7 @@ function App() {
 
   // handleNavigateToInternationalJobs: Dashboarddagi Xalqaro bento card bosilganda ishlaydi.
   const handleNavigateToInternationalJobs = () => {
-    setSelectedBenefits(['foreigner']);
+    setSelectedBenefits(['international']);
     setSelectedLicenses([]);
     setSelectedLangLevel('all');
     setJobSearchQuery('');

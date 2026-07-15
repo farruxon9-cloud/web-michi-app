@@ -59,6 +59,7 @@ export const MOCK_JOBS = [
     logo: "https://ui-avatars.com/api/?name=Nippon+Express&background=E63946&color=fff&size=100",
     phone: "045-222-3333",
     phoneMode: "interview_only",
+    isInternational: true,
     isActive: true
   },
   {
@@ -134,6 +135,7 @@ export const MOCK_JOBS = [
     logo: "https://ui-avatars.com/api/?name=Fukuyama+Trans&background=264653&color=fff&size=100",
     phone: "052-888-9999",
     phoneMode: "public",
+    isInternational: true,
     isActive: true
   }
 ];
@@ -204,6 +206,7 @@ export default function DriverFeed({
       if (benefit === 'foreigner') return job.foreigners && job.foreigners !== 'foreigners_none';
       if (benefit === 'bonus') return job.bonus && job.bonus !== 'bonus_none';
       if (benefit === 'insurance') return job.insurance && job.insurance.startsWith('insurance_');
+      if (benefit === 'international') return job.isInternational === true;
       return true;
     });
 

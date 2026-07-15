@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload, Clock, Banknote, Share2, Briefcase, CheckCircle2 } from 'lucide-react';
+import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload, Clock, Banknote, Share2, Briefcase, CheckCircle2, Globe } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import { compressImage } from '../utils/imageCompressor';
 import './DriverFeed.css';
@@ -74,15 +74,16 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   const { t } = useTranslation();
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAdTypeSelect, setShowAdTypeSelect] = useState(false);
+  const [showJobTypeSelect, setShowJobTypeSelect] = useState(false);
   const [selectedAdType, setSelectedAdType] = useState('job');
   const [jobImage, setJobImage] = useState(null);
   const fileInputRef = useRef(null);
 
   React.useEffect(() => {
     if (onFormToggle) {
-      onFormToggle(showAddForm || showAdTypeSelect);
+      onFormToggle(showAddForm || showAdTypeSelect || showJobTypeSelect);
     }
-  }, [showAddForm, showAdTypeSelect, onFormToggle]);
+  }, [showAddForm, showAdTypeSelect, showJobTypeSelect, onFormToggle]);
 
   React.useEffect(() => {
     if (jobToEdit) {
@@ -113,7 +114,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           hasShoukai: (jobToEdit.shoukaiFee > 0 || jobToEdit.hasShoukai === 'yes' || jobToEdit.hasShoukai === true) ? 'yes' : 'no',
           shoukaiFee: jobToEdit.shoukaiFee ? String(jobToEdit.shoukaiFee) : '',
           shoukaiConditions: jobToEdit.shoukaiConditions || '',
-          phoneMode: jobToEdit.phoneMode || 'public'
+          phoneMode: jobToEdit.phoneMode || 'public',
+          isInternational: jobToEdit.isInternational || false
         });
       } else {
         setNewJob({
@@ -138,7 +140,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           shoukaiFee: jobToEdit.shoukaiFee ? String(jobToEdit.shoukaiFee) : '',
           shoukaiConditions: jobToEdit.shoukaiConditions || '',
           license: jobToEdit.license || [],
-          phoneMode: jobToEdit.phoneMode || 'public'
+          phoneMode: jobToEdit.phoneMode || 'public',
+          isInternational: jobToEdit.isInternational || false
         });
       }
       setJobImage(jobToEdit.image || null);
@@ -173,7 +176,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     langs: ['UZ', 'JP'], // Default driving school languages
     courses: ['Oogata', 'Chugata', 'Futsu'], // Default driving school courses
     license: [], // Array for regular job licenses if needed
-    phoneMode: 'public'
+    phoneMode: 'public',
+    isInternational: false
   });
   const [errors, setErrors] = useState({});
 
@@ -352,7 +356,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         shoukaiAmount: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : "0",
         shoukai: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : "0",
         shoukaiConditions: newJob.shoukaiConditions || t('defaultJobShoukaiConditions', 'Tavsiya qilingan nomzod ishga qabul qilinib, kamida 3 oy ishlasa shoukai puli to\'lab beriladi.'),
-        phoneMode: newJob.phoneMode || 'public'
+        phoneMode: newJob.phoneMode || 'public',
+        isInternational: newJob.isInternational || false
       };
 
       if (newJob.id) {
@@ -386,7 +391,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       shoukaiConditions: '',
       langs: ['UZ', 'JP'],
       courses: ['Oogata', 'Chugata', 'Futsu'],
-      phoneMode: 'public'
+      phoneMode: 'public',
+      isInternational: false
     });
   };
 
@@ -440,6 +446,34 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             {isAdCourse ? t('addNewSchoolAd', "Yangi avtomaktab e'loni") : t('addNewJob', "Yangi ish e'loni qo'shish")}
           </h2>
         </div>
+
+        {/* International Recruitment Mode Badge Indicator */}
+        {!isAdCourse && newJob.isInternational && (
+          <div 
+            className="glass squircle animate-fade-in"
+            style={{ 
+              margin: '0 16px 20px 16px', 
+              padding: '16px', 
+              background: 'linear-gradient(135deg, rgba(94, 92, 230, 0.1), rgba(175, 82, 222, 0.1))', 
+              border: '1px solid rgba(175, 82, 222, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}
+          >
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, #5E5CE6, #AF52DE)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Globe size={20} color="#FFF" />
+            </div>
+            <div>
+              <h4 style={{ margin: '0 0 2px 0', fontSize: '14.5px', fontWeight: '800', color: 'var(--text-main)' }}>
+                {t('recruitmentInternational', "Xalqaro vakansiya / Tokutei Ginou")}
+              </h4>
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.85 }}>
+                Chet eldagi nomzodlarni jalb qilish uchun maxsus viza va yordam so'rovnomasi faol.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div style={{ padding: '0 16px' }}>
           {/* Image Upload Section */}
@@ -916,7 +950,85 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     );
   }
 
-    // ===== AD TYPE SELECTION SCREEN (FOR DRIVING SCHOOLS) =====
+  // ===== JOB RECRUITMENT TYPE SELECTION SCREEN =====
+  if (showJobTypeSelect) {
+    return (
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
+          <button className="icon-btn glass" onClick={() => setShowJobTypeSelect(false)}>
+            <ArrowLeft size={20} />
+          </button>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>
+            {t('recruitmentTypeSelectTitle', "Ish e'loni so'rovnomasi turini tanlang")}
+          </h2>
+        </div>
+
+        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <p style={{ fontSize: '14.5px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+            {t('recruitmentChooseDesc', "Nomzodlarni qayerdan jalb qilmoqchisiz? Chet eldagi nomzodlar so'rovnomasida viza va qo'llab-quvvatlash parametrlari kiritiladi.")}
+          </p>
+
+          {/* Option A: Local Recruitment */}
+          <div 
+            className="glass squircle animate-fade-in"
+            onClick={() => {
+              setNewJob(prev => ({
+                ...prev,
+                isInternational: false,
+                foreigners: 'foreigners_none',
+                housing: 'housing_none'
+              }));
+              setShowAddForm(true);
+              setShowJobTypeSelect(false);
+            }}
+            style={{ padding: '24px 20px', cursor: 'pointer', transition: 'all 0.3s ease', border: '1px solid var(--glass-border)', display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--glass-bg)' }}
+          >
+            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Briefcase size={24} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>
+                {t('recruitmentLocal', "Mahalliy vakansiya (Yaponiya ichidagi nomzodlar uchun)")}
+              </h3>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                Yaponiyada yashayotgan va ishlash huquqiga ega nomzodlar uchun oddiy e'lon so'rovnomasi.
+              </p>
+            </div>
+          </div>
+
+          {/* Option B: International Recruitment */}
+          <div 
+            className="glass squircle animate-fade-in"
+            onClick={() => {
+              setNewJob(prev => ({
+                ...prev,
+                isInternational: true,
+                foreigners: 'foreigners_visa',
+                housing: 'housing_dorm'
+              }));
+              setShowAddForm(true);
+              setShowJobTypeSelect(false);
+            }}
+            style={{ padding: '24px 20px', cursor: 'pointer', transition: 'all 0.3s ease', border: '1px solid rgba(175, 82, 222, 0.3)', display: 'flex', gap: '16px', alignItems: 'center', background: 'linear-gradient(135deg, rgba(94, 92, 230, 0.05), rgba(175, 82, 222, 0.05))' }}
+          >
+            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(175, 82, 222, 0.1)', color: '#AF52DE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Globe size={24} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: '#AF52DE' }}>
+                {t('recruitmentInternational', "Xalqaro vakansiya / Tokutei Ginou (Chet eldagi nomzodlar uchun)")} 🌐
+              </h3>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                Chet eldagi (masalan, O'zbekiston) nomzodlarni jalb qilish va Tokutei Ginou viza yordami so'rovnomasi.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== AD TYPE SELECTION SCREEN (FOR DRIVING SCHOOLS) =====
   if (showAdTypeSelect) {
     return (
       <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
@@ -938,7 +1050,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             className="glass squircle animate-fade-in"
             onClick={() => {
               setSelectedAdType('job');
-              setShowAddForm(true);
+              setShowJobTypeSelect(true);
               setShowAdTypeSelect(false);
             }}
             style={{ padding: '24px 20px', cursor: 'pointer', transition: 'all 0.3s ease', border: '1px solid var(--glass-border)', display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--glass-bg)' }}
@@ -995,7 +1107,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               setShowAdTypeSelect(true);
             } else {
               setSelectedAdType('job');
-              setShowAddForm(true);
+              setShowJobTypeSelect(true);
             }
           }}
           style={{ 
