@@ -1039,6 +1039,15 @@ function App() {
             setSelectedJob(null);
             setSelectedSchool(null);
             setBackTab(null);
+            if (tab === 'jobs') {
+              setSelectedBenefits([]);
+              setSelectedLicenses([]);
+              setSelectedLangLevel('all');
+              setJobSearchQuery('');
+              setJobActiveSegment('all');
+              setMinSalary(0);
+              setSelectedPrefecture('all');
+            }
             setActiveTab(tab);
           }}
           unreadCount={showProfileBadges ? unreadCount : 0}

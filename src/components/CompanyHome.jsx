@@ -975,8 +975,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               setNewJob(prev => ({
                 ...prev,
                 isInternational: false,
-                foreigners: 'foreigners_none',
-                housing: 'housing_none'
+                foreigners: '',
+                housing: ''
               }));
               setShowAddForm(true);
               setShowJobTypeSelect(false);
