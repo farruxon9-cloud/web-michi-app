@@ -187,6 +187,19 @@ export default function DrivingAcademy({
 }) {
   const { t } = useTranslation();
   
+  const getMaskedAddress = (fullAddress) => {
+    if (!fullAddress) return '';
+    const parts = fullAddress.split(',');
+    if (parts.length > 1) {
+      return parts[0] + (parts[1] ? ', ' + parts[1] : '') + ` (${t('addressMaskedNotice')})`;
+    }
+    const words = fullAddress.trim().split(/\s+/);
+    if (words.length > 2) {
+      return words.slice(0, 3).join(' ') + ` (${t('addressMaskedNotice')})`;
+    }
+    return fullAddress + ` (${t('addressMaskedNotice')})`;
+  };
+  
   /**
    * showShoukaiInput — Shoukai input maydoni ko'rinishi holati.
    * true bo'lganda do'st ismini kiritish maydoni ochiladi.
@@ -342,7 +355,7 @@ export default function DrivingAcademy({
               </div>
               <div className="contact-row">
                 <MapPin size={16} color="#AF52DE" />
-                <span>{t('fullAddress')}: {school.fullAddress}</span>
+                <span>{t('fullAddress')}: {getMaskedAddress(school.fullAddress)}</span>
               </div>
             </div>
 

@@ -260,6 +260,18 @@ function App() {
     }
   };
 
+  // handleNavigateToInternationalJobs: Dashboarddagi Xalqaro bento card bosilganda ishlaydi.
+  const handleNavigateToInternationalJobs = () => {
+    setSelectedBenefits(['foreigner']);
+    setSelectedLicenses([]);
+    setSelectedLangLevel('all');
+    setJobSearchQuery('');
+    setJobActiveSegment('all');
+    setMinSalary(0);
+    setSelectedPrefecture('all');
+    setActiveTab('jobs');
+  };
+
   // Dark mode
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('michi_darkmode');
@@ -838,6 +850,7 @@ function App() {
             setProfileActivePage={setProfileActivePage}
             setProfileActivePageSource={setProfileActivePageSource}
             userRole={userRole}
+            onNavigateToInternational={handleNavigateToInternationalJobs}
           />
         );
       case 'jobs':

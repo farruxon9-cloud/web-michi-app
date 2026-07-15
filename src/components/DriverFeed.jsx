@@ -32,6 +32,8 @@ export const MOCK_JOBS = [
     license: "lic_futsu",
     description: "Koto-ku bo'ylab kichik posilkalarni mijozlarga yetkazib berish. Kuniga o'rtacha 80-100 ta posilka. Yo'nalishlar aniq belgilangan.",
     logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    phone: "03-1234-5678",
+    phoneMode: "public",
     isActive: true
   },
   {
@@ -50,11 +52,13 @@ export const MOCK_JOBS = [
     dayOff: "shift_rotation",
     bonus: "bonus_3",
     insurance: "insurance_full",
-    foreigners: "foreigners_visa",
+    foreigners: "foreigners_visa", // visa support (implies N4)
     housing: "housing_dorm",
     license: "lic_kenin",
     description: "Yokohama portidan Kanto hududi bo'ylab dengiz konteynerlarini tashish. Tirkama (Ken'in) guvohnomasi majburiy.",
     logo: "https://ui-avatars.com/api/?name=Nippon+Express&background=E63946&color=fff&size=100",
+    phone: "045-222-3333",
+    phoneMode: "interview_only",
     isActive: true
   },
   {
@@ -73,11 +77,13 @@ export const MOCK_JOBS = [
     dayOff: "shanba_yakshanba",
     bonus: "bonus_2",
     insurance: "insurance_basic",
-    foreigners: "foreigners_ok",
+    foreigners: "foreigners_ok", // foreigners welcome (implies N4)
     housing: "housing_half",
     license: "lic_oogata",
     description: "Kanto va Kansai o'rtasida yirik omborlar aro logistika tashish. Katta yuk mashinasi (Oogata) guvohnomasi majburiy.",
     logo: "https://ui-avatars.com/api/?name=Yamato+Transport&background=2A9D8F&color=fff&size=100",
+    phone: "048-444-5555",
+    phoneMode: "public",
     isActive: true
   },
   {
@@ -101,6 +107,8 @@ export const MOCK_JOBS = [
     license: "lic_oogata_tokushu",
     description: "Qurilish maydonchalarida maxsus texnika (Ekskavator) boshqarish. Sharyo-kei litsenziyasi bo'lishi shart.",
     logo: "https://ui-avatars.com/api/?name=Seino+Transport&background=E9C46A&color=333&size=100",
+    phone: "047-666-7777",
+    phoneMode: "interview_only",
     isActive: true
   },
   {
@@ -119,11 +127,13 @@ export const MOCK_JOBS = [
     dayOff: "flexible",
     bonus: "bonus_none",
     insurance: "insurance_partial",
-    foreigners: "foreigners_nolang",
+    foreigners: "foreigners_n4", // Changed foreigners_nolang to foreigners_n4
     housing: "housing_none",
     license: "tech_forklift",
     description: "Omborda yuklarni tushirish va joylash. Forklift guvohnomasi talab etiladi.",
     logo: "https://ui-avatars.com/api/?name=Fukuyama+Trans&background=264653&color=fff&size=100",
+    phone: "052-888-9999",
+    phoneMode: "public",
     isActive: true
   }
 ];
@@ -179,8 +189,9 @@ export default function DriverFeed({
     // 2. Japanese level filter (visible if user level >= job required level)
     const userVal = { 'all': 4, 'none': 0, 'n5_n4': 1, 'n3': 2, 'n2_n1': 3 }[selectedLangLevel];
     const jobVal = {
-      'foreigners_nolang': 0,
-      'foreigners_ok': 0,
+      'foreigners_n4': 1,
+      'foreigners_nolang': 1,
+      'foreigners_ok': 1,
       'foreigners_visa': 1,
       'foreigners_n3': 2,
       'foreigners_n2': 3

@@ -112,7 +112,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           courses: jobToEdit.courses || ['Oogata', 'Chugata', 'Futsu'],
           hasShoukai: (jobToEdit.shoukaiFee > 0 || jobToEdit.hasShoukai === 'yes' || jobToEdit.hasShoukai === true) ? 'yes' : 'no',
           shoukaiFee: jobToEdit.shoukaiFee ? String(jobToEdit.shoukaiFee) : '',
-          shoukaiConditions: jobToEdit.shoukaiConditions || ''
+          shoukaiConditions: jobToEdit.shoukaiConditions || '',
+          phoneMode: jobToEdit.phoneMode || 'public'
         });
       } else {
         setNewJob({
@@ -136,7 +137,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           hasShoukai: (jobToEdit.hasShoukai === true || jobToEdit.hasShoukai === 'yes' || jobToEdit.shoukaiFee > 0) ? 'yes' : 'no',
           shoukaiFee: jobToEdit.shoukaiFee ? String(jobToEdit.shoukaiFee) : '',
           shoukaiConditions: jobToEdit.shoukaiConditions || '',
-          license: jobToEdit.license || []
+          license: jobToEdit.license || [],
+          phoneMode: jobToEdit.phoneMode || 'public'
         });
       }
       setJobImage(jobToEdit.image || null);
@@ -170,7 +172,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     shoukaiConditions: '',
     langs: ['UZ', 'JP'], // Default driving school languages
     courses: ['Oogata', 'Chugata', 'Futsu'], // Default driving school courses
-    license: [] // Array for regular job licenses if needed
+    license: [], // Array for regular job licenses if needed
+    phoneMode: 'public'
   });
   const [errors, setErrors] = useState({});
 
@@ -193,10 +196,11 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     { value: 'Yo\'q', key: 'ins_none' }
   ];
   const FOREIGNERS_OPTIONS = [
-    { value: 'Viza yordami bor (Sponsorship)', key: 'for_visa' },
-    { value: 'Faqat PR / Teijusha', key: 'for_pr' },
-    { value: 'Barcha chet elliklar qabul', key: 'for_all' },
-    { value: 'Yapon tilini bilish N3+', key: 'for_n3' }
+    { value: 'foreigners_visa', key: 'foreigners_visa' },
+    { value: 'foreigners_ok', key: 'foreigners_ok' },
+    { value: 'foreigners_n4', key: 'foreigners_n4' },
+    { value: 'foreigners_n3', key: 'foreigners_n3' },
+    { value: 'foreigners_n2', key: 'foreigners_n2' }
   ];
   const HOUSING_OPTIONS = [
     { value: 'Yotoqxona mavjud', key: 'hou_dorm' },
@@ -347,7 +351,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         shoukaiFee: newJob.hasShoukai === 'yes' ? Number(newJob.shoukaiFee) : 0,
         shoukaiAmount: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : "0",
         shoukai: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : "0",
-        shoukaiConditions: newJob.shoukaiConditions || t('defaultJobShoukaiConditions', 'Tavsiya qilingan nomzod ishga qabul qilinib, kamida 3 oy ishlasa shoukai puli to\'lab beriladi.')
+        shoukaiConditions: newJob.shoukaiConditions || t('defaultJobShoukaiConditions', 'Tavsiya qilingan nomzod ishga qabul qilinib, kamida 3 oy ishlasa shoukai puli to\'lab beriladi.'),
+        phoneMode: newJob.phoneMode || 'public'
       };
 
       if (newJob.id) {
@@ -380,7 +385,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       shoukaiFee: '', 
       shoukaiConditions: '',
       langs: ['UZ', 'JP'],
-      courses: ['Oogata', 'Chugata', 'Futsu']
+      courses: ['Oogata', 'Chugata', 'Futsu'],
+      phoneMode: 'public'
     });
   };
 
@@ -715,6 +721,28 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 maxLength={25}
               />
               {errors.phone && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.phone}</span>}
+            </div>
+
+            <div className="input-group chip-group-container" style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
+                {t('phoneModeLabel', 'Telefon raqam maxfiyligi')}
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  className={`form-chip ${newJob.phoneMode === 'public' ? 'selected' : ''}`}
+                  onClick={() => setNewJob({...newJob, phoneMode: 'public'})}
+                >
+                  {t('phoneModePublic', 'Hammaga ochiq (Qo\'ng\'iroq qilish ochiq)')}
+                </button>
+                <button
+                  type="button"
+                  className={`form-chip ${newJob.phoneMode === 'interview_only' ? 'selected' : ''}`}
+                  onClick={() => setNewJob({...newJob, phoneMode: 'interview_only'})}
+                >
+                  {t('phoneModeInterview', 'Faqat suhbatga taklif qilinganlarga')}
+                </button>
+              </div>
             </div>
 
             <div className="input-group" style={{ marginBottom: '20px' }}>

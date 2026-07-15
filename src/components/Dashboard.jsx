@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck } from 'lucide-react';
+import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck, Globe } from 'lucide-react';
 import './Dashboard.css';
 
 const formatTime = (secs) => {
@@ -10,7 +10,7 @@ const formatTime = (secs) => {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
 
-export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVoiceStandby, isVoiceActive, onVoiceActivate, onVoiceToggle, setProfileActivePage, setProfileActivePageSource, userRole }) {
+export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVoiceStandby, isVoiceActive, onVoiceActivate, onVoiceToggle, setProfileActivePage, setProfileActivePageSource, userRole, onNavigateToInternational }) {
   const { t, i18n } = useTranslation();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -288,6 +288,30 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
           </div>
         </div>
 
+      </div>
+
+      {/* Xalqaro Rekruting & Tokutei Ginou Visa Card */}
+      <div 
+        className="bento-action-card glass squircle" 
+        onClick={onNavigateToInternational}
+        style={{ cursor: 'pointer', padding: '16px 20px', background: 'linear-gradient(135deg, rgba(94, 92, 230, 0.15), rgba(175, 82, 222, 0.15))', border: '1px solid rgba(175, 82, 222, 0.25)' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          <div style={{ flex: 1, paddingRight: '8px' }}>
+            <span style={{ fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--primary)', marginBottom: '4px', display: 'block' }}>
+              GLOBAL CAREER
+            </span>
+            <h3 style={{ fontSize: '18px', fontWeight: '800', margin: '0 0 4px 0', color: 'var(--text-main)' }}>
+              {t('bentoInternationalTitle', 'Xalqaro Ishlar')}
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, opacity: 0.85 }}>
+              {t('bentoInternationalSub', 'Tokutei Ginou viza beruvchi e\'lonlar')}
+            </p>
+          </div>
+          <div className="music-gradient-icon" style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, #5E5CE6, #AF52DE)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 20px rgba(94, 92, 230, 0.3)', flexShrink: 0 }}>
+            <Globe size={22} color="#FFF" />
+          </div>
+        </div>
       </div>
 
       {/* Premium Minimalist Music Player / Company My Ads / Driver Applications Shortcut Cards */}
