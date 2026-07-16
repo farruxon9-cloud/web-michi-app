@@ -9,27 +9,32 @@ const INITIAL_COMPANY_JOBS = [
   {
     id: 1, company: "Sagawa Express", title: "Mahalliy yetkazib berish (Local Delivery)", salary: "¥300,000 / oyiga",
     image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Tokyo, Koto-ku", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100"
+    location: "Tokyo, Koto-ku", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    nearestStation: "Kokusai-tenjijo Station", walkTime: 8
   },
   {
     id: 2, company: "Sagawa Express", title: "Xalqaro yuk tashish (Trailer)", salary: "¥500,000 / oyiga",
     image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Kanagawa, Yokohama", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100"
+    location: "Kanagawa, Yokohama", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    nearestStation: "Motomachi-Chukagai Station", walkTime: 12
   },
   {
     id: 3, company: "Sagawa Express", title: "Tungi reys haydovchisi (10t)", salary: "¥450,000 / oyiga",
     image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Saitama, Omiya", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100"
+    location: "Saitama, Omiya", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    nearestStation: "Omiya Station", walkTime: 5
   },
   {
     id: 4, company: "Sagawa Express", title: "Ekskavator va Maxsus texnika haydovchisi", salary: "¥380,000 / oyiga",
     image: "https://images.unsplash.com/photo-1541888062837-7b247f082e05?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Chiba, Matsudo", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100"
+    location: "Chiba, Matsudo", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    nearestStation: "Tokiwadaira Station", walkTime: 15
   },
   {
     id: 5, company: "Sagawa Express", title: "Omborxona Forklift operatori", salary: "¥250,000 / oyiga",
     image: "https://images.unsplash.com/photo-1587293852726-70cdb56c28ea?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Aichi, Nagoya", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100"
+    location: "Aichi, Nagoya", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    nearestStation: "Nagoya Station", walkTime: 10
   }
 ];
 
@@ -142,7 +147,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           license: jobToEdit.license || [],
           phoneMode: jobToEdit.phoneMode || 'public',
           isInternational: jobToEdit.isInternational || false,
-          type: jobToEdit.type || 'fulltime'
+          type: jobToEdit.type || 'fulltime',
+          nearestStation: jobToEdit.nearestStation || '',
+          walkTime: jobToEdit.walkTime ? String(jobToEdit.walkTime) : ''
         });
       }
       setJobImage(jobToEdit.image || null);
@@ -179,7 +186,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     license: [], // Array for regular job licenses if needed
     phoneMode: 'public',
     isInternational: false,
-    type: 'fulltime'
+    type: 'fulltime',
+    nearestStation: '',
+    walkTime: ''
   });
   const [errors, setErrors] = useState({});
 
@@ -361,7 +370,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         shoukaiConditions: newJob.shoukaiConditions || t('defaultJobShoukaiConditions', 'Tavsiya qilingan nomzod ishga qabul qilinib, kamida 3 oy ishlasa shoukai puli to\'lab beriladi.'),
         phoneMode: newJob.phoneMode || 'public',
         isInternational: newJob.isInternational || false,
-        type: newJob.type || 'fulltime'
+        type: newJob.type || 'fulltime',
+        nearestStation: newJob.nearestStation || '',
+        walkTime: newJob.walkTime ? Number(newJob.walkTime) : ''
       };
 
       if (newJob.id) {
@@ -693,6 +704,45 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               />
               {errors.detailAddress && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.detailAddress}</span>}
             </div>
+
+            {!isAdCourse && (
+              <>
+                <div className="input-group" style={{ marginBottom: '16px' }}>
+                  <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                    {t('nearestStationLabel', 'Eng yaqin metro/poyezd bekati')}
+                  </label>
+                  <input 
+                    type="text" 
+                    value={newJob.nearestStation} 
+                    onChange={e => setNewJob({...newJob, nearestStation: e.target.value})} 
+                    placeholder="Masalan: Shinjuku bekati, Omiya bekati" 
+                    className="auth-input"
+                    maxLength={50}
+                  />
+                </div>
+
+                <div className="input-group" style={{ marginBottom: '16px' }}>
+                  <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                    {t('walkTimeLabel', 'Bekatgacha piyoda yurish vaqti')}
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input 
+                      type="number" 
+                      value={newJob.walkTime} 
+                      onChange={e => setNewJob({...newJob, walkTime: e.target.value.replace(/[^0-9]/g, '')})} 
+                      placeholder="Masalan: 8" 
+                      className="auth-input"
+                      style={{ flex: 1 }}
+                      min={0}
+                      max={60}
+                    />
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: '600', fontSize: '14px' }}>
+                      {t('minutesUnit', 'daqiqa')}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* BLOCK 2: Ish Sharoitlari (Chips) */}

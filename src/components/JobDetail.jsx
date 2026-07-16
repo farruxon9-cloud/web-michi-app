@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Bookmark, Map as MapIcon, Calendar, Clock, Banknote, Share2, 
-  Shield, Home, Globe, Award, Car, Users, Heart, Building2, CheckCircle2, Phone, Sparkles } from 'lucide-react';
+  Shield, Home, Globe, Award, Car, Users, Heart, Building2, CheckCircle2, Phone, Sparkles, Train } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './JobDetail.css';
 
@@ -210,6 +210,22 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
                     <span className="db-row-label">{t('housingLabel', 'Uy-joy')}</span>
                   </div>
                   <strong className="db-row-value">{t(job.housing, job.housing)}</strong>
+                </div>
+              )}
+
+              {/* Metro/Bekat Row */}
+              {job.nearestStation && (
+                <div className="db-list-row">
+                  <div className="db-row-left">
+                    <div className="db-row-icon icon-subway">
+                      <Train size={16} color="#AF52DE" />
+                    </div>
+                    <span className="db-row-label">{t('nearestStationLabel', 'Metro / Bekat')}</span>
+                  </div>
+                  <strong className="db-row-value">
+                    {job.nearestStation}
+                    {job.walkTime ? ` (🚶‍♂️ ${job.walkTime} ${t('minutesUnit', 'daqiqa')})` : ''}
+                  </strong>
                 </div>
               )}
 

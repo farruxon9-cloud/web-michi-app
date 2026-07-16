@@ -670,6 +670,7 @@ html.dark-mode .info-card-icon {
 .db-row-icon.icon-globe { background: rgba(10, 132, 255, 0.1); }
 .db-row-icon.icon-home { background: rgba(52, 199, 89, 0.1); }
 .db-row-icon.icon-license { background: rgba(230, 57, 70, 0.1); }
+.db-row-icon.icon-subway { background: rgba(175, 82, 222, 0.1); }
 
 .db-row-label {
   font-size: 12px;

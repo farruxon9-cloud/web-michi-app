@@ -218,6 +218,9 @@ function App() {
   const [selectedBenefits, setSelectedBenefits] = useState([]);
   const [minSalary, setMinSalary] = useState(0);
   const [selectedPrefecture, setSelectedPrefecture] = useState('all');
+  const [selectedCity, setSelectedCity] = useState('all');
+  const [stationQuery, setStationQuery] = useState('');
+  const [onlyNearStation, setOnlyNearStation] = useState(false);
 
   const togglePlay = () => {
     setIsPlaying(prev => !prev);
@@ -885,6 +888,12 @@ function App() {
             setMinSalary={setMinSalary}
             selectedPrefecture={selectedPrefecture}
             setSelectedPrefecture={setSelectedPrefecture}
+            selectedCity={selectedCity}
+            setSelectedCity={setSelectedCity}
+            stationQuery={stationQuery}
+            setStationQuery={setStationQuery}
+            onlyNearStation={onlyNearStation}
+            setOnlyNearStation={setOnlyNearStation}
           />
         );
       case 'academy':
