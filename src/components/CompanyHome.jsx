@@ -141,7 +141,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           shoukaiConditions: jobToEdit.shoukaiConditions || '',
           license: jobToEdit.license || [],
           phoneMode: jobToEdit.phoneMode || 'public',
-          isInternational: jobToEdit.isInternational || false
+          isInternational: jobToEdit.isInternational || false,
+          type: jobToEdit.type || 'fulltime'
         });
       }
       setJobImage(jobToEdit.image || null);
@@ -177,7 +178,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     courses: ['Oogata', 'Chugata', 'Futsu'], // Default driving school courses
     license: [], // Array for regular job licenses if needed
     phoneMode: 'public',
-    isInternational: false
+    isInternational: false,
+    type: 'fulltime'
   });
   const [errors, setErrors] = useState({});
 
@@ -358,7 +360,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         shoukai: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : "0",
         shoukaiConditions: newJob.shoukaiConditions || t('defaultJobShoukaiConditions', 'Tavsiya qilingan nomzod ishga qabul qilinib, kamida 3 oy ishlasa shoukai puli to\'lab beriladi.'),
         phoneMode: newJob.phoneMode || 'public',
-        isInternational: newJob.isInternational || false
+        isInternational: newJob.isInternational || false,
+        type: newJob.type || 'fulltime'
       };
 
       if (newJob.id) {
@@ -566,6 +569,47 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               />
               {errors.salary && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.salary}</span>}
             </div>
+
+            {!isAdCourse && (
+              <div className="input-group chip-group-container" style={{ marginBottom: '16px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
+                  {t('jobTypeLabel', 'Ish turi / Bandlik shakli')} <span style={{ color: '#FF3B30' }}>*</span>
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {[
+                    { value: 'fulltime', label: t('jobType_fulltime', 'Doimiy (Seishain)') },
+                    { value: 'contract', label: t('jobType_contract', 'Shartnoma (Keiyaku)') },
+                    { value: 'parttime', label: t('jobType_parttime', 'Kunbay/Soatbay (Arubaito)') }
+                  ].map(opt => {
+                    const isSelected = newJob.type === opt.value;
+                    const isDisabled = newJob.isInternational && opt.value === 'parttime';
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`form-chip ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                        disabled={isDisabled}
+                        onClick={() => {
+                          setNewJob({ ...newJob, type: opt.value });
+                        }}
+                        style={{
+                          opacity: isDisabled ? 0.45 : 1,
+                          cursor: isDisabled ? 'not-allowed' : 'pointer',
+                          textDecoration: isDisabled ? 'line-through' : 'none'
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {newJob.isInternational && (
+                  <span style={{ fontSize: '11.5px', color: '#FF9F0A', marginTop: '8px', display: 'block', fontWeight: '500', lineHeight: '1.4' }}>
+                    {t('sswArubaitoWarning', '⚠️ Tokutei Ginou (SSW) vizasi qonunchiligiga ko\'ra, part-time (arubaito) ishlash taqiqlanadi.')}
+                  </span>
+                )}
+              </div>
+            )}
 
             <div className="input-group" style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
@@ -1005,7 +1049,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 ...prev,
                 isInternational: true,
                 foreigners: 'foreigners_visa',
-                housing: 'housing_dorm'
+                housing: 'housing_dorm',
+                type: prev.type === 'parttime' ? 'fulltime' : (prev.type || 'fulltime')
               }));
               setShowAddForm(true);
               setShowJobTypeSelect(false);
