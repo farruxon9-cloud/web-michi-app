@@ -450,7 +450,7 @@ const getLicenseLabel = (type) => {
           </p>
         </div>
 
-        <div className="profile-menu hide-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '30px', overflowY: 'auto', maxHeight: 'calc(100vh - 120px)', paddingRight: '2px' }}>
+        <div className="profile-menu" style={{ paddingTop: '16px', paddingBottom: '30px' }}>
           {/* Logo & Vision */}
           <div className="glass squircle" style={{ padding: '24px 20px', textAlign: 'center' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '18px', background: 'var(--primary)', color: 'white', fontSize: '28px', fontWeight: '900', marginBottom: '16px', boxShadow: '0 8px 24px rgba(90, 85, 234, 0.3)' }}>
