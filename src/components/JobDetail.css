@@ -730,3 +730,63 @@ html.dark-mode .db-sub-cell {
     font-size: 11.5px;
   }
 }
+
+/* SSW Requirements Card block - premium violet styling */
+.ssw-requirements-block {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(175, 82, 222, 0.05) 0%, rgba(94, 92, 230, 0.02) 100%);
+  border: 1px solid rgba(175, 82, 222, 0.18);
+  border-radius: 20px;
+}
+
+.ssw-req-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.ssw-req-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.ssw-req-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ssw-req-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ssw-req-bullet {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #AF52DE;
+  margin-top: 7px;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px #AF52DE;
+}
+
+.ssw-req-item p {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+/* Dark mode adjustments */
+html.dark-mode .ssw-requirements-block {
+  background: linear-gradient(135deg, rgba(175, 82, 222, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border-color: rgba(175, 82, 222, 0.25);
+}

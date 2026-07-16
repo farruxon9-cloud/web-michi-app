@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck, Globe } from 'lucide-react';
+import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck, Globe, Compass } from 'lucide-react';
 import './Dashboard.css';
 
 const formatTime = (secs) => {
@@ -332,7 +332,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
           </div>
           
           <div className="bento-international-card-icon">
-            <Globe size={24} />
+            <Compass size={24} />
           </div>
         </div>
       </div>

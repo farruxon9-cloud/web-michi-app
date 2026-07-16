@@ -292,8 +292,8 @@ export default function DriverFeed({
                 <div className="job-card-body">
                   {job.isInternational ? (
                     <div className="international-card-tag">
-                      <span className="airplane-icon">✈️</span>
-                      <span>{t('foreigners_visa', 'Yangi Viza Homiyligi (COE)')}</span>
+                      <Globe size={10} style={{ marginRight: '2px' }} />
+                      <span>{t('foreigners_visa', 'Tokutei Ginou (SSW) • New Visa')}</span>
                     </div>
                   ) : job.foreigners === 'foreigners_visa_renew' ? (
                     <div className="local-visa-renew-tag">

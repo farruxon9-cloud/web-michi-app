@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Bookmark, Map as MapIcon, Calendar, Clock, Banknote, Share2, 
-  Shield, Home, Globe, Award, Car, Users, Heart, Building2, CheckCircle2, Phone } from 'lucide-react';
+  Shield, Home, Globe, Award, Car, Users, Heart, Building2, CheckCircle2, Phone, Sparkles } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './JobDetail.css';
 
@@ -83,8 +83,8 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
             <div>
               {job.isInternational ? (
                 <div className="international-card-tag" style={{ marginBottom: '8px' }}>
-                  <span className="airplane-icon">✈️</span>
-                  <span>{t('foreigners_visa', 'Yangi Viza Homiyligi (COE)')}</span>
+                  <Globe size={10} style={{ marginRight: '2px' }} />
+                  <span>{t('foreigners_visa', 'Tokutei Ginou (SSW) • New Visa')}</span>
                 </div>
               ) : job.foreigners === 'foreigners_visa_renew' ? (
                 <div className="local-visa-renew-tag" style={{ marginBottom: '8px' }}>
@@ -228,6 +228,30 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
             </div>
           </div>
         </div>
+
+        {/* ====== TOKUTEI GINOU (SSW) VISA REQUIREMENTS ====== */}
+        {job.isInternational && (
+          <div className="ssw-requirements-block glass squircle fade-in">
+            <div className="ssw-req-header">
+              <Sparkles size={18} color="#AF52DE" />
+              <h3>{t('sswRequirementsTitle', 'Tokutei Ginou (SSW) Imtihon va Viza Talablari')}</h3>
+            </div>
+            <div className="ssw-req-list">
+              <div className="ssw-req-item">
+                <span className="ssw-req-bullet"></span>
+                <p>{t('sswLanguageReq', '🇯🇵 Yapon Tili: JLPT N4 yoki JFT-Basic hujjati bo\'lishi majburiy.')}</p>
+              </div>
+              <div className="ssw-req-item">
+                <span className="ssw-req-bullet"></span>
+                <p>{t('sswSkillsReq', '🚛 Logistika Imtihoni: Haydovchilik / Logistika SSW kasbiy imtihon hujjati shart.')}</p>
+              </div>
+              <div className="ssw-req-item">
+                <span className="ssw-req-bullet"></span>
+                <p>{t('sswSupportOrgReq', '🏢 Qo\'llab-quvvatlash: 1-sonli ro\'yxatdan o\'tgan tashkilot (RSO) ko\'magi kafolatlanadi.')}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ====== TAVSIF ====== */}
         <div className="description-block">

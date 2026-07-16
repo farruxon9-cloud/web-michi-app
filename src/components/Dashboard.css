@@ -471,15 +471,7 @@ html.light-mode {
   100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
 }
 
-/* Slow spin for the globe icon inside international card representing global connection */
-.bento-international-card .bento-international-card-icon svg {
-  animation: slowGlobeSpin 30s linear infinite;
-}
 
-@keyframes slowGlobeSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
 
 .action-card-left {
   display: flex;
