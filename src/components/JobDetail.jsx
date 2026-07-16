@@ -81,6 +81,22 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           <div className="company-title-wrap">
             <img src={job.logo} alt={job.company} className="detail-logo squircle" />
             <div>
+              {job.isInternational ? (
+                <div className="international-card-tag" style={{ marginBottom: '8px' }}>
+                  <span className="airplane-icon">✈️</span>
+                  <span>{t('foreigners_visa', 'Yangi Viza Homiyligi (COE)')}</span>
+                </div>
+              ) : job.foreigners === 'foreigners_visa_renew' ? (
+                <div className="local-visa-renew-tag" style={{ marginBottom: '8px' }}>
+                  <span className="briefcase-icon">💼</span>
+                  <span>{t('foreigners_visa_renew', 'Mavjud Vizani Uzaytirish')}</span>
+                </div>
+              ) : job.foreigners === 'foreigners_ok' ? (
+                <div className="local-foreigner-ok-tag" style={{ marginBottom: '8px' }}>
+                  <span className="users-icon">👥</span>
+                  <span>{t('foreigners_ok', 'Chet elliklar ochiq (Vizasiz)')}</span>
+                </div>
+              ) : null}
               <h2 className="detail-title">{t(`job_${job.id}_title`, job.title)}</h2>
               <div className="company-name-row">
                 <span>{job.company}</span>

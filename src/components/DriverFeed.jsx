@@ -78,7 +78,7 @@ export const MOCK_JOBS = [
     dayOff: "shanba_yakshanba",
     bonus: "bonus_2",
     insurance: "insurance_basic",
-    foreigners: "foreigners_ok", // foreigners welcome (implies N4)
+    foreigners: "foreigners_visa_renew",
     housing: "housing_half",
     license: "lic_oogata",
     description: "Kanto va Kansai o'rtasida yirik omborlar aro logistika tashish. Katta yuk mashinasi (Oogata) guvohnomasi majburiy.",
@@ -128,7 +128,7 @@ export const MOCK_JOBS = [
     dayOff: "flexible",
     bonus: "bonus_none",
     insurance: "insurance_partial",
-    foreigners: "foreigners_n4", // Changed foreigners_nolang to foreigners_n4
+    foreigners: "foreigners_visa",
     housing: "housing_none",
     license: "tech_forklift",
     description: "Omborda yuklarni tushirish va joylash. Forklift guvohnomasi talab etiladi.",
@@ -195,6 +195,7 @@ export default function DriverFeed({
       'foreigners_nolang': 1,
       'foreigners_ok': 1,
       'foreigners_visa': 1,
+      'foreigners_visa_renew': 1,
       'foreigners_n3': 2,
       'foreigners_n2': 3
     }[job.foreigners] || 0;
@@ -289,12 +290,22 @@ export default function DriverFeed({
 
                 {/* ---- O'ng qism: Ma'lumotlar ---- */}
                 <div className="job-card-body">
-                  {job.isInternational && (
+                  {job.isInternational ? (
                     <div className="international-card-tag">
                       <span className="airplane-icon">✈️</span>
-                      <span>{t('foreigners_visa', 'Chet eldan qabul / Visa support')}</span>
+                      <span>{t('foreigners_visa', 'Yangi Viza Homiyligi (COE)')}</span>
                     </div>
-                  )}
+                  ) : job.foreigners === 'foreigners_visa_renew' ? (
+                    <div className="local-visa-renew-tag">
+                      <span className="briefcase-icon">💼</span>
+                      <span>{t('foreigners_visa_renew', 'Mavjud Vizani Uzaytirish')}</span>
+                    </div>
+                  ) : job.foreigners === 'foreigners_ok' ? (
+                    <div className="local-foreigner-ok-tag">
+                      <span className="users-icon">👥</span>
+                      <span>{t('foreigners_ok', 'Chet elliklar ochiq (Vizasiz)')}</span>
+                    </div>
+                  ) : null}
                   {/* Kompaniya nomi va tasdiqlash belgisi */}
                   <div className="job-card-company">
                     <img src={job.logo} alt={job.company} className="job-card-company-logo" />

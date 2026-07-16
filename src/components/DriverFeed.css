@@ -144,6 +144,48 @@ html.dark-mode .job-card-international {
   font-size: 10px;
 }
 
+.local-visa-renew-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #0A84FF, #5E5CE6);
+  color: #FFF;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(10, 132, 255, 0.15);
+}
+
+.local-visa-renew-tag .briefcase-icon {
+  font-size: 10px;
+}
+
+.local-foreigner-ok-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #30D158, #34C759);
+  color: #FFF;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(48, 209, 88, 0.15);
+}
+
+.local-foreigner-ok-tag .users-icon {
+  font-size: 10px;
+}
+
 .job-card-main-layout {
   display: flex;
   flex-direction: row;

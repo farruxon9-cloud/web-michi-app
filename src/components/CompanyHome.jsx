@@ -201,6 +201,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   ];
   const FOREIGNERS_OPTIONS = [
     { value: 'foreigners_visa', key: 'foreigners_visa' },
+    { value: 'foreigners_visa_renew', key: 'foreigners_visa_renew' },
     { value: 'foreigners_ok', key: 'foreigners_ok' },
     { value: 'foreigners_n4', key: 'foreigners_n4' },
     { value: 'foreigners_n3', key: 'foreigners_n3' },
