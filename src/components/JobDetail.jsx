@@ -84,12 +84,12 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
               {job.isInternational ? (
                 <div className="international-card-tag" style={{ marginBottom: '8px' }}>
                   <Globe size={10} style={{ marginRight: '2px' }} />
-                  <span>{t('foreigners_visa', 'Tokutei Ginou (SSW) • New Visa')}</span>
+                  <span>{t('foreigners_visa', 'Tokutei Ginou • Xalqaro Ish')}</span>
                 </div>
               ) : job.foreigners === 'foreigners_visa_renew' ? (
                 <div className="local-visa-renew-tag" style={{ marginBottom: '8px' }}>
                   <span className="briefcase-icon">💼</span>
-                  <span>{t('foreigners_visa_renew', 'Mavjud Vizani Uzaytirish')}</span>
+                  <span>{t('foreigners_visa_renew', 'Vizani Uzaytirish Ko\'magi')}</span>
                 </div>
               ) : job.foreigners === 'foreigners_ok' ? (
                 <div className="local-foreigner-ok-tag" style={{ marginBottom: '8px' }}>
