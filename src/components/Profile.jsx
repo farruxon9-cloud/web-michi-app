@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
@@ -425,6 +425,115 @@ const getLicenseLabel = (type) => {
                 <span>{t('allOff')}</span>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== ABOUT PAGE =====
+  if (activePage === 'about') {
+    return (
+      <div className="profile-container fade-in">
+        <div className="profile-sticky-back">
+          <button className="icon-btn glass" onClick={() => setActivePage('main')}>
+            <ArrowLeft size={20} />
+          </button>
+        </div>
+        
+        <div className="sub-page-header" style={{ paddingTop: '56px', marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>
+            {t('aboutAppTitle', 'Michi (道) haqida')}
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '4px 0 0 0' }}>
+            {t('aboutSubtitle', 'Platforma missiyasi va kompaniya ma\'lumotlari')}
+          </p>
+        </div>
+
+        <div className="profile-menu hide-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '30px', overflowY: 'auto', maxHeight: 'calc(100vh - 120px)', paddingRight: '2px' }}>
+          {/* Logo & Vision */}
+          <div className="glass squircle" style={{ padding: '24px 20px', textAlign: 'center' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '18px', background: 'var(--primary)', color: 'white', fontSize: '28px', fontWeight: '900', marginBottom: '16px', boxShadow: '0 8px 24px rgba(90, 85, 234, 0.3)' }}>
+              道
+            </div>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '20px', fontWeight: '800', color: 'var(--text-main)' }}>Michi (道)</h3>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+              {t('aboutVision', 'Michi — Yaponiya logistika va avtomobilsozlik ekotizimini birlashtiruvchi yagona raqamli platformadir. Biz haydovchilar, tijorat flotlari va xizmat ko\'rsatish tarmoqlarini o\'zaro to\'g\'ridan-to\'g\'ri bog\'laymiz.')}
+            </p>
+          </div>
+
+          {/* Platform stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+            <div className="glass squircle" style={{ padding: '16px 8px', textAlign: 'center' }}>
+              <strong style={{ display: 'block', fontSize: '18px', color: 'var(--primary)', fontWeight: '800', marginBottom: '4px' }}>10k+</strong>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsPositions', 'Ish o\'rinlari')}</span>
+            </div>
+            <div className="glass squircle" style={{ padding: '16px 8px', textAlign: 'center' }}>
+              <strong style={{ display: 'block', fontSize: '18px', color: 'var(--primary)', fontWeight: '800', marginBottom: '4px' }}>500+</strong>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsCompanies', 'Kompaniyalar')}</span>
+            </div>
+            <div className="glass squircle" style={{ padding: '16px 8px', textAlign: 'center' }}>
+              <strong style={{ display: 'block', fontSize: '18px', color: 'var(--primary)', fontWeight: '800', marginBottom: '4px' }}>24/7</strong>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsSupport', 'Ko\'mak')}</span>
+            </div>
+          </div>
+
+          {/* 2024 problem & Vision */}
+          <div className="glass squircle" style={{ padding: '20px' }}>
+            <h4 style={{ margin: '0 0 10px 0', fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              ⚠️ {t('aboutProblem2024Title', '2024 Muammosi va Yechim')}
+            </h4>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.55' }}>
+              {t('aboutProblem2024Desc', 'Yaponiya logistika sektori yangi ish vaqti cheklovlari sababli haydovchilar yetishmovchiligi muammosiga duch kelmoqda. Michi ushbu trillion iyenalik inqirozga raqamli optimallashtirish va tezkor moslashtirish orqali yechim taqdim etadi.')}
+            </p>
+          </div>
+
+          {/* Company & Asset backing */}
+          <div className="glass squircle" style={{ padding: '20px' }}>
+            <h4 style={{ margin: '0 0 10px 0', fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              🛡️ {t('aboutGuaranteesTitle', 'Ishonchlilik va Kafolat')}
+            </h4>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.55', marginBottom: '12px' }}>
+              {t('aboutGuaranteesDesc', 'Michi platformasi va uning moliyaviy barqarorligi International Halal Capital Group ning ko\'chmas mulk aktivlari bilan huquqiy jihatdan kafolatlangan bo\'lib, foydalanuvchilar va investorlar uchun yuqori xavfsizlikni ta\'minlaydi.')}
+            </p>
+            <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', fontWeight: '600', borderTop: '1px solid var(--glass-border)', paddingTop: '10px' }}>
+              🏢 {t('aboutParentCompany', 'Loyiha egasi')}: <span style={{ color: 'var(--text-main)', fontWeight: '700' }}>International Halal Capital Group</span>
+            </div>
+          </div>
+
+          {/* Contact Details */}
+          <div className="glass squircle" style={{ padding: '20px' }}>
+            <h4 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+              📞 {t('aboutContactUsTitle', 'Aloqa Ma\'lumotlari')}
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>{t('contactDriverSupport', 'Haydovchilar uchun ko\'mak')}</span>
+                <a href="mailto:support@michi.jp.net" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>support@michi.jp.net</a>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>{t('contactGeneral', 'Umumiy savollar')}</span>
+                <a href="mailto:info@michi.jp.net" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>info@michi.jp.net</a>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>{t('contactPartnership', 'Hamkorlik bo\'limi')}</span>
+                <a href="mailto:partners@michi.jp.net" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>partners@michi.jp.net</a>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>{t('contactInvestors', 'Investorlar bo\'limi')}</span>
+                <a href="mailto:invest@michi.jp.net" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>invest@michi.jp.net</a>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', marginTop: '4px' }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>{t('contactWebsite', 'Veb-sayt')}</span>
+                <a href="https://www.michi.jp.net" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  www.michi.jp.net <Globe size={13} />
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '10px' }}>
+            © 2026 Michi (道). All rights reserved.
           </div>
         </div>
       </div>
@@ -1966,6 +2075,12 @@ const getLicenseLabel = (type) => {
           <div className="menu-item" onClick={() => setActivePage('settings')}>
             <div className="menu-icon"><Settings size={20} /></div>
             <span>{t('settings')}</span>
+            <ChevronRight size={20} color="#8E8E93" className="chevron" />
+          </div>
+          <div className="menu-divider"></div>
+          <div className="menu-item" onClick={() => setActivePage('about')}>
+            <div className="menu-icon"><Info size={20} /></div>
+            <span>{t('aboutApp', 'Platforma haqida')}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
         </div>
