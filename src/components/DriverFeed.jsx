@@ -176,6 +176,7 @@ export default function DriverFeed({
   // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
   const filteredJobs = jobs.filter(job => {
     const matchSegment = activeSegment === 'all' 
+      || (activeSegment === 'international' && job.isInternational === true)
       || (activeSegment === 'permanent' && job.type === 'fulltime')
       || (activeSegment === 'hourly' && (job.type === 'parttime' || job.type === 'contract'));
       
@@ -252,6 +253,12 @@ export default function DriverFeed({
             onClick={() => setActiveSegment('all')}
           >
             {t('allJobs', "Barchasi")}
+          </div>
+          <div 
+            className={`segment ${activeSegment === 'international' ? 'active' : ''}`}
+            onClick={() => setActiveSegment('international')}
+          >
+            {t('tokuteiGinouSegment', 'Tokutei Ginou')}
           </div>
           <div 
             className={`segment ${activeSegment === 'permanent' ? 'active' : ''}`}
