@@ -23,7 +23,7 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
-  animation: wrench-pulse 2s infinite ease-in-out;
+  animation: pulse 2s infinite ease-in-out;
 }
 
 .coming-soon-content h2 {
@@ -37,7 +37,7 @@
   line-height: 1.5;
 }
 
-@keyframes wrench-pulse {
+@keyframes pulse {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(175, 82, 222, 0.7); }
   70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(175, 82, 222, 0); }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(175, 82, 222, 0); }
