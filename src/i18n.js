@@ -544,7 +544,14 @@ const resources = {
   },
   ja: {
     translation: {
-
+      advancedFilters: "詳細フィルター",
+      filterLicenses: "運転免許要件",
+      filterJapanese: "日本語レベル",
+      filterBenefits: "福利厚生・特徴",
+      filterSalary: "最低月給",
+      clearFilters: "クリア",
+      applyFilters: "適用する",
+      filterLocation: "勤務地で探す",
       navHome: "ホーム",
       navJobs: "求人",
       navAcademy: "教習所",
@@ -1168,7 +1175,14 @@ const resources = {
   },
   en: {
     translation: {
-
+      advancedFilters: "Advanced Filters",
+      filterLicenses: "Driver's License Requirement",
+      filterJapanese: "Japanese Language Level",
+      filterBenefits: "Benefits & Conditions",
+      filterSalary: "Minimum Monthly Salary",
+      clearFilters: "Clear",
+      applyFilters: "Apply Filters",
+      filterLocation: "Search by Region",
       navHome: "Home",
       navJobs: "Jobs",
       navAcademy: "Academies",

@@ -500,6 +500,8 @@ export default function DriverFeed({
                 <X size={18} />
               </button>
             </div>
+            
+            <div className="filter-drawer-content hide-scrollbar">
 
                         {/* Category 1: Location (Prefecture & City & Station) */}
               <div className="filter-section">
@@ -600,6 +602,7 @@ export default function DriverFeed({
                     </button>
                   </div>
                 </div>
+              </div>
 
 
               {/* Category 2: Licenses */}
