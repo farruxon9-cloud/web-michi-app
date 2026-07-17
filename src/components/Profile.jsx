@@ -478,13 +478,13 @@ const getLicenseLabel = (type) => {
             </div>
           </div>
 
-          {/* 2024 problem & Vision */}
+          {/* Future Perks & Vision */}
           <div className="glass squircle" style={{ padding: '20px' }}>
             <h4 style={{ margin: '0 0 10px 0', fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              ⚠️ {t('aboutProblem2024Title', '2024 Muammosi va Yechim')}
+              🌟 {t('aboutFuturePerksTitle', 'Kelajakdagi imkoniyatlar va chegirmalar')}
             </h4>
             <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.55' }}>
-              {t('aboutProblem2024Desc', 'Yaponiya logistika sektori yangi ish vaqti cheklovlari sababli haydovchilar yetishmovchiligi muammosiga duch kelmoqda. Michi ushbu trillion iyenalik inqirozga raqamli optimallashtirish va tezkor moslashtirish orqali yechim taqdim etadi.')}
+              {t('aboutFuturePerksDesc', 'Michi platformasi yaqin kelajakda haydovchilar uchun shunchaki ish qidirish vositasi emas, balki to\'liq ko\'makchiga aylanadi. Tez orada ilova orqali avtoulovlar uchun maxsus chegirmali sug\'urta, texnik xizmat ko\'rsatish (shakai/maintenance) hamda ehtiyot qismlarni eng arzon narxlarda olish imkoniyatlari joriy etiladi.')}
             </p>
           </div>
 
