@@ -9,6 +9,7 @@ import './App.css';
 import { MOCK_JOBS } from './components/DriverFeed';
 import { MOCK_SCHOOLS } from './components/DrivingAcademy';
 import VoiceAssistant from './components/VoiceAssistant';
+import RobotAvatar from './components/RobotAvatar';
 import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy loading heavy components for faster initial load
@@ -996,17 +997,25 @@ function App() {
           <span className="header-username">{getUserNameWithHonorific()}</span>
         </div>
 
-        <button
-          className="theme-toggle-btn"
-          onClick={() => setDarkMode(prev => !prev)}
-          aria-label="Toggle theme"
-        >
-          <div className={`theme-toggle-track ${darkMode ? 'dark' : 'light'}`}>
-            <div className="theme-toggle-thumb">
-              {darkMode ? <Moon size={14} strokeWidth={2.5} /> : <Sun size={14} strokeWidth={2.5} />}
+        <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            className="theme-toggle-btn"
+            onClick={() => setDarkMode(prev => !prev)}
+            aria-label="Toggle theme"
+          >
+            <div className={`theme-toggle-track ${darkMode ? 'dark' : 'light'}`}>
+              <div className="theme-toggle-thumb">
+                {darkMode ? <Moon size={14} strokeWidth={2.5} /> : <Sun size={14} strokeWidth={2.5} />}
+              </div>
             </div>
-          </div>
-        </button>
+          </button>
+
+          <RobotAvatar 
+            isVoiceActive={isVoiceActive} 
+            voiceStatus={voiceStatus} 
+            onClick={handleVoiceToggle} 
+          />
+        </div>
 
         <div className="logo">
           <div className="logo-kanji">道</div>
@@ -1045,6 +1054,11 @@ function App() {
         <BottomNav 
           activeTab={activeTab} 
           setActiveTab={(tab) => {
+            // Agar foydalanuvchi faol turgan profile tabini takroran (2-marta) bossa, profilning asosiy oynasiga qaytaradi
+            if (tab === 'profile' && activeTab === 'profile') {
+              setProfileActivePage('main');
+            }
+            
             setSelectedJob(null);
             setSelectedSchool(null);
             setBackTab(null);

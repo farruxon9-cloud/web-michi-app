@@ -228,43 +228,62 @@
 }
 
 
-/* ====== 2. FLOATING SUBTITLE PILL (NOTIFICATION STYLE) ====== */
-.voice-chat-bubble-pill {
+/* ====== 2. FLOATING ROBOT SPEECH BUBBLE (TOP-RIGHT) ====== */
+.voice-robot-speech-bubble {
   position: absolute;
-  top: 76px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 380px;
+  top: 76px; /* Sits right below header next to the robot avatar */
+  right: 16px;
+  width: calc(100% - 32px);
+  max-width: 290px;
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0, 0, 0, 0.04);
-  border-radius: 20px;
-  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08), 0 3px 6px rgba(0, 0, 0, 0.03);
+  border-radius: 18px;
+  padding: 12px 14px;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 10px;
   z-index: 10001;
   box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not(.light-mode) .voice-chat-bubble-pill {
-    background: rgba(28, 28, 30, 0.8);
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-  }
+.voice-robot-speech-bubble.animate-slide-in {
+  animation: bubble-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-html.dark-mode .voice-chat-bubble-pill {
-  background: rgba(28, 28, 30, 0.8);
+@keyframes bubble-slide-in {
+  from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+html.dark-mode .voice-robot-speech-bubble {
+  background: rgba(28, 28, 30, 0.82);
   border-color: rgba(255, 255, 255, 0.08);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
 }
 
-.voice-pill-content {
+/* Little bubble pointer (arrow) pointing up to the robot head */
+.speech-bubble-pointer {
+  position: absolute;
+  top: -6px;
+  right: 28px; /* Positioned right under the robot avatar's column */
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.75);
+  transform: rotate(45deg);
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+html.dark-mode .speech-bubble-pointer {
+  background: rgba(28, 28, 30, 0.82);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.speech-bubble-content {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -272,18 +291,19 @@ html.dark-mode .voice-chat-bubble-pill {
   min-width: 0;
 }
 
-.pill-segment {
+.bubble-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   min-width: 0;
 }
 
-.pill-dot {
+.bubble-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
+  margin-top: 6px;
 }
 
 .user-dot { background: #FF9500; }
@@ -294,7 +314,7 @@ html.dark-mode .voice-chat-bubble-pill {
 }
 .error-dot { background: #FF3B30; }
 
-.pill-text {
+.bubble-text {
   margin: 0;
   font-size: 13px;
   line-height: 1.4;
@@ -302,26 +322,62 @@ html.dark-mode .voice-chat-bubble-pill {
   word-break: break-word;
 }
 
-.pill-text.ja-text {
+.bubble-text.ja-text {
   font-weight: 600;
 }
 
-.pill-text.error-text {
+.bubble-text.error-text {
   color: #FF3B30;
 }
 
-.voice-pill-close {
+/* Footer Actions (Language switch + close button) */
+.bubble-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  padding-top: 8px;
+  margin-top: 2px;
+}
+
+html.dark-mode .bubble-footer-actions {
+  border-top-color: rgba(255, 255, 255, 0.04);
+}
+
+.voice-lang-toggle-bubble {
+  background: rgba(94, 92, 230, 0.1);
+  border: 1px solid rgba(94, 92, 230, 0.15);
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.voice-lang-toggle-bubble:hover {
+  background: rgba(94, 92, 230, 0.18);
+  transform: translateY(-0.5px);
+}
+
+.voice-bubble-close-btn {
   background: transparent;
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
   padding: 2px;
-  margin-left: 8px;
-  flex-shrink: 0;
   opacity: 0.7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
 }
 
-.voice-pill-close:hover {
+.voice-bubble-close-btn:hover {
   opacity: 1;
   color: var(--text-main);
 }

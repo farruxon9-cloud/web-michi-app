@@ -3083,86 +3083,54 @@ Return ONLY the raw JSON object, no markdown wrappers.
   // Render ambient voice control interface
   return (
     <>
-      {/* Floating subtitle bubble (shows spoken inputs and AI responses briefly) */}
+      {/* Robot Speech Bubble - floats near the top right below the header robot */}
       {showPill && (
-        <div className="voice-chat-bubble-pill animate-slide-in">
-          <div className="voice-pill-content">
+        <div className="voice-robot-speech-bubble animate-slide-in">
+          <div className="speech-bubble-pointer"></div>
+          
+          <div className="speech-bubble-content">
             {transcript && (
-              <div className="pill-segment user-segment">
-                <span className="pill-dot user-dot"></span>
-                <p className="pill-text"><strong>{t('userSaid', 'Siz')}:</strong> {transcript}</p>
+              <div className="bubble-row user-row">
+                <span className="bubble-dot user-dot"></span>
+                <p className="bubble-text"><strong>{t('userSaid', 'Siz')}:</strong> {transcript}</p>
               </div>
             )}
             
             {aiResponseText && (
-              <div className="pill-segment ai-segment">
-                <span className="pill-dot ai-dot"></span>
-                <p className="pill-text ja-text"><strong>AI:</strong> {aiResponseText}</p>
+              <div className="bubble-row ai-row">
+                <span className="bubble-dot ai-dot"></span>
+                <p className="bubble-text ja-text"><strong>AI:</strong> {aiResponseText}</p>
               </div>
             )}
 
             {status === 'thinking' && !aiResponseText && (
-              <div className="pill-segment thinking-segment">
-                <span className="pill-dot thinking-dot"></span>
-                <p className="pill-text italic">{t('aiThinking', 'AI fikrlamoqda...')}</p>
+              <div className="bubble-row thinking-row">
+                <span className="bubble-dot thinking-dot"></span>
+                <p className="bubble-text italic">{t('aiThinking', 'AI fikrlamoqda...')}</p>
               </div>
             )}
 
             {errorMessage && (
-              <div className="pill-segment error-segment">
-                <span className="pill-dot error-dot"></span>
-                <p className="pill-text error-text">{errorMessage}</p>
+              <div className="bubble-row error-row">
+                <span className="bubble-dot error-dot"></span>
+                <p className="bubble-text error-text">{errorMessage}</p>
               </div>
             )}
           </div>
-          <button className="voice-pill-close" onClick={() => setShowPill(false)}>
-            <X size={12} />
-          </button>
-        </div>
-      )}
-
-      {/* Siri-Style Ambient Glow Wave Bar (shown bottom center, above nav bar) */}
-      {status !== 'idle' && !isVoiceStandby && (
-        <div className={`voice-ambient-glow-container ${status}`}>
-          <div className="voice-glow-visualizer-orb">
-            <canvas ref={canvasRef} className="ai-liquid-orb-glow-canvas" />
-            <div className="ai-liquid-orb-core">
-              <Sparkles size={16} color="#ffffff" fill="#ffffff" />
-            </div>
-          </div>
-          <div className="voice-ambient-info" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {status === 'listening' && <span>{t('aiListeningLabel', 'Tinglamoqda... (Gapiring)')}</span>}
-            {status === 'thinking' && <span>{t('aiThinkingLabel', 'Fikrlamoqda...')}</span>}
-            {status === 'speaking' && <span>{t('aiSpeakingLabel', 'Javob bermoqda...')}</span>}
-            
+          
+          <div className="bubble-footer-actions">
             <button 
-              className="voice-lang-toggle" 
+              className="voice-lang-toggle-bubble" 
               onClick={cycleSpeechLanguage}
               title="Ovozli tilni o'zgartirish"
-              style={{
-                background: 'rgba(255, 255, 255, 0.15)',
-                border: '1px solid rgba(255, 255, 255, 0.25)',
-                color: '#fff',
-                fontSize: '10px',
-                fontWeight: '700',
-                padding: '2px 8px',
-                borderRadius: '20px',
-                marginLeft: '8px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                transition: 'all 0.2s ease',
-                backdropFilter: 'blur(5px)',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-              }}
             >
               {speechLang === 'uz' ? '🇺🇿 UZ' : speechLang === 'ja' ? '🇯🇵 JA' : '🇬🇧 EN'}
             </button>
+            
+            <button className="voice-bubble-close-btn" onClick={() => setShowPill(false)}>
+              <X size={12} />
+            </button>
           </div>
-          <button className="voice-ambient-stop-btn" onClick={stopAllVoiceActivities} title="To'xtatish">
-            <X size={14} />
-          </button>
         </div>
       )}
     </>
