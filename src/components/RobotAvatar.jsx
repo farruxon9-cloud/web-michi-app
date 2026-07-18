@@ -19,23 +19,17 @@ export default function RobotAvatar({ isVoiceActive, voiceStatus = 'idle', onCli
         {/* Glossy light reflection sheen overlay */}
         <div className="robot-screen-gloss"></div>
         
-        {/* Face Elements arranged as Top Row (Eyes) and Bottom Row (Mouth + Blush) */}
+        {/* Face Elements: Simple layout with only eyes and mouth */}
         <div className="robot-face-layout">
           <div className="robot-eyes-row">
-            <div className="robot-eye eye-left">
-              <div className="robot-eyebrow eyebrow-left"></div>
-            </div>
-            <div className="robot-eye eye-right">
-              <div className="robot-eyebrow eyebrow-right"></div>
-            </div>
+            <div className="robot-eye eye-left"></div>
+            <div className="robot-eye eye-right"></div>
           </div>
           
           <div className="robot-mouth-row">
-            <div className="robot-blush blush-left"></div>
             <div className="robot-mouth-wrap">
               <div className="robot-mouth"></div>
             </div>
-            <div className="robot-blush blush-right"></div>
           </div>
         </div>
       </div>

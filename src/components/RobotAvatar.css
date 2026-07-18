@@ -11,20 +11,20 @@
 }
 
 .robot-avatar-container:hover {
-  transform: scale(1.06);
+  transform: scale(1.05);
 }
 
 .robot-avatar-container:active {
   transform: scale(0.95);
 }
 
-/* Head squircle screen - Compacted to 38px x 28px */
+/* Head squircle screen - Compacted to 30px x 26px (reduced width) */
 .robot-head-screen {
-  width: 38px;
-  height: 28px;
+  width: 30px;
+  height: 26px;
   background: #121214;
   border: 1.2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 11px;
+  border-radius: 9px;
   position: relative;
   overflow: hidden;
   box-shadow: 
@@ -49,21 +49,21 @@ html:not(.dark-mode) .robot-head-screen {
 .robot-avatar-container.listening .robot-head-screen {
   border-color: rgba(255, 184, 0, 0.4);
   box-shadow: 
-    0 0 10px rgba(255, 184, 0, 0.2),
+    0 0 8px rgba(255, 184, 0, 0.25),
     0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .robot-avatar-container.thinking .robot-head-screen {
   border-color: rgba(0, 243, 255, 0.4);
   box-shadow: 
-    0 0 10px rgba(0, 243, 255, 0.2),
+    0 0 8px rgba(0, 243, 255, 0.25),
     0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .robot-avatar-container.speaking .robot-head-screen {
   border-color: rgba(255, 184, 0, 0.4);
   box-shadow: 
-    0 0 10px rgba(255, 184, 0, 0.2),
+    0 0 8px rgba(255, 184, 0, 0.25),
     0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
@@ -98,82 +98,31 @@ html:not(.dark-mode) .robot-head-screen {
 .robot-eyes-row {
   display: flex;
   justify-content: center;
-  gap: 10px; /* Horizontal space between eyes */
+  gap: 7px; /* Horizontal space between eyes */
   width: 100%;
   align-items: center;
-  height: 12px;
+  height: 10px;
   position: relative;
 }
 
 /* Glowing Brand Amber Yellow eyes (smaller and much cuter) */
 .robot-eye {
-  width: 4.5px;
-  height: 6px;
+  width: 3.8px;
+  height: 5.5px;
   background: #FFB800; /* Warm mood-lifting Brand Amber Yellow */
-  border-radius: 3px;
+  border-radius: 2px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
-  box-shadow: 0 0 4px rgba(255, 184, 0, 0.7);
+  box-shadow: 0 0 3px rgba(255, 184, 0, 0.7);
 }
-
-/* Eyebrows (Qoshlar) - placed above the eyes for human expressions */
-.robot-eyebrow {
-  position: absolute;
-  top: -3px;
-  left: -0.5px;
-  width: 5.5px;
-  height: 1.2px;
-  background: rgba(255, 184, 0, 0.85);
-  border-radius: 0.5px;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
-  opacity: 0; /* Hidden by default or in sleep */
-}
-
-/* Active eyebrow display */
-.robot-avatar-container:not(.sleeping) .robot-eyebrow {
-  opacity: 0.9;
-}
-
-/* Eyebrow expression styles based on states */
-/* Idle / Listening: happy raised eyebrows */
-.robot-avatar-container.idle .eyebrow-left { transform: rotate(-5deg) translateY(-0.2px); }
-.robot-avatar-container.idle .eyebrow-right { transform: rotate(5deg) translateY(-0.2px); }
-
-.robot-avatar-container.listening .eyebrow-left { transform: rotate(-10deg) translateY(-0.5px); }
-.robot-avatar-container.listening .eyebrow-right { transform: rotate(10deg) translateY(-0.5px); }
-
-/* Thinking: curious / tilted eyebrows */
-.robot-avatar-container.thinking .eyebrow-left { transform: rotate(8deg) translateY(0.2px); }
-.robot-avatar-container.thinking .eyebrow-right { transform: rotate(-8deg) translateY(-0.5px); }
-
-/* Speaking: animated soft moving eyebrows */
-.robot-avatar-container.speaking .eyebrow-left {
-  animation: eyebrow-talk-left 0.8s infinite ease-in-out;
-}
-.robot-avatar-container.speaking .eyebrow-right {
-  animation: eyebrow-talk-right 0.8s infinite ease-in-out;
-}
-
-@keyframes eyebrow-talk-left {
-  0%, 100% { transform: rotate(-5deg) translateY(-0.2px); }
-  50% { transform: rotate(-12deg) translateY(-0.6px); }
-}
-@keyframes eyebrow-talk-right {
-  0%, 100% { transform: rotate(5deg) translateY(-0.2px); }
-  50% { transform: rotate(12deg) translateY(-0.6px); }
-}
-
-/* Error: confused / slanted eyebrows */
-.robot-avatar-container.error .eyebrow-left { transform: rotate(15deg) translateY(0.3px); }
-.robot-avatar-container.error .eyebrow-right { transform: rotate(-15deg) translateY(0.3px); }
 
 /* Sleeping state - eyes closed (thin lines) */
 .robot-avatar-container.sleeping .robot-eye {
-  height: 1.2px;
-  width: 4px;
+  height: 1px;
+  width: 3.5px;
   border-radius: 1px;
   opacity: 0.3;
   background: rgba(255, 255, 255, 0.4);
@@ -216,7 +165,7 @@ html:not(.dark-mode) .robot-head-screen {
 .robot-avatar-container.error .robot-eye {
   background: #FF3B30; /* red for error */
   box-shadow: 0 0 3px rgba(255, 59, 48, 0.6);
-  height: 4px; /* small confused eyes */
+  height: 3.5px; /* small confused eyes */
   border-radius: 50%;
 }
 
@@ -227,17 +176,17 @@ html:not(.dark-mode) .robot-head-screen {
 
 @keyframes eye-think {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
+  50% { transform: translateY(-1.5px); }
 }
 
-/* Mouth & Blush Row (Bottom) */
+/* Mouth Row (Bottom) */
 .robot-mouth-row {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   position: relative;
-  height: 6px;
+  height: 5px;
 }
 
 /* Mouth element */
@@ -252,103 +201,67 @@ html:not(.dark-mode) .robot-head-screen {
 }
 
 .robot-mouth {
-  width: 6.5px;
-  height: 3px;
+  width: 5.5px;
+  height: 2.5px;
   border-bottom: 1.2px solid #FFB800; /* Friendly Brand Amber Yellow */
-  border-radius: 0 0 6px 6px;
+  border-radius: 0 0 5px 5px;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
-  transform: translateY(-2px);
+  transform: translateY(-1.5px);
 }
 
 /* Sleeping mouth is a flat hidden line */
 .robot-avatar-container.sleeping .robot-mouth {
-  width: 3px;
+  width: 2.5px;
   height: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 0;
-  transform: translateY(2px);
+  transform: translateY(1.5px);
 }
 
 /* Listening mouth is a small tiny soft smile */
 .robot-avatar-container.listening .robot-mouth {
-  width: 5px;
-  height: 2.5px;
+  width: 4.5px;
+  height: 2px;
   border-bottom: 1.2px solid #FFB800;
-  border-radius: 0 0 5px 5px;
-  transform: translateY(-1px);
+  border-radius: 0 0 4px 4px;
+  transform: translateY(-0.8px);
 }
 
 /* Thinking mouth is a tiny neutral line */
 .robot-avatar-container.thinking .robot-mouth {
-  width: 4.5px;
+  width: 4px;
   height: 0;
   border-bottom: 1.2px solid #00F3FF; /* cyan for thinking */
   border-radius: 0;
-  transform: translateY(0);
+  transform: translateY(0.5px);
 }
 
 /* Speaking mouth - gentle synchronous talking smile animation */
 .robot-avatar-container.speaking .robot-mouth {
-  width: 6.5px;
-  height: 3px;
+  width: 5.5px;
+  height: 2.5px;
   border-bottom: 1.2px solid #FFB800;
-  border-radius: 0 0 6px 6px;
+  border-radius: 0 0 5px 5px;
   animation: mouth-talk 0.8s infinite ease-in-out; /* Smooth gentle speech */
-  transform: translateY(-2px);
+  transform: translateY(-1.5px);
 }
 
 @keyframes mouth-talk {
   0%, 100% {
-    transform: translateY(-2px) scaleY(1);
+    transform: translateY(-1.5px) scaleY(1);
   }
   50% {
-    transform: translateY(-2px) scaleY(1.5);
+    transform: translateY(-1.5px) scaleY(1.4);
   }
 }
 
 /* Error mouth is a small confused line */
 .robot-avatar-container.error .robot-mouth {
-  width: 5px;
+  width: 4px;
   height: 0;
   border-bottom: 1.2px solid #FF3B30;
   border-radius: 0;
   transform: translateY(1px);
-}
-
-/* Blush cheeks (Yonoqchalar) - placed on sides of mouth */
-.robot-blush {
-  width: 4px;
-  height: 2px;
-  border-radius: 50%;
-  background: rgba(255, 94, 140, 0.65); /* Rosy pink */
-  box-shadow: 0 0 3px rgba(255, 94, 140, 0.8);
-  position: absolute;
-  top: -1px;
-  transition: all 0.3s ease;
-  opacity: 0; /* Hidden in sleep */
-}
-
-.blush-left {
-  left: 6px;
-}
-
-.blush-right {
-  right: 6px;
-}
-
-/* Show blush cheeks in active modes */
-.robot-avatar-container:not(.sleeping) .robot-blush {
-  opacity: 0.95;
-}
-
-/* Pulse breathing blush when speaking */
-.robot-avatar-container.speaking .robot-blush {
-  animation: blush-breath 0.8s infinite ease-in-out;
-}
-
-@keyframes blush-breath {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.25); opacity: 1; }
 }
 
 /* Outer glowing pulse ring when active */
@@ -358,7 +271,7 @@ html:not(.dark-mode) .robot-head-screen {
   left: -3px;
   right: -3px;
   bottom: -3px;
-  border-radius: 10px;
+  border-radius: 11px;
   pointer-events: none;
   z-index: 0;
   opacity: 0;
