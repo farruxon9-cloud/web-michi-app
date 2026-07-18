@@ -1023,17 +1023,15 @@ function App() {
         {/* Right Side: Header Control Capsule (Theme toggle + Robot Avatar unified) */}
         <div className="header-control-capsule">
           <button
-            className="theme-icon-btn"
+            className="theme-toggle-btn"
             onClick={() => setDarkMode(prev => !prev)}
             aria-label="Toggle theme"
             title={darkMode ? "Kunduzgi rejim" : "Tungi rejim"}
           >
-            <div className="theme-icon-wrapper">
-              {darkMode ? (
-                <Sun size={15} strokeWidth={2.2} color="#FFD60A" fill="#FFD60A" />
-              ) : (
-                <Moon size={15} strokeWidth={2.2} color="#8E8E93" />
-              )}
+            <div className={`theme-toggle-track ${darkMode ? 'dark' : 'light'}`}>
+              <div className="theme-toggle-thumb">
+                {darkMode ? <Moon size={14} strokeWidth={2.5} /> : <Sun size={14} strokeWidth={2.5} />}
+              </div>
             </div>
           </button>
 
