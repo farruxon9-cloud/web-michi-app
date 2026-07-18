@@ -992,12 +992,36 @@ function App() {
       <div className="glass-blob blob-3"></div>
 
       <header className="global-header">
-        <div className="user-profile-corner">
-          <img src={getAvatarSrc()} alt="User" className="header-avatar" style={{ border: '2px solid var(--primary)', padding: '2px', borderRadius: '50%', background: '#fff' }} />
-          <span className="header-username">{getUserNameWithHonorific()}</span>
+        {/* Left Side: Clickable Profile Avatar (removes name text, redirects to profile main page) */}
+        <div 
+          className="header-profile-click"
+          onClick={() => {
+            setActiveTab('profile');
+            if (setProfileActivePage) {
+              setProfileActivePage('main');
+            }
+          }}
+          title="Profilni ko'rish"
+        >
+          <img 
+            src={getAvatarSrc()} 
+            alt="User" 
+            className="header-avatar-new" 
+          />
         </div>
 
-        <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Center: Mathematically Centered Clickable MICHI Logo (redirects to Home) */}
+        <div 
+          className="header-logo-centered"
+          onClick={() => setActiveTab('home')}
+          title="Bosh sahifa"
+        >
+          <div className="logo-kanji">道</div>
+          <span className="logo-text">MICHI</span>
+        </div>
+
+        {/* Right Side: Header Actions Group */}
+        <div className="header-actions">
           <button
             className="theme-toggle-btn"
             onClick={() => setDarkMode(prev => !prev)}
@@ -1015,11 +1039,6 @@ function App() {
             voiceStatus={voiceStatus} 
             onClick={handleVoiceToggle} 
           />
-        </div>
-
-        <div className="logo">
-          <div className="logo-kanji">道</div>
-          MICHI
         </div>
       </header>
 

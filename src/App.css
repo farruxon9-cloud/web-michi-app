@@ -163,3 +163,98 @@ html.dark-mode .global-header {
 .theme-toggle-btn:active .theme-toggle-thumb {
   transform: scale(0.9);
 }
+
+/* ============================================
+   Perfect Header Layout & Alignment Styles
+   ============================================ */
+
+/* Clickable Profile Avatar (Left Side) */
+.header-profile-click {
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+  z-index: 101; /* Layered above absolute center background if needed */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header-profile-click:hover {
+  transform: scale(1.04);
+}
+
+.header-profile-click:active {
+  transform: scale(0.95);
+}
+
+.header-avatar-new {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--primary);
+  padding: 1.5px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+html.dark-mode .header-avatar-new {
+  background: #1c1c1e;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Mathematically Centered Logo Container */
+.header-logo-centered {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 100;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header-logo-centered:hover {
+  opacity: 0.9;
+  transform: translate(-50%, -50%) scale(1.03);
+}
+
+.header-logo-centered:active {
+  transform: translate(-50%, -50%) scale(0.97);
+}
+
+/* Kanji Emblem inside Logo */
+.header-logo-centered .logo-kanji {
+  width: 26px;
+  height: 26px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 2px 5px rgba(94, 92, 230, 0.2);
+}
+
+.header-logo-centered .logo-text {
+  font-size: 15px;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+  color: var(--text-main);
+  font-family: 'Outfit', -apple-system, sans-serif;
+}
+
+/* Right Side Actions Group (Theme Switch + RobotAvatar) */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 101;
+}
+
