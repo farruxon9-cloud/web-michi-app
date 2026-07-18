@@ -1002,8 +1002,8 @@ function App() {
           <span className="logo-text">MICHI</span>
         </div>
 
-        {/* Right Side: Header Control Capsule (Theme toggle + Robot Avatar unified) */}
-        <div className="header-control-capsule">
+        {/* Center: Mathematically Centered Theme Toggle Switch (sliding track) */}
+        <div className="header-theme-toggle-centered">
           <button
             className="theme-toggle-btn"
             onClick={() => setDarkMode(prev => !prev)}
@@ -1016,9 +1016,10 @@ function App() {
               </div>
             </div>
           </button>
+        </div>
 
-          <div className="capsule-divider"></div>
-
+        {/* Right Side: Standalone Robot Avatar (Separated AI widget) */}
+        <div className="header-robot-right">
           <RobotAvatar 
             isVoiceActive={isVoiceActive} 
             voiceStatus={voiceStatus} 
