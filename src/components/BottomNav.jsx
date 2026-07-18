@@ -150,14 +150,6 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
               {showBadge && (
                 <span className="nav-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
               )}
-              {item.id === 'academy' && isVoiceStandby && !isActive && (
-                <div className={`voice-standby-orb-nav-overlay ${voiceStatus || 'idle'} animate-fade-in`}>
-                  <div className="voice-standby-orb-glow"></div>
-                  <div className="voice-standby-orb-sphere">
-                    <Sparkles size={11} color="#ffffff" fill="#ffffff" style={{ opacity: 0.95 }} />
-                  </div>
-                </div>
-              )}
             </div>
             <span>{item.label}</span>
           </button>
