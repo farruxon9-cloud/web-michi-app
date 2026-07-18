@@ -18,17 +18,17 @@
   transform: scale(0.95);
 }
 
-/* Head squircle screen */
+/* Head squircle screen - Compacted to 38px x 28px */
 .robot-head-screen {
-  width: 42px;
-  height: 32px;
+  width: 38px;
+  height: 28px;
   background: #121214;
   border: 1.2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 7px;
   position: relative;
   overflow: hidden;
   box-shadow: 
-    0 3px 8px rgba(0, 0, 0, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.15),
     inset 0 1px 1px rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
@@ -41,30 +41,30 @@ html:not(.dark-mode) .robot-head-screen {
   background: #18181b; /* Dark contrast screen */
   border-color: rgba(0, 0, 0, 0.15);
   box-shadow: 
-    0 3px 8px rgba(0, 0, 0, 0.2),
+    0 2px 6px rgba(0, 0, 0, 0.2),
     inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 /* Glow border on active state - extremely soft and premium */
 .robot-avatar-container.listening .robot-head-screen {
-  border-color: rgba(94, 92, 230, 0.4);
+  border-color: rgba(255, 184, 0, 0.4);
   box-shadow: 
-    0 0 10px rgba(94, 92, 230, 0.2),
-    0 3px 8px rgba(0, 0, 0, 0.15);
+    0 0 10px rgba(255, 184, 0, 0.2),
+    0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .robot-avatar-container.thinking .robot-head-screen {
   border-color: rgba(0, 243, 255, 0.4);
   box-shadow: 
     0 0 10px rgba(0, 243, 255, 0.2),
-    0 3px 8px rgba(0, 0, 0, 0.15);
+    0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .robot-avatar-container.speaking .robot-head-screen {
-  border-color: rgba(94, 92, 230, 0.4);
+  border-color: rgba(255, 184, 0, 0.4);
   box-shadow: 
-    0 0 10px rgba(94, 92, 230, 0.2),
-    0 3px 8px rgba(0, 0, 0, 0.15);
+    0 0 10px rgba(255, 184, 0, 0.2),
+    0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Screen glossy glass reflection sheen */
@@ -79,39 +79,104 @@ html:not(.dark-mode) .robot-head-screen {
   pointer-events: none;
 }
 
-/* Face positioning */
-.robot-face {
+/* Face Layout container (Column structure) */
+.robot-face-layout {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  justify-content: space-around;
-  padding: 0 6px; /* Increased side padding for bezel look */
+  gap: 2px; /* Small vertical gap between eyes and mouth */
+  padding: 3px 0;
   position: relative;
   z-index: 2;
+  box-sizing: border-box;
 }
 
-/* Glowing vertical pill eyes (smaller and much cuter) */
+/* Eyes row (Top) */
+.robot-eyes-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* Horizontal space between eyes */
+  width: 100%;
+  align-items: center;
+  height: 12px;
+  position: relative;
+}
+
+/* Glowing Brand Amber Yellow eyes (smaller and much cuter) */
 .robot-eye {
-  width: 5px; /* Compact width */
-  height: 8px; /* Compact height */
-  background: #ffffff; /* Soft warm white, always friendly */
+  width: 4.5px;
+  height: 6px;
+  background: #FFB800; /* Warm mood-lifting Brand Amber Yellow */
   border-radius: 3px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
-  box-shadow: 0 0 3px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 4px rgba(255, 184, 0, 0.7);
 }
+
+/* Eyebrows (Qoshlar) - placed above the eyes for human expressions */
+.robot-eyebrow {
+  position: absolute;
+  top: -3px;
+  left: -0.5px;
+  width: 5.5px;
+  height: 1.2px;
+  background: rgba(255, 184, 0, 0.85);
+  border-radius: 0.5px;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
+  opacity: 0; /* Hidden by default or in sleep */
+}
+
+/* Active eyebrow display */
+.robot-avatar-container:not(.sleeping) .robot-eyebrow {
+  opacity: 0.9;
+}
+
+/* Eyebrow expression styles based on states */
+/* Idle / Listening: happy raised eyebrows */
+.robot-avatar-container.idle .eyebrow-left { transform: rotate(-5deg) translateY(-0.2px); }
+.robot-avatar-container.idle .eyebrow-right { transform: rotate(5deg) translateY(-0.2px); }
+
+.robot-avatar-container.listening .eyebrow-left { transform: rotate(-10deg) translateY(-0.5px); }
+.robot-avatar-container.listening .eyebrow-right { transform: rotate(10deg) translateY(-0.5px); }
+
+/* Thinking: curious / tilted eyebrows */
+.robot-avatar-container.thinking .eyebrow-left { transform: rotate(8deg) translateY(0.2px); }
+.robot-avatar-container.thinking .eyebrow-right { transform: rotate(-8deg) translateY(-0.5px); }
+
+/* Speaking: animated soft moving eyebrows */
+.robot-avatar-container.speaking .eyebrow-left {
+  animation: eyebrow-talk-left 0.8s infinite ease-in-out;
+}
+.robot-avatar-container.speaking .eyebrow-right {
+  animation: eyebrow-talk-right 0.8s infinite ease-in-out;
+}
+
+@keyframes eyebrow-talk-left {
+  0%, 100% { transform: rotate(-5deg) translateY(-0.2px); }
+  50% { transform: rotate(-12deg) translateY(-0.6px); }
+}
+@keyframes eyebrow-talk-right {
+  0%, 100% { transform: rotate(5deg) translateY(-0.2px); }
+  50% { transform: rotate(12deg) translateY(-0.6px); }
+}
+
+/* Error: confused / slanted eyebrows */
+.robot-avatar-container.error .eyebrow-left { transform: rotate(15deg) translateY(0.3px); }
+.robot-avatar-container.error .eyebrow-right { transform: rotate(-15deg) translateY(0.3px); }
 
 /* Sleeping state - eyes closed (thin lines) */
 .robot-avatar-container.sleeping .robot-eye {
-  height: 1.5px;
+  height: 1.2px;
   width: 4px;
   border-radius: 1px;
   opacity: 0.3;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.4);
   box-shadow: none;
   transform: translateY(2px);
 }
@@ -126,31 +191,31 @@ html:not(.dark-mode) .robot-head-screen {
     transform: scaleY(1);
   }
   96% {
-    transform: scaleY(0.1);
+    transform: scaleY(0.15);
   }
 }
 
-/* Colors for active modes - kept warm white with soft glow */
+/* Colors for active modes - kept Brand Amber Yellow with soft glow */
 .robot-avatar-container.listening .robot-eye {
-  background: #ffffff;
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
+  background: #FFB800;
+  box-shadow: 0 0 5px rgba(255, 184, 0, 0.9);
   animation: eye-blink 5s infinite, eye-breath 1.8s infinite ease-in-out;
 }
 
 .robot-avatar-container.thinking .robot-eye {
-  background: #ffffff;
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
+  background: #00F3FF; /* cyan for thinking */
+  box-shadow: 0 0 5px rgba(0, 243, 255, 0.9);
   animation: eye-think 1.2s infinite ease-in-out;
 }
 
 .robot-avatar-container.speaking .robot-eye {
-  background: #ffffff;
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
+  background: #FFB800;
+  box-shadow: 0 0 5px rgba(255, 184, 0, 0.9);
 }
 
 .robot-avatar-container.error .robot-eye {
-  background: #ffffff;
-  box-shadow: 0 0 3px rgba(255, 255, 255, 0.6);
+  background: #FF3B30; /* red for error */
+  box-shadow: 0 0 3px rgba(255, 59, 48, 0.6);
   height: 4px; /* small confused eyes */
   border-radius: 50%;
 }
@@ -165,25 +230,34 @@ html:not(.dark-mode) .robot-head-screen {
   50% { transform: translateY(-2px); }
 }
 
+/* Mouth & Blush Row (Bottom) */
+.robot-mouth-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+  height: 6px;
+}
+
 /* Mouth element */
 .robot-mouth-wrap {
-  width: 10px;
-  height: 6px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: visible;
   transition: all 0.3s ease;
+  z-index: 2;
 }
 
 .robot-mouth {
-  width: 8px;
-  height: 4px;
-  border-bottom: 1.5px solid #ffffff; /* Friendly white mouth */
-  border-radius: 0 0 8px 8px;
+  width: 6.5px;
+  height: 3px;
+  border-bottom: 1.2px solid #FFB800; /* Friendly Brand Amber Yellow */
+  border-radius: 0 0 6px 6px;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 /* Sleeping mouth is a flat hidden line */
@@ -197,48 +271,84 @@ html:not(.dark-mode) .robot-head-screen {
 
 /* Listening mouth is a small tiny soft smile */
 .robot-avatar-container.listening .robot-mouth {
-  width: 6px;
-  height: 3px;
-  border-bottom: 1.5px solid #ffffff;
-  border-radius: 0 0 6px 6px;
-  transform: translateY(0);
+  width: 5px;
+  height: 2.5px;
+  border-bottom: 1.2px solid #FFB800;
+  border-radius: 0 0 5px 5px;
+  transform: translateY(-1px);
 }
 
 /* Thinking mouth is a tiny neutral line */
 .robot-avatar-container.thinking .robot-mouth {
-  width: 5px;
+  width: 4.5px;
   height: 0;
-  border-bottom: 1.5px solid #ffffff;
+  border-bottom: 1.2px solid #00F3FF; /* cyan for thinking */
   border-radius: 0;
-  transform: translateY(1px);
+  transform: translateY(0);
 }
 
-/* Speaking mouth - gentle synchronous talking smile animation (moves slowly & softly) */
+/* Speaking mouth - gentle synchronous talking smile animation */
 .robot-avatar-container.speaking .robot-mouth {
-  width: 8px;
-  height: 4px;
-  border-bottom: 1.5px solid #ffffff; /* Kept clean white, no scary red */
-  border-radius: 0 0 8px 8px;
-  animation: mouth-talk 0.8s infinite ease-in-out; /* Slowed down to 0.8s for smooth gentle speech */
-  transform: translateY(-1px);
+  width: 6.5px;
+  height: 3px;
+  border-bottom: 1.2px solid #FFB800;
+  border-radius: 0 0 6px 6px;
+  animation: mouth-talk 0.8s infinite ease-in-out; /* Smooth gentle speech */
+  transform: translateY(-2px);
 }
 
 @keyframes mouth-talk {
   0%, 100% {
-    transform: translateY(-1px) scaleY(1);
+    transform: translateY(-2px) scaleY(1);
   }
   50% {
-    transform: translateY(-1px) scaleY(1.5);
+    transform: translateY(-2px) scaleY(1.5);
   }
 }
 
-/* Error mouth is a small neutral straight line */
+/* Error mouth is a small confused line */
 .robot-avatar-container.error .robot-mouth {
-  width: 6px;
+  width: 5px;
   height: 0;
-  border-bottom: 1.2px solid #ffffff;
+  border-bottom: 1.2px solid #FF3B30;
   border-radius: 0;
-  transform: translateY(2px);
+  transform: translateY(1px);
+}
+
+/* Blush cheeks (Yonoqchalar) - placed on sides of mouth */
+.robot-blush {
+  width: 4px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(255, 94, 140, 0.65); /* Rosy pink */
+  box-shadow: 0 0 3px rgba(255, 94, 140, 0.8);
+  position: absolute;
+  top: -1px;
+  transition: all 0.3s ease;
+  opacity: 0; /* Hidden in sleep */
+}
+
+.blush-left {
+  left: 6px;
+}
+
+.blush-right {
+  right: 6px;
+}
+
+/* Show blush cheeks in active modes */
+.robot-avatar-container:not(.sleeping) .robot-blush {
+  opacity: 0.95;
+}
+
+/* Pulse breathing blush when speaking */
+.robot-avatar-container.speaking .robot-blush {
+  animation: blush-breath 0.8s infinite ease-in-out;
+}
+
+@keyframes blush-breath {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.25); opacity: 1; }
 }
 
 /* Outer glowing pulse ring when active */
@@ -248,7 +358,7 @@ html:not(.dark-mode) .robot-head-screen {
   left: -3px;
   right: -3px;
   bottom: -3px;
-  border-radius: 11px;
+  border-radius: 10px;
   pointer-events: none;
   z-index: 0;
   opacity: 0;
@@ -256,7 +366,7 @@ html:not(.dark-mode) .robot-head-screen {
 }
 
 .robot-pulse-ring.listening {
-  border: 1px solid rgba(94, 92, 230, 0.3);
+  border: 1px solid rgba(255, 184, 0, 0.3);
   animation: pulse-glow-ring 2s infinite ease-out;
 }
 

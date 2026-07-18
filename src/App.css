@@ -98,9 +98,9 @@ html.dark-mode .global-header {
 
 .theme-toggle-track {
   position: relative;
-  width: 52px;
-  height: 28px;
-  border-radius: 14px;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.08);
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(16px);
@@ -124,8 +124,8 @@ html.dark-mode .global-header {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: linear-gradient(135deg, #FFB800, #FF8C00); /* Warm sun gradient */
   display: flex;
@@ -139,7 +139,7 @@ html.dark-mode .global-header {
 }
 
 .theme-toggle-track.dark .theme-toggle-thumb {
-  left: calc(100% - 24px); /* Slide to the right side */
+  left: calc(100% - 20px); /* Slide to the right side */
   background: linear-gradient(135deg, #5E5CE6, #8B5CF6); /* Cool indigo-violet gradient */
   box-shadow:
     0 2px 8px rgba(94, 92, 230, 0.4),

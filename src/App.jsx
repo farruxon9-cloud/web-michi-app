@@ -1030,7 +1030,7 @@ function App() {
           >
             <div className={`theme-toggle-track ${darkMode ? 'dark' : 'light'}`}>
               <div className="theme-toggle-thumb">
-                {darkMode ? <Moon size={14} strokeWidth={2.5} /> : <Sun size={14} strokeWidth={2.5} />}
+                {darkMode ? <Moon size={11} strokeWidth={2.5} /> : <Sun size={11} strokeWidth={2.5} />}
               </div>
             </div>
           </button>
