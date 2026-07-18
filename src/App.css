@@ -11,7 +11,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px; /* Unified 16px horizontal padding = same as Dashboard & BottomNav */
+  padding: 12px 28px; /* Pulled inward from edges for a balanced minimalist header */
   background: var(--bg-color);
   border-bottom: 1px solid rgba(0, 0, 0, 0.04); /* Subtle refined separator instead of heavy box-shadow */
   position: relative;
