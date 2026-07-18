@@ -250,11 +250,85 @@ html.dark-mode .header-avatar-new {
   font-family: 'Outfit', -apple-system, sans-serif;
 }
 
-/* Right Side Actions Group (Theme Switch + RobotAvatar) */
-.header-actions {
+/* Right Side Unified Control Capsule */
+.header-control-capsule {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 20px;
+  padding: 2px 4px 2px 6px;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
   z-index: 101;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
+  box-sizing: border-box;
+  height: 38px;
+}
+
+html.dark-mode .header-control-capsule {
+  background: rgba(28, 28, 30, 0.55);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Minimalist Circular Theme Toggle Button */
+.theme-icon-btn {
+  background: transparent;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.theme-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  transform: scale(1.08);
+}
+
+html.dark-mode .theme-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.theme-icon-btn:active {
+  transform: scale(0.92);
+}
+
+.theme-icon-btn .theme-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.4, 1);
+}
+
+.theme-icon-btn:hover .theme-icon-wrapper {
+  transform: rotate(15deg);
+}
+
+/* Capsule Vertical Divider */
+.capsule-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+html.dark-mode .capsule-divider {
+  background: rgba(255, 255, 255, 0.12);
 }
 
