@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck, Globe, Compass } from 'lucide-react';
+import { playHapticClick } from '../utils/haptics';
 import './Dashboard.css';
 
 const formatTime = (secs) => {
@@ -18,6 +19,14 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
   
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+
+  const triggerSound = () => {
+    try {
+      const saved = localStorage.getItem('michi_sound');
+      const soundSettings = saved ? JSON.parse(saved) : { sound: true, vibration: true };
+      playHapticClick(soundSettings);
+    } catch (e) {}
+  };
 
   const SLIDES = [
     {
@@ -114,6 +123,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
   const handleCardClick = (tab) => {
     const diffX = Math.abs(touchStartX.current - touchEndX.current);
     if (diffX < 10) {
+      triggerSound();
       setActiveTab(tab);
     }
   };
@@ -258,7 +268,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
       {/* Bento Icons Row (Like BON App Store / Google Play / Inst) */}
       <div className="bento-icons-row">
         
-        <div className="bento-icon-card dark-card" onClick={() => setActiveTab('jobs')}>
+        <div className="bento-icon-card dark-card" onClick={() => { triggerSound(); setActiveTab('jobs'); }}>
           <div className="bento-icon-wrap">
             <Briefcase size={28} />
           </div>
@@ -268,7 +278,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
           </div>
         </div>
 
-        <div className="bento-icon-card dark-card" onClick={() => setActiveTab('academy')}>
+        <div className="bento-icon-card dark-card" onClick={() => { triggerSound(); setActiveTab('academy'); }}>
           <div className="bento-icon-wrap">
             <GraduationCap size={28} />
           </div>
@@ -278,7 +288,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
           </div>
         </div>
 
-        <div className="bento-icon-card light-card" onClick={() => setActiveTab('service')}>
+        <div className="bento-icon-card light-card" onClick={() => { triggerSound(); setActiveTab('service'); }}>
           <div className="bento-icon-wrap">
             <Wrench size={26} />
           </div>
@@ -415,6 +425,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
             <div 
               className="bento-my-ads-card glass squircle" 
               onClick={() => {
+                triggerSound();
                 if (setProfileActivePageSource) setProfileActivePageSource('home');
                 if (setProfileActivePage) setProfileActivePage('my_ads');
                 setActiveTab('profile');
@@ -433,6 +444,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
             <div 
               className="bento-my-ads-card bento-my-apps-card glass squircle" 
               onClick={() => {
+                triggerSound();
                 if (setProfileActivePageSource) setProfileActivePageSource('home');
                 if (setProfileActivePage) setProfileActivePage('applications');
                 setActiveTab('profile');

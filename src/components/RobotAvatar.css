@@ -45,26 +45,26 @@ html:not(.dark-mode) .robot-head-screen {
     inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
-/* Glow border on active state */
+/* Glow border on active state - extremely soft and premium */
 .robot-avatar-container.listening .robot-head-screen {
-  border-color: var(--primary);
+  border-color: rgba(94, 92, 230, 0.4);
   box-shadow: 
-    0 0 10px rgba(94, 92, 230, 0.35),
-    0 3px 8px rgba(0, 0, 0, 0.2);
+    0 0 10px rgba(94, 92, 230, 0.2),
+    0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
 .robot-avatar-container.thinking .robot-head-screen {
-  border-color: #00F3FF;
+  border-color: rgba(0, 243, 255, 0.4);
   box-shadow: 
-    0 0 10px rgba(0, 243, 255, 0.35),
-    0 3px 8px rgba(0, 0, 0, 0.2);
+    0 0 10px rgba(0, 243, 255, 0.2),
+    0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
 .robot-avatar-container.speaking .robot-head-screen {
-  border-color: #FF007A;
+  border-color: rgba(94, 92, 230, 0.4);
   box-shadow: 
-    0 0 10px rgba(255, 0, 122, 0.35),
-    0 3px 8px rgba(0, 0, 0, 0.2);
+    0 0 10px rgba(94, 92, 230, 0.2),
+    0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Screen glossy glass reflection sheen */
@@ -74,7 +74,7 @@ html:not(.dark-mode) .robot-head-screen {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 60%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 60%);
   z-index: 5;
   pointer-events: none;
 }
@@ -86,31 +86,32 @@ html:not(.dark-mode) .robot-head-screen {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 4px;
+  padding: 0 6px; /* Increased side padding for bezel look */
   position: relative;
   z-index: 2;
 }
 
-/* Glowing vertical pill eyes */
+/* Glowing vertical pill eyes (smaller and much cuter) */
 .robot-eye {
-  width: 7px;
-  height: 14px;
-  background: #ffffff;
-  border-radius: 4px;
+  width: 5px; /* Compact width */
+  height: 8px; /* Compact height */
+  background: #ffffff; /* Soft warm white, always friendly */
+  border-radius: 3px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.6);
 }
 
 /* Sleeping state - eyes closed (thin lines) */
 .robot-avatar-container.sleeping .robot-eye {
-  height: 2px;
+  height: 1.5px;
+  width: 4px;
   border-radius: 1px;
-  opacity: 0.35;
-  background: rgba(255, 255, 255, 0.6);
+  opacity: 0.3;
+  background: rgba(255, 255, 255, 0.5);
   box-shadow: none;
   transform: translateY(2px);
 }
@@ -129,45 +130,45 @@ html:not(.dark-mode) .robot-head-screen {
   }
 }
 
-/* Colors for active modes */
+/* Colors for active modes - kept warm white with soft glow */
 .robot-avatar-container.listening .robot-eye {
-  background: var(--primary);
-  box-shadow: 0 0 6px var(--primary);
-  animation: eye-blink 5s infinite, eye-breath 1.2s infinite ease-in-out;
+  background: #ffffff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
+  animation: eye-blink 5s infinite, eye-breath 1.8s infinite ease-in-out;
 }
 
 .robot-avatar-container.thinking .robot-eye {
-  background: #00F3FF;
-  box-shadow: 0 0 6px #00F3FF;
-  animation: eye-think 0.8s infinite ease-in-out;
+  background: #ffffff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
+  animation: eye-think 1.2s infinite ease-in-out;
 }
 
 .robot-avatar-container.speaking .robot-eye {
   background: #ffffff;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
 }
 
 .robot-avatar-container.error .robot-eye {
-  background: #FF3B30;
-  box-shadow: 0 0 6px #FF3B30;
-  height: 8px;
+  background: #ffffff;
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.6);
+  height: 4px; /* small confused eyes */
   border-radius: 50%;
 }
 
 @keyframes eye-breath {
   0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.8; }
+  50% { transform: scale(1.08); opacity: 0.85; }
 }
 
 @keyframes eye-think {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  50% { transform: translateY(-2px); }
 }
 
 /* Mouth element */
 .robot-mouth-wrap {
-  width: 12px;
-  height: 8px;
+  width: 10px;
+  height: 6px;
   position: relative;
   display: flex;
   align-items: center;
@@ -179,7 +180,7 @@ html:not(.dark-mode) .robot-head-screen {
 .robot-mouth {
   width: 8px;
   height: 4px;
-  border-bottom: 1.5px solid #ffffff;
+  border-bottom: 1.5px solid #ffffff; /* Friendly white mouth */
   border-radius: 0 0 8px 8px;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
   transform: translateY(-1px);
@@ -187,58 +188,56 @@ html:not(.dark-mode) .robot-head-screen {
 
 /* Sleeping mouth is a flat hidden line */
 .robot-avatar-container.sleeping .robot-mouth {
-  width: 4px;
+  width: 3px;
   height: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 0;
   transform: translateY(2px);
 }
 
-/* Listening mouth is a small tiny circle/oh face of wonder */
+/* Listening mouth is a small tiny soft smile */
 .robot-avatar-container.listening .robot-mouth {
-  width: 4px;
-  height: 4px;
-  border: 1.5px solid var(--primary);
-  border-radius: 50%;
-  background: transparent;
+  width: 6px;
+  height: 3px;
+  border-bottom: 1.5px solid #ffffff;
+  border-radius: 0 0 6px 6px;
   transform: translateY(0);
 }
 
-/* Thinking mouth is a neutral line */
+/* Thinking mouth is a tiny neutral line */
 .robot-avatar-container.thinking .robot-mouth {
-  width: 6px;
+  width: 5px;
   height: 0;
-  border-bottom: 1.5px solid #00F3FF;
+  border-bottom: 1.5px solid #ffffff;
   border-radius: 0;
   transform: translateY(1px);
 }
 
-/* Speaking mouth - talking animation */
+/* Speaking mouth - gentle synchronous talking smile animation (moves slowly & softly) */
 .robot-avatar-container.speaking .robot-mouth {
-  width: 6px;
-  height: 6px;
-  border: 1.5px solid #FF007A;
-  border-radius: 50%;
-  animation: mouth-talk 0.16s infinite ease-in-out;
-  transform: translateY(0);
+  width: 8px;
+  height: 4px;
+  border-bottom: 1.5px solid #ffffff; /* Kept clean white, no scary red */
+  border-radius: 0 0 8px 8px;
+  animation: mouth-talk 0.8s infinite ease-in-out; /* Slowed down to 0.8s for smooth gentle speech */
+  transform: translateY(-1px);
 }
 
 @keyframes mouth-talk {
   0%, 100% {
-    transform: scaleY(0.3);
+    transform: translateY(-1px) scaleY(1);
   }
   50% {
-    transform: scaleY(1.4);
+    transform: translateY(-1px) scaleY(1.5);
   }
 }
 
-/* Error mouth is a sad curve */
+/* Error mouth is a small neutral straight line */
 .robot-avatar-container.error .robot-mouth {
-  width: 8px;
-  height: 4px;
-  border-top: 1.5px solid #FF3B30;
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
+  width: 6px;
+  height: 0;
+  border-bottom: 1.2px solid #ffffff;
+  border-radius: 0;
   transform: translateY(2px);
 }
 

@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
@@ -10,6 +10,26 @@ import VerifiedBadge from './VerifiedBadge';
 import CompanyHome from './CompanyHome';
 import ResumeBuilder from './ResumeBuilder';
 import './Profile.css';
+
+const StatCounter = ({ target, suffix = '', duration = 1200 }) => {
+  const [count, setCount] = React.useState(0);
+
+  React.useEffect(() => {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const easeProgress = 1 - Math.pow(1 - progress, 3); // cubicOut easing
+      setCount(Math.floor(easeProgress * target));
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }, [target, duration]);
+
+  return <span>{count.toLocaleString()}{suffix}</span>;
+};
 
 const STATUS_PIPELINE = ['submitted', 'reviewing', 'reviewed', 'interview', 'rejected', 'accepted'];
 const STATUS_COLORS = {
@@ -55,6 +75,14 @@ export default function Profile({
 }) {
   const { t } = useTranslation();
 
+  // Sub-sahifa o'zgarganda scroll holatini tepaga reset qilish (Scroll Restoration)
+  React.useEffect(() => {
+    const container = document.querySelector('.profile-container');
+    if (container) {
+      container.scrollTop = 0;
+    }
+  }, [activePage]);
+
   // --- STATISTIKA VA SANARLARNI HISOBLASH (DYNAMIC MENUS & USER BADGES) ---
   // Hamma bo'limlar uchun bosilgan o'zgarishlar sanoqlari (badges) dynamic ravishda hisoblanadi.
 
@@ -88,6 +116,7 @@ export default function Profile({
   const [empInputName, setEmpInputName] = useState('');
   const [empInputPhone, setEmpInputPhone] = useState('');
   const [expandedAppId, setExpandedAppId] = useState(null);
+  const [aboutTab, setAboutTab] = useState('platform');
   const fileInputRef = useRef(null);
 
   
@@ -435,105 +464,207 @@ const getLicenseLabel = (type) => {
   if (activePage === 'about') {
     return (
       <div className="profile-container fade-in">
-        <div className="profile-sticky-back">
-          <button className="icon-btn glass" onClick={() => setActivePage('main')}>
+        <div className="about-glow-container about-page-wrapper" style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '16px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          
+          {/* Clip Orbs container to prevent horizontal scrolling/shaking */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', borderRadius: '24px', pointerEvents: 'none', zIndex: 1 }}>
+            <div className="about-glow-orb orb1" />
+            <div className="about-glow-orb orb2" />
+          </div>
+
+          {/* Floating Back Button: Stays sticky at top-left, scrolls independently */}
+          <button 
+            className="icon-btn glass" 
+            onClick={() => setActivePage('main')} 
+            style={{ 
+              position: 'sticky', 
+              top: '0px', 
+              left: '0px', 
+              zIndex: 100, 
+              alignSelf: 'flex-start',
+              margin: 0, 
+              width: '40px', 
+              height: '40px', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              border: '1.2px solid var(--glass-border)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.04), inset 0 1px 1.5px rgba(255,255,255,0.4)',
+              cursor: 'pointer',
+              marginBottom: '-40px' /* Pulls the title up to align horizontally */
+            }}
+          >
             <ArrowLeft size={20} />
           </button>
-        </div>
-        
-        <div className="sub-page-header" style={{ paddingTop: '56px', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>
-            {t('aboutAppTitle', 'Michi (道) haqida')}
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '4px 0 0 0' }}>
-            {t('aboutSubtitle', 'Platforma missiyasi va kompaniya ma\'lumotlari')}
-          </p>
-        </div>
 
-        <div className="profile-menu" style={{ paddingTop: '16px', paddingBottom: '30px' }}>
-          {/* Logo & Vision */}
-          <div className="glass squircle" style={{ padding: '24px 20px', textAlign: 'center' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '18px', background: 'var(--primary)', color: 'white', fontSize: '28px', fontWeight: '900', marginBottom: '16px', boxShadow: '0 8px 24px rgba(90, 85, 234, 0.3)' }}>
-              道
-            </div>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '20px', fontWeight: '800', color: 'var(--text-main)' }}>Michi (道)</h3>
-            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-              {t('aboutVision', 'Michi — Yaponiya logistika va avtomobilsozlik ekotizimini birlashtiruvchi yagona raqamli platformadir. Biz haydovchilar, tijorat flotlari va xizmat ko\'rsatish tarmoqlarini o\'zaro to\'g\'ridan-to\'g\'ri bog\'laymiz.')}
-            </p>
+          {/* Title Row: Scrolls normally with content */}
+          <div className="about-animate-item about-delay-1" style={{ textAlign: 'center', zIndex: 2, position: 'relative', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+            <h2 style={{ fontSize: '19px', fontWeight: '950', margin: 0, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+              {t('aboutAppTitle', 'Michi (道) haqida')}
+            </h2>
           </div>
 
-          {/* Platform stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-            <div className="glass squircle" style={{ padding: '16px 8px', textAlign: 'center' }}>
-              <strong style={{ display: 'block', fontSize: '18px', color: 'var(--primary)', fontWeight: '800', marginBottom: '4px' }}>10k+</strong>
-              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsPositions', 'Ish o\'rinlari')}</span>
+          {/* Single Unified Bento Grid */}
+          <div className="about-bento-grid" style={{ position: 'relative', zIndex: 2 }}>
+            
+            {/* Manifesto Quote Card (Span 2) */}
+            <div className="about-manifesto-card about-span-2 about-animate-item about-delay-2">
+              <span className="role-tag" style={{ border: 'none', background: 'var(--primary-light)', color: 'var(--primary)', padding: '3px 8px', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px', display: 'inline-block' }}>
+                {t('michiManifesto', 'Michi manifesti')}
+              </span>
+              <p className="about-manifesto-quote" style={{ fontSize: '13px', lineHeight: '1.45', margin: '0 0 12px 0' }}>
+                "{t('aboutVision')}"
+              </p>
+              <div className="about-manifesto-author" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, var(--primary) 0%, #AF52DE 100%)', color: 'white', fontSize: '14px', fontWeight: '900' }}>道</div>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)' }}>{t('michiTeam', 'Michi Ekotizimi Jamoasi')}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>International Halal Capital Group</div>
+                </div>
+              </div>
             </div>
-            <div className="glass squircle" style={{ padding: '16px 8px', textAlign: 'center' }}>
-              <strong style={{ display: 'block', fontSize: '18px', color: 'var(--primary)', fontWeight: '800', marginBottom: '4px' }}>500+</strong>
-              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsCompanies', 'Kompaniyalar')}</span>
-            </div>
-            <div className="glass squircle" style={{ padding: '16px 8px', textAlign: 'center' }}>
-              <strong style={{ display: 'block', fontSize: '18px', color: 'var(--primary)', fontWeight: '800', marginBottom: '4px' }}>24/7</strong>
-              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsSupport', 'Ko\'mak')}</span>
-            </div>
-          </div>
 
-          {/* Future Perks & Vision */}
-          <div className="glass squircle" style={{ padding: '20px' }}>
-            <h4 style={{ margin: '0 0 10px 0', fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              🌟 {t('aboutFuturePerksTitle', 'Kelajakdagi imkoniyatlar va chegirmalar')}
-            </h4>
-            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.55' }}>
-              {t('aboutFuturePerksDesc', 'Michi platformasi yaqin kelajakda haydovchilar uchun shunchaki ish qidirish vositasi emas, balki to\'liq ko\'makchiga aylanadi. Tez orada ilova orqali avtoulovlar uchun maxsus chegirmali sug\'urta, texnik xizmat ko\'rsatish (shakai/maintenance) hamda ehtiyot qismlarni eng arzon narxlarda olish imkoniyatlari joriy etiladi.')}
-            </p>
-          </div>
-
-          {/* Company & Asset backing */}
-          <div className="glass squircle" style={{ padding: '20px' }}>
-            <h4 style={{ margin: '0 0 10px 0', fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              🛡️ {t('aboutGuaranteesTitle', 'Ishonchlilik va Kafolat')}
-            </h4>
-            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.55', marginBottom: '12px' }}>
-              {t('aboutGuaranteesDesc', 'Michi platformasi va uning moliyaviy barqarorligi International Halal Capital Group ning ko\'chmas mulk aktivlari bilan huquqiy jihatdan kafolatlangan bo\'lib, foydalanuvchilar va investorlar uchun yuqori xavfsizlikni ta\'minlaydi.')}
-            </p>
-            <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', fontWeight: '600', borderTop: '1px solid var(--glass-border)', paddingTop: '10px' }}>
-              🏢 {t('aboutParentCompany', 'Loyiha egasi')}: <span style={{ color: 'var(--text-main)', fontWeight: '700' }}>International Halal Capital Group</span>
-            </div>
-          </div>
-
-          {/* Contact Details */}
-          <div className="glass squircle" style={{ padding: '20px' }}>
-            <h4 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
-              📞 {t('aboutContactUsTitle', 'Aloqa Ma\'lumotlari')}
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
-                <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>{t('contactDriverSupport', 'Haydovchilar uchun ko\'mak')}</span>
-                <a href="mailto:support@michi.jp.net" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>support@michi.jp.net</a>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
-                <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>{t('contactGeneral', 'Umumiy savollar')}</span>
-                <a href="mailto:info@michi.jp.net" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>info@michi.jp.net</a>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
-                <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>{t('contactPartnership', 'Hamkorlik bo\'limi')}</span>
-                <a href="mailto:partners@michi.jp.net" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>partners@michi.jp.net</a>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
-                <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>{t('contactInvestors', 'Investorlar bo\'limi')}</span>
-                <a href="mailto:invest@michi.jp.net" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>invest@michi.jp.net</a>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', marginTop: '4px' }}>
-                <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>{t('contactWebsite', 'Veb-sayt')}</span>
-                <a href="https://www.michi.jp.net" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  www.michi.jp.net <Globe size={13} />
-                </a>
+            {/* Vision Card (Span 1) */}
+            <div className="about-glass-card about-span-1 about-animate-item about-delay-3">
+              <div>
+                <h4 style={{ color: '#0A84FF', fontSize: '12.5px' }}>
+                  <Globe size={16} />
+                  Vision
+                </h4>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4', margin: 0 }}>
+                  {t('aboutSubtitle', 'Yaponiya bo\'yicha yagona raqamli ekotizim.')}
+                </p>
               </div>
             </div>
-          </div>
-          
-          <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '10px' }}>
-            © 2026 Michi (道). All rights reserved.
+
+            {/* Active Jobs Card (Span 1) */}
+            <div className="about-glass-card card-primary about-span-1 about-animate-item about-delay-4" style={{ textAlign: 'center', alignItems: 'center', justifyContent: 'center' }}>
+              <Briefcase size={20} style={{ color: 'var(--primary)', marginBottom: '4px' }} />
+              <strong className="about-shimmer-text" style={{ display: 'block', fontSize: '18px', fontWeight: '900', marginBottom: '1px' }}>
+                <StatCounter target={10} suffix="k+" />
+              </strong>
+              <span style={{ fontSize: '9px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase' }}>{t('aboutStatsPositions', 'Ish o\'rinlari')}</span>
+            </div>
+
+            {/* Corporate Backup & Guarantees Card (Span 2) */}
+            <div className="about-glass-card card-success about-span-2 about-animate-item about-delay-5">
+              <div>
+                <h4 style={{ color: '#34C759', fontSize: '12.5px' }}>
+                  <ShieldCheck size={16} />
+                  {t('aboutGuaranteesTitle', 'Kafolat')}
+                </h4>
+                <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', lineHeight: '1.4', margin: 0 }}>
+                  {t('aboutGuaranteesDesc', 'Loyihamiz barqarorligi International Halal Capital Group aktivlari bilan to\'liq kafolatlangan.')}
+                </p>
+              </div>
+            </div>
+
+            {/* Future Perks / Benefits Card (Span 2) */}
+            <div className="about-glass-card card-primary about-span-2 about-animate-item about-delay-6">
+              <div>
+                <h4 style={{ fontSize: '12.5px' }}>
+                  <Sparkles size={16} style={{ color: 'var(--primary)' }} />
+                  {t('aboutFuturePerksTitle', 'Imkoniyatlar')}
+                </h4>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4', marginBottom: '8px' }}>
+                  {t('aboutFuturePerksDesc', 'Yaqinda haydovchilar uchun chegirmali xizmatlar ishga tushadi:')}
+                </p>
+                <div className="about-perks-list">
+                  <div className="about-perk-row">
+                    <ShieldCheck size={14} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '1px' }} />
+                    <span style={{ fontSize: '11.5px', color: 'var(--text-main)', fontWeight: '600', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                      {t('perkInsuranceTitle', 'Sug\'urta chegirmalari')} 
+                      <span style={{ fontSize: '8.5px', background: 'var(--primary-light)', padding: '1px 5px', borderRadius: '4px', color: 'var(--primary)', fontWeight: '700' }}>{t('statusSoon', 'Tez kunda')}</span>
+                    </span>
+                  </div>
+                  <div className="about-perk-row">
+                    <Wrench size={14} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '1px' }} />
+                    <span style={{ fontSize: '11.5px', color: 'var(--text-main)', fontWeight: '600', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                      {t('perkShakaiTitle', 'Chegirmali Shakai')} 
+                      <span style={{ fontSize: '8.5px', background: 'var(--primary-light)', padding: '1px 5px', borderRadius: '4px', color: 'var(--primary)', fontWeight: '700' }}>{t('statusPlan', 'Reja')}</span>
+                    </span>
+                  </div>
+                  <div className="about-perk-row">
+                    <Briefcase size={14} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '1px' }} />
+                    <span style={{ fontSize: '11.5px', color: 'var(--text-main)', fontWeight: '600', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                      {t('perkPartsTitle', 'Ehtiyot qismlar')} 
+                      <span style={{ fontSize: '8.5px', background: 'var(--primary-light)', padding: '1px 5px', borderRadius: '4px', color: 'var(--primary)', fontWeight: '700' }}>{t('statusPlan', 'Reja')}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Companies Card (Span 1) */}
+            <div className="about-glass-card card-primary about-span-1 about-animate-item about-delay-7" style={{ padding: '16px 8px', textAlign: 'center', alignItems: 'center', justifyContent: 'center' }}>
+              <Building2 size={18} style={{ color: 'var(--primary)', marginBottom: '4px' }} />
+              <strong className="about-shimmer-text" style={{ display: 'block', fontSize: '17px', fontWeight: '900', marginBottom: '1px' }}>
+                <StatCounter target={500} suffix="+" />
+              </strong>
+              <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsCompanies', 'Kompaniyalar')}</span>
+            </div>
+
+            {/* Support Card (Span 1) */}
+            <div className="about-glass-card card-primary about-span-1 about-animate-item about-delay-8" style={{ padding: '16px 8px', textAlign: 'center', alignItems: 'center', justifyContent: 'center' }}>
+              <Phone size={18} style={{ color: 'var(--primary)', marginBottom: '4px' }} />
+              <strong className="about-shimmer-text" style={{ display: 'block', fontSize: '17px', fontWeight: '900', marginBottom: '1px' }}>
+                <StatCounter target={24} suffix="/7" />
+              </strong>
+              <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsSupport', 'Ko\'mak')}</span>
+            </div>
+
+            {/* Contacts Section Title (Span 2) */}
+            <div style={{ padding: '8px 0 0 0', borderTop: '1px solid var(--glass-border)', marginTop: '4px', width: '100%', display: 'flex', alignItems: 'center', gap: '6px' }} className="about-span-2">
+              <Mail size={14} style={{ color: '#0A84FF' }} />
+              <span style={{ fontSize: '12.5px', fontWeight: '800', color: 'var(--text-main)' }}>
+                {t('aboutContactUsTitle', 'Aloqa Departamenti')}
+              </span>
+            </div>
+
+            {/* Contact buttons (Four individual span 1 grid items for visual symmetry) */}
+            <a href="mailto:support@michi.jp.net" className="about-contact-card-btn about-span-1">
+              <span>{t('contactDriverSupport', 'Qo\'llab-quvvatlash')}</span>
+              <strong style={{ fontSize: '11px' }}>support@michi.jp.net</strong>
+            </a>
+            <a href="mailto:info@michi.jp.net" className="about-contact-card-btn about-span-1">
+              <span>{t('contactGeneral', 'Umumiy savollar')}</span>
+              <strong style={{ fontSize: '11px' }}>info@michi.jp.net</strong>
+            </a>
+            <a href="mailto:partners@michi.jp.net" className="about-contact-card-btn about-span-1">
+              <span>{t('contactPartnership', 'Hamkorlik')}</span>
+              <strong style={{ fontSize: '11px' }}>partners@michi.jp.net</strong>
+            </a>
+            <a href="mailto:invest@michi.jp.net" className="about-contact-card-btn about-span-1">
+              <span>{t('contactInvestors', 'Investorlar')}</span>
+              <strong style={{ fontSize: '11px' }}>invest@michi.jp.net</strong>
+            </a>
+
+            {/* Website link (Span 2) */}
+            <a 
+              href="https://www.michi.jp.net" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="about-contact-card-btn about-span-2" 
+              style={{ 
+                width: '100%', 
+                flexDirection: 'row', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                gap: '8px', 
+                padding: '12px', 
+                background: 'linear-gradient(135deg, var(--primary) 0%, #AF52DE 100%)', 
+                borderColor: 'transparent',
+                boxShadow: '0 6px 20px rgba(90, 85, 234, 0.2)'
+              }}
+            >
+              <Globe size={16} color="#FFF" />
+              <strong style={{ color: '#FFF', fontSize: '13px', fontWeight: '800' }}>{t('officialWebsite', 'www.michi.jp.net rasmiy sayti')}</strong>
+            </a>
+            {/* Copyright (Span 2) */}
+            <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--text-secondary)', marginTop: '6px' }} className="about-span-2">
+              © 2026 Michi (道). All rights reserved.
+            </div>
           </div>
         </div>
       </div>

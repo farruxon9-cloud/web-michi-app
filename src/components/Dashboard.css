@@ -1301,3 +1301,23 @@ html.dark-mode .ios-switch.checked {
   margin-bottom: 6px;
 }
 
+/* Premium Bento Spotlight & Glow Hover Effects */
+.bento-icon-card:hover,
+.bento-action-card:hover,
+.bento-music-card:hover,
+.bento-my-ads-card:hover,
+.bento-ai-card:hover {
+  border-color: var(--primary) !important;
+  box-shadow: 0 12px 30px rgba(90, 85, 234, 0.08), inset 0 0 1px 1px var(--primary-light-border) !important;
+  transform: translateY(-3px) scale(1.01) !important;
+}
+
+.dark-mode .bento-icon-card:hover,
+.dark-mode .bento-action-card:hover,
+.dark-mode .bento-music-card:hover,
+.dark-mode .bento-my-ads-card:hover,
+.dark-mode .bento-ai-card:hover {
+  border-color: var(--primary) !important;
+  box-shadow: 0 12px 30px rgba(90, 85, 234, 0.2), inset 0 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+}
+
