@@ -168,114 +168,11 @@ html.dark-mode .global-header {
    Perfect Header Layout & Alignment Styles
    ============================================ */
 
-/* Clickable Profile Capsule & Avatar on Left */
-.header-avatar-wrap {
+/* Clickable Logo on the Left */
+.header-logo-left {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.header-avatar-wrap:hover {
-  transform: scale(1.05);
-}
-
-.header-avatar-wrap:active {
-  transform: scale(0.95);
-}
-
-.header-avatar-new {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1.2px solid var(--primary);
-  padding: 1px;
-  background: #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-}
-
-html.dark-mode .header-avatar-new {
-  background: #1c1c1e;
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* Notification Bell Button inside Profile Capsule */
-.header-bell-btn {
-  background: transparent;
-  border: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--text-main);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  position: relative;
-  padding: 0;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.header-bell-btn:hover {
-  background: rgba(0, 0, 0, 0.04);
-  transform: scale(1.08);
-}
-
-html.dark-mode .header-bell-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.header-bell-btn:active {
-  transform: scale(0.92);
-}
-
-.bell-icon-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Unread Badge on Bell Icon */
-.header-bell-badge {
-  position: absolute;
-  top: -5px;
-  right: -6px;
-  background: #FF3B30;
-  color: #ffffff;
-  font-size: 8.5px;
-  font-weight: 850;
-  min-width: 13px;
-  height: 13px;
-  border-radius: 6.5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 3px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-  box-sizing: border-box;
-}
-
-html.dark-mode .header-bell-badge {
-  border-color: #1c1c1e;
-}
-
-/* Mathematically Centered Logo Container */
-.header-logo-centered {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
   z-index: 100;
   transition: opacity 0.2s ease, transform 0.2s ease;
@@ -283,17 +180,16 @@ html.dark-mode .header-bell-badge {
   -webkit-tap-highlight-color: transparent;
 }
 
-.header-logo-centered:hover {
-  opacity: 0.9;
-  transform: translate(-50%, -50%) scale(1.03);
+.header-logo-left:hover {
+  opacity: 0.95;
+  transform: scale(1.02);
 }
 
-.header-logo-centered:active {
-  transform: translate(-50%, -50%) scale(0.97);
+.header-logo-left:active {
+  transform: scale(0.97);
 }
 
-/* Kanji Emblem inside Logo */
-.header-logo-centered .logo-kanji {
+.header-logo-left .logo-kanji {
   width: 26px;
   height: 26px;
   background: var(--primary);
@@ -307,7 +203,7 @@ html.dark-mode .header-bell-badge {
   box-shadow: 0 2px 5px rgba(94, 92, 230, 0.2);
 }
 
-.header-logo-centered .logo-text {
+.header-logo-left .logo-text {
   font-size: 15px;
   font-weight: 850;
   letter-spacing: 0.05em;
@@ -315,8 +211,7 @@ html.dark-mode .header-bell-badge {
   font-family: 'Outfit', -apple-system, sans-serif;
 }
 
-/* Twin Glass Capsules (Left Profile & Right Control) */
-.header-profile-capsule,
+/* Right Side Unified Control Capsule */
 .header-control-capsule {
   display: flex;
   align-items: center;
@@ -332,26 +227,16 @@ html.dark-mode .header-bell-badge {
   transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
   box-sizing: border-box;
   height: 42px;
+  padding: 4px 8px 4px 10px;
+  gap: 10px;
 }
 
-html.dark-mode .header-profile-capsule,
 html.dark-mode .header-control-capsule {
   background: rgba(28, 28, 30, 0.55);
   border-color: rgba(255, 255, 255, 0.08);
   box-shadow: 
     0 2px 8px rgba(0, 0, 0, 0.15),
     inset 0 1px 1px rgba(255, 255, 255, 0.05);
-}
-
-/* Specific paddings and gaps for optimal visual balance */
-.header-profile-capsule {
-  padding: 4px 6px 4px 5px;
-  gap: 8px;
-}
-
-.header-control-capsule {
-  padding: 4px 8px 4px 10px;
-  gap: 10px;
 }
 
 /* Capsule Vertical Divider */

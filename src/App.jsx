@@ -992,51 +992,9 @@ function App() {
       <div className="glass-blob blob-3"></div>
 
       <header className="global-header">
-        {/* Left Side: Clickable Profile Capsule (Twin structure: Avatar + Bell notifications) */}
-        <div className="header-profile-capsule">
-          <div 
-            className="header-avatar-wrap"
-            onClick={() => {
-              setActiveTab('profile');
-              if (setProfileActivePage) {
-                setProfileActivePage('main');
-              }
-            }}
-            title="Profilni ko'rish"
-          >
-            <img 
-              src={getAvatarSrc()} 
-              alt="User" 
-              className="header-avatar-new" 
-            />
-          </div>
-
-          <div className="capsule-divider"></div>
-
-          <button 
-            className="header-bell-btn" 
-            onClick={() => {
-              setActiveTab('profile');
-              if (setProfileActivePage) {
-                setProfileActivePage('notifications');
-              }
-            }}
-            title="Bildirishnomalar"
-          >
-            <div className="bell-icon-wrap">
-              <Bell size={16} strokeWidth={2.2} />
-              {unreadCount > 0 && (
-                <span className="header-bell-badge">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </div>
-          </button>
-        </div>
-
-        {/* Center: Mathematically Centered Clickable MICHI Logo (redirects to Home) */}
+        {/* Left Side: Clickable MICHI Logo (redirects to Home) */}
         <div 
-          className="header-logo-centered"
+          className="header-logo-left"
           onClick={() => setActiveTab('home')}
           title="Bosh sahifa"
         >
