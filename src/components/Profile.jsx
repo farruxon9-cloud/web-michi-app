@@ -1154,6 +1154,163 @@ export default function Profile({
         uz: "🦋 Eshitish cheklangan",
         ja: "🦋 聴覚障害者マーク (蝶マーク)",
         en: "🦋 Hearing Impaired Mark"
+      },
+      myVehicleTitle: {
+        uz: "Mening Mashinam",
+        ja: "マイカー (登録車両)",
+        en: "My Vehicle"
+      },
+      editVehicle: {
+        uz: "Tahrirlash",
+        ja: "編集",
+        en: "Edit"
+      },
+      vehicleTypeLabel: {
+        uz: "Transport turi",
+        ja: "車種・カテゴリー",
+        en: "Vehicle Category"
+      },
+      vehicleModelLabel: {
+        uz: "Rusumi / Modeli",
+        ja: "メーカー・モデル",
+        en: "Make & Model"
+      },
+      vehicleBodyStyleLabel: {
+        uz: "Kuzov shakli",
+        ja: "ボディタイプ",
+        en: "Body Style"
+      },
+      vehicleYearLabel: {
+        uz: "Yili",
+        ja: "年式",
+        en: "Year"
+      },
+      vehicleColorLabel: {
+        uz: "Moshina rangi",
+        ja: "ボディカラー",
+        en: "Vehicle Color"
+      },
+      vehicleDimensionsLabel: {
+        uz: "Avtotransport o'lchamlari (Navigatsiya uchun)",
+        ja: "車両寸法 (ナビゲーション用)",
+        en: "Vehicle Dimensions (for Navigation)"
+      },
+      heightLabel: {
+        uz: "Balandlik",
+        ja: "車高 (高さ)",
+        en: "Height"
+      },
+      widthLabel: {
+        uz: "Eni",
+        ja: "車幅 (幅)",
+        en: "Width"
+      },
+      lengthLabel: {
+        uz: "Uzunlik",
+        ja: "全長 (長さ)",
+        en: "Length"
+      },
+      weightLabel: {
+        uz: "Vazni",
+        ja: "車両重量 (重さ)",
+        en: "Weight"
+      },
+      // Vehicle types
+      type_car: {
+        uz: "Yengil avto",
+        ja: "乗用車 (普通・軽)",
+        en: "Passenger Car"
+      },
+      type_moto: {
+        uz: "Motosikl",
+        ja: "二輪車 (バイク)",
+        en: "Motorcycle"
+      },
+      type_velo: {
+        uz: "Velosiped",
+        ja: "自転車",
+        en: "Bicycle"
+      },
+      type_truck_3t: {
+        uz: "3t Yuk mashinasi",
+        ja: "3t トラック",
+        en: "3t Truck"
+      },
+      type_truck_4t: {
+        uz: "4t Yuk mashinasi",
+        ja: "4t トラック",
+        en: "4t Truck"
+      },
+      type_trailer: {
+        uz: "Trailer (Katta yuk)",
+        ja: "大型トレーラー",
+        en: "Trailer (Heavy Cargo)"
+      },
+      type_bus: {
+        uz: "Avtobus",
+        ja: "バス",
+        en: "Bus"
+      },
+      // Body styles
+      body_sedan: {
+        uz: "Sedan",
+        ja: "セダン",
+        en: "Sedan"
+      },
+      body_hatchback: {
+        uz: "Hatchback",
+        ja: "ハッチバック",
+        en: "Hatchback"
+      },
+      body_suv: {
+        uz: "SUV (Krossover)",
+        ja: "SUV (クロスカントリー)",
+        en: "SUV"
+      },
+      body_minivan: {
+        uz: "Minivan / MPV",
+        ja: "ミニバン (ワンボックス)",
+        en: "Minivan / MPV"
+      },
+      body_scooter: {
+        uz: "Motoroller",
+        ja: "スクーター (カブ)",
+        en: "Scooter"
+      },
+      body_sportbike: {
+        uz: "Sportbayk",
+        ja: "スポーツバイク",
+        en: "Sportbike"
+      },
+      body_flatbed: {
+        uz: "Ochiq bortli",
+        ja: "平ボディ",
+        en: "Flatbed"
+      },
+      body_box_truck: {
+        uz: "Furgon (Yopiq)",
+        ja: "バン・箱型",
+        en: "Box Truck"
+      },
+      body_wing_body: {
+        uz: "Wing Body",
+        ja: "ウィングボディ",
+        en: "Wing Body"
+      },
+      body_dump_truck: {
+        uz: "Samosval",
+        ja: "ダンプ",
+        en: "Dump Truck"
+      },
+      body_trailer_container: {
+        uz: "Tirkamali",
+        ja: "コンテナトレーラー",
+        en: "Container Trailer"
+      },
+      body_standard: {
+        uz: "Standart",
+        ja: "標準仕様",
+        en: "Standard"
       }
     };
     if (dict[key]) {
@@ -3115,7 +3272,7 @@ const getLicenseLabel = (type) => {
             <div className="resume-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                 <Wrench size={20} color="#30D158" />
-                <h3 style={{ margin: 0 }}>{t('myVehicleTitle', 'Mening Mashinam')}</h3>
+                <h3 style={{ margin: 0 }}>{getProfileLangText('myVehicleTitle')}</h3>
               </div>
               {!isEditingVehicle && (
                 <button 
@@ -3125,7 +3282,7 @@ const getLicenseLabel = (type) => {
                     setIsEditingVehicle(true);
                   }}
                 >
-                  📝 {t('editVehicle', 'Tahrirlash')}
+                  📝 {getProfileLangText('editVehicle')}
                 </button>
               )}
             </div>
@@ -3180,68 +3337,70 @@ const getLicenseLabel = (type) => {
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                     <div className="resume-field">
-                      <span className="field-label">{t('vehicleType', 'Transport turi')}</span>
+                      <span className="field-label">{getProfileLangText('vehicleTypeLabel')}</span>
                       <span className="field-value" style={{ textTransform: 'capitalize' }}>
-                        {myVehicle.type === 'car' ? t('vehicleCar', 'Yengil avto') :
-                         myVehicle.type === 'moto' ? t('vehicleMoto', 'Motosikl') :
-                         myVehicle.type === 'velo' ? t('vehicleVelo', 'Velosiped') :
-                         myVehicle.type === 'truck_3t' ? t('vehicleTruck3t', '3t Yuk mashinasi') :
-                         myVehicle.type === 'truck_4t' ? t('vehicleTruck4t', '4t Yuk mashinasi') :
-                         myVehicle.type === 'trailer' ? t('vehicleTrailer', 'Trailer (Katta yuk)') :
-                         myVehicle.type === 'bus' ? t('vehicleBus', 'Avtobus') : myVehicle.type}
+                        {myVehicle.type === 'car' ? getProfileLangText('type_car') :
+                         myVehicle.type === 'moto' ? getProfileLangText('type_moto') :
+                         myVehicle.type === 'velo' ? getProfileLangText('type_velo') :
+                         myVehicle.type === 'truck_3t' ? getProfileLangText('type_truck_3t') :
+                         myVehicle.type === 'truck_4t' ? getProfileLangText('type_truck_4t') :
+                         myVehicle.type === 'trailer' ? getProfileLangText('type_trailer') :
+                         myVehicle.type === 'bus' ? getProfileLangText('type_bus') : myVehicle.type}
                       </span>
                     </div>
 
                     <div className="resume-field">
-                      <span className="field-label">{t('vehicleModel', 'Rusumi / Modeli')}</span>
+                      <span className="field-label">{getProfileLangText('vehicleModelLabel')}</span>
                       <span className="field-value" style={{ fontWeight: 'bold' }}>
                         {myVehicle.make} {myVehicle.model} {myVehicle.trim && `(${myVehicle.trim})`}
                       </span>
                     </div>
 
                     <div className="resume-field">
-                      <span className="field-label">{t('vehicleBodyStyle', 'Kuzov shakli')}</span>
+                      <span className="field-label">{getProfileLangText('vehicleBodyStyleLabel')}</span>
                       <span className="field-value" style={{ textTransform: 'capitalize' }}>
-                        {myVehicle.bodyStyle === 'sedan' ? t('bodySedan', 'Sedan') :
-                         myVehicle.bodyStyle === 'hatchback' ? t('bodyHatchback', 'Hatchback') :
-                         myVehicle.bodyStyle === 'suv' ? t('bodySuv', 'SUV (Krossover)') :
-                         myVehicle.bodyStyle === 'minivan' ? t('bodyMinivan', 'Minivan / MPV') :
-                         myVehicle.bodyStyle === 'scooter' ? t('bodyScooter', 'Motoroller') :
-                         myVehicle.bodyStyle === 'sportbike' ? t('bodySportbike', 'Sportbayk') :
-                         myVehicle.bodyStyle === 'flatbed' ? t('bodyFlatbed', 'Ochiq bortli') :
-                         myVehicle.bodyStyle === 'box_truck' ? t('bodyBoxTruck', 'Furgon (Yopiq)') :
-                         myVehicle.bodyStyle === 'wing_body' ? t('bodyWingBody', 'Wing Body') :
-                         myVehicle.bodyStyle === 'dump_truck' ? t('bodyDumpTruck', 'Samosval') :
-                         myVehicle.bodyStyle === 'trailer_container' ? t('bodyTrailer', 'Tirkamali') :
-                         myVehicle.bodyStyle || t('bodyStandard', 'Standart')}
+                        {myVehicle.bodyStyle === 'sedan' ? getProfileLangText('body_sedan') :
+                         myVehicle.bodyStyle === 'hatchback' ? getProfileLangText('body_hatchback') :
+                         myVehicle.bodyStyle === 'suv' ? getProfileLangText('body_suv') :
+                         myVehicle.bodyStyle === 'minivan' ? getProfileLangText('body_minivan') :
+                         myVehicle.bodyStyle === 'scooter' ? getProfileLangText('body_scooter') :
+                         myVehicle.bodyStyle === 'sportbike' ? getProfileLangText('body_sportbike') :
+                         myVehicle.bodyStyle === 'flatbed' ? getProfileLangText('body_flatbed') :
+                         myVehicle.bodyStyle === 'box_truck' ? getProfileLangText('body_box_truck') :
+                         myVehicle.bodyStyle === 'wing_body' ? getProfileLangText('body_wing_body') :
+                         myVehicle.bodyStyle === 'dump_truck' ? getProfileLangText('body_dump_truck') :
+                         myVehicle.bodyStyle === 'trailer_container' ? getProfileLangText('body_trailer_container') :
+                         myVehicle.bodyStyle || getProfileLangText('body_standard')}
                       </span>
                     </div>
 
                     <div className="resume-field">
-                      <span className="field-label">{t('vehicleYear', 'Yili')}</span>
+                      <span className="field-label">{getProfileLangText('vehicleYearLabel')}</span>
                       <span className="field-value">{myVehicle.year || '-'}</span>
                     </div>
 
                     <div className="resume-field" style={{ gridColumn: 'span 2', borderTop: '1px solid var(--glass-border)', paddingTop: '8px', marginTop: '4px' }}>
                       <span className="field-label" style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        📐 <span>{t('vehicleDimensions', 'Avtotransport o\'lchamlari (Navigatsiya uchun)')}</span>
-                        <span style={{ fontSize: '9px', background: '#34C759', color: 'white', padding: '1px 5px', borderRadius: '3px', fontWeight: 'normal', marginLeft: 'auto' }}>AVTOMAT HISOBLANGAN</span>
+                        📐 <span>{getProfileLangText('vehicleDimensionsLabel')}</span>
+                        <span style={{ fontSize: '9px', background: '#34C759', color: 'white', padding: '1px 5px', borderRadius: '3px', fontWeight: 'normal', marginLeft: 'auto' }}>
+                          {i18n.language === 'ja' ? '自動計算' : i18n.language === 'en' ? 'AUTO CALCULATED' : 'AVTOMAT HISOBLANGAN'}
+                        </span>
                       </span>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('height', 'Balandlik')}</span>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('heightLabel')}</span>
                           <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.height} m</span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('width', 'Eni')}</span>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('widthLabel')}</span>
                           <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.width} m</span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('length', 'Uzunlik')}</span>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('lengthLabel')}</span>
                           <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.length} m</span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('weight', 'Vazni')}</span>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('weightLabel')}</span>
                           <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.weight} t</span>
                         </div>
                       </div>
@@ -3299,7 +3458,7 @@ const getLicenseLabel = (type) => {
                   {/* Form inputs */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleType', 'Transport turi')}</label>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{getProfileLangText('vehicleTypeLabel')}</label>
                       <select 
                         value={editVehicleData.type}
                         onChange={e => {
@@ -3318,12 +3477,12 @@ const getLicenseLabel = (type) => {
                           const dims = getVehiclePresetDimensions(val, defaultStyle);
                           
                           setEditVehicleData(prev => ({ 
-                            ...prev, 
-                            type: val,
-                            make: mk,
-                            model: md,
-                            bodyStyle: defaultStyle,
-                            ...dims
+                             ...prev, 
+                             type: val,
+                             make: mk,
+                             model: md,
+                             bodyStyle: defaultStyle,
+                             ...dims
                           }));
                         }}
                         style={{
@@ -3336,18 +3495,18 @@ const getLicenseLabel = (type) => {
                           outline: 'none'
                         }}
                       >
-                        <option value="car">{t('vehicleCar', 'Yengil avto')}</option>
-                        <option value="moto">{t('vehicleMoto', 'Motosikl')}</option>
-                        <option value="velo">{t('vehicleVelo', 'Velosiped')}</option>
-                        <option value="truck_3t">{t('vehicleTruck3t', '3t Yuk mashinasi')}</option>
-                        <option value="truck_4t">{t('vehicleTruck4t', '4t Yuk mashinasi')}</option>
-                        <option value="trailer">{t('vehicleTrailer', 'Trailer (Katta tirkama)')}</option>
-                        <option value="bus">{t('vehicleBus', 'Avtobus')}</option>
+                        <option value="car">{getProfileLangText('type_car')}</option>
+                        <option value="moto">{getProfileLangText('type_moto')}</option>
+                        <option value="velo">{getProfileLangText('type_velo')}</option>
+                        <option value="truck_3t">{getProfileLangText('type_truck_3t')}</option>
+                        <option value="truck_4t">{getProfileLangText('type_truck_4t')}</option>
+                        <option value="trailer">{getProfileLangText('type_trailer')}</option>
+                        <option value="bus">{getProfileLangText('type_bus')}</option>
                       </select>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleBodyStyle', 'Kuzov shakli')}</label>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{getProfileLangText('vehicleBodyStyleLabel')}</label>
                       <select
                         value={editVehicleData.bodyStyle}
                         onChange={e => {
@@ -3371,35 +3530,35 @@ const getLicenseLabel = (type) => {
                       >
                         {editVehicleData.type === 'car' && (
                           <>
-                            <option value="sedan">Sedan</option>
-                            <option value="hatchback">Hatchback</option>
-                            <option value="suv">SUV (Krossover)</option>
-                            <option value="minivan">Minivan / Boxy MPV</option>
+                            <option value="sedan">{getProfileLangText('body_sedan')}</option>
+                            <option value="hatchback">{getProfileLangText('body_hatchback')}</option>
+                            <option value="suv">{getProfileLangText('body_suv')}</option>
+                            <option value="minivan">{getProfileLangText('body_minivan')}</option>
                           </>
                         )}
                         {editVehicleData.type === 'moto' && (
                           <>
-                            <option value="scooter">Motoroller (Super Cub)</option>
-                            <option value="sportbike">Sportbayk / Motosikl</option>
+                            <option value="scooter">{getProfileLangText('body_scooter')}</option>
+                            <option value="sportbike">{getProfileLangText('body_sportbike')}</option>
                           </>
                         )}
-                        {editVehicleData.type === 'velo' && <option value="standard">Standart Velo</option>}
+                        {editVehicleData.type === 'velo' && <option value="standard">{getProfileLangText('body_standard')}</option>}
                         {editVehicleData.type === 'truck_3t' && (
                           <>
-                            <option value="flatbed">Hirada (Ochiq bortli)</option>
-                            <option value="box_truck">Furgon (Box Truck)</option>
+                            <option value="flatbed">{getProfileLangText('body_flatbed')}</option>
+                            <option value="box_truck">{getProfileLangText('body_box_truck')}</option>
                           </>
                         )}
                         {editVehicleData.type === 'truck_4t' && (
                           <>
-                            <option value="flatbed">Hirada (Ochiq bortli)</option>
-                            <option value="box_truck">Furgon (Box Truck)</option>
-                            <option value="wing_body">Wing Body (Qanotli)</option>
-                            <option value="dump_truck">Samosval (Dump)</option>
+                            <option value="flatbed">{getProfileLangText('body_flatbed')}</option>
+                            <option value="box_truck">{getProfileLangText('body_box_truck')}</option>
+                            <option value="wing_body">{getProfileLangText('body_wing_body')}</option>
+                            <option value="dump_truck">{getProfileLangText('body_dump_truck')}</option>
                           </>
                         )}
-                        {editVehicleData.type === 'trailer' && <option value="trailer_container">Konteyner Tirkamali</option>}
-                        {editVehicleData.type === 'bus' && <option value="standard">Avtobus shakli</option>}
+                        {editVehicleData.type === 'trailer' && <option value="trailer_container">{getProfileLangText('body_trailer_container')}</option>}
+                        {editVehicleData.type === 'bus' && <option value="standard">{getProfileLangText('body_standard')}</option>}
                       </select>
                     </div>
 
