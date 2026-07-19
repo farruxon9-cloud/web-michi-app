@@ -243,73 +243,240 @@ export default function Profile({
   const renderVehicleSVG = (type, bodyStyle, color) => {
     const paintColor = color || '#5E5CE6';
     
+    // Helper to calculate highlights and shadows from hex color dynamically
+    const adjustBrightness = (hex, percent) => {
+      try {
+        let R = parseInt(hex.substring(1, 3), 16);
+        let G = parseInt(hex.substring(3, 5), 16);
+        let B = parseInt(hex.substring(5, 7), 16);
+
+        R = parseInt(R * (100 + percent) / 100);
+        G = parseInt(G * (100 + percent) / 100);
+        B = parseInt(B * (100 + percent) / 100);
+
+        R = (R < 255) ? R : 255;
+        G = (G < 255) ? G : 255;
+        B = (B < 255) ? B : 255;
+
+        R = (R > 0) ? R : 0;
+        G = (G > 0) ? G : 0;
+        B = (B > 0) ? B : 0;
+
+        const rHex = R.toString(16).padStart(2, '0');
+        const gHex = G.toString(16).padStart(2, '0');
+        const bHex = B.toString(16).padStart(2, '0');
+
+        return `#${rHex}${gHex}${bHex}`;
+      } catch (e) {
+        return hex;
+      }
+    };
+
+    const paintColorLight = adjustBrightness(paintColor, 40);
+    const paintColorDark = adjustBrightness(paintColor, -30);
+    const paintColorDarker = adjustBrightness(paintColor, -55);
+    
+    // Create unique ID based on color to prevent duplicate gradient collision
+    const colId = paintColor.replace('#', '');
+    const gId = `${bodyStyle}-paint-${colId}`;
+
     switch (bodyStyle) {
       // 🚗 PASSENGER CAR BODIES
       case 'minivan':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.15)" />
-            <path fill={paintColor} d="M12,38 L10,36 C10,34 10,18 15,18 L76,18 C78,18 80,19 82,23 L87,31 C89,35 88,38 86,38 Z" />
-            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M22,21 L35,21 L35,27 L22,27 Z" />
-            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M38,21 L55,21 L55,27 L38,27 Z" />
-            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M58,21 L74,21 L72,27 L58,27 Z" />
-            <line x1="56" y1="20" x2="56" y2="35" stroke="rgba(0,0,0,0.25)" strokeWidth="1" />
-            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M78,22 L82,28 L78,28 Z" />
-            <path fill="#FFD60A" d="M85,32 Q88,32 87,34 L84,35 Z" />
-            <path fill="#FF453A" d="M10,22 L12,22 L12,28 L10,28 Z" />
-            <circle cx="28" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="28" cy="38" r="4" fill="#8e8e93" />
-            <circle cx="72" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="72" cy="38" r="4" fill="#8e8e93" />
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="45%" stopColor={paintColor} />
+                <stop offset="85%" stopColor={paintColorDark} />
+                <stop offset="100%" stopColor={paintColorDarker} />
+              </linearGradient>
+              <linearGradient id="mini-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#121d2c" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="42" ry="4.2" fill="rgba(0,0,0,0.22)" />
+            <circle cx="28" cy="38" r="9" fill="rgba(0,0,0,0.3)" />
+            <circle cx="72" cy="38" r="9" fill="rgba(0,0,0,0.3)" />
+            
+            {/* Boxy Minivan body (Toyota Alphard / Freed style) */}
+            <path fill={`url(#${gId})`} d="M12,37 L10,33 C10,29 11,20 16,19 L72,19 C75,19 78,20 80,24 L85,31 C87,35 86,37 84,37 Z" />
+            
+            {/* Side Window Glass */}
+            <path fill="url(#mini-glass)" d="M22,21 L35,21 L35,27 L22,27 Z" />
+            <path fill="url(#mini-glass)" d="M38,21 L55,21 L55,27 L38,27 Z" />
+            <path fill="url(#mini-glass)" d="M58,21 L72,21 L70,27 L58,27 Z" />
+            <path fill="url(#mini-glass)" d="M75,22 L80,27 L76,27 Z" />
+            
+            {/* Seams and door trims */}
+            <path fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="0.8" d="M36,20 L36,36 M56,36 L56,20" />
+            <rect x="52" y="28" width="3" height="1" fill="#d1d1d6" />
+            <rect x="33" y="28" width="3" height="1" fill="#d1d1d6" />
+            
+            {/* Headlights and taillights */}
+            <path fill="#ffffff" d="M83,30 L85,32 L83,34 Z" />
+            <path fill="#FFD60A" opacity="0.8" d="M84,31 L85,32 L84,33 Z" />
+            <path fill="#FF3B30" d="M10,23 L12,23 L12,28 L10,28 Z" />
+            
+            {/* Detailed alloy wheels */}
+            <circle cx="28" cy="38" r="8" fill="#1c1c1e" />
+            <circle cx="28" cy="38" r="5.5" fill="#8e8e93" />
+            <path d="M28,33 L28,43 M23,38 L33,38 M25,35 L31,41 M25,41 L31,35" stroke="#ffffff" strokeWidth="0.7" />
+            <circle cx="28" cy="38" r="2" fill="#545456" />
+
+            <circle cx="72" cy="38" r="8" fill="#1c1c1e" />
+            <circle cx="72" cy="38" r="5.5" fill="#8e8e93" />
+            <path d="M72,33 L72,43 M67,38 L77,38 M69,35 L75,41 M69,41 L75,35" stroke="#ffffff" strokeWidth="0.7" />
+            <circle cx="72" cy="38" r="2" fill="#545456" />
           </svg>
         );
 
       case 'suv':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="42" ry="4.5" fill="rgba(0,0,0,0.18)" />
-            <path fill={paintColor} d="M14,36 L11,32 C11,30 13,22 20,21 C27,20 38,13 50,13 C62,13 78,16 83,24 C88,30 87,35 84,36 Z" />
-            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M32,21 L44,16 L60,16 L72,21 C70,24 35,24 32,21 Z" />
-            <path fill={paintColor} d="M11,20 L15,19 L16,21 L12,22 Z" />
-            <path d="M18,36 A10,10 0 0,1 38,36" fill="none" stroke="#3a3a3c" strokeWidth="2.5" />
-            <path d="M62,36 A10,10 0 0,1 82,36" fill="none" stroke="#3a3a3c" strokeWidth="2.5" />
-            <path fill="#FFD60A" d="M84,28 Q87,28 86,30 L82,31 Z" />
-            <path fill="#FF453A" d="M11,28 L14,28 L14,31 L11,31 Z" />
-            <circle cx="28" cy="36" r="7.5" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="2" />
-            <circle cx="28" cy="36" r="3.5" fill="#aeaeaf" />
-            <circle cx="72" cy="36" r="7.5" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="2" />
-            <circle cx="72" cy="36" r="3.5" fill="#aeaeaf" />
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="40%" stopColor={paintColor} />
+                <stop offset="80%" stopColor={paintColorDark} />
+                <stop offset="100%" stopColor={paintColorDarker} />
+              </linearGradient>
+              <linearGradient id="suv-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#121a24" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="42" ry="4.5" fill="rgba(0,0,0,0.22)" />
+            <circle cx="28" cy="38" r="9" fill="rgba(0,0,0,0.3)" />
+            <circle cx="72" cy="38" r="9" fill="rgba(0,0,0,0.3)" />
+            
+            {/* Harrier SUV Body */}
+            <path fill={`url(#${gId})`} d="M12,35 L10,31 C9,27 12,20 18,19 C25,18 36,12 48,12 C62,12 76,15 82,22 C88,27 88,31 85,34 L83,38 L14,38 Z" />
+            
+            {/* Bottom plastic protection skirt */}
+            <path fill="#2c2c2e" d="M10,34 L12,38 L83,38 L85,34 L82,35 L74,35 C74,33 70,30 66,32 L60,35 L34,35 C32,32 26,32 24,35 L12,35 Z" />
+            
+            {/* Window Glass */}
+            <path fill="url(#suv-glass)" d="M30,20 L44,15 L56,15 L66,20 L64,26 L30,26 Z" />
+            <rect x="43" y="15" width="2" height="11" fill="#1c1c1e" />
+            <rect x="55" y="15" width="2" height="11" fill="#1c1c1e" />
+            
+            {/* Details */}
+            <path fill="none" stroke="#d1d1d6" strokeWidth="0.8" d="M29,20 L44,14.5 L56,14.5 L67,20" />
+            <rect x="36" y="28" width="5" height="1.5" rx="0.5" fill="#d1d1d6" />
+            <rect x="48" y="28" width="5" height="1.5" rx="0.5" fill="#d1d1d6" />
+            
+            {/* Xenon Glow lights */}
+            <path fill="#ffffff" d="M82,23 L85,25 L83,28 Z" />
+            <path fill="#0A84FF" opacity="0.75" d="M83,24 L86,26 L84,28 Z" />
+            <path fill="#FF453A" d="M10,24 L12,24 L13,28 L11,28 Z" />
+            
+            {/* Rims */}
+            <circle cx="28" cy="38" r="8" fill="#1c1c1e" />
+            <circle cx="28" cy="38" r="6" fill="#8e8e93" />
+            <path d="M28,32 L28,44 M22,38 L34,38 M24,34 L32,42 M24,42 L32,34" stroke="#ffffff" strokeWidth="0.7" />
+            <circle cx="28" cy="38" r="2" fill="#545456" />
+
+            <circle cx="72" cy="38" r="8" fill="#1c1c1e" />
+            <circle cx="72" cy="38" r="6" fill="#8e8e93" />
+            <path d="M72,32 L72,44 M66,38 L78,38 M68,34 L76,42 M68,42 L76,34" stroke="#ffffff" strokeWidth="0.7" />
+            <circle cx="72" cy="38" r="2" fill="#545456" />
           </svg>
         );
 
       case 'hatchback':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="38" ry="3.8" fill="rgba(0,0,0,0.13)" />
-            <path fill={paintColor} d="M16,36 L12,33 C12,31 14,24 22,23 C30,22 38,16 46,16 C54,16 70,18 78,25 C86,32 84,35 80,36 Z" />
-            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M34,22 L45,18 L55,18 L65,22 Z" />
-            <path fill="#ffffff" opacity="0.25" d="M36,21 L44,19 L48,19 Z" />
-            <path fill="#FFD60A" d="M81,29 Q84,29 83,32 L80,33 Z" />
-            <circle cx="28" cy="37" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="28" cy="37" r="3" fill="#8e8e93" />
-            <circle cx="68" cy="37" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="68" cy="37" r="3" fill="#8e8e93" />
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="40%" stopColor={paintColor} />
+                <stop offset="85%" stopColor={paintColorDark} />
+                <stop offset="100%" stopColor={paintColorDarker} />
+              </linearGradient>
+              <linearGradient id="hatch-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="38" ry="3.8" fill="rgba(0,0,0,0.18)" />
+            <circle cx="28" cy="37" r="8.5" fill="rgba(0,0,0,0.25)" />
+            <circle cx="68" cy="37" r="8.5" fill="rgba(0,0,0,0.25)" />
+            
+            {/* Honda Fit style body */}
+            <path fill={`url(#${gId})`} d="M16,36 L12,33 C12,31 14,24 22,23 C30,22 38,16 46,16 C54,16 70,18 78,25 C86,32 84,35 80,36 Z" />
+            
+            {/* Windows */}
+            <path fill="url(#hatch-glass)" d="M34,22 L45,18 L55,18 L65,22 L63,26 L34,26 Z" />
+            <rect x="46" y="18" width="2" height="8" fill="#1c1c1e" />
+            
+            <rect x="36" y="28" width="4" height="1.2" rx="0.4" fill="#d1d1d6" />
+            
+            {/* Lights */}
+            <path fill="#ffffff" d="M78,25 L81,27 L79,30 Z" />
+            <path fill="#FFD60A" opacity="0.8" d="M79,26 L80,27 L79,28 Z" />
+            <path fill="#FF3B30" d="M12,28 L14,28 L14,31 L12,31 Z" />
+            
+            {/* Rims */}
+            <circle cx="28" cy="37" r="7" fill="#1c1c1e" />
+            <circle cx="28" cy="37" r="5" fill="#8e8e93" />
+            <path d="M28,32 L28,42 M23,37 L33,37" stroke="#ffffff" strokeWidth="0.6" />
+            <circle cx="28" cy="37" r="2" fill="#545456" />
+
+            <circle cx="68" cy="37" r="7" fill="#1c1c1e" />
+            <circle cx="68" cy="37" r="5" fill="#8e8e93" />
+            <path d="M68,32 L68,42 M63,37 L73,37" stroke="#ffffff" strokeWidth="0.6" />
+            <circle cx="68" cy="37" r="2" fill="#545456" />
           </svg>
         );
 
       case 'sedan':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="40" ry="4" fill="rgba(0,0,0,0.15)" />
-            <path fill={paintColor} d="M15,35 L12,32 C12,32 15,26 22,25 C29,24 38,15 48,15 C58,15 78,17 84,26 C90,32 88,37 84,39 L15,39 Z" />
-            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M35,24 L45,17 L58,17 L68,24 Z" />
-            <path fill="#ffffff" opacity="0.3" d="M38,23 L46,18 L50,18 Z" />
-            <path fill="#FFD60A" d="M85,30 Q88,30 87,33 L83,34 Z" />
-            <path fill="#FF453A" d="M12,32 L15,32 L15,35 L12,35 Z" />
-            <circle cx="28" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="28" cy="38" r="4" fill="#8e8e93" />
-            <circle cx="72" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="72" cy="38" r="4" fill="#8e8e93" />
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="45%" stopColor={paintColor} />
+                <stop offset="85%" stopColor={paintColorDark} />
+                <stop offset="100%" stopColor={paintColorDarker} />
+              </linearGradient>
+              <linearGradient id="sedan-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="40" ry="4" fill="rgba(0,0,0,0.18)" />
+            <circle cx="28" cy="38" r="9.2" fill="rgba(0,0,0,0.25)" />
+            <circle cx="72" cy="38" r="9.2" fill="rgba(0,0,0,0.25)" />
+            
+            {/* Aerodynamic Prius style sedan body */}
+            <path fill={`url(#${gId})`} d="M15,35 L12,32 C12,32 15,26 22,25 C29,24 38,15 48,15 C58,15 78,17 84,26 C90,32 88,37 84,39 L15,39 Z" />
+            
+            {/* Windows */}
+            <path fill="url(#sedan-glass)" d="M32,24 L45,17 L58,17 L68,24 L65,28 L32,28 Z" />
+            <rect x="46" y="17" width="2" height="11" fill="#1c1c1e" />
+            <rect x="58" y="17" width="1.5" height="11" fill="#1c1c1e" />
+            
+            <rect x="36" y="29" width="4" height="1.2" rx="0.4" fill="#d1d1d6" />
+            <rect x="49" y="29" width="4" height="1.2" rx="0.4" fill="#d1d1d6" />
+            
+            {/* Lights */}
+            <path fill="#ffffff" d="M83,27 L86,29 L84,32 Z" />
+            <path fill="#0A84FF" opacity="0.8" d="M84,28 L85,29 L84,30 Z" />
+            <path fill="#FF3B30" d="M11,31 L14,31 L14,35 L11,35 Z" />
+            
+            {/* Wheels */}
+            <circle cx="28" cy="38" r="8" fill="#1c1c1e" />
+            <circle cx="28" cy="38" r="6" fill="#8e8e93" />
+            <path d="M28,32 L28,44 M22,38 L34,38 M24,34 L32,42 M24,42 L32,34" stroke="#ffffff" strokeWidth="0.7" />
+            <circle cx="28" cy="38" r="2" fill="#545456" />
+
+            <circle cx="72" cy="38" r="8" fill="#1c1c1e" />
+            <circle cx="72" cy="38" r="6" fill="#8e8e93" />
+            <path d="M72,32 L72,44 M66,38 L78,38 M68,34 L76,42 M68,42 L76,34" stroke="#ffffff" strokeWidth="0.7" />
+            <circle cx="72" cy="38" r="2" fill="#545456" />
           </svg>
         );
 
@@ -317,28 +484,64 @@ export default function Profile({
       case 'scooter':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="35" ry="3.5" fill="rgba(0,0,0,0.12)" />
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="35" ry="3.5" fill="rgba(0,0,0,0.18)" />
+            {/* Frame parts */}
             <path d="M22,38 L30,34 L46,34 L52,24 L56,16" stroke="#8e8e93" strokeWidth="2.5" fill="none" />
-            <path fill={paintColor} d="M52,38 L58,24 L54,16 L48,16 L44,24 Z" />
-            <path fill={paintColor} d="M22,34 C25,28 35,26 44,28 L40,36 Z" />
-            <circle cx="22" cy="38" r="10" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.8" />
-            <circle cx="22" cy="38" r="4.5" fill="#8e8e93" />
-            <circle cx="78" cy="38" r="10" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.8" />
-            <circle cx="78" cy="38" r="4.5" fill="#8e8e93" />
+            <path fill="url(#gId)" d="M52,38 L58,24 L54,16 L48,16 L44,24 Z" />
+            {/* Body covers */}
+            <path fill="url(#gId)" d="M22,34 C25,28 35,26 44,28 L40,36 Z" />
+            {/* Engine / Mechanical parts */}
+            <rect x="36" y="34" width="12" height="6" fill="#3a3a3c" rx="1" />
+            <circle cx="40" cy="37" r="2" fill="#8e8e93" />
+            
+            {/* Wheels with realistic thin spokes (Honda Cub classic) */}
+            <circle cx="22" cy="38" r="10" fill="#1c1c1e" />
+            <circle cx="22" cy="38" r="7.5" fill="#e5e5ea" />
+            <path d="M22,30.5 L22,45.5 M14.5,38 L29.5,38 M16.7,32.7 L27.3,43.3 M16.7,43.3 L27.3,32.7" stroke="#8e8e93" strokeWidth="0.5" />
+            <circle cx="22" cy="38" r="3" fill="#8e8e93" />
+
+            <circle cx="78" cy="38" r="10" fill="#1c1c1e" />
+            <circle cx="78" cy="38" r="7.5" fill="#e5e5ea" />
+            <path d="M78,30.5 L78,45.5 M70.5,38 L85.5,38 M72.7,32.7 L83.3,43.3 M72.7,43.3 L83.3,32.7" stroke="#8e8e93" strokeWidth="0.5" />
+            <circle cx="78" cy="38" r="3" fill="#8e8e93" />
           </svg>
         );
 
       case 'sportbike':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="35" ry="3.5" fill="rgba(0,0,0,0.15)" />
-            <path d="M25,38 L45,25 L65,25 L75,38" stroke="#8e8e93" strokeWidth="3" fill="none" />
-            <path d="M45,25 L50,15 L70,38" stroke="#1c1c1e" strokeWidth="2.5" fill="none" />
-            <path fill={paintColor} d="M35,28 C32,25 35,22 45,21 C55,20 62,24 62,28 Z" />
-            <circle cx="22" cy="38" r="10" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="2" />
-            <circle cx="22" cy="38" r="5" fill="#8e8e93" />
-            <circle cx="78" cy="38" r="10" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="2" />
-            <circle cx="78" cy="38" r="5" fill="#8e8e93" />
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="35" ry="3.5" fill="rgba(0,0,0,0.2)" />
+            {/* Mechanical details */}
+            <path d="M25,38 L45,25 L65,25 L75,38" stroke="#3a3a3c" strokeWidth="3.5" fill="none" />
+            <path d="M45,25 L50,15 L70,38" stroke="#1c1c1e" strokeWidth="3" fill="none" />
+            <rect x="42" y="28" width="16" height="9" fill="#2c2c2e" rx="1.5" />
+            
+            {/* Painted Sport fairing */}
+            <path fill="url(#gId)" d="M35,28 C32,25 35,22 45,21 C55,20 65,23 68,28 L56,33 Z" />
+            <path fill="url(#gId)" d="M72,21 L78,21 L74,27 Z" />
+            
+            {/* Wheels */}
+            <circle cx="22" cy="38" r="10" fill="#1c1c1e" />
+            <circle cx="22" cy="38" r="6.5" fill="#8e8e93" />
+            <path d="M22,31.5 L22,44.5 M15.5,38 L28.5,38" stroke="#ffffff" strokeWidth="1" />
+            <circle cx="22" cy="38" r="3.5" fill="#1c1c1e" />
+
+            <circle cx="78" cy="38" r="10" fill="#1c1c1e" />
+            <circle cx="78" cy="38" r="6.5" fill="#8e8e93" />
+            <path d="M78,31.5 L78,44.5 M71.5,38 L84.5,38" stroke="#ffffff" strokeWidth="1" />
+            <circle cx="78" cy="38" r="3.5" fill="#1c1c1e" />
           </svg>
         );
 
@@ -348,152 +551,270 @@ export default function Profile({
         if (type === 'velo') {
           return (
             <svg viewBox="0 0 100 50" width="100%" height="100%">
-              <ellipse cx="50" cy="43" rx="32" ry="3" fill="rgba(0,0,0,0.1)" />
-              <path d="M22,38 L45,38 L60,25 L35,25 Z" stroke={paintColor} strokeWidth="2.5" fill="none" />
-              <path d="M22,38 L35,25 M45,38 L52,18" stroke={paintColor} strokeWidth="2.5" fill="none" />
-              <path d="M28,21 L36,21" stroke="#1c1c1e" strokeWidth="2" fill="none" />
-              <path d="M50,16 L56,16" stroke="#1c1c1e" strokeWidth="2" fill="none" />
-              <circle cx="22" cy="38" r="10" stroke="#8e8e93" strokeWidth="1" fill="none" />
-              <circle cx="22" cy="38" r="1.5" fill="#1c1c1e" />
-              <circle cx="78" cy="38" r="10" stroke="#8e8e93" strokeWidth="1" fill="none" />
-              <circle cx="78" cy="38" r="1.5" fill="#1c1c1e" />
+              <ellipse cx="50" cy="43" rx="32" ry="3" fill="rgba(0,0,0,0.12)" />
+              {/* Detailed bike frame */}
+              <path d="M22,38 L45,38 L60,25 L35,25 Z" stroke={paintColor} strokeWidth="2" fill="none" />
+              <path d="M22,38 L35,25 M45,38 L52,18" stroke={paintColor} strokeWidth="2" fill="none" />
+              <path d="M28,21 L36,21" stroke="#1c1c1e" strokeWidth="1.8" fill="none" />
+              <path d="M50,16 L56,16" stroke="#1c1c1e" strokeWidth="1.8" fill="none" />
+              <circle cx="45" cy="38" r="3" fill="none" stroke="#e5e5ea" strokeWidth="1.2" />
+              {/* Thin spoke wheels */}
+              <circle cx="22" cy="38" r="10" stroke="#8e8e93" strokeWidth="1.2" fill="none" />
+              <path d="M22,28 L22,48 M12,38 L32,38 M15,31 L29,45 M15,45 L29,31" stroke="#aeaeaf" strokeWidth="0.4" />
+              <circle cx="78" cy="38" r="10" stroke="#8e8e93" strokeWidth="1.2" fill="none" />
+              <path d="M78,28 L78,48 M68,38 L88,38 M71,31 L85,45 M71,45 L85,31" stroke="#aeaeaf" strokeWidth="0.4" />
             </svg>
           );
         } else if (type === 'bus') {
           return (
             <svg viewBox="0 0 100 50" width="100%" height="100%">
-              <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.18)" />
-              <path fill={paintColor} d="M12,36 L12,16 Q12,14 15,14 L82,14 Q88,14 88,18 L88,36 Z" />
-              <rect x="18" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
-              <rect x="31" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
-              <rect x="44" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
-              <rect x="57" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
-              <rect x="70" y="18" width="12" height="7" fill="var(--card-bg, #1c1c1e)" />
-              <rect x="84" y="32" width="4" height="2" fill="#FFD60A" />
-              <rect x="12" y="30" width="2" height="4" fill="#FF3B30" />
-              <circle cx="28" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-              <circle cx="28" cy="38" r="3" fill="#8e8e93" />
-              <circle cx="72" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-              <circle cx="72" cy="38" r="3" fill="#8e8e93" />
+              <defs>
+                <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor={paintColorLight} />
+                  <stop offset="50%" stopColor={paintColor} />
+                  <stop offset="100%" stopColor={paintColorDark} />
+                </linearGradient>
+                <linearGradient id="bus-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#73a6e4" stopOpacity="0.6" />
+                  <stop offset="100%" stopColor="#192330" stopOpacity="0.9" />
+                </linearGradient>
+              </defs>
+              <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.22)" />
+              <circle cx="28" cy="38" r="9" fill="rgba(0,0,0,0.3)" />
+              <circle cx="72" cy="38" r="9" fill="rgba(0,0,0,0.3)" />
+              
+              {/* Isuzu Gala Highway Coach Bus body */}
+              <path fill={`url(#${gId})`} d="M12,36 L12,16 Q12,14 15,14 L82,14 Q88,14 88,18 L88,36 Z" />
+              
+              {/* Windows */}
+              <rect x="18" y="17" width="10" height="8" fill="url(#bus-glass)" />
+              <rect x="31" y="17" width="10" height="8" fill="url(#bus-glass)" />
+              <rect x="44" y="17" width="10" height="8" fill="url(#bus-glass)" />
+              <rect x="57" y="17" width="10" height="8" fill="url(#bus-glass)" />
+              <rect x="70" y="17" width="12" height="8" fill="url(#bus-glass)" />
+              
+              {/* Decal Lines */}
+              <rect x="12" y="29" width="76" height="2.5" fill="#ffffff" opacity="0.8" />
+              <rect x="12" y="32" width="76" height="1.2" fill="#FF9F0A" />
+              
+              <rect x="84" y="30" width="4" height="2" fill="#FFD60A" />
+              <rect x="12" y="27" width="2" height="4" fill="#FF3B30" />
+              
+              {/* Axles */}
+              <circle cx="28" cy="38" r="8" fill="#1c1c1e" />
+              <circle cx="28" cy="38" r="4.5" fill="#8e8e93" stroke="#545456" strokeWidth="1" />
+              
+              <circle cx="72" cy="38" r="8" fill="#1c1c1e" />
+              <circle cx="72" cy="38" r="4.5" fill="#8e8e93" stroke="#545456" strokeWidth="1" />
             </svg>
           );
         }
         break;
-
+ 
       // 🚚 TRUCK BODIES
       case 'flatbed':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.18)" />
-            {/* Chassis and Open Bed */}
-            <rect x="10" y="34" width="78" height="5" fill="#3a3a3c" />
-            {/* Cabin (Painted) */}
-            <path fill={paintColor} d="M64,34 L64,16 L76,16 Q84,16 84,24 L84,34 Z" />
-            <path fill="var(--card-bg, #1c1c1e)" d="M68,19 L76,19 L79,25 L68,25 Z" />
-            {/* Open Board Rails */}
-            <rect x="12" y="27" width="52" height="7" fill="#8e8e93" stroke="#aeaeaf" strokeWidth="1" />
-            <line x1="28" y1="27" x2="28" y2="34" stroke="#aeaeaf" strokeWidth="1" />
-            <line x1="44" y1="27" x2="44" y2="34" stroke="#aeaeaf" strokeWidth="1" />
-            <circle cx="24" cy="38" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="24" cy="38" r="3" fill="#8e8e93" />
-            <circle cx="42" cy="38" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="42" cy="38" r="3" fill="#8e8e93" />
-            <circle cx="72" cy="38" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="72" cy="38" r="3" fill="#8e8e93" />
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="50%" stopColor={paintColor} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+              <linearGradient id="truck-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.22)" />
+            
+            {/* Chassis */}
+            <rect x="10" y="34" width="78" height="4.5" fill="#1c1c1e" />
+            
+            {/* Cabin (Painted Isuzu Elf Cabin) */}
+            <path fill={`url(#${gId})`} d="M64,34 L64,16 L76,16 Q84,16 84,23 L84,34 Z" />
+            <path fill="url(#truck-glass)" d="M68,19 L76,19 L79,25 L68,25 Z" />
+            
+            {/* Flatbed Rails */}
+            <rect x="12" y="26" width="51" height="8" fill="#d1d1d6" stroke="#8e8e93" strokeWidth="0.8" />
+            <line x1="28" y1="26" x2="28" y2="34" stroke="#8e8e93" strokeWidth="0.8" />
+            <line x1="44" y1="26" x2="44" y2="34" stroke="#8e8e93" strokeWidth="0.8" />
+            
+            {/* Wheels */}
+            <circle cx="24" cy="38" r="7" fill="#1c1c1e" />
+            <circle cx="24" cy="38" r="4" fill="#aeaeaf" />
+            <circle cx="42" cy="38" r="7" fill="#1c1c1e" />
+            <circle cx="42" cy="38" r="4" fill="#aeaeaf" />
+            <circle cx="72" cy="38" r="7" fill="#1c1c1e" />
+            <circle cx="72" cy="38" r="4" fill="#aeaeaf" />
           </svg>
         );
 
       case 'box_truck':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="44" ry="4.5" fill="rgba(0,0,0,0.2)" />
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="50%" stopColor={paintColor} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+              <linearGradient id="container-sides" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="100%" stopColor="#e5e5ea" />
+              </linearGradient>
+              <linearGradient id="truck-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="44" ry="4.5" fill="rgba(0,0,0,0.22)" />
             <rect x="10" y="35" width="80" height="5" fill="#1c1c1e" />
+            
             {/* Cabin (Painted) */}
-            <path fill={paintColor} d="M64,35 L64,15 L78,15 Q86,15 86,24 L86,35 Z" />
-            <path fill="var(--card-bg, #1c1c1e)" d="M68,18 L76,18 L81,25 L68,25 Z" />
-            {/* Closed Box */}
-            <rect x="12" y="11" width="51" height="24" fill="#f2f2f7" stroke="#aeaeaf" strokeWidth="1.2" />
-            <line x1="29" y1="11" x2="29" y2="35" stroke="#aeaeaf" strokeWidth="1.2" />
-            <line x1="46" y1="11" x2="46" y2="35" stroke="#aeaeaf" strokeWidth="1.2" />
-            <circle cx="22" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="22" cy="39" r="3" fill="#aeaeaf" />
-            <circle cx="38" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="38" cy="39" r="3" fill="#aeaeaf" />
-            <circle cx="74" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="74" cy="39" r="3" fill="#aeaeaf" />
+            <path fill={`url(#${gId})`} d="M64,35 L64,15 L78,15 Q86,15 86,24 L86,35 Z" />
+            <path fill="url(#truck-glass)" d="M68,18 L76,18 L81,25 L68,25 Z" />
+            
+            {/* Closed Aluminium Container Box */}
+            <rect x="11" y="11" width="52" height="24" fill="url(#container-sides)" stroke="#8e8e93" strokeWidth="1" />
+            <line x1="28" y1="11" x2="28" y2="35" stroke="#aeaeaf" strokeWidth="0.8" />
+            <line x1="45" y1="11" x2="45" y2="35" stroke="#aeaeaf" strokeWidth="0.8" />
+            
+            {/* Wheels */}
+            <circle cx="22" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="22" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="38" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="38" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="74" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="74" cy="39" r="4.2" fill="#aeaeaf" />
           </svg>
         );
 
       case 'wing_body':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="44" ry="4.5" fill="rgba(0,0,0,0.2)" />
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="50%" stopColor={paintColor} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+              <linearGradient id="wing-container" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#f2f2f7" />
+                <stop offset="100%" stopColor="#d1d1d6" />
+              </linearGradient>
+              <linearGradient id="truck-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="44" ry="4.5" fill="rgba(0,0,0,0.22)" />
             <rect x="10" y="35" width="80" height="5" fill="#1c1c1e" />
-            {/* Cabin (Painted) */}
-            <path fill={paintColor} d="M64,35 L64,15 L78,15 Q86,15 86,24 L86,35 Z" />
-            <path fill="var(--card-bg, #1c1c1e)" d="M68,18 L76,18 L81,25 L68,25 Z" />
-            {/* Wing Body Panel (horizontal line indicating splitting wings) */}
-            <rect x="12" y="11" width="51" height="24" fill="#e5e5ea" stroke="#8e8e93" strokeWidth="1.5" />
-            <line x1="12" y1="21" x2="63" y2="21" stroke="#3a3a3c" strokeWidth="1.5" />
-            <line x1="29" y1="11" x2="29" y2="35" stroke="#8e8e93" strokeWidth="1" />
-            <line x1="46" y1="11" x2="46" y2="35" stroke="#8e8e93" strokeWidth="1" />
-            {/* Locking rods vertical */}
-            <line x1="15" y1="21" x2="15" y2="35" stroke="#8e8e93" strokeWidth="1.2" />
-            <line x1="60" y1="21" x2="60" y2="35" stroke="#8e8e93" strokeWidth="1.2" />
-            <circle cx="22" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="22" cy="39" r="3" fill="#aeaeaf" />
-            <circle cx="38" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="38" cy="39" r="3" fill="#aeaeaf" />
-            <circle cx="74" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="74" cy="39" r="3" fill="#aeaeaf" />
+            
+            {/* Cabin (Painted Hino Ranger style) */}
+            <path fill={`url(#${gId})`} d="M64,35 L64,15 L78,15 Q86,15 86,24 L86,35 Z" />
+            <path fill="url(#truck-glass)" d="M68,18 L76,18 L81,25 L68,25 Z" />
+            
+            {/* Wing Container (Hino Wing Body side details) */}
+            <rect x="11" y="11" width="52" height="24" fill="url(#wing-container)" stroke="#8e8e93" strokeWidth="1" />
+            <line x1="11" y1="22" x2="63" y2="22" stroke="#8e8e93" strokeWidth="1.5" />
+            <line x1="28" y1="11" x2="28" y2="35" stroke="#aeaeaf" strokeWidth="0.8" />
+            <line x1="45" y1="11" x2="45" y2="35" stroke="#aeaeaf" strokeWidth="0.8" />
+            
+            {/* Wing hydraulic rod lines */}
+            <line x1="14" y1="22" x2="14" y2="35" stroke="#8e8e93" strokeWidth="1" />
+            <line x1="60" y1="22" x2="60" y2="35" stroke="#8e8e93" strokeWidth="1" />
+            
+            {/* Wheels */}
+            <circle cx="22" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="22" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="38" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="38" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="74" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="74" cy="39" r="4.2" fill="#aeaeaf" />
           </svg>
         );
 
       case 'dump_truck':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="40" ry="4" fill="rgba(0,0,0,0.2)" />
-            <rect x="12" y="34" width="74" height="6" fill="#1c1c1e" />
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="50%" stopColor={paintColor} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+              <linearGradient id="truck-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="40" ry="4" fill="rgba(0,0,0,0.22)" />
+            <rect x="12" y="34" width="74" height="5.5" fill="#1c1c1e" />
+            
             {/* Cabin (Painted) */}
-            <path fill={paintColor} d="M60,34 L60,18 L72,18 Q78,18 78,25 L78,34 Z" />
-            <path fill="var(--card-bg, #1c1c1e)" d="M64,21 L72,21 L74,27 L64,27 Z" />
-            {/* Dump metal cargo bed */}
-            <path fill="#aeaeaf" d="M15,16 L56,16 L56,34 L15,34 Z" stroke="#8e8e93" strokeWidth="1.5" />
-            <line x1="20" y1="16" x2="35" y2="34" stroke="#8e8e93" strokeWidth="1.5" />
-            <line x1="35" y1="16" x2="50" y2="34" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="26" cy="38" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="26" cy="38" r="3" fill="#aeaeaf" />
-            <circle cx="44" cy="38" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="44" cy="38" r="3" fill="#aeaeaf" />
-            <circle cx="69" cy="38" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="69" cy="38" r="3" fill="#aeaeaf" />
+            <path fill={`url(#${gId})`} d="M60,34 L60,18 L72,18 Q78,18 78,25 L78,34 Z" />
+            <path fill="url(#truck-glass)" d="M64,21 L72,21 L74,27 L64,27 Z" />
+            
+            {/* Metal Cargo Bed (Realistic details, angle bars) */}
+            <path fill="#8e8e93" d="M14,16 L56,16 L56,34 L14,34 Z" stroke="#3a3a3c" strokeWidth="1" />
+            <line x1="20" y1="16" x2="20" y2="34" stroke="#545456" strokeWidth="1.2" />
+            <line x1="32" y1="16" x2="32" y2="34" stroke="#545456" strokeWidth="1.2" />
+            <line x1="44" y1="16" x2="44" y2="34" stroke="#545456" strokeWidth="1.2" />
+            
+            {/* Wheels */}
+            <circle cx="26" cy="38" r="7.5" fill="#1c1c1e" />
+            <circle cx="26" cy="38" r="4.2" fill="#aeaeaf" />
+            <circle cx="44" cy="38" r="7.5" fill="#1c1c1e" />
+            <circle cx="44" cy="38" r="4.2" fill="#aeaeaf" />
+            <circle cx="69" cy="38" r="7.5" fill="#1c1c1e" />
+            <circle cx="69" cy="38" r="4.2" fill="#aeaeaf" />
           </svg>
         );
 
       case 'trailer_container':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="46" ry="4.8" fill="rgba(0,0,0,0.22)" />
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="50%" stopColor={paintColor} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+              <linearGradient id="container-body" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="100%" stopColor="#e5e5ea" />
+              </linearGradient>
+              <linearGradient id="truck-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="46" ry="4.8" fill="rgba(0,0,0,0.25)" />
             <rect x="6" y="36" width="88" height="5" fill="#1c1c1e" />
+            
             {/* Cabin/Tractor (Paint color) */}
-            <path fill={paintColor} d="M68,36 L68,14 L82,14 Q88,14 88,22 L88,36 Z" />
-            <path fill="var(--card-bg, #1c1c1e)" d="M72,17 L80,17 L84,24 L72,24 Z" />
-            <path fill={paintColor} opacity="0.8" d="M68,14 L80,11 L82,14 Z" />
-            {/* Long Trailer Box */}
-            <rect x="8" y="13" width="56" height="23" fill="#ffffff" stroke="#aeaeaf" strokeWidth="1.5" />
-            <line x1="22" y1="13" x2="22" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
-            <line x1="36" y1="13" x2="36" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
-            <line x1="50" y1="13" x2="50" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
-            <circle cx="16" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="16" cy="39" r="3" fill="#aeaeaf" />
-            <circle cx="32" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="32" cy="39" r="3" fill="#aeaeaf" />
-            <circle cx="48" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="48" cy="39" r="3" fill="#aeaeaf" />
-            <circle cx="73" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="73" cy="39" r="3" fill="#aeaeaf" />
-            <circle cx="83" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
-            <circle cx="83" cy="39" r="3" fill="#aeaeaf" />
+            <path fill={`url(#${gId})`} d="M68,36 L68,14 L82,14 Q88,14 88,22 L88,36 Z" />
+            <path fill="url(#truck-glass)" d="M72,17 L80,17 L84,24 L72,24 Z" />
+            <path fill={`url(#${gId})`} opacity="0.8" d="M68,14 L80,11 L82,14 Z" />
+            
+            {/* Long Trailer Box (Container seams) */}
+            <rect x="8" y="13" width="56" height="23" fill="url(#container-body)" stroke="#8e8e93" strokeWidth="1" />
+            <line x1="22" y1="13" x2="22" y2="36" stroke="#d1d1d6" strokeWidth="0.8" />
+            <line x1="36" y1="13" x2="36" y2="36" stroke="#d1d1d6" strokeWidth="0.8" />
+            <line x1="50" y1="13" x2="50" y2="36" stroke="#d1d1d6" strokeWidth="0.8" />
+            
+            {/* Wheels */}
+            <circle cx="16" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="16" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="32" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="32" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="48" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="48" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="73" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="73" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="83" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="83" cy="39" r="4.2" fill="#aeaeaf" />
           </svg>
         );
 
