@@ -119,6 +119,182 @@ export default function Profile({
   const [aboutTab, setAboutTab] = useState('platform');
   const fileInputRef = useRef(null);
 
+  const [myVehicle, setMyVehicle] = useState(() => {
+    try {
+      const saved = localStorage.getItem('michi_user_vehicle');
+      return saved ? JSON.parse(saved) : {
+        type: 'car',
+        make: 'Toyota',
+        model: 'Harrier',
+        trim: 'Z',
+        year: '2024',
+        color: '#5E5CE6',
+        plateNumber: '練馬 300 あ 12-34',
+        height: '1.69',
+        width: '1.85',
+        length: '4.74',
+        weight: '1.62'
+      };
+    } catch (e) {
+      return {
+        type: 'car',
+        make: 'Toyota',
+        model: 'Harrier',
+        trim: 'Z',
+        year: '2024',
+        color: '#5E5CE6',
+        plateNumber: '練馬 300 あ 12-34',
+        height: '1.69',
+        width: '1.85',
+        length: '4.74',
+        weight: '1.62'
+      };
+    }
+  });
+
+  const [isEditingVehicle, setIsEditingVehicle] = useState(false);
+  const [editVehicleData, setEditVehicleData] = useState({ ...myVehicle });
+
+  const handleSaveVehicle = (e) => {
+    e.preventDefault();
+    setMyVehicle(editVehicleData);
+    localStorage.setItem('michi_user_vehicle', JSON.stringify(editVehicleData));
+    setIsEditingVehicle(false);
+    window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: editVehicleData }));
+  };
+
+  const renderVehicleSVG = (type, color) => {
+    const paintColor = color || '#5E5CE6';
+    switch (type) {
+      case 'car':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="40" ry="4" fill="rgba(0,0,0,0.15)" />
+            <path fill={paintColor} d="M15,35 L12,32 C12,32 15,26 22,25 C29,24 38,15 48,15 C58,15 78,17 84,26 C90,32 88,37 84,39 L15,39 Z" />
+            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M35,24 L45,17 L58,17 L68,24 Z" />
+            <path fill="#ffffff" opacity="0.3" d="M38,23 L46,18 L50,18 Z" />
+            <path fill="#FFD60A" d="M85,30 Q88,30 87,33 L83,34 Z" />
+            <path fill="#FF453A" d="M12,32 L15,32 L15,35 L12,35 Z" />
+            <circle cx="28" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="28" cy="38" r="4" fill="#8e8e93" />
+            <circle cx="72" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="72" cy="38" r="4" fill="#8e8e93" />
+          </svg>
+        );
+      case 'moto':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="35" ry="3.5" fill="rgba(0,0,0,0.15)" />
+            <path d="M25,38 L45,25 L65,25 L75,38" stroke="#8e8e93" strokeWidth="3" fill="none" />
+            <path d="M45,25 L50,15 L70,38" stroke="#1c1c1e" strokeWidth="2.5" fill="none" />
+            <path fill={paintColor} d="M35,28 C32,25 35,22 45,21 C55,20 62,24 62,28 Z" />
+            <circle cx="22" cy="38" r="10" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="2" />
+            <circle cx="22" cy="38" r="5" fill="#8e8e93" />
+            <circle cx="78" cy="38" r="10" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="2" />
+            <circle cx="78" cy="38" r="5" fill="#8e8e93" />
+          </svg>
+        );
+      case 'velo':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="32" ry="3" fill="rgba(0,0,0,0.1)" />
+            <path d="M22,38 L45,38 L60,25 L35,25 Z" stroke={paintColor} strokeWidth="2.5" fill="none" />
+            <path d="M22,38 L35,25 M45,38 L52,18" stroke={paintColor} strokeWidth="2.5" fill="none" />
+            <path d="M28,21 L36,21" stroke="#1c1c1e" strokeWidth="2" fill="none" />
+            <path d="M50,16 L56,16" stroke="#1c1c1e" strokeWidth="2" fill="none" />
+            <circle cx="22" cy="38" r="10" stroke="#8e8e93" strokeWidth="1" fill="none" />
+            <circle cx="22" cy="38" r="1.5" fill="#1c1c1e" />
+            <circle cx="78" cy="38" r="10" stroke="#8e8e93" strokeWidth="1" fill="none" />
+            <circle cx="78" cy="38" r="1.5" fill="#1c1c1e" />
+          </svg>
+        );
+      case 'truck_3t':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.18)" />
+            <rect x="12" y="36" width="76" height="4" fill="#3a3a3c" />
+            <path fill={paintColor} d="M64,36 L64,18 L76,18 Q84,18 84,26 L84,36 Z" />
+            <path fill="var(--card-bg, #1c1c1e)" d="M68,21 L76,21 L79,27 L68,27 Z" />
+            <rect x="15" y="14" width="48" height="22" fill="#e5e5ea" stroke="#d1d1d6" strokeWidth="1" />
+            <line x1="39" y1="14" x2="39" y2="36" stroke="#d1d1d6" strokeWidth="1" />
+            <rect x="80" y="32" width="5" height="2" fill="#FFD60A" />
+            <rect x="78" y="35" width="8" height="3" fill="#8e8e93" />
+            <circle cx="26" cy="39" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="26" cy="39" r="3" fill="#8e8e93" />
+            <circle cx="48" cy="39" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="48" cy="39" r="3" fill="#8e8e93" />
+            <circle cx="74" cy="39" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="74" cy="39" r="3" fill="#8e8e93" />
+          </svg>
+        );
+      case 'truck_4t':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="44" ry="4.5" fill="rgba(0,0,0,0.2)" />
+            <rect x="10" y="36" width="80" height="5" fill="#1c1c1e" />
+            <path fill={paintColor} d="M64,36 L64,15 L78,15 Q86,15 86,24 L86,36 Z" />
+            <rect x="81" y="28" width="5" height="8" fill="#e5e5ea" />
+            <rect x="83" y="30" width="3" height="4" fill="#3a3a3c" />
+            <path fill="var(--card-bg, #1c1c1e)" d="M68,18 L76,18 L81,25 L68,25 Z" />
+            <rect x="12" y="11" width="51" height="25" fill="#f2f2f7" stroke="#aeaeaf" strokeWidth="1.2" />
+            <line x1="29" y1="11" x2="29" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
+            <line x1="46" y1="11" x2="46" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
+            <circle cx="22" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="22" cy="39" r="3" fill="#aeaeaf" />
+            <circle cx="38" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="38" cy="39" r="3" fill="#aeaeaf" />
+            <circle cx="74" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="74" cy="39" r="3" fill="#aeaeaf" />
+          </svg>
+        );
+      case 'trailer':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="46" ry="4.8" fill="rgba(0,0,0,0.22)" />
+            <rect x="6" y="36" width="88" height="5" fill="#1c1c1e" />
+            <path fill={paintColor} d="M68,36 L68,14 L82,14 Q88,14 88,22 L88,36 Z" />
+            <path fill="var(--card-bg, #1c1c1e)" d="M72,17 L80,17 L84,24 L72,24 Z" />
+            <path fill={paintColor} opacity="0.8" d="M68,14 L80,11 L82,14 Z" />
+            <rect x="8" y="13" width="56" height="23" fill="#ffffff" stroke="#aeaeaf" strokeWidth="1.5" />
+            <line x1="22" y1="13" x2="22" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
+            <line x1="36" y1="13" x2="36" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
+            <line x1="50" y1="13" x2="50" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
+            <rect x="84" y="33" width="5" height="3" fill="#FFD60A" />
+            <circle cx="16" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="16" cy="39" r="3" fill="#aeaeaf" />
+            <circle cx="32" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="32" cy="39" r="3" fill="#aeaeaf" />
+            <circle cx="48" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="48" cy="39" r="3" fill="#aeaeaf" />
+            <circle cx="73" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="73" cy="39" r="3" fill="#aeaeaf" />
+            <circle cx="83" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="83" cy="39" r="3" fill="#aeaeaf" />
+          </svg>
+        );
+      case 'bus':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.18)" />
+            <path fill={paintColor} d="M12,36 L12,16 Q12,14 15,14 L82,14 Q88,14 88,18 L88,36 Z" />
+            <rect x="18" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
+            <rect x="31" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
+            <rect x="44" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
+            <rect x="57" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
+            <rect x="70" y="18" width="12" height="7" fill="var(--card-bg, #1c1c1e)" />
+            <rect x="84" y="32" width="4" height="2" fill="#FFD60A" />
+            <rect x="12" y="30" width="2" height="4" fill="#FF3B30" />
+            <circle cx="28" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="28" cy="38" r="3" fill="#8e8e93" />
+            <circle cx="72" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="72" cy="38" r="3" fill="#8e8e93" />
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
+
   
 
 
@@ -2009,6 +2185,449 @@ const getLicenseLabel = (type) => {
                 </div>
               )}
 
+            </div>
+          </div>
+        )}
+
+        {/* Mening Mashinam (My Vehicle) Card */}
+        {(userRole === 'driver' || userRole === 'guest') && (
+          <div className="menu-group glass squircle resume-card" style={{ marginTop: '16px' }}>
+            <div className="resume-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                <Wrench size={20} color="#30D158" />
+                <h3 style={{ margin: 0 }}>{t('myVehicleTitle', 'Mening Mashinam')}</h3>
+              </div>
+              {!isEditingVehicle ? (
+                <button 
+                  className="resume-edit-btn"
+                  onClick={() => {
+                    setEditVehicleData({ ...myVehicle });
+                    setIsEditingVehicle(true);
+                  }}
+                >
+                  📝 {t('editVehicle', 'Tahrirlash')}
+                </button>
+              ) : (
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button 
+                    type="button"
+                    className="resume-edit-btn"
+                    style={{ background: 'linear-gradient(135deg, #FF3B30, #FF2D55)', boxShadow: '0 4px 10px rgba(255, 59, 48, 0.2)' }}
+                    onClick={() => setIsEditingVehicle(false)}
+                  >
+                    ❌ {t('cancel', 'Bekor qilish')}
+                  </button>
+                  <button 
+                    type="button"
+                    className="resume-edit-btn"
+                    style={{ background: 'linear-gradient(135deg, #0A84FF, #007AFF)', boxShadow: '0 4px 10px rgba(10, 132, 255, 0.2)' }}
+                    onClick={handleSaveVehicle}
+                  >
+                    💾 {t('save', 'Saqlash')}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="resume-body">
+              {!isEditingVehicle ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+                  {/* Vehicle graphic display with 3D shadow and dynamic color */}
+                  <div className="vehicle-display-box squircle" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
+                    border: '1px solid var(--glass-border)',
+                    padding: '16px',
+                    minHeight: '120px',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 60%)',
+                      pointerEvents: 'none'
+                    }}></div>
+                    
+                    <div style={{ width: '160px', height: '80px', transform: 'scale(1.2)' }}>
+                      {renderVehicleSVG(myVehicle.type, myVehicle.color)}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                    <div className="resume-field">
+                      <span className="field-label">{t('vehicleType', 'Transport turi')}</span>
+                      <span className="field-value" style={{ textTransform: 'capitalize' }}>
+                        {myVehicle.type === 'car' ? t('vehicleCar', 'Yengil avto') :
+                         myVehicle.type === 'moto' ? t('vehicleMoto', 'Motosikl') :
+                         myVehicle.type === 'velo' ? t('vehicleVelo', 'Velosiped') :
+                         myVehicle.type === 'truck_3t' ? t('vehicleTruck3t', '3t Yuk mashinasi') :
+                         myVehicle.type === 'truck_4t' ? t('vehicleTruck4t', '4t Yuk mashinasi') :
+                         myVehicle.type === 'trailer' ? t('vehicleTrailer', 'Trailer (Katta yuk)') :
+                         myVehicle.type === 'bus' ? t('vehicleBus', 'Avtobus') : myVehicle.type}
+                      </span>
+                    </div>
+
+                    <div className="resume-field">
+                      <span className="field-label">{t('vehicleModel', 'Rusumi / Modeli')}</span>
+                      <span className="field-value" style={{ fontWeight: 'bold' }}>
+                        {myVehicle.make} {myVehicle.model} {myVehicle.trim && `(${myVehicle.trim})`}
+                      </span>
+                    </div>
+
+                    <div className="resume-field">
+                      <span className="field-label">{t('vehicleYear', 'Yili')}</span>
+                      <span className="field-value">{myVehicle.year || '-'}</span>
+                    </div>
+
+                    <div className="resume-field">
+                      <span className="field-label">{t('vehiclePlate', 'Davlat raqami')}</span>
+                      <span className="field-value" style={{ fontStyle: 'italic', letterSpacing: '1px' }}>{myVehicle.plateNumber || '-'}</span>
+                    </div>
+
+                    <div className="resume-field" style={{ gridColumn: 'span 2', borderTop: '1px solid var(--glass-border)', paddingTop: '8px', marginTop: '4px' }}>
+                      <span className="field-label" style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        📐 <span>{t('vehicleDimensions', 'Avtotransport o\'lchamlari (Navigatsiya uchun)')}</span>
+                      </span>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('height', 'Balandlik')}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.height} m</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('width', 'Eni')}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.width} m</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('length', 'Uzunlik')}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.length} m</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('weight', 'Vazni')}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.weight} t</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%' }}>
+                  {/* Realtime Live Preview with dynamic paint color */}
+                  <div className="vehicle-display-box squircle" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
+                    border: '1px dashed var(--primary)',
+                    padding: '16px',
+                    minHeight: '110px',
+                    position: 'relative'
+                  }}>
+                    <div style={{ width: '150px', height: '75px', transform: 'scale(1.2)' }}>
+                      {renderVehicleSVG(editVehicleData.type, editVehicleData.color)}
+                    </div>
+                    <span style={{
+                      position: 'absolute',
+                      top: '6px',
+                      right: '10px',
+                      fontSize: '9px',
+                      background: 'var(--primary)',
+                      color: 'white',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      fontWeight: 'bold'
+                    }}>LIVE PREVIEW</span>
+                  </div>
+
+                  {/* Form inputs */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleType', 'Transport turi')}</label>
+                      <select 
+                        value={editVehicleData.type}
+                        onChange={e => {
+                          const val = e.target.value;
+                          let h = '1.69', w = '1.85', l = '4.74', wt = '1.62'; // Car presets
+                          let mk = editVehicleData.make;
+                          let md = editVehicleData.model;
+                          if (val === 'moto') { h = '1.1'; w = '0.8'; l = '2.1'; wt = '0.2'; mk = 'Honda'; md = 'Super Cub'; }
+                          else if (val === 'velo') { h = '1.0'; w = '0.6'; l = '1.7'; wt = '0.015'; mk = 'Bridgestone'; md = 'Road Bike'; }
+                          else if (val === 'truck_3t') { h = '2.8'; w = '2.1'; l = '6.2'; wt = '4.5'; mk = 'Isuzu'; md = 'Elf'; }
+                          else if (val === 'truck_4t') { h = '3.4'; w = '2.3'; l = '8.5'; wt = '8.0'; mk = 'Hino'; md = 'Ranger'; }
+                          else if (val === 'trailer') { h = '3.8'; w = '2.5'; l = '16.5'; wt = '25.0'; mk = 'Fuso'; md = 'Super Great'; }
+                          else if (val === 'bus') { h = '3.2'; w = '2.5'; l = '11.5'; wt = '12.0'; mk = 'Isuzu'; md = 'Gala'; }
+                          else { mk = 'Toyota'; md = 'Harrier'; }
+                          
+                          setEditVehicleData(prev => ({ 
+                            ...prev, 
+                            type: val,
+                            make: mk,
+                            model: md,
+                            height: h,
+                            width: w,
+                            length: l,
+                            weight: wt
+                          }));
+                        }}
+                        style={{
+                          background: 'var(--card-bg, #2c2c2e)',
+                          color: 'var(--text-main)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '8px',
+                          padding: '8px',
+                          fontSize: '14px',
+                          outline: 'none'
+                        }}
+                      >
+                        <option value="car">{t('vehicleCar', 'Yengil avto')}</option>
+                        <option value="moto">{t('vehicleMoto', 'Motosikl')}</option>
+                        <option value="velo">{t('vehicleVelo', 'Velosiped')}</option>
+                        <option value="truck_3t">{t('vehicleTruck3t', '3t Yuk mashinasi')}</option>
+                        <option value="truck_4t">{t('vehicleTruck4t', '4t Yuk mashinasi')}</option>
+                        <option value="trailer">{t('vehicleTrailer', 'Trailer (Katta yuk)')}</option>
+                        <option value="bus">{t('vehicleBus', 'Avtobus')}</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleMake', 'Ishlab chiqaruvchi (Rusumi)')}</label>
+                      <input 
+                        type="text"
+                        placeholder="Toyota, Hino, Isuzu..."
+                        value={editVehicleData.make}
+                        onChange={e => setEditVehicleData(prev => ({ ...prev, make: e.target.value }))}
+                        style={{
+                          background: 'var(--card-bg, #2c2c2e)',
+                          color: 'var(--text-main)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '8px',
+                          padding: '8px',
+                          fontSize: '14px',
+                          outline: 'none'
+                        }}
+                        required
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel', 'Modeli')}</label>
+                      <input 
+                        type="text"
+                        placeholder="Prius, Ranger, Elf..."
+                        value={editVehicleData.model}
+                        onChange={e => setEditVehicleData(prev => ({ ...prev, model: e.target.value }))}
+                        style={{
+                          background: 'var(--card-bg, #2c2c2e)',
+                          color: 'var(--text-main)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '8px',
+                          padding: '8px',
+                          fontSize: '14px',
+                          outline: 'none'
+                        }}
+                        required
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleTrim', 'Komplektatsiya (Trim)')}</label>
+                      <input 
+                        type="text"
+                        placeholder="Z, G, S, Pro..."
+                        value={editVehicleData.trim}
+                        onChange={e => setEditVehicleData(prev => ({ ...prev, trim: e.target.value }))}
+                        style={{
+                          background: 'var(--card-bg, #2c2c2e)',
+                          color: 'var(--text-main)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '8px',
+                          padding: '8px',
+                          fontSize: '14px',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleYear', 'Yili')}</label>
+                      <input 
+                        type="text"
+                        placeholder="2024"
+                        value={editVehicleData.year}
+                        onChange={e => setEditVehicleData(prev => ({ ...prev, year: e.target.value }))}
+                        style={{
+                          background: 'var(--card-bg, #2c2c2e)',
+                          color: 'var(--text-main)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '8px',
+                          padding: '8px',
+                          fontSize: '14px',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehiclePlate', 'Davlat raqami')}</label>
+                      <input 
+                        type="text"
+                        placeholder="練馬 300 あ 12-34 / 01 A 777 AA"
+                        value={editVehicleData.plateNumber}
+                        onChange={e => setEditVehicleData(prev => ({ ...prev, plateNumber: e.target.value }))}
+                        style={{
+                          background: 'var(--card-bg, #2c2c2e)',
+                          color: 'var(--text-main)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '8px',
+                          padding: '8px',
+                          fontSize: '14px',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Color picker */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', gridColumn: 'span 2' }}>
+                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleColor', 'Moshina rangi')}</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <input 
+                          type="color" 
+                          value={editVehicleData.color} 
+                          onChange={e => setEditVehicleData(prev => ({ ...prev, color: e.target.value }))}
+                          style={{
+                            border: 'none',
+                            outline: 'none',
+                            background: 'none',
+                            width: '36px',
+                            height: '36px',
+                            cursor: 'pointer'
+                          }}
+                        />
+                        {/* Preset color chips */}
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          {[
+                            { hex: '#5E5CE6', name: 'Indigo' },
+                            { hex: '#F2F2F7', name: 'Pearl White' },
+                            { hex: '#1C1C1E', name: 'Obsidian' },
+                            { hex: '#FF3B30', name: 'Red' },
+                            { hex: '#FF9F0A', name: 'Orange' },
+                            { hex: '#34C759', name: 'Green' },
+                            { hex: '#8E8E93', name: 'Silver' },
+                            { hex: '#0A84FF', name: 'Blue' }
+                          ].map(chip => (
+                            <button
+                              key={chip.hex}
+                              type="button"
+                              onClick={() => setEditVehicleData(prev => ({ ...prev, color: chip.hex }))}
+                              style={{
+                                width: '22px',
+                                height: '22px',
+                                borderRadius: '50%',
+                                background: chip.hex,
+                                border: editVehicleData.color === chip.hex ? '2px solid var(--primary)' : '1px solid rgba(0,0,0,0.2)',
+                                cursor: 'pointer',
+                                transition: 'all 0.1s ease',
+                                boxShadow: editVehicleData.color === chip.hex ? '0 0 6px var(--primary)' : 'none'
+                              }}
+                              title={chip.name}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Dimensions editors */}
+                    <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '6px', borderTop: '1px solid var(--glass-border)', paddingTop: '10px', marginTop: '6px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                        📐 O'lchamlar va Og'irlik (Navigatsiya xaritasida ko'prik va yo'l taqiqlarini chetlab o'tish uchun):
+                      </span>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('height', 'Balandlik (m)')}</label>
+                          <input 
+                            type="number" 
+                            step="0.01" 
+                            value={editVehicleData.height}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, height: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '6px',
+                              padding: '6px',
+                              fontSize: '12px',
+                              outline: 'none',
+                              textAlign: 'center'
+                            }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('width', 'Eni (m)')}</label>
+                          <input 
+                            type="number" 
+                            step="0.01" 
+                            value={editVehicleData.width}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, width: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '6px',
+                              padding: '6px',
+                              fontSize: '12px',
+                              outline: 'none',
+                              textAlign: 'center'
+                            }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('length', 'Uzunlik (m)')}</label>
+                          <input 
+                            type="number" 
+                            step="0.01" 
+                            value={editVehicleData.length}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, length: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '6px',
+                              padding: '6px',
+                              fontSize: '12px',
+                              outline: 'none',
+                              textAlign: 'center'
+                            }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('weight', 'Og\'irlik (t)')}</label>
+                          <input 
+                            type="number" 
+                            step="0.01" 
+                            value={editVehicleData.weight}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, weight: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '6px',
+                              padding: '6px',
+                              fontSize: '12px',
+                              outline: 'none',
+                              textAlign: 'center'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
