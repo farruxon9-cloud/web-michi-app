@@ -852,11 +852,13 @@ export default function Profile({
     let boltBg = '#8e8e93';
     let hasBgGraphic = false;
     let bgGraphicSvg = null;
+    let shadow = '0.5px 0.5px 0px rgba(255,255,255,0.8), -0.5px -0.5px 0px rgba(0,0,0,0.15)';
 
     if (plateType === 'commercial') {
       bg = 'linear-gradient(135deg, #1b3d20, #24522a)';
       border = '2.5px solid #ffffff';
       textColor = '#ffffff';
+      shadow = '0.5px 0.5px 0px rgba(0,0,0,0.4), -0.5px -0.5px 0px rgba(255,255,255,0.2)';
     } else if (plateType === 'kei_private') {
       bg = 'linear-gradient(135deg, #ffd83b, #ffd60a)';
       border = '2.5px solid #1c1c1e';
@@ -865,6 +867,7 @@ export default function Profile({
       bg = 'linear-gradient(135deg, #2c2c2e, #1c1c1e)';
       border = '2.5px solid #ffd60a';
       textColor = '#ffd60a';
+      shadow = '0.5px 0.5px 0px rgba(0,0,0,0.4), -0.5px -0.5px 0px rgba(255,255,255,0.2)';
     } else if (plateType === 'illustrated_fuji') {
       bg = 'linear-gradient(to bottom, #b3e5fc, #e1f5fe, #ffffff)';
       border = '2.5px solid #24522a';
@@ -944,21 +947,62 @@ export default function Profile({
         justifyContent: 'space-between',
         position: 'relative',
         boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-        fontFamily: 'monospace',
-        fontWeight: 'bold',
+        fontFamily: '"Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif',
         transform: scale,
         overflow: 'hidden'
       }}>
         {hasBgGraphic && bgGraphicSvg}
-        <div style={{ position: 'absolute', top: '3px', left: '22px', width: '3.5px', height: '3.5px', borderRadius: '50%', background: boltBg, border: '0.5px solid #545456', zIndex: 2 }}></div>
-        <div style={{ position: 'absolute', top: '3px', right: '22px', width: '3.5px', height: '3.5px', borderRadius: '50%', background: boltBg, border: '0.5px solid #545456', zIndex: 2 }}></div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', lineHeight: 1, padding: '0 8px', marginTop: '1px', zIndex: 2, position: 'relative' }}>
+        
+        {/* Left Screw Slotted Bolt */}
+        <svg viewBox="0 0 10 10" style={{ position: 'absolute', top: '6px', left: '14px', width: '6px', height: '6px', zIndex: 2 }}>
+          <circle cx="5" cy="5" r="4.5" fill="#d1d1d6" stroke="#48484a" strokeWidth="0.75" />
+          <line x1="2.5" y1="5" x2="7.5" y2="5" stroke="#3a3a3c" strokeWidth="1" />
+        </svg>
+
+        {/* Right Screw Slotted Bolt */}
+        <svg viewBox="0 0 10 10" style={{ position: 'absolute', top: '6px', right: '14px', width: '6px', height: '6px', zIndex: 2 }}>
+          <circle cx="5" cy="5" r="4.5" fill="#d1d1d6" stroke="#48484a" strokeWidth="0.75" />
+          <line x1="5" y1="2.5" x2="5" y2="7.5" stroke="#3a3a3c" strokeWidth="1" />
+        </svg>
+
+        {/* JDM Top Row (Prefecture and Class Code spaced between bolts) */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          fontSize: '9.5px', 
+          lineHeight: 1, 
+          padding: '0 26px', 
+          marginTop: '3px', 
+          zIndex: 2, 
+          position: 'relative',
+          fontWeight: '900',
+          textShadow: shadow
+        }}>
           <span>{prefecture}</span>
           <span>{classCode}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px', marginBottom: '1px', zIndex: 2, position: 'relative' }}>
-          <span style={{ fontSize: '13px' }}>{hira}</span>
-          <span style={{ fontSize: '17px', letterSpacing: '0.5px' }}>{number}</span>
+
+        {/* JDM Main Row (Hiragana Calligraphy Left, 4-digit number Right) */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          padding: '0 6px', 
+          marginBottom: '2px', 
+          zIndex: 2, 
+          position: 'relative',
+          textShadow: shadow
+        }}>
+          <span style={{ 
+            fontSize: '14px', 
+            fontFamily: '"Hiragino Mincho ProN", serif', 
+            fontWeight: 'bold' 
+          }}>{hira}</span>
+          <span style={{ 
+            fontSize: '19px', 
+            letterSpacing: '1px', 
+            fontWeight: '900' 
+          }}>{number}</span>
         </div>
       </div>
     );
