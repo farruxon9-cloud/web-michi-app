@@ -928,6 +928,50 @@ export default function Profile({
           <path d="M70,15 Q72,12 70,9 Q68,12 70,15 Z" fill="#ffb7c5" transform="rotate(-30 70 15)" />
         </svg>
       );
+    } else if (plateType === 'illustrated_matsudo') {
+      bg = 'linear-gradient(135deg, #fff0f5 0%, #e0f2f1 100%)';
+      border = '2.5px solid #2e7d32';
+      textColor = '#1c4224';
+      hasBgGraphic = true;
+      bgGraphicSvg = (
+        <svg viewBox="0 0 100 50" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.9, pointerEvents: 'none' }}>
+          {/* Tokiwadaira Sakura (Top Left pink branch) */}
+          <g transform="translate(12, 10)">
+            <circle cx="0" cy="0" r="3.5" fill="#ff6b8b" />
+            <circle cx="-2.5" cy="-2.5" r="3" fill="#ff8da1" opacity="0.85" />
+            <circle cx="2.5" cy="-2.5" r="3" fill="#ff8da1" opacity="0.85" />
+            <circle cx="2.5" cy="2.5" r="3" fill="#ff8da1" opacity="0.85" />
+            <circle cx="-2.5" cy="2.5" r="3" fill="#ff8da1" opacity="0.85" />
+            <circle cx="0" cy="0" r="0.75" fill="#ffd60a" />
+          </g>
+          <g transform="translate(24, 7)">
+            <circle cx="0" cy="0" r="2.5" fill="#ff8da1" opacity="0.8" />
+            <circle cx="-2" cy="-2" r="2" fill="#ffccd5" opacity="0.8" />
+            <circle cx="2" cy="-2" r="2" fill="#ffccd5" opacity="0.8" />
+            <circle cx="2" cy="2" r="2" fill="#ffccd5" opacity="0.8" />
+            <circle cx="-2" cy="2" r="2" fill="#ffccd5" opacity="0.8" />
+          </g>
+          {/* Hondo-ji Ajisai Hydrangeas (Bottom Right) */}
+          <g transform="translate(88, 38)">
+            <circle cx="-3" cy="-3" r="2.5" fill="#8c9eff" opacity="0.85" />
+            <circle cx="2" cy="-3" r="2.5" fill="#b388ff" opacity="0.85" />
+            <circle cx="-2" cy="2" r="2.5" fill="#80d8ff" opacity="0.85" />
+            <circle cx="2" cy="2" r="2.5" fill="#b388ff" opacity="0.85" />
+            <circle cx="0" cy="0" r="3" fill="#8c9eff" opacity="0.9" />
+          </g>
+          {/* Yagiri no Watashi Boat (Bottom Left/Center) */}
+          <g transform="translate(45, 41)">
+            {/* Water Waves */}
+            <path d="M-25,3 Q-15,1 -5,3 Q5,1 15,3 Q25,1 35,3" fill="none" stroke="#4fc3f7" strokeWidth="0.75" />
+            {/* Simple rowboat */}
+            <path d="M-8,1 L8,1 L11,-1 L-6,-1 Z" fill="#8d6e63" />
+            {/* Boatman / Passenger silhouette */}
+            <circle cx="0" cy="-4" r="1.5" fill="#5d4037" />
+            <path d="M-1.5,-2.5 L1.5,-2.5 L1,1 L-1,1 Z" fill="#5d4037" />
+            <line x1="-3" y1="-1" x2="-8" y2="4" stroke="#3e2723" strokeWidth="0.5" />
+          </g>
+        </svg>
+      );
     }
 
     const scale = isPreview ? 'scale(1.1)' : 'scale(1.2)';
@@ -3584,7 +3628,8 @@ const getLicenseLabel = (type) => {
                           <option value="kei_commercial">⬛ Kei-car tijoriy (Qora rangli)</option>
                           <option value="illustrated_fuji">🗻 Fuji tog'i tasvirli (Art Plate)</option>
                           <option value="illustrated_expo">🔴 Osaka Expo 2025 esdalik raqami</option>
-                          <option value="illustrated_flower">🌸 Sakura gullari dizaynli raqam</option>
+                          <option value="illustrated_flower">🌸 Sakura va Nanohana gullari (Milliy)</option>
+                          <option value="illustrated_matsudo">🏞️ Matsudo mahalliy tasvirli raqami (Sakura, Ajisai & Yagiri boat)</option>
                         </select>
                       </div>
 
