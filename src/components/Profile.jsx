@@ -126,10 +126,15 @@ export default function Profile({
         type: 'car',
         make: 'Toyota',
         model: 'Harrier',
+        bodyStyle: 'suv',
         trim: 'Z',
         year: '2024',
         color: '#5E5CE6',
-        plateNumber: '練馬 300 あ 12-34',
+        platePrefecture: '練馬',
+        plateClass: '300',
+        plateHira: 'あ',
+        plateNumber: '12-34',
+        isCommercial: false,
         height: '1.69',
         width: '1.85',
         length: '4.74',
@@ -140,10 +145,15 @@ export default function Profile({
         type: 'car',
         make: 'Toyota',
         model: 'Harrier',
+        bodyStyle: 'suv',
         trim: 'Z',
         year: '2024',
         color: '#5E5CE6',
-        plateNumber: '練馬 300 あ 12-34',
+        platePrefecture: '練馬',
+        plateClass: '300',
+        plateHira: 'あ',
+        plateNumber: '12-34',
+        isCommercial: false,
         height: '1.69',
         width: '1.85',
         length: '4.74',
@@ -155,6 +165,54 @@ export default function Profile({
   const [isEditingVehicle, setIsEditingVehicle] = useState(false);
   const [editVehicleData, setEditVehicleData] = useState({ ...myVehicle });
 
+  // JDM Prefectures & Hiragana Lists
+  const JDM_PREFECTURES = [
+    '練馬', '品川', '足立', '多摩', '世田谷', '杉並', '横浜', '川崎', '湘南', '相模', 
+    '大宮', '川口', '所沢', '千葉', '成田', 'なにわ', '大阪', '和泉', '京都', '神戸', 
+    '姫路', '名古屋', '三河', '福岡', '北九州', '札幌', '旭川', '仙台', '広島'
+  ];
+  
+  const JDM_HIRAGANA = [
+    'あ', 'い', 'う', 'え', 'か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ',
+    'た', 'ち', 'つ', 'て', 'と', 'な', 'ni', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'ほ',
+    'ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ'
+  ];
+
+  const getVehiclePresetDimensions = (type, bodyStyle) => {
+    const presets = {
+      car: {
+        sedan: { height: '1.43', width: '1.76', length: '4.60', weight: '1.35' },
+        hatchback: { height: '1.45', width: '1.69', length: '3.99', weight: '1.05' },
+        suv: { height: '1.69', width: '1.85', length: '4.74', weight: '1.62' },
+        minivan: { height: '1.71', width: '1.69', length: '4.26', weight: '1.37' }
+      },
+      moto: {
+        scooter: { height: '1.10', width: '0.80', length: '2.10', weight: '0.12' },
+        sportbike: { height: '1.15', width: '0.75', length: '2.05', weight: '0.19' }
+      },
+      velo: {
+        standard: { height: '1.00', width: '0.60', length: '1.70', weight: '0.015' }
+      },
+      truck_3t: {
+        flatbed: { height: '2.20', width: '1.95', length: '4.69', weight: '3.50' },
+        box_truck: { height: '2.80', width: '2.10', length: '6.20', weight: '4.50' }
+      },
+      truck_4t: {
+        flatbed: { height: '2.40', width: '2.25', length: '8.15', weight: '7.50' },
+        box_truck: { height: '3.40', width: '2.30', length: '8.50', weight: '8.00' },
+        wing_body: { height: '3.45', width: '2.35', length: '8.60', weight: '8.20' },
+        dump_truck: { height: '2.60', width: '2.20', length: '5.90', weight: '7.90' }
+      },
+      trailer: {
+        trailer_container: { height: '3.80', width: '2.50', length: '16.50', weight: '25.00' }
+      },
+      bus: {
+        standard: { height: '3.20', width: '2.50', length: '11.50', weight: '12.00' }
+      }
+    };
+    return presets[type]?.[bodyStyle] || presets[type]?.standard || presets[type]?.sedan || { height: '1.50', width: '1.80', length: '4.50', weight: '1.50' };
+  };
+
   const handleSaveVehicle = (e) => {
     e.preventDefault();
     setMyVehicle(editVehicleData);
@@ -163,54 +221,64 @@ export default function Profile({
     window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: editVehicleData }));
   };
 
-  const renderVehicleSVG = (type, make = '', model = '', color) => {
+  const renderVehicleSVG = (type, bodyStyle, color) => {
     const paintColor = color || '#5E5CE6';
-    const mStr = ((make || '') + ' ' + (model || '')).toLowerCase();
     
-    switch (type) {
-      case 'car':
-        // 1. Minivan / Boxy MPV (Honda Freed, Alphard, Stepwgn, Serena, Noah, Voxy, Hiace, Van, etc.)
-        if (mStr.includes('freed') || mStr.includes('spike') || mStr.includes('stepwgn') || mStr.includes('alphard') || mStr.includes('vellfire') || mStr.includes('noah') || mStr.includes('voxy') || mStr.includes('hiace') || mStr.includes('serena') || mStr.includes('van') || mStr.includes('mpv') || mStr.includes('box')) {
-          return (
-            <svg viewBox="0 0 100 50" width="100%" height="100%">
-              <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.15)" />
-              <path fill={paintColor} d="M12,38 L10,36 C10,34 10,18 15,18 L76,18 C78,18 80,19 82,23 L87,31 C89,35 88,38 86,38 Z" />
-              <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M22,21 L35,21 L35,27 L22,27 Z" />
-              <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M38,21 L55,21 L55,27 L38,27 Z" />
-              <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M58,21 L74,21 L72,27 L58,27 Z" />
-              <line x1="56" y1="20" x2="56" y2="35" stroke="rgba(0,0,0,0.25)" strokeWidth="1" />
-              <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M78,22 L82,28 L78,28 Z" />
-              <path fill="#FFD60A" d="M85,32 Q88,32 87,34 L84,35 Z" />
-              <path fill="#FF453A" d="M10,22 L12,22 L12,28 L10,28 Z" />
-              <circle cx="28" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-              <circle cx="28" cy="38" r="4" fill="#8e8e93" />
-              <circle cx="72" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-              <circle cx="72" cy="38" r="4" fill="#8e8e93" />
-            </svg>
-          );
-        }
-        
-        // 2. SUV / Crossover (Toyota Harrier, Rav4, CX-5, Forester, Land Cruiser, Jeep, Pajero, etc.)
-        if (mStr.includes('harrier') || mStr.includes('suv') || mStr.includes('rav4') || mStr.includes('land') || mStr.includes('cruiser') || mStr.includes('prado') || mStr.includes('cx') || mStr.includes('trail') || mStr.includes('forester') || mStr.includes('jeep') || mStr.includes('pajero') || mStr.includes('rover') || mStr.includes('cross')) {
-          return (
-            <svg viewBox="0 0 100 50" width="100%" height="100%">
-              <ellipse cx="50" cy="43" rx="42" ry="4.5" fill="rgba(0,0,0,0.18)" />
-              <path fill={paintColor} d="M14,36 L11,32 C11,30 13,22 20,21 C27,20 38,13 50,13 C62,13 78,16 83,24 C88,30 87,35 84,36 Z" />
-              <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M32,21 L44,16 L60,16 L72,21 C70,24 35,24 32,21 Z" />
-              <path fill={paintColor} d="M11,20 L15,19 L16,21 L12,22 Z" />
-              <path d="M18,36 A10,10 0 0,1 38,36" fill="none" stroke="#3a3a3c" strokeWidth="2.5" />
-              <path d="M62,36 A10,10 0 0,1 82,36" fill="none" stroke="#3a3a3c" strokeWidth="2.5" />
-              <path fill="#FFD60A" d="M84,28 Q87,28 86,30 L82,31 Z" />
-              <path fill="#FF453A" d="M11,28 L14,28 L14,31 L11,31 Z" />
-              <circle cx="28" cy="36" r="7.5" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="2" />
-              <circle cx="28" cy="36" r="3.5" fill="#aeaeaf" />
-              <circle cx="72" cy="36" r="7.5" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="2" />
-              <circle cx="72" cy="36" r="3.5" fill="#aeaeaf" />
-            </svg>
-          );
-        }
+    switch (bodyStyle) {
+      // 🚗 PASSENGER CAR BODIES
+      case 'minivan':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.15)" />
+            <path fill={paintColor} d="M12,38 L10,36 C10,34 10,18 15,18 L76,18 C78,18 80,19 82,23 L87,31 C89,35 88,38 86,38 Z" />
+            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M22,21 L35,21 L35,27 L22,27 Z" />
+            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M38,21 L55,21 L55,27 L38,27 Z" />
+            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M58,21 L74,21 L72,27 L58,27 Z" />
+            <line x1="56" y1="20" x2="56" y2="35" stroke="rgba(0,0,0,0.25)" strokeWidth="1" />
+            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M78,22 L82,28 L78,28 Z" />
+            <path fill="#FFD60A" d="M85,32 Q88,32 87,34 L84,35 Z" />
+            <path fill="#FF453A" d="M10,22 L12,22 L12,28 L10,28 Z" />
+            <circle cx="28" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="28" cy="38" r="4" fill="#8e8e93" />
+            <circle cx="72" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="72" cy="38" r="4" fill="#8e8e93" />
+          </svg>
+        );
 
-        // 3. Standard Sedan / Liftback (Toyota Prius, Civic, Corolla, Fit, Aqua, etc.)
+      case 'suv':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="42" ry="4.5" fill="rgba(0,0,0,0.18)" />
+            <path fill={paintColor} d="M14,36 L11,32 C11,30 13,22 20,21 C27,20 38,13 50,13 C62,13 78,16 83,24 C88,30 87,35 84,36 Z" />
+            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M32,21 L44,16 L60,16 L72,21 C70,24 35,24 32,21 Z" />
+            <path fill={paintColor} d="M11,20 L15,19 L16,21 L12,22 Z" />
+            <path d="M18,36 A10,10 0 0,1 38,36" fill="none" stroke="#3a3a3c" strokeWidth="2.5" />
+            <path d="M62,36 A10,10 0 0,1 82,36" fill="none" stroke="#3a3a3c" strokeWidth="2.5" />
+            <path fill="#FFD60A" d="M84,28 Q87,28 86,30 L82,31 Z" />
+            <path fill="#FF453A" d="M11,28 L14,28 L14,31 L11,31 Z" />
+            <circle cx="28" cy="36" r="7.5" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="2" />
+            <circle cx="28" cy="36" r="3.5" fill="#aeaeaf" />
+            <circle cx="72" cy="36" r="7.5" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="2" />
+            <circle cx="72" cy="36" r="3.5" fill="#aeaeaf" />
+          </svg>
+        );
+
+      case 'hatchback':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="38" ry="3.8" fill="rgba(0,0,0,0.13)" />
+            <path fill={paintColor} d="M16,36 L12,33 C12,31 14,24 22,23 C30,22 38,16 46,16 C54,16 70,18 78,25 C86,32 84,35 80,36 Z" />
+            <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M34,22 L45,18 L55,18 L65,22 Z" />
+            <path fill="#ffffff" opacity="0.25" d="M36,21 L44,19 L48,19 Z" />
+            <path fill="#FFD60A" d="M81,29 Q84,29 83,32 L80,33 Z" />
+            <circle cx="28" cy="37" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="28" cy="37" r="3" fill="#8e8e93" />
+            <circle cx="68" cy="37" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="68" cy="37" r="3" fill="#8e8e93" />
+          </svg>
+        );
+
+      case 'sedan':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
             <ellipse cx="50" cy="43" rx="40" ry="4" fill="rgba(0,0,0,0.15)" />
@@ -226,25 +294,22 @@ export default function Profile({
           </svg>
         );
 
-      case 'moto':
-        // Scooter profile (Honda Cub, Scooter, Vespa, Jog, Today, etc.)
-        if (mStr.includes('cub') || mStr.includes('scooter') || mStr.includes('vespa') || mStr.includes('today') || mStr.includes('jog')) {
-          return (
-            <svg viewBox="0 0 100 50" width="100%" height="100%">
-              <ellipse cx="50" cy="43" rx="35" ry="3.5" fill="rgba(0,0,0,0.12)" />
-              {/* Scooter Frame */}
-              <path d="M22,38 L30,34 L46,34 L52,24 L56,16" stroke="#8e8e93" strokeWidth="2.5" fill="none" />
-              {/* Scooter Body Shield (Paint color) */}
-              <path fill={paintColor} d="M52,38 L58,24 L54,16 L48,16 L44,24 Z" />
-              <path fill={paintColor} d="M22,34 C25,28 35,26 44,28 L40,36 Z" />
-              <circle cx="22" cy="38" r="10" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.8" />
-              <circle cx="22" cy="38" r="4.5" fill="#8e8e93" />
-              <circle cx="78" cy="38" r="10" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.8" />
-              <circle cx="78" cy="38" r="4.5" fill="#8e8e93" />
-            </svg>
-          );
-        }
-        // Sport Bike / Regular Moto
+      // 🏍️ MOTORCYCLE BODIES
+      case 'scooter':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="35" ry="3.5" fill="rgba(0,0,0,0.12)" />
+            <path d="M22,38 L30,34 L46,34 L52,24 L56,16" stroke="#8e8e93" strokeWidth="2.5" fill="none" />
+            <path fill={paintColor} d="M52,38 L58,24 L54,16 L48,16 L44,24 Z" />
+            <path fill={paintColor} d="M22,34 C25,28 35,26 44,28 L40,36 Z" />
+            <circle cx="22" cy="38" r="10" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.8" />
+            <circle cx="22" cy="38" r="4.5" fill="#8e8e93" />
+            <circle cx="78" cy="38" r="10" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.8" />
+            <circle cx="78" cy="38" r="4.5" fill="#8e8e93" />
+          </svg>
+        );
+
+      case 'sportbike':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
             <ellipse cx="50" cy="43" rx="35" ry="3.5" fill="rgba(0,0,0,0.15)" />
@@ -258,53 +323,79 @@ export default function Profile({
           </svg>
         );
 
+      // 🚲 BICYCLE
       case 'velo':
-        return (
-          <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="32" ry="3" fill="rgba(0,0,0,0.1)" />
-            <path d="M22,38 L45,38 L60,25 L35,25 Z" stroke={paintColor} strokeWidth="2.5" fill="none" />
-            <path d="M22,38 L35,25 M45,38 L52,18" stroke={paintColor} strokeWidth="2.5" fill="none" />
-            <path d="M28,21 L36,21" stroke="#1c1c1e" strokeWidth="2" fill="none" />
-            <path d="M50,16 L56,16" stroke="#1c1c1e" strokeWidth="2" fill="none" />
-            <circle cx="22" cy="38" r="10" stroke="#8e8e93" strokeWidth="1" fill="none" />
-            <circle cx="22" cy="38" r="1.5" fill="#1c1c1e" />
-            <circle cx="78" cy="38" r="10" stroke="#8e8e93" strokeWidth="1" fill="none" />
-            <circle cx="78" cy="38" r="1.5" fill="#1c1c1e" />
-          </svg>
-        );
+      case 'standard':
+        if (type === 'velo') {
+          return (
+            <svg viewBox="0 0 100 50" width="100%" height="100%">
+              <ellipse cx="50" cy="43" rx="32" ry="3" fill="rgba(0,0,0,0.1)" />
+              <path d="M22,38 L45,38 L60,25 L35,25 Z" stroke={paintColor} strokeWidth="2.5" fill="none" />
+              <path d="M22,38 L35,25 M45,38 L52,18" stroke={paintColor} strokeWidth="2.5" fill="none" />
+              <path d="M28,21 L36,21" stroke="#1c1c1e" strokeWidth="2" fill="none" />
+              <path d="M50,16 L56,16" stroke="#1c1c1e" strokeWidth="2" fill="none" />
+              <circle cx="22" cy="38" r="10" stroke="#8e8e93" strokeWidth="1" fill="none" />
+              <circle cx="22" cy="38" r="1.5" fill="#1c1c1e" />
+              <circle cx="78" cy="38" r="10" stroke="#8e8e93" strokeWidth="1" fill="none" />
+              <circle cx="78" cy="38" r="1.5" fill="#1c1c1e" />
+            </svg>
+          );
+        } else if (type === 'bus') {
+          return (
+            <svg viewBox="0 0 100 50" width="100%" height="100%">
+              <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.18)" />
+              <path fill={paintColor} d="M12,36 L12,16 Q12,14 15,14 L82,14 Q88,14 88,18 L88,36 Z" />
+              <rect x="18" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
+              <rect x="31" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
+              <rect x="44" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
+              <rect x="57" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
+              <rect x="70" y="18" width="12" height="7" fill="var(--card-bg, #1c1c1e)" />
+              <rect x="84" y="32" width="4" height="2" fill="#FFD60A" />
+              <rect x="12" y="30" width="2" height="4" fill="#FF3B30" />
+              <circle cx="28" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+              <circle cx="28" cy="38" r="3" fill="#8e8e93" />
+              <circle cx="72" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+              <circle cx="72" cy="38" r="3" fill="#8e8e93" />
+            </svg>
+          );
+        }
+        break;
 
-      case 'truck_3t':
+      // 🚚 TRUCK BODIES
+      case 'flatbed':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
             <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.18)" />
-            <rect x="12" y="36" width="76" height="4" fill="#3a3a3c" />
-            <path fill={paintColor} d="M64,36 L64,18 L76,18 Q84,18 84,26 L84,36 Z" />
-            <path fill="var(--card-bg, #1c1c1e)" d="M68,21 L76,21 L79,27 L68,27 Z" />
-            <rect x="15" y="14" width="48" height="22" fill="#e5e5ea" stroke="#d1d1d6" strokeWidth="1" />
-            <line x1="39" y1="14" x2="39" y2="36" stroke="#d1d1d6" strokeWidth="1" />
-            <rect x="80" y="32" width="5" height="2" fill="#FFD60A" />
-            <rect x="78" y="35" width="8" height="3" fill="#8e8e93" />
-            <circle cx="26" cy="39" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="26" cy="39" r="3" fill="#8e8e93" />
-            <circle cx="48" cy="39" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="48" cy="39" r="3" fill="#8e8e93" />
-            <circle cx="74" cy="39" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="74" cy="39" r="3" fill="#8e8e93" />
+            {/* Chassis and Open Bed */}
+            <rect x="10" y="34" width="78" height="5" fill="#3a3a3c" />
+            {/* Cabin (Painted) */}
+            <path fill={paintColor} d="M64,34 L64,16 L76,16 Q84,16 84,24 L84,34 Z" />
+            <path fill="var(--card-bg, #1c1c1e)" d="M68,19 L76,19 L79,25 L68,25 Z" />
+            {/* Open Board Rails */}
+            <rect x="12" y="27" width="52" height="7" fill="#8e8e93" stroke="#aeaeaf" strokeWidth="1" />
+            <line x1="28" y1="27" x2="28" y2="34" stroke="#aeaeaf" strokeWidth="1" />
+            <line x1="44" y1="27" x2="44" y2="34" stroke="#aeaeaf" strokeWidth="1" />
+            <circle cx="24" cy="38" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="24" cy="38" r="3" fill="#8e8e93" />
+            <circle cx="42" cy="38" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="42" cy="38" r="3" fill="#8e8e93" />
+            <circle cx="72" cy="38" r="7" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="72" cy="38" r="3" fill="#8e8e93" />
           </svg>
         );
 
-      case 'truck_4t':
+      case 'box_truck':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
             <ellipse cx="50" cy="43" rx="44" ry="4.5" fill="rgba(0,0,0,0.2)" />
-            <rect x="10" y="36" width="80" height="5" fill="#1c1c1e" />
-            <path fill={paintColor} d="M64,36 L64,15 L78,15 Q86,15 86,24 L86,36 Z" />
-            <rect x="81" y="28" width="5" height="8" fill="#e5e5ea" />
-            <rect x="83" y="30" width="3" height="4" fill="#3a3a3c" />
+            <rect x="10" y="35" width="80" height="5" fill="#1c1c1e" />
+            {/* Cabin (Painted) */}
+            <path fill={paintColor} d="M64,35 L64,15 L78,15 Q86,15 86,24 L86,35 Z" />
             <path fill="var(--card-bg, #1c1c1e)" d="M68,18 L76,18 L81,25 L68,25 Z" />
-            <rect x="12" y="11" width="51" height="25" fill="#f2f2f7" stroke="#aeaeaf" strokeWidth="1.2" />
-            <line x1="29" y1="11" x2="29" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
-            <line x1="46" y1="11" x2="46" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
+            {/* Closed Box */}
+            <rect x="12" y="11" width="51" height="24" fill="#f2f2f7" stroke="#aeaeaf" strokeWidth="1.2" />
+            <line x1="29" y1="11" x2="29" y2="35" stroke="#aeaeaf" strokeWidth="1.2" />
+            <line x1="46" y1="11" x2="46" y2="35" stroke="#aeaeaf" strokeWidth="1.2" />
             <circle cx="22" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
             <circle cx="22" cy="39" r="3" fill="#aeaeaf" />
             <circle cx="38" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
@@ -314,19 +405,66 @@ export default function Profile({
           </svg>
         );
 
-      case 'trailer':
+      case 'wing_body':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="44" ry="4.5" fill="rgba(0,0,0,0.2)" />
+            <rect x="10" y="35" width="80" height="5" fill="#1c1c1e" />
+            {/* Cabin (Painted) */}
+            <path fill={paintColor} d="M64,35 L64,15 L78,15 Q86,15 86,24 L86,35 Z" />
+            <path fill="var(--card-bg, #1c1c1e)" d="M68,18 L76,18 L81,25 L68,25 Z" />
+            {/* Wing Body Panel (horizontal line indicating splitting wings) */}
+            <rect x="12" y="11" width="51" height="24" fill="#e5e5ea" stroke="#8e8e93" strokeWidth="1.5" />
+            <line x1="12" y1="21" x2="63" y2="21" stroke="#3a3a3c" strokeWidth="1.5" />
+            <line x1="29" y1="11" x2="29" y2="35" stroke="#8e8e93" strokeWidth="1" />
+            <line x1="46" y1="11" x2="46" y2="35" stroke="#8e8e93" strokeWidth="1" />
+            {/* Locking rods vertical */}
+            <line x1="15" y1="21" x2="15" y2="35" stroke="#8e8e93" strokeWidth="1.2" />
+            <line x1="60" y1="21" x2="60" y2="35" stroke="#8e8e93" strokeWidth="1.2" />
+            <circle cx="22" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="22" cy="39" r="3" fill="#aeaeaf" />
+            <circle cx="38" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="38" cy="39" r="3" fill="#aeaeaf" />
+            <circle cx="74" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="74" cy="39" r="3" fill="#aeaeaf" />
+          </svg>
+        );
+
+      case 'dump_truck':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <ellipse cx="50" cy="43" rx="40" ry="4" fill="rgba(0,0,0,0.2)" />
+            <rect x="12" y="34" width="74" height="6" fill="#1c1c1e" />
+            {/* Cabin (Painted) */}
+            <path fill={paintColor} d="M60,34 L60,18 L72,18 Q78,18 78,25 L78,34 Z" />
+            <path fill="var(--card-bg, #1c1c1e)" d="M64,21 L72,21 L74,27 L64,27 Z" />
+            {/* Dump metal cargo bed */}
+            <path fill="#aeaeaf" d="M15,16 L56,16 L56,34 L15,34 Z" stroke="#8e8e93" strokeWidth="1.5" />
+            <line x1="20" y1="16" x2="35" y2="34" stroke="#8e8e93" strokeWidth="1.5" />
+            <line x1="35" y1="16" x2="50" y2="34" stroke="#8e8e93" strokeWidth="1.5" />
+            <circle cx="26" cy="38" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="26" cy="38" r="3" fill="#aeaeaf" />
+            <circle cx="44" cy="38" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="44" cy="38" r="3" fill="#aeaeaf" />
+            <circle cx="69" cy="38" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
+            <circle cx="69" cy="38" r="3" fill="#aeaeaf" />
+          </svg>
+        );
+
+      case 'trailer_container':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
             <ellipse cx="50" cy="43" rx="46" ry="4.8" fill="rgba(0,0,0,0.22)" />
             <rect x="6" y="36" width="88" height="5" fill="#1c1c1e" />
+            {/* Cabin/Tractor (Paint color) */}
             <path fill={paintColor} d="M68,36 L68,14 L82,14 Q88,14 88,22 L88,36 Z" />
             <path fill="var(--card-bg, #1c1c1e)" d="M72,17 L80,17 L84,24 L72,24 Z" />
             <path fill={paintColor} opacity="0.8" d="M68,14 L80,11 L82,14 Z" />
+            {/* Long Trailer Box */}
             <rect x="8" y="13" width="56" height="23" fill="#ffffff" stroke="#aeaeaf" strokeWidth="1.5" />
             <line x1="22" y1="13" x2="22" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
             <line x1="36" y1="13" x2="36" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
             <line x1="50" y1="13" x2="50" y2="36" stroke="#aeaeaf" strokeWidth="1.2" />
-            <rect x="84" y="33" width="5" height="3" fill="#FFD60A" />
             <circle cx="16" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
             <circle cx="16" cy="39" r="3" fill="#aeaeaf" />
             <circle cx="32" cy="39" r="8" fill="#1c1c1e" stroke="#aeaeaf" strokeWidth="2" />
@@ -340,24 +478,6 @@ export default function Profile({
           </svg>
         );
 
-      case 'bus':
-        return (
-          <svg viewBox="0 0 100 50" width="100%" height="100%">
-            <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.18)" />
-            <path fill={paintColor} d="M12,36 L12,16 Q12,14 15,14 L82,14 Q88,14 88,18 L88,36 Z" />
-            <rect x="18" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
-            <rect x="31" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
-            <rect x="44" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
-            <rect x="57" y="18" width="10" height="7" fill="var(--card-bg, #1c1c1e)" />
-            <rect x="70" y="18" width="12" height="7" fill="var(--card-bg, #1c1c1e)" />
-            <rect x="84" y="32" width="4" height="2" fill="#FFD60A" />
-            <rect x="12" y="30" width="2" height="4" fill="#FF3B30" />
-            <circle cx="28" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="28" cy="38" r="3" fill="#8e8e93" />
-            <circle cx="72" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
-            <circle cx="72" cy="38" r="3" fill="#8e8e93" />
-          </svg>
-        );
       default:
         return null;
     }
@@ -2299,31 +2419,74 @@ const getLicenseLabel = (type) => {
 
             <div className="resume-body">
               {!isEditingVehicle ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
-                  {/* Vehicle graphic display with 3D shadow and dynamic color */}
-                  <div className="vehicle-display-box squircle" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
-                    border: '1px solid var(--glass-border)',
-                    padding: '16px',
-                    minHeight: '120px',
-                    position: 'relative',
-                    overflow: 'hidden'
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+                  {/* Visual Layout: 3D Vehicle Render Left, Japanese License Plate Right */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1.2fr 0.8fr',
+                    gap: '12px',
+                    width: '100%',
+                    alignItems: 'center'
                   }}>
-                    <div style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 60%)',
-                      pointerEvents: 'none'
-                    }}></div>
-                    
-                    <div style={{ width: '160px', height: '80px', transform: 'scale(1.2)' }}>
-                      {renderVehicleSVG(myVehicle.type, myVehicle.make, myVehicle.model, myVehicle.color)}
+                    {/* Vehicle Graphic Display */}
+                    <div className="vehicle-display-box squircle" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
+                      border: '1px solid var(--glass-border)',
+                      padding: '12px',
+                      height: '110px',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 60%)',
+                        pointerEvents: 'none'
+                      }}></div>
+                      <div style={{ width: '130px', height: '65px', transform: 'scale(1.2)' }}>
+                        {renderVehicleSVG(myVehicle.type, myVehicle.bodyStyle, myVehicle.color)}
+                      </div>
+                    </div>
+
+                    {/* JDM License Plate Display */}
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      <div className={`jdm-plate-box ${myVehicle.isCommercial ? 'commercial' : ''}`} style={{
+                        width: '120px',
+                        height: '72px',
+                        border: '2.5px solid ' + (myVehicle.isCommercial ? '#ffffff' : '#2c3e2d'),
+                        borderRadius: '5px',
+                        background: myVehicle.isCommercial ? 'linear-gradient(135deg, #1b3d20, #24522a)' : 'linear-gradient(135deg, #f8f9fa, #ffffff)',
+                        color: myVehicle.isCommercial ? '#ffffff' : '#24522a',
+                        padding: '4px 6px',
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        position: 'relative',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                        fontFamily: 'monospace',
+                        fontWeight: 'bold'
+                      }}>
+                        {/* Bolts */}
+                        <div style={{ position: 'absolute', top: '3px', left: '22px', width: '3px', height: '3px', borderRadius: '50%', background: '#8e8e93', border: '0.5px solid #aeaeaf' }}></div>
+                        <div style={{ position: 'absolute', top: '3px', right: '22px', width: '3px', height: '3px', borderRadius: '50%', background: '#8e8e93', border: '0.5px solid #aeaeaf' }}></div>
+                        
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', lineHeight: 1, padding: '0 8px', marginTop: '1px' }}>
+                          <span>{myVehicle.platePrefecture || '練馬'}</span>
+                          <span>{myVehicle.plateClass || '300'}</span>
+                        </div>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px', marginBottom: '1px' }}>
+                          <span style={{ fontSize: '13px' }}>{myVehicle.plateHira || 'あ'}</span>
+                          <span style={{ fontSize: '17px', letterSpacing: '0.5px' }}>{myVehicle.plateNumber || '12-34'}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -2349,18 +2512,32 @@ const getLicenseLabel = (type) => {
                     </div>
 
                     <div className="resume-field">
-                      <span className="field-label">{t('vehicleYear', 'Yili')}</span>
-                      <span className="field-value">{myVehicle.year || '-'}</span>
+                      <span className="field-label">{t('vehicleBodyStyle', 'Kuzov shakli')}</span>
+                      <span className="field-value" style={{ textTransform: 'capitalize' }}>
+                        {myVehicle.bodyStyle === 'sedan' ? t('bodySedan', 'Sedan') :
+                         myVehicle.bodyStyle === 'hatchback' ? t('bodyHatchback', 'Hatchback') :
+                         myVehicle.bodyStyle === 'suv' ? t('bodySuv', 'SUV (Krossover)') :
+                         myVehicle.bodyStyle === 'minivan' ? t('bodyMinivan', 'Minivan / MPV') :
+                         myVehicle.bodyStyle === 'scooter' ? t('bodyScooter', 'Motoroller') :
+                         myVehicle.bodyStyle === 'sportbike' ? t('bodySportbike', 'Sportbayk') :
+                         myVehicle.bodyStyle === 'flatbed' ? t('bodyFlatbed', 'Ochiq bortli') :
+                         myVehicle.bodyStyle === 'box_truck' ? t('bodyBoxTruck', 'Furgon (Yopiq)') :
+                         myVehicle.bodyStyle === 'wing_body' ? t('bodyWingBody', 'Wing Body') :
+                         myVehicle.bodyStyle === 'dump_truck' ? t('bodyDumpTruck', 'Samosval') :
+                         myVehicle.bodyStyle === 'trailer_container' ? t('bodyTrailer', 'Tirkamali') :
+                         myVehicle.bodyStyle || t('bodyStandard', 'Standart')}
+                      </span>
                     </div>
 
                     <div className="resume-field">
-                      <span className="field-label">{t('vehiclePlate', 'Davlat raqami')}</span>
-                      <span className="field-value" style={{ fontStyle: 'italic', letterSpacing: '1px' }}>{myVehicle.plateNumber || '-'}</span>
+                      <span className="field-label">{t('vehicleYear', 'Yili')}</span>
+                      <span className="field-value">{myVehicle.year || '-'}</span>
                     </div>
 
                     <div className="resume-field" style={{ gridColumn: 'span 2', borderTop: '1px solid var(--glass-border)', paddingTop: '8px', marginTop: '4px' }}>
                       <span className="field-label" style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         📐 <span>{t('vehicleDimensions', 'Avtotransport o\'lchamlari (Navigatsiya uchun)')}</span>
+                        <span style={{ fontSize: '9px', background: '#34C759', color: 'white', padding: '1px 5px', borderRadius: '3px', fontWeight: 'normal', marginLeft: 'auto' }}>AVTOMAT HISOBLANGAN</span>
                       </span>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -2385,61 +2562,99 @@ const getLicenseLabel = (type) => {
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%' }}>
-                  {/* Realtime Live Preview with dynamic paint color */}
-                  <div className="vehicle-display-box squircle" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
-                    border: '1px dashed var(--primary)',
-                    padding: '16px',
-                    minHeight: '110px',
-                    position: 'relative'
+                  {/* Realtime Live Preview with dynamic paint color and JDM Plate Preview */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1.2fr 0.8fr',
+                    gap: '12px',
+                    width: '100%',
+                    alignItems: 'center'
                   }}>
-                    <div style={{ width: '150px', height: '75px', transform: 'scale(1.2)' }}>
-                      {renderVehicleSVG(editVehicleData.type, editVehicleData.make, editVehicleData.model, editVehicleData.color)}
+                    {/* Live SVG Preview */}
+                    <div className="vehicle-display-box squircle" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
+                      border: '1px dashed var(--primary)',
+                      padding: '12px',
+                      height: '100px',
+                      position: 'relative'
+                    }}>
+                      <div style={{ width: '120px', height: '60px', transform: 'scale(1.2)' }}>
+                        {renderVehicleSVG(editVehicleData.type, editVehicleData.bodyStyle, editVehicleData.color)}
+                      </div>
+                      <span style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: '6px',
+                        fontSize: '7px',
+                        background: 'var(--primary)',
+                        color: 'white',
+                        padding: '1px 4px',
+                        borderRadius: '3px',
+                        fontWeight: 'bold'
+                      }}>PREVIEW</span>
                     </div>
-                    <span style={{
-                      position: 'absolute',
-                      top: '6px',
-                      right: '10px',
-                      fontSize: '9px',
-                      background: 'var(--primary)',
-                      color: 'white',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      fontWeight: 'bold'
-                    }}>LIVE PREVIEW</span>
+
+                    {/* Live Plate Preview */}
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      <div className={`jdm-plate-box ${editVehicleData.isCommercial ? 'commercial' : ''}`} style={{
+                        width: '110px',
+                        height: '66px',
+                        border: '2.5px solid ' + (editVehicleData.isCommercial ? '#ffffff' : '#2c3e2d'),
+                        borderRadius: '5px',
+                        background: editVehicleData.isCommercial ? 'linear-gradient(135deg, #1b3d20, #24522a)' : 'linear-gradient(135deg, #f8f9fa, #ffffff)',
+                        color: editVehicleData.isCommercial ? '#ffffff' : '#24522a',
+                        padding: '3px 5px',
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        fontFamily: 'monospace',
+                        fontWeight: 'bold',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8px', lineHeight: 1, padding: '0 6px' }}>
+                          <span>{editVehicleData.platePrefecture || '練馬'}</span>
+                          <span>{editVehicleData.plateClass || '300'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1px' }}>
+                          <span style={{ fontSize: '11px' }}>{editVehicleData.plateHira || 'あ'}</span>
+                          <span style={{ fontSize: '15px', letterSpacing: '0.2px' }}>{editVehicleData.plateNumber || '12-34'}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Form inputs */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleType', 'Transport turi')}</label>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleType', 'Transport turi')}</label>
                       <select 
                         value={editVehicleData.type}
                         onChange={e => {
                           const val = e.target.value;
-                          let h = '1.69', w = '1.85', l = '4.74', wt = '1.62'; // Car presets
-                          let mk = editVehicleData.make;
-                          let md = editVehicleData.model;
-                          if (val === 'moto') { h = '1.1'; w = '0.8'; l = '2.1'; wt = '0.2'; mk = 'Honda'; md = 'Super Cub'; }
-                          else if (val === 'velo') { h = '1.0'; w = '0.6'; l = '1.7'; wt = '0.015'; mk = 'Bridgestone'; md = 'Road Bike'; }
-                          else if (val === 'truck_3t') { h = '2.8'; w = '2.1'; l = '6.2'; wt = '4.5'; mk = 'Isuzu'; md = 'Elf'; }
-                          else if (val === 'truck_4t') { h = '3.4'; w = '2.3'; l = '8.5'; wt = '8.0'; mk = 'Hino'; md = 'Ranger'; }
-                          else if (val === 'trailer') { h = '3.8'; w = '2.5'; l = '16.5'; wt = '25.0'; mk = 'Fuso'; md = 'Super Great'; }
-                          else if (val === 'bus') { h = '3.2'; w = '2.5'; l = '11.5'; wt = '12.0'; mk = 'Isuzu'; md = 'Gala'; }
-                          else { mk = 'Toyota'; md = 'Harrier'; }
+                          let defaultStyle = 'sedan';
+                          let mk = 'Toyota';
+                          let md = 'Harrier';
+                          
+                          if (val === 'moto') { defaultStyle = 'scooter'; mk = 'Honda'; md = 'Super Cub'; }
+                          else if (val === 'velo') { defaultStyle = 'standard'; mk = 'Bridgestone'; md = 'City Cycle'; }
+                          else if (val === 'truck_3t') { defaultStyle = 'box_truck'; mk = 'Isuzu'; md = 'Elf'; }
+                          else if (val === 'truck_4t') { defaultStyle = 'wing_body'; mk = 'Hino'; md = 'Ranger'; }
+                          else if (val === 'trailer') { defaultStyle = 'trailer_container'; mk = 'Fuso'; md = 'Super Great'; }
+                          else if (val === 'bus') { defaultStyle = 'standard'; mk = 'Isuzu'; md = 'Gala'; }
+                          
+                          const dims = getVehiclePresetDimensions(val, defaultStyle);
                           
                           setEditVehicleData(prev => ({ 
                             ...prev, 
                             type: val,
                             make: mk,
                             model: md,
-                            height: h,
-                            width: w,
-                            length: l,
-                            weight: wt
+                            bodyStyle: defaultStyle,
+                            ...dims
                           }));
                         }}
                         style={{
@@ -2447,8 +2662,8 @@ const getLicenseLabel = (type) => {
                           color: 'var(--text-main)',
                           border: '1px solid var(--glass-border)',
                           borderRadius: '8px',
-                          padding: '8px',
-                          fontSize: '14px',
+                          padding: '7px',
+                          fontSize: '13px',
                           outline: 'none'
                         }}
                       >
@@ -2457,111 +2672,315 @@ const getLicenseLabel = (type) => {
                         <option value="velo">{t('vehicleVelo', 'Velosiped')}</option>
                         <option value="truck_3t">{t('vehicleTruck3t', '3t Yuk mashinasi')}</option>
                         <option value="truck_4t">{t('vehicleTruck4t', '4t Yuk mashinasi')}</option>
-                        <option value="trailer">{t('vehicleTrailer', 'Trailer (Katta yuk)')}</option>
+                        <option value="trailer">{t('vehicleTrailer', 'Trailer (Katta tirkama)')}</option>
                         <option value="bus">{t('vehicleBus', 'Avtobus')}</option>
                       </select>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleMake', 'Ishlab chiqaruvchi (Rusumi)')}</label>
-                      <input 
-                        type="text"
-                        placeholder="Toyota, Hino, Isuzu..."
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleBodyStyle', 'Kuzov shakli')}</label>
+                      <select
+                        value={editVehicleData.bodyStyle}
+                        onChange={e => {
+                          const val = e.target.value;
+                          const dims = getVehiclePresetDimensions(editVehicleData.type, val);
+                          setEditVehicleData(prev => ({ 
+                            ...prev, 
+                            bodyStyle: val,
+                            ...dims
+                          }));
+                        }}
+                        style={{
+                          background: 'var(--card-bg, #2c2c2e)',
+                          color: 'var(--text-main)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '8px',
+                          padding: '7px',
+                          fontSize: '13px',
+                          outline: 'none'
+                        }}
+                      >
+                        {editVehicleData.type === 'car' && (
+                          <>
+                            <option value="sedan">Sedan</option>
+                            <option value="hatchback">Hatchback</option>
+                            <option value="suv">SUV (Krossover)</option>
+                            <option value="minivan">Minivan / Boxy MPV</option>
+                          </>
+                        )}
+                        {editVehicleData.type === 'moto' && (
+                          <>
+                            <option value="scooter">Motoroller (Super Cub)</option>
+                            <option value="sportbike">Sportbayk / Motosikl</option>
+                          </>
+                        )}
+                        {editVehicleData.type === 'velo' && <option value="standard">Standart Velo</option>}
+                        {editVehicleData.type === 'truck_3t' && (
+                          <>
+                            <option value="flatbed">Hirada (Ochiq bortli)</option>
+                            <option value="box_truck">Furgon (Box Truck)</option>
+                          </>
+                        )}
+                        {editVehicleData.type === 'truck_4t' && (
+                          <>
+                            <option value="flatbed">Hirada (Ochiq bortli)</option>
+                            <option value="box_truck">Furgon (Box Truck)</option>
+                            <option value="wing_body">Wing Body (Qanotli)</option>
+                            <option value="dump_truck">Samosval (Dump)</option>
+                          </>
+                        )}
+                        {editVehicleData.type === 'trailer' && <option value="trailer_container">Konteyner Tirkamali</option>}
+                        {editVehicleData.type === 'bus' && <option value="standard">Avtobus shakli</option>}
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleMake', 'Ishlab chiqaruvchi (Brand)')}</label>
+                      <select 
                         value={editVehicleData.make}
-                        onChange={e => setEditVehicleData(prev => ({ ...prev, make: e.target.value }))}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setEditVehicleData(prev => ({ ...prev, make: val, model: val === 'Toyota' ? 'Harrier' : val === 'Honda' ? 'Freed' : 'Other' }));
+                        }}
                         style={{
                           background: 'var(--card-bg, #2c2c2e)',
                           color: 'var(--text-main)',
                           border: '1px solid var(--glass-border)',
                           borderRadius: '8px',
-                          padding: '8px',
-                          fontSize: '14px',
+                          padding: '7px',
+                          fontSize: '13px',
                           outline: 'none'
                         }}
-                        required
-                      />
+                      >
+                        <option value="Toyota">Toyota</option>
+                        <option value="Honda">Honda</option>
+                        <option value="Nissan">Nissan</option>
+                        <option value="Hino">Hino</option>
+                        <option value="Isuzu">Isuzu</option>
+                        <option value="Mitsubishi Fuso">Mitsubishi Fuso</option>
+                        <option value="Boshqa">Boshqa (Other)</option>
+                      </select>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel', 'Modeli')}</label>
-                      <input 
-                        type="text"
-                        placeholder="Prius, Ranger, Elf..."
-                        value={editVehicleData.model}
-                        onChange={e => setEditVehicleData(prev => ({ ...prev, model: e.target.value }))}
-                        style={{
-                          background: 'var(--card-bg, #2c2c2e)',
-                          color: 'var(--text-main)',
-                          border: '1px solid var(--glass-border)',
-                          borderRadius: '8px',
-                          padding: '8px',
-                          fontSize: '14px',
-                          outline: 'none'
-                        }}
-                        required
-                      />
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel', 'Modeli')}</label>
+                      {editVehicleData.make !== 'Boshqa' ? (
+                        <select 
+                          value={editVehicleData.model}
+                          onChange={e => {
+                            const val = e.target.value;
+                            // Update bodyStyle if matched in preset models
+                            let matchedBody = editVehicleData.bodyStyle;
+                            if (val === 'Harrier') matchedBody = 'suv';
+                            else if (val === 'Prius') matchedBody = 'sedan';
+                            else if (val === 'Alphard' || val === 'Freed' || val === 'Stepwgn') matchedBody = 'minivan';
+                            else if (val === 'Super Cub') matchedBody = 'scooter';
+                            
+                            const dims = getVehiclePresetDimensions(editVehicleData.type, matchedBody);
+                            
+                            setEditVehicleData(prev => ({ 
+                              ...prev, 
+                              model: val, 
+                              bodyStyle: matchedBody,
+                              ...dims
+                            }));
+                          }}
+                          style={{
+                            background: 'var(--card-bg, #2c2c2e)',
+                            color: 'var(--text-main)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '8px',
+                            padding: '7px',
+                            fontSize: '13px',
+                            outline: 'none'
+                          }}
+                        >
+                          {editVehicleData.make === 'Toyota' && (
+                            <>
+                              <option value="Harrier">Harrier</option>
+                              <option value="Prius">Prius</option>
+                              <option value="Alphard">Alphard</option>
+                              <option value="Yaris">Yaris</option>
+                            </>
+                          )}
+                          {editVehicleData.make === 'Honda' && (
+                            <>
+                              <option value="Freed">Freed</option>
+                              <option value="Stepwgn">Stepwgn</option>
+                              <option value="Fit">Fit</option>
+                              <option value="Super Cub">Super Cub</option>
+                            </>
+                          )}
+                          {editVehicleData.make === 'Nissan' && (
+                            <>
+                              <option value="Serena">Serena Van</option>
+                              <option value="Note">Note Hatchback</option>
+                            </>
+                          )}
+                          {editVehicleData.make === 'Hino' && (
+                            <>
+                              <option value="Ranger">Ranger 4t</option>
+                              <option value="Profia">Profia 10t</option>
+                            </>
+                          )}
+                          {editVehicleData.make === 'Isuzu' && (
+                            <>
+                              <option value="Elf">Elf 3t</option>
+                              <option value="Forward">Forward 4t</option>
+                              <option value="Giga">Giga 10t</option>
+                            </>
+                          )}
+                          {editVehicleData.make === 'Mitsubishi Fuso' && (
+                            <>
+                              <option value="Canter">Canter 3t</option>
+                              <option value="Fighter">Fighter 4t</option>
+                              <option value="Super Great">Super Great 10t</option>
+                            </>
+                          )}
+                        </select>
+                      ) : (
+                        <input 
+                          type="text"
+                          placeholder="Harrier, Freed..."
+                          value={editVehicleData.model}
+                          onChange={e => setEditVehicleData(prev => ({ ...prev, model: e.target.value }))}
+                          style={{
+                            background: 'var(--card-bg, #2c2c2e)',
+                            color: 'var(--text-main)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '8px',
+                            padding: '7px',
+                            fontSize: '13px',
+                            outline: 'none'
+                          }}
+                          required
+                        />
+                      )}
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleTrim', 'Komplektatsiya (Trim)')}</label>
-                      <input 
-                        type="text"
-                        placeholder="Z, G, S, Pro..."
-                        value={editVehicleData.trim}
-                        onChange={e => setEditVehicleData(prev => ({ ...prev, trim: e.target.value }))}
-                        style={{
-                          background: 'var(--card-bg, #2c2c2e)',
-                          color: 'var(--text-main)',
-                          border: '1px solid var(--glass-border)',
-                          borderRadius: '8px',
-                          padding: '8px',
-                          fontSize: '14px',
-                          outline: 'none'
-                        }}
-                      />
-                    </div>
+                    {/* JDM Japanese Plate Editor Fields */}
+                    <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--glass-border)', paddingTop: '10px', marginTop: '4px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                        🇯🇵 Yaponiya Standartidagi Avtoraqam (JDM Plate Constructor):
+                      </span>
+                      
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {/* Prefecture Dropdown */}
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Prefektura</label>
+                          <select 
+                            value={editVehicleData.platePrefecture}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, platePrefecture: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '6px',
+                              padding: '6px',
+                              fontSize: '12px',
+                              outline: 'none'
+                            }}
+                          >
+                            {JDM_PREFECTURES.map(pref => <option key={pref} value={pref}>{pref}</option>)}
+                          </select>
+                        </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleYear', 'Yili')}</label>
-                      <input 
-                        type="text"
-                        placeholder="2024"
-                        value={editVehicleData.year}
-                        onChange={e => setEditVehicleData(prev => ({ ...prev, year: e.target.value }))}
-                        style={{
-                          background: 'var(--card-bg, #2c2c2e)',
-                          color: 'var(--text-main)',
-                          border: '1px solid var(--glass-border)',
-                          borderRadius: '8px',
-                          padding: '8px',
-                          fontSize: '14px',
-                          outline: 'none'
-                        }}
-                      />
-                    </div>
+                        {/* Class Code */}
+                        <div style={{ width: '60px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Klass</label>
+                          <input 
+                            type="text" 
+                            maxLength="3"
+                            placeholder="300"
+                            value={editVehicleData.plateClass}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, plateClass: e.target.value.replace(/\D/g, '') }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '6px',
+                              padding: '6px',
+                              fontSize: '12px',
+                              outline: 'none',
+                              textAlign: 'center'
+                            }}
+                          />
+                        </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehiclePlate', 'Davlat raqami')}</label>
-                      <input 
-                        type="text"
-                        placeholder="練馬 300 あ 12-34 / 01 A 777 AA"
-                        value={editVehicleData.plateNumber}
-                        onChange={e => setEditVehicleData(prev => ({ ...prev, plateNumber: e.target.value }))}
-                        style={{
-                          background: 'var(--card-bg, #2c2c2e)',
-                          color: 'var(--text-main)',
-                          border: '1px solid var(--glass-border)',
-                          borderRadius: '8px',
-                          padding: '8px',
-                          fontSize: '14px',
-                          outline: 'none'
-                        }}
-                      />
+                        {/* Hiragana Select */}
+                        <div style={{ width: '50px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Hira</label>
+                          <select 
+                            value={editVehicleData.plateHira}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, plateHira: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '6px',
+                              padding: '6px',
+                              fontSize: '12px',
+                              outline: 'none'
+                            }}
+                          >
+                            {JDM_HIRAGANA.map(hira => <option key={hira} value={hira}>{hira}</option>)}
+                          </select>
+                        </div>
+
+                        {/* 4 Digit Main Number */}
+                        <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Raqam (e.g. 12-34)</label>
+                          <input 
+                            type="text" 
+                            placeholder="12-34"
+                            value={editVehicleData.plateNumber}
+                            onChange={e => {
+                              let val = e.target.value.replace(/[^\d-]/g, '');
+                              if (val.length === 4 && !val.includes('-')) {
+                                val = val.slice(0, 2) + '-' + val.slice(2);
+                              }
+                              setEditVehicleData(prev => ({ ...prev, plateNumber: val }));
+                            }}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '6px',
+                              padding: '6px',
+                              fontSize: '12px',
+                              outline: 'none',
+                              textAlign: 'center',
+                              letterSpacing: '1px',
+                              fontWeight: 'bold'
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Plate Commercial Toggle */}
+                      <label style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontSize: '12px',
+                        color: 'var(--text-main)',
+                        cursor: 'pointer',
+                        padding: '4px 0',
+                        marginTop: '2px'
+                      }}>
+                        <input 
+                          type="checkbox"
+                          checked={editVehicleData.isCommercial}
+                          onChange={e => setEditVehicleData(prev => ({ ...prev, isCommercial: e.target.checked }))}
+                          style={{ accentColor: 'var(--primary)', cursor: 'pointer' }}
+                        />
+                        <span>🟢 {t('commercialPlateToggle', 'Tijorat (Yashil rangli) avtoraqam (Kompaniya moshinalari uchun)')}</span>
+                      </label>
                     </div>
 
                     {/* Color picker */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', gridColumn: 'span 2' }}>
-                      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleColor', 'Moshina rangi')}</label>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleColor', 'Moshina rangi')}</label>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <input 
                           type="color" 
@@ -2571,8 +2990,8 @@ const getLicenseLabel = (type) => {
                             border: 'none',
                             outline: 'none',
                             background: 'none',
-                            width: '36px',
-                            height: '36px',
+                            width: '32px',
+                            height: '32px',
                             cursor: 'pointer'
                           }}
                         />
@@ -2593,8 +3012,8 @@ const getLicenseLabel = (type) => {
                               type="button"
                               onClick={() => setEditVehicleData(prev => ({ ...prev, color: chip.hex }))}
                               style={{
-                                width: '22px',
-                                height: '22px',
+                                width: '20px',
+                                height: '20px',
                                 borderRadius: '50%',
                                 background: chip.hex,
                                 border: editVehicleData.color === chip.hex ? '2px solid var(--primary)' : '1px solid rgba(0,0,0,0.2)',
@@ -2609,96 +3028,22 @@ const getLicenseLabel = (type) => {
                       </div>
                     </div>
 
-                    {/* Dimensions editors */}
-                    <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '6px', borderTop: '1px solid var(--glass-border)', paddingTop: '10px', marginTop: '6px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                        📐 O'lchamlar va Og'irlik (Navigatsiya xaritasida ko'prik va yo'l taqiqlarini chetlab o'tish uchun):
-                      </span>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('height', 'Balandlik (m)')}</label>
-                          <input 
-                            type="number" 
-                            step="0.01" 
-                            value={editVehicleData.height}
-                            onChange={e => setEditVehicleData(prev => ({ ...prev, height: e.target.value }))}
-                            style={{
-                              background: 'var(--card-bg, #2c2c2e)',
-                              color: 'var(--text-main)',
-                              border: '1px solid var(--glass-border)',
-                              borderRadius: '6px',
-                              padding: '6px',
-                              fontSize: '12px',
-                              outline: 'none',
-                              textAlign: 'center'
-                            }}
-                          />
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('width', 'Eni (m)')}</label>
-                          <input 
-                            type="number" 
-                            step="0.01" 
-                            value={editVehicleData.width}
-                            onChange={e => setEditVehicleData(prev => ({ ...prev, width: e.target.value }))}
-                            style={{
-                              background: 'var(--card-bg, #2c2c2e)',
-                              color: 'var(--text-main)',
-                              border: '1px solid var(--glass-border)',
-                              borderRadius: '6px',
-                              padding: '6px',
-                              fontSize: '12px',
-                              outline: 'none',
-                              textAlign: 'center'
-                            }}
-                          />
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('length', 'Uzunlik (m)')}</label>
-                          <input 
-                            type="number" 
-                            step="0.01" 
-                            value={editVehicleData.length}
-                            onChange={e => setEditVehicleData(prev => ({ ...prev, length: e.target.value }))}
-                            style={{
-                              background: 'var(--card-bg, #2c2c2e)',
-                              color: 'var(--text-main)',
-                              border: '1px solid var(--glass-border)',
-                              borderRadius: '6px',
-                              padding: '6px',
-                              fontSize: '12px',
-                              outline: 'none',
-                              textAlign: 'center'
-                            }}
-                          />
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('weight', 'Og\'irlik (t)')}</label>
-                          <input 
-                            type="number" 
-                            step="0.01" 
-                            value={editVehicleData.weight}
-                            onChange={e => setEditVehicleData(prev => ({ ...prev, weight: e.target.value }))}
-                            style={{
-                              background: 'var(--card-bg, #2c2c2e)',
-                              color: 'var(--text-main)',
-                              border: '1px solid var(--glass-border)',
-                              borderRadius: '6px',
-                              padding: '6px',
-                              fontSize: '12px',
-                              outline: 'none',
-                              textAlign: 'center'
-                            }}
-                          />
-                        </div>
-                      </div>
+                    <div style={{ display: 'none' }}>
+                      {/* Sub-inputs strictly for form values mapping (locked parameters hidden from active clutter) */}
+                      <input type="hidden" value={editVehicleData.height} />
+                      <input type="hidden" value={editVehicleData.width} />
+                      <input type="hidden" value={editVehicleData.length} />
+                      <input type="hidden" value={editVehicleData.weight} />
                     </div>
+
                   </div>
                 </div>
               )}
             </div>
           </div>
         )}
+
+        {/* Company Profile Card */}
 
         {/* Company Profile Card */}
         {userRole === 'company' && (
