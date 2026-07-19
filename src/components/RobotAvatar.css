@@ -140,7 +140,7 @@ html.dark-mode .robot-head-screen {
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
   box-shadow: 0 0 3px rgba(94, 92, 230, 0.6);
-  animation: eye-blink 5s infinite;
+  animation: eye-blink 3.5s infinite;
 }
 
 /* Inactive Standby state - eyes open but slightly dimmer and passive */
@@ -150,10 +150,10 @@ html.dark-mode .robot-head-screen {
 }
 
 @keyframes eye-blink {
-  0%, 94%, 98%, 100% {
+  0%, 84%, 100% {
     transform: scaleY(1);
   }
-  96% {
+  92% {
     transform: scaleY(0.15);
   }
 }
@@ -163,7 +163,7 @@ html.dark-mode .robot-head-screen {
   background: #5E5CE6;
   opacity: 1;
   box-shadow: 0 0 5px rgba(94, 92, 230, 0.8);
-  animation: eye-blink 5s infinite, eye-breath 1.8s infinite ease-in-out;
+  animation: eye-blink 3.5s infinite, eye-breath 1.8s infinite ease-in-out;
 }
 
 .robot-avatar-container.thinking .robot-eye {
