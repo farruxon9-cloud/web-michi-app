@@ -120,45 +120,64 @@ export default function Profile({
   const fileInputRef = useRef(null);
 
   const [myVehicle, setMyVehicle] = useState(() => {
+    const defaultVehicle = {
+      type: 'car',
+      make: 'Toyota',
+      model: 'Harrier',
+      bodyStyle: 'suv',
+      trim: 'Z',
+      year: '2024',
+      color: '#5E5CE6',
+      platePrefecture: '練馬',
+      plateClass: '300',
+      plateHira: 'あ',
+      plateNumber: '12-34',
+      isCommercial: false,
+      height: '1.69',
+      width: '1.85',
+      length: '4.74',
+      weight: '1.62'
+    };
+
     try {
       const saved = localStorage.getItem('michi_user_vehicle');
-      return saved ? JSON.parse(saved) : {
-        type: 'car',
-        make: 'Toyota',
-        model: 'Harrier',
-        bodyStyle: 'suv',
-        trim: 'Z',
-        year: '2024',
-        color: '#5E5CE6',
-        platePrefecture: '練馬',
-        plateClass: '300',
-        plateHira: 'あ',
-        plateNumber: '12-34',
-        isCommercial: false,
-        height: '1.69',
-        width: '1.85',
-        length: '4.74',
-        weight: '1.62'
-      };
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        
+        // 1. Migrate old format plateNumber "練馬 300 あ 12-34"
+        if (parsed.plateNumber && parsed.plateNumber.includes(' ')) {
+          const parts = parsed.plateNumber.split(' ');
+          if (parts.length >= 4) {
+            parsed.platePrefecture = parts[0];
+            parsed.plateClass = parts[1];
+            parsed.plateHira = parts[2];
+            parsed.plateNumber = parts[3];
+          }
+        }
+
+        // 2. Ensure all fields are filled
+        if (!parsed.platePrefecture) parsed.platePrefecture = '練馬';
+        if (!parsed.plateClass) parsed.plateClass = '300';
+        if (!parsed.plateHira) parsed.plateHira = 'あ';
+        if (!parsed.plateNumber || parsed.plateNumber.includes(' ')) parsed.plateNumber = '12-34';
+        
+        // 3. Ensure bodyStyle is defined and matches type presets
+        if (!parsed.bodyStyle) {
+          if (parsed.type === 'car') parsed.bodyStyle = 'sedan';
+          else if (parsed.type === 'moto') parsed.bodyStyle = 'scooter';
+          else if (parsed.type === 'velo') parsed.bodyStyle = 'standard';
+          else if (parsed.type === 'truck_3t') parsed.bodyStyle = 'box_truck';
+          else if (parsed.type === 'truck_4t') parsed.bodyStyle = 'wing_body';
+          else if (parsed.type === 'trailer') parsed.bodyStyle = 'trailer_container';
+          else if (parsed.type === 'bus') parsed.bodyStyle = 'standard';
+          else parsed.bodyStyle = 'sedan';
+        }
+        
+        return parsed;
+      }
+      return defaultVehicle;
     } catch (e) {
-      return {
-        type: 'car',
-        make: 'Toyota',
-        model: 'Harrier',
-        bodyStyle: 'suv',
-        trim: 'Z',
-        year: '2024',
-        color: '#5E5CE6',
-        platePrefecture: '練馬',
-        plateClass: '300',
-        plateHira: 'あ',
-        plateNumber: '12-34',
-        isCommercial: false,
-        height: '1.69',
-        width: '1.85',
-        length: '4.74',
-        weight: '1.62'
-      };
+      return defaultVehicle;
     }
   });
 
@@ -2865,12 +2884,15 @@ const getLicenseLabel = (type) => {
                       </span>
                       
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        {/* Prefecture Dropdown */}
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        {/* Prefecture Text Input (Allows ALL Japanese Prefectures) */}
+                        <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Prefektura</label>
-                          <select 
-                            value={editVehicleData.platePrefecture}
-                            onChange={e => setEditVehicleData(prev => ({ ...prev, platePrefecture: e.target.value }))}
+                          <input 
+                            type="text"
+                            placeholder="練馬, 品川..."
+                            maxLength="4"
+                            value={editVehicleData.platePrefecture || ''}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, platePrefecture: e.target.value.trim().slice(0, 4) }))}
                             style={{
                               background: 'var(--card-bg, #2c2c2e)',
                               color: 'var(--text-main)',
@@ -2878,21 +2900,21 @@ const getLicenseLabel = (type) => {
                               borderRadius: '6px',
                               padding: '6px',
                               fontSize: '12px',
-                              outline: 'none'
+                              outline: 'none',
+                              textAlign: 'center',
+                              fontWeight: 'bold'
                             }}
-                          >
-                            {JDM_PREFECTURES.map(pref => <option key={pref} value={pref}>{pref}</option>)}
-                          </select>
+                          />
                         </div>
 
                         {/* Class Code */}
-                        <div style={{ width: '60px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div style={{ width: '55px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Klass</label>
                           <input 
                             type="text" 
                             maxLength="3"
                             placeholder="300"
-                            value={editVehicleData.plateClass}
+                            value={editVehicleData.plateClass || ''}
                             onChange={e => setEditVehicleData(prev => ({ ...prev, plateClass: e.target.value.replace(/\D/g, '') }))}
                             style={{
                               background: 'var(--card-bg, #2c2c2e)',
@@ -2908,10 +2930,10 @@ const getLicenseLabel = (type) => {
                         </div>
 
                         {/* Hiragana Select */}
-                        <div style={{ width: '50px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div style={{ width: '45px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Hira</label>
                           <select 
-                            value={editVehicleData.plateHira}
+                            value={editVehicleData.plateHira || 'あ'}
                             onChange={e => setEditVehicleData(prev => ({ ...prev, plateHira: e.target.value }))}
                             style={{
                               background: 'var(--card-bg, #2c2c2e)',
@@ -2933,7 +2955,7 @@ const getLicenseLabel = (type) => {
                           <input 
                             type="text" 
                             placeholder="12-34"
-                            value={editVehicleData.plateNumber}
+                            value={editVehicleData.plateNumber || ''}
                             onChange={e => {
                               let val = e.target.value.replace(/[^\d-]/g, '');
                               if (val.length === 4 && !val.includes('-')) {
@@ -2955,6 +2977,41 @@ const getLicenseLabel = (type) => {
                             }}
                           />
                         </div>
+                      </div>
+
+                      {/* Compact Quick Select Prefecture Grid (Optimized for Mobile/Clutter-free) */}
+                      <div style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '4px',
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '6px',
+                        padding: '6px',
+                        marginTop: '2px',
+                        maxHeight: '72px',
+                        overflowY: 'auto'
+                      }}>
+                        {['練馬', '品川', '足立', '多摩', '世田谷', '杉並', '板橋', '江東', '横浜', '川崎', '湘南', '相模', '大宮', '所沢', '川口', '千葉', '成田', '大阪', 'なにわ', '和泉', '京都', '神戸', '姫路', '名古屋', '三河', '福岡', '札幌', '仙台', '広島'].map(pref => (
+                          <button
+                            key={pref}
+                            type="button"
+                            onClick={() => setEditVehicleData(prev => ({ ...prev, platePrefecture: pref }))}
+                            style={{
+                              background: editVehicleData.platePrefecture === pref ? 'var(--primary)' : 'var(--card-bg, rgba(255,255,255,0.05))',
+                              color: editVehicleData.platePrefecture === pref ? '#ffffff' : 'var(--text-secondary)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '4px',
+                              padding: '1px 5px',
+                              fontSize: '9px',
+                              cursor: 'pointer',
+                              transition: 'all 0.1s ease',
+                              fontWeight: editVehicleData.platePrefecture === pref ? 'bold' : 'normal'
+                            }}
+                          >
+                            {pref}
+                          </button>
+                        ))}
                       </div>
 
                       {/* Plate Commercial Toggle */}
