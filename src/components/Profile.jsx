@@ -2404,7 +2404,7 @@ const getLicenseLabel = (type) => {
                 <Wrench size={20} color="#30D158" />
                 <h3 style={{ margin: 0 }}>{t('myVehicleTitle', 'Mening Mashinam')}</h3>
               </div>
-              {!isEditingVehicle ? (
+              {!isEditingVehicle && (
                 <button 
                   className="resume-edit-btn"
                   onClick={() => {
@@ -2414,25 +2414,6 @@ const getLicenseLabel = (type) => {
                 >
                   📝 {t('editVehicle', 'Tahrirlash')}
                 </button>
-              ) : (
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <button 
-                    type="button"
-                    className="resume-edit-btn"
-                    style={{ background: 'linear-gradient(135deg, #FF3B30, #FF2D55)', boxShadow: '0 4px 10px rgba(255, 59, 48, 0.2)' }}
-                    onClick={() => setIsEditingVehicle(false)}
-                  >
-                    ❌ {t('cancel', 'Bekor qilish')}
-                  </button>
-                  <button 
-                    type="button"
-                    className="resume-edit-btn"
-                    style={{ background: 'linear-gradient(135deg, #0A84FF, #007AFF)', boxShadow: '0 4px 10px rgba(10, 132, 255, 0.2)' }}
-                    onClick={handleSaveVehicle}
-                  >
-                    💾 {t('save', 'Saqlash')}
-                  </button>
-                </div>
               )}
             </div>
 
@@ -2883,13 +2864,39 @@ const getLicenseLabel = (type) => {
                         🇯🇵 Yaponiya Standartidagi Avtoraqam (JDM Plate Constructor):
                       </span>
                       
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        {/* Prefecture Text Input (Allows ALL Japanese Prefectures) */}
-                        <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Prefektura</label>
+                      {/* Datalist containing ALL 100+ Japanese Plate Offices */}
+                      <datalist id="jdm-prefectures">
+                        {/* Hokkaido */}
+                        <option value="札幌" /><option value="函館" /><option value="旭川" /><option value="室蘭" /><option value="釧路" /><option value="帯広" /><option value="北見" /><option value="小樽" /><option value="苫小牧" /><option value="知床" />
+                        {/* Tohoku */}
+                        <option value="青森" /><option value="八戸" /><option value="盛岡" /><option value="岩手" /><option value="平泉" /><option value="仙台" /><option value="宮城" /><option value="秋田" /><option value="山形" /><option value="庄内" /><option value="福島" /><option value="会津" /><option value="郡山" /><option value="いわき" />
+                        {/* Kanto */}
+                        <option value="水戸" /><option value="土浦" /><option value="つくば" /><option value="宇都宮" /><option value="とちぎ" /><option value="那須" /><option value="前橋" /><option value="高崎" /><option value="群馬" /><option value="大宮" /><option value="熊谷" /><option value="川口" /><option value="所沢" /><option value="川越" /><option value="春日部" /><option value="越谷" /><option value="千葉" /><option value="成田" /><option value="習志野" /><option value="袖ヶ浦" /><option value="野田" /><option value="柏" /><option value="松戸" /><option value="市川" /><option value="船橋" /><option value="市原" /><option value="品川" /><option value="世田谷" /><option value="練馬" /><option value="杉並" /><option value="板橋" /><option value="足立" /><option value="江東" /><option value="葛飾" /><option value="八王子" /><option value="多摩" /><option value="横浜" /><option value="川崎" /><option value="相模" /><option value="湘南" /><option value="小田原" />
+                        {/* Chubu */}
+                        <option value="新潟" /><option value="長岡" /><option value="上越" /><option value="富山" /><option value="金沢" /><option value="石川" /><option value="福井" /><option value="山梨" /><option value="富士山" /><option value="長野" /><option value="松本" /><option value="諏訪" /><option value="岐阜" /><option value="飛騨" /><option value="静岡" /><option value="沼津" /><option value="浜松" /><option value="伊豆" /><option value="豊橋" /><option value="岡崎" /><option value="豊田" /><option value="名古屋" /><option value="尾張小牧" /><option value="一宮" /><option value="春日井" /><option value="三河" /><option value="津" /><option value="鈴鹿" /><option value="四日市" /><option value="伊勢志摩" />
+                        {/* Kinki */}
+                        <option value="滋賀" /><option value="京都" /><option value="大阪" /><option value="なにわ" /><option value="和泉" /><option value="堺" /><option value="飛鳥" /><option value="奈良" /><option value="橿原" /><option value="神戸" /><option value="姫路" /><option value="尼崎" /><option value="和歌山" />
+                        {/* Chugoku & Shikoku */}
+                        <option value="鳥取" /><option value="島根" /><option value="出雲" /><option value="岡山" /><option value="倉敷" /><option value="広島" /><option value="福山" /><option value="下関" /><option value="山口" /><option value="徳島" /><option value="香川" /><option value="高松" /><option value="愛媛" /><option value="高知" />
+                        {/* Kyushu & Okinawa */}
+                        <option value="福岡" /><option value="久留米" /><option value="北九州" /><option value="筑豊" /><option value="佐賀" /><option value="長崎" /><option value="佐世保" /><option value="熊本" /><option value="大分" /><option value="宮崎" /><option value="鹿児島" /><option value="奄美" /><option value="沖縄" /><option value="宮古" /><option value="八重山" />
+                      </datalist>
+
+                      {/* 2-Column Grid for JDM Plate Constructor Input Fields */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '10px',
+                        width: '100%',
+                        boxSizing: 'border-box'
+                      }}>
+                        {/* Prefecture Text Input (Auto-complete linked to datalist) */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Prefektura (Hudud)</label>
                           <input 
                             type="text"
-                            placeholder="練馬, 品川..."
+                            list="jdm-prefectures"
+                            placeholder="練馬, 松戸, 品川..."
                             maxLength="4"
                             value={editVehicleData.platePrefecture || ''}
                             onChange={e => setEditVehicleData(prev => ({ ...prev, platePrefecture: e.target.value.trim().slice(0, 4) }))}
@@ -2898,18 +2905,20 @@ const getLicenseLabel = (type) => {
                               color: 'var(--text-main)',
                               border: '1px solid var(--glass-border)',
                               borderRadius: '6px',
-                              padding: '6px',
-                              fontSize: '12px',
+                              padding: '8px',
+                              fontSize: '13px',
                               outline: 'none',
                               textAlign: 'center',
-                              fontWeight: 'bold'
+                              fontWeight: 'bold',
+                              width: '100%',
+                              boxSizing: 'border-box'
                             }}
                           />
                         </div>
 
                         {/* Class Code */}
-                        <div style={{ width: '55px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Klass</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Klass kodi</label>
                           <input 
                             type="text" 
                             maxLength="3"
@@ -2921,17 +2930,19 @@ const getLicenseLabel = (type) => {
                               color: 'var(--text-main)',
                               border: '1px solid var(--glass-border)',
                               borderRadius: '6px',
-                              padding: '6px',
-                              fontSize: '12px',
+                              padding: '8px',
+                              fontSize: '13px',
                               outline: 'none',
-                              textAlign: 'center'
+                              textAlign: 'center',
+                              width: '100%',
+                              boxSizing: 'border-box'
                             }}
                           />
                         </div>
 
                         {/* Hiragana Select */}
-                        <div style={{ width: '45px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Hira</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Hiragana</label>
                           <select 
                             value={editVehicleData.plateHira || 'あ'}
                             onChange={e => setEditVehicleData(prev => ({ ...prev, plateHira: e.target.value }))}
@@ -2940,9 +2951,12 @@ const getLicenseLabel = (type) => {
                               color: 'var(--text-main)',
                               border: '1px solid var(--glass-border)',
                               borderRadius: '6px',
-                              padding: '6px',
-                              fontSize: '12px',
-                              outline: 'none'
+                              padding: '8px',
+                              fontSize: '13px',
+                              outline: 'none',
+                              width: '100%',
+                              boxSizing: 'border-box',
+                              height: '37px'
                             }}
                           >
                             {JDM_HIRAGANA.map(hira => <option key={hira} value={hira}>{hira}</option>)}
@@ -2950,7 +2964,7 @@ const getLicenseLabel = (type) => {
                         </div>
 
                         {/* 4 Digit Main Number */}
-                        <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Raqam (e.g. 12-34)</label>
                           <input 
                             type="text" 
@@ -2968,50 +2982,17 @@ const getLicenseLabel = (type) => {
                               color: 'var(--text-main)',
                               border: '1px solid var(--glass-border)',
                               borderRadius: '6px',
-                              padding: '6px',
-                              fontSize: '12px',
+                              padding: '8px',
+                              fontSize: '13px',
                               outline: 'none',
                               textAlign: 'center',
                               letterSpacing: '1px',
-                              fontWeight: 'bold'
+                              fontWeight: 'bold',
+                              width: '100%',
+                              boxSizing: 'border-box'
                             }}
                           />
                         </div>
-                      </div>
-
-                      {/* Compact Quick Select Prefecture Grid (Optimized for Mobile/Clutter-free) */}
-                      <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '4px',
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid var(--glass-border)',
-                        borderRadius: '6px',
-                        padding: '6px',
-                        marginTop: '2px',
-                        maxHeight: '72px',
-                        overflowY: 'auto'
-                      }}>
-                        {['練馬', '品川', '足立', '多摩', '世田谷', '杉並', '板橋', '江東', '横浜', '川崎', '湘南', '相模', '大宮', '所沢', '川口', '千葉', '成田', '大阪', 'なにわ', '和泉', '京都', '神戸', '姫路', '名古屋', '三河', '福岡', '札幌', '仙台', '広島'].map(pref => (
-                          <button
-                            key={pref}
-                            type="button"
-                            onClick={() => setEditVehicleData(prev => ({ ...prev, platePrefecture: pref }))}
-                            style={{
-                              background: editVehicleData.platePrefecture === pref ? 'var(--primary)' : 'var(--card-bg, rgba(255,255,255,0.05))',
-                              color: editVehicleData.platePrefecture === pref ? '#ffffff' : 'var(--text-secondary)',
-                              border: '1px solid var(--glass-border)',
-                              borderRadius: '4px',
-                              padding: '1px 5px',
-                              fontSize: '9px',
-                              cursor: 'pointer',
-                              transition: 'all 0.1s ease',
-                              fontWeight: editVehicleData.platePrefecture === pref ? 'bold' : 'normal'
-                            }}
-                          >
-                            {pref}
-                          </button>
-                        ))}
                       </div>
 
                       {/* Plate Commercial Toggle */}
@@ -3023,7 +3004,7 @@ const getLicenseLabel = (type) => {
                         color: 'var(--text-main)',
                         cursor: 'pointer',
                         padding: '4px 0',
-                        marginTop: '2px'
+                        marginTop: '4px'
                       }}>
                         <input 
                           type="checkbox"
@@ -3091,6 +3072,53 @@ const getLicenseLabel = (type) => {
                       <input type="hidden" value={editVehicleData.width} />
                       <input type="hidden" value={editVehicleData.length} />
                       <input type="hidden" value={editVehicleData.weight} />
+                    </div>
+
+                    {/* Action Buttons Row at the bottom of the form (Prevents Header Horizontal Clutter) */}
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '16px', width: '100%', gridColumn: 'span 2', boxSizing: 'border-box' }}>
+                      <button 
+                        type="button"
+                        style={{
+                          flex: 1,
+                          background: 'linear-gradient(135deg, rgba(255, 59, 48, 0.15), rgba(255, 45, 85, 0.15))',
+                          border: '1px solid rgba(255, 59, 48, 0.3)',
+                          color: '#FF453A',
+                          borderRadius: '8px',
+                          padding: '10px',
+                          fontSize: '14px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                        onClick={() => setIsEditingVehicle(false)}
+                      >
+                        ❌ {t('cancel', 'Bekor qilish')}
+                      </button>
+                      <button 
+                        type="button"
+                        style={{
+                          flex: 1,
+                          background: 'linear-gradient(135deg, #0A84FF, #007AFF)',
+                          border: 'none',
+                          color: '#ffffff',
+                          borderRadius: '8px',
+                          padding: '10px',
+                          fontSize: '14px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          boxShadow: '0 4px 12px rgba(10, 132, 255, 0.3)'
+                        }}
+                        onClick={handleSaveVehicle}
+                      >
+                        💾 {t('save', 'Saqlash')}
+                      </button>
                     </div>
 
                   </div>
