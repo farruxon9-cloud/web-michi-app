@@ -866,14 +866,16 @@ export default function Profile({
       border = '2.5px solid #ffd60a';
       textColor = '#ffd60a';
     } else if (plateType === 'illustrated_fuji') {
-      bg = 'linear-gradient(to bottom, #7bb9e8, #c1e4f7, #fdfbf7)';
+      bg = 'linear-gradient(to bottom, #b3e5fc, #e1f5fe, #ffffff)';
       border = '2.5px solid #24522a';
       textColor = '#24522a';
       hasBgGraphic = true;
       bgGraphicSvg = (
-        <svg viewBox="0 0 100 50" style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '70%', opacity: 0.6, pointerEvents: 'none' }}>
-          <path d="M10,50 L40,25 Q50,22 60,25 L90,50 Z" fill="#ffffff" />
-          <path d="M42,27 L48,22 Q50,20 52,22 L58,27 L53,30 L50,27 L47,30 Z" fill="#8cb3d9" opacity="0.8" />
+        <svg viewBox="0 0 100 50" style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '80%', opacity: 0.85, pointerEvents: 'none' }}>
+          {/* Mount Fuji silhouette */}
+          <path d="M10,50 L42,24 L58,24 L90,50 Z" fill="#7bb9e8" />
+          {/* White Snowcap */}
+          <path d="M42,24 L48,18 Q50,16 52,18 L58,24 L54,28 Q50,26 46,28 Z" fill="#ffffff" />
         </svg>
       );
     } else if (plateType === 'illustrated_expo') {
@@ -882,14 +884,17 @@ export default function Profile({
       textColor = '#1c1c1e';
       hasBgGraphic = true;
       bgGraphicSvg = (
-        <svg viewBox="0 0 100 50" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.4, pointerEvents: 'none' }}>
-          <circle cx="5" cy="5" r="4" fill="#ff3b30" />
-          <circle cx="15" cy="4" r="3.5" fill="#ff3b30" />
-          <circle cx="95" cy="12" r="5" fill="#ff3b30" />
-          <circle cx="94" cy="20" r="3" fill="#ff3b30" />
-          <circle cx="8" cy="42" r="4" fill="#ff3b30" />
-          <circle cx="88" cy="44" r="4.5" fill="#ff3b30" />
-          <path d="M95,12 A2,2 0 1,1 94,12 Z" fill="#ffffff" />
+        <svg viewBox="0 0 100 50" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.8, pointerEvents: 'none' }}>
+          {/* Expo mascot red bubbles on borders */}
+          <circle cx="8" cy="8" r="5" fill="#ff3b30" />
+          <circle cx="18" cy="6" r="4" fill="#ff3b30" />
+          <circle cx="92" cy="12" r="6" fill="#ff3b30" />
+          <circle cx="91" cy="22" r="4" fill="#ff3b30" />
+          <circle cx="10" cy="42" r="5" fill="#ffffff" stroke="#ff3b30" strokeWidth="2" />
+          <circle cx="88" cy="42" r="5" fill="#ff3b30" />
+          {/* Mascot eye dots */}
+          <circle cx="92" cy="12" r="1.5" fill="#ffffff" />
+          <circle cx="92" cy="12" r="0.5" fill="#007aff" />
         </svg>
       );
     } else if (plateType === 'illustrated_flower') {
@@ -898,14 +903,26 @@ export default function Profile({
       textColor = '#881b37';
       hasBgGraphic = true;
       bgGraphicSvg = (
-        <svg viewBox="0 0 100 50" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.7, pointerEvents: 'none' }}>
-          <circle cx="10" cy="12" r="3" fill="#ffb7c5" />
-          <circle cx="14" cy="9" r="2.5" fill="#ffb7c5" />
-          <circle cx="7" cy="7" r="2" fill="#ffb7c5" />
-          <circle cx="90" cy="40" r="3.5" fill="#ffb7c5" />
-          <circle cx="85" cy="42" r="2.5" fill="#ffb7c5" />
-          <path d="M50,8 Q52,5 50,2 Q48,5 50,8 Z" fill="#ffccd5" transform="rotate(15 50 8)" />
-          <path d="M54,12 Q57,11 58,8 Q55,9 54,12 Z" fill="#ffccd5" />
+        <svg viewBox="0 0 100 50" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.9, pointerEvents: 'none' }}>
+          {/* Pink cherry blossoms in corners */}
+          <g transform="translate(12, 12)">
+            <circle cx="0" cy="0" r="4" fill="#ff6b8b" />
+            <circle cx="-3" cy="-3" r="3.5" fill="#ff8da1" opacity="0.9" />
+            <circle cx="3" cy="-3" r="3.5" fill="#ff8da1" opacity="0.9" />
+            <circle cx="3" cy="3" r="3.5" fill="#ff8da1" opacity="0.9" />
+            <circle cx="-3" cy="3" r="3.5" fill="#ff8da1" opacity="0.9" />
+            <circle cx="0" cy="0" r="1" fill="#ffd60a" />
+          </g>
+          <g transform="translate(88, 38)">
+            <circle cx="0" cy="0" r="4.5" fill="#ff6b8b" />
+            <circle cx="-3.5" cy="-3.5" r="4" fill="#ff8da1" opacity="0.9" />
+            <circle cx="3.5" cy="-3.5" r="4" fill="#ff8da1" opacity="0.9" />
+            <circle cx="3.5" cy="3.5" r="4" fill="#ff8da1" opacity="0.9" />
+            <circle cx="-3.5" cy="3.5" r="4" fill="#ff8da1" opacity="0.9" />
+            <circle cx="0" cy="0" r="1" fill="#ffd60a" />
+          </g>
+          <path d="M50,8 Q52,5 50,2 Q48,5 50,8 Z" fill="#ffb7c5" transform="rotate(15 50 8)" />
+          <path d="M70,15 Q72,12 70,9 Q68,12 70,15 Z" fill="#ffb7c5" transform="rotate(-30 70 15)" />
         </svg>
       );
     }
