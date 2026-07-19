@@ -833,13 +833,49 @@ export default function VoiceAssistant({
     }
   }, [conversationHistory, status]);
 
+  // Helper to clean Japanese polite copulas like です (des/desu), と申します, etc. locally
+  const cleanJapaneseCopula = (text) => {
+    if (!text) return '';
+    let cleaned = text.trim();
+    
+    // Romaji patterns (case insensitive)
+    cleaned = cleaned.replace(/\s+desu$/i, '');
+    cleaned = cleaned.replace(/\s+des$/i, '');
+    cleaned = cleaned.replace(/\s+da$/i, '');
+    cleaned = cleaned.replace(/\s+to\s+moushimasu$/i, '');
+    cleaned = cleaned.replace(/\s+to\s+iimasu$/i, '');
+    
+    // Japanese characters
+    cleaned = cleaned.replace(/です$/, '');
+    cleaned = cleaned.replace(/でーす$/, '');
+    cleaned = cleaned.replace(/だ$/, '');
+    cleaned = cleaned.replace(/と申します$/, '');
+    cleaned = cleaned.replace(/と言います$/, '');
+    cleaned = cleaned.replace(/ともうします$/, '');
+    cleaned = cleaned.replace(/といいます$/, '');
+    
+    return cleaned.trim();
+  };
+
   // Helper to standardise conversational date/year/phone inputs using Gemini AI parsing
   const parseResumeFieldWithGemini = async (step, text, isUz, isJa) => {
     try {
       let prompt = '';
-      if (step === 'ask_birthdate') {
+      if (step === 'ask_name') {
+        prompt = `Foydalanuvchi o'z ism-familiyasini aytdi: "${text}".
+Ism va familiyani aniqlab, keraksiz polite so'zlar (です, desu, と申します, da, des, といいます) bo'lsa, ularni butunlay olib tashlang.
+Ism va familiya bosh harflarini katta qiling (masalan, Farrux Kanoatov). 
+Faqat toza ism-familiya qiymatining o'zini qaytaring. Hech qanday boshqa izoh, so'z yoki nuqta yozmang.`;
+      } else if (step === 'ask_furigana') {
+        prompt = `Foydalanuvchi o'z ismining yaponcha o'qilishini (furigana/katakana) aytdi: "${text}".
+Ushbu matnni toza Yapon Katakanasiga (カタカナ) o'tkazing va chet el ismlari uchun kerakli kichik Katakana harflarini (ァ, ィ, ゥ, ェ, ォ, ッ, ャ, ュ, ョ, ヶ va h.k.) aniqlikda ishlating.
+Masalan: "farrux" -> ファルホ / ファルッフ (kichik harflar bilan).
+Matndagi polite copula bo'lsa (masalan: です, desu, と申します, da, des), ularni butunlay olib tashlang.
+Faqat Katakana formatidagi ismning o'qilishini qaytaring. Hech qanday boshqa izoh yoki so'z yozmang.`;
+      } else if (step === 'ask_birthdate') {
         prompt = `Foydalanuvchi o'zining tug'ilgan sanasini og'zaki aytdi: "${text}".
 Ushbu matndan tug'ilgan yil, oy va kunni aniqlab, faqat "YYYY-MM-DD" formatidagi sanani qaytaring. 
+Yaponcha va o'zbekcha ifodalarni, shuningdek "です" (desu/des) kabi yaponcha copulalarni tozalang.
 Agar faqat yil aytilgan bo'lsa, Oyni 01, Kunni 01 qiling.
 Hech qanday boshqa so'z, izoh yoki tushuntirish yozmang. Faqat YYYY-MM-DD formatidagi qiymatni o'zini qaytaring. 
 Masalan, agar "to'qson beshinchi yil o'n beshinchi may" desa, javob: 1995-05-15`;
@@ -852,7 +888,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
       } else if (step === 'ask_edu_start_year' || step === 'ask_edu_end_year' || step === 'ask_work_start_year' || step === 'ask_work_end_year') {
         prompt = `Foydalanuvchi yilni aytdi: "${text}". Matndan faqat 4 xonali yilni aniqlab (masalan: 2020) qaytaring. Boshqa hech narsa yozmang.`;
       } else {
-        return text;
+        return cleanJapaneseCopula(text);
       }
 
       const response = await fetchGeminiWithPool(
@@ -864,7 +900,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
       return cleaned;
     } catch (e) {
       console.warn("Gemini birthdate helper parsing failed, using fallback:", e);
-      return text;
+      return cleanJapaneseCopula(text);
     }
   };
 
@@ -1150,12 +1186,14 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
 
     switch (currentStep) {
       case 'ask_name':
-        setTempResumeData(prev => ({ ...prev, fullName: cleanText }));
+        setStatus('thinking');
+        const parsedName = await parseResumeFieldWithGemini('ask_name', cleanText, isUz, isJa);
+        setTempResumeData(prev => ({ ...prev, fullName: parsedName }));
         setResumeStep('confirm_name');
         speakStepMsg(isUz 
-          ? `Ismingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
-          : isJa ? `お名前は「${cleanText}」でよろしいですか？` 
-          : `Is your name "${cleanText}"? Confirm?`);
+          ? `Ismingizni "${parsedName}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `お名前は「${parsedName}」でよろしいですか？` 
+          : `Is your name "${parsedName}"? Confirm?`);
         break;
 
       case 'confirm_name':
@@ -1181,12 +1219,14 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
         break;
 
       case 'ask_furigana':
-        setTempResumeData(prev => ({ ...prev, furigana: cleanText }));
+        setStatus('thinking');
+        const parsedFurigana = await parseResumeFieldWithGemini('ask_furigana', cleanText, isUz, isJa);
+        setTempResumeData(prev => ({ ...prev, furigana: parsedFurigana }));
         setResumeStep('confirm_furigana');
         speakStepMsg(isUz
-          ? `Furigana talaffuzini "${cleanText}" deb yozaymi? Tasdiqlaysizmi?`
-          : isJa ? `フリガナは「${cleanText}」でよろしいですか？`
-          : `Is the furigana "${cleanText}"? Confirm?`);
+          ? `Furigana talaffuzini "${parsedFurigana}" deb yozaymi? Tasdiqlaysizmi?`
+          : isJa ? `フリガナは「${parsedFurigana}」でよろしいですか？`
+          : `Is the furigana "${parsedFurigana}"? Confirm?`);
         break;
 
       case 'confirm_furigana':
@@ -2095,8 +2135,13 @@ ${viewingContext}
     const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
     const dataContext = generateDataContext();
 
+    const now = new Date();
+    const localTimeContext = `\nCurrent local date and time: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}, ${now.toLocaleTimeString('en-US', { hour12: false })}. You MUST use this local date and time context to answer questions about the current day, date, year, month, or time in the user's language.`;
+
     const systemPrompt = `
 You are "Michi AI" — the smart voice assistant for the Michi app (a premium Japanese platform for truck driver jobs and driving academy courses).
+${localTimeContext}
+
 The user is sending you a text message. You must analyze the message and return a JSON structure.
 
 Your task: analyze the user's message and return a JSON object:
@@ -2525,11 +2570,15 @@ Return ONLY the raw JSON object, no markdown wrappers.
     setStatus('thinking');
 
     const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
-    
     const dataContext = generateDataContext();
+
+    const now = new Date();
+    const localTimeContext = `\nCurrent local date and time: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}, ${now.toLocaleTimeString('en-US', { hour12: false })}. You MUST use this local date and time context to answer questions about the current day, date, year, month, or time in the user's language.`;
 
     const systemPrompt = `
 You are "Michi AI" — the smart voice assistant for the Michi app (a premium Japanese platform for truck driver jobs and driving academy courses).
+${localTimeContext}
+
 The user is speaking to you directly via recorded audio. You must listen to the audio data, transcribe it, and return a JSON structure.
 
 Your task: analyze the user's speech and return a JSON object:
