@@ -73,7 +73,7 @@ export default function Profile({
   isVoiceStandby,
   setIsVoiceStandby
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Sub-sahifa o'zgarganda scroll holatini tepaga reset qilish (Scroll Restoration)
   React.useEffect(() => {
