@@ -18,31 +18,33 @@
   transform: scale(0.95);
 }
 
-/* Head squircle screen - Compacted to 30px x 26px (reduced width) */
+/* Head squircle screen - Glassmorphic Frosted Glass (30px x 26px) */
 .robot-head-screen {
   width: 30px;
   height: 26px;
-  background: #121214;
-  border: 1.2px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.2px solid rgba(255, 255, 255, 0.2);
   border-radius: 9px;
   position: relative;
   overflow: hidden;
   box-shadow: 
-    0 2px 6px rgba(0, 0, 0, 0.15),
-    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+    0 2px 8px rgba(0, 0, 0, 0.12),
+    inset 0 1px 2px rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.4s cubic-bezier(0.25, 1, 0.4, 1);
 }
 
-/* Light Mode specific screen styling */
+/* Light Mode specific screen styling - Frosted Light Glass */
 html:not(.dark-mode) .robot-head-screen {
-  background: #18181b; /* Dark contrast screen */
-  border-color: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
   box-shadow: 
-    0 2px 6px rgba(0, 0, 0, 0.2),
-    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 /* Glow border on active state - extremely soft and premium */
