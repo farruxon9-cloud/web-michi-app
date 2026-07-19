@@ -1052,6 +1052,116 @@ export default function Profile({
     );
   };
 
+  const getProfileLangText = (key) => {
+    const lang = i18n.language || 'uz';
+    const dict = {
+      plateDesignLabel: {
+        uz: "🖼️ Avtoraqam turi",
+        ja: "🖼️ ナンバープレートデザイン",
+        en: "🖼️ License Plate Design"
+      },
+      driverBadgeLabel: {
+        uz: "🔰 Haydovchi belgisi",
+        ja: "🔰 運転者マーク",
+        en: "🔰 Driver Badge"
+      },
+      prefectureLabel: {
+        uz: "Prefektura (Hudud)",
+        ja: "地名 (陸運局)",
+        en: "Prefecture (LTO)"
+      },
+      classCodeLabel: {
+        uz: "Klass kodi",
+        ja: "分類番号",
+        en: "Class Code"
+      },
+      hiraLabel: {
+        uz: "Hiragana",
+        ja: "ひらがな",
+        en: "Hiragana"
+      },
+      numLabel: {
+        uz: "Raqam (masalan, 12-34)",
+        ja: "一連指定番号 (例 12-34)",
+        en: "Number (e.g. 12-34)"
+      },
+      constructorTitle: {
+        uz: "🇯🇵 Yaponiya Standartidagi Avtoraqam (JDM Plate Constructor):",
+        ja: "🇯🇵 日本のナンバープレート作成 (JDM Constructor):",
+        en: "🇯🇵 Japanese License Plate Constructor (JDM):"
+      },
+      opt_private: {
+        uz: "⬜ Shaxsiy standart (Oq rangli)",
+        ja: "⬜ 自家用・普通車 (白色)",
+        en: "⬜ Private Standard (White)"
+      },
+      opt_commercial: {
+        uz: "🟩 Tijoriy standart (Yashil rangli)",
+        ja: "🟩 事業用・普通車 (緑色)",
+        en: "🟩 Commercial Standard (Green)"
+      },
+      opt_kei_private: {
+        uz: "🟨 Kei-car shaxsiy (Sariq rangli)",
+        ja: "🟨 自家用・軽自動車 (黄色)",
+        en: "🟨 Kei-car Private (Yellow)"
+      },
+      opt_kei_commercial: {
+        uz: "⬛ Kei-car tijoriy (Qora rangli)",
+        ja: "⬛ 事業用・軽自動車 (黒色)",
+        en: "⬛ Kei-car Commercial (Black)"
+      },
+      opt_illustrated_fuji: {
+        uz: "🗻 Fuji tog'i tasvirli (Art Plate)",
+        ja: "🗻 富士山 図柄入りプレート (Art Plate)",
+        en: "🗻 Mount Fuji Art Plate"
+      },
+      opt_illustrated_expo: {
+        uz: "🔴 Osaka Expo 2025 esdalik raqami",
+        ja: "🔴 大阪・関西万博 記念プレート (EXPO 2025)",
+        en: "🔴 Osaka Expo 2025 Commemorative"
+      },
+      opt_illustrated_flower: {
+        uz: "🌸 Sakura va Nanohana gullari (Milliy)",
+        ja: "🌸 全国花柄図柄入りプレート (桜と菜の花)",
+        en: "🌸 National Sakura & Canola Flowers"
+      },
+      opt_illustrated_matsudo: {
+        uz: "🏞️ Matsudo mahalliy tasvirli raqami (Sakura, Ajisai & Yagiri boat)",
+        ja: "🏞️ 松戸版図柄入りナンバー (桜・あじさい・矢切の渡し)",
+        en: "🏞️ Matsudo Local Plate (Sakura, Ajisai & Yagiri)"
+      },
+      opt_badge_none: {
+        uz: "❌ Maxsus belgisiz (Standart)",
+        ja: "❌ 特殊マークなし (標準)",
+        en: "❌ No Special Badge (Standard)"
+      },
+      opt_badge_beginner: {
+        uz: "🔰 Shoshinsha (Yangi haydovchi)",
+        ja: "🔰 初心者マーク (若葉マーク)",
+        en: "🔰 Beginner Mark (Wakaba)"
+      },
+      opt_badge_elderly: {
+        uz: "🍀 Koreisha (Yoshi katta)",
+        ja: "🍀 高齢運転者マーク (もみじ)",
+        en: "🍀 Elderly Driver Mark (Yotsuba)"
+      },
+      opt_badge_disabled: {
+        uz: "♿ Nogironligi bor",
+        ja: "♿ 身体障害者マーク (車椅子)",
+        en: "♿ Physical Disability Mark"
+      },
+      opt_badge_hearing: {
+        uz: "🦋 Eshitish cheklangan",
+        ja: "🦋 聴覚障害者マーク (蝶マーク)",
+        en: "🦋 Hearing Impaired Mark"
+      }
+    };
+    if (dict[key]) {
+      return dict[key][lang] || dict[key]['uz'];
+    }
+    return '';
+  };
+
   const renderDriverMarkBadge = (mark) => {
     switch (mark) {
       case 'beginner':
@@ -1061,7 +1171,7 @@ export default function Profile({
               <path d="M12,2 L4,8 L4,15 C4,19 8,22 12,23 C16,22 20,19 20,15 L20,8 Z" fill="#ffd60a" />
               <path d="M12,2 L4,8 L4,15 C4,19 8,22 12,23 Z" fill="#30d158" />
             </svg>
-            <span>Wakaba (Yangi haydovchi)</span>
+            <span>{getProfileLangText('opt_badge_beginner')}</span>
           </div>
         );
       case 'elderly':
@@ -1074,7 +1184,7 @@ export default function Profile({
               <circle cx="9" cy="15" r="4.5" fill="#30B0C7" />
               <path d="M12,7 L12,17 M7,12 L17,12" stroke="#ffffff" strokeWidth="1.2" />
             </svg>
-            <span>Yotsuba (Katta yoshli)</span>
+            <span>{getProfileLangText('opt_badge_elderly')}</span>
           </div>
         );
       case 'disabled':
@@ -1085,7 +1195,7 @@ export default function Profile({
               <circle cx="12" cy="8" r="2" fill="#ffffff" />
               <path d="M14,13 H11 V10 H13 M9,16 A3,3 0 1,1 12,13" stroke="#ffffff" strokeWidth="1.5" fill="none" />
             </svg>
-            <span>Nogironligi bor</span>
+            <span>{getProfileLangText('opt_badge_disabled')}</span>
           </div>
         );
       case 'hearing':
@@ -1097,7 +1207,7 @@ export default function Profile({
               <path d="M12,16 C9,19 7,12 12,9 C17,12 15,19 12,16 Z" fill="#30d158" />
               <circle cx="12" cy="12" r="2" fill="#ffd60a" />
             </svg>
-            <span>Eshitish cheklangan</span>
+            <span>{getProfileLangText('opt_badge_hearing')}</span>
           </div>
         );
       default:
@@ -3459,10 +3569,9 @@ const getLicenseLabel = (type) => {
                       )}
                     </div>
 
-                    {/* JDM Japanese Plate Editor Fields */}
                     <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--glass-border)', paddingTop: '10px', marginTop: '4px' }}>
                       <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                        🇯🇵 Yaponiya Standartidagi Avtoraqam (JDM Plate Constructor):
+                        {getProfileLangText('constructorTitle')}
                       </span>
                       
                       {/* Datalist containing ALL 100+ Japanese Plate Offices */}
@@ -3470,9 +3579,9 @@ const getLicenseLabel = (type) => {
                         {/* Hokkaido */}
                         <option value="札幌" /><option value="函館" /><option value="旭川" /><option value="室蘭" /><option value="釧路" /><option value="帯広" /><option value="北見" /><option value="小樽" /><option value="苫小牧" /><option value="知床" />
                         {/* Tohoku */}
-                        <option value="青森" /><option value="八戸" /><option value="盛岡" /><option value="岩手" /><option value="平泉" /><option value="仙台" /><option value="宮城" /><option value="秋田" /><option value="山形" /><option value="庄内" /><option value="福島" /><option value="会津" /><option value="郡山" /><option value="いわき" />
+                        <option value="青森" /><option value="八户" /><option value="盛岡" /><option value="岩手" /><option value="平泉" /><option value="仙台" /><option value="宮城" /><option value="秋田" /><option value="山形" /><option value="庄内" /><option value="福島" /><option value="会津" /><option value="郡山" /><option value="いわき" />
                         {/* Kanto */}
-                        <option value="水戸" /><option value="土浦" /><option value="つくば" /><option value="宇都宮" /><option value="とちぎ" /><option value="那須" /><option value="前橋" /><option value="高崎" /><option value="群馬" /><option value="大宮" /><option value="熊谷" /><option value="川口" /><option value="所沢" /><option value="川越" /><option value="春日部" /><option value="越谷" /><option value="千葉" /><option value="成田" /><option value="習志野" /><option value="袖ヶ浦" /><option value="野田" /><option value="柏" /><option value="松戸" /><option value="市川" /><option value="船橋" /><option value="市原" /><option value="品川" /><option value="世田谷" /><option value="練馬" /><option value="杉並" /><option value="板橋" /><option value="足立" /><option value="江東" /><option value="葛飾" /><option value="八王子" /><option value="多摩" /><option value="横浜" /><option value="川崎" /><option value="相模" /><option value="湘南" /><option value="小田原" />
+                        <option value="水戸" /><option value="土浦" /><option value="つくば" /><option value="宇tsunomiya" /><option value="とちぎ" /><option value="那須" /><option value="前橋" /><option value="高崎" /><option value="群馬" /><option value="大宮" /><option value="熊谷" /><option value="川口" /><option value="所沢" /><option value="川越" /><option value="春日部" /><option value="越谷" /><option value="千葉" /><option value="成田" /><option value="習志野" /><option value="袖ヶ浦" /><option value="野田" /><option value="柏" /><option value="松戸" /><option value="市川" /><option value="船橋" /><option value="市原" /><option value="品川" /><option value="世田谷" /><option value="練馬" /><option value="杉並" /><option value="板橋" /><option value="足立" /><option value="江東" /><option value="葛飾" /><option value="八王子" /><option value="多摩" /><option value="横浜" /><option value="川崎" /><option value="相模" /><option value="湘南" /><option value="小田原" />
                         {/* Chubu */}
                         <option value="新潟" /><option value="長岡" /><option value="上越" /><option value="富山" /><option value="金沢" /><option value="石川" /><option value="福井" /><option value="山梨" /><option value="富士山" /><option value="長野" /><option value="松本" /><option value="諏訪" /><option value="岐阜" /><option value="飛騨" /><option value="静岡" /><option value="沼津" /><option value="浜松" /><option value="伊豆" /><option value="豊橋" /><option value="岡崎" /><option value="豊田" /><option value="名古屋" /><option value="尾張小牧" /><option value="一宮" /><option value="春日井" /><option value="三河" /><option value="津" /><option value="鈴鹿" /><option value="四日市" /><option value="伊勢志摩" />
                         {/* Kinki */}
@@ -3493,7 +3602,7 @@ const getLicenseLabel = (type) => {
                       }}>
                         {/* Prefecture Text Input (Auto-complete linked to datalist) */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Prefektura (Hudud)</label>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('prefectureLabel')}</label>
                           <input 
                             type="text"
                             list="jdm-prefectures"
@@ -3519,7 +3628,7 @@ const getLicenseLabel = (type) => {
 
                         {/* Class Code */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Klass kodi</label>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('classCodeLabel')}</label>
                           <input 
                             type="text" 
                             maxLength="3"
@@ -3543,7 +3652,7 @@ const getLicenseLabel = (type) => {
 
                         {/* Hiragana Select */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Hiragana</label>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('hiraLabel')}</label>
                           <select 
                             value={editVehicleData.plateHira || 'あ'}
                             onChange={e => setEditVehicleData(prev => ({ ...prev, plateHira: e.target.value }))}
@@ -3566,7 +3675,7 @@ const getLicenseLabel = (type) => {
 
                         {/* 4 Digit Main Number */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Raqam (e.g. 12-34)</label>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('numLabel')}</label>
                           <input 
                             type="text" 
                             placeholder="12-34"
@@ -3596,10 +3705,9 @@ const getLicenseLabel = (type) => {
                         </div>
                       </div>
 
-                      {/* Plate Commercial Toggle */}
                       {/* JDM Plate design selection */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
-                        <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>🖼️ Avtoraqam turi (Plate Design)</label>
+                        <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{getProfileLangText('plateDesignLabel')}</label>
                         <select
                           value={editVehicleData.plateType || 'private'}
                           onChange={e => {
@@ -3622,20 +3730,20 @@ const getLicenseLabel = (type) => {
                             boxSizing: 'border-box'
                           }}
                         >
-                          <option value="private">⬜ Shaxsiy standart (Oq rangli)</option>
-                          <option value="commercial">🟩 Tijoriy standart (Yashil rangli)</option>
-                          <option value="kei_private">🟨 Kei-car shaxsiy (Sariq rangli)</option>
-                          <option value="kei_commercial">⬛ Kei-car tijoriy (Qora rangli)</option>
-                          <option value="illustrated_fuji">🗻 Fuji tog'i tasvirli (Art Plate)</option>
-                          <option value="illustrated_expo">🔴 Osaka Expo 2025 esdalik raqami</option>
-                          <option value="illustrated_flower">🌸 Sakura va Nanohana gullari (Milliy)</option>
-                          <option value="illustrated_matsudo">🏞️ Matsudo mahalliy tasvirli raqami (Sakura, Ajisai & Yagiri boat)</option>
+                          <option value="private">{getProfileLangText('opt_private')}</option>
+                          <option value="commercial">{getProfileLangText('opt_commercial')}</option>
+                          <option value="kei_private">{getProfileLangText('opt_kei_private')}</option>
+                          <option value="kei_commercial">{getProfileLangText('opt_kei_commercial')}</option>
+                          <option value="illustrated_fuji">{getProfileLangText('opt_illustrated_fuji')}</option>
+                          <option value="illustrated_expo">{getProfileLangText('opt_illustrated_expo')}</option>
+                          <option value="illustrated_flower">{getProfileLangText('opt_illustrated_flower')}</option>
+                          <option value="illustrated_matsudo">{getProfileLangText('opt_illustrated_matsudo')}</option>
                         </select>
                       </div>
 
                       {/* Driver Mark badge selection */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
-                        <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>🔰 Haydovchi belgisi (Driver Badge)</label>
+                        <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{getProfileLangText('driverBadgeLabel')}</label>
                         <select
                           value={editVehicleData.driverMark || 'none'}
                           onChange={e => setEditVehicleData(prev => ({ ...prev, driverMark: e.target.value }))}
@@ -3651,11 +3759,11 @@ const getLicenseLabel = (type) => {
                             boxSizing: 'border-box'
                           }}
                         >
-                          <option value="none">❌ Maxsus belgisiz (Standart)</option>
-                          <option value="beginner">🔰 初心者マーク (Wakaba - Yangi haydovchi)</option>
-                          <option value="elderly">🍀 高齢運転者マーク (Yotsuba - Yoshi katta)</option>
-                          <option value="disabled">♿ 身体障害者マーク (Physical Disability)</option>
-                          <option value="hearing">🦋 聴覚障害者マーク (Hearing Impaired)</option>
+                          <option value="none">{getProfileLangText('opt_badge_none')}</option>
+                          <option value="beginner">{getProfileLangText('opt_badge_beginner')}</option>
+                          <option value="elderly">{getProfileLangText('opt_badge_elderly')}</option>
+                          <option value="disabled">{getProfileLangText('opt_badge_disabled')}</option>
+                          <option value="hearing">{getProfileLangText('opt_badge_hearing')}</option>
                         </select>
                       </div>
                     </div>
