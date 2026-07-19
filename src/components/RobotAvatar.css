@@ -128,7 +128,7 @@ html.dark-mode .robot-head-screen {
   position: relative;
 }
 
-/* Glowing Brand Indigo Violet eyes (extremely cute on white screen) */
+/* Glowing Brand Indigo Violet eyes (extremely cute on white screen) - Always blinking */
 .robot-eye {
   width: 3.8px;
   height: 5.5px;
@@ -140,22 +140,13 @@ html.dark-mode .robot-head-screen {
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
   box-shadow: 0 0 3px rgba(94, 92, 230, 0.6);
-}
-
-/* Sleeping state - eyes closed (thin lines) */
-.robot-avatar-container.sleeping .robot-eye {
-  height: 1px;
-  width: 3.5px;
-  border-radius: 1px;
-  opacity: 0.35;
-  background: rgba(94, 92, 230, 0.5);
-  box-shadow: none;
-  transform: translateY(2px);
-}
-
-/* Blinking animation in active/idle state */
-.robot-avatar-container:not(.sleeping) .robot-eye {
   animation: eye-blink 5s infinite;
+}
+
+/* Inactive Standby state - eyes open but slightly dimmer and passive */
+.robot-avatar-container.inactive .robot-eye {
+  opacity: 0.55;
+  box-shadow: none;
 }
 
 @keyframes eye-blink {
@@ -170,23 +161,27 @@ html.dark-mode .robot-head-screen {
 /* Colors for active modes */
 .robot-avatar-container.listening .robot-eye {
   background: #5E5CE6;
+  opacity: 1;
   box-shadow: 0 0 5px rgba(94, 92, 230, 0.8);
   animation: eye-blink 5s infinite, eye-breath 1.8s infinite ease-in-out;
 }
 
 .robot-avatar-container.thinking .robot-eye {
   background: #00F3FF; /* cyan for thinking */
+  opacity: 1;
   box-shadow: 0 0 5px rgba(0, 243, 255, 0.8);
   animation: eye-think 1.2s infinite ease-in-out;
 }
 
 .robot-avatar-container.speaking .robot-eye {
   background: #5E5CE6;
+  opacity: 1;
   box-shadow: 0 0 5px rgba(94, 92, 230, 0.8);
 }
 
 .robot-avatar-container.error .robot-eye {
   background: #FF3B30; /* red for error */
+  opacity: 1;
   box-shadow: 0 0 3px rgba(255, 59, 48, 0.6);
   height: 3.5px; /* small confused eyes */
   border-radius: 50%;
@@ -232,13 +227,9 @@ html.dark-mode .robot-head-screen {
   transform: translateY(-1.5px);
 }
 
-/* Sleeping mouth is a flat hidden line */
-.robot-avatar-container.sleeping .robot-mouth {
-  width: 2.5px;
-  height: 0;
-  border-bottom: 1px solid rgba(94, 92, 230, 0.35);
-  border-radius: 0;
-  transform: translateY(1.5px);
+/* Inactive Standby mouth - static dimmer smile */
+.robot-avatar-container.inactive .robot-mouth {
+  opacity: 0.55;
 }
 
 /* Listening mouth is a small tiny soft smile */
@@ -301,17 +292,32 @@ html.dark-mode .robot-head-screen {
   transition: all 0.3s ease;
 }
 
+.robot-pulse-ring.idle {
+  border: 1.5px solid rgba(94, 92, 230, 0.25);
+  animation: pulse-glow-ring-slow 3s infinite ease-in-out;
+}
+
 .robot-pulse-ring.listening {
-  border: 1px solid rgba(94, 92, 230, 0.3);
+  border: 1.5px solid rgba(94, 92, 230, 0.4);
+  animation: pulse-glow-ring 2s infinite ease-out;
+}
+
+.robot-pulse-ring.speaking {
+  border: 1.5px solid rgba(94, 92, 230, 0.4);
   animation: pulse-glow-ring 2s infinite ease-out;
 }
 
 .robot-pulse-ring.thinking {
-  border: 1px solid rgba(0, 243, 255, 0.3);
+  border: 1.5px solid rgba(0, 243, 255, 0.4);
   animation: pulse-glow-ring 1.5s infinite ease-out;
 }
 
 @keyframes pulse-glow-ring {
   0% { transform: scale(0.95); opacity: 0.8; }
   100% { transform: scale(1.2); opacity: 0; }
+}
+
+@keyframes pulse-glow-ring-slow {
+  0%, 100% { transform: scale(1); opacity: 0.2; }
+  50% { transform: scale(1.08); opacity: 0.6; }
 }

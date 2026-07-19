@@ -4,7 +4,7 @@ import './RobotAvatar.css';
 export default function RobotAvatar({ isVoiceActive, voiceStatus = 'idle', onClick }) {
   // Determine eye status class
   const getStatusClass = () => {
-    if (!isVoiceActive) return 'sleeping';
+    if (!isVoiceActive) return 'inactive';
     return voiceStatus; // 'idle' | 'listening' | 'thinking' | 'speaking' | 'error'
   };
 
