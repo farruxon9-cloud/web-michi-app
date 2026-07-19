@@ -163,10 +163,54 @@ export default function Profile({
     window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: editVehicleData }));
   };
 
-  const renderVehicleSVG = (type, color) => {
+  const renderVehicleSVG = (type, make = '', model = '', color) => {
     const paintColor = color || '#5E5CE6';
+    const mStr = ((make || '') + ' ' + (model || '')).toLowerCase();
+    
     switch (type) {
       case 'car':
+        // 1. Minivan / Boxy MPV (Honda Freed, Alphard, Stepwgn, Serena, Noah, Voxy, Hiace, Van, etc.)
+        if (mStr.includes('freed') || mStr.includes('spike') || mStr.includes('stepwgn') || mStr.includes('alphard') || mStr.includes('vellfire') || mStr.includes('noah') || mStr.includes('voxy') || mStr.includes('hiace') || mStr.includes('serena') || mStr.includes('van') || mStr.includes('mpv') || mStr.includes('box')) {
+          return (
+            <svg viewBox="0 0 100 50" width="100%" height="100%">
+              <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.15)" />
+              <path fill={paintColor} d="M12,38 L10,36 C10,34 10,18 15,18 L76,18 C78,18 80,19 82,23 L87,31 C89,35 88,38 86,38 Z" />
+              <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M22,21 L35,21 L35,27 L22,27 Z" />
+              <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M38,21 L55,21 L55,27 L38,27 Z" />
+              <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M58,21 L74,21 L72,27 L58,27 Z" />
+              <line x1="56" y1="20" x2="56" y2="35" stroke="rgba(0,0,0,0.25)" strokeWidth="1" />
+              <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M78,22 L82,28 L78,28 Z" />
+              <path fill="#FFD60A" d="M85,32 Q88,32 87,34 L84,35 Z" />
+              <path fill="#FF453A" d="M10,22 L12,22 L12,28 L10,28 Z" />
+              <circle cx="28" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+              <circle cx="28" cy="38" r="4" fill="#8e8e93" />
+              <circle cx="72" cy="38" r="8" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.5" />
+              <circle cx="72" cy="38" r="4" fill="#8e8e93" />
+            </svg>
+          );
+        }
+        
+        // 2. SUV / Crossover (Toyota Harrier, Rav4, CX-5, Forester, Land Cruiser, Jeep, Pajero, etc.)
+        if (mStr.includes('harrier') || mStr.includes('suv') || mStr.includes('rav4') || mStr.includes('land') || mStr.includes('cruiser') || mStr.includes('prado') || mStr.includes('cx') || mStr.includes('trail') || mStr.includes('forester') || mStr.includes('jeep') || mStr.includes('pajero') || mStr.includes('rover') || mStr.includes('cross')) {
+          return (
+            <svg viewBox="0 0 100 50" width="100%" height="100%">
+              <ellipse cx="50" cy="43" rx="42" ry="4.5" fill="rgba(0,0,0,0.18)" />
+              <path fill={paintColor} d="M14,36 L11,32 C11,30 13,22 20,21 C27,20 38,13 50,13 C62,13 78,16 83,24 C88,30 87,35 84,36 Z" />
+              <path fill="var(--card-bg, #1c1c1e)" opacity="0.85" d="M32,21 L44,16 L60,16 L72,21 C70,24 35,24 32,21 Z" />
+              <path fill={paintColor} d="M11,20 L15,19 L16,21 L12,22 Z" />
+              <path d="M18,36 A10,10 0 0,1 38,36" fill="none" stroke="#3a3a3c" strokeWidth="2.5" />
+              <path d="M62,36 A10,10 0 0,1 82,36" fill="none" stroke="#3a3a3c" strokeWidth="2.5" />
+              <path fill="#FFD60A" d="M84,28 Q87,28 86,30 L82,31 Z" />
+              <path fill="#FF453A" d="M11,28 L14,28 L14,31 L11,31 Z" />
+              <circle cx="28" cy="36" r="7.5" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="2" />
+              <circle cx="28" cy="36" r="3.5" fill="#aeaeaf" />
+              <circle cx="72" cy="36" r="7.5" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="2" />
+              <circle cx="72" cy="36" r="3.5" fill="#aeaeaf" />
+            </svg>
+          );
+        }
+
+        // 3. Standard Sedan / Liftback (Toyota Prius, Civic, Corolla, Fit, Aqua, etc.)
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
             <ellipse cx="50" cy="43" rx="40" ry="4" fill="rgba(0,0,0,0.15)" />
@@ -181,7 +225,26 @@ export default function Profile({
             <circle cx="72" cy="38" r="4" fill="#8e8e93" />
           </svg>
         );
+
       case 'moto':
+        // Scooter profile (Honda Cub, Scooter, Vespa, Jog, Today, etc.)
+        if (mStr.includes('cub') || mStr.includes('scooter') || mStr.includes('vespa') || mStr.includes('today') || mStr.includes('jog')) {
+          return (
+            <svg viewBox="0 0 100 50" width="100%" height="100%">
+              <ellipse cx="50" cy="43" rx="35" ry="3.5" fill="rgba(0,0,0,0.12)" />
+              {/* Scooter Frame */}
+              <path d="M22,38 L30,34 L46,34 L52,24 L56,16" stroke="#8e8e93" strokeWidth="2.5" fill="none" />
+              {/* Scooter Body Shield (Paint color) */}
+              <path fill={paintColor} d="M52,38 L58,24 L54,16 L48,16 L44,24 Z" />
+              <path fill={paintColor} d="M22,34 C25,28 35,26 44,28 L40,36 Z" />
+              <circle cx="22" cy="38" r="10" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.8" />
+              <circle cx="22" cy="38" r="4.5" fill="#8e8e93" />
+              <circle cx="78" cy="38" r="10" fill="#1c1c1e" stroke="#8e8e93" strokeWidth="1.8" />
+              <circle cx="78" cy="38" r="4.5" fill="#8e8e93" />
+            </svg>
+          );
+        }
+        // Sport Bike / Regular Moto
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
             <ellipse cx="50" cy="43" rx="35" ry="3.5" fill="rgba(0,0,0,0.15)" />
@@ -194,6 +257,7 @@ export default function Profile({
             <circle cx="78" cy="38" r="5" fill="#8e8e93" />
           </svg>
         );
+
       case 'velo':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
@@ -208,6 +272,7 @@ export default function Profile({
             <circle cx="78" cy="38" r="1.5" fill="#1c1c1e" />
           </svg>
         );
+
       case 'truck_3t':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
@@ -227,6 +292,7 @@ export default function Profile({
             <circle cx="74" cy="39" r="3" fill="#8e8e93" />
           </svg>
         );
+
       case 'truck_4t':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
@@ -247,6 +313,7 @@ export default function Profile({
             <circle cx="74" cy="39" r="3" fill="#aeaeaf" />
           </svg>
         );
+
       case 'trailer':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
@@ -272,6 +339,7 @@ export default function Profile({
             <circle cx="83" cy="39" r="3" fill="#aeaeaf" />
           </svg>
         );
+
       case 'bus':
         return (
           <svg viewBox="0 0 100 50" width="100%" height="100%">
@@ -2255,7 +2323,7 @@ const getLicenseLabel = (type) => {
                     }}></div>
                     
                     <div style={{ width: '160px', height: '80px', transform: 'scale(1.2)' }}>
-                      {renderVehicleSVG(myVehicle.type, myVehicle.color)}
+                      {renderVehicleSVG(myVehicle.type, myVehicle.make, myVehicle.model, myVehicle.color)}
                     </div>
                   </div>
 
@@ -2329,7 +2397,7 @@ const getLicenseLabel = (type) => {
                     position: 'relative'
                   }}>
                     <div style={{ width: '150px', height: '75px', transform: 'scale(1.2)' }}>
-                      {renderVehicleSVG(editVehicleData.type, editVehicleData.color)}
+                      {renderVehicleSVG(editVehicleData.type, editVehicleData.make, editVehicleData.model, editVehicleData.color)}
                     </div>
                     <span style={{
                       position: 'absolute',
