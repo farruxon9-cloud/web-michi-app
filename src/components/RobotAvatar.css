@@ -18,55 +18,55 @@
   transform: scale(0.95);
 }
 
-/* Head squircle screen - Glassmorphic Frosted Glass (30px x 26px) */
+/* Head squircle screen - Glossy White Ceramic (30px x 26px) */
 .robot-head-screen {
   width: 30px;
   height: 26px;
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1.2px solid rgba(255, 255, 255, 0.2);
+  background: #ffffff;
+  border: 1.2px solid rgba(0, 0, 0, 0.12);
   border-radius: 9px;
   position: relative;
   overflow: hidden;
   box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.12),
-    inset 0 1px 2px rgba(255, 255, 255, 0.15);
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    inset 0 1.5px 1.5px #ffffff,
+    inset 0 -1px 2px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.4s cubic-bezier(0.25, 1, 0.4, 1);
 }
 
-/* Light Mode specific screen styling - Frosted Light Glass */
+/* Light Mode specific screen styling - Pure White Ceramic */
 html:not(.dark-mode) .robot-head-screen {
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.14);
   box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    inset 0 1px 2px rgba(255, 255, 255, 0.5);
+    0 2px 6px rgba(0, 0, 0, 0.05),
+    inset 0 1.5px 1.5px #ffffff,
+    inset 0 -1px 2px rgba(0, 0, 0, 0.03);
 }
 
-/* Glow border on active state - extremely soft and premium */
+/* Glow border on active state - Indigo glow */
 .robot-avatar-container.listening .robot-head-screen {
-  border-color: rgba(255, 184, 0, 0.4);
+  border-color: rgba(94, 92, 230, 0.4);
   box-shadow: 
-    0 0 8px rgba(255, 184, 0, 0.25),
-    0 2px 6px rgba(0, 0, 0, 0.15);
+    0 0 8px rgba(94, 92, 230, 0.2),
+    0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .robot-avatar-container.thinking .robot-head-screen {
   border-color: rgba(0, 243, 255, 0.4);
   box-shadow: 
-    0 0 8px rgba(0, 243, 255, 0.25),
-    0 2px 6px rgba(0, 0, 0, 0.15);
+    0 0 8px rgba(0, 243, 255, 0.2),
+    0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .robot-avatar-container.speaking .robot-head-screen {
-  border-color: rgba(255, 184, 0, 0.4);
+  border-color: rgba(94, 92, 230, 0.4);
   box-shadow: 
-    0 0 8px rgba(255, 184, 0, 0.25),
-    0 2px 6px rgba(0, 0, 0, 0.15);
+    0 0 8px rgba(94, 92, 230, 0.2),
+    0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 /* Screen glossy glass reflection sheen */
@@ -76,7 +76,7 @@ html:not(.dark-mode) .robot-head-screen {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 60%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 60%);
   z-index: 5;
   pointer-events: none;
 }
@@ -107,18 +107,18 @@ html:not(.dark-mode) .robot-head-screen {
   position: relative;
 }
 
-/* Glowing Brand Amber Yellow eyes (smaller and much cuter) */
+/* Glowing Brand Indigo Violet eyes (extremely cute on white screen) */
 .robot-eye {
   width: 3.8px;
   height: 5.5px;
-  background: #FFB800; /* Warm mood-lifting Brand Amber Yellow */
+  background: #5E5CE6; /* Warm Brand Indigo Violet */
   border-radius: 2px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
-  box-shadow: 0 0 3px rgba(255, 184, 0, 0.7);
+  box-shadow: 0 0 3px rgba(94, 92, 230, 0.6);
 }
 
 /* Sleeping state - eyes closed (thin lines) */
@@ -126,8 +126,8 @@ html:not(.dark-mode) .robot-head-screen {
   height: 1px;
   width: 3.5px;
   border-radius: 1px;
-  opacity: 0.3;
-  background: rgba(255, 255, 255, 0.4);
+  opacity: 0.35;
+  background: rgba(94, 92, 230, 0.5);
   box-shadow: none;
   transform: translateY(2px);
 }
@@ -146,22 +146,22 @@ html:not(.dark-mode) .robot-head-screen {
   }
 }
 
-/* Colors for active modes - kept Brand Amber Yellow with soft glow */
+/* Colors for active modes */
 .robot-avatar-container.listening .robot-eye {
-  background: #FFB800;
-  box-shadow: 0 0 5px rgba(255, 184, 0, 0.9);
+  background: #5E5CE6;
+  box-shadow: 0 0 5px rgba(94, 92, 230, 0.8);
   animation: eye-blink 5s infinite, eye-breath 1.8s infinite ease-in-out;
 }
 
 .robot-avatar-container.thinking .robot-eye {
   background: #00F3FF; /* cyan for thinking */
-  box-shadow: 0 0 5px rgba(0, 243, 255, 0.9);
+  box-shadow: 0 0 5px rgba(0, 243, 255, 0.8);
   animation: eye-think 1.2s infinite ease-in-out;
 }
 
 .robot-avatar-container.speaking .robot-eye {
-  background: #FFB800;
-  box-shadow: 0 0 5px rgba(255, 184, 0, 0.9);
+  background: #5E5CE6;
+  box-shadow: 0 0 5px rgba(94, 92, 230, 0.8);
 }
 
 .robot-avatar-container.error .robot-eye {
@@ -205,7 +205,7 @@ html:not(.dark-mode) .robot-head-screen {
 .robot-mouth {
   width: 5.5px;
   height: 2.5px;
-  border-bottom: 1.2px solid #FFB800; /* Friendly Brand Amber Yellow */
+  border-bottom: 1.2px solid #5E5CE6; /* Brand Indigo Violet smile */
   border-radius: 0 0 5px 5px;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
   transform: translateY(-1.5px);
@@ -215,7 +215,7 @@ html:not(.dark-mode) .robot-head-screen {
 .robot-avatar-container.sleeping .robot-mouth {
   width: 2.5px;
   height: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  border-bottom: 1px solid rgba(94, 92, 230, 0.35);
   border-radius: 0;
   transform: translateY(1.5px);
 }
@@ -224,7 +224,7 @@ html:not(.dark-mode) .robot-head-screen {
 .robot-avatar-container.listening .robot-mouth {
   width: 4.5px;
   height: 2px;
-  border-bottom: 1.2px solid #FFB800;
+  border-bottom: 1.2px solid #5E5CE6;
   border-radius: 0 0 4px 4px;
   transform: translateY(-0.8px);
 }
@@ -242,7 +242,7 @@ html:not(.dark-mode) .robot-head-screen {
 .robot-avatar-container.speaking .robot-mouth {
   width: 5.5px;
   height: 2.5px;
-  border-bottom: 1.2px solid #FFB800;
+  border-bottom: 1.2px solid #5E5CE6;
   border-radius: 0 0 5px 5px;
   animation: mouth-talk 0.8s infinite ease-in-out; /* Smooth gentle speech */
   transform: translateY(-1.5px);
@@ -281,7 +281,7 @@ html:not(.dark-mode) .robot-head-screen {
 }
 
 .robot-pulse-ring.listening {
-  border: 1px solid rgba(255, 184, 0, 0.3);
+  border: 1px solid rgba(94, 92, 230, 0.3);
   animation: pulse-glow-ring 2s infinite ease-out;
 }
 
