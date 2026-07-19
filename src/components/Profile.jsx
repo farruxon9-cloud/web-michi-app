@@ -818,8 +818,20 @@ export default function Profile({
           </svg>
         );
 
-      default:
+      default: {
+        let fallbackBodyStyle = 'sedan';
+        if (type === 'moto') fallbackBodyStyle = 'scooter';
+        else if (type === 'velo') fallbackBodyStyle = 'standard';
+        else if (type === 'truck_3t') fallbackBodyStyle = 'box_truck';
+        else if (type === 'truck_4t') fallbackBodyStyle = 'wing_body';
+        else if (type === 'trailer') fallbackBodyStyle = 'trailer_container';
+        else if (type === 'bus') fallbackBodyStyle = 'standard';
+        
+        if (bodyStyle !== fallbackBodyStyle) {
+          return renderVehicleSVG(type, fallbackBodyStyle, color);
+        }
         return null;
+      }
     }
   };
 
@@ -3061,7 +3073,43 @@ const getLicenseLabel = (type) => {
                         value={editVehicleData.make}
                         onChange={e => {
                           const val = e.target.value;
-                          setEditVehicleData(prev => ({ ...prev, make: val, model: val === 'Toyota' ? 'Harrier' : val === 'Honda' ? 'Freed' : 'Other' }));
+                          let defaultModel = 'Other';
+                          let defaultBody = 'sedan';
+                          
+                          if (editVehicleData.type === 'car') {
+                            if (val === 'Toyota') { defaultModel = 'Harrier'; defaultBody = 'suv'; }
+                            else if (val === 'Honda') { defaultModel = 'Freed'; defaultBody = 'minivan'; }
+                            else if (val === 'Nissan') { defaultModel = 'Serena'; defaultBody = 'minivan'; }
+                          } else if (editVehicleData.type === 'moto') {
+                            if (val === 'Honda') { defaultModel = 'Super Cub'; defaultBody = 'scooter'; }
+                          } else if (editVehicleData.type === 'truck_3t') {
+                            if (val === 'Isuzu') { defaultModel = 'Elf'; defaultBody = 'box_truck'; }
+                            else if (val === 'Mitsubishi Fuso') { defaultModel = 'Canter'; defaultBody = 'box_truck'; }
+                          } else if (editVehicleData.type === 'truck_4t') {
+                            if (val === 'Hino') { defaultModel = 'Ranger'; defaultBody = 'wing_body'; }
+                            else if (val === 'Isuzu') { defaultModel = 'Forward'; defaultBody = 'wing_body'; }
+                            else if (val === 'Mitsubishi Fuso') { defaultModel = 'Fighter'; defaultBody = 'wing_body'; }
+                          } else if (editVehicleData.type === 'trailer') {
+                            if (val === 'Hino') { defaultModel = 'Profia'; defaultBody = 'trailer_container'; }
+                            else if (val === 'Isuzu') { defaultModel = 'Giga'; defaultBody = 'trailer_container'; }
+                            else if (val === 'Mitsubishi Fuso') { defaultModel = 'Super Great'; defaultBody = 'trailer_container'; }
+                          } else if (editVehicleData.type === 'bus') {
+                            defaultModel = 'Gala';
+                            defaultBody = 'standard';
+                          } else if (editVehicleData.type === 'velo') {
+                            defaultModel = 'City Cycle';
+                            defaultBody = 'standard';
+                          }
+
+                          const dims = getVehiclePresetDimensions(editVehicleData.type, defaultBody);
+                          
+                          setEditVehicleData(prev => ({ 
+                            ...prev, 
+                            make: val, 
+                            model: defaultModel,
+                            bodyStyle: defaultBody,
+                            ...dims
+                          }));
                         }}
                         style={{
                           background: 'var(--card-bg, #2c2c2e)',
@@ -3094,8 +3142,14 @@ const getLicenseLabel = (type) => {
                             let matchedBody = editVehicleData.bodyStyle;
                             if (val === 'Harrier') matchedBody = 'suv';
                             else if (val === 'Prius') matchedBody = 'sedan';
-                            else if (val === 'Alphard' || val === 'Freed' || val === 'Stepwgn') matchedBody = 'minivan';
+                            else if (val === 'Alphard' || val === 'Freed' || val === 'Stepwgn' || val === 'Serena') matchedBody = 'minivan';
+                            else if (val === 'Yaris' || val === 'Fit' || val === 'Note') matchedBody = 'hatchback';
                             else if (val === 'Super Cub') matchedBody = 'scooter';
+                            else if (val === 'Elf' || val === 'Canter') matchedBody = 'box_truck';
+                            else if (val === 'Ranger' || val === 'Forward' || val === 'Fighter') matchedBody = 'wing_body';
+                            else if (val === 'Profia' || val === 'Giga' || val === 'Super Great') matchedBody = 'trailer_container';
+                            else if (val === 'Gala') matchedBody = 'standard';
+                            else if (val === 'City Cycle') matchedBody = 'standard';
                             
                             const dims = getVehiclePresetDimensions(editVehicleData.type, matchedBody);
                             
