@@ -133,6 +133,8 @@ export default function Profile({
       plateHira: 'あ',
       plateNumber: '12-34',
       isCommercial: false,
+      plateType: 'private',
+      driverMark: 'none',
       height: '1.69',
       width: '1.85',
       length: '4.74',
@@ -160,6 +162,8 @@ export default function Profile({
         if (!parsed.plateClass) parsed.plateClass = '300';
         if (!parsed.plateHira) parsed.plateHira = 'あ';
         if (!parsed.plateNumber || parsed.plateNumber.includes(' ')) parsed.plateNumber = '12-34';
+        if (!parsed.plateType) parsed.plateType = parsed.isCommercial ? 'commercial' : 'private';
+        if (!parsed.driverMark) parsed.driverMark = 'none';
         
         // 3. Ensure bodyStyle is defined and matches type presets
         if (!parsed.bodyStyle) {
@@ -832,6 +836,167 @@ export default function Profile({
         }
         return null;
       }
+    }
+  };
+
+  const renderJDMPlateBox = (plate, isPreview = false) => {
+    const prefecture = plate.platePrefecture || '練馬';
+    const classCode = plate.plateClass || '300';
+    const hira = plate.plateHira || 'あ';
+    const number = plate.plateNumber || '12-34';
+    const plateType = plate.plateType || (plate.isCommercial ? 'commercial' : 'private');
+
+    let bg = 'linear-gradient(135deg, #f8f9fa, #ffffff)';
+    let border = '2.5px solid #2c3e2d';
+    let textColor = '#24522a';
+    let boltBg = '#8e8e93';
+    let hasBgGraphic = false;
+    let bgGraphicSvg = null;
+
+    if (plateType === 'commercial') {
+      bg = 'linear-gradient(135deg, #1b3d20, #24522a)';
+      border = '2.5px solid #ffffff';
+      textColor = '#ffffff';
+    } else if (plateType === 'kei_private') {
+      bg = 'linear-gradient(135deg, #ffd83b, #ffd60a)';
+      border = '2.5px solid #1c1c1e';
+      textColor = '#1c1c1e';
+    } else if (plateType === 'kei_commercial') {
+      bg = 'linear-gradient(135deg, #2c2c2e, #1c1c1e)';
+      border = '2.5px solid #ffd60a';
+      textColor = '#ffd60a';
+    } else if (plateType === 'illustrated_fuji') {
+      bg = 'linear-gradient(to bottom, #7bb9e8, #c1e4f7, #fdfbf7)';
+      border = '2.5px solid #24522a';
+      textColor = '#24522a';
+      hasBgGraphic = true;
+      bgGraphicSvg = (
+        <svg viewBox="0 0 100 50" style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '70%', opacity: 0.6, pointerEvents: 'none' }}>
+          <path d="M10,50 L40,25 Q50,22 60,25 L90,50 Z" fill="#ffffff" />
+          <path d="M42,27 L48,22 Q50,20 52,22 L58,27 L53,30 L50,27 L47,30 Z" fill="#8cb3d9" opacity="0.8" />
+        </svg>
+      );
+    } else if (plateType === 'illustrated_expo') {
+      bg = 'linear-gradient(135deg, #f8f9fa, #ffffff)';
+      border = '2.5px solid #ff3b30';
+      textColor = '#1c1c1e';
+      hasBgGraphic = true;
+      bgGraphicSvg = (
+        <svg viewBox="0 0 100 50" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.4, pointerEvents: 'none' }}>
+          <circle cx="5" cy="5" r="4" fill="#ff3b30" />
+          <circle cx="15" cy="4" r="3.5" fill="#ff3b30" />
+          <circle cx="95" cy="12" r="5" fill="#ff3b30" />
+          <circle cx="94" cy="20" r="3" fill="#ff3b30" />
+          <circle cx="8" cy="42" r="4" fill="#ff3b30" />
+          <circle cx="88" cy="44" r="4.5" fill="#ff3b30" />
+          <path d="M95,12 A2,2 0 1,1 94,12 Z" fill="#ffffff" />
+        </svg>
+      );
+    } else if (plateType === 'illustrated_flower') {
+      bg = 'linear-gradient(135deg, #fff0f5, #ffe4e1)';
+      border = '2.5px solid #ff2d55';
+      textColor = '#881b37';
+      hasBgGraphic = true;
+      bgGraphicSvg = (
+        <svg viewBox="0 0 100 50" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.7, pointerEvents: 'none' }}>
+          <circle cx="10" cy="12" r="3" fill="#ffb7c5" />
+          <circle cx="14" cy="9" r="2.5" fill="#ffb7c5" />
+          <circle cx="7" cy="7" r="2" fill="#ffb7c5" />
+          <circle cx="90" cy="40" r="3.5" fill="#ffb7c5" />
+          <circle cx="85" cy="42" r="2.5" fill="#ffb7c5" />
+          <path d="M50,8 Q52,5 50,2 Q48,5 50,8 Z" fill="#ffccd5" transform="rotate(15 50 8)" />
+          <path d="M54,12 Q57,11 58,8 Q55,9 54,12 Z" fill="#ffccd5" />
+        </svg>
+      );
+    }
+
+    const scale = isPreview ? 'scale(1.1)' : 'scale(1.2)';
+
+    return (
+      <div className={`jdm-plate-box ${plateType}`} style={{
+        width: '120px',
+        height: '72px',
+        border: border,
+        borderRadius: '5px',
+        background: bg,
+        color: textColor,
+        padding: '4px 6px',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        position: 'relative',
+        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+        fontFamily: 'monospace',
+        fontWeight: 'bold',
+        transform: scale,
+        overflow: 'hidden'
+      }}>
+        {hasBgGraphic && bgGraphicSvg}
+        <div style={{ position: 'absolute', top: '3px', left: '22px', width: '3.5px', height: '3.5px', borderRadius: '50%', background: boltBg, border: '0.5px solid #545456', zIndex: 2 }}></div>
+        <div style={{ position: 'absolute', top: '3px', right: '22px', width: '3.5px', height: '3.5px', borderRadius: '50%', background: boltBg, border: '0.5px solid #545456', zIndex: 2 }}></div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', lineHeight: 1, padding: '0 8px', marginTop: '1px', zIndex: 2, position: 'relative' }}>
+          <span>{prefecture}</span>
+          <span>{classCode}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px', marginBottom: '1px', zIndex: 2, position: 'relative' }}>
+          <span style={{ fontSize: '13px' }}>{hira}</span>
+          <span style={{ fontSize: '17px', letterSpacing: '0.5px' }}>{number}</span>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDriverMarkBadge = (mark) => {
+    switch (mark) {
+      case 'beginner':
+        return (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(52, 199, 89, 0.1)', border: '1px solid rgba(52, 199, 89, 0.3)', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', color: '#34c759', fontWeight: 'bold' }}>
+            <svg viewBox="0 0 24 24" width="16" height="16" style={{ verticalAlign: 'middle' }}>
+              <path d="M12,2 L4,8 L4,15 C4,19 8,22 12,23 C16,22 20,19 20,15 L20,8 Z" fill="#ffd60a" />
+              <path d="M12,2 L4,8 L4,15 C4,19 8,22 12,23 Z" fill="#30d158" />
+            </svg>
+            <span>Wakaba (Yangi haydovchi)</span>
+          </div>
+        );
+      case 'elderly':
+        return (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 159, 10, 0.1)', border: '1px solid rgba(255, 159, 10, 0.3)', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', color: '#ff9f0a', fontWeight: 'bold' }}>
+            <svg viewBox="0 0 24 24" width="16" height="16" style={{ verticalAlign: 'middle' }}>
+              <circle cx="9" cy="9" r="4.5" fill="#FF9F0A" />
+              <circle cx="15" cy="9" r="4.5" fill="#FFD60A" />
+              <circle cx="15" cy="15" r="4.5" fill="#30D158" />
+              <circle cx="9" cy="15" r="4.5" fill="#30B0C7" />
+              <path d="M12,7 L12,17 M7,12 L17,12" stroke="#ffffff" strokeWidth="1.2" />
+            </svg>
+            <span>Yotsuba (Katta yoshli)</span>
+          </div>
+        );
+      case 'disabled':
+        return (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(10, 132, 255, 0.1)', border: '1px solid rgba(10, 132, 255, 0.3)', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', color: '#0a84ff', fontWeight: 'bold' }}>
+            <svg viewBox="0 0 24 24" width="16" height="16" style={{ verticalAlign: 'middle' }}>
+              <circle cx="12" cy="12" r="10" fill="#0A84FF" />
+              <circle cx="12" cy="8" r="2" fill="#ffffff" />
+              <path d="M14,13 H11 V10 H13 M9,16 A3,3 0 1,1 12,13" stroke="#ffffff" strokeWidth="1.5" fill="none" />
+            </svg>
+            <span>Nogironligi bor</span>
+          </div>
+        );
+      case 'hearing':
+        return (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(48, 176, 199, 0.1)', border: '1px solid rgba(48, 176, 199, 0.3)', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', color: '#30b0c7', fontWeight: 'bold' }}>
+            <svg viewBox="0 0 24 24" width="16" height="16" style={{ verticalAlign: 'middle' }}>
+              <circle cx="12" cy="12" r="10" fill="#ffd60a" />
+              <path d="M12,8 C9,5 7,12 12,15 C17,12 15,5 12,8 Z" fill="#30d158" />
+              <path d="M12,16 C9,19 7,12 12,9 C17,12 15,19 12,16 Z" fill="#30d158" />
+              <circle cx="12" cy="12" r="2" fill="#ffd60a" />
+            </svg>
+            <span>Eshitish cheklangan</span>
+          </div>
+        );
+      default:
+        return null;
     }
   };
 
@@ -2788,38 +2953,13 @@ const getLicenseLabel = (type) => {
                     </div>
 
                     {/* JDM License Plate Display */}
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                      <div className={`jdm-plate-box ${myVehicle.isCommercial ? 'commercial' : ''}`} style={{
-                        width: '120px',
-                        height: '72px',
-                        border: '2.5px solid ' + (myVehicle.isCommercial ? '#ffffff' : '#2c3e2d'),
-                        borderRadius: '5px',
-                        background: myVehicle.isCommercial ? 'linear-gradient(135deg, #1b3d20, #24522a)' : 'linear-gradient(135deg, #f8f9fa, #ffffff)',
-                        color: myVehicle.isCommercial ? '#ffffff' : '#24522a',
-                        padding: '4px 6px',
-                        boxSizing: 'border-box',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        position: 'relative',
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-                        fontFamily: 'monospace',
-                        fontWeight: 'bold'
-                      }}>
-                        {/* Bolts */}
-                        <div style={{ position: 'absolute', top: '3px', left: '22px', width: '3px', height: '3px', borderRadius: '50%', background: '#8e8e93', border: '0.5px solid #aeaeaf' }}></div>
-                        <div style={{ position: 'absolute', top: '3px', right: '22px', width: '3px', height: '3px', borderRadius: '50%', background: '#8e8e93', border: '0.5px solid #aeaeaf' }}></div>
-                        
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', lineHeight: 1, padding: '0 8px', marginTop: '1px' }}>
-                          <span>{myVehicle.platePrefecture || '練馬'}</span>
-                          <span>{myVehicle.plateClass || '300'}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                      {renderJDMPlateBox(myVehicle, false)}
+                      {myVehicle.driverMark && myVehicle.driverMark !== 'none' && (
+                        <div style={{ marginTop: '14px' }}>
+                          {renderDriverMarkBadge(myVehicle.driverMark)}
                         </div>
-                        
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px', marginBottom: '1px' }}>
-                          <span style={{ fontSize: '13px' }}>{myVehicle.plateHira || 'あ'}</span>
-                          <span style={{ fontSize: '17px', letterSpacing: '0.5px' }}>{myVehicle.plateNumber || '12-34'}</span>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
 
@@ -2931,32 +3071,13 @@ const getLicenseLabel = (type) => {
                     </div>
 
                     {/* Live Plate Preview */}
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                      <div className={`jdm-plate-box ${editVehicleData.isCommercial ? 'commercial' : ''}`} style={{
-                        width: '110px',
-                        height: '66px',
-                        border: '2.5px solid ' + (editVehicleData.isCommercial ? '#ffffff' : '#2c3e2d'),
-                        borderRadius: '5px',
-                        background: editVehicleData.isCommercial ? 'linear-gradient(135deg, #1b3d20, #24522a)' : 'linear-gradient(135deg, #f8f9fa, #ffffff)',
-                        color: editVehicleData.isCommercial ? '#ffffff' : '#24522a',
-                        padding: '3px 5px',
-                        boxSizing: 'border-box',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        fontFamily: 'monospace',
-                        fontWeight: 'bold',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
-                      }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8px', lineHeight: 1, padding: '0 6px' }}>
-                          <span>{editVehicleData.platePrefecture || '練馬'}</span>
-                          <span>{editVehicleData.plateClass || '300'}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                      {renderJDMPlateBox(editVehicleData, true)}
+                      {editVehicleData.driverMark && editVehicleData.driverMark !== 'none' && (
+                        <div style={{ transform: 'scale(0.9)', marginTop: '4px' }}>
+                          {renderDriverMarkBadge(editVehicleData.driverMark)}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1px' }}>
-                          <span style={{ fontSize: '11px' }}>{editVehicleData.plateHira || 'あ'}</span>
-                          <span style={{ fontSize: '15px', letterSpacing: '0.2px' }}>{editVehicleData.plateNumber || '12-34'}</span>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
 
@@ -3371,24 +3492,66 @@ const getLicenseLabel = (type) => {
                       </div>
 
                       {/* Plate Commercial Toggle */}
-                      <label style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        fontSize: '12px',
-                        color: 'var(--text-main)',
-                        cursor: 'pointer',
-                        padding: '4px 0',
-                        marginTop: '4px'
-                      }}>
-                        <input 
-                          type="checkbox"
-                          checked={editVehicleData.isCommercial}
-                          onChange={e => setEditVehicleData(prev => ({ ...prev, isCommercial: e.target.checked }))}
-                          style={{ accentColor: 'var(--primary)', cursor: 'pointer' }}
-                        />
-                        <span>🟢 {t('commercialPlateToggle', 'Tijorat (Yashil rangli) avtoraqam (Kompaniya moshinalari uchun)')}</span>
-                      </label>
+                      {/* JDM Plate design selection */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
+                        <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>🖼️ Avtoraqam turi (Plate Design)</label>
+                        <select
+                          value={editVehicleData.plateType || 'private'}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setEditVehicleData(prev => ({ 
+                              ...prev, 
+                              plateType: val,
+                              isCommercial: val === 'commercial' || val === 'kei_commercial'
+                            }));
+                          }}
+                          style={{
+                            background: 'var(--card-bg, #2c2c2e)',
+                            color: 'var(--text-main)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '8px',
+                            padding: '8px',
+                            fontSize: '13px',
+                            outline: 'none',
+                            width: '100%',
+                            boxSizing: 'border-box'
+                          }}
+                        >
+                          <option value="private">⬜ Shaxsiy standart (Oq rangli)</option>
+                          <option value="commercial">🟩 Tijoriy standart (Yashil rangli)</option>
+                          <option value="kei_private">🟨 Kei-car shaxsiy (Sariq rangli)</option>
+                          <option value="kei_commercial">⬛ Kei-car tijoriy (Qora rangli)</option>
+                          <option value="illustrated_fuji">🗻 Fuji tog'i tasvirli (Art Plate)</option>
+                          <option value="illustrated_expo">🔴 Osaka Expo 2025 esdalik raqami</option>
+                          <option value="illustrated_flower">🌸 Sakura gullari dizaynli raqam</option>
+                        </select>
+                      </div>
+
+                      {/* Driver Mark badge selection */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+                        <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>🔰 Haydovchi belgisi (Driver Badge)</label>
+                        <select
+                          value={editVehicleData.driverMark || 'none'}
+                          onChange={e => setEditVehicleData(prev => ({ ...prev, driverMark: e.target.value }))}
+                          style={{
+                            background: 'var(--card-bg, #2c2c2e)',
+                            color: 'var(--text-main)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '8px',
+                            padding: '8px',
+                            fontSize: '13px',
+                            outline: 'none',
+                            width: '100%',
+                            boxSizing: 'border-box'
+                          }}
+                        >
+                          <option value="none">❌ Maxsus belgisiz (Standart)</option>
+                          <option value="beginner">🔰 初心者マーク (Wakaba - Yangi haydovchi)</option>
+                          <option value="elderly">🍀 高齢運転者マーク (Yotsuba - Yoshi katta)</option>
+                          <option value="disabled">♿ 身体障害者マーク (Physical Disability)</option>
+                          <option value="hearing">🦋 聴覚障害者マーク (Hearing Impaired)</option>
+                        </select>
+                      </div>
                     </div>
 
                     {/* Color picker */}
