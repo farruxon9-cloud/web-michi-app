@@ -273,6 +273,32 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     });
   };
 
+  const handleFormBack = () => {
+    if (showAddForm) {
+      setShowAddForm(false);
+      setErrors({});
+      setJobImage(null);
+      
+      if (jobToEdit) {
+        setJobToEdit(null);
+        return;
+      }
+      
+      if (selectedAdType === 'school') {
+        setShowAdTypeSelect(true);
+      } else {
+        setShowJobTypeSelect(true);
+      }
+    } else if (showJobTypeSelect) {
+      setShowJobTypeSelect(false);
+      if (profileData?.companyType === 'driving_school') {
+        setShowAdTypeSelect(true);
+      }
+    } else if (showAdTypeSelect) {
+      setShowAdTypeSelect(false);
+    }
+  };
+
   const handleAddJob = () => {
     // 1. Mandatory Fields Validation with inline errors
     const newErrors = {};
@@ -299,8 +325,21 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      // Scroll to top smoothly
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      const errorList = [];
+      if (newErrors.title) errorList.push(isAdCourse ? t('schoolTypeLabel', 'Toifalar') : t('jobTitleLabel', 'Sarlavha'));
+      if (newErrors.salary) errorList.push(isAdCourse ? t('schoolPriceLabel', 'Boshlang\'ich narxi') : t('salaryLabel', 'Maosh'));
+      if (newErrors.postalCode) errorList.push(t('postalCodeLabel', 'Pochta indeksi'));
+      if (newErrors.prefecture) errorList.push(t('prefectureLabel', 'Prefektura'));
+      if (newErrors.detailAddress) errorList.push(t('detailAddressLabel', 'Batafsil manzil'));
+      if (newErrors.phone) errorList.push(t('phoneLabel', 'Telefon'));
+      if (newErrors.email) errorList.push(t('emailLabel', 'Email'));
+      if (newErrors.description) errorList.push(isAdCourse ? t('schoolDescLabel', 'Tavsif') : t('jobDescLabel', 'Batafsil tavsif'));
+      if (newErrors.hasShoukai) errorList.push(t('shoukaiSettings', 'Shoukai sozlamalari'));
+      if (newErrors.shoukaiFee) errorList.push(t('shoukaiSumLabel', 'Shoukai summasi'));
+
+      alert(`${t('validationFailedAlert', 'Iltimos, barcha majburiy maydonlarni to\'ldiring')}:\n- ${errorList.join('\n- ')}`);
       return;
     }
     
@@ -451,13 +490,35 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     };
 
     return (
-      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
-          <button className="icon-btn glass" onClick={() => { setShowAddForm(false); setJobImage(null); setErrors({}); }}>
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px', position: 'relative' }}>
+        {/* Pinned Sticky Back Button */}
+        <div style={{ 
+          position: 'sticky', 
+          top: '12px', 
+          left: '16px', 
+          zIndex: 120, 
+          width: 'fit-content',
+          marginBottom: '-40px',
+          pointerEvents: 'none'
+        }}>
+          <button 
+            className="icon-btn glass animate-scale-up" 
+            onClick={handleFormBack}
+            style={{ 
+              pointerEvents: 'auto',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              background: 'var(--glass-bg)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid var(--glass-border)'
+            }}
+          >
             <ArrowLeft size={20} />
           </button>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>
+        </div>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 72px' }}>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>
             {isAdCourse ? t('addNewSchoolAd', "Yangi avtomaktab e'loni") : t('addNewJob', "Yangi ish e'loni qo'shish")}
           </h2>
         </div>
@@ -1045,15 +1106,37 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     );
   }
 
-  // ===== JOB RECRUITMENT TYPE SELECTION SCREEN =====
   if (showJobTypeSelect) {
     return (
-      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
-          <button className="icon-btn glass" onClick={() => setShowJobTypeSelect(false)}>
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px', position: 'relative' }}>
+        {/* Pinned Sticky Back Button */}
+        <div style={{ 
+          position: 'sticky', 
+          top: '12px', 
+          left: '16px', 
+          zIndex: 120, 
+          width: 'fit-content',
+          marginBottom: '-40px',
+          pointerEvents: 'none'
+        }}>
+          <button 
+            className="icon-btn glass animate-scale-up" 
+            onClick={handleFormBack}
+            style={{ 
+              pointerEvents: 'auto',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              background: 'var(--glass-bg)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid var(--glass-border)'
+            }}
+          >
             <ArrowLeft size={20} />
           </button>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>
+        </div>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 72px' }}>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>
             {t('recruitmentTypeSelectTitle', "Ish e'loni so'rovnomasi turini tanlang")}
           </h2>
         </div>
@@ -1086,7 +1169,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 {t('recruitmentLocal', "Mahalliy vakansiya (Yaponiya ichidagi nomzodlar uchun)")}
               </h3>
               <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-                Yaponiyada yashayotgan va ishlash huquqiga ega nomzodlar uchun oddiy e'lon so'rovnomasi.
+                {t('recruitmentLocalDesc', "Yaponiyada yashayotgan va ishlash huquqiga ega nomzodlar uchun oddiy e'lon so'rovnomasi.")}
               </p>
             </div>
           </div>
@@ -1115,7 +1198,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 {t('recruitmentInternational', "Xalqaro vakansiya / Tokutei Ginou (Chet eldagi nomzodlar uchun)")} 🌐
               </h3>
               <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-                Chet eldagi (masalan, O'zbekiston) nomzodlarni jalb qilish va Tokutei Ginou viza yordami so'rovnomasi.
+                {t('recruitmentInternationalDesc', "Chet eldagi (masalan, O'zbekiston) nomzodlarni jalb qilish va Tokutei Ginou viza yordami so'rovnomasi.")}
               </p>
             </div>
           </div>
@@ -1124,15 +1207,37 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     );
   }
 
-  // ===== AD TYPE SELECTION SCREEN (FOR DRIVING SCHOOLS) =====
   if (showAdTypeSelect) {
     return (
-      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
-          <button className="icon-btn glass" onClick={() => setShowAdTypeSelect(false)}>
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px', position: 'relative' }}>
+        {/* Pinned Sticky Back Button */}
+        <div style={{ 
+          position: 'sticky', 
+          top: '12px', 
+          left: '16px', 
+          zIndex: 120, 
+          width: 'fit-content',
+          marginBottom: '-40px',
+          pointerEvents: 'none'
+        }}>
+          <button 
+            className="icon-btn glass animate-scale-up" 
+            onClick={handleFormBack}
+            style={{ 
+              pointerEvents: 'auto',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              background: 'var(--glass-bg)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid var(--glass-border)'
+            }}
+          >
             <ArrowLeft size={20} />
           </button>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>
+        </div>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 72px' }}>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>
             {t('chooseAdTypeTitle', "E'lon turini tanlang")}
           </h2>
         </div>
