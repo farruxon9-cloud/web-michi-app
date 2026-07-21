@@ -467,6 +467,7 @@ const resources = {
       allJobs: "Barchasi",
       shiftWork: "Smenali",
       noJobsFound: "Mos e'lonlar topilmadi",
+      loadMore: "Ko'proq yuklash",
       licenseRequired: "Litsenziya talabi",
       // Mock jobs
       job_1_title: "Mahalliy yetkazib berish (Local Delivery)",
@@ -1148,6 +1149,7 @@ const resources = {
       allJobs: "すべて",
       shiftWork: "シフト制",
       noJobsFound: "該当する求人が見つかりませんでした",
+      loadMore: "もっと見る",
       licenseRequired: "必要免許",
       // Mock jobs
       job_1_title: "地元の配達（ローカルデリバリー）",
@@ -1685,6 +1687,7 @@ const resources = {
       allJobs: "All Jobs",
       shiftWork: "Shift Work",
       noJobsFound: "No jobs found matching the criteria",
+      loadMore: "Load More",
       licenseRequired: "License Requirement",
       // Mock jobs
       job_1_title: "Local Delivery",
@@ -2127,6 +2130,7 @@ const resources = {
       editJob: "Chỉnh sửa",
       perMonth: "tháng",
       loading: "Đang tải...",
+      loadMore: "Tải thêm",
       shoukai: "Giới thiệu",
       adminPanel: "Bảng Quản Trị",
       adminPanelDesc: "Cấp hoặc thu hồi trạng thái \"Đối tác tin cậy ⭐\" cho các công ty và trường học.",
@@ -2559,6 +2563,7 @@ const resources = {
       editJob: "编辑",
       perMonth: "月",
       loading: "加载中...",
+      loadMore: "加载更多",
       shoukai: "推荐",
       adminPanel: "管理面板",
       adminPanelDesc: "为公司和学校授予或撤销“信赖的合作伙伴 ⭐”状态。",
@@ -2985,6 +2990,7 @@ const resources = {
       editJob: "सम्पादन गर्नुहोस्",
       perMonth: "महिना",
       loading: "लोड हुँदैछ...",
+      loadMore: "और लोड करें",
       shoukai: "सिफारिस",
       adminPanel: "प्रशासक प्यानल",
       adminPanelDesc: "कम्पनीहरू र विद्यालयहरूका लागि \"भरपर्दो साझेदार ⭐\" स्थिति प्रदान वा खारेज गर्नुहोस्।",

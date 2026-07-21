@@ -169,6 +169,16 @@ export default function DriverFeed({
 }) {
   const { t } = useTranslation();
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(10);
+
+  // Reset pagination when any filter changes
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [
+    searchQuery, activeSegment, selectedLicenses,
+    selectedLangLevel, selectedBenefits, minSalary,
+    selectedPrefecture, selectedCity, stationQuery, onlyNearStation
+  ]);
 
   const getSalaryNumber = (salaryStr) => {
     if (!salaryStr) return 0;
@@ -314,7 +324,7 @@ export default function DriverFeed({
 
       {/* ====== E'LONLAR RO'YXATI (GOO-NET USLUBIDA) ====== */}
       <div className="jobs-list hide-scrollbar">
-        {filteredJobs.map(job => {
+        {filteredJobs.slice(0, visibleCount).map(job => {
           const showVerified = verifiedCompanies.includes(job.company) || isContractActive;
           return (
             <div key={job.id} className={`job-card-hz glass ${job.isInternational ? 'job-card-international' : ''}`} onClick={() => onJobClick({...job, verified: showVerified})}>
@@ -482,6 +492,41 @@ export default function DriverFeed({
             </div>
           );
         })}
+
+        {visibleCount < filteredJobs.length && (
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0 8px 0', width: '100%' }}>
+            <button 
+              onClick={() => setVisibleCount(prev => prev + 10)}
+              className="glass squircle animate-scale-up"
+              style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--glass-border)',
+                color: 'var(--text-main)',
+                padding: '12px 24px',
+                fontSize: '13.5px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                width: '100%',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.borderColor = 'var(--primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                e.currentTarget.style.borderColor = 'var(--glass-border)';
+              }}
+            >
+              <span>{t('loadMore', 'Ko\'proq yuklash')}</span>
+            </button>
+          </div>
+        )}
         {filteredJobs.length === 0 && (
           <div className="empty-feed">
             <Search size={40} color="#C7C7CC" />
