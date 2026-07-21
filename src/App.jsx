@@ -346,7 +346,8 @@ function App() {
     motivation: '',
     selfPR: '',
     hobbies: '',
-    personalRequests: '貴社規定に従います。'
+    personalRequests: '貴社規定に従います。',
+    jlptStatus: null
   });
 
   // Disabled auto-save logic for role and profile

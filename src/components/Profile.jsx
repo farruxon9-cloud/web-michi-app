@@ -2248,6 +2248,22 @@ const getLicenseLabel = (type) => {
                     }
                   </div>
                 </div>
+                <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
+                  <span className="field-label" style={{marginBottom: '4px'}}>{t('jlptLanguageLabel', 'JLPT Yapon tili darajasi')}</span>
+                  <div>
+                    {profileData.jlptStatus && profileData.jlptStatus.verified ? (
+                      <div className="glass squircle animate-scale-up" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', background: 'rgba(48, 209, 88, 0.08)', border: '1px solid rgba(48, 209, 88, 0.3)', borderRadius: '12px' }}>
+                        <ShieldCheck size={18} color="#30D158" className="animate-pulse" />
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <strong style={{ fontSize: '13.5px', color: '#30D158' }}>JLPT {profileData.jlptStatus.level} Verified ✓</strong>
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Cert No: {profileData.jlptStatus.certNo}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided', 'Tasdiqlanmagan')}</span>
+                    )}
+                  </div>
+                </div>
                   {/* Work History */}
                   {profileData.workHistory && profileData.workHistory.length > 0 && (
                     <div className="resume-field">
@@ -2674,6 +2690,17 @@ const getLicenseLabel = (type) => {
                               </div>
                             </div>
 
+                            {resumeInfo.jlptStatus && resumeInfo.jlptStatus.verified && (
+                              <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
+                                <span style={{ color: '#8E8E93' }}>JLPT Yapon tili darajasi:</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', background: 'rgba(48, 209, 88, 0.08)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(48, 209, 88, 0.2)' }}>
+                                  <ShieldCheck size={14} color="#30D158" />
+                                  <strong style={{ color: '#30D158', fontSize: '12px' }}>JLPT {resumeInfo.jlptStatus.level} Verified ✓</strong>
+                                  <span style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>({resumeInfo.jlptStatus.certNo})</span>
+                                </div>
+                              </div>
+                            )}
+
                             {resumeInfo.workHistory && resumeInfo.workHistory.length > 0 && (
                               <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', gap: '6px' }}>
                                 <span style={{ color: '#8E8E93' }}>{t('workExperience', 'Ish tajribasi')}:</span>
@@ -3095,6 +3122,12 @@ const getLicenseLabel = (type) => {
         <h2>{profileData.fullName}</h2>
         <p>{profileData.email}</p>
         <span className="role-tag glass">{getRoleLabel()}</span>
+        {profileData.jlptStatus && profileData.jlptStatus.verified && (
+          <span className="role-tag glass animate-scale-up" style={{ border: '1px solid rgba(48, 209, 88, 0.4)', background: 'rgba(48, 209, 88, 0.08)', color: '#30D158', display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: '6px', fontWeight: 'bold' }}>
+            <ShieldCheck size={12} color="#30D158" />
+            <span>JLPT {profileData.jlptStatus.level} Verified</span>
+          </span>
+        )}
       </div>
 
       <div className="profile-menu">

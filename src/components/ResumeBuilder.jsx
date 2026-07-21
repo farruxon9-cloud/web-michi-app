@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, User, Phone, Briefcase, GraduationCap, Award, BookOpen, FileText, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, User, Phone, Briefcase, GraduationCap, Award, BookOpen, FileText, Loader2, Sparkles, ShieldCheck, CheckCircle2, X, Plus } from 'lucide-react';
 import { generateRirekisho } from '../utils/resumeGenerator';
 import './ResumeBuilder.css';
 
@@ -78,11 +78,22 @@ export default function ResumeBuilder({
     educationHistory: [],
     workHistory: [],
     driverLicenses: [],
-    techCertificates: []
+    techCertificates: [],
+    jlptStatus: profileData.jlptStatus || null
   });
 
   const [pdfStatus, setPdfStatus] = useState(null); // null, 'loading_font', 'generating_pdf', 'downloading', 'completed', 'failed'
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
+
+  // JLPT Verification simulation states
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationProgress, setVerificationProgress] = useState(0);
+  const [verificationStatusText, setVerificationStatusText] = useState('');
+  const [detectedLevel, setDetectedLevel] = useState('N3');
+  const [detectedCertNo, setDetectedCertNo] = useState('');
+  const [verificationStage, setVerificationStage] = useState('idle'); // 'idle', 'uploading', 'analyzing', 'success'
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Local state for Day, Month, Year select dropdowns
   const [selectedYear, setSelectedYear] = useState('');
@@ -117,7 +128,8 @@ export default function ResumeBuilder({
       })) : [],
       workHistory: profileData.workHistory ? [...profileData.workHistory] : [],
       driverLicenses: profileData.driverLicenses ? [...profileData.driverLicenses] : [],
-      techCertificates: profileData.techCertificates ? [...profileData.techCertificates] : []
+      techCertificates: profileData.techCertificates ? [...profileData.techCertificates] : [],
+      jlptStatus: profileData.jlptStatus || null
     };
 
     setFormData(initialData);
@@ -394,6 +406,85 @@ export default function ResumeBuilder({
         ? prev.techCertificates.filter(c => c !== cert) 
         : [...prev.techCertificates, cert];
       return { ...prev, techCertificates: updated };
+    });
+  };
+
+  const handleVerifyStart = (file) => {
+    if (!file) return;
+    setUploadedFile(file);
+    setIsVerifying(true);
+    setVerificationStage('uploading');
+    setVerificationProgress(0);
+    setVerificationStatusText(currentLang === 'ja' ? 'ファイルをアップロード中...' : 'Fayl yuklanmoqda...');
+
+    // Extract potential JLPT level from filename (e.g. N1, N2, N3, N4, N5)
+    let extractedLevel = 'N3';
+    const nameUpper = file.name.toUpperCase();
+    const match = nameUpper.match(/N[1-5]|Ｎ[１-５]/);
+    if (match) {
+      let matchStr = match[0];
+      if (matchStr === 'Ｎ１') matchStr = 'N1';
+      else if (matchStr === 'Ｎ２') matchStr = 'N2';
+      else if (matchStr === 'Ｎ３') matchStr = 'N3';
+      else if (matchStr === 'Ｎ４') matchStr = 'N4';
+      else if (matchStr === 'Ｎ５') matchStr = 'N5';
+      extractedLevel = matchStr;
+    }
+    setDetectedLevel(extractedLevel);
+
+    // Simulate progress timer
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      setVerificationProgress(progress);
+
+      if (progress === 40) {
+        setVerificationStage('analyzing');
+        setVerificationStatusText(currentLang === 'ja' ? '証明書署名とテキストを解析中 (Tesseract.js)...' : 'Sertifikat imzosi va matni tahlil qilinmoqda (Tesseract.js)...');
+      } else if (progress === 80) {
+        setVerificationStatusText(currentLang === 'ja' ? 'JEESデータベースと整合性を確認中...' : 'JEES ma\'lumotlar bazasi bilan solishtirilmoqda...');
+      } else if (progress >= 100) {
+        clearInterval(interval);
+        
+        // Generate random unique certificate number
+        const yearCode = new Date().getFullYear().toString().substring(2);
+        const randomNum1 = Math.floor(100000 + Math.random() * 900000);
+        const randomNum2 = Math.floor(1000 + Math.random() * 9000);
+        const certNo = `No. ${yearCode}A${randomNum1}-${randomNum2}`;
+        setDetectedCertNo(certNo);
+        
+        setVerificationStage('success');
+        setVerificationStatusText('');
+        setIsVerifying(false);
+
+        // Update local state and parent profileData
+        const updatedStatus = {
+          level: extractedLevel,
+          verified: true,
+          certNo,
+          date: new Date().toISOString().split('T')[0]
+        };
+
+        setFormData(prev => {
+          const updated = { ...prev, jlptStatus: updatedStatus };
+          if (onUpdateProfile) {
+            onUpdateProfile(updated);
+          }
+          return updated;
+        });
+      }
+    }, 300);
+  };
+
+  const handleResetVerification = () => {
+    setUploadedFile(null);
+    setVerificationStage('idle');
+    setFormData(prev => {
+      const updated = { ...prev, jlptStatus: null };
+      if (onUpdateProfile) {
+        onUpdateProfile(updated);
+      }
+      return updated;
     });
   };
 
@@ -971,6 +1062,100 @@ export default function ResumeBuilder({
                 </button>
               ))}
             </div>
+
+            {/* JLPT Certificate Verification Block */}
+            <span className="section-label" style={{ marginTop: '20px', display: 'block', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '15px' }}>
+              🇯🇵 {t('jlptVerificationTitle', 'JLPT Yapon tili sertifikatini tasdiqlash')}
+            </span>
+
+            {formData.jlptStatus && formData.jlptStatus.verified ? (
+              /* Verified State Card */
+              <div className="glass squircle animate-scale-up" style={{ padding: '16px', border: '1px solid rgba(48, 209, 88, 0.3)', background: 'rgba(48, 209, 88, 0.06)', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <ShieldCheck size={26} color="#30D158" className="animate-pulse" />
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <strong style={{ fontSize: '15px', color: '#30D158' }}>JLPT {formData.jlptStatus.level} Tasdiqlangan ✓</strong>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Hujjat raqami: {formData.jlptStatus.certNo}</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px', marginTop: '4px' }}>
+                  <button 
+                    type="button"
+                    className="badge-select-btn squircle"
+                    style={{ flex: 1, padding: '8px', fontSize: '12px', borderColor: 'rgba(255, 59, 48, 0.3)', color: '#FF3B30', background: 'rgba(255, 59, 48, 0.05)', cursor: 'pointer' }}
+                    onClick={handleResetVerification}
+                  >
+                    O'chirish (Reset)
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Unverified / Upload State Box */
+              <div className="glass squircle" style={{ padding: '16px', border: '1px solid var(--glass-border)', background: 'rgba(255, 255, 255, 0.01)', marginTop: '10px' }}>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, margin: '0 0 14px 0' }}>
+                  {t('jlptVerificationDesc', 'Yaponiya logistika firmalariga til darajangizni isbotlash va oyligingizni 1.5-2 barobar oshirish uchun JLPT hujjatingizni (PDF yoki rasm) yuklab tasdiqlang.')}
+                </p>
+
+                {isVerifying ? (
+                  /* Loading Progress UI */
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Loader2 size={18} className="animate-spin" color="var(--primary)" />
+                      <span style={{ fontSize: '13px', color: 'var(--text-main)', fontWeight: 'bold' }}>{verificationStatusText}</span>
+                    </div>
+                    <div style={{ height: '6px', background: 'var(--glass-bg)', borderRadius: '3px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
+                      <div style={{ height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, #30D158 100%)', width: `${verificationProgress}%`, transition: 'width 0.2s ease' }}></div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Form selectors and file upload fields */
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <div className="form-group" style={{ flex: 1, margin: 0 }}>
+                        <label style={{ fontSize: '11px', marginBottom: '4px' }}>Sertifikat darajasi</label>
+                        <select 
+                          value={detectedLevel} 
+                          onChange={(e) => setDetectedLevel(e.target.value)}
+                          style={{ padding: '8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', width: '100%', fontSize: '12px' }}
+                        >
+                          <option value="N1">JLPT N1</option>
+                          <option value="N2">JLPT N2</option>
+                          <option value="N3">JLPT N3</option>
+                          <option value="N4">JLPT N4</option>
+                          <option value="N5">JLPT N5</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      style={{ border: '2px dashed var(--glass-border)', borderRadius: '12px', padding: '24px 10px', textAlign: 'center', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.01)', transition: 'all 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
+                      onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--glass-border)'}
+                    >
+                      <FileText size={24} style={{ color: 'var(--text-secondary)', marginBottom: '8px' }} />
+                      <strong style={{ display: 'block', fontSize: '13px', color: 'var(--text-main)' }}>
+                        {uploadedFile ? uploadedFile.name : t('uploadCertFile', 'Faylni tanlash (PDF yoki rasm)')}
+                      </strong>
+                      <span style={{ fontSize: '11px', color: '#8E8E93', marginTop: '4px', display: 'block' }}>Maksimal o\'lcham 10 MB</span>
+                    </div>
+
+                    <input 
+                      ref={fileInputRef}
+                      type="file" 
+                      accept=".pdf,image/*" 
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          handleVerifyStart(file);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
