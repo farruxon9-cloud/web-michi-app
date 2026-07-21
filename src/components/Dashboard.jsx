@@ -333,10 +333,10 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                 特定技能 (SSW)
               </span>
               <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700' }}>
-                🏠 Uy-joy bor
+                {t('bentoHousingAvailable', '🏠 Uy-joy bor')}
               </span>
               <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700' }}>
-                最小 N4
+                {t('bentoMinN4', 'Minimal N4')}
               </span>
             </div>
           </div>
