@@ -776,7 +776,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                     type="text" 
                     value={newJob.nearestStation} 
                     onChange={e => setNewJob({...newJob, nearestStation: e.target.value})} 
-                    placeholder="Masalan: Shinjuku bekati, Omiya bekati" 
+                    placeholder={t('nearestStationPlaceholder', "Masalan: Shinjuku bekati, Omiya bekati")} 
                     className="auth-input"
                     maxLength={50}
                   />
@@ -791,7 +791,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                       type="number" 
                       value={newJob.walkTime} 
                       onChange={e => setNewJob({...newJob, walkTime: e.target.value.replace(/[^0-9]/g, '')})} 
-                      placeholder="Masalan: 8" 
+                      placeholder={t('walkTimePlaceholder', "Masalan: 8")} 
                       className="auth-input"
                       style={{ flex: 1 }}
                       min={0}
