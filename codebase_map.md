@@ -93,7 +93,7 @@
   - *Bog'liqliklar mavjud emas*
 
 ### 📦 [Dashboard.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Dashboard.jsx)
-* **Fayl yo'li:** `src/components/Dashboard.jsx` (606 qator, 25876 bayt)
+* **Fayl yo'li:** `src/components/Dashboard.jsx` (605 qator, 25874 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `setActiveTab`
   - `profileData`
@@ -505,7 +505,7 @@
 * **Importlari:** `react`, `lucide-react`, `react-i18next`, `./components/Splash`, `./components/LanguageSelect`, `./components/RoleSelect`, `./components/BottomNav`, `./components/Dashboard`, `./components/DriverFeed`, `./components/JobDetail`, `./components/DrivingAcademy`, `./components/ServiceComingSoon`, `./components/Profile`, `./components/AdminDashboard`, `./components/CompanyHome`, `./components/VoiceAssistant`, `./components/RobotAvatar`, `./components/JDMNavigation`, `./components/ErrorBoundary`
 
 ### 📄 [i18n.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/i18n.js)
-* **Yo'li:** `src/i18n.js` (3793 qator)
+* **Yo'li:** `src/i18n.js` (3823 qator)
 * **Importlari:** `i18next`, `react-i18next`
 
 ### 📄 [index.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/index.css)

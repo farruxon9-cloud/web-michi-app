@@ -563,13 +563,12 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
           <div style={{ flex: 1, paddingRight: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span className="premium-live-dot" style={{ background: '#10b981', boxShadow: '0 0 0 4px rgba(16, 185, 129, 0.2)' }}></span>
               <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1.5px', color: '#10b981', textTransform: 'uppercase' }}>
-                🇯🇵 JAPAN DRIVING MAP
+                {t('bentoJDMBadge1', '🇯🇵 Yaponiya Xaritasi')}
               </span>
               <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.5)' }}></span>
               <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                SOTA Routing
+                {t('bentoJDMBadge2', 'Aqlli Navigatsiya')}
               </span>
             </div>
             
@@ -583,13 +582,13 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
 
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: '700' }}>
-                🚚 Truck Presets
+                {t('bentoJDMSubtag1', '🚚 Mashina sozlamalari')}
               </span>
               <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: '700' }}>
-                🌉 Height Limits (高さ制限)
+                {t('bentoJDMSubtag2', '🌉 Balandlik taqiqi')}
               </span>
               <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: '700' }}>
-                ⚖️ Weight Caps
+                {t('bentoJDMSubtag3', '⚖️ Vazn cheklovi')}
               </span>
             </div>
           </div>
