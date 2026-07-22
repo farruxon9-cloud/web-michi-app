@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "test": "vitest run"
+    "test": "vitest run",
+    "validate": "node scripts/generate_codebase_map.js && npm run lint && npm run test && npm run build"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",
