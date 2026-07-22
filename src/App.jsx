@@ -16,6 +16,7 @@ import AdminDashboard from './components/AdminDashboard';
 import CompanyHome from './components/CompanyHome';
 import VoiceAssistant from './components/VoiceAssistant';
 import RobotAvatar from './components/RobotAvatar';
+import JDMNavigation from './components/JDMNavigation';
 import ErrorBoundary from './components/ErrorBoundary';
 
 const TRACKS = [
@@ -139,6 +140,7 @@ function App() {
   const [languageSelected, setLanguageSelected] = useState(false);
   const [userRole, setUserRole] = useState(null); // Temporarily disable auto-login
   const [activeTab, setActiveTab] = useState('home');
+  const [showJDMNavigation, setShowJDMNavigation] = useState(false);
   const [isVoiceStandby, setIsVoiceStandby] = useState(() => {
     const saved = localStorage.getItem('michi_voice_standby');
     return saved === 'true';
@@ -852,6 +854,7 @@ function App() {
             setProfileActivePageSource={setProfileActivePageSource}
             userRole={userRole}
             onNavigateToInternational={handleNavigateToInternationalJobs}
+            onNavigateToJDM={() => setShowJDMNavigation(true)}
           />
         );
       case 'jobs':
@@ -1049,6 +1052,12 @@ function App() {
               setActiveTab('profile');
             }}
           />
+        </ChunkErrorBoundary>
+      )}
+
+      {showJDMNavigation && (
+        <ChunkErrorBoundary>
+          <JDMNavigation onBack={() => setShowJDMNavigation(false)} />
         </ChunkErrorBoundary>
       )}
 

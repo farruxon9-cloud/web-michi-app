@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck, Globe, Compass } from 'lucide-react';
+import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck, Globe, Compass, Navigation } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import './Dashboard.css';
 
@@ -11,7 +11,7 @@ const formatTime = (secs) => {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
 
-export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVoiceStandby, isVoiceActive, onVoiceActivate, onVoiceToggle, setProfileActivePage, setProfileActivePageSource, userRole, onNavigateToInternational }) {
+export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVoiceStandby, isVoiceActive, onVoiceActivate, onVoiceToggle, setProfileActivePage, setProfileActivePageSource, userRole, onNavigateToInternational, onNavigateToJDM }) {
   const { t, i18n } = useTranslation();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -547,8 +547,58 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
           </div>
         </div>
       )}
+      {/* 🗺️ Smart Truck JDM Navigation Bento Card */}
+      <div 
+        className="bento-action-card bento-jdm-card squircle" 
+        onClick={() => { triggerSound(); onNavigateToJDM(); }}
+        style={{ 
+          padding: '20px 24px', 
+          cursor: 'pointer', 
+          marginTop: '16px',
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.05) 100%)',
+          border: '1px solid rgba(16, 185, 129, 0.25)',
+          boxShadow: '0 8px 32px rgba(16, 185, 129, 0.05)'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
+          <div style={{ flex: 1, paddingRight: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span className="premium-live-dot" style={{ background: '#10b981', boxShadow: '0 0 0 4px rgba(16, 185, 129, 0.2)' }}></span>
+              <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1.5px', color: '#10b981', textTransform: 'uppercase' }}>
+                🇯🇵 JAPAN DRIVING MAP
+              </span>
+              <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.5)' }}></span>
+              <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                SOTA Routing
+              </span>
+            </div>
+            
+            <h3 style={{ fontSize: '20px', fontWeight: '900', margin: '0 0 6px 0', color: 'var(--text-main)', letterSpacing: '-0.03em', lineHeight: '1.2' }}>
+              {t('bentoJDMTitle', 'Aqlli Yuk Mashinalari Navigatsiyasi')}
+            </h3>
+            
+            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0 0 12px 0', opacity: 0.85, lineHeight: '1.4' }}>
+              {t('bentoJDMSub', 'Yaponiyadagi transport o\'lchamlari va ko\'prik cheklovlari xaritasi')}
+            </p>
 
-
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: '700' }}>
+                🚚 Truck Presets
+              </span>
+              <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: '700' }}>
+                🌉 Height Limits (高さ制限)
+              </span>
+              <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: '700' }}>
+                ⚖️ Weight Caps
+              </span>
+            </div>
+          </div>
+          
+          <div className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.3)' }}>
+            <Navigation size={24} color="#FFF" />
+          </div>
+        </div>
+      </div>
 
     </div>
   );

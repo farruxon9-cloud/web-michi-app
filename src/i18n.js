@@ -4,6 +4,8 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   uz: {
     translation: {
+      bentoJDMTitle: "Aqlli Yuk Mashinalari Navigatsiyasi",
+      bentoJDMSub: "Yaponiyadagi transport o'lchamlari va ko'prik cheklovlari xaritasi",
       advancedFilters: "Kengaytirilgan filtrlar",
       filterLicenses: "Haydovchilik guvohnomasi",
       filterJapanese: "Yapon tili darajasi",
@@ -598,6 +600,8 @@ const resources = {
   },
   ja: {
     translation: {
+      bentoJDMTitle: "JDMスマートトラックナビ",
+      bentoJDMSub: "高架下・車幅・重量制限の回避ルート検索",
       advancedFilters: "詳細フィルター",
       filterLicenses: "運転免許要件",
       filterJapanese: "日本語レベル",
@@ -1292,6 +1296,8 @@ const resources = {
   },
   en: {
     translation: {
+      bentoJDMTitle: "Smart Truck JDM Navigation",
+      bentoJDMSub: "Bridge height, width, and weight limit routing in Japan",
       advancedFilters: "Advanced Filters",
       filterLicenses: "Driver's License Requirement",
       filterJapanese: "Japanese Language Level",
@@ -1868,6 +1874,8 @@ const resources = {
   },
   vi: {
     translation: {
+      bentoJDMTitle: "Định vị xe tải thông minh JDM",
+      bentoJDMSub: "Định tuyến giới hạn chiều cao, chiều rộng và trọng lượng cầu ở Nhật Bản",
       navHome: "Trang chủ",
       postalCodeLabel: "Mã bưu điện",
       prefectureLabel: "Tỉnh/Thành phố",
@@ -2343,6 +2351,8 @@ const resources = {
   },
   zh: {
     translation: {
+      bentoJDMTitle: "JDM 智能货车导航",
+      bentoJDMSub: "日本桥梁高度、宽度与重量限制路线规避",
       navHome: "首页",
       postalCodeLabel: "邮政编码",
       prefectureLabel: "都道府县",
@@ -2805,6 +2815,8 @@ const resources = {
   },
   ne: {
     translation: {
+      bentoJDMTitle: "स्मार्ट ट्रक JDM नेभिगेसन",
+      bentoJDMSub: "जापानमा पुलको उचाइ, चौडाइ र वजन सीमा राउटिङ",
       navHome: "गृह",
       postalCodeLabel: "पोस्टल कोड",
       prefectureLabel: "प्रांत",

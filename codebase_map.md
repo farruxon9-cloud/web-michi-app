@@ -6,8 +6,8 @@
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 47 ta
-* **Komponentlar soni:** 36 ta
+* **Jami skanerlangan fayllar:** 50 ta
+* **Komponentlar soni:** 39 ta
 * **Yordamchi funksiyalar (utils):** 6 ta
 
 ---
@@ -93,7 +93,7 @@
   - *Bog'liqliklar mavjud emas*
 
 ### 📦 [Dashboard.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Dashboard.jsx)
-* **Fayl yo'li:** `src/components/Dashboard.jsx` (556 qator, 22566 bayt)
+* **Fayl yo'li:** `src/components/Dashboard.jsx` (606 qator, 25876 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `setActiveTab`
   - `profileData`
@@ -106,6 +106,7 @@
   - `setProfileActivePageSource`
   - `userRole`
   - `onNavigateToInternational`
+  - `onNavigateToJDM`
 * **Import qilgan bog'liqliklari:**
   - `react`
   - `react-i18next`
@@ -214,6 +215,29 @@
 * **Import qilgan bog'liqliklari:**
   - `react`
   - `lucide-react`
+
+### 📦 [JDMNavigation.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.css)
+* **Fayl yo'li:** `src/components/JDMNavigation.css` (981 qator, 19640 bayt)
+* **Import qilgan bog'liqliklari:**
+  - *Bog'liqliklar mavjud emas*
+
+### 📦 [JDMNavigation.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1237 qator, 62907 bayt)
+* **Qabul qiladigan parametrlari (Props):**
+  - `onBack`
+* **Import qilgan bog'liqliklari:**
+  - `react`
+  - `react-i18next`
+  - `lucide-react`
+  - `../utils/haptics`
+
+### 📦 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
+* **Fayl yo'li:** `src/components/JDMNavigation.test.jsx` (50 qator, 1521 bayt)
+* **Import qilgan bog'liqliklari:**
+  - `vitest`
+  - `react`
+  - `react-dom/server`
+  - `./JDMNavigation`
 
 ### 📦 [JobDetail.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JobDetail.css)
 * **Fayl yo'li:** `src/components/JobDetail.css` (798 qator, 15980 bayt)
@@ -477,11 +501,11 @@
 * **Importlari:** *Yo'q*
 
 ### 📄 [App.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/App.jsx)
-* **Yo'li:** `src/App.jsx` (1239 qator)
-* **Importlari:** `react`, `lucide-react`, `react-i18next`, `./components/Splash`, `./components/LanguageSelect`, `./components/RoleSelect`, `./components/BottomNav`, `./components/Dashboard`, `./components/DriverFeed`, `./components/JobDetail`, `./components/DrivingAcademy`, `./components/ServiceComingSoon`, `./components/Profile`, `./components/AdminDashboard`, `./components/CompanyHome`, `./components/VoiceAssistant`, `./components/RobotAvatar`, `./components/ErrorBoundary`
+* **Yo'li:** `src/App.jsx` (1248 qator)
+* **Importlari:** `react`, `lucide-react`, `react-i18next`, `./components/Splash`, `./components/LanguageSelect`, `./components/RoleSelect`, `./components/BottomNav`, `./components/Dashboard`, `./components/DriverFeed`, `./components/JobDetail`, `./components/DrivingAcademy`, `./components/ServiceComingSoon`, `./components/Profile`, `./components/AdminDashboard`, `./components/CompanyHome`, `./components/VoiceAssistant`, `./components/RobotAvatar`, `./components/JDMNavigation`, `./components/ErrorBoundary`
 
 ### 📄 [i18n.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/i18n.js)
-* **Yo'li:** `src/i18n.js` (3781 qator)
+* **Yo'li:** `src/i18n.js` (3793 qator)
 * **Importlari:** `i18next`, `react-i18next`
 
 ### 📄 [index.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/index.css)
