@@ -6,21 +6,17 @@ import LanguageSelect from './components/LanguageSelect';
 import RoleSelect from './components/RoleSelect';
 import BottomNav from './components/BottomNav';
 import './App.css';
-import { MOCK_JOBS } from './components/DriverFeed';
-import { MOCK_SCHOOLS } from './components/DrivingAcademy';
+import Dashboard from './components/Dashboard';
+import DriverFeed, { MOCK_JOBS } from './components/DriverFeed';
+import JobDetail from './components/JobDetail';
+import DrivingAcademy, { MOCK_SCHOOLS } from './components/DrivingAcademy';
+import ServiceComingSoon from './components/ServiceComingSoon';
+import Profile from './components/Profile';
+import AdminDashboard from './components/AdminDashboard';
+import CompanyHome from './components/CompanyHome';
 import VoiceAssistant from './components/VoiceAssistant';
 import RobotAvatar from './components/RobotAvatar';
 import ErrorBoundary from './components/ErrorBoundary';
-
-// Lazy loading heavy components for faster initial load
-const Dashboard = lazy(() => import('./components/Dashboard'));
-const DriverFeed = lazy(() => import('./components/DriverFeed'));
-const JobDetail = lazy(() => import('./components/JobDetail'));
-const DrivingAcademy = lazy(() => import('./components/DrivingAcademy'));
-const ServiceComingSoon = lazy(() => import('./components/ServiceComingSoon'));
-const Profile = lazy(() => import('./components/Profile'));
-const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
-const CompanyHome = lazy(() => import('./components/CompanyHome'));
 
 const TRACKS = [
   { id: 1, title: 'Tokyo Rain (東京の雨)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/chill-lofi-background-music-331434.mp3' },
@@ -1030,13 +1026,13 @@ function App() {
       </header>
 
       <main className="main-content" style={{ zIndex: 10 }}>
-        <ChunkErrorBoundary><Suspense fallback={<div style={{display:'flex', justifyContent:'center', padding:40, color:'#8E8E93'}}>{t('loading', 'Yuklanmoqda...')}</div>}>
+        <ChunkErrorBoundary>
           {renderTabContent()}
-        </Suspense></ChunkErrorBoundary>
+        </ChunkErrorBoundary>
       </main>
 
       {selectedJob && (
-        <ChunkErrorBoundary><Suspense fallback={<div style={{display:'flex', justifyContent:'center', padding:40, color:'#8E8E93'}}>{t('loading', 'Yuklanmoqda...')}</div>}>
+        <ChunkErrorBoundary>
           <JobDetail 
             job={selectedJob} 
             onBack={() => setSelectedJob(null)} 
@@ -1053,7 +1049,7 @@ function App() {
               setActiveTab('profile');
             }}
           />
-        </Suspense></ChunkErrorBoundary>
+        </ChunkErrorBoundary>
       )}
 
       {!(activeTab === 'profile' && profileActivePage === 'resume_builder') && (
