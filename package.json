@@ -13,7 +13,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "test": "vitest run",
-    "validate": "node scripts/generate_codebase_map.js && npm run lint && npm run test && npm run build"
+    "validate": "node scripts/generate_codebase_map.js && npm run lint && npm run test && node tests/e2e.js && npm run build"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",
