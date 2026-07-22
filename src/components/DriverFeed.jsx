@@ -325,7 +325,7 @@ export default function DriverFeed({
       {/* ====== E'LONLAR RO'YXATI (GOO-NET USLUBIDA) ====== */}
       <div className="jobs-list hide-scrollbar">
         {filteredJobs.slice(0, visibleCount).map(job => {
-          const showVerified = verifiedCompanies.includes(job.company) || isContractActive;
+          const showVerified = (verifiedCompanies || []).includes(job.company) || isContractActive;
           return (
             <div key={job.id} className={`job-card-hz glass ${job.isInternational ? 'job-card-international' : ''}`} onClick={() => onJobClick({...job, verified: showVerified})}>
               <div className="job-card-main-layout">

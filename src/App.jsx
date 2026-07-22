@@ -981,7 +981,7 @@ function App() {
           />
         );
       default:
-        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} verifiedCompanies={verifiedCompanies} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
     }
   };
 
