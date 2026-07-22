@@ -32,7 +32,7 @@
  * ==========================================================================
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, Banknote, Edit3 } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
@@ -187,6 +187,19 @@ export default function DrivingAcademy({
 }) {
   const { t } = useTranslation();
   
+  const getMaskedAddress = (fullAddress) => {
+    if (!fullAddress) return '';
+    const parts = fullAddress.split(',');
+    if (parts.length > 1) {
+      return parts[0] + (parts[1] ? ', ' + parts[1] : '') + ` (${t('addressMaskedNotice')})`;
+    }
+    const words = fullAddress.trim().split(/\s+/);
+    if (words.length > 2) {
+      return words.slice(0, 3).join(' ') + ` (${t('addressMaskedNotice')})`;
+    }
+    return fullAddress + ` (${t('addressMaskedNotice')})`;
+  };
+  
   /**
    * showShoukaiInput — Shoukai input maydoni ko'rinishi holati.
    * true bo'lganda do'st ismini kiritish maydoni ochiladi.
@@ -198,6 +211,13 @@ export default function DrivingAcademy({
    * Input maydoni to'ldirilgandan keyin onApplySchool ga uzatiladi.
    */
   const [referrerName, setReferrerName] = useState('');
+
+  const [visibleCount, setVisibleCount] = useState(10);
+
+  // Reset pagination when search query changes
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [searchQuery]);
 
 
   // Filtrlash: qidiruv bo'yicha
@@ -342,7 +362,7 @@ export default function DrivingAcademy({
               </div>
               <div className="contact-row">
                 <MapPin size={16} color="#AF52DE" />
-                <span>{t('fullAddress')}: {school.fullAddress}</span>
+                <span>{t('fullAddress')}: {getMaskedAddress(school.fullAddress)}</span>
               </div>
             </div>
 
@@ -530,7 +550,7 @@ export default function DrivingAcademy({
 
       {/* ------- MAKTABLAR RO'YXATI ------- */}
       <div className="jobs-list hide-scrollbar">
-        {filteredSchools.map(school => {
+        {filteredSchools.slice(0, visibleCount).map(school => {
           /** showVerified — Maktab tasdiqlangan YOKI shartnoma faol bo'lsa badge ko'rsatiladi */
           const showVerified = school.verified || isContractActive;
           return (
@@ -654,6 +674,41 @@ export default function DrivingAcademy({
             </div>
           );
         })}
+
+        {visibleCount < filteredSchools.length && (
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0 8px 0', width: '100%' }}>
+            <button 
+              onClick={() => setVisibleCount(prev => prev + 10)}
+              className="glass squircle animate-scale-up"
+              style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--glass-border)',
+                color: 'var(--text-main)',
+                padding: '12px 24px',
+                fontSize: '13.5px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                width: '100%',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.borderColor = 'var(--primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                e.currentTarget.style.borderColor = 'var(--glass-border)';
+              }}
+            >
+              <span>{t('loadMore', 'Ko\'proq yuklash')}</span>
+            </button>
+          </div>
+        )}
         {filteredSchools.length === 0 && (
           <div className="empty-feed">
             <Search size={40} color="#C7C7CC" />

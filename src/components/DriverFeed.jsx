@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone, Edit3, CheckCircle2, SlidersHorizontal, X } from 'lucide-react';
@@ -23,6 +23,8 @@ export const MOCK_JOBS = [
     verified: true,
     location: "Tokyo, Koto-ku",
     fullAddress: "〒135-0063 Tokyo, Koto-ku, Ariake 3-1-1",
+    nearestStation: "Kokusai-tenjijo Station",
+    walkTime: 8,
     hours: "08:00 - 17:00",
     dayOff: "shanba_yakshanba",
     bonus: "bonus_2",
@@ -32,6 +34,8 @@ export const MOCK_JOBS = [
     license: "lic_futsu",
     description: "Koto-ku bo'ylab kichik posilkalarni mijozlarga yetkazib berish. Kuniga o'rtacha 80-100 ta posilka. Yo'nalishlar aniq belgilangan.",
     logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    phone: "03-1234-5678",
+    phoneMode: "public",
     isActive: true
   },
   {
@@ -46,15 +50,20 @@ export const MOCK_JOBS = [
     verified: true,
     location: "Kanagawa, Yokohama",
     fullAddress: "〒231-0023 Kanagawa, Yokohama, Naka-ku, Yamashitacho 12",
+    nearestStation: "Motomachi-Chukagai Station",
+    walkTime: 12,
     hours: "shift",
     dayOff: "shift_rotation",
     bonus: "bonus_3",
     insurance: "insurance_full",
-    foreigners: "foreigners_visa",
+    foreigners: "foreigners_visa", // visa support (implies N4)
     housing: "housing_dorm",
     license: "lic_kenin",
     description: "Yokohama portidan Kanto hududi bo'ylab dengiz konteynerlarini tashish. Tirkama (Ken'in) guvohnomasi majburiy.",
     logo: "https://ui-avatars.com/api/?name=Nippon+Express&background=E63946&color=fff&size=100",
+    phone: "045-222-3333",
+    phoneMode: "interview_only",
+    isInternational: true,
     isActive: true
   },
   {
@@ -69,15 +78,19 @@ export const MOCK_JOBS = [
     verified: true,
     location: "Saitama, Omiya",
     fullAddress: "〒330-0854 Saitama, Omiya-ku, Sakuragicho 2-1",
+    nearestStation: "Omiya Station",
+    walkTime: 5,
     hours: "20:00 - 05:00",
     dayOff: "shanba_yakshanba",
     bonus: "bonus_2",
     insurance: "insurance_basic",
-    foreigners: "foreigners_ok",
+    foreigners: "foreigners_visa_renew",
     housing: "housing_half",
     license: "lic_oogata",
     description: "Kanto va Kansai o'rtasida yirik omborlar aro logistika tashish. Katta yuk mashinasi (Oogata) guvohnomasi majburiy.",
     logo: "https://ui-avatars.com/api/?name=Yamato+Transport&background=2A9D8F&color=fff&size=100",
+    phone: "048-444-5555",
+    phoneMode: "public",
     isActive: true
   },
   {
@@ -92,6 +105,8 @@ export const MOCK_JOBS = [
     verified: false,
     location: "Chiba, Matsudo",
     fullAddress: "〒270-2253 Chiba, Matsudo, Tokiwadaira 3-2-1",
+    nearestStation: "Tokiwadaira Station",
+    walkTime: 15,
     hours: "07:00 - 16:00",
     dayOff: "shanba_yakshanba",
     bonus: "bonus_none",
@@ -101,6 +116,8 @@ export const MOCK_JOBS = [
     license: "lic_oogata_tokushu",
     description: "Qurilish maydonchalarida maxsus texnika (Ekskavator) boshqarish. Sharyo-kei litsenziyasi bo'lishi shart.",
     logo: "https://ui-avatars.com/api/?name=Seino+Transport&background=E9C46A&color=333&size=100",
+    phone: "047-666-7777",
+    phoneMode: "interview_only",
     isActive: true
   },
   {
@@ -115,15 +132,20 @@ export const MOCK_JOBS = [
     verified: true,
     location: "Aichi, Nagoya",
     fullAddress: "〒450-0002 Aichi, Nagoya, Nakamura-ku, Meieki 1-1-4",
+    nearestStation: "Nagoya Station",
+    walkTime: 10,
     hours: "09:00 - 14:00",
     dayOff: "flexible",
     bonus: "bonus_none",
     insurance: "insurance_partial",
-    foreigners: "foreigners_nolang",
+    foreigners: "foreigners_visa",
     housing: "housing_none",
     license: "tech_forklift",
     description: "Omborda yuklarni tushirish va joylash. Forklift guvohnomasi talab etiladi.",
     logo: "https://ui-avatars.com/api/?name=Fukuyama+Trans&background=264653&color=fff&size=100",
+    phone: "052-888-9999",
+    phoneMode: "public",
+    isInternational: true,
     isActive: true
   }
 ];
@@ -140,10 +162,23 @@ export default function DriverFeed({
   selectedLangLevel = 'all', setSelectedLangLevel,
   selectedBenefits = [], setSelectedBenefits,
   minSalary = 0, setMinSalary,
-  selectedPrefecture = 'all', setSelectedPrefecture
+  selectedPrefecture = 'all', setSelectedPrefecture,
+  selectedCity = 'all', setSelectedCity,
+  stationQuery = '', setStationQuery,
+  onlyNearStation = false, setOnlyNearStation
 }) {
   const { t } = useTranslation();
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(10);
+
+  // Reset pagination when any filter changes
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [
+    searchQuery, activeSegment, selectedLicenses,
+    selectedLangLevel, selectedBenefits, minSalary,
+    selectedPrefecture, selectedCity, stationQuery, onlyNearStation
+  ]);
 
   const getSalaryNumber = (salaryStr) => {
     if (!salaryStr) return 0;
@@ -151,7 +186,14 @@ export default function DriverFeed({
     return isNaN(num) ? 0 : num;
   };
 
-  const hasActiveFilters = selectedLicenses.length > 0 || selectedLangLevel !== 'all' || selectedBenefits.length > 0 || minSalary > 0 || selectedPrefecture !== 'all';
+  const hasActiveFilters = selectedLicenses.length > 0 
+    || selectedLangLevel !== 'all' 
+    || selectedBenefits.length > 0 
+    || minSalary > 0 
+    || selectedPrefecture !== 'all'
+    || selectedCity !== 'all'
+    || stationQuery !== ''
+    || onlyNearStation === true;
 
   const handleResetFilters = () => {
     setSelectedLicenses([]);
@@ -159,52 +201,83 @@ export default function DriverFeed({
     setSelectedBenefits([]);
     setMinSalary(0);
     setSelectedPrefecture('all');
+    setSelectedCity('all');
+    setStationQuery('');
+    setOnlyNearStation(false);
   };
 
   // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
-  const filteredJobs = jobs.filter(job => {
-    const matchSegment = activeSegment === 'all' 
+  // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
+  const filteredJobs = (jobs || []).filter(job => {
+    if (!job) return false;
+
+    const matchSegment = !activeSegment || activeSegment === 'all' 
+      || (activeSegment === 'international' && job.isInternational === true)
       || (activeSegment === 'permanent' && job.type === 'fulltime')
       || (activeSegment === 'hourly' && (job.type === 'parttime' || job.type === 'contract'));
       
-    const matchSearch = !searchQuery || 
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const sq = (searchQuery || '').toLowerCase();
+    const matchSearch = !sq || 
+      (job.title && job.title.toLowerCase().includes(sq)) ||
+      (job.company && job.company.toLowerCase().includes(sq)) ||
+      (job.location && job.location.toLowerCase().includes(sq)) ||
+      (job.description && job.description.toLowerCase().includes(sq));
 
     // 1. License filter
-    const matchLicense = selectedLicenses.length === 0 || selectedLicenses.includes(job.license);
+    const matchLicense = !selectedLicenses || selectedLicenses.length === 0 || selectedLicenses.includes(job.license);
 
     // 2. Japanese level filter (visible if user level >= job required level)
-    const userVal = { 'all': 4, 'none': 0, 'n5_n4': 1, 'n3': 2, 'n2_n1': 3 }[selectedLangLevel];
+    const langMap = { 'all': 4, 'none': 0, 'n5_n4': 1, 'n3': 2, 'n2_n1': 3, 'N5': 1, 'N4': 1, 'N3': 2, 'N2': 3, 'N1': 3 };
+    const userVal = langMap[selectedLangLevel] ?? 4;
     const jobVal = {
-      'foreigners_nolang': 0,
-      'foreigners_ok': 0,
+      'foreigners_n4': 1,
+      'foreigners_nolang': 1,
+      'foreigners_ok': 1,
       'foreigners_visa': 1,
+      'foreigners_visa_renew': 1,
       'foreigners_n3': 2,
       'foreigners_n2': 3
     }[job.foreigners] || 0;
     const matchLang = userVal >= jobVal;
 
     // 3. Benefits filter (all selected benefits must match)
-    const matchBenefits = selectedBenefits.every(benefit => {
+    const matchBenefits = !selectedBenefits || selectedBenefits.length === 0 || selectedBenefits.every(benefit => {
       if (benefit === 'housing') return job.housing && job.housing !== 'housing_none';
       if (benefit === 'foreigner') return job.foreigners && job.foreigners !== 'foreigners_none';
       if (benefit === 'bonus') return job.bonus && job.bonus !== 'bonus_none';
       if (benefit === 'insurance') return job.insurance && job.insurance.startsWith('insurance_');
+      if (benefit === 'international') return job.isInternational === true;
       return true;
     });
 
     // 4. Salary filter
-    const matchSalary = minSalary === 0 || getSalaryNumber(job.salary) >= minSalary;
+    const matchSalary = !minSalary || minSalary === 0 || getSalaryNumber(job.salary) >= minSalary;
 
-    // 5. Prefecture location filter
-    const matchPrefecture = selectedPrefecture === 'all' || 
-      (job.location && job.location.toLowerCase().includes(selectedPrefecture.toLowerCase())) ||
-      (job.fullAddress && job.fullAddress.toLowerCase().includes(selectedPrefecture.toLowerCase()));
+    // 5. Prefecture and City location filter
+    const prefSq = (selectedPrefecture && selectedPrefecture !== 'all') ? selectedPrefecture.toLowerCase() : '';
+    const matchPrefecture = !prefSq || 
+      (job.location && job.location.toLowerCase().includes(prefSq)) ||
+      (job.fullAddress && job.fullAddress.toLowerCase().includes(prefSq)) ||
+      (job.prefecture && job.prefecture.toLowerCase().includes(prefSq));
 
-    return matchSegment && matchSearch && matchLicense && matchLang && matchBenefits && matchSalary && matchPrefecture;
+    const citySq = (selectedCity && selectedCity !== 'all') ? selectedCity.toLowerCase() : '';
+    const matchCity = !citySq || 
+      (job.location && job.location.toLowerCase().includes(citySq)) ||
+      (job.fullAddress && job.fullAddress.toLowerCase().includes(citySq)) ||
+      (job.detailAddress && job.detailAddress.toLowerCase().includes(citySq));
+
+    // 6. Station query filter
+    const stSq = (stationQuery || '').toLowerCase();
+    const matchStation = !stSq || 
+      (job.nearestStation && job.nearestStation.toLowerCase().includes(stSq)) ||
+      (job.fullAddress && job.fullAddress.toLowerCase().includes(stSq));
+
+    // 7. Near station walk time filter (<10 min walk)
+    const matchWalkTime = !onlyNearStation || 
+      (job.walkTime !== undefined && job.walkTime !== '' && Number(job.walkTime) <= 10);
+
+    return matchSegment && matchSearch && matchLicense && matchLang && 
+      matchBenefits && matchSalary && matchPrefecture && matchCity && matchStation && matchWalkTime;
   });
 
   return (
@@ -239,6 +312,12 @@ export default function DriverFeed({
             {t('allJobs', "Barchasi")}
           </div>
           <div 
+            className={`segment ${activeSegment === 'international' ? 'active' : ''}`}
+            onClick={() => setActiveSegment('international')}
+          >
+            {t('tokuteiGinouSegment', 'Tokutei Ginou')}
+          </div>
+          <div 
             className={`segment ${activeSegment === 'permanent' ? 'active' : ''}`}
             onClick={() => setActiveSegment('permanent')}
           >
@@ -255,10 +334,10 @@ export default function DriverFeed({
 
       {/* ====== E'LONLAR RO'YXATI (GOO-NET USLUBIDA) ====== */}
       <div className="jobs-list hide-scrollbar">
-        {filteredJobs.map(job => {
-          const showVerified = verifiedCompanies.includes(job.company) || isContractActive;
+        {filteredJobs.slice(0, visibleCount).map(job => {
+          const showVerified = (verifiedCompanies || []).includes(job.company) || isContractActive;
           return (
-            <div key={job.id} className="job-card-hz glass" onClick={() => onJobClick({...job, verified: showVerified})}>
+            <div key={job.id} className={`job-card-hz glass ${job.isInternational ? 'job-card-international' : ''}`} onClick={() => onJobClick({...job, verified: showVerified})}>
               <div className="job-card-main-layout">
                 {/* ---- Chap qism: E'lon rasmi ---- */}
                 <div className="job-card-img">
@@ -275,6 +354,22 @@ export default function DriverFeed({
 
                 {/* ---- O'ng qism: Ma'lumotlar ---- */}
                 <div className="job-card-body">
+                  {job.isInternational ? (
+                    <div className="international-card-tag">
+                      <Globe size={10} style={{ marginRight: '2px' }} />
+                      <span>{t('foreigners_visa', 'Tokutei Ginou • Xalqaro Ish')}</span>
+                    </div>
+                  ) : job.foreigners === 'foreigners_visa_renew' ? (
+                    <div className="local-visa-renew-tag">
+                      <span className="briefcase-icon">💼</span>
+                      <span>{t('foreigners_visa_renew', 'Vizani Uzaytirish Ko\'magi')}</span>
+                    </div>
+                  ) : job.foreigners === 'foreigners_ok' ? (
+                    <div className="local-foreigner-ok-tag">
+                      <span className="users-icon">👥</span>
+                      <span>{t('foreigners_ok', 'Chet elliklar ochiq (Vizasiz)')}</span>
+                    </div>
+                  ) : null}
                   {/* Kompaniya nomi va tasdiqlash belgisi */}
                   <div className="job-card-company">
                     <img src={job.logo} alt={job.company} className="job-card-company-logo" />
@@ -407,6 +502,41 @@ export default function DriverFeed({
             </div>
           );
         })}
+
+        {visibleCount < filteredJobs.length && (
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0 8px 0', width: '100%' }}>
+            <button 
+              onClick={() => setVisibleCount(prev => prev + 10)}
+              className="glass squircle animate-scale-up"
+              style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--glass-border)',
+                color: 'var(--text-main)',
+                padding: '12px 24px',
+                fontSize: '13.5px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                width: '100%',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.borderColor = 'var(--primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                e.currentTarget.style.borderColor = 'var(--glass-border)';
+              }}
+            >
+              <span>{t('loadMore', 'Ko\'proq yuklash')}</span>
+            </button>
+          </div>
+        )}
         {filteredJobs.length === 0 && (
           <div className="empty-feed">
             <Search size={40} color="#C7C7CC" />
@@ -425,12 +555,13 @@ export default function DriverFeed({
                 <X size={18} />
               </button>
             </div>
-
+            
             <div className="filter-drawer-content hide-scrollbar">
-              {/* Category 1: Location (Prefecture) */}
+
+                        {/* Category 1: Location (Prefecture & City & Station) */}
               <div className="filter-section">
                 <h4>{t('filterLocation', 'Hudud bo\'yicha qidiruv')}</h4>
-                <div className="filter-tags">
+                <div className="filter-tags" style={{ marginBottom: '14px' }}>
                   {[
                     { id: 'all', label: t('lang_all', 'Barchasi') },
                     { id: 'Tokyo', label: 'Tokyo (東京)' },
@@ -447,14 +578,87 @@ export default function DriverFeed({
                       <button 
                         key={item.id} 
                         className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
-                        onClick={() => setSelectedPrefecture(item.id)}
+                        onClick={() => {
+                          setSelectedPrefecture(item.id);
+                          setSelectedCity('all'); // Reset city on prefecture change
+                        }}
                       >
                         {item.label}
                       </button>
                     );
                   })}
                 </div>
+
+                {/* Nested Cities Select */}
+                {selectedPrefecture !== 'all' && ['Tokyo', 'Kanagawa', 'Saitama', 'Chiba', 'Osaka', 'Kyoto', 'Aichi'].includes(selectedPrefecture) && (
+                  <div className="nested-cities-block fade-in" style={{ padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '14px', border: '1px dashed var(--glass-border)', marginBottom: '14px' }}>
+                    <h5 style={{ margin: '0 0 10px 0', fontSize: '12.5px', fontWeight: '700', color: 'var(--text-secondary)' }}>
+                      📍 {t('cityLabel', 'Shahar / Tuman')} ({selectedPrefecture}):
+                    </h5>
+                    <div className="filter-tags">
+                      {(
+                        {
+                          'Tokyo': ['all', 'Koto-ku', 'Shinjuku-ku', 'Minato-ku', 'Chiyoda-ku'],
+                          'Kanagawa': ['all', 'Yokohama', 'Kawasaki'],
+                          'Saitama': ['all', 'Omiya-ku', 'Omiya', 'Kawagoe'],
+                          'Chiba': ['all', 'Matsudo', 'Funabashi'],
+                          'Osaka': ['all', 'Osaka-shi', 'Sakai'],
+                          'Kyoto': ['all', 'Kyoto-shi'],
+                          'Aichi': ['all', 'Nagoya', 'Toyohashi']
+                        }[selectedPrefecture] || ['all']
+                      ).map(city => {
+                        const isCitySelected = selectedCity === city;
+                        return (
+                          <button
+                            key={city}
+                            type="button"
+                            className={`filter-tag-chip ${isCitySelected ? 'active' : ''}`}
+                            onClick={() => setSelectedCity(city)}
+                            style={{ padding: '4px 10px', fontSize: '12px' }}
+                          >
+                            {city === 'all' ? t('lang_all', 'Barchasi') : city}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Subway/Train Station filter */}
+                <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
+                    🚉 {t('nearestStationLabel', 'Eng yaqin metro/poyezd bekati')}
+                  </label>
+                  <input
+                    type="text"
+                    value={stationQuery}
+                    onChange={e => setStationQuery(e.target.value)}
+                    placeholder={t('searchStationPlaceholder', 'Bekat nomini yozing...')}
+                    className="auth-input"
+                    style={{ fontSize: '12.5px', padding: '10px 12px' }}
+                  />
+
+                  {/* Near Station Toggle Chip */}
+                  <div style={{ marginTop: '4px' }}>
+                    <button
+                      type="button"
+                      className={`filter-tag-chip ${onlyNearStation ? 'active' : ''}`}
+                      onClick={() => setOnlyNearStation(!onlyNearStation)}
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '12.5px',
+                        borderRadius: '20px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      {t('nearStationOnlyFilter', '🚶‍♂️ Metroga yaqin (10 daq. piyoda)')}
+                    </button>
+                  </div>
+                </div>
               </div>
+
 
               {/* Category 2: Licenses */}
               <div className="filter-section">

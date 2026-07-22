@@ -1,51 +1,52 @@
 .bottom-nav {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 86px;
+  bottom: 12px;
+  left: 12px;
+  width: calc(100% - 24px);
+  height: 72px;
   display: flex;
   justify-content: space-evenly; /* Equal spacing between all items AND from edges */
-  align-items: flex-start;
-  padding: 12px 16px 26px 16px; /* 16px horizontal = matches header & dashboard container */
-  background: var(--bg-color);
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  align-items: center;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-radius: 24px;
   z-index: 300;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(90, 85, 234, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (prefers-color-scheme: dark) {
   .bottom-nav {
-    background: #1C1C1E;
-    border-top-color: rgba(255, 255, 255, 0.06);
+    background: rgba(28, 28, 30, 0.72);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 4px 16px rgba(90, 85, 234, 0.12);
   }
 }
 html.dark-mode .bottom-nav {
-  background: #1C1C1E;
-  border-top-color: rgba(255, 255, 255, 0.06);
-}
-
-@media (min-width: 481px) {
-  .bottom-nav {
-    border-radius: 0 0 32px 32px;
-  }
+  background: rgba(28, 28, 30, 0.72);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 4px 16px rgba(90, 85, 234, 0.12);
 }
 
 .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   background: none;
   border: none;
   color: #8E8E93;
   font-family: inherit;
   font-size: 10px;
-  font-weight: 600;
-  gap: 4px;
+  font-weight: 700;
+  gap: 3px;
   flex: 1; /* Equal share of row width — enough room for all languages */
   min-width: 0;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: transform 0.38s cubic-bezier(0.25, 1, 0.4, 1), color 0.25s ease; /* Fluid zoom animation */
   padding: 0;
 }
 
@@ -60,6 +61,7 @@ html.dark-mode .nav-item {
 
 .nav-item.active {
   color: var(--primary);
+  transform: scale(1.05); /* Refined magnifying lens zoom */
 }
 
 .nav-item span {
@@ -77,8 +79,99 @@ html.dark-mode .nav-item {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 52px;
+  height: 30px;
+  border-radius: 16px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent;
+  color: #8E8E93;
+}
+
+html.dark-mode .nav-icon-wrap {
+  color: #A1A1A6;
+}
+
+.bottom-nav-indicator-track {
+  position: absolute;
+  top: 12px; /* Centered vertically inside 72px tall bottom nav */
+  left: 8px;
+  width: calc(100% - 16px);
+  height: 48px; /* Compact height */
+  pointer-events: none; /* Let clicks on other tabs pass through */
+  display: flex;
+  align-items: center;
+  z-index: 3; /* Positioned above tab buttons to allow dragging active tab */
+}
+
+.bottom-nav-indicator {
+  position: relative; /* Anchor for absolute reflection sheen overlay */
+  width: 20%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.54s cubic-bezier(0.25, 1, 0.4, 1); /* Liquid smooth snap */
+  pointer-events: auto; /* ENABLE pointer capturing for dragging */
+  cursor: grab;
+}
+
+.bottom-nav-indicator:active {
+  cursor: grabbing;
+}
+
+/* Diagonal specular light reflection sheen that sweeps on movement */
+.bottom-nav-indicator::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 6px;
+  width: calc(100% - 12px);
+  height: 100%;
+  border-radius: 16px; /* Concentric rounded-rectangle shape matching Bottom Nav background */
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0) 30%, 
+    rgba(255, 255, 255, 0.4) 45%, 
+    rgba(255, 255, 255, 0.55) 50%, 
+    rgba(255, 255, 255, 0.4) 55%, 
+    rgba(255, 255, 255, 0) 70%, 
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 250% 100%;
+  background-position: calc(var(--active-index) * 25%) 0%;
+  transition: background-position 0.54s cubic-bezier(0.25, 1, 0.4, 1);
+  z-index: 2;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+.bottom-nav-indicator::after {
+  content: '';
+  width: calc(100% - 12px); /* Tighter fit for compact look */
+  height: 100%;
+  border-radius: 16px; /* Concentric rounded-rectangle shape matching Bottom Nav background */
+  background: rgba(255, 255, 255, 0.14); /* Semi-transparent clear glass (perfect visibility without fogginess) */
+  border: 1.2px solid rgba(255, 255, 255, 0.95); /* Crisp specular glass rim highlight */
+  box-shadow: 
+    0 4px 14px rgba(94, 92, 230, 0.15), /* Soft violet-blue halo shadow (outlines the glass boundary perfectly) */
+    0 2px 4px rgba(0, 0, 0, 0.02),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.95), /* Specular top light edge */
+    inset 0 -2.5px 5px rgba(0, 0, 0, 0.02); /* Bottom refraction shadow simulating glass thickness */
+  display: block;
+}
+
+html.dark-mode .bottom-nav-indicator::after {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.4), 
+    0 2px 10px rgba(94, 92, 230, 0.25), 
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.22), 
+    inset 0 -2.5px 5px rgba(0, 0, 0, 0.25);
+}
+
+.nav-item.active .nav-icon-wrap {
+  color: var(--primary);
 }
 
 .nav-badge {
@@ -105,4 +198,16 @@ html.dark-mode .nav-item {
 .dark-mode .nav-badge {
   border-color: rgba(255, 59, 48, 0.5);
   box-shadow: 0 0 8px rgba(255, 59, 48, 0.5);
+}
+
+/* Active Tab Bounce Animation */
+@keyframes bounceTab {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.85); }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.nav-item.active .nav-icon-wrap {
+  animation: bounceTab 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }

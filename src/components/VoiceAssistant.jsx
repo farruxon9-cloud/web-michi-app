@@ -833,13 +833,49 @@ export default function VoiceAssistant({
     }
   }, [conversationHistory, status]);
 
+  // Helper to clean Japanese polite copulas like です (des/desu), と申します, etc. locally
+  const cleanJapaneseCopula = (text) => {
+    if (!text) return '';
+    let cleaned = text.trim();
+    
+    // Romaji patterns (case insensitive)
+    cleaned = cleaned.replace(/\s+desu$/i, '');
+    cleaned = cleaned.replace(/\s+des$/i, '');
+    cleaned = cleaned.replace(/\s+da$/i, '');
+    cleaned = cleaned.replace(/\s+to\s+moushimasu$/i, '');
+    cleaned = cleaned.replace(/\s+to\s+iimasu$/i, '');
+    
+    // Japanese characters
+    cleaned = cleaned.replace(/です$/, '');
+    cleaned = cleaned.replace(/でーす$/, '');
+    cleaned = cleaned.replace(/だ$/, '');
+    cleaned = cleaned.replace(/と申します$/, '');
+    cleaned = cleaned.replace(/と言います$/, '');
+    cleaned = cleaned.replace(/ともうします$/, '');
+    cleaned = cleaned.replace(/といいます$/, '');
+    
+    return cleaned.trim();
+  };
+
   // Helper to standardise conversational date/year/phone inputs using Gemini AI parsing
   const parseResumeFieldWithGemini = async (step, text, isUz, isJa) => {
     try {
       let prompt = '';
-      if (step === 'ask_birthdate') {
+      if (step === 'ask_name') {
+        prompt = `Foydalanuvchi o'z ism-familiyasini aytdi: "${text}".
+Ism va familiyani aniqlab, keraksiz polite so'zlar (です, desu, と申します, da, des, といいます) bo'lsa, ularni butunlay olib tashlang.
+Ism va familiya bosh harflarini katta qiling (masalan, Farrux Kanoatov). 
+Faqat toza ism-familiya qiymatining o'zini qaytaring. Hech qanday boshqa izoh, so'z yoki nuqta yozmang.`;
+      } else if (step === 'ask_furigana') {
+        prompt = `Foydalanuvchi o'z ismining yaponcha o'qilishini (furigana/katakana) aytdi: "${text}".
+Ushbu matnni toza Yapon Katakanasiga (カタカナ) o'tkazing va chet el ismlari uchun kerakli kichik Katakana harflarini (ァ, ィ, ゥ, ェ, ォ, ッ, ャ, ュ, ョ, ヶ va h.k.) aniqlikda ishlating.
+Masalan: "farrux" -> ファルホ / ファルッフ (kichik harflar bilan).
+Matndagi polite copula bo'lsa (masalan: です, desu, と申します, da, des), ularni butunlay olib tashlang.
+Faqat Katakana formatidagi ismning o'qilishini qaytaring. Hech qanday boshqa izoh yoki so'z yozmang.`;
+      } else if (step === 'ask_birthdate') {
         prompt = `Foydalanuvchi o'zining tug'ilgan sanasini og'zaki aytdi: "${text}".
 Ushbu matndan tug'ilgan yil, oy va kunni aniqlab, faqat "YYYY-MM-DD" formatidagi sanani qaytaring. 
+Yaponcha va o'zbekcha ifodalarni, shuningdek "です" (desu/des) kabi yaponcha copulalarni tozalang.
 Agar faqat yil aytilgan bo'lsa, Oyni 01, Kunni 01 qiling.
 Hech qanday boshqa so'z, izoh yoki tushuntirish yozmang. Faqat YYYY-MM-DD formatidagi qiymatni o'zini qaytaring. 
 Masalan, agar "to'qson beshinchi yil o'n beshinchi may" desa, javob: 1995-05-15`;
@@ -852,7 +888,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
       } else if (step === 'ask_edu_start_year' || step === 'ask_edu_end_year' || step === 'ask_work_start_year' || step === 'ask_work_end_year') {
         prompt = `Foydalanuvchi yilni aytdi: "${text}". Matndan faqat 4 xonali yilni aniqlab (masalan: 2020) qaytaring. Boshqa hech narsa yozmang.`;
       } else {
-        return text;
+        return cleanJapaneseCopula(text);
       }
 
       const response = await fetchGeminiWithPool(
@@ -864,7 +900,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
       return cleaned;
     } catch (e) {
       console.warn("Gemini birthdate helper parsing failed, using fallback:", e);
-      return text;
+      return cleanJapaneseCopula(text);
     }
   };
 
@@ -1150,12 +1186,14 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
 
     switch (currentStep) {
       case 'ask_name':
-        setTempResumeData(prev => ({ ...prev, fullName: cleanText }));
+        setStatus('thinking');
+        const parsedName = await parseResumeFieldWithGemini('ask_name', cleanText, isUz, isJa);
+        setTempResumeData(prev => ({ ...prev, fullName: parsedName }));
         setResumeStep('confirm_name');
         speakStepMsg(isUz 
-          ? `Ismingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
-          : isJa ? `お名前は「${cleanText}」でよろしいですか？` 
-          : `Is your name "${cleanText}"? Confirm?`);
+          ? `Ismingizni "${parsedName}" deb yozaymi? Tasdiqlaysizmi?` 
+          : isJa ? `お名前は「${parsedName}」でよろしいですか？` 
+          : `Is your name "${parsedName}"? Confirm?`);
         break;
 
       case 'confirm_name':
@@ -1181,12 +1219,14 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
         break;
 
       case 'ask_furigana':
-        setTempResumeData(prev => ({ ...prev, furigana: cleanText }));
+        setStatus('thinking');
+        const parsedFurigana = await parseResumeFieldWithGemini('ask_furigana', cleanText, isUz, isJa);
+        setTempResumeData(prev => ({ ...prev, furigana: parsedFurigana }));
         setResumeStep('confirm_furigana');
         speakStepMsg(isUz
-          ? `Furigana talaffuzini "${cleanText}" deb yozaymi? Tasdiqlaysizmi?`
-          : isJa ? `フリガナは「${cleanText}」でよろしいですか？`
-          : `Is the furigana "${cleanText}"? Confirm?`);
+          ? `Furigana talaffuzini "${parsedFurigana}" deb yozaymi? Tasdiqlaysizmi?`
+          : isJa ? `フリガナは「${parsedFurigana}」でよろしいですか？`
+          : `Is the furigana "${parsedFurigana}"? Confirm?`);
         break;
 
       case 'confirm_furigana':
@@ -2095,8 +2135,13 @@ ${viewingContext}
     const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
     const dataContext = generateDataContext();
 
+    const now = new Date();
+    const localTimeContext = `\nCurrent local date and time: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}, ${now.toLocaleTimeString('en-US', { hour12: false })}. You MUST use this local date and time context to answer questions about the current day, date, year, month, or time in the user's language.`;
+
     const systemPrompt = `
 You are "Michi AI" — the smart voice assistant for the Michi app (a premium Japanese platform for truck driver jobs and driving academy courses).
+${localTimeContext}
+
 The user is sending you a text message. You must analyze the message and return a JSON structure.
 
 Your task: analyze the user's message and return a JSON object:
@@ -2525,11 +2570,15 @@ Return ONLY the raw JSON object, no markdown wrappers.
     setStatus('thinking');
 
     const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
-    
     const dataContext = generateDataContext();
+
+    const now = new Date();
+    const localTimeContext = `\nCurrent local date and time: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}, ${now.toLocaleTimeString('en-US', { hour12: false })}. You MUST use this local date and time context to answer questions about the current day, date, year, month, or time in the user's language.`;
 
     const systemPrompt = `
 You are "Michi AI" — the smart voice assistant for the Michi app (a premium Japanese platform for truck driver jobs and driving academy courses).
+${localTimeContext}
+
 The user is speaking to you directly via recorded audio. You must listen to the audio data, transcribe it, and return a JSON structure.
 
 Your task: analyze the user's speech and return a JSON object:
@@ -3083,86 +3132,54 @@ Return ONLY the raw JSON object, no markdown wrappers.
   // Render ambient voice control interface
   return (
     <>
-      {/* Floating subtitle bubble (shows spoken inputs and AI responses briefly) */}
+      {/* Robot Speech Bubble - floats near the top right below the header robot */}
       {showPill && (
-        <div className="voice-chat-bubble-pill animate-slide-in">
-          <div className="voice-pill-content">
+        <div className="voice-robot-speech-bubble animate-slide-in">
+          <div className="speech-bubble-pointer"></div>
+          
+          <div className="speech-bubble-content">
             {transcript && (
-              <div className="pill-segment user-segment">
-                <span className="pill-dot user-dot"></span>
-                <p className="pill-text"><strong>{t('userSaid', 'Siz')}:</strong> {transcript}</p>
+              <div className="bubble-row user-row">
+                <span className="bubble-dot user-dot"></span>
+                <p className="bubble-text"><strong>{t('userSaid', 'Siz')}:</strong> {transcript}</p>
               </div>
             )}
             
             {aiResponseText && (
-              <div className="pill-segment ai-segment">
-                <span className="pill-dot ai-dot"></span>
-                <p className="pill-text ja-text"><strong>AI:</strong> {aiResponseText}</p>
+              <div className="bubble-row ai-row">
+                <span className="bubble-dot ai-dot"></span>
+                <p className="bubble-text ja-text"><strong>AI:</strong> {aiResponseText}</p>
               </div>
             )}
 
             {status === 'thinking' && !aiResponseText && (
-              <div className="pill-segment thinking-segment">
-                <span className="pill-dot thinking-dot"></span>
-                <p className="pill-text italic">{t('aiThinking', 'AI fikrlamoqda...')}</p>
+              <div className="bubble-row thinking-row">
+                <span className="bubble-dot thinking-dot"></span>
+                <p className="bubble-text italic">{t('aiThinking', 'AI fikrlamoqda...')}</p>
               </div>
             )}
 
             {errorMessage && (
-              <div className="pill-segment error-segment">
-                <span className="pill-dot error-dot"></span>
-                <p className="pill-text error-text">{errorMessage}</p>
+              <div className="bubble-row error-row">
+                <span className="bubble-dot error-dot"></span>
+                <p className="bubble-text error-text">{errorMessage}</p>
               </div>
             )}
           </div>
-          <button className="voice-pill-close" onClick={() => setShowPill(false)}>
-            <X size={12} />
-          </button>
-        </div>
-      )}
-
-      {/* Siri-Style Ambient Glow Wave Bar (shown bottom center, above nav bar) */}
-      {status !== 'idle' && !isVoiceStandby && (
-        <div className={`voice-ambient-glow-container ${status}`}>
-          <div className="voice-glow-visualizer-orb">
-            <canvas ref={canvasRef} className="ai-liquid-orb-glow-canvas" />
-            <div className="ai-liquid-orb-core">
-              <Sparkles size={16} color="#ffffff" fill="#ffffff" />
-            </div>
-          </div>
-          <div className="voice-ambient-info" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {status === 'listening' && <span>{t('aiListeningLabel', 'Tinglamoqda... (Gapiring)')}</span>}
-            {status === 'thinking' && <span>{t('aiThinkingLabel', 'Fikrlamoqda...')}</span>}
-            {status === 'speaking' && <span>{t('aiSpeakingLabel', 'Javob bermoqda...')}</span>}
-            
+          
+          <div className="bubble-footer-actions">
             <button 
-              className="voice-lang-toggle" 
+              className="voice-lang-toggle-bubble" 
               onClick={cycleSpeechLanguage}
               title="Ovozli tilni o'zgartirish"
-              style={{
-                background: 'rgba(255, 255, 255, 0.15)',
-                border: '1px solid rgba(255, 255, 255, 0.25)',
-                color: '#fff',
-                fontSize: '10px',
-                fontWeight: '700',
-                padding: '2px 8px',
-                borderRadius: '20px',
-                marginLeft: '8px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                transition: 'all 0.2s ease',
-                backdropFilter: 'blur(5px)',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-              }}
             >
               {speechLang === 'uz' ? '🇺🇿 UZ' : speechLang === 'ja' ? '🇯🇵 JA' : '🇬🇧 EN'}
             </button>
+            
+            <button className="voice-bubble-close-btn" onClick={() => setShowPill(false)}>
+              <X size={12} />
+            </button>
           </div>
-          <button className="voice-ambient-stop-btn" onClick={stopAllVoiceActivities} title="To'xtatish">
-            <X size={14} />
-          </button>
         </div>
       )}
     </>

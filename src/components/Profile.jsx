@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
@@ -10,6 +10,26 @@ import VerifiedBadge from './VerifiedBadge';
 import CompanyHome from './CompanyHome';
 import ResumeBuilder from './ResumeBuilder';
 import './Profile.css';
+
+const StatCounter = ({ target, suffix = '', duration = 1200 }) => {
+  const [count, setCount] = React.useState(0);
+
+  React.useEffect(() => {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const easeProgress = 1 - Math.pow(1 - progress, 3); // cubicOut easing
+      setCount(Math.floor(easeProgress * target));
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }, [target, duration]);
+
+  return <span>{count.toLocaleString()}{suffix}</span>;
+};
 
 const STATUS_PIPELINE = ['submitted', 'reviewing', 'reviewed', 'interview', 'rejected', 'accepted'];
 const STATUS_COLORS = {
@@ -53,7 +73,15 @@ export default function Profile({
   isVoiceStandby,
   setIsVoiceStandby
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  // Sub-sahifa o'zgarganda scroll holatini tepaga reset qilish (Scroll Restoration)
+  React.useEffect(() => {
+    const container = document.querySelector('.profile-container');
+    if (container) {
+      container.scrollTop = 0;
+    }
+  }, [activePage]);
 
   // --- STATISTIKA VA SANARLARNI HISOBLASH (DYNAMIC MENUS & USER BADGES) ---
   // Hamma bo'limlar uchun bosilgan o'zgarishlar sanoqlari (badges) dynamic ravishda hisoblanadi.
@@ -88,7 +116,1261 @@ export default function Profile({
   const [empInputName, setEmpInputName] = useState('');
   const [empInputPhone, setEmpInputPhone] = useState('');
   const [expandedAppId, setExpandedAppId] = useState(null);
+  const [aboutTab, setAboutTab] = useState('platform');
   const fileInputRef = useRef(null);
+
+  const [myVehicle, setMyVehicle] = useState(() => {
+    const defaultVehicle = {
+      type: 'car',
+      make: 'Toyota',
+      model: 'Harrier',
+      bodyStyle: 'suv',
+      trim: 'Z',
+      year: '2024',
+      color: '#5E5CE6',
+      platePrefecture: '練馬',
+      plateClass: '300',
+      plateHira: 'あ',
+      plateNumber: '12-34',
+      isCommercial: false,
+      plateType: 'private',
+      driverMark: 'none',
+      height: '1.69',
+      width: '1.85',
+      length: '4.74',
+      weight: '1.62'
+    };
+
+    try {
+      const saved = localStorage.getItem('michi_user_vehicle');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        
+        // 1. Migrate old format plateNumber "練馬 300 あ 12-34"
+        if (parsed.plateNumber && parsed.plateNumber.includes(' ')) {
+          const parts = parsed.plateNumber.split(' ');
+          if (parts.length >= 4) {
+            parsed.platePrefecture = parts[0];
+            parsed.plateClass = parts[1];
+            parsed.plateHira = parts[2];
+            parsed.plateNumber = parts[3];
+          }
+        }
+
+        // 2. Ensure all fields are filled
+        if (!parsed.platePrefecture) parsed.platePrefecture = '練馬';
+        if (!parsed.plateClass) parsed.plateClass = '300';
+        if (!parsed.plateHira) parsed.plateHira = 'あ';
+        if (!parsed.plateNumber || parsed.plateNumber.includes(' ')) parsed.plateNumber = '12-34';
+        if (!parsed.plateType) parsed.plateType = parsed.isCommercial ? 'commercial' : 'private';
+        if (!parsed.driverMark) parsed.driverMark = 'none';
+        
+        // 3. Ensure bodyStyle is defined and matches type presets
+        if (!parsed.bodyStyle) {
+          if (parsed.type === 'car') parsed.bodyStyle = 'sedan';
+          else if (parsed.type === 'moto') parsed.bodyStyle = 'scooter';
+          else if (parsed.type === 'velo') parsed.bodyStyle = 'standard';
+          else if (parsed.type === 'truck_3t') parsed.bodyStyle = 'box_truck';
+          else if (parsed.type === 'truck_4t') parsed.bodyStyle = 'wing_body';
+          else if (parsed.type === 'trailer') parsed.bodyStyle = 'trailer_container';
+          else if (parsed.type === 'bus') parsed.bodyStyle = 'standard';
+          else parsed.bodyStyle = 'sedan';
+        }
+        
+        return parsed;
+      }
+      return defaultVehicle;
+    } catch (e) {
+      return defaultVehicle;
+    }
+  });
+
+  const [isEditingVehicle, setIsEditingVehicle] = useState(false);
+  const [editVehicleData, setEditVehicleData] = useState({ ...myVehicle });
+
+  // JDM Prefectures & Hiragana Lists
+  const JDM_PREFECTURES = [
+    '練馬', '品川', '足立', '多摩', '世田谷', '杉並', '横浜', '川崎', '湘南', '相模', 
+    '大宮', '川口', '所沢', '千葉', '成田', 'なにわ', '大阪', '和泉', '京都', '神戸', 
+    '姫路', '名古屋', '三河', '福岡', '北九州', '札幌', '旭川', '仙台', '広島'
+  ];
+  
+  const JDM_HIRAGANA = [
+    'あ', 'い', 'う', 'え', 'か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ',
+    'た', 'ち', 'つ', 'て', 'と', 'な', 'ni', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'ほ',
+    'ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ'
+  ];
+
+  const getVehiclePresetDimensions = (type, bodyStyle) => {
+    const presets = {
+      car: {
+        sedan: { height: '1.43', width: '1.76', length: '4.60', weight: '1.35' },
+        hatchback: { height: '1.45', width: '1.69', length: '3.99', weight: '1.05' },
+        suv: { height: '1.69', width: '1.85', length: '4.74', weight: '1.62' },
+        minivan: { height: '1.71', width: '1.69', length: '4.26', weight: '1.37' }
+      },
+      moto: {
+        scooter: { height: '1.10', width: '0.80', length: '2.10', weight: '0.12' },
+        sportbike: { height: '1.15', width: '0.75', length: '2.05', weight: '0.19' }
+      },
+      velo: {
+        standard: { height: '1.00', width: '0.60', length: '1.70', weight: '0.015' }
+      },
+      truck_3t: {
+        flatbed: { height: '2.20', width: '1.95', length: '4.69', weight: '3.50' },
+        box_truck: { height: '2.80', width: '2.10', length: '6.20', weight: '4.50' }
+      },
+      truck_4t: {
+        flatbed: { height: '2.40', width: '2.25', length: '8.15', weight: '7.50' },
+        box_truck: { height: '3.40', width: '2.30', length: '8.50', weight: '8.00' },
+        wing_body: { height: '3.45', width: '2.35', length: '8.60', weight: '8.20' },
+        dump_truck: { height: '2.60', width: '2.20', length: '5.90', weight: '7.90' }
+      },
+      trailer: {
+        trailer_container: { height: '3.80', width: '2.50', length: '16.50', weight: '25.00' }
+      },
+      bus: {
+        standard: { height: '3.20', width: '2.50', length: '11.50', weight: '12.00' }
+      }
+    };
+    return presets[type]?.[bodyStyle] || presets[type]?.standard || presets[type]?.sedan || { height: '1.50', width: '1.80', length: '4.50', weight: '1.50' };
+  };
+
+  const handleSaveVehicle = (e) => {
+    e.preventDefault();
+    setMyVehicle(editVehicleData);
+    localStorage.setItem('michi_user_vehicle', JSON.stringify(editVehicleData));
+    setIsEditingVehicle(false);
+    window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: editVehicleData }));
+  };
+
+  const renderVehicleSVG = (type, bodyStyle, color) => {
+    const paintColor = color || '#5E5CE6';
+    
+    // Helper to calculate highlights and shadows from hex color dynamically
+    const adjustBrightness = (hex, percent) => {
+      try {
+        let R = parseInt(hex.substring(1, 3), 16);
+        let G = parseInt(hex.substring(3, 5), 16);
+        let B = parseInt(hex.substring(5, 7), 16);
+
+        R = parseInt(R * (100 + percent) / 100);
+        G = parseInt(G * (100 + percent) / 100);
+        B = parseInt(B * (100 + percent) / 100);
+
+        R = (R < 255) ? R : 255;
+        G = (G < 255) ? G : 255;
+        B = (B < 255) ? B : 255;
+
+        R = (R > 0) ? R : 0;
+        G = (G > 0) ? G : 0;
+        B = (B > 0) ? B : 0;
+
+        const rHex = R.toString(16).padStart(2, '0');
+        const gHex = G.toString(16).padStart(2, '0');
+        const bHex = B.toString(16).padStart(2, '0');
+
+        return `#${rHex}${gHex}${bHex}`;
+      } catch (e) {
+        return hex;
+      }
+    };
+
+    const paintColorLight = adjustBrightness(paintColor, 40);
+    const paintColorDark = adjustBrightness(paintColor, -30);
+    const paintColorDarker = adjustBrightness(paintColor, -55);
+    
+    // Create unique ID based on color to prevent duplicate gradient collision
+    const colId = paintColor.replace('#', '');
+    const gId = `${bodyStyle}-paint-${colId}`;
+
+    switch (bodyStyle) {
+      // 🚗 PASSENGER CAR BODIES
+      case 'minivan':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="45%" stopColor={paintColor} />
+                <stop offset="85%" stopColor={paintColorDark} />
+                <stop offset="100%" stopColor={paintColorDarker} />
+              </linearGradient>
+              <linearGradient id="mini-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#121d2c" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="42" ry="4.2" fill="rgba(0,0,0,0.22)" />
+            <circle cx="28" cy="38" r="9" fill="rgba(0,0,0,0.3)" />
+            <circle cx="72" cy="38" r="9" fill="rgba(0,0,0,0.3)" />
+            
+            {/* Boxy Minivan body (Toyota Alphard / Freed style) */}
+            <path fill={`url(#${gId})`} d="M12,37 L10,33 C10,29 11,20 16,19 L72,19 C75,19 78,20 80,24 L85,31 C87,35 86,37 84,37 Z" />
+            
+            {/* Side Window Glass */}
+            <path fill="url(#mini-glass)" d="M22,21 L35,21 L35,27 L22,27 Z" />
+            <path fill="url(#mini-glass)" d="M38,21 L55,21 L55,27 L38,27 Z" />
+            <path fill="url(#mini-glass)" d="M58,21 L72,21 L70,27 L58,27 Z" />
+            <path fill="url(#mini-glass)" d="M75,22 L80,27 L76,27 Z" />
+            
+            {/* Seams and door trims */}
+            <path fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="0.8" d="M36,20 L36,36 M56,36 L56,20" />
+            <rect x="52" y="28" width="3" height="1" fill="#d1d1d6" />
+            <rect x="33" y="28" width="3" height="1" fill="#d1d1d6" />
+            
+            {/* Headlights and taillights */}
+            <path fill="#ffffff" d="M83,30 L85,32 L83,34 Z" />
+            <path fill="#FFD60A" opacity="0.8" d="M84,31 L85,32 L84,33 Z" />
+            <path fill="#FF3B30" d="M10,23 L12,23 L12,28 L10,28 Z" />
+            
+            {/* Detailed alloy wheels */}
+            <circle cx="28" cy="38" r="8" fill="#1c1c1e" />
+            <circle cx="28" cy="38" r="5.5" fill="#8e8e93" />
+            <path d="M28,33 L28,43 M23,38 L33,38 M25,35 L31,41 M25,41 L31,35" stroke="#ffffff" strokeWidth="0.7" />
+            <circle cx="28" cy="38" r="2" fill="#545456" />
+
+            <circle cx="72" cy="38" r="8" fill="#1c1c1e" />
+            <circle cx="72" cy="38" r="5.5" fill="#8e8e93" />
+            <path d="M72,33 L72,43 M67,38 L77,38 M69,35 L75,41 M69,41 L75,35" stroke="#ffffff" strokeWidth="0.7" />
+            <circle cx="72" cy="38" r="2" fill="#545456" />
+          </svg>
+        );
+
+      case 'suv':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="40%" stopColor={paintColor} />
+                <stop offset="80%" stopColor={paintColorDark} />
+                <stop offset="100%" stopColor={paintColorDarker} />
+              </linearGradient>
+              <linearGradient id="suv-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#121a24" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="42" ry="4.5" fill="rgba(0,0,0,0.22)" />
+            <circle cx="28" cy="38" r="9" fill="rgba(0,0,0,0.3)" />
+            <circle cx="72" cy="38" r="9" fill="rgba(0,0,0,0.3)" />
+            
+            {/* Harrier SUV Body */}
+            <path fill={`url(#${gId})`} d="M12,35 L10,31 C9,27 12,20 18,19 C25,18 36,12 48,12 C62,12 76,15 82,22 C88,27 88,31 85,34 L83,38 L14,38 Z" />
+            
+            {/* Bottom plastic protection skirt */}
+            <path fill="#2c2c2e" d="M10,34 L12,38 L83,38 L85,34 L82,35 L74,35 C74,33 70,30 66,32 L60,35 L34,35 C32,32 26,32 24,35 L12,35 Z" />
+            
+            {/* Window Glass */}
+            <path fill="url(#suv-glass)" d="M30,20 L44,15 L56,15 L66,20 L64,26 L30,26 Z" />
+            <rect x="43" y="15" width="2" height="11" fill="#1c1c1e" />
+            <rect x="55" y="15" width="2" height="11" fill="#1c1c1e" />
+            
+            {/* Details */}
+            <path fill="none" stroke="#d1d1d6" strokeWidth="0.8" d="M29,20 L44,14.5 L56,14.5 L67,20" />
+            <rect x="36" y="28" width="5" height="1.5" rx="0.5" fill="#d1d1d6" />
+            <rect x="48" y="28" width="5" height="1.5" rx="0.5" fill="#d1d1d6" />
+            
+            {/* Xenon Glow lights */}
+            <path fill="#ffffff" d="M82,23 L85,25 L83,28 Z" />
+            <path fill="#0A84FF" opacity="0.75" d="M83,24 L86,26 L84,28 Z" />
+            <path fill="#FF453A" d="M10,24 L12,24 L13,28 L11,28 Z" />
+            
+            {/* Rims */}
+            <circle cx="28" cy="38" r="8" fill="#1c1c1e" />
+            <circle cx="28" cy="38" r="6" fill="#8e8e93" />
+            <path d="M28,32 L28,44 M22,38 L34,38 M24,34 L32,42 M24,42 L32,34" stroke="#ffffff" strokeWidth="0.7" />
+            <circle cx="28" cy="38" r="2" fill="#545456" />
+
+            <circle cx="72" cy="38" r="8" fill="#1c1c1e" />
+            <circle cx="72" cy="38" r="6" fill="#8e8e93" />
+            <path d="M72,32 L72,44 M66,38 L78,38 M68,34 L76,42 M68,42 L76,34" stroke="#ffffff" strokeWidth="0.7" />
+            <circle cx="72" cy="38" r="2" fill="#545456" />
+          </svg>
+        );
+
+      case 'hatchback':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="40%" stopColor={paintColor} />
+                <stop offset="85%" stopColor={paintColorDark} />
+                <stop offset="100%" stopColor={paintColorDarker} />
+              </linearGradient>
+              <linearGradient id="hatch-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="38" ry="3.8" fill="rgba(0,0,0,0.18)" />
+            <circle cx="28" cy="37" r="8.5" fill="rgba(0,0,0,0.25)" />
+            <circle cx="68" cy="37" r="8.5" fill="rgba(0,0,0,0.25)" />
+            
+            {/* Honda Fit style body */}
+            <path fill={`url(#${gId})`} d="M16,36 L12,33 C12,31 14,24 22,23 C30,22 38,16 46,16 C54,16 70,18 78,25 C86,32 84,35 80,36 Z" />
+            
+            {/* Windows */}
+            <path fill="url(#hatch-glass)" d="M34,22 L45,18 L55,18 L65,22 L63,26 L34,26 Z" />
+            <rect x="46" y="18" width="2" height="8" fill="#1c1c1e" />
+            
+            <rect x="36" y="28" width="4" height="1.2" rx="0.4" fill="#d1d1d6" />
+            
+            {/* Lights */}
+            <path fill="#ffffff" d="M78,25 L81,27 L79,30 Z" />
+            <path fill="#FFD60A" opacity="0.8" d="M79,26 L80,27 L79,28 Z" />
+            <path fill="#FF3B30" d="M12,28 L14,28 L14,31 L12,31 Z" />
+            
+            {/* Rims */}
+            <circle cx="28" cy="37" r="7" fill="#1c1c1e" />
+            <circle cx="28" cy="37" r="5" fill="#8e8e93" />
+            <path d="M28,32 L28,42 M23,37 L33,37" stroke="#ffffff" strokeWidth="0.6" />
+            <circle cx="28" cy="37" r="2" fill="#545456" />
+
+            <circle cx="68" cy="37" r="7" fill="#1c1c1e" />
+            <circle cx="68" cy="37" r="5" fill="#8e8e93" />
+            <path d="M68,32 L68,42 M63,37 L73,37" stroke="#ffffff" strokeWidth="0.6" />
+            <circle cx="68" cy="37" r="2" fill="#545456" />
+          </svg>
+        );
+
+      case 'sedan':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="45%" stopColor={paintColor} />
+                <stop offset="85%" stopColor={paintColorDark} />
+                <stop offset="100%" stopColor={paintColorDarker} />
+              </linearGradient>
+              <linearGradient id="sedan-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="40" ry="4" fill="rgba(0,0,0,0.18)" />
+            <circle cx="28" cy="38" r="9.2" fill="rgba(0,0,0,0.25)" />
+            <circle cx="72" cy="38" r="9.2" fill="rgba(0,0,0,0.25)" />
+            
+            {/* Aerodynamic Prius style sedan body */}
+            <path fill={`url(#${gId})`} d="M15,35 L12,32 C12,32 15,26 22,25 C29,24 38,15 48,15 C58,15 78,17 84,26 C90,32 88,37 84,39 L15,39 Z" />
+            
+            {/* Windows */}
+            <path fill="url(#sedan-glass)" d="M32,24 L45,17 L58,17 L68,24 L65,28 L32,28 Z" />
+            <rect x="46" y="17" width="2" height="11" fill="#1c1c1e" />
+            <rect x="58" y="17" width="1.5" height="11" fill="#1c1c1e" />
+            
+            <rect x="36" y="29" width="4" height="1.2" rx="0.4" fill="#d1d1d6" />
+            <rect x="49" y="29" width="4" height="1.2" rx="0.4" fill="#d1d1d6" />
+            
+            {/* Lights */}
+            <path fill="#ffffff" d="M83,27 L86,29 L84,32 Z" />
+            <path fill="#0A84FF" opacity="0.8" d="M84,28 L85,29 L84,30 Z" />
+            <path fill="#FF3B30" d="M11,31 L14,31 L14,35 L11,35 Z" />
+            
+            {/* Wheels */}
+            <circle cx="28" cy="38" r="8" fill="#1c1c1e" />
+            <circle cx="28" cy="38" r="6" fill="#8e8e93" />
+            <path d="M28,32 L28,44 M22,38 L34,38 M24,34 L32,42 M24,42 L32,34" stroke="#ffffff" strokeWidth="0.7" />
+            <circle cx="28" cy="38" r="2" fill="#545456" />
+
+            <circle cx="72" cy="38" r="8" fill="#1c1c1e" />
+            <circle cx="72" cy="38" r="6" fill="#8e8e93" />
+            <path d="M72,32 L72,44 M66,38 L78,38 M68,34 L76,42 M68,42 L76,34" stroke="#ffffff" strokeWidth="0.7" />
+            <circle cx="72" cy="38" r="2" fill="#545456" />
+          </svg>
+        );
+
+      // 🏍️ MOTORCYCLE BODIES
+      case 'scooter':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="35" ry="3.5" fill="rgba(0,0,0,0.18)" />
+            {/* Frame parts */}
+            <path d="M22,38 L30,34 L46,34 L52,24 L56,16" stroke="#8e8e93" strokeWidth="2.5" fill="none" />
+            <path fill="url(#gId)" d="M52,38 L58,24 L54,16 L48,16 L44,24 Z" />
+            {/* Body covers */}
+            <path fill="url(#gId)" d="M22,34 C25,28 35,26 44,28 L40,36 Z" />
+            {/* Engine / Mechanical parts */}
+            <rect x="36" y="34" width="12" height="6" fill="#3a3a3c" rx="1" />
+            <circle cx="40" cy="37" r="2" fill="#8e8e93" />
+            
+            {/* Wheels with realistic thin spokes (Honda Cub classic) */}
+            <circle cx="22" cy="38" r="10" fill="#1c1c1e" />
+            <circle cx="22" cy="38" r="7.5" fill="#e5e5ea" />
+            <path d="M22,30.5 L22,45.5 M14.5,38 L29.5,38 M16.7,32.7 L27.3,43.3 M16.7,43.3 L27.3,32.7" stroke="#8e8e93" strokeWidth="0.5" />
+            <circle cx="22" cy="38" r="3" fill="#8e8e93" />
+
+            <circle cx="78" cy="38" r="10" fill="#1c1c1e" />
+            <circle cx="78" cy="38" r="7.5" fill="#e5e5ea" />
+            <path d="M78,30.5 L78,45.5 M70.5,38 L85.5,38 M72.7,32.7 L83.3,43.3 M72.7,43.3 L83.3,32.7" stroke="#8e8e93" strokeWidth="0.5" />
+            <circle cx="78" cy="38" r="3" fill="#8e8e93" />
+          </svg>
+        );
+
+      case 'sportbike':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="35" ry="3.5" fill="rgba(0,0,0,0.2)" />
+            {/* Mechanical details */}
+            <path d="M25,38 L45,25 L65,25 L75,38" stroke="#3a3a3c" strokeWidth="3.5" fill="none" />
+            <path d="M45,25 L50,15 L70,38" stroke="#1c1c1e" strokeWidth="3" fill="none" />
+            <rect x="42" y="28" width="16" height="9" fill="#2c2c2e" rx="1.5" />
+            
+            {/* Painted Sport fairing */}
+            <path fill="url(#gId)" d="M35,28 C32,25 35,22 45,21 C55,20 65,23 68,28 L56,33 Z" />
+            <path fill="url(#gId)" d="M72,21 L78,21 L74,27 Z" />
+            
+            {/* Wheels */}
+            <circle cx="22" cy="38" r="10" fill="#1c1c1e" />
+            <circle cx="22" cy="38" r="6.5" fill="#8e8e93" />
+            <path d="M22,31.5 L22,44.5 M15.5,38 L28.5,38" stroke="#ffffff" strokeWidth="1" />
+            <circle cx="22" cy="38" r="3.5" fill="#1c1c1e" />
+
+            <circle cx="78" cy="38" r="10" fill="#1c1c1e" />
+            <circle cx="78" cy="38" r="6.5" fill="#8e8e93" />
+            <path d="M78,31.5 L78,44.5 M71.5,38 L84.5,38" stroke="#ffffff" strokeWidth="1" />
+            <circle cx="78" cy="38" r="3.5" fill="#1c1c1e" />
+          </svg>
+        );
+
+      // 🚲 BICYCLE
+      case 'velo':
+      case 'standard':
+        if (type === 'velo') {
+          return (
+            <svg viewBox="0 0 100 50" width="100%" height="100%">
+              <ellipse cx="50" cy="43" rx="32" ry="3" fill="rgba(0,0,0,0.12)" />
+              {/* Detailed bike frame */}
+              <path d="M22,38 L45,38 L60,25 L35,25 Z" stroke={paintColor} strokeWidth="2" fill="none" />
+              <path d="M22,38 L35,25 M45,38 L52,18" stroke={paintColor} strokeWidth="2" fill="none" />
+              <path d="M28,21 L36,21" stroke="#1c1c1e" strokeWidth="1.8" fill="none" />
+              <path d="M50,16 L56,16" stroke="#1c1c1e" strokeWidth="1.8" fill="none" />
+              <circle cx="45" cy="38" r="3" fill="none" stroke="#e5e5ea" strokeWidth="1.2" />
+              {/* Thin spoke wheels */}
+              <circle cx="22" cy="38" r="10" stroke="#8e8e93" strokeWidth="1.2" fill="none" />
+              <path d="M22,28 L22,48 M12,38 L32,38 M15,31 L29,45 M15,45 L29,31" stroke="#aeaeaf" strokeWidth="0.4" />
+              <circle cx="78" cy="38" r="10" stroke="#8e8e93" strokeWidth="1.2" fill="none" />
+              <path d="M78,28 L78,48 M68,38 L88,38 M71,31 L85,45 M71,45 L85,31" stroke="#aeaeaf" strokeWidth="0.4" />
+            </svg>
+          );
+        } else if (type === 'bus') {
+          return (
+            <svg viewBox="0 0 100 50" width="100%" height="100%">
+              <defs>
+                <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor={paintColorLight} />
+                  <stop offset="50%" stopColor={paintColor} />
+                  <stop offset="100%" stopColor={paintColorDark} />
+                </linearGradient>
+                <linearGradient id="bus-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#73a6e4" stopOpacity="0.6" />
+                  <stop offset="100%" stopColor="#192330" stopOpacity="0.9" />
+                </linearGradient>
+              </defs>
+              <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.22)" />
+              <circle cx="28" cy="38" r="9" fill="rgba(0,0,0,0.3)" />
+              <circle cx="72" cy="38" r="9" fill="rgba(0,0,0,0.3)" />
+              
+              {/* Isuzu Gala Highway Coach Bus body */}
+              <path fill={`url(#${gId})`} d="M12,36 L12,16 Q12,14 15,14 L82,14 Q88,14 88,18 L88,36 Z" />
+              
+              {/* Windows */}
+              <rect x="18" y="17" width="10" height="8" fill="url(#bus-glass)" />
+              <rect x="31" y="17" width="10" height="8" fill="url(#bus-glass)" />
+              <rect x="44" y="17" width="10" height="8" fill="url(#bus-glass)" />
+              <rect x="57" y="17" width="10" height="8" fill="url(#bus-glass)" />
+              <rect x="70" y="17" width="12" height="8" fill="url(#bus-glass)" />
+              
+              {/* Decal Lines */}
+              <rect x="12" y="29" width="76" height="2.5" fill="#ffffff" opacity="0.8" />
+              <rect x="12" y="32" width="76" height="1.2" fill="#FF9F0A" />
+              
+              <rect x="84" y="30" width="4" height="2" fill="#FFD60A" />
+              <rect x="12" y="27" width="2" height="4" fill="#FF3B30" />
+              
+              {/* Axles */}
+              <circle cx="28" cy="38" r="8" fill="#1c1c1e" />
+              <circle cx="28" cy="38" r="4.5" fill="#8e8e93" stroke="#545456" strokeWidth="1" />
+              
+              <circle cx="72" cy="38" r="8" fill="#1c1c1e" />
+              <circle cx="72" cy="38" r="4.5" fill="#8e8e93" stroke="#545456" strokeWidth="1" />
+            </svg>
+          );
+        }
+        break;
+ 
+      // 🚚 TRUCK BODIES
+      case 'flatbed':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="50%" stopColor={paintColor} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+              <linearGradient id="truck-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="42" ry="4" fill="rgba(0,0,0,0.22)" />
+            
+            {/* Chassis */}
+            <rect x="10" y="34" width="78" height="4.5" fill="#1c1c1e" />
+            
+            {/* Cabin (Painted Isuzu Elf Cabin) */}
+            <path fill={`url(#${gId})`} d="M64,34 L64,16 L76,16 Q84,16 84,23 L84,34 Z" />
+            <path fill="url(#truck-glass)" d="M68,19 L76,19 L79,25 L68,25 Z" />
+            
+            {/* Flatbed Rails */}
+            <rect x="12" y="26" width="51" height="8" fill="#d1d1d6" stroke="#8e8e93" strokeWidth="0.8" />
+            <line x1="28" y1="26" x2="28" y2="34" stroke="#8e8e93" strokeWidth="0.8" />
+            <line x1="44" y1="26" x2="44" y2="34" stroke="#8e8e93" strokeWidth="0.8" />
+            
+            {/* Wheels */}
+            <circle cx="24" cy="38" r="7" fill="#1c1c1e" />
+            <circle cx="24" cy="38" r="4" fill="#aeaeaf" />
+            <circle cx="42" cy="38" r="7" fill="#1c1c1e" />
+            <circle cx="42" cy="38" r="4" fill="#aeaeaf" />
+            <circle cx="72" cy="38" r="7" fill="#1c1c1e" />
+            <circle cx="72" cy="38" r="4" fill="#aeaeaf" />
+          </svg>
+        );
+
+      case 'box_truck':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="50%" stopColor={paintColor} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+              <linearGradient id="container-sides" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="100%" stopColor="#e5e5ea" />
+              </linearGradient>
+              <linearGradient id="truck-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="44" ry="4.5" fill="rgba(0,0,0,0.22)" />
+            <rect x="10" y="35" width="80" height="5" fill="#1c1c1e" />
+            
+            {/* Cabin (Painted) */}
+            <path fill={`url(#${gId})`} d="M64,35 L64,15 L78,15 Q86,15 86,24 L86,35 Z" />
+            <path fill="url(#truck-glass)" d="M68,18 L76,18 L81,25 L68,25 Z" />
+            
+            {/* Closed Aluminium Container Box */}
+            <rect x="11" y="11" width="52" height="24" fill="url(#container-sides)" stroke="#8e8e93" strokeWidth="1" />
+            <line x1="28" y1="11" x2="28" y2="35" stroke="#aeaeaf" strokeWidth="0.8" />
+            <line x1="45" y1="11" x2="45" y2="35" stroke="#aeaeaf" strokeWidth="0.8" />
+            
+            {/* Wheels */}
+            <circle cx="22" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="22" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="38" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="38" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="74" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="74" cy="39" r="4.2" fill="#aeaeaf" />
+          </svg>
+        );
+
+      case 'wing_body':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="50%" stopColor={paintColor} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+              <linearGradient id="wing-container" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#f2f2f7" />
+                <stop offset="100%" stopColor="#d1d1d6" />
+              </linearGradient>
+              <linearGradient id="truck-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="44" ry="4.5" fill="rgba(0,0,0,0.22)" />
+            <rect x="10" y="35" width="80" height="5" fill="#1c1c1e" />
+            
+            {/* Cabin (Painted Hino Ranger style) */}
+            <path fill={`url(#${gId})`} d="M64,35 L64,15 L78,15 Q86,15 86,24 L86,35 Z" />
+            <path fill="url(#truck-glass)" d="M68,18 L76,18 L81,25 L68,25 Z" />
+            
+            {/* Wing Container (Hino Wing Body side details) */}
+            <rect x="11" y="11" width="52" height="24" fill="url(#wing-container)" stroke="#8e8e93" strokeWidth="1" />
+            <line x1="11" y1="22" x2="63" y2="22" stroke="#8e8e93" strokeWidth="1.5" />
+            <line x1="28" y1="11" x2="28" y2="35" stroke="#aeaeaf" strokeWidth="0.8" />
+            <line x1="45" y1="11" x2="45" y2="35" stroke="#aeaeaf" strokeWidth="0.8" />
+            
+            {/* Wing hydraulic rod lines */}
+            <line x1="14" y1="22" x2="14" y2="35" stroke="#8e8e93" strokeWidth="1" />
+            <line x1="60" y1="22" x2="60" y2="35" stroke="#8e8e93" strokeWidth="1" />
+            
+            {/* Wheels */}
+            <circle cx="22" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="22" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="38" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="38" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="74" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="74" cy="39" r="4.2" fill="#aeaeaf" />
+          </svg>
+        );
+
+      case 'dump_truck':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="50%" stopColor={paintColor} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+              <linearGradient id="truck-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="40" ry="4" fill="rgba(0,0,0,0.22)" />
+            <rect x="12" y="34" width="74" height="5.5" fill="#1c1c1e" />
+            
+            {/* Cabin (Painted) */}
+            <path fill={`url(#${gId})`} d="M60,34 L60,18 L72,18 Q78,18 78,25 L78,34 Z" />
+            <path fill="url(#truck-glass)" d="M64,21 L72,21 L74,27 L64,27 Z" />
+            
+            {/* Metal Cargo Bed (Realistic details, angle bars) */}
+            <path fill="#8e8e93" d="M14,16 L56,16 L56,34 L14,34 Z" stroke="#3a3a3c" strokeWidth="1" />
+            <line x1="20" y1="16" x2="20" y2="34" stroke="#545456" strokeWidth="1.2" />
+            <line x1="32" y1="16" x2="32" y2="34" stroke="#545456" strokeWidth="1.2" />
+            <line x1="44" y1="16" x2="44" y2="34" stroke="#545456" strokeWidth="1.2" />
+            
+            {/* Wheels */}
+            <circle cx="26" cy="38" r="7.5" fill="#1c1c1e" />
+            <circle cx="26" cy="38" r="4.2" fill="#aeaeaf" />
+            <circle cx="44" cy="38" r="7.5" fill="#1c1c1e" />
+            <circle cx="44" cy="38" r="4.2" fill="#aeaeaf" />
+            <circle cx="69" cy="38" r="7.5" fill="#1c1c1e" />
+            <circle cx="69" cy="38" r="4.2" fill="#aeaeaf" />
+          </svg>
+        );
+
+      case 'trailer_container':
+        return (
+          <svg viewBox="0 0 100 50" width="100%" height="100%">
+            <defs>
+              <linearGradient id={gId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={paintColorLight} />
+                <stop offset="50%" stopColor={paintColor} />
+                <stop offset="100%" stopColor={paintColorDark} />
+              </linearGradient>
+              <linearGradient id="container-body" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="100%" stopColor="#e5e5ea" />
+              </linearGradient>
+              <linearGradient id="truck-glass" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#121820" stopOpacity="0.95" />
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="43" rx="46" ry="4.8" fill="rgba(0,0,0,0.25)" />
+            <rect x="6" y="36" width="88" height="5" fill="#1c1c1e" />
+            
+            {/* Cabin/Tractor (Paint color) */}
+            <path fill={`url(#${gId})`} d="M68,36 L68,14 L82,14 Q88,14 88,22 L88,36 Z" />
+            <path fill="url(#truck-glass)" d="M72,17 L80,17 L84,24 L72,24 Z" />
+            <path fill={`url(#${gId})`} opacity="0.8" d="M68,14 L80,11 L82,14 Z" />
+            
+            {/* Long Trailer Box (Container seams) */}
+            <rect x="8" y="13" width="56" height="23" fill="url(#container-body)" stroke="#8e8e93" strokeWidth="1" />
+            <line x1="22" y1="13" x2="22" y2="36" stroke="#d1d1d6" strokeWidth="0.8" />
+            <line x1="36" y1="13" x2="36" y2="36" stroke="#d1d1d6" strokeWidth="0.8" />
+            <line x1="50" y1="13" x2="50" y2="36" stroke="#d1d1d6" strokeWidth="0.8" />
+            
+            {/* Wheels */}
+            <circle cx="16" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="16" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="32" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="32" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="48" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="48" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="73" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="73" cy="39" r="4.2" fill="#aeaeaf" />
+            <circle cx="83" cy="39" r="7.5" fill="#1c1c1e" />
+            <circle cx="83" cy="39" r="4.2" fill="#aeaeaf" />
+          </svg>
+        );
+
+      default: {
+        let fallbackBodyStyle = 'sedan';
+        if (type === 'moto') fallbackBodyStyle = 'scooter';
+        else if (type === 'velo') fallbackBodyStyle = 'standard';
+        else if (type === 'truck_3t') fallbackBodyStyle = 'box_truck';
+        else if (type === 'truck_4t') fallbackBodyStyle = 'wing_body';
+        else if (type === 'trailer') fallbackBodyStyle = 'trailer_container';
+        else if (type === 'bus') fallbackBodyStyle = 'standard';
+        
+        if (bodyStyle !== fallbackBodyStyle) {
+          return renderVehicleSVG(type, fallbackBodyStyle, color);
+        }
+        return null;
+      }
+    }
+  };
+
+  const renderJDMPlateBox = (plate, isPreview = false) => {
+    const prefecture = plate.platePrefecture || '練馬';
+    const classCode = plate.plateClass || '300';
+    const hira = plate.plateHira || 'あ';
+    const number = plate.plateNumber || '12-34';
+    const plateType = plate.plateType || (plate.isCommercial ? 'commercial' : 'private');
+
+    let bg = 'linear-gradient(135deg, #f8f9fa, #ffffff)';
+    let border = '2.5px solid #2c3e2d';
+    let textColor = '#24522a';
+    let boltBg = '#8e8e93';
+    let hasBgGraphic = false;
+    let bgGraphicSvg = null;
+    let shadow = '0.5px 0.5px 0px rgba(255,255,255,0.8), -0.5px -0.5px 0px rgba(0,0,0,0.15)';
+
+    if (plateType === 'commercial') {
+      bg = 'linear-gradient(135deg, #1b3d20, #24522a)';
+      border = '2.5px solid #ffffff';
+      textColor = '#ffffff';
+      shadow = '0.5px 0.5px 0px rgba(0,0,0,0.4), -0.5px -0.5px 0px rgba(255,255,255,0.2)';
+    } else if (plateType === 'kei_private') {
+      bg = 'linear-gradient(135deg, #ffd83b, #ffd60a)';
+      border = '2.5px solid #1c1c1e';
+      textColor = '#1c1c1e';
+    } else if (plateType === 'kei_commercial') {
+      bg = 'linear-gradient(135deg, #2c2c2e, #1c1c1e)';
+      border = '2.5px solid #ffd60a';
+      textColor = '#ffd60a';
+      shadow = '0.5px 0.5px 0px rgba(0,0,0,0.4), -0.5px -0.5px 0px rgba(255,255,255,0.2)';
+    } else if (plateType === 'illustrated_fuji') {
+      bg = 'linear-gradient(to bottom, #b3e5fc, #e1f5fe, #ffffff)';
+      border = '2.5px solid #24522a';
+      textColor = '#24522a';
+      hasBgGraphic = true;
+      bgGraphicSvg = (
+        <svg viewBox="0 0 100 50" style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '80%', opacity: 0.85, pointerEvents: 'none' }}>
+          {/* Mount Fuji silhouette */}
+          <path d="M10,50 L42,24 L58,24 L90,50 Z" fill="#7bb9e8" />
+          {/* White Snowcap */}
+          <path d="M42,24 L48,18 Q50,16 52,18 L58,24 L54,28 Q50,26 46,28 Z" fill="#ffffff" />
+        </svg>
+      );
+    } else if (plateType === 'illustrated_expo') {
+      bg = 'linear-gradient(135deg, #f8f9fa, #ffffff)';
+      border = '2.5px solid #ff3b30';
+      textColor = '#1c1c1e';
+      hasBgGraphic = true;
+      bgGraphicSvg = (
+        <svg viewBox="0 0 100 50" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.8, pointerEvents: 'none' }}>
+          {/* Expo mascot red bubbles on borders */}
+          <circle cx="8" cy="8" r="5" fill="#ff3b30" />
+          <circle cx="18" cy="6" r="4" fill="#ff3b30" />
+          <circle cx="92" cy="12" r="6" fill="#ff3b30" />
+          <circle cx="91" cy="22" r="4" fill="#ff3b30" />
+          <circle cx="10" cy="42" r="5" fill="#ffffff" stroke="#ff3b30" strokeWidth="2" />
+          <circle cx="88" cy="42" r="5" fill="#ff3b30" />
+          {/* Mascot eye dots */}
+          <circle cx="92" cy="12" r="1.5" fill="#ffffff" />
+          <circle cx="92" cy="12" r="0.5" fill="#007aff" />
+        </svg>
+      );
+    } else if (plateType === 'illustrated_flower') {
+      bg = 'linear-gradient(135deg, #fff0f5, #ffe4e1)';
+      border = '2.5px solid #ff2d55';
+      textColor = '#881b37';
+      hasBgGraphic = true;
+      bgGraphicSvg = (
+        <svg viewBox="0 0 100 50" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.9, pointerEvents: 'none' }}>
+          {/* Pink cherry blossoms in corners */}
+          <g transform="translate(12, 12)">
+            <circle cx="0" cy="0" r="4" fill="#ff6b8b" />
+            <circle cx="-3" cy="-3" r="3.5" fill="#ff8da1" opacity="0.9" />
+            <circle cx="3" cy="-3" r="3.5" fill="#ff8da1" opacity="0.9" />
+            <circle cx="3" cy="3" r="3.5" fill="#ff8da1" opacity="0.9" />
+            <circle cx="-3" cy="3" r="3.5" fill="#ff8da1" opacity="0.9" />
+            <circle cx="0" cy="0" r="1" fill="#ffd60a" />
+          </g>
+          <g transform="translate(88, 38)">
+            <circle cx="0" cy="0" r="4.5" fill="#ff6b8b" />
+            <circle cx="-3.5" cy="-3.5" r="4" fill="#ff8da1" opacity="0.9" />
+            <circle cx="3.5" cy="-3.5" r="4" fill="#ff8da1" opacity="0.9" />
+            <circle cx="3.5" cy="3.5" r="4" fill="#ff8da1" opacity="0.9" />
+            <circle cx="-3.5" cy="3.5" r="4" fill="#ff8da1" opacity="0.9" />
+            <circle cx="0" cy="0" r="1" fill="#ffd60a" />
+          </g>
+          <path d="M50,8 Q52,5 50,2 Q48,5 50,8 Z" fill="#ffb7c5" transform="rotate(15 50 8)" />
+          <path d="M70,15 Q72,12 70,9 Q68,12 70,15 Z" fill="#ffb7c5" transform="rotate(-30 70 15)" />
+        </svg>
+      );
+    } else if (plateType === 'illustrated_matsudo') {
+      bg = 'linear-gradient(135deg, #fff0f5 0%, #e0f2f1 100%)';
+      border = '2.5px solid #2e7d32';
+      textColor = '#1c4224';
+      hasBgGraphic = true;
+      bgGraphicSvg = (
+        <svg viewBox="0 0 100 50" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.9, pointerEvents: 'none' }}>
+          {/* Tokiwadaira Sakura (Top Left pink branch) */}
+          <g transform="translate(12, 10)">
+            <circle cx="0" cy="0" r="3.5" fill="#ff6b8b" />
+            <circle cx="-2.5" cy="-2.5" r="3" fill="#ff8da1" opacity="0.85" />
+            <circle cx="2.5" cy="-2.5" r="3" fill="#ff8da1" opacity="0.85" />
+            <circle cx="2.5" cy="2.5" r="3" fill="#ff8da1" opacity="0.85" />
+            <circle cx="-2.5" cy="2.5" r="3" fill="#ff8da1" opacity="0.85" />
+            <circle cx="0" cy="0" r="0.75" fill="#ffd60a" />
+          </g>
+          <g transform="translate(24, 7)">
+            <circle cx="0" cy="0" r="2.5" fill="#ff8da1" opacity="0.8" />
+            <circle cx="-2" cy="-2" r="2" fill="#ffccd5" opacity="0.8" />
+            <circle cx="2" cy="-2" r="2" fill="#ffccd5" opacity="0.8" />
+            <circle cx="2" cy="2" r="2" fill="#ffccd5" opacity="0.8" />
+            <circle cx="-2" cy="2" r="2" fill="#ffccd5" opacity="0.8" />
+          </g>
+          {/* Hondo-ji Ajisai Hydrangeas (Bottom Right) */}
+          <g transform="translate(88, 38)">
+            <circle cx="-3" cy="-3" r="2.5" fill="#8c9eff" opacity="0.85" />
+            <circle cx="2" cy="-3" r="2.5" fill="#b388ff" opacity="0.85" />
+            <circle cx="-2" cy="2" r="2.5" fill="#80d8ff" opacity="0.85" />
+            <circle cx="2" cy="2" r="2.5" fill="#b388ff" opacity="0.85" />
+            <circle cx="0" cy="0" r="3" fill="#8c9eff" opacity="0.9" />
+          </g>
+          {/* Yagiri no Watashi Boat (Bottom Left/Center) */}
+          <g transform="translate(45, 41)">
+            {/* Water Waves */}
+            <path d="M-25,3 Q-15,1 -5,3 Q5,1 15,3 Q25,1 35,3" fill="none" stroke="#4fc3f7" strokeWidth="0.75" />
+            {/* Simple rowboat */}
+            <path d="M-8,1 L8,1 L11,-1 L-6,-1 Z" fill="#8d6e63" />
+            {/* Boatman / Passenger silhouette */}
+            <circle cx="0" cy="-4" r="1.5" fill="#5d4037" />
+            <path d="M-1.5,-2.5 L1.5,-2.5 L1,1 L-1,1 Z" fill="#5d4037" />
+            <line x1="-3" y1="-1" x2="-8" y2="4" stroke="#3e2723" strokeWidth="0.5" />
+          </g>
+        </svg>
+      );
+    }
+
+    const scale = isPreview ? 'scale(1.1)' : 'scale(1.2)';
+
+    return (
+      <div className={`jdm-plate-box ${plateType}`} style={{
+        width: '120px',
+        height: '72px',
+        border: border,
+        borderRadius: '5px',
+        background: bg,
+        color: textColor,
+        padding: '4px 6px',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        position: 'relative',
+        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+        fontFamily: '"Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif',
+        transform: scale,
+        overflow: 'hidden'
+      }}>
+        {hasBgGraphic && bgGraphicSvg}
+        
+        {/* Left Screw Slotted Bolt */}
+        <svg viewBox="0 0 10 10" style={{ position: 'absolute', top: '6px', left: '14px', width: '6px', height: '6px', zIndex: 2 }}>
+          <circle cx="5" cy="5" r="4.5" fill="#d1d1d6" stroke="#48484a" strokeWidth="0.75" />
+          <line x1="2.5" y1="5" x2="7.5" y2="5" stroke="#3a3a3c" strokeWidth="1" />
+        </svg>
+
+        {/* Right Screw Slotted Bolt */}
+        <svg viewBox="0 0 10 10" style={{ position: 'absolute', top: '6px', right: '14px', width: '6px', height: '6px', zIndex: 2 }}>
+          <circle cx="5" cy="5" r="4.5" fill="#d1d1d6" stroke="#48484a" strokeWidth="0.75" />
+          <line x1="5" y1="2.5" x2="5" y2="7.5" stroke="#3a3a3c" strokeWidth="1" />
+        </svg>
+
+        {/* JDM Top Row (Prefecture and Class Code spaced between bolts) */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          fontSize: '9.5px', 
+          lineHeight: 1, 
+          padding: '0 26px', 
+          marginTop: '3px', 
+          zIndex: 2, 
+          position: 'relative',
+          fontWeight: '900',
+          textShadow: shadow
+        }}>
+          <span>{prefecture}</span>
+          <span>{classCode}</span>
+        </div>
+
+        {/* JDM Main Row (Hiragana Calligraphy Left, 4-digit number Right) */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          padding: '0 6px', 
+          marginBottom: '2px', 
+          zIndex: 2, 
+          position: 'relative',
+          textShadow: shadow
+        }}>
+          <span style={{ 
+            fontSize: '14px', 
+            fontFamily: '"Hiragino Mincho ProN", serif', 
+            fontWeight: 'bold' 
+          }}>{hira}</span>
+          <span style={{ 
+            fontSize: '19px', 
+            letterSpacing: '1px', 
+            fontWeight: '900' 
+          }}>{number}</span>
+        </div>
+      </div>
+    );
+  };
+
+  const getProfileLangText = (key) => {
+    const lang = i18n.language || 'uz';
+    const dict = {
+      plateDesignLabel: {
+        uz: "🖼️ Avtoraqam turi",
+        ja: "🖼️ ナンバープレートデザイン",
+        en: "🖼️ License Plate Design"
+      },
+      driverBadgeLabel: {
+        uz: "🔰 Haydovchi belgisi",
+        ja: "🔰 運転者マーク",
+        en: "🔰 Driver Badge"
+      },
+      prefectureLabel: {
+        uz: "Prefektura (Hudud)",
+        ja: "地名 (陸運局)",
+        en: "Prefecture (LTO)"
+      },
+      classCodeLabel: {
+        uz: "Klass kodi",
+        ja: "分類番号",
+        en: "Class Code"
+      },
+      hiraLabel: {
+        uz: "Hiragana",
+        ja: "ひらがな",
+        en: "Hiragana"
+      },
+      numLabel: {
+        uz: "Raqam (masalan, 12-34)",
+        ja: "一連指定番号 (例 12-34)",
+        en: "Number (e.g. 12-34)"
+      },
+      constructorTitle: {
+        uz: "🇯🇵 Yaponiya Standartidagi Avtoraqam (JDM Plate Constructor):",
+        ja: "🇯🇵 日本のナンバープレート作成 (JDM Constructor):",
+        en: "🇯🇵 Japanese License Plate Constructor (JDM):"
+      },
+      opt_private: {
+        uz: "⬜ Shaxsiy standart (Oq rangli)",
+        ja: "⬜ 自家用・普通車 (白色)",
+        en: "⬜ Private Standard (White)"
+      },
+      opt_commercial: {
+        uz: "🟩 Tijoriy standart (Yashil rangli)",
+        ja: "🟩 事業用・普通車 (緑色)",
+        en: "🟩 Commercial Standard (Green)"
+      },
+      opt_kei_private: {
+        uz: "🟨 Kei-car shaxsiy (Sariq rangli)",
+        ja: "🟨 自家用・軽自動車 (黄色)",
+        en: "🟨 Kei-car Private (Yellow)"
+      },
+      opt_kei_commercial: {
+        uz: "⬛ Kei-car tijoriy (Qora rangli)",
+        ja: "⬛ 事業用・軽自動車 (黒色)",
+        en: "⬛ Kei-car Commercial (Black)"
+      },
+      opt_illustrated_fuji: {
+        uz: "🗻 Fuji tog'i tasvirli (Art Plate)",
+        ja: "🗻 富士山 図柄入りプレート (Art Plate)",
+        en: "🗻 Mount Fuji Art Plate"
+      },
+      opt_illustrated_expo: {
+        uz: "🔴 Osaka Expo 2025 esdalik raqami",
+        ja: "🔴 大阪・関西万博 記念プレート (EXPO 2025)",
+        en: "🔴 Osaka Expo 2025 Commemorative"
+      },
+      opt_illustrated_flower: {
+        uz: "🌸 Sakura va Nanohana gullari (Milliy)",
+        ja: "🌸 全国花柄図柄入りプレート (桜と菜の花)",
+        en: "🌸 National Sakura & Canola Flowers"
+      },
+      opt_illustrated_matsudo: {
+        uz: "🏞️ Matsudo mahalliy tasvirli raqami (Sakura, Ajisai & Yagiri boat)",
+        ja: "🏞️ 松戸版図柄入りナンバー (桜・あじさい・矢切の渡し)",
+        en: "🏞️ Matsudo Local Plate (Sakura, Ajisai & Yagiri)"
+      },
+      opt_badge_none: {
+        uz: "❌ Maxsus belgisiz (Standart)",
+        ja: "❌ 特殊マークなし (標準)",
+        en: "❌ No Special Badge (Standard)"
+      },
+      opt_badge_beginner: {
+        uz: "🔰 Shoshinsha (Yangi haydovchi)",
+        ja: "🔰 初心者マーク (若葉マーク)",
+        en: "🔰 Beginner Mark (Wakaba)"
+      },
+      opt_badge_elderly: {
+        uz: "🍀 Koreisha (Yoshi katta)",
+        ja: "🍀 高齢運転者マーク (もみじ)",
+        en: "🍀 Elderly Driver Mark (Yotsuba)"
+      },
+      opt_badge_disabled: {
+        uz: "♿ Nogironligi bor",
+        ja: "♿ 身体障害者マーク (車椅子)",
+        en: "♿ Physical Disability Mark"
+      },
+      opt_badge_hearing: {
+        uz: "🦋 Eshitish cheklangan",
+        ja: "🦋 聴覚障害者マーク (蝶マーク)",
+        en: "🦋 Hearing Impaired Mark"
+      },
+      myVehicleTitle: {
+        uz: "Mening Mashinam",
+        ja: "マイカー (登録車両)",
+        en: "My Vehicle"
+      },
+      editVehicle: {
+        uz: "Tahrirlash",
+        ja: "編集",
+        en: "Edit"
+      },
+      vehicleTypeLabel: {
+        uz: "Transport turi",
+        ja: "車種・カテゴリー",
+        en: "Vehicle Category"
+      },
+      vehicleModelLabel: {
+        uz: "Rusumi / Modeli",
+        ja: "メーカー・モデル",
+        en: "Make & Model"
+      },
+      vehicleBodyStyleLabel: {
+        uz: "Kuzov shakli",
+        ja: "ボディタイプ",
+        en: "Body Style"
+      },
+      vehicleYearLabel: {
+        uz: "Yili",
+        ja: "年式",
+        en: "Year"
+      },
+      vehicleColorLabel: {
+        uz: "Moshina rangi",
+        ja: "ボディカラー",
+        en: "Vehicle Color"
+      },
+      vehicleDimensionsLabel: {
+        uz: "Avtotransport o'lchamlari (Navigatsiya uchun)",
+        ja: "車両寸法 (ナビゲーション用)",
+        en: "Vehicle Dimensions (for Navigation)"
+      },
+      heightLabel: {
+        uz: "Balandlik",
+        ja: "車高 (高さ)",
+        en: "Height"
+      },
+      widthLabel: {
+        uz: "Eni",
+        ja: "車幅 (幅)",
+        en: "Width"
+      },
+      lengthLabel: {
+        uz: "Uzunlik",
+        ja: "全長 (長さ)",
+        en: "Length"
+      },
+      weightLabel: {
+        uz: "Vazni",
+        ja: "車両重量 (重さ)",
+        en: "Weight"
+      },
+      // Vehicle types
+      type_car: {
+        uz: "Yengil avto",
+        ja: "乗用車 (普通・軽)",
+        en: "Passenger Car"
+      },
+      type_moto: {
+        uz: "Motosikl",
+        ja: "二輪車 (バイク)",
+        en: "Motorcycle"
+      },
+      type_velo: {
+        uz: "Velosiped",
+        ja: "自転車",
+        en: "Bicycle"
+      },
+      type_truck_3t: {
+        uz: "3t Yuk mashinasi",
+        ja: "3t トラック",
+        en: "3t Truck"
+      },
+      type_truck_4t: {
+        uz: "4t Yuk mashinasi",
+        ja: "4t トラック",
+        en: "4t Truck"
+      },
+      type_trailer: {
+        uz: "Trailer (Katta yuk)",
+        ja: "大型トレーラー",
+        en: "Trailer (Heavy Cargo)"
+      },
+      type_bus: {
+        uz: "Avtobus",
+        ja: "バス",
+        en: "Bus"
+      },
+      // Body styles
+      body_sedan: {
+        uz: "Sedan",
+        ja: "セダン",
+        en: "Sedan"
+      },
+      body_hatchback: {
+        uz: "Hatchback",
+        ja: "ハッチバック",
+        en: "Hatchback"
+      },
+      body_suv: {
+        uz: "SUV (Krossover)",
+        ja: "SUV (クロスカントリー)",
+        en: "SUV"
+      },
+      body_minivan: {
+        uz: "Minivan / MPV",
+        ja: "ミニバン (ワンボックス)",
+        en: "Minivan / MPV"
+      },
+      body_scooter: {
+        uz: "Motoroller",
+        ja: "スクーター (カブ)",
+        en: "Scooter"
+      },
+      body_sportbike: {
+        uz: "Sportbayk",
+        ja: "スポーツバイク",
+        en: "Sportbike"
+      },
+      body_flatbed: {
+        uz: "Ochiq bortli",
+        ja: "平ボディ",
+        en: "Flatbed"
+      },
+      body_box_truck: {
+        uz: "Furgon (Yopiq)",
+        ja: "バン・箱型",
+        en: "Box Truck"
+      },
+      body_wing_body: {
+        uz: "Wing Body",
+        ja: "ウィングボディ",
+        en: "Wing Body"
+      },
+      body_dump_truck: {
+        uz: "Samosval",
+        ja: "ダンプ",
+        en: "Dump Truck"
+      },
+      body_trailer_container: {
+        uz: "Tirkamali",
+        ja: "コンテナトレーラー",
+        en: "Container Trailer"
+      },
+      body_standard: {
+        uz: "Standart",
+        ja: "標準仕様",
+        en: "Standard"
+      }
+    };
+    if (dict[key]) {
+      return dict[key][lang] || dict[key]['uz'];
+    }
+    return '';
+  };
+
+  const renderDriverMarkBadge = (mark) => {
+    switch (mark) {
+      case 'beginner':
+        return (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(52, 199, 89, 0.1)', border: '1px solid rgba(52, 199, 89, 0.3)', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', color: '#34c759', fontWeight: 'bold' }}>
+            <svg viewBox="0 0 24 24" width="16" height="16" style={{ verticalAlign: 'middle' }}>
+              <path d="M12,2 L4,8 L4,15 C4,19 8,22 12,23 C16,22 20,19 20,15 L20,8 Z" fill="#ffd60a" />
+              <path d="M12,2 L4,8 L4,15 C4,19 8,22 12,23 Z" fill="#30d158" />
+            </svg>
+            <span>{getProfileLangText('opt_badge_beginner')}</span>
+          </div>
+        );
+      case 'elderly':
+        return (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 159, 10, 0.1)', border: '1px solid rgba(255, 159, 10, 0.3)', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', color: '#ff9f0a', fontWeight: 'bold' }}>
+            <svg viewBox="0 0 24 24" width="16" height="16" style={{ verticalAlign: 'middle' }}>
+              <circle cx="9" cy="9" r="4.5" fill="#FF9F0A" />
+              <circle cx="15" cy="9" r="4.5" fill="#FFD60A" />
+              <circle cx="15" cy="15" r="4.5" fill="#30D158" />
+              <circle cx="9" cy="15" r="4.5" fill="#30B0C7" />
+              <path d="M12,7 L12,17 M7,12 L17,12" stroke="#ffffff" strokeWidth="1.2" />
+            </svg>
+            <span>{getProfileLangText('opt_badge_elderly')}</span>
+          </div>
+        );
+      case 'disabled':
+        return (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(10, 132, 255, 0.1)', border: '1px solid rgba(10, 132, 255, 0.3)', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', color: '#0a84ff', fontWeight: 'bold' }}>
+            <svg viewBox="0 0 24 24" width="16" height="16" style={{ verticalAlign: 'middle' }}>
+              <circle cx="12" cy="12" r="10" fill="#0A84FF" />
+              <circle cx="12" cy="8" r="2" fill="#ffffff" />
+              <path d="M14,13 H11 V10 H13 M9,16 A3,3 0 1,1 12,13" stroke="#ffffff" strokeWidth="1.5" fill="none" />
+            </svg>
+            <span>{getProfileLangText('opt_badge_disabled')}</span>
+          </div>
+        );
+      case 'hearing':
+        return (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(48, 176, 199, 0.1)', border: '1px solid rgba(48, 176, 199, 0.3)', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', color: '#30b0c7', fontWeight: 'bold' }}>
+            <svg viewBox="0 0 24 24" width="16" height="16" style={{ verticalAlign: 'middle' }}>
+              <circle cx="12" cy="12" r="10" fill="#ffd60a" />
+              <path d="M12,8 C9,5 7,12 12,15 C17,12 15,5 12,8 Z" fill="#30d158" />
+              <path d="M12,16 C9,19 7,12 12,9 C17,12 15,19 12,16 Z" fill="#30d158" />
+              <circle cx="12" cy="12" r="2" fill="#ffd60a" />
+            </svg>
+            <span>{getProfileLangText('opt_badge_hearing')}</span>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   
 
@@ -431,6 +1713,217 @@ const getLicenseLabel = (type) => {
     );
   }
 
+  // ===== ABOUT PAGE =====
+  if (activePage === 'about') {
+    return (
+      <div className="profile-container fade-in">
+        <div className="about-glow-container about-page-wrapper" style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '16px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          
+          {/* Clip Orbs container to prevent horizontal scrolling/shaking */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', borderRadius: '24px', pointerEvents: 'none', zIndex: 1 }}>
+            <div className="about-glow-orb orb1" />
+            <div className="about-glow-orb orb2" />
+          </div>
+
+          {/* Floating Back Button: Stays sticky at top-left, scrolls independently */}
+          <button 
+            className="icon-btn glass" 
+            onClick={() => setActivePage('main')} 
+            style={{ 
+              position: 'sticky', 
+              top: '0px', 
+              left: '0px', 
+              zIndex: 100, 
+              alignSelf: 'flex-start',
+              margin: 0, 
+              width: '40px', 
+              height: '40px', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              border: '1.2px solid var(--glass-border)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.04), inset 0 1px 1.5px rgba(255,255,255,0.4)',
+              cursor: 'pointer',
+              marginBottom: '-40px' /* Pulls the title up to align horizontally */
+            }}
+          >
+            <ArrowLeft size={20} />
+          </button>
+
+          {/* Title Row: Scrolls normally with content */}
+          <div className="about-animate-item about-delay-1" style={{ textAlign: 'center', zIndex: 2, position: 'relative', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+            <h2 style={{ fontSize: '19px', fontWeight: '950', margin: 0, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+              {t('aboutAppTitle', 'Michi (道) haqida')}
+            </h2>
+          </div>
+
+          {/* Single Unified Bento Grid */}
+          <div className="about-bento-grid" style={{ position: 'relative', zIndex: 2 }}>
+            
+            {/* Manifesto Quote Card (Span 2) */}
+            <div className="about-manifesto-card about-span-2 about-animate-item about-delay-2">
+              <span className="role-tag" style={{ border: 'none', background: 'var(--primary-light)', color: 'var(--primary)', padding: '3px 8px', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px', display: 'inline-block' }}>
+                {t('michiManifesto', 'Michi manifesti')}
+              </span>
+              <p className="about-manifesto-quote" style={{ fontSize: '13px', lineHeight: '1.45', margin: '0 0 12px 0' }}>
+                "{t('aboutVision')}"
+              </p>
+              <div className="about-manifesto-author" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, var(--primary) 0%, #AF52DE 100%)', color: 'white', fontSize: '14px', fontWeight: '900' }}>道</div>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)' }}>{t('michiTeam', 'Michi Ekotizimi Jamoasi')}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>International Halal Capital Group</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Vision Card (Span 1) */}
+            <div className="about-glass-card about-span-1 about-animate-item about-delay-3">
+              <div>
+                <h4 style={{ color: '#0A84FF', fontSize: '12.5px' }}>
+                  <Globe size={16} />
+                  Vision
+                </h4>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4', margin: 0 }}>
+                  {t('aboutSubtitle', 'Yaponiya bo\'yicha yagona raqamli ekotizim.')}
+                </p>
+              </div>
+            </div>
+
+            {/* Active Jobs Card (Span 1) */}
+            <div className="about-glass-card card-primary about-span-1 about-animate-item about-delay-4" style={{ textAlign: 'center', alignItems: 'center', justifyContent: 'center' }}>
+              <Briefcase size={20} style={{ color: 'var(--primary)', marginBottom: '4px' }} />
+              <strong className="about-shimmer-text" style={{ display: 'block', fontSize: '18px', fontWeight: '900', marginBottom: '1px' }}>
+                <StatCounter target={10} suffix="k+" />
+              </strong>
+              <span style={{ fontSize: '9px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase' }}>{t('aboutStatsPositions', 'Ish o\'rinlari')}</span>
+            </div>
+
+            {/* Corporate Backup & Guarantees Card (Span 2) */}
+            <div className="about-glass-card card-success about-span-2 about-animate-item about-delay-5">
+              <div>
+                <h4 style={{ color: '#34C759', fontSize: '12.5px' }}>
+                  <ShieldCheck size={16} />
+                  {t('aboutGuaranteesTitle', 'Kafolat')}
+                </h4>
+                <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', lineHeight: '1.4', margin: 0 }}>
+                  {t('aboutGuaranteesDesc', 'Loyihamiz barqarorligi International Halal Capital Group aktivlari bilan to\'liq kafolatlangan.')}
+                </p>
+              </div>
+            </div>
+
+            {/* Future Perks / Benefits Card (Span 2) */}
+            <div className="about-glass-card card-primary about-span-2 about-animate-item about-delay-6">
+              <div>
+                <h4 style={{ fontSize: '12.5px' }}>
+                  <Sparkles size={16} style={{ color: 'var(--primary)' }} />
+                  {t('aboutFuturePerksTitle', 'Imkoniyatlar')}
+                </h4>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4', marginBottom: '8px' }}>
+                  {t('aboutFuturePerksDesc', 'Yaqinda haydovchilar uchun chegirmali xizmatlar ishga tushadi:')}
+                </p>
+                <div className="about-perks-list">
+                  <div className="about-perk-row">
+                    <ShieldCheck size={14} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '1px' }} />
+                    <span style={{ fontSize: '11.5px', color: 'var(--text-main)', fontWeight: '600', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                      {t('perkInsuranceTitle', 'Sug\'urta chegirmalari')} 
+                      <span style={{ fontSize: '8.5px', background: 'var(--primary-light)', padding: '1px 5px', borderRadius: '4px', color: 'var(--primary)', fontWeight: '700' }}>{t('statusSoon', 'Tez kunda')}</span>
+                    </span>
+                  </div>
+                  <div className="about-perk-row">
+                    <Wrench size={14} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '1px' }} />
+                    <span style={{ fontSize: '11.5px', color: 'var(--text-main)', fontWeight: '600', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                      {t('perkShakaiTitle', 'Chegirmali Shakai')} 
+                      <span style={{ fontSize: '8.5px', background: 'var(--primary-light)', padding: '1px 5px', borderRadius: '4px', color: 'var(--primary)', fontWeight: '700' }}>{t('statusPlan', 'Reja')}</span>
+                    </span>
+                  </div>
+                  <div className="about-perk-row">
+                    <Briefcase size={14} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '1px' }} />
+                    <span style={{ fontSize: '11.5px', color: 'var(--text-main)', fontWeight: '600', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                      {t('perkPartsTitle', 'Ehtiyot qismlar')} 
+                      <span style={{ fontSize: '8.5px', background: 'var(--primary-light)', padding: '1px 5px', borderRadius: '4px', color: 'var(--primary)', fontWeight: '700' }}>{t('statusPlan', 'Reja')}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Companies Card (Span 1) */}
+            <div className="about-glass-card card-primary about-span-1 about-animate-item about-delay-7" style={{ padding: '16px 8px', textAlign: 'center', alignItems: 'center', justifyContent: 'center' }}>
+              <Building2 size={18} style={{ color: 'var(--primary)', marginBottom: '4px' }} />
+              <strong className="about-shimmer-text" style={{ display: 'block', fontSize: '17px', fontWeight: '900', marginBottom: '1px' }}>
+                <StatCounter target={500} suffix="+" />
+              </strong>
+              <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsCompanies', 'Kompaniyalar')}</span>
+            </div>
+
+            {/* Support Card (Span 1) */}
+            <div className="about-glass-card card-primary about-span-1 about-animate-item about-delay-8" style={{ padding: '16px 8px', textAlign: 'center', alignItems: 'center', justifyContent: 'center' }}>
+              <Phone size={18} style={{ color: 'var(--primary)', marginBottom: '4px' }} />
+              <strong className="about-shimmer-text" style={{ display: 'block', fontSize: '17px', fontWeight: '900', marginBottom: '1px' }}>
+                <StatCounter target={24} suffix="/7" />
+              </strong>
+              <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsSupport', 'Ko\'mak')}</span>
+            </div>
+
+            {/* Contacts Section Title (Span 2) */}
+            <div style={{ padding: '8px 0 0 0', borderTop: '1px solid var(--glass-border)', marginTop: '4px', width: '100%', display: 'flex', alignItems: 'center', gap: '6px' }} className="about-span-2">
+              <Mail size={14} style={{ color: '#0A84FF' }} />
+              <span style={{ fontSize: '12.5px', fontWeight: '800', color: 'var(--text-main)' }}>
+                {t('aboutContactUsTitle', 'Aloqa Departamenti')}
+              </span>
+            </div>
+
+            {/* Contact buttons (Four individual span 1 grid items for visual symmetry) */}
+            <a href="mailto:support@michi.jp.net" className="about-contact-card-btn about-span-1">
+              <span>{t('contactDriverSupport', 'Qo\'llab-quvvatlash')}</span>
+              <strong style={{ fontSize: '11px' }}>support@michi.jp.net</strong>
+            </a>
+            <a href="mailto:info@michi.jp.net" className="about-contact-card-btn about-span-1">
+              <span>{t('contactGeneral', 'Umumiy savollar')}</span>
+              <strong style={{ fontSize: '11px' }}>info@michi.jp.net</strong>
+            </a>
+            <a href="mailto:partners@michi.jp.net" className="about-contact-card-btn about-span-1">
+              <span>{t('contactPartnership', 'Hamkorlik')}</span>
+              <strong style={{ fontSize: '11px' }}>partners@michi.jp.net</strong>
+            </a>
+            <a href="mailto:invest@michi.jp.net" className="about-contact-card-btn about-span-1">
+              <span>{t('contactInvestors', 'Investorlar')}</span>
+              <strong style={{ fontSize: '11px' }}>invest@michi.jp.net</strong>
+            </a>
+
+            {/* Website link (Span 2) */}
+            <a 
+              href="https://www.michi.jp.net" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="about-contact-card-btn about-span-2" 
+              style={{ 
+                width: '100%', 
+                flexDirection: 'row', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                gap: '8px', 
+                padding: '12px', 
+                background: 'linear-gradient(135deg, var(--primary) 0%, #AF52DE 100%)', 
+                borderColor: 'transparent',
+                boxShadow: '0 6px 20px rgba(90, 85, 234, 0.2)'
+              }}
+            >
+              <Globe size={16} color="#FFF" />
+              <strong style={{ color: '#FFF', fontSize: '13px', fontWeight: '800' }}>{t('officialWebsite', 'www.michi.jp.net rasmiy sayti')}</strong>
+            </a>
+            {/* Copyright (Span 2) */}
+            <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--text-secondary)', marginTop: '6px' }} className="about-span-2">
+              © 2026 Michi (道). All rights reserved.
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ===== MY POSTED ADS PAGE (COMPANY) =====
   if (activePage === 'my_ads') {
     return (
@@ -753,6 +2246,22 @@ const getLicenseLabel = (type) => {
                       )) : 
                       <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided', 'Kiritilmagan')}</span>
                     }
+                  </div>
+                </div>
+                <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
+                  <span className="field-label" style={{marginBottom: '4px'}}>{t('jlptLanguageLabel', 'JLPT Yapon tili darajasi')}</span>
+                  <div>
+                    {profileData.jlptStatus && profileData.jlptStatus.verified ? (
+                      <div className="glass squircle animate-scale-up" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', background: 'rgba(48, 209, 88, 0.08)', border: '1px solid rgba(48, 209, 88, 0.3)', borderRadius: '12px' }}>
+                        <ShieldCheck size={18} color="#30D158" className="animate-pulse" />
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <strong style={{ fontSize: '13.5px', color: '#30D158' }}>JLPT {profileData.jlptStatus.level} Verified ✓</strong>
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Cert No: {profileData.jlptStatus.certNo}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided', 'Tasdiqlanmagan')}</span>
+                    )}
                   </div>
                 </div>
                   {/* Work History */}
@@ -1181,6 +2690,17 @@ const getLicenseLabel = (type) => {
                               </div>
                             </div>
 
+                            {resumeInfo.jlptStatus && resumeInfo.jlptStatus.verified && (
+                              <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
+                                <span style={{ color: '#8E8E93' }}>JLPT Yapon tili darajasi:</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', background: 'rgba(48, 209, 88, 0.08)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(48, 209, 88, 0.2)' }}>
+                                  <ShieldCheck size={14} color="#30D158" />
+                                  <strong style={{ color: '#30D158', fontSize: '12px' }}>JLPT {resumeInfo.jlptStatus.level} Verified ✓</strong>
+                                  <span style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>({resumeInfo.jlptStatus.certNo})</span>
+                                </div>
+                              </div>
+                            )}
+
                             {resumeInfo.workHistory && resumeInfo.workHistory.length > 0 && (
                               <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', gap: '6px' }}>
                                 <span style={{ color: '#8E8E93' }}>{t('workExperience', 'Ish tajribasi')}:</span>
@@ -1602,6 +3122,12 @@ const getLicenseLabel = (type) => {
         <h2>{profileData.fullName}</h2>
         <p>{profileData.email}</p>
         <span className="role-tag glass">{getRoleLabel()}</span>
+        {profileData.jlptStatus && profileData.jlptStatus.verified && (
+          <span className="role-tag glass animate-scale-up" style={{ border: '1px solid rgba(48, 209, 88, 0.4)', background: 'rgba(48, 209, 88, 0.08)', color: '#30D158', display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: '6px', fontWeight: 'bold' }}>
+            <ShieldCheck size={12} color="#30D158" />
+            <span>JLPT {profileData.jlptStatus.level} Verified</span>
+          </span>
+        )}
       </div>
 
       <div className="profile-menu">
@@ -1772,6 +3298,781 @@ const getLicenseLabel = (type) => {
             </div>
           </div>
         )}
+
+        {/* Mening Mashinam (My Vehicle) Card */}
+        {(userRole === 'driver' || userRole === 'guest') && (
+          <div className="menu-group glass squircle resume-card" style={{ marginTop: '16px' }}>
+            <div className="resume-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                <Wrench size={20} color="#30D158" />
+                <h3 style={{ margin: 0 }}>{getProfileLangText('myVehicleTitle')}</h3>
+              </div>
+              {!isEditingVehicle && (
+                <button 
+                  className="resume-edit-btn"
+                  onClick={() => {
+                    setEditVehicleData({ ...myVehicle });
+                    setIsEditingVehicle(true);
+                  }}
+                >
+                  📝 {getProfileLangText('editVehicle')}
+                </button>
+              )}
+            </div>
+
+            <div className="resume-body">
+              {!isEditingVehicle ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+                  {/* Visual Layout: 3D Vehicle Render Left, Japanese License Plate Right */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1.2fr 0.8fr',
+                    gap: '12px',
+                    width: '100%',
+                    alignItems: 'center'
+                  }}>
+                    {/* Vehicle Graphic Display */}
+                    <div className="vehicle-display-box squircle" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
+                      border: '1px solid var(--glass-border)',
+                      padding: '12px',
+                      height: '110px',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 60%)',
+                        pointerEvents: 'none'
+                      }}></div>
+                      <div style={{ width: '130px', height: '65px', transform: 'scale(1.2)' }}>
+                        {renderVehicleSVG(myVehicle.type, myVehicle.bodyStyle, myVehicle.color)}
+                      </div>
+                    </div>
+
+                    {/* JDM License Plate Display */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                      {renderJDMPlateBox(myVehicle, false)}
+                      {myVehicle.driverMark && myVehicle.driverMark !== 'none' && (
+                        <div style={{ marginTop: '14px' }}>
+                          {renderDriverMarkBadge(myVehicle.driverMark)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                    <div className="resume-field">
+                      <span className="field-label">{getProfileLangText('vehicleTypeLabel')}</span>
+                      <span className="field-value" style={{ textTransform: 'capitalize' }}>
+                        {myVehicle.type === 'car' ? getProfileLangText('type_car') :
+                         myVehicle.type === 'moto' ? getProfileLangText('type_moto') :
+                         myVehicle.type === 'velo' ? getProfileLangText('type_velo') :
+                         myVehicle.type === 'truck_3t' ? getProfileLangText('type_truck_3t') :
+                         myVehicle.type === 'truck_4t' ? getProfileLangText('type_truck_4t') :
+                         myVehicle.type === 'trailer' ? getProfileLangText('type_trailer') :
+                         myVehicle.type === 'bus' ? getProfileLangText('type_bus') : myVehicle.type}
+                      </span>
+                    </div>
+
+                    <div className="resume-field">
+                      <span className="field-label">{getProfileLangText('vehicleModelLabel')}</span>
+                      <span className="field-value" style={{ fontWeight: 'bold' }}>
+                        {myVehicle.make} {myVehicle.model} {myVehicle.trim && `(${myVehicle.trim})`}
+                      </span>
+                    </div>
+
+                    <div className="resume-field">
+                      <span className="field-label">{getProfileLangText('vehicleBodyStyleLabel')}</span>
+                      <span className="field-value" style={{ textTransform: 'capitalize' }}>
+                        {myVehicle.bodyStyle === 'sedan' ? getProfileLangText('body_sedan') :
+                         myVehicle.bodyStyle === 'hatchback' ? getProfileLangText('body_hatchback') :
+                         myVehicle.bodyStyle === 'suv' ? getProfileLangText('body_suv') :
+                         myVehicle.bodyStyle === 'minivan' ? getProfileLangText('body_minivan') :
+                         myVehicle.bodyStyle === 'scooter' ? getProfileLangText('body_scooter') :
+                         myVehicle.bodyStyle === 'sportbike' ? getProfileLangText('body_sportbike') :
+                         myVehicle.bodyStyle === 'flatbed' ? getProfileLangText('body_flatbed') :
+                         myVehicle.bodyStyle === 'box_truck' ? getProfileLangText('body_box_truck') :
+                         myVehicle.bodyStyle === 'wing_body' ? getProfileLangText('body_wing_body') :
+                         myVehicle.bodyStyle === 'dump_truck' ? getProfileLangText('body_dump_truck') :
+                         myVehicle.bodyStyle === 'trailer_container' ? getProfileLangText('body_trailer_container') :
+                         myVehicle.bodyStyle || getProfileLangText('body_standard')}
+                      </span>
+                    </div>
+
+                    <div className="resume-field">
+                      <span className="field-label">{getProfileLangText('vehicleYearLabel')}</span>
+                      <span className="field-value">{myVehicle.year || '-'}</span>
+                    </div>
+
+                    <div className="resume-field" style={{ gridColumn: 'span 2', borderTop: '1px solid var(--glass-border)', paddingTop: '8px', marginTop: '4px' }}>
+                      <span className="field-label" style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        📐 <span>{getProfileLangText('vehicleDimensionsLabel')}</span>
+                        <span style={{ fontSize: '9px', background: '#34C759', color: 'white', padding: '1px 5px', borderRadius: '3px', fontWeight: 'normal', marginLeft: 'auto' }}>
+                          {i18n.language === 'ja' ? '自動計算' : i18n.language === 'en' ? 'AUTO CALCULATED' : 'AVTOMAT HISOBLANGAN'}
+                        </span>
+                      </span>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('heightLabel')}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.height} m</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('widthLabel')}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.width} m</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('lengthLabel')}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.length} m</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('weightLabel')}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.weight} t</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%' }}>
+                  {/* Realtime Live Preview with dynamic paint color and JDM Plate Preview */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1.2fr 0.8fr',
+                    gap: '12px',
+                    width: '100%',
+                    alignItems: 'center'
+                  }}>
+                    {/* Live SVG Preview */}
+                    <div className="vehicle-display-box squircle" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
+                      border: '1px dashed var(--primary)',
+                      padding: '12px',
+                      height: '100px',
+                      position: 'relative'
+                    }}>
+                      <div style={{ width: '120px', height: '60px', transform: 'scale(1.2)' }}>
+                        {renderVehicleSVG(editVehicleData.type, editVehicleData.bodyStyle, editVehicleData.color)}
+                      </div>
+                      <span style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: '6px',
+                        fontSize: '7px',
+                        background: 'var(--primary)',
+                        color: 'white',
+                        padding: '1px 4px',
+                        borderRadius: '3px',
+                        fontWeight: 'bold'
+                      }}>PREVIEW</span>
+                    </div>
+
+                    {/* Live Plate Preview */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                      {renderJDMPlateBox(editVehicleData, true)}
+                      {editVehicleData.driverMark && editVehicleData.driverMark !== 'none' && (
+                        <div style={{ transform: 'scale(0.9)', marginTop: '4px' }}>
+                          {renderDriverMarkBadge(editVehicleData.driverMark)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Form inputs */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{getProfileLangText('vehicleTypeLabel')}</label>
+                      <select 
+                        value={editVehicleData.type}
+                        onChange={e => {
+                          const val = e.target.value;
+                          let defaultStyle = 'sedan';
+                          let mk = 'Toyota';
+                          let md = 'Harrier';
+                          
+                          if (val === 'moto') { defaultStyle = 'scooter'; mk = 'Honda'; md = 'Super Cub'; }
+                          else if (val === 'velo') { defaultStyle = 'standard'; mk = 'Bridgestone'; md = 'City Cycle'; }
+                          else if (val === 'truck_3t') { defaultStyle = 'box_truck'; mk = 'Isuzu'; md = 'Elf'; }
+                          else if (val === 'truck_4t') { defaultStyle = 'wing_body'; mk = 'Hino'; md = 'Ranger'; }
+                          else if (val === 'trailer') { defaultStyle = 'trailer_container'; mk = 'Fuso'; md = 'Super Great'; }
+                          else if (val === 'bus') { defaultStyle = 'standard'; mk = 'Isuzu'; md = 'Gala'; }
+                          
+                          const dims = getVehiclePresetDimensions(val, defaultStyle);
+                          
+                          setEditVehicleData(prev => ({ 
+                             ...prev, 
+                             type: val,
+                             make: mk,
+                             model: md,
+                             bodyStyle: defaultStyle,
+                             ...dims
+                          }));
+                        }}
+                        style={{
+                          background: 'var(--card-bg, #2c2c2e)',
+                          color: 'var(--text-main)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '8px',
+                          padding: '7px',
+                          fontSize: '13px',
+                          outline: 'none'
+                        }}
+                      >
+                        <option value="car">{getProfileLangText('type_car')}</option>
+                        <option value="moto">{getProfileLangText('type_moto')}</option>
+                        <option value="velo">{getProfileLangText('type_velo')}</option>
+                        <option value="truck_3t">{getProfileLangText('type_truck_3t')}</option>
+                        <option value="truck_4t">{getProfileLangText('type_truck_4t')}</option>
+                        <option value="trailer">{getProfileLangText('type_trailer')}</option>
+                        <option value="bus">{getProfileLangText('type_bus')}</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{getProfileLangText('vehicleBodyStyleLabel')}</label>
+                      <select
+                        value={editVehicleData.bodyStyle}
+                        onChange={e => {
+                          const val = e.target.value;
+                          const dims = getVehiclePresetDimensions(editVehicleData.type, val);
+                          setEditVehicleData(prev => ({ 
+                            ...prev, 
+                            bodyStyle: val,
+                            ...dims
+                          }));
+                        }}
+                        style={{
+                          background: 'var(--card-bg, #2c2c2e)',
+                          color: 'var(--text-main)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '8px',
+                          padding: '7px',
+                          fontSize: '13px',
+                          outline: 'none'
+                        }}
+                      >
+                        {editVehicleData.type === 'car' && (
+                          <>
+                            <option value="sedan">{getProfileLangText('body_sedan')}</option>
+                            <option value="hatchback">{getProfileLangText('body_hatchback')}</option>
+                            <option value="suv">{getProfileLangText('body_suv')}</option>
+                            <option value="minivan">{getProfileLangText('body_minivan')}</option>
+                          </>
+                        )}
+                        {editVehicleData.type === 'moto' && (
+                          <>
+                            <option value="scooter">{getProfileLangText('body_scooter')}</option>
+                            <option value="sportbike">{getProfileLangText('body_sportbike')}</option>
+                          </>
+                        )}
+                        {editVehicleData.type === 'velo' && <option value="standard">{getProfileLangText('body_standard')}</option>}
+                        {editVehicleData.type === 'truck_3t' && (
+                          <>
+                            <option value="flatbed">{getProfileLangText('body_flatbed')}</option>
+                            <option value="box_truck">{getProfileLangText('body_box_truck')}</option>
+                          </>
+                        )}
+                        {editVehicleData.type === 'truck_4t' && (
+                          <>
+                            <option value="flatbed">{getProfileLangText('body_flatbed')}</option>
+                            <option value="box_truck">{getProfileLangText('body_box_truck')}</option>
+                            <option value="wing_body">{getProfileLangText('body_wing_body')}</option>
+                            <option value="dump_truck">{getProfileLangText('body_dump_truck')}</option>
+                          </>
+                        )}
+                        {editVehicleData.type === 'trailer' && <option value="trailer_container">{getProfileLangText('body_trailer_container')}</option>}
+                        {editVehicleData.type === 'bus' && <option value="standard">{getProfileLangText('body_standard')}</option>}
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleMake', 'Ishlab chiqaruvchi (Brand)')}</label>
+                      <select 
+                        value={editVehicleData.make}
+                        onChange={e => {
+                          const val = e.target.value;
+                          let defaultModel = 'Other';
+                          let defaultBody = 'sedan';
+                          
+                          if (editVehicleData.type === 'car') {
+                            if (val === 'Toyota') { defaultModel = 'Harrier'; defaultBody = 'suv'; }
+                            else if (val === 'Honda') { defaultModel = 'Freed'; defaultBody = 'minivan'; }
+                            else if (val === 'Nissan') { defaultModel = 'Serena'; defaultBody = 'minivan'; }
+                          } else if (editVehicleData.type === 'moto') {
+                            if (val === 'Honda') { defaultModel = 'Super Cub'; defaultBody = 'scooter'; }
+                          } else if (editVehicleData.type === 'truck_3t') {
+                            if (val === 'Isuzu') { defaultModel = 'Elf'; defaultBody = 'box_truck'; }
+                            else if (val === 'Mitsubishi Fuso') { defaultModel = 'Canter'; defaultBody = 'box_truck'; }
+                          } else if (editVehicleData.type === 'truck_4t') {
+                            if (val === 'Hino') { defaultModel = 'Ranger'; defaultBody = 'wing_body'; }
+                            else if (val === 'Isuzu') { defaultModel = 'Forward'; defaultBody = 'wing_body'; }
+                            else if (val === 'Mitsubishi Fuso') { defaultModel = 'Fighter'; defaultBody = 'wing_body'; }
+                          } else if (editVehicleData.type === 'trailer') {
+                            if (val === 'Hino') { defaultModel = 'Profia'; defaultBody = 'trailer_container'; }
+                            else if (val === 'Isuzu') { defaultModel = 'Giga'; defaultBody = 'trailer_container'; }
+                            else if (val === 'Mitsubishi Fuso') { defaultModel = 'Super Great'; defaultBody = 'trailer_container'; }
+                          } else if (editVehicleData.type === 'bus') {
+                            defaultModel = 'Gala';
+                            defaultBody = 'standard';
+                          } else if (editVehicleData.type === 'velo') {
+                            defaultModel = 'City Cycle';
+                            defaultBody = 'standard';
+                          }
+
+                          const dims = getVehiclePresetDimensions(editVehicleData.type, defaultBody);
+                          
+                          setEditVehicleData(prev => ({ 
+                            ...prev, 
+                            make: val, 
+                            model: defaultModel,
+                            bodyStyle: defaultBody,
+                            ...dims
+                          }));
+                        }}
+                        style={{
+                          background: 'var(--card-bg, #2c2c2e)',
+                          color: 'var(--text-main)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '8px',
+                          padding: '7px',
+                          fontSize: '13px',
+                          outline: 'none'
+                        }}
+                      >
+                        <option value="Toyota">Toyota</option>
+                        <option value="Honda">Honda</option>
+                        <option value="Nissan">Nissan</option>
+                        <option value="Hino">Hino</option>
+                        <option value="Isuzu">Isuzu</option>
+                        <option value="Mitsubishi Fuso">Mitsubishi Fuso</option>
+                        <option value="Boshqa">Boshqa (Other)</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel', 'Modeli')}</label>
+                      {editVehicleData.make !== 'Boshqa' ? (
+                        <select 
+                          value={editVehicleData.model}
+                          onChange={e => {
+                            const val = e.target.value;
+                            // Update bodyStyle if matched in preset models
+                            let matchedBody = editVehicleData.bodyStyle;
+                            if (val === 'Harrier') matchedBody = 'suv';
+                            else if (val === 'Prius') matchedBody = 'sedan';
+                            else if (val === 'Alphard' || val === 'Freed' || val === 'Stepwgn' || val === 'Serena') matchedBody = 'minivan';
+                            else if (val === 'Yaris' || val === 'Fit' || val === 'Note') matchedBody = 'hatchback';
+                            else if (val === 'Super Cub') matchedBody = 'scooter';
+                            else if (val === 'Elf' || val === 'Canter') matchedBody = 'box_truck';
+                            else if (val === 'Ranger' || val === 'Forward' || val === 'Fighter') matchedBody = 'wing_body';
+                            else if (val === 'Profia' || val === 'Giga' || val === 'Super Great') matchedBody = 'trailer_container';
+                            else if (val === 'Gala') matchedBody = 'standard';
+                            else if (val === 'City Cycle') matchedBody = 'standard';
+                            
+                            const dims = getVehiclePresetDimensions(editVehicleData.type, matchedBody);
+                            
+                            setEditVehicleData(prev => ({ 
+                              ...prev, 
+                              model: val, 
+                              bodyStyle: matchedBody,
+                              ...dims
+                            }));
+                          }}
+                          style={{
+                            background: 'var(--card-bg, #2c2c2e)',
+                            color: 'var(--text-main)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '8px',
+                            padding: '7px',
+                            fontSize: '13px',
+                            outline: 'none'
+                          }}
+                        >
+                          {editVehicleData.make === 'Toyota' && (
+                            <>
+                              <option value="Harrier">Harrier</option>
+                              <option value="Prius">Prius</option>
+                              <option value="Alphard">Alphard</option>
+                              <option value="Yaris">Yaris</option>
+                            </>
+                          )}
+                          {editVehicleData.make === 'Honda' && (
+                            <>
+                              <option value="Freed">Freed</option>
+                              <option value="Stepwgn">Stepwgn</option>
+                              <option value="Fit">Fit</option>
+                              <option value="Super Cub">Super Cub</option>
+                            </>
+                          )}
+                          {editVehicleData.make === 'Nissan' && (
+                            <>
+                              <option value="Serena">Serena Van</option>
+                              <option value="Note">Note Hatchback</option>
+                            </>
+                          )}
+                          {editVehicleData.make === 'Hino' && (
+                            <>
+                              <option value="Ranger">Ranger 4t</option>
+                              <option value="Profia">Profia 10t</option>
+                            </>
+                          )}
+                          {editVehicleData.make === 'Isuzu' && (
+                            <>
+                              <option value="Elf">Elf 3t</option>
+                              <option value="Forward">Forward 4t</option>
+                              <option value="Giga">Giga 10t</option>
+                            </>
+                          )}
+                          {editVehicleData.make === 'Mitsubishi Fuso' && (
+                            <>
+                              <option value="Canter">Canter 3t</option>
+                              <option value="Fighter">Fighter 4t</option>
+                              <option value="Super Great">Super Great 10t</option>
+                            </>
+                          )}
+                        </select>
+                      ) : (
+                        <input 
+                          type="text"
+                          placeholder="Harrier, Freed..."
+                          value={editVehicleData.model}
+                          onChange={e => setEditVehicleData(prev => ({ ...prev, model: e.target.value }))}
+                          style={{
+                            background: 'var(--card-bg, #2c2c2e)',
+                            color: 'var(--text-main)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '8px',
+                            padding: '7px',
+                            fontSize: '13px',
+                            outline: 'none'
+                          }}
+                          required
+                        />
+                      )}
+                    </div>
+
+                    <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--glass-border)', paddingTop: '10px', marginTop: '4px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                        {getProfileLangText('constructorTitle')}
+                      </span>
+                      
+                      {/* Datalist containing ALL 100+ Japanese Plate Offices */}
+                      <datalist id="jdm-prefectures">
+                        {/* Hokkaido */}
+                        <option value="札幌" /><option value="函館" /><option value="旭川" /><option value="室蘭" /><option value="釧路" /><option value="帯広" /><option value="北見" /><option value="小樽" /><option value="苫小牧" /><option value="知床" />
+                        {/* Tohoku */}
+                        <option value="青森" /><option value="八户" /><option value="盛岡" /><option value="岩手" /><option value="平泉" /><option value="仙台" /><option value="宮城" /><option value="秋田" /><option value="山形" /><option value="庄内" /><option value="福島" /><option value="会津" /><option value="郡山" /><option value="いわき" />
+                        {/* Kanto */}
+                        <option value="水戸" /><option value="土浦" /><option value="つくば" /><option value="宇tsunomiya" /><option value="とちぎ" /><option value="那須" /><option value="前橋" /><option value="高崎" /><option value="群馬" /><option value="大宮" /><option value="熊谷" /><option value="川口" /><option value="所沢" /><option value="川越" /><option value="春日部" /><option value="越谷" /><option value="千葉" /><option value="成田" /><option value="習志野" /><option value="袖ヶ浦" /><option value="野田" /><option value="柏" /><option value="松戸" /><option value="市川" /><option value="船橋" /><option value="市原" /><option value="品川" /><option value="世田谷" /><option value="練馬" /><option value="杉並" /><option value="板橋" /><option value="足立" /><option value="江東" /><option value="葛飾" /><option value="八王子" /><option value="多摩" /><option value="横浜" /><option value="川崎" /><option value="相模" /><option value="湘南" /><option value="小田原" />
+                        {/* Chubu */}
+                        <option value="新潟" /><option value="長岡" /><option value="上越" /><option value="富山" /><option value="金沢" /><option value="石川" /><option value="福井" /><option value="山梨" /><option value="富士山" /><option value="長野" /><option value="松本" /><option value="諏訪" /><option value="岐阜" /><option value="飛騨" /><option value="静岡" /><option value="沼津" /><option value="浜松" /><option value="伊豆" /><option value="豊橋" /><option value="岡崎" /><option value="豊田" /><option value="名古屋" /><option value="尾張小牧" /><option value="一宮" /><option value="春日井" /><option value="三河" /><option value="津" /><option value="鈴鹿" /><option value="四日市" /><option value="伊勢志摩" />
+                        {/* Kinki */}
+                        <option value="滋賀" /><option value="京都" /><option value="大阪" /><option value="なにわ" /><option value="和泉" /><option value="堺" /><option value="飛鳥" /><option value="奈良" /><option value="橿原" /><option value="神戸" /><option value="姫路" /><option value="尼崎" /><option value="和歌山" />
+                        {/* Chugoku & Shikoku */}
+                        <option value="鳥取" /><option value="島根" /><option value="出雲" /><option value="岡山" /><option value="倉敷" /><option value="広島" /><option value="福山" /><option value="下関" /><option value="山口" /><option value="徳島" /><option value="香川" /><option value="高松" /><option value="愛媛" /><option value="高知" />
+                        {/* Kyushu & Okinawa */}
+                        <option value="福岡" /><option value="久留米" /><option value="北九州" /><option value="筑豊" /><option value="佐賀" /><option value="長崎" /><option value="佐世保" /><option value="熊本" /><option value="大分" /><option value="宮崎" /><option value="鹿児島" /><option value="奄美" /><option value="沖縄" /><option value="宮古" /><option value="八重山" />
+                      </datalist>
+
+                      {/* 2-Column Grid for JDM Plate Constructor Input Fields */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '10px',
+                        width: '100%',
+                        boxSizing: 'border-box'
+                      }}>
+                        {/* Prefecture Text Input (Auto-complete linked to datalist) */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('prefectureLabel')}</label>
+                          <input 
+                            type="text"
+                            list="jdm-prefectures"
+                            placeholder="練馬, 松戸, 品川..."
+                            maxLength="4"
+                            value={editVehicleData.platePrefecture || ''}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, platePrefecture: e.target.value.trim().slice(0, 4) }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '6px',
+                              padding: '8px',
+                              fontSize: '13px',
+                              outline: 'none',
+                              textAlign: 'center',
+                              fontWeight: 'bold',
+                              width: '100%',
+                              boxSizing: 'border-box'
+                            }}
+                          />
+                        </div>
+
+                        {/* Class Code */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('classCodeLabel')}</label>
+                          <input 
+                            type="text" 
+                            maxLength="3"
+                            placeholder="300"
+                            value={editVehicleData.plateClass || ''}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, plateClass: e.target.value.replace(/\D/g, '') }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '6px',
+                              padding: '8px',
+                              fontSize: '13px',
+                              outline: 'none',
+                              textAlign: 'center',
+                              width: '100%',
+                              boxSizing: 'border-box'
+                            }}
+                          />
+                        </div>
+
+                        {/* Hiragana Select */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('hiraLabel')}</label>
+                          <select 
+                            value={editVehicleData.plateHira || 'あ'}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, plateHira: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '6px',
+                              padding: '8px',
+                              fontSize: '13px',
+                              outline: 'none',
+                              width: '100%',
+                              boxSizing: 'border-box',
+                              height: '37px'
+                            }}
+                          >
+                            {JDM_HIRAGANA.map(hira => <option key={hira} value={hira}>{hira}</option>)}
+                          </select>
+                        </div>
+
+                        {/* 4 Digit Main Number */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('numLabel')}</label>
+                          <input 
+                            type="text" 
+                            placeholder="12-34"
+                            value={editVehicleData.plateNumber || ''}
+                            onChange={e => {
+                              let val = e.target.value.replace(/[^\d-]/g, '');
+                              if (val.length === 4 && !val.includes('-')) {
+                                val = val.slice(0, 2) + '-' + val.slice(2);
+                              }
+                              setEditVehicleData(prev => ({ ...prev, plateNumber: val }));
+                            }}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '6px',
+                              padding: '8px',
+                              fontSize: '13px',
+                              outline: 'none',
+                              textAlign: 'center',
+                              letterSpacing: '1px',
+                              fontWeight: 'bold',
+                              width: '100%',
+                              boxSizing: 'border-box'
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* JDM Plate design selection */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
+                        <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{getProfileLangText('plateDesignLabel')}</label>
+                        <select
+                          value={editVehicleData.plateType || 'private'}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setEditVehicleData(prev => ({ 
+                              ...prev, 
+                              plateType: val,
+                              isCommercial: val === 'commercial' || val === 'kei_commercial'
+                            }));
+                          }}
+                          style={{
+                            background: 'var(--card-bg, #2c2c2e)',
+                            color: 'var(--text-main)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '8px',
+                            padding: '8px',
+                            fontSize: '13px',
+                            outline: 'none',
+                            width: '100%',
+                            boxSizing: 'border-box'
+                          }}
+                        >
+                          <option value="private">{getProfileLangText('opt_private')}</option>
+                          <option value="commercial">{getProfileLangText('opt_commercial')}</option>
+                          <option value="kei_private">{getProfileLangText('opt_kei_private')}</option>
+                          <option value="kei_commercial">{getProfileLangText('opt_kei_commercial')}</option>
+                          <option value="illustrated_fuji">{getProfileLangText('opt_illustrated_fuji')}</option>
+                          <option value="illustrated_expo">{getProfileLangText('opt_illustrated_expo')}</option>
+                          <option value="illustrated_flower">{getProfileLangText('opt_illustrated_flower')}</option>
+                          <option value="illustrated_matsudo">{getProfileLangText('opt_illustrated_matsudo')}</option>
+                        </select>
+                      </div>
+
+                      {/* Driver Mark badge selection */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+                        <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{getProfileLangText('driverBadgeLabel')}</label>
+                        <select
+                          value={editVehicleData.driverMark || 'none'}
+                          onChange={e => setEditVehicleData(prev => ({ ...prev, driverMark: e.target.value }))}
+                          style={{
+                            background: 'var(--card-bg, #2c2c2e)',
+                            color: 'var(--text-main)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '8px',
+                            padding: '8px',
+                            fontSize: '13px',
+                            outline: 'none',
+                            width: '100%',
+                            boxSizing: 'border-box'
+                          }}
+                        >
+                          <option value="none">{getProfileLangText('opt_badge_none')}</option>
+                          <option value="beginner">{getProfileLangText('opt_badge_beginner')}</option>
+                          <option value="elderly">{getProfileLangText('opt_badge_elderly')}</option>
+                          <option value="disabled">{getProfileLangText('opt_badge_disabled')}</option>
+                          <option value="hearing">{getProfileLangText('opt_badge_hearing')}</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Color picker */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', gridColumn: 'span 2' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleColor', 'Moshina rangi')}</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <input 
+                          type="color" 
+                          value={editVehicleData.color} 
+                          onChange={e => setEditVehicleData(prev => ({ ...prev, color: e.target.value }))}
+                          style={{
+                            border: 'none',
+                            outline: 'none',
+                            background: 'none',
+                            width: '32px',
+                            height: '32px',
+                            cursor: 'pointer'
+                          }}
+                        />
+                        {/* Preset color chips */}
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          {[
+                            { hex: '#5E5CE6', name: 'Indigo' },
+                            { hex: '#F2F2F7', name: 'Pearl White' },
+                            { hex: '#1C1C1E', name: 'Obsidian' },
+                            { hex: '#FF3B30', name: 'Red' },
+                            { hex: '#FF9F0A', name: 'Orange' },
+                            { hex: '#34C759', name: 'Green' },
+                            { hex: '#8E8E93', name: 'Silver' },
+                            { hex: '#0A84FF', name: 'Blue' }
+                          ].map(chip => (
+                            <button
+                              key={chip.hex}
+                              type="button"
+                              onClick={() => setEditVehicleData(prev => ({ ...prev, color: chip.hex }))}
+                              style={{
+                                width: '20px',
+                                height: '20px',
+                                borderRadius: '50%',
+                                background: chip.hex,
+                                border: editVehicleData.color === chip.hex ? '2px solid var(--primary)' : '1px solid rgba(0,0,0,0.2)',
+                                cursor: 'pointer',
+                                transition: 'all 0.1s ease',
+                                boxShadow: editVehicleData.color === chip.hex ? '0 0 6px var(--primary)' : 'none'
+                              }}
+                              title={chip.name}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'none' }}>
+                      {/* Sub-inputs strictly for form values mapping (locked parameters hidden from active clutter) */}
+                      <input type="hidden" value={editVehicleData.height} />
+                      <input type="hidden" value={editVehicleData.width} />
+                      <input type="hidden" value={editVehicleData.length} />
+                      <input type="hidden" value={editVehicleData.weight} />
+                    </div>
+
+                    {/* Action Buttons Row at the bottom of the form (Prevents Header Horizontal Clutter) */}
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '16px', width: '100%', gridColumn: 'span 2', boxSizing: 'border-box' }}>
+                      <button 
+                        type="button"
+                        style={{
+                          flex: 1,
+                          background: 'linear-gradient(135deg, rgba(255, 59, 48, 0.15), rgba(255, 45, 85, 0.15))',
+                          border: '1px solid rgba(255, 59, 48, 0.3)',
+                          color: '#FF453A',
+                          borderRadius: '8px',
+                          padding: '10px',
+                          fontSize: '14px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                        onClick={() => setIsEditingVehicle(false)}
+                      >
+                        ❌ {t('cancel', 'Bekor qilish')}
+                      </button>
+                      <button 
+                        type="button"
+                        style={{
+                          flex: 1,
+                          background: 'linear-gradient(135deg, #0A84FF, #007AFF)',
+                          border: 'none',
+                          color: '#ffffff',
+                          borderRadius: '8px',
+                          padding: '10px',
+                          fontSize: '14px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          boxShadow: '0 4px 12px rgba(10, 132, 255, 0.3)'
+                        }}
+                        onClick={handleSaveVehicle}
+                      >
+                        💾 {t('save', 'Saqlash')}
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Company Profile Card */}
 
         {/* Company Profile Card */}
         {userRole === 'company' && (
@@ -1966,6 +4267,12 @@ const getLicenseLabel = (type) => {
           <div className="menu-item" onClick={() => setActivePage('settings')}>
             <div className="menu-icon"><Settings size={20} /></div>
             <span>{t('settings')}</span>
+            <ChevronRight size={20} color="#8E8E93" className="chevron" />
+          </div>
+          <div className="menu-divider"></div>
+          <div className="menu-item" onClick={() => setActivePage('about')}>
+            <div className="menu-icon"><Info size={20} /></div>
+            <span>{t('aboutApp', 'Platforma haqida')}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
         </div>

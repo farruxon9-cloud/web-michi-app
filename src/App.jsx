@@ -1,25 +1,22 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import { Sun, Moon, FileText } from 'lucide-react';
+import { Sun, Moon, FileText, Bell } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Splash from './components/Splash';
 import LanguageSelect from './components/LanguageSelect';
 import RoleSelect from './components/RoleSelect';
 import BottomNav from './components/BottomNav';
 import './App.css';
-import { MOCK_JOBS } from './components/DriverFeed';
-import { MOCK_SCHOOLS } from './components/DrivingAcademy';
+import Dashboard from './components/Dashboard';
+import DriverFeed, { MOCK_JOBS } from './components/DriverFeed';
+import JobDetail from './components/JobDetail';
+import DrivingAcademy, { MOCK_SCHOOLS } from './components/DrivingAcademy';
+import ServiceComingSoon from './components/ServiceComingSoon';
+import Profile from './components/Profile';
+import AdminDashboard from './components/AdminDashboard';
+import CompanyHome from './components/CompanyHome';
 import VoiceAssistant from './components/VoiceAssistant';
+import RobotAvatar from './components/RobotAvatar';
 import ErrorBoundary from './components/ErrorBoundary';
-
-// Lazy loading heavy components for faster initial load
-const Dashboard = lazy(() => import('./components/Dashboard'));
-const DriverFeed = lazy(() => import('./components/DriverFeed'));
-const JobDetail = lazy(() => import('./components/JobDetail'));
-const DrivingAcademy = lazy(() => import('./components/DrivingAcademy'));
-const ServiceComingSoon = lazy(() => import('./components/ServiceComingSoon'));
-const Profile = lazy(() => import('./components/Profile'));
-const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
-const CompanyHome = lazy(() => import('./components/CompanyHome'));
 
 const TRACKS = [
   { id: 1, title: 'Tokyo Rain (東京の雨)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/chill-lofi-background-music-331434.mp3' },
@@ -218,6 +215,9 @@ function App() {
   const [selectedBenefits, setSelectedBenefits] = useState([]);
   const [minSalary, setMinSalary] = useState(0);
   const [selectedPrefecture, setSelectedPrefecture] = useState('all');
+  const [selectedCity, setSelectedCity] = useState('all');
+  const [stationQuery, setStationQuery] = useState('');
+  const [onlyNearStation, setOnlyNearStation] = useState(false);
 
   const togglePlay = () => {
     setIsPlaying(prev => !prev);
@@ -258,6 +258,18 @@ function App() {
       setActiveTab(backTab);
       setBackTab(null);
     }
+  };
+
+  // handleNavigateToInternationalJobs: Dashboarddagi Xalqaro bento card bosilganda ishlaydi.
+  const handleNavigateToInternationalJobs = () => {
+    setSelectedBenefits(['international']);
+    setSelectedLicenses([]);
+    setSelectedLangLevel('all');
+    setJobSearchQuery('');
+    setJobActiveSegment('all');
+    setMinSalary(0);
+    setSelectedPrefecture('all');
+    setActiveTab('jobs');
   };
 
   // Dark mode
@@ -330,7 +342,8 @@ function App() {
     motivation: '',
     selfPR: '',
     hobbies: '',
-    personalRequests: '貴社規定に従います。'
+    personalRequests: '貴社規定に従います。',
+    jlptStatus: null
   });
 
   // Disabled auto-save logic for role and profile
@@ -838,6 +851,7 @@ function App() {
             setProfileActivePage={setProfileActivePage}
             setProfileActivePageSource={setProfileActivePageSource}
             userRole={userRole}
+            onNavigateToInternational={handleNavigateToInternationalJobs}
           />
         );
       case 'jobs':
@@ -872,6 +886,12 @@ function App() {
             setMinSalary={setMinSalary}
             selectedPrefecture={selectedPrefecture}
             setSelectedPrefecture={setSelectedPrefecture}
+            selectedCity={selectedCity}
+            setSelectedCity={setSelectedCity}
+            stationQuery={stationQuery}
+            setStationQuery={setStationQuery}
+            onlyNearStation={onlyNearStation}
+            setOnlyNearStation={setOnlyNearStation}
           />
         );
       case 'academy':
@@ -957,7 +977,7 @@ function App() {
           />
         );
       default:
-        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} verifiedCompanies={verifiedCompanies} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
     }
   };
 
@@ -969,37 +989,50 @@ function App() {
       <div className="glass-blob blob-3"></div>
 
       <header className="global-header">
-        <div className="user-profile-corner">
-          <img src={getAvatarSrc()} alt="User" className="header-avatar" style={{ border: '2px solid var(--primary)', padding: '2px', borderRadius: '50%', background: '#fff' }} />
-          <span className="header-username">{getUserNameWithHonorific()}</span>
+        {/* Left Side: Clickable MICHI Logo (redirects to Home) */}
+        <div 
+          className="header-logo-left"
+          onClick={() => setActiveTab('home')}
+          title="Bosh sahifa"
+        >
+          <div className="logo-kanji">道</div>
+          <span className="logo-text">MICHI</span>
         </div>
 
-        <button
-          className="theme-toggle-btn"
-          onClick={() => setDarkMode(prev => !prev)}
-          aria-label="Toggle theme"
-        >
-          <div className={`theme-toggle-track ${darkMode ? 'dark' : 'light'}`}>
-            <div className="theme-toggle-thumb">
-              {darkMode ? <Moon size={14} strokeWidth={2.5} /> : <Sun size={14} strokeWidth={2.5} />}
+        {/* Center: Mathematically Centered Theme Toggle Switch (sliding track) */}
+        <div className="header-theme-toggle-centered">
+          <button
+            className="theme-toggle-btn"
+            onClick={() => setDarkMode(prev => !prev)}
+            aria-label="Toggle theme"
+            title={darkMode ? "Kunduzgi rejim" : "Tungi rejim"}
+          >
+            <div className={`theme-toggle-track ${darkMode ? 'dark' : 'light'}`}>
+              <div className="theme-toggle-thumb">
+                {darkMode ? <Moon size={11} strokeWidth={2.5} /> : <Sun size={11} strokeWidth={2.5} />}
+              </div>
             </div>
-          </div>
-        </button>
+          </button>
+        </div>
 
-        <div className="logo">
-          <div className="logo-kanji">道</div>
-          MICHI
+        {/* Right Side: Standalone Robot Avatar (Separated AI widget) */}
+        <div className="header-robot-right">
+          <RobotAvatar 
+            isVoiceActive={isVoiceActive} 
+            voiceStatus={voiceStatus} 
+            onClick={handleVoiceToggle} 
+          />
         </div>
       </header>
 
       <main className="main-content" style={{ zIndex: 10 }}>
-        <ChunkErrorBoundary><Suspense fallback={<div style={{display:'flex', justifyContent:'center', padding:40, color:'#8E8E93'}}>{t('loading', 'Yuklanmoqda...')}</div>}>
+        <ChunkErrorBoundary>
           {renderTabContent()}
-        </Suspense></ChunkErrorBoundary>
+        </ChunkErrorBoundary>
       </main>
 
       {selectedJob && (
-        <ChunkErrorBoundary><Suspense fallback={<div style={{display:'flex', justifyContent:'center', padding:40, color:'#8E8E93'}}>{t('loading', 'Yuklanmoqda...')}</div>}>
+        <ChunkErrorBoundary>
           <JobDetail 
             job={selectedJob} 
             onBack={() => setSelectedJob(null)} 
@@ -1016,16 +1049,30 @@ function App() {
               setActiveTab('profile');
             }}
           />
-        </Suspense></ChunkErrorBoundary>
+        </ChunkErrorBoundary>
       )}
 
       {!(activeTab === 'profile' && profileActivePage === 'resume_builder') && (
         <BottomNav 
           activeTab={activeTab} 
           setActiveTab={(tab) => {
+            // Agar foydalanuvchi faol turgan profile tabini takroran (2-marta) bossa, profilning asosiy oynasiga qaytaradi
+            if (tab === 'profile' && activeTab === 'profile') {
+              setProfileActivePage('main');
+            }
+            
             setSelectedJob(null);
             setSelectedSchool(null);
             setBackTab(null);
+            if (tab === 'jobs') {
+              setSelectedBenefits([]);
+              setSelectedLicenses([]);
+              setSelectedLangLevel('all');
+              setJobSearchQuery('');
+              setJobActiveSegment('all');
+              setMinSalary(0);
+              setSelectedPrefecture('all');
+            }
             setActiveTab(tab);
           }}
           unreadCount={showProfileBadges ? unreadCount : 0}

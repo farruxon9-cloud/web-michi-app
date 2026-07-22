@@ -249,7 +249,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
     return (
       <div className="role-container slide-up">
         <div className="auth-card glass squircle" style={{ textAlign: 'center', padding: '40px 24px' }}>
-          <button className="icon-btn" onClick={() => setAuthStep('register')} style={{ position: 'absolute', top: 20, left: 20 }}>
+          <button className="icon-btn glass" onClick={() => setAuthStep('register')} style={{ position: 'absolute', top: 20, left: 20 }}>
             <ArrowLeft size={20} />
           </button>
           <MailCheck size={48} color="#0A84FF" style={{ margin: '20px auto' }} />
@@ -325,7 +325,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
       <div className="role-container login-centered-container slide-up">
         <div className="auth-card glass squircle" style={{ position: 'relative', width: '100%' }}>
           <button 
-            className="icon-btn" 
+            className="icon-btn glass" 
             onClick={() => {
               if (recoveryStep === 'code') setRecoveryStep('email');
               else if (recoveryStep === 'new_password') setRecoveryStep('code');
@@ -438,7 +438,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
     return (
       <div className="role-container login-centered-container slide-up">
         <div className="auth-card glass squircle" style={{ position: 'relative', width: '100%' }}>
-          <button className="icon-btn" onClick={() => setAuthStep('role')} style={{ position: 'absolute', top: '16px', left: '16px' }}>
+          <button className="icon-btn glass" onClick={() => setAuthStep('role')} style={{ position: 'absolute', top: '16px', left: '16px' }}>
             <ArrowLeft size={20} />
           </button>
           

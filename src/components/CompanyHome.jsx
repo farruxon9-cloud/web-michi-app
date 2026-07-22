@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload, Clock, Banknote, Share2, Briefcase, CheckCircle2 } from 'lucide-react';
+import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload, Clock, Banknote, Share2, Briefcase, CheckCircle2, Globe } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import { compressImage } from '../utils/imageCompressor';
 import './DriverFeed.css';
@@ -9,27 +9,32 @@ const INITIAL_COMPANY_JOBS = [
   {
     id: 1, company: "Sagawa Express", title: "Mahalliy yetkazib berish (Local Delivery)", salary: "¥300,000 / oyiga",
     image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Tokyo, Koto-ku", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100"
+    location: "Tokyo, Koto-ku", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    nearestStation: "Kokusai-tenjijo Station", walkTime: 8
   },
   {
     id: 2, company: "Sagawa Express", title: "Xalqaro yuk tashish (Trailer)", salary: "¥500,000 / oyiga",
     image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Kanagawa, Yokohama", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100"
+    location: "Kanagawa, Yokohama", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    nearestStation: "Motomachi-Chukagai Station", walkTime: 12
   },
   {
     id: 3, company: "Sagawa Express", title: "Tungi reys haydovchisi (10t)", salary: "¥450,000 / oyiga",
     image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Saitama, Omiya", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100"
+    location: "Saitama, Omiya", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    nearestStation: "Omiya Station", walkTime: 5
   },
   {
     id: 4, company: "Sagawa Express", title: "Ekskavator va Maxsus texnika haydovchisi", salary: "¥380,000 / oyiga",
     image: "https://images.unsplash.com/photo-1541888062837-7b247f082e05?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Chiba, Matsudo", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100"
+    location: "Chiba, Matsudo", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    nearestStation: "Tokiwadaira Station", walkTime: 15
   },
   {
     id: 5, company: "Sagawa Express", title: "Omborxona Forklift operatori", salary: "¥250,000 / oyiga",
     image: "https://images.unsplash.com/photo-1587293852726-70cdb56c28ea?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Aichi, Nagoya", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100"
+    location: "Aichi, Nagoya", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    nearestStation: "Nagoya Station", walkTime: 10
   }
 ];
 
@@ -74,15 +79,16 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   const { t } = useTranslation();
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAdTypeSelect, setShowAdTypeSelect] = useState(false);
+  const [showJobTypeSelect, setShowJobTypeSelect] = useState(false);
   const [selectedAdType, setSelectedAdType] = useState('job');
   const [jobImage, setJobImage] = useState(null);
   const fileInputRef = useRef(null);
 
   React.useEffect(() => {
     if (onFormToggle) {
-      onFormToggle(showAddForm || showAdTypeSelect);
+      onFormToggle(showAddForm || showAdTypeSelect || showJobTypeSelect);
     }
-  }, [showAddForm, showAdTypeSelect, onFormToggle]);
+  }, [showAddForm, showAdTypeSelect, showJobTypeSelect, onFormToggle]);
 
   React.useEffect(() => {
     if (jobToEdit) {
@@ -112,7 +118,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           courses: jobToEdit.courses || ['Oogata', 'Chugata', 'Futsu'],
           hasShoukai: (jobToEdit.shoukaiFee > 0 || jobToEdit.hasShoukai === 'yes' || jobToEdit.hasShoukai === true) ? 'yes' : 'no',
           shoukaiFee: jobToEdit.shoukaiFee ? String(jobToEdit.shoukaiFee) : '',
-          shoukaiConditions: jobToEdit.shoukaiConditions || ''
+          shoukaiConditions: jobToEdit.shoukaiConditions || '',
+          phoneMode: jobToEdit.phoneMode || 'public',
+          isInternational: jobToEdit.isInternational || false
         });
       } else {
         setNewJob({
@@ -136,7 +144,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           hasShoukai: (jobToEdit.hasShoukai === true || jobToEdit.hasShoukai === 'yes' || jobToEdit.shoukaiFee > 0) ? 'yes' : 'no',
           shoukaiFee: jobToEdit.shoukaiFee ? String(jobToEdit.shoukaiFee) : '',
           shoukaiConditions: jobToEdit.shoukaiConditions || '',
-          license: jobToEdit.license || []
+          license: jobToEdit.license || [],
+          phoneMode: jobToEdit.phoneMode || 'public',
+          isInternational: jobToEdit.isInternational || false,
+          type: jobToEdit.type || 'fulltime',
+          nearestStation: jobToEdit.nearestStation || '',
+          walkTime: jobToEdit.walkTime ? String(jobToEdit.walkTime) : ''
         });
       }
       setJobImage(jobToEdit.image || null);
@@ -170,7 +183,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     shoukaiConditions: '',
     langs: ['UZ', 'JP'], // Default driving school languages
     courses: ['Oogata', 'Chugata', 'Futsu'], // Default driving school courses
-    license: [] // Array for regular job licenses if needed
+    license: [], // Array for regular job licenses if needed
+    phoneMode: 'public',
+    isInternational: false,
+    type: 'fulltime',
+    nearestStation: '',
+    walkTime: ''
   });
   const [errors, setErrors] = useState({});
 
@@ -193,10 +211,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     { value: 'Yo\'q', key: 'ins_none' }
   ];
   const FOREIGNERS_OPTIONS = [
-    { value: 'Viza yordami bor (Sponsorship)', key: 'for_visa' },
-    { value: 'Faqat PR / Teijusha', key: 'for_pr' },
-    { value: 'Barcha chet elliklar qabul', key: 'for_all' },
-    { value: 'Yapon tilini bilish N3+', key: 'for_n3' }
+    { value: 'foreigners_visa', key: 'foreigners_visa' },
+    { value: 'foreigners_visa_renew', key: 'foreigners_visa_renew' },
+    { value: 'foreigners_ok', key: 'foreigners_ok' },
+    { value: 'foreigners_n4', key: 'foreigners_n4' },
+    { value: 'foreigners_n3', key: 'foreigners_n3' },
+    { value: 'foreigners_n2', key: 'foreigners_n2' }
   ];
   const HOUSING_OPTIONS = [
     { value: 'Yotoqxona mavjud', key: 'hou_dorm' },
@@ -214,8 +234,17 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   ];
 
 
-  const companyJobs = (jobs || []).filter(j => j.company === (profileData?.fullName || "Sagawa Express"));
-  const companySchools = (schools || []).filter(s => s.name === (profileData?.fullName || "Koyama Driving School"));
+  const isMyJob = (job) => {
+    const myName = profileData?.fullName;
+    if (!myName) return false;
+    return job.company === myName || (myName === 'Sagawa Express' && job.company === 'Sagawa Express');
+  };
+
+  const isMySchool = (school) => {
+    const myName = profileData?.fullName;
+    if (!myName) return false;
+    return school.name === myName || (myName === 'Koyama Driving School' && school.name === 'Koyama Driving School');
+  };
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
@@ -253,6 +282,32 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     });
   };
 
+  const handleFormBack = () => {
+    if (showAddForm) {
+      setShowAddForm(false);
+      setErrors({});
+      setJobImage(null);
+      
+      if (jobToEdit) {
+        setJobToEdit(null);
+        return;
+      }
+      
+      if (selectedAdType === 'school') {
+        setShowAdTypeSelect(true);
+      } else {
+        setShowJobTypeSelect(true);
+      }
+    } else if (showJobTypeSelect) {
+      setShowJobTypeSelect(false);
+      if (profileData?.companyType === 'driving_school') {
+        setShowAdTypeSelect(true);
+      }
+    } else if (showAdTypeSelect) {
+      setShowAdTypeSelect(false);
+    }
+  };
+
   const handleAddJob = () => {
     // 1. Mandatory Fields Validation with inline errors
     const newErrors = {};
@@ -279,8 +334,21 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      // Scroll to top smoothly
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      const errorList = [];
+      if (newErrors.title) errorList.push(isAdCourse ? t('schoolTypeLabel', 'Toifalar') : t('jobTitleLabel', 'Sarlavha'));
+      if (newErrors.salary) errorList.push(isAdCourse ? t('schoolPriceLabel', 'Boshlang\'ich narxi') : t('salaryLabel', 'Maosh'));
+      if (newErrors.postalCode) errorList.push(t('postalCodeLabel', 'Pochta indeksi'));
+      if (newErrors.prefecture) errorList.push(t('prefectureLabel', 'Prefektura'));
+      if (newErrors.detailAddress) errorList.push(t('detailAddressLabel', 'Batafsil manzil'));
+      if (newErrors.phone) errorList.push(t('phoneLabel', 'Telefon'));
+      if (newErrors.email) errorList.push(t('emailLabel', 'Email'));
+      if (newErrors.description) errorList.push(isAdCourse ? t('schoolDescLabel', 'Tavsif') : t('jobDescLabel', 'Batafsil tavsif'));
+      if (newErrors.hasShoukai) errorList.push(t('shoukaiSettings', 'Shoukai sozlamalari'));
+      if (newErrors.shoukaiFee) errorList.push(t('shoukaiSumLabel', 'Shoukai summasi'));
+
+      alert(`${t('validationFailedAlert', 'Iltimos, barcha majburiy maydonlarni to\'ldiring')}:\n- ${errorList.join('\n- ')}`);
       return;
     }
     
@@ -347,7 +415,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         shoukaiFee: newJob.hasShoukai === 'yes' ? Number(newJob.shoukaiFee) : 0,
         shoukaiAmount: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : "0",
         shoukai: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : "0",
-        shoukaiConditions: newJob.shoukaiConditions || t('defaultJobShoukaiConditions', 'Tavsiya qilingan nomzod ishga qabul qilinib, kamida 3 oy ishlasa shoukai puli to\'lab beriladi.')
+        shoukaiConditions: newJob.shoukaiConditions || t('defaultJobShoukaiConditions', 'Tavsiya qilingan nomzod ishga qabul qilinib, kamida 3 oy ishlasa shoukai puli to\'lab beriladi.'),
+        phoneMode: newJob.phoneMode || 'public',
+        isInternational: newJob.isInternational || false,
+        type: newJob.type || 'fulltime',
+        nearestStation: newJob.nearestStation || '',
+        walkTime: newJob.walkTime ? Number(newJob.walkTime) : ''
       };
 
       if (newJob.id) {
@@ -380,7 +453,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       shoukaiFee: '', 
       shoukaiConditions: '',
       langs: ['UZ', 'JP'],
-      courses: ['Oogata', 'Chugata', 'Futsu']
+      courses: ['Oogata', 'Chugata', 'Futsu'],
+      phoneMode: 'public',
+      isInternational: false
     });
   };
 
@@ -424,16 +499,66 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     };
 
     return (
-      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
-          <button className="icon-btn glass" onClick={() => { setShowAddForm(false); setJobImage(null); setErrors({}); }}>
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px', position: 'relative' }}>
+        {/* Pinned Sticky Back Button */}
+        <div style={{ 
+          position: 'sticky', 
+          top: '12px', 
+          left: '16px', 
+          zIndex: 120, 
+          width: 'fit-content',
+          marginBottom: '-40px',
+          pointerEvents: 'none'
+        }}>
+          <button 
+            className="icon-btn glass animate-scale-up" 
+            onClick={handleFormBack}
+            style={{ 
+              pointerEvents: 'auto',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              background: 'var(--glass-bg)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid var(--glass-border)'
+            }}
+          >
             <ArrowLeft size={20} />
           </button>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>
+        </div>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 72px' }}>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>
             {isAdCourse ? t('addNewSchoolAd', "Yangi avtomaktab e'loni") : t('addNewJob', "Yangi ish e'loni qo'shish")}
           </h2>
         </div>
+
+        {/* International Recruitment Mode Badge Indicator */}
+        {!isAdCourse && newJob.isInternational && (
+          <div 
+            className="glass squircle animate-fade-in"
+            style={{ 
+              margin: '0 16px 20px 16px', 
+              padding: '16px', 
+              background: 'linear-gradient(135deg, rgba(94, 92, 230, 0.1), rgba(175, 82, 222, 0.1))', 
+              border: '1px solid rgba(175, 82, 222, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}
+          >
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, #5E5CE6, #AF52DE)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Globe size={20} color="#FFF" />
+            </div>
+            <div>
+              <h4 style={{ margin: '0 0 2px 0', fontSize: '14.5px', fontWeight: '800', color: 'var(--text-main)' }}>
+                {t('recruitmentInternational', "Xalqaro vakansiya / Tokutei Ginou")}
+              </h4>
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.85 }}>
+                Chet eldagi nomzodlarni jalb qilish uchun maxsus viza va yordam so'rovnomasi faol.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div style={{ padding: '0 16px' }}>
           {/* Image Upload Section */}
@@ -526,6 +651,47 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               {errors.salary && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.salary}</span>}
             </div>
 
+            {!isAdCourse && (
+              <div className="input-group chip-group-container" style={{ marginBottom: '16px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
+                  {t('jobTypeLabel', 'Ish turi / Bandlik shakli')} <span style={{ color: '#FF3B30' }}>*</span>
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {[
+                    { value: 'fulltime', label: t('jobType_fulltime', 'Doimiy (Seishain)') },
+                    { value: 'contract', label: t('jobType_contract', 'Shartnoma (Keiyaku)') },
+                    { value: 'parttime', label: t('jobType_parttime', 'Kunbay/Soatbay (Arubaito)') }
+                  ].map(opt => {
+                    const isSelected = newJob.type === opt.value;
+                    const isDisabled = newJob.isInternational && opt.value === 'parttime';
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`form-chip ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                        disabled={isDisabled}
+                        onClick={() => {
+                          setNewJob({ ...newJob, type: opt.value });
+                        }}
+                        style={{
+                          opacity: isDisabled ? 0.45 : 1,
+                          cursor: isDisabled ? 'not-allowed' : 'pointer',
+                          textDecoration: isDisabled ? 'line-through' : 'none'
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {newJob.isInternational && (
+                  <span style={{ fontSize: '11.5px', color: '#FF9F0A', marginTop: '8px', display: 'block', fontWeight: '500', lineHeight: '1.4' }}>
+                    {t('sswArubaitoWarning', '⚠️ Tokutei Ginou (SSW) vizasi qonunchiligiga ko\'ra, part-time (arubaito) ishlash taqiqlanadi.')}
+                  </span>
+                )}
+              </div>
+            )}
+
             <div className="input-group" style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
                 {isAdCourse ? t('schoolDiscountLabel', 'A\'zolar uchun chegirma (Ixtiyoriy)') : t('bonusLabel', 'Bonus puli bormi? (Ixtiyoriy)')}
@@ -608,6 +774,45 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               />
               {errors.detailAddress && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.detailAddress}</span>}
             </div>
+
+            {!isAdCourse && (
+              <>
+                <div className="input-group" style={{ marginBottom: '16px' }}>
+                  <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                    {t('nearestStationLabel', 'Eng yaqin metro/poyezd bekati')}
+                  </label>
+                  <input 
+                    type="text" 
+                    value={newJob.nearestStation} 
+                    onChange={e => setNewJob({...newJob, nearestStation: e.target.value})} 
+                    placeholder={t('nearestStationPlaceholder', "Masalan: Shinjuku bekati, Omiya bekati")} 
+                    className="auth-input"
+                    maxLength={50}
+                  />
+                </div>
+
+                <div className="input-group" style={{ marginBottom: '16px' }}>
+                  <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
+                    {t('walkTimeLabel', 'Bekatgacha piyoda yurish vaqti')}
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input 
+                      type="number" 
+                      value={newJob.walkTime} 
+                      onChange={e => setNewJob({...newJob, walkTime: e.target.value.replace(/[^0-9]/g, '')})} 
+                      placeholder={t('walkTimePlaceholder', "Masalan: 8")} 
+                      className="auth-input"
+                      style={{ flex: 1 }}
+                      min={0}
+                      max={60}
+                    />
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: '600', fontSize: '14px' }}>
+                      {t('minutesUnit', 'daqiqa')}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* BLOCK 2: Ish Sharoitlari (Chips) */}
@@ -715,6 +920,28 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 maxLength={25}
               />
               {errors.phone && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.phone}</span>}
+            </div>
+
+            <div className="input-group chip-group-container" style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
+                {t('phoneModeLabel', 'Telefon raqam maxfiyligi')}
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  className={`form-chip ${newJob.phoneMode === 'public' ? 'selected' : ''}`}
+                  onClick={() => setNewJob({...newJob, phoneMode: 'public'})}
+                >
+                  {t('phoneModePublic', 'Hammaga ochiq (Qo\'ng\'iroq qilish ochiq)')}
+                </button>
+                <button
+                  type="button"
+                  className={`form-chip ${newJob.phoneMode === 'interview_only' ? 'selected' : ''}`}
+                  onClick={() => setNewJob({...newJob, phoneMode: 'interview_only'})}
+                >
+                  {t('phoneModeInterview', 'Faqat suhbatga taklif qilinganlarga')}
+                </button>
+              </div>
             </div>
 
             <div className="input-group" style={{ marginBottom: '20px' }}>
@@ -888,15 +1115,138 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     );
   }
 
-    // ===== AD TYPE SELECTION SCREEN (FOR DRIVING SCHOOLS) =====
-  if (showAdTypeSelect) {
+  if (showJobTypeSelect) {
     return (
-      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 16px' }}>
-          <button className="icon-btn glass" onClick={() => setShowAdTypeSelect(false)}>
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px', position: 'relative' }}>
+        {/* Pinned Sticky Back Button */}
+        <div style={{ 
+          position: 'sticky', 
+          top: '12px', 
+          left: '16px', 
+          zIndex: 120, 
+          width: 'fit-content',
+          marginBottom: '-40px',
+          pointerEvents: 'none'
+        }}>
+          <button 
+            className="icon-btn glass animate-scale-up" 
+            onClick={handleFormBack}
+            style={{ 
+              pointerEvents: 'auto',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              background: 'var(--glass-bg)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid var(--glass-border)'
+            }}
+          >
             <ArrowLeft size={20} />
           </button>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>
+        </div>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 72px' }}>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>
+            {t('recruitmentTypeSelectTitle', "Ish e'loni so'rovnomasi turini tanlang")}
+          </h2>
+        </div>
+
+        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <p style={{ fontSize: '14.5px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+            {t('recruitmentChooseDesc', "Nomzodlarni qayerdan jalb qilmoqchisiz? Chet eldagi nomzodlar so'rovnomasida viza va qo'llab-quvvatlash parametrlari kiritiladi.")}
+          </p>
+
+          {/* Option A: Local Recruitment */}
+          <div 
+            className="glass squircle animate-fade-in"
+            onClick={() => {
+              setNewJob(prev => ({
+                ...prev,
+                isInternational: false,
+                foreigners: '',
+                housing: ''
+              }));
+              setShowAddForm(true);
+              setShowJobTypeSelect(false);
+            }}
+            style={{ padding: '24px 20px', cursor: 'pointer', transition: 'all 0.3s ease', border: '1px solid var(--glass-border)', display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--glass-bg)' }}
+          >
+            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Briefcase size={24} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>
+                {t('recruitmentLocal', "Mahalliy vakansiya (Yaponiya ichidagi nomzodlar uchun)")}
+              </h3>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                {t('recruitmentLocalDesc', "Yaponiyada yashayotgan va ishlash huquqiga ega nomzodlar uchun oddiy e'lon so'rovnomasi.")}
+              </p>
+            </div>
+          </div>
+
+          {/* Option B: International Recruitment */}
+          <div 
+            className="glass squircle animate-fade-in"
+            onClick={() => {
+              setNewJob(prev => ({
+                ...prev,
+                isInternational: true,
+                foreigners: 'foreigners_visa',
+                housing: 'housing_dorm',
+                type: prev.type === 'parttime' ? 'fulltime' : (prev.type || 'fulltime')
+              }));
+              setShowAddForm(true);
+              setShowJobTypeSelect(false);
+            }}
+            style={{ padding: '24px 20px', cursor: 'pointer', transition: 'all 0.3s ease', border: '1px solid rgba(175, 82, 222, 0.3)', display: 'flex', gap: '16px', alignItems: 'center', background: 'linear-gradient(135deg, rgba(94, 92, 230, 0.05), rgba(175, 82, 222, 0.05))' }}
+          >
+            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(175, 82, 222, 0.1)', color: '#AF52DE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Globe size={24} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: '#AF52DE' }}>
+                {t('recruitmentInternational', "Xalqaro vakansiya / Tokutei Ginou (Chet eldagi nomzodlar uchun)")} 🌐
+              </h3>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                {t('recruitmentInternationalDesc', "Chet eldagi (masalan, O'zbekiston) nomzodlarni jalb qilish va Tokutei Ginou viza yordami so'rovnomasi.")}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showAdTypeSelect) {
+    return (
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px', position: 'relative' }}>
+        {/* Pinned Sticky Back Button */}
+        <div style={{ 
+          position: 'sticky', 
+          top: '12px', 
+          left: '16px', 
+          zIndex: 120, 
+          width: 'fit-content',
+          marginBottom: '-40px',
+          pointerEvents: 'none'
+        }}>
+          <button 
+            className="icon-btn glass animate-scale-up" 
+            onClick={handleFormBack}
+            style={{ 
+              pointerEvents: 'auto',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              background: 'var(--glass-bg)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid var(--glass-border)'
+            }}
+          >
+            <ArrowLeft size={20} />
+          </button>
+        </div>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 20px 72px' }}>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>
             {t('chooseAdTypeTitle', "E'lon turini tanlang")}
           </h2>
         </div>
@@ -910,7 +1260,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             className="glass squircle animate-fade-in"
             onClick={() => {
               setSelectedAdType('job');
-              setShowAddForm(true);
+              setShowJobTypeSelect(true);
               setShowAdTypeSelect(false);
             }}
             style={{ padding: '24px 20px', cursor: 'pointer', transition: 'all 0.3s ease', border: '1px solid var(--glass-border)', display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--glass-bg)' }}
@@ -967,7 +1317,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               setShowAdTypeSelect(true);
             } else {
               setSelectedAdType('job');
-              setShowAddForm(true);
+              setShowJobTypeSelect(true);
             }
           }}
           style={{ 
@@ -1007,96 +1357,112 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       {/* SECTION 1: JOB VACANCIES LIST (ACTIVE FOR ALL COMPANIES) */}
       <div style={{ padding: '0 16px', marginBottom: '12px' }}>
         <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          💼 {t('yourJobs', "Sizning ish e'lonlaringiz")}
+          💼 {t('yourJobs', "Mening e'lonlarim va Vakansiyalar")}
         </h2>
       </div>
 
       <div className="jobs-list hide-scrollbar" style={{ marginBottom: '24px' }}>
-        {companyJobs.length === 0 ? (
+        {(jobs || []).length === 0 ? (
           <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13.5px' }}>
             {t('noJobsYet', "Hozircha ish e'lonlari joylanmagan.")}
           </p>
         ) : (
-          companyJobs.map(job => (
-            <div key={job.id} className="job-card-hz glass" onClick={() => onJobClick({...job})}>
-              <div className="job-card-main-layout">
-                <div className="job-card-img">
-                  <img 
-                    src={job.image} 
-                    alt={t(`job_${job.id}_title`, job.title)} 
-                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
-                  />
-                  <span className={`job-type-badge type-${job.type || 'fulltime'}`}>
-                    {t(`jobType_${job.type || 'fulltime'}`, (job.type || 'fulltime') === 'fulltime' ? '正社員' : (job.type || 'fulltime') === 'parttime' ? 'アルバイト' : '契約')}
-                  </span>
-                </div>
-
-                <div className="job-card-body">
-                  <div className="job-card-company">
-                    <img src={job.logo} alt={job.company} className="job-card-company-logo" />
-                    <span>{job.company}</span>
-                    {job.verified && <VerifiedBadge size={14} />}
-                  </div>
-
-                  <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
-
-                  <div className="job-card-salary">
-                    <Banknote size={15} />
-                    <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}</span>
-                  </div>
-
-                  <div className="job-card-chips">
-                    <span className="job-chip">
-                      <MapPin size={12} />
-                      {t(`job_${job.id}_location`, job.location)}
+          (jobs || []).map(job => {
+            const isMine = isMyJob(job);
+            return (
+              <div key={job.id} className="job-card-hz glass" onClick={() => onJobClick({...job})}>
+                <div className="job-card-main-layout">
+                  <div className="job-card-img">
+                    <img 
+                      src={job.image} 
+                      alt={t(`job_${job.id}_title`, job.title)} 
+                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
+                    />
+                    <span className={`job-type-badge type-${job.type || 'fulltime'}`}>
+                      {t(`jobType_${job.type || 'fulltime'}`, (job.type || 'fulltime') === 'fulltime' ? '正社員' : (job.type || 'fulltime') === 'parttime' ? 'アルバイト' : '契約')}
                     </span>
-                    {job.hours && (
+                  </div>
+
+                  <div className="job-card-body">
+                    <div className="job-card-company">
+                      <img src={job.logo} alt={job.company} className="job-card-company-logo" />
+                      <span>{job.company}</span>
+                      {job.verified && <VerifiedBadge size={14} />}
+                    </div>
+
+                    <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
+
+                    <div className="job-card-salary">
+                      <Banknote size={15} />
+                      <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}</span>
+                    </div>
+
+                    <div className="job-card-chips">
                       <span className="job-chip">
-                        <Clock size={12} />
-                        {job.hours === 'shift' ? t('shiftWork', 'Smenali') : t(job.hours, job.hours)}
+                        <MapPin size={12} />
+                        {t(`job_${job.id}_location`, job.location)}
                       </span>
-                    )}
-                    {job.shoukaiFee > 0 && (
-                      <span className="job-chip chip-highlight">
-                        <Share2 size={10} />
-                        {t('shoukaiAvailable', 'Shoukai puli bor')}
-                        <span style={{ opacity: 0.8, marginLeft: '4px', fontWeight: 'bold' }}>
-                          (¥{job.shoukaiFee.toLocaleString()})
+                      {job.hours && (
+                        <span className="job-chip">
+                          <Clock size={12} />
+                          {job.hours === 'shift' ? t('shiftWork', 'Smenali') : t(job.hours, job.hours)}
                         </span>
-                      </span>
-                    )}
+                      )}
+                      {job.shoukaiFee > 0 && (
+                        <span className="job-chip chip-highlight">
+                          <Share2 size={10} />
+                          {t('shoukaiAvailable', 'Shoukai puli bor')}
+                          <span style={{ opacity: 0.8, marginLeft: '4px', fontWeight: 'bold' }}>
+                            (¥{job.shoukaiFee.toLocaleString()})
+                          </span>
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="job-card-actions">
-                <button 
-                  className="job-card-btn btn-apply"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setJobToEdit(job);
-                  }}
-                  style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
-                >
-                  <Edit3 size={13} />
-                  {t('editJob', 'Tahrirlash')}
-                </button>
-                {((job.shoukai && job.shoukai !== "0") || job.hasShoukai || job.shoukaiFee > 0) && (
-                  <button 
-                    className="job-card-btn btn-shoukai"
-                    onClick={(e) => { 
-                      e.stopPropagation(); 
-                      onShoukai && onShoukai(job); 
-                    }}
-                    style={{ flex: 1 }}
-                  >
-                    <Share2 size={13} />
-                    {t('shoukaiAvailableLabel', 'Puli Bor')}
-                  </button>
-                )}
+                <div className="job-card-actions">
+                  {isMine ? (
+                    <button 
+                      className="job-card-btn btn-apply"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setJobToEdit(job);
+                      }}
+                      style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
+                    >
+                      <Edit3 size={13} />
+                      {t('editJob', 'Tahrirlash')}
+                    </button>
+                  ) : (
+                    <button 
+                      className="job-card-btn btn-apply"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onApply && onApply(job);
+                      }}
+                      style={{ flex: 1 }}
+                    >
+                      {t('applyJob', 'Ariza topshirish')}
+                    </button>
+                  )}
+                  {((job.shoukai && job.shoukai !== "0") || job.hasShoukai || job.shoukaiFee > 0) && (
+                    <button 
+                      className="job-card-btn btn-shoukai"
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        onShoukai && onShoukai(job); 
+                      }}
+                      style={{ flex: 1 }}
+                    >
+                      <Share2 size={13} />
+                      {t('shoukaiAvailableLabel', 'Puli Bor')}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -1105,97 +1471,113 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         <>
           <div style={{ padding: '0 16px', marginBottom: '12px', marginTop: '16px' }}>
             <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              🎓 {t('yourSchools', "Sizning avtomaktab kurslaringiz")}
+              🎓 {t('yourSchools', "Barcha avtomaktab kurslari")}
             </h2>
           </div>
 
           <div className="jobs-list hide-scrollbar">
-            {companySchools.length === 0 ? (
+            {(schools || []).length === 0 ? (
               <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13.5px' }}>
                 {t('noSchoolsYet', "Hozircha avtomaktab e'lonlari joylanmagan.")}
               </p>
             ) : (
-              companySchools.map(school => (
-                <div key={school.id} className="job-card-hz glass" onClick={() => onSchoolClick ? onSchoolClick(school) : onJobClick(school)}>
-                  <div className="job-card-main-layout">
-                    <div className="job-card-img">
-                      <img 
-                        src={school.image} 
-                        alt={t(`school_${school.id}_name`, school.name)} 
-                        onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
-                      />
-                      <div className="job-type-badge type-fulltime">
-                        {school.langs ? school.langs.join(', ') : 'UZ, JP'}
-                      </div>
-                    </div>
-
-                    <div className="job-card-body">
-                      <div className="job-card-company">
-                        <span>{t(`school_${school.id}_name`, school.name)}</span>
-                        <VerifiedBadge size={14} />
+              (schools || []).map(school => {
+                const isMine = isMySchool(school);
+                return (
+                  <div key={school.id} className="job-card-hz glass" onClick={() => onSchoolClick ? onSchoolClick(school) : onJobClick(school)}>
+                    <div className="job-card-main-layout">
+                      <div className="job-card-img">
+                        <img 
+                          src={school.image} 
+                          alt={t(`school_${school.id}_name`, school.name)} 
+                          onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
+                        />
+                        <div className="job-type-badge type-fulltime">
+                          {school.langs ? school.langs.join(', ') : 'UZ, JP'}
+                        </div>
                       </div>
 
-                      <h3 className="job-card-title">{t(`school_${school.id}_type`, school.type)}</h3>
+                      <div className="job-card-body">
+                        <div className="job-card-company">
+                          <span>{t(`school_${school.id}_name`, school.name)}</span>
+                          <VerifiedBadge size={14} />
+                        </div>
 
-                      <div className="job-card-salary">
-                        <Banknote size={15} color="#30D158" />
-                        <span>{school.price}</span>
-                        {school.discount && (
-                          <span className="discount-tag" style={{ marginLeft: '4px', fontSize: '9px', padding: '1.5px 4px' }}>
-                            -{school.discount}
-                          </span>
-                        )}
-                      </div>
+                        <h3 className="job-card-title">{t(`school_${school.id}_type`, school.type)}</h3>
 
-                      <div className="job-card-chips">
-                        <span className="job-chip">
-                          <MapPin size={10} />
-                          {t(`school_${school.id}_location`, school.location)}
-                        </span>
-                        {school.shoukaiFee > 0 && (
-                          <span className="job-chip chip-highlight">
-                            <Share2 size={10} />
-                            {t('shoukaiAvailable', 'Shoukai puli bor')}
-                            <span style={{ opacity: 0.8, marginLeft: '4px', fontWeight: 'bold' }}>
-                              (¥{school.shoukaiFee.toLocaleString()})
+                        <div className="job-card-salary">
+                          <Banknote size={15} color="#30D158" />
+                          <span>{school.price}</span>
+                          {school.discount && (
+                            <span className="discount-tag" style={{ marginLeft: '4px', fontSize: '9px', padding: '1.5px 4px' }}>
+                              -{school.discount}
                             </span>
+                          )}
+                        </div>
+
+                        <div className="job-card-chips">
+                          <span className="job-chip">
+                            <MapPin size={10} />
+                            {t(`school_${school.id}_location`, school.location)}
                           </span>
-                        )}
+                          {school.shoukaiFee > 0 && (
+                            <span className="job-chip chip-highlight">
+                              <Share2 size={10} />
+                              {t('shoukaiAvailable', 'Shoukai puli bor')}
+                              <span style={{ opacity: 0.8, marginLeft: '4px', fontWeight: 'bold' }}>
+                                (¥{school.shoukaiFee.toLocaleString()})
+                              </span>
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="job-card-actions">
-                    <button 
-                      className="job-card-btn btn-apply"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setJobToEdit(school);
-                      }}
-                      style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
-                    >
-                      <Edit3 size={13} />
-                      {t('editJob', 'Tahrirlash')}
-                    </button>
-                    {((school.shoukai && school.shoukai !== "0") || school.shoukaiFee > 0) && (
-                      <button 
-                        className="job-card-btn btn-shoukai"
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          onShoukai && onShoukai({
-                            ...school,
-                            shoukai: school.shoukai || (school.shoukaiFee ? `¥${Number(school.shoukaiFee).toLocaleString()}` : undefined)
-                          }); 
-                        }}
-                        style={{ flex: 1 }}
-                      >
-                        <Share2 size={13} />
-                        {t('shoukaiAvailableLabel', 'Puli Bor')}
-                      </button>
-                    )}
+                    <div className="job-card-actions">
+                      {isMine ? (
+                        <button 
+                          className="job-card-btn btn-apply"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setJobToEdit(school);
+                          }}
+                          style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
+                        >
+                          <Edit3 size={13} />
+                          {t('editJob', 'Tahrirlash')}
+                        </button>
+                      ) : (
+                        <button 
+                          className="job-card-btn btn-apply"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onApplySchool && onApplySchool(school);
+                          }}
+                          style={{ flex: 1 }}
+                        >
+                          {t('applySchool', 'Kursga yozilish')}
+                        </button>
+                      )}
+                      {((school.shoukai && school.shoukai !== "0") || school.shoukaiFee > 0) && (
+                        <button 
+                          className="job-card-btn btn-shoukai"
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            onShoukai && onShoukai({
+                              ...school,
+                              shoukai: school.shoukai || (school.shoukaiFee ? `¥${Number(school.shoukaiFee).toLocaleString()}` : undefined)
+                            }); 
+                          }}
+                          style={{ flex: 1 }}
+                        >
+                          <Share2 size={13} />
+                          {t('shoukaiAvailableLabel', 'Puli Bor')}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </>

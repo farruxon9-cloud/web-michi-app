@@ -110,6 +110,82 @@
   transform: scale(0.98);
 }
 
+/* Premium styling for international job card recruiting from abroad */
+.job-card-international {
+  background: linear-gradient(135deg, rgba(94, 92, 230, 0.04), rgba(175, 82, 222, 0.04)) !important;
+  border: 1.5px solid rgba(175, 82, 222, 0.3) !important;
+  box-shadow: 0 8px 30px rgba(94, 92, 230, 0.05), 0 0 10px rgba(175, 82, 222, 0.03) !important;
+}
+
+html.dark-mode .job-card-international {
+  background: linear-gradient(135deg, rgba(94, 92, 230, 0.08), rgba(175, 82, 222, 0.08)) !important;
+  border-color: rgba(175, 82, 222, 0.4) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3) !important;
+}
+
+.international-card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #FF453A, #FF9F0A);
+  color: #FFF;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(255, 69, 58, 0.15);
+}
+
+.international-card-tag .airplane-icon {
+  font-size: 10px;
+}
+
+.local-visa-renew-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #0A84FF, #5E5CE6);
+  color: #FFF;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(10, 132, 255, 0.15);
+}
+
+.local-visa-renew-tag .briefcase-icon {
+  font-size: 10px;
+}
+
+.local-foreigner-ok-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #30D158, #34C759);
+  color: #FFF;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(48, 209, 88, 0.15);
+}
+
+.local-foreigner-ok-tag .users-icon {
+  font-size: 10px;
+}
+
 .job-card-main-layout {
   display: flex;
   flex-direction: row;
@@ -417,6 +493,11 @@ html.dark-mode .job-chip.chip-green {
 
 /* ====== MOBILE RESPONSIVENESS AND ANTI-OVERFLOW ====== */
 @media (max-width: 480px) {
+  .segment {
+    font-size: 11.5px !important;
+    padding: 6px 2px;
+  }
+
   .feed-container {
     width: 100%;
     overflow-x: hidden;

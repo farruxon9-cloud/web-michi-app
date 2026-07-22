@@ -11,7 +11,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px; /* Unified 16px horizontal padding = same as Dashboard & BottomNav */
+  padding: 12px 52px; /* Pulled significantly closer to the center for a cohesive layout */
   background: var(--bg-color);
   border-bottom: 1px solid rgba(0, 0, 0, 0.04); /* Subtle refined separator instead of heavy box-shadow */
   position: relative;
@@ -98,9 +98,9 @@ html.dark-mode .global-header {
 
 .theme-toggle-track {
   position: relative;
-  width: 52px;
-  height: 28px;
-  border-radius: 14px;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.08);
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(16px);
@@ -124,8 +124,8 @@ html.dark-mode .global-header {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: linear-gradient(135deg, #FFB800, #FF8C00); /* Warm sun gradient */
   display: flex;
@@ -139,7 +139,7 @@ html.dark-mode .global-header {
 }
 
 .theme-toggle-track.dark .theme-toggle-thumb {
-  left: calc(100% - 24px); /* Slide to the right side */
+  left: calc(100% - 20px); /* Slide to the right side */
   background: linear-gradient(135deg, #5E5CE6, #8B5CF6); /* Cool indigo-violet gradient */
   box-shadow:
     0 2px 8px rgba(94, 92, 230, 0.4),
@@ -163,3 +163,70 @@ html.dark-mode .global-header {
 .theme-toggle-btn:active .theme-toggle-thumb {
   transform: scale(0.9);
 }
+
+/* ============================================
+   Perfect Header Layout & Alignment Styles
+   ============================================ */
+
+/* Clickable Logo on the Left */
+.header-logo-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  z-index: 100;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header-logo-left:hover {
+  opacity: 0.95;
+  transform: scale(1.02);
+}
+
+.header-logo-left:active {
+  transform: scale(0.97);
+}
+
+.header-logo-left .logo-kanji {
+  width: 26px;
+  height: 26px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 2px 5px rgba(94, 92, 230, 0.2);
+}
+
+.header-logo-left .logo-text {
+  font-size: 15px;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+  color: var(--text-main);
+  font-family: 'Outfit', -apple-system, sans-serif;
+}
+
+/* Centered Theme Toggle Switch Container */
+.header-theme-toggle-centered {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* Standalone Robot Avatar Container on Right */
+.header-robot-right {
+  display: flex;
+  align-items: center;
+  z-index: 101;
+}
+

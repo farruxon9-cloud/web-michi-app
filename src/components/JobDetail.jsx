@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Bookmark, Map as MapIcon, Calendar, Clock, Banknote, Share2, 
-  Shield, Home, Globe, Award, Car, Users, Heart, Building2, CheckCircle2, Phone } from 'lucide-react';
+  Shield, Home, Globe, Award, Car, Users, Heart, Building2, CheckCircle2, Phone, Sparkles, Train } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import './JobDetail.css';
 
@@ -13,8 +13,27 @@ import './JobDetail.css';
 // ============================================================
 export default function JobDetail({ job, onBack, onApply, onShoukai, applications = [], onToggleSave, profileData, userRole, onEditJob }) {
   const { t } = useTranslation();
+
+  const getMaskedAddress = (fullAddress, location) => {
+    if (!fullAddress) return location || '';
+    const parts = fullAddress.split(',');
+    if (parts.length > 1) {
+      return parts[0] + (parts[1] ? ', ' + parts[1] : '') + ` (${t('addressMaskedNotice')})`;
+    }
+    const words = fullAddress.trim().split(/\s+/);
+    if (words.length > 2) {
+      return words.slice(0, 3).join(' ') + ` (${t('addressMaskedNotice')})`;
+    }
+    return fullAddress + ` (${t('addressMaskedNotice')})`;
+  };
+
   const alreadyApplied = applications.some(a => a.jobId === job.id && !a.isSimulatedReferral);
   const isSaved = profileData?.savedItems?.jobs?.some(j => j.id === job.id);
+
+  const myApplication = applications.find(a => a.jobId === job.id && !a.isSimulatedReferral);
+  const appStatus = myApplication ? myApplication.status : null;
+  const isInterviewReady = appStatus === 'interview' || appStatus === 'accepted';
+  const canCall = (job.phoneMode === 'public' || !job.phoneMode) || isInterviewReady;
 
   // Ma'lumot elementlari ro'yxati — har biri ikonka, kalit va qiymat bilan
   // Bu tizim kompaniya e'lon yaratganda avtomatik to'ldiriladi
@@ -62,6 +81,22 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           <div className="company-title-wrap">
             <img src={job.logo} alt={job.company} className="detail-logo squircle" />
             <div>
+              {job.isInternational ? (
+                <div className="international-card-tag" style={{ marginBottom: '8px' }}>
+                  <Globe size={10} style={{ marginRight: '2px' }} />
+                  <span>{t('foreigners_visa', 'Tokutei Ginou • Xalqaro Ish')}</span>
+                </div>
+              ) : job.foreigners === 'foreigners_visa_renew' ? (
+                <div className="local-visa-renew-tag" style={{ marginBottom: '8px' }}>
+                  <span className="briefcase-icon">💼</span>
+                  <span>{t('foreigners_visa_renew', 'Vizani Uzaytirish Ko\'magi')}</span>
+                </div>
+              ) : job.foreigners === 'foreigners_ok' ? (
+                <div className="local-foreigner-ok-tag" style={{ marginBottom: '8px' }}>
+                  <span className="users-icon">👥</span>
+                  <span>{t('foreigners_ok', 'Chet elliklar ochiq (Vizasiz)')}</span>
+                </div>
+              ) : null}
               <h2 className="detail-title">{t(`job_${job.id}_title`, job.title)}</h2>
               <div className="company-name-row">
                 <span>{job.company}</span>
@@ -178,6 +213,22 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
                 </div>
               )}
 
+              {/* Metro/Bekat Row */}
+              {job.nearestStation && (
+                <div className="db-list-row">
+                  <div className="db-row-left">
+                    <div className="db-row-icon icon-subway">
+                      <Train size={16} color="#AF52DE" />
+                    </div>
+                    <span className="db-row-label">{t('nearestStationLabel', 'Metro / Bekat')}</span>
+                  </div>
+                  <strong className="db-row-value">
+                    {job.nearestStation}
+                    {job.walkTime ? ` (🚶‍♂️ ${job.walkTime} ${t('minutesUnit', 'daqiqa')})` : ''}
+                  </strong>
+                </div>
+              )}
+
               {/* Litsenziya Row */}
               {job.license && (
                 <div className="db-list-row">
@@ -194,6 +245,30 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           </div>
         </div>
 
+        {/* ====== TOKUTEI GINOU (SSW) VISA REQUIREMENTS ====== */}
+        {job.isInternational && (
+          <div className="ssw-requirements-block glass squircle fade-in">
+            <div className="ssw-req-header">
+              <Sparkles size={18} color="#AF52DE" />
+              <h3>{t('sswRequirementsTitle', 'Tokutei Ginou (SSW) Imtihon va Viza Talablari')}</h3>
+            </div>
+            <div className="ssw-req-list">
+              <div className="ssw-req-item">
+                <span className="ssw-req-bullet"></span>
+                <p>{t('sswLanguageReq', '🇯🇵 Yapon Tili: JLPT N4 yoki JFT-Basic hujjati bo\'lishi majburiy.')}</p>
+              </div>
+              <div className="ssw-req-item">
+                <span className="ssw-req-bullet"></span>
+                <p>{t('sswSkillsReq', '🚛 Logistika Imtihoni: Haydovchilik / Logistika SSW kasbiy imtihon hujjati shart.')}</p>
+              </div>
+              <div className="ssw-req-item">
+                <span className="ssw-req-bullet"></span>
+                <p>{t('sswSupportOrgReq', '🏢 Qo\'llab-quvvatlash: 1-sonli ro\'yxatdan o\'tgan tashkilot (RSO) ko\'magi kafolatlanadi.')}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ====== TAVSIF ====== */}
         <div className="description-block">
           <h3>{t('jobConditions', 'Ish sharoitlari')}</h3>
@@ -204,7 +279,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
         <div className="map-block">
           <h3>{t('address', 'Manzil')}</h3>
           <a 
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.fullAddress || job.location || '')}`}
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(getMaskedAddress(job.fullAddress, job.location))}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ textDecoration: 'none' }}
@@ -213,7 +288,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
               <MapIcon size={32} color="#0A84FF" />
               <span style={{textAlign: 'center', color: 'var(--text-main)', marginTop: '12px', fontWeight: '500'}}>
                 {t('viewOnMap', "Xaritada ko'rish")} <br/>
-                <small style={{ color: 'var(--text-secondary)', display: 'inline-block', marginTop: '12px' }}>{job.fullAddress || t(`job_${job.id}_location`, job.location)}</small>
+                <small style={{ color: 'var(--text-secondary)', display: 'inline-block', marginTop: '12px' }}>{getMaskedAddress(job.fullAddress, job.location)}</small>
               </span>
             </div>
           </a>
@@ -257,14 +332,26 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
             </button>
           ) : (
             <>
-              <a 
-                href={`tel:${job.phone || '+81 90-1234-5678'}`} 
-                className="apply-btn"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontWeight: '700' }}
-              >
-                <Phone size={16} />
-                {t('callBtn', 'Qo\'ng\'iroq qilish')}
-              </a>
+              {canCall ? (
+                <a 
+                  href={`tel:${job.phone || '03-1234-5678'}`} 
+                  className="apply-btn"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontWeight: '700' }}
+                >
+                  <Phone size={16} />
+                  {t('callBtn', 'Qo\'ng\'iroq qilish')}
+                </a>
+              ) : (
+                <button 
+                  type="button"
+                  className="apply-btn"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: 0.6, cursor: 'not-allowed', background: 'rgba(118, 118, 128, 0.12)', color: 'var(--text-secondary)' }}
+                  onClick={() => alert(t('phoneHiddenNotice'))}
+                >
+                  <Phone size={16} />
+                  {t('callBtn', 'Qo\'ng\'iroq qilish')} 🔒
+                </button>
+              )}
               <button 
                 className="apply-btn shoukai-btn" 
                 onClick={() => onShoukai(job)}
@@ -279,9 +366,30 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
             <button 
               className={`apply-btn ${alreadyApplied ? 'applied' : ''}`}
               onClick={() => !alreadyApplied && onApply(job)}
+              style={{ flex: '1.2' }}
             >
               {alreadyApplied ? t('applied') : t('applyJob')}
             </button>
+            {canCall ? (
+              <a 
+                href={`tel:${job.phone || '090-1234-5678'}`} 
+                className="apply-btn"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', background: 'var(--success)', color: '#fff', fontWeight: 'bold' }}
+              >
+                <Phone size={14} />
+                {t('callBtn', 'Qo\'ng\'iroq')}
+              </a>
+            ) : (
+              <button 
+                type="button"
+                className="apply-btn"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.65, background: 'rgba(118, 118, 128, 0.12)', color: 'var(--text-secondary)', cursor: 'not-allowed' }}
+                onClick={() => alert(t('phoneHiddenNotice'))}
+              >
+                <Phone size={14} />
+                {t('callBtn', 'Qo\'ng\'iroq')} 🔒
+              </button>
+            )}
             <button 
               className="apply-btn shoukai-btn" 
               onClick={() => onShoukai(job)}
