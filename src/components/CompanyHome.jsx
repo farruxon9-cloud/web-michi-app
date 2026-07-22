@@ -237,6 +237,105 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   const companyJobs = (jobs || []).filter(j => j.company === (profileData?.fullName || "Sagawa Express"));
   const companySchools = (schools || []).filter(s => s.name === (profileData?.fullName || "Koyama Driving School"));
 
+  const handleLoadDemoJobs = () => {
+    const compName = profileData?.fullName || "Sagawa Express";
+    const demoJobs = [
+      {
+        id: Date.now(),
+        company: compName,
+        title: "Mahalliy yetkazib berish (Local Delivery)",
+        salary: "¥320,000 / oyiga",
+        type: "fulltime",
+        shoukai: "¥50,000",
+        shoukaiFee: 50000,
+        hasShoukai: true,
+        image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800",
+        verified: true,
+        location: "Tokyo, Koto-ku",
+        fullAddress: "〒135-0063 Tokyo, Koto-ku, Ariake 3-1-1",
+        postalCode: "135-0063",
+        prefecture: "Tokyo",
+        detailAddress: "Koto-ku, Ariake 3-1-1",
+        nearestStation: "Kokusai-tenjijo Station",
+        walkTime: 8,
+        hours: "08:00 - 17:00",
+        dayOff: "shanba_yakshanba",
+        bonus: "Yiliga 2 marta",
+        insurance: "To'liq sug'urta",
+        foreigners: "foreigners_visa",
+        housing: "housing_dorm",
+        description: "Posilkalarni belgilangan yo'nalishlar bo'yicha mijozlarga yetkazib berish. Qulay sharoit va yaxshi jamoa.",
+        logo: profileData?.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(compName) + "&background=0D8ABC&color=fff",
+        phone: "03-1234-5678",
+        phoneMode: "public",
+        isActive: true
+      },
+      {
+        id: Date.now() + 1,
+        company: compName,
+        title: "Xalqaro yuk tashish (Trailer Driver)",
+        salary: "¥480,000 / oyiga",
+        type: "fulltime",
+        shoukai: "¥100,000",
+        shoukaiFee: 100000,
+        hasShoukai: true,
+        image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
+        verified: true,
+        location: "Kanagawa, Yokohama",
+        fullAddress: "〒231-0002 Kanagawa, Yokohama, Naka-ku 2-5",
+        postalCode: "231-0002",
+        prefecture: "Kanagawa",
+        detailAddress: "Yokohama, Naka-ku 2-5",
+        nearestStation: "Yokohama Station",
+        walkTime: 12,
+        hours: "Smenali grafik",
+        dayOff: "Jadval bo'yicha",
+        bonus: "Yiliga 2 marta",
+        insurance: "To'liq sug'urta",
+        foreigners: "foreigners_visa",
+        housing: "housing_half",
+        description: "Konteynerlarni portdan Kanto hududi bo'ylab tashish. Ken'in guvohnomasi talab qilinadi.",
+        logo: profileData?.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(compName) + "&background=0D8ABC&color=fff",
+        phone: "045-987-6543",
+        phoneMode: "public",
+        isActive: true
+      }
+    ];
+    if (setJobs) {
+      setJobs(prev => [...demoJobs, ...(prev || [])]);
+    }
+  };
+
+  const handleLoadDemoSchools = () => {
+    const schName = profileData?.fullName || "Koyama Driving School";
+    const demoSchools = [
+      {
+        id: Date.now(),
+        name: schName,
+        type: "Katta yuk mashinasi (Oogata License)",
+        price: "¥280,000~",
+        discount: "¥20,000 chegirma",
+        image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
+        verified: true,
+        location: "Saitama, Omiya",
+        fullAddress: "〒330-0854 Saitama, Omiya-ku 1-12",
+        postalCode: "330-0854",
+        prefecture: "Saitama",
+        detailAddress: "Omiya-ku 1-12",
+        description: "Zamonaviy o'quv maydonchasi va malakali yo'riqchilar. Oogata toifasi bo'yicha tezlashtirilgan kurs.",
+        courses: ["Oogata", "Chugata", "Futsu"],
+        phone: "048-111-2233",
+        email: "info@school.jp",
+        langs: ["UZ", "JP"],
+        shoukaiFee: 30000,
+        shoukai: "¥30,000"
+      }
+    ];
+    if (setSchools) {
+      setSchools(prev => [...demoSchools, ...(prev || [])]);
+    }
+  };
+
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -1354,9 +1453,31 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
       <div className="jobs-list hide-scrollbar" style={{ marginBottom: '24px' }}>
         {companyJobs.length === 0 ? (
-          <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13.5px' }}>
-            {t('noJobsYet', "Hozircha ish e'lonlari joylanmagan.")}
-          </p>
+          <div style={{ padding: '24px 16px', textAlign: 'center', background: 'var(--glass-bg)', borderRadius: '20px', border: '1px solid var(--glass-border)', margin: '0 16px' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', marginBottom: '16px', lineHeight: '1.5' }}>
+              {t('noJobsYet', "Hozircha ish e'lonlari joylanmagan.")}
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button 
+                className="btn-primary squircle"
+                onClick={() => {
+                  setSelectedAdType('job');
+                  setShowJobTypeSelect(true);
+                }}
+                style={{ padding: '10px 18px', fontSize: '13.5px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Plus size={16} />
+                {t('addNewJob', "Yangi e'lon qo'shish")}
+              </button>
+              <button 
+                className="glass squircle"
+                onClick={handleLoadDemoJobs}
+                style={{ padding: '10px 18px', fontSize: '13.5px', fontWeight: '600', color: '#0A84FF', border: '1px solid #0A84FF', display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+              >
+                ✨ {t('loadDemoJobs', "Demo e'lonlarni yuklash")}
+              </button>
+            </div>
+          </div>
         ) : (
           companyJobs.map(job => (
             <div key={job.id} className="job-card-hz glass" onClick={() => onJobClick({...job})}>
@@ -1452,9 +1573,31 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
           <div className="jobs-list hide-scrollbar">
             {companySchools.length === 0 ? (
-              <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13.5px' }}>
-                {t('noSchoolsYet', "Hozircha avtomaktab e'lonlari joylanmagan.")}
-              </p>
+              <div style={{ padding: '24px 16px', textAlign: 'center', background: 'var(--glass-bg)', borderRadius: '20px', border: '1px solid var(--glass-border)', margin: '0 16px' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', marginBottom: '16px', lineHeight: '1.5' }}>
+                  {t('noSchoolsYet', "Hozircha avtomaktab e'lonlari joylanmagan.")}
+                </p>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button 
+                    className="btn-primary squircle"
+                    onClick={() => {
+                      setSelectedAdType('school');
+                      setShowAddForm(true);
+                    }}
+                    style={{ padding: '10px 18px', fontSize: '13.5px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Plus size={16} />
+                    {t('addNewSchoolAd', "Yangi avtomaktab e'loni")}
+                  </button>
+                  <button 
+                    className="glass squircle"
+                    onClick={handleLoadDemoSchools}
+                    style={{ padding: '10px 18px', fontSize: '13.5px', fontWeight: '600', color: '#AF52DE', border: '1px solid #AF52DE', display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+                  >
+                    ✨ {t('loadDemoSchools', "Demo kurslarni yuklash")}
+                  </button>
+                </div>
+              </div>
             ) : (
               companySchools.map(school => (
                 <div key={school.id} className="job-card-hz glass" onClick={() => onSchoolClick ? onSchoolClick(school) : onJobClick(school)}>
