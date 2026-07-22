@@ -207,23 +207,28 @@ export default function DriverFeed({
   };
 
   // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
-  const filteredJobs = jobs.filter(job => {
-    const matchSegment = activeSegment === 'all' 
+  // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
+  const filteredJobs = (jobs || []).filter(job => {
+    if (!job) return false;
+
+    const matchSegment = !activeSegment || activeSegment === 'all' 
       || (activeSegment === 'international' && job.isInternational === true)
       || (activeSegment === 'permanent' && job.type === 'fulltime')
       || (activeSegment === 'hourly' && (job.type === 'parttime' || job.type === 'contract'));
       
-    const matchSearch = !searchQuery || 
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const sq = (searchQuery || '').toLowerCase();
+    const matchSearch = !sq || 
+      (job.title && job.title.toLowerCase().includes(sq)) ||
+      (job.company && job.company.toLowerCase().includes(sq)) ||
+      (job.location && job.location.toLowerCase().includes(sq)) ||
+      (job.description && job.description.toLowerCase().includes(sq));
 
     // 1. License filter
-    const matchLicense = selectedLicenses.length === 0 || selectedLicenses.includes(job.license);
+    const matchLicense = !selectedLicenses || selectedLicenses.length === 0 || selectedLicenses.includes(job.license);
 
     // 2. Japanese level filter (visible if user level >= job required level)
-    const userVal = { 'all': 4, 'none': 0, 'n5_n4': 1, 'n3': 2, 'n2_n1': 3 }[selectedLangLevel];
+    const langMap = { 'all': 4, 'none': 0, 'n5_n4': 1, 'n3': 2, 'n2_n1': 3, 'N5': 1, 'N4': 1, 'N3': 2, 'N2': 3, 'N1': 3 };
+    const userVal = langMap[selectedLangLevel] ?? 4;
     const jobVal = {
       'foreigners_n4': 1,
       'foreigners_nolang': 1,
@@ -236,7 +241,7 @@ export default function DriverFeed({
     const matchLang = userVal >= jobVal;
 
     // 3. Benefits filter (all selected benefits must match)
-    const matchBenefits = selectedBenefits.every(benefit => {
+    const matchBenefits = !selectedBenefits || selectedBenefits.length === 0 || selectedBenefits.every(benefit => {
       if (benefit === 'housing') return job.housing && job.housing !== 'housing_none';
       if (benefit === 'foreigner') return job.foreigners && job.foreigners !== 'foreigners_none';
       if (benefit === 'bonus') return job.bonus && job.bonus !== 'bonus_none';
@@ -246,21 +251,26 @@ export default function DriverFeed({
     });
 
     // 4. Salary filter
-    const matchSalary = minSalary === 0 || getSalaryNumber(job.salary) >= minSalary;
+    const matchSalary = !minSalary || minSalary === 0 || getSalaryNumber(job.salary) >= minSalary;
 
     // 5. Prefecture and City location filter
-    const matchPrefecture = selectedPrefecture === 'all' || 
-      (job.location && job.location.toLowerCase().includes(selectedPrefecture.toLowerCase())) ||
-      (job.fullAddress && job.fullAddress.toLowerCase().includes(selectedPrefecture.toLowerCase()));
+    const prefSq = (selectedPrefecture && selectedPrefecture !== 'all') ? selectedPrefecture.toLowerCase() : '';
+    const matchPrefecture = !prefSq || 
+      (job.location && job.location.toLowerCase().includes(prefSq)) ||
+      (job.fullAddress && job.fullAddress.toLowerCase().includes(prefSq)) ||
+      (job.prefecture && job.prefecture.toLowerCase().includes(prefSq));
 
-    const matchCity = selectedCity === 'all' || 
-      (job.location && job.location.toLowerCase().includes(selectedCity.toLowerCase())) ||
-      (job.fullAddress && job.fullAddress.toLowerCase().includes(selectedCity.toLowerCase()));
+    const citySq = (selectedCity && selectedCity !== 'all') ? selectedCity.toLowerCase() : '';
+    const matchCity = !citySq || 
+      (job.location && job.location.toLowerCase().includes(citySq)) ||
+      (job.fullAddress && job.fullAddress.toLowerCase().includes(citySq)) ||
+      (job.detailAddress && job.detailAddress.toLowerCase().includes(citySq));
 
     // 6. Station query filter
-    const matchStation = !stationQuery || 
-      (job.nearestStation && job.nearestStation.toLowerCase().includes(stationQuery.toLowerCase())) ||
-      (job.fullAddress && job.fullAddress.toLowerCase().includes(stationQuery.toLowerCase()));
+    const stSq = (stationQuery || '').toLowerCase();
+    const matchStation = !stSq || 
+      (job.nearestStation && job.nearestStation.toLowerCase().includes(stSq)) ||
+      (job.fullAddress && job.fullAddress.toLowerCase().includes(stSq));
 
     // 7. Near station walk time filter (<10 min walk)
     const matchWalkTime = !onlyNearStation || 
