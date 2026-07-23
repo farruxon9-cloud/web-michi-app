@@ -145,6 +145,7 @@ export default function JDMNavigation({ onBack }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [showSimControls, setShowSimControls] = useState(false);
+  const [showNavVehicleMenu, setShowNavVehicleMenu] = useState(false);
 
   // Local sound triggers
   const triggerSound = () => {
@@ -1041,52 +1042,54 @@ export default function JDMNavigation({ onBack }) {
         </div>
       )}
 
-      {/* Floating Turn-by-Turn Guidance Overlay Card - Bottom (Only visible when navigating) */}
+      {/* Floating Turn-by-Turn Guidance Overlay Card - Top (Only visible when navigating) */}
       {isNavigating && (
-        <div className="nav-card glass squircle panel-hud floating-hud animate-slide-up" style={{ gap: '0' }}>
-          {/* Top Turn Instruction Banner */}
-          <div className="nav-top-banner" style={{ margin: '0 0 10px 0' }}>
-            <div className="nav-turn-icon-wrap">
-              <Navigation size={22} color="#ffffff" style={{ transform: 'rotate(45deg)' }} />
-            </div>
-            <div className="nav-turn-details">
-              <h3 className="nav-turn-road" style={{ fontSize: '13.5px' }}>
-                {currentLang === 'ja' 
-                  ? (currentStep?.jaText || '直進してください') 
-                  : (currentStep?.text || 'Proceed Straight')
-                }
-              </h3>
-              <span className="nav-turn-sub" style={{ fontSize: '9.5px' }}>
-                {currentLang === 'ja' 
-                  ? `次のチェックポイント: ${currentStep?.landmark || 'デポ'}` 
-                  : `Next Checkpoint: ${currentStep?.landmark || 'Depot'}`
-                }
-              </span>
-            </div>
+        <div className="nav-top-banner floating-top-hud glass squircle animate-slide-down" style={{ position: 'absolute', top: '12px', left: '12px', right: '12px', zIndex: 1000, margin: 0, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(28,28,30,0.85)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="nav-turn-icon-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#30D158', borderRadius: '50%', width: '28px', height: '28px' }}>
+            <Navigation size={15} color="#ffffff" style={{ transform: 'rotate(45deg)' }} />
           </div>
+          <div className="nav-turn-details" style={{ flex: 1 }}>
+            <h3 className="nav-turn-road" style={{ fontSize: '13px', fontWeight: '800', margin: 0, color: '#fff', textAlign: 'left' }}>
+              {currentLang === 'ja' ? (currentStep?.jaText || '直進してください') : (currentStep?.text || 'Proceed Straight')}
+            </h3>
+            <span className="nav-turn-sub" style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', display: 'block', textAlign: 'left', marginTop: '1px' }}>
+              {currentLang === 'ja' ? `次のチェックポイント: ${currentStep?.landmark || 'デポ'}` : `Next Checkpoint: ${currentStep?.landmark || 'Depot'}`}
+            </span>
+          </div>
+          <div style={{ fontSize: '8px', background: 'rgba(48,209,88,0.2)', color: '#30D158', padding: '3px 6px', borderRadius: '6px', fontWeight: '900' }}>
+            {route.status === 'safe' ? 'SAFE' : 'DETOUR'}
+          </div>
+        </div>
+      )}
 
-          {/* Bottom ETA Info Bar */}
-          <div className="nav-bottom-stat-row" style={{ padding: '10px 14px' }}>
-            <div className="nav-stat-time">
-              <span className="time-value" style={{ fontSize: '22px' }}>
-                {route.time}
+      {/* Floating Turn-by-Turn Info Bar - Bottom (Only visible when navigating) */}
+      {isNavigating && (
+        <div className="nav-card glass squircle floating-bottom-hud animate-slide-up" style={{ position: 'absolute', bottom: '84px', left: '12px', right: '12px', zIndex: 1000, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '10px' }}>
+            {/* ETA and Stats */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+              <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--text-main)' }}>
+                {route.time} {currentLang === 'ja' ? '分' : 'min'}
               </span>
-              <span className="time-unit">
-                {currentLang === 'ja' ? '分' : 'min'}
-              </span>
-            </div>
-            
-            <div className="nav-stat-divider" style={{ height: '24px', margin: '0 12px' }}></div>
-            
-            <div className="nav-stat-details">
-              <span className="stat-eta" style={{ fontSize: '11px' }}>
-                ETA {getETA(route.time)}
-              </span>
-              <span className="stat-dist" style={{ fontSize: '10px' }}>
-                {route.distance} km
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
+                ETA {getETA(route.time)} ({route.distance} km)
               </span>
             </div>
-            
+
+            {/* Clickable Active Vehicle Selector badge */}
+            <button 
+              type="button"
+              onClick={() => {
+                triggerSound();
+                setShowNavVehicleMenu(!showNavVehicleMenu);
+              }}
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)', padding: '5px 8px', borderRadius: '8px', color: 'var(--text-main)', fontSize: '10.5px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+            >
+              <span>🚚</span>
+              <span>{currentLang === 'ja' ? VEHICLE_PRESETS[selectedVehicle]?.jaShort : VEHICLE_PRESETS[selectedVehicle]?.short}</span>
+            </button>
+
+            {/* Exit Button */}
             <button 
               type="button" 
               className="nav-exit-btn"
@@ -1095,15 +1098,40 @@ export default function JDMNavigation({ onBack }) {
                 setIsNavigating(false);
                 setIsAutoPlaying(false);
                 setCurrentStepIndex(0);
+                setShowNavVehicleMenu(false);
               }}
-              style={{ padding: '8px 16px', fontSize: '11.5px' }}
+              style={{ padding: '6px 12px', fontSize: '11px', background: '#FF453A', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '800', cursor: 'pointer' }}
             >
               {currentLang === 'ja' ? '終了' : 'Exit'}
             </button>
           </div>
 
-          {/* Hidden/expandable simulation debugging tools */}
-          <div className="simulation-settings-wrap" style={{ marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '6px' }}>
+          {/* Floating Nav Vehicle Quick Switcher Menu */}
+          {showNavVehicleMenu && (
+            <div className="nav-vehicle-dropdown glass squircle animate-scale-up" style={{ position: 'absolute', bottom: 'calc(100% + 8px)', right: '12px', background: 'rgba(30,30,32,0.95)', backdropFilter: 'blur(20px)', border: '1px solid var(--glass-border)', padding: '6px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 1001, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', minWidth: '160px' }}>
+              <span style={{ fontSize: '8px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', padding: '2px 8px', textTransform: 'uppercase', display: 'block', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: '4px' }}>
+                {currentLang === 'ja' ? '車両タイプを選択' : 'Select Vehicle Class'}
+              </span>
+              {Object.entries(VEHICLE_PRESETS).map(([key, val]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => {
+                    triggerSound();
+                    handleVehicleSelect(key);
+                    setShowNavVehicleMenu(false);
+                  }}
+                  style={{ padding: '6px 10px', background: selectedVehicle === key ? 'var(--primary)' : 'none', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '10.5px', fontWeight: '800', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
+                >
+                  <span>{currentLang === 'ja' ? val.jaShort : val.short}</span>
+                  <span style={{ fontSize: '8.5px', color: selectedVehicle === key ? '#fff' : 'var(--text-secondary)' }}>{val.height}m</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Simulation settings toggle inside bottom panel */}
+          <div className="simulation-settings-wrap" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '4px' }}>
             <button 
               type="button" 
               className="sim-toggle-btn"
@@ -1114,19 +1142,15 @@ export default function JDMNavigation({ onBack }) {
             </button>
 
             {showSimControls && (
-              <div className="sim-panel-content animate-fade-in" style={{ marginTop: '6px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  <span>Sim Progress</span>
-                  <span>{currentStepIndex + 1} / {navSteps.length}</span>
-                </div>
+              <div className="sim-panel-content animate-fade-in" style={{ marginTop: '4px' }}>
                 <div style={{ display: 'flex', gap: '6px' }}>
-                  <button type="button" disabled={currentStepIndex === 0} onClick={() => setCurrentStepIndex(prev => prev - 1)} style={{ flex: 1, padding: '6px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '10px' }}>
+                  <button type="button" disabled={currentStepIndex === 0} onClick={() => setCurrentStepIndex(prev => prev - 1)} style={{ flex: 1, padding: '5px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '9.5px' }}>
                     Back
                   </button>
-                  <button type="button" onClick={() => setIsAutoPlaying(!isAutoPlaying)} style={{ flex: 1.2, padding: '6px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: isAutoPlaying ? 'rgba(255,149,0,0.15)' : 'var(--glass-bg)', color: isAutoPlaying ? '#FF9500' : 'var(--text-main)', cursor: 'pointer', fontSize: '10px' }}>
+                  <button type="button" onClick={() => setIsAutoPlaying(!isAutoPlaying)} style={{ flex: 1.2, padding: '5px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: isAutoPlaying ? 'rgba(255,149,0,0.15)' : 'var(--glass-bg)', color: isAutoPlaying ? '#FF9500' : 'var(--text-main)', cursor: 'pointer', fontSize: '9.5px' }}>
                     {isAutoPlaying ? 'Pause' : 'Play'}
                   </button>
-                  <button type="button" disabled={currentStepIndex === navSteps.length - 1} onClick={() => setCurrentStepIndex(prev => prev + 1)} style={{ flex: 1, padding: '6px', borderRadius: '6px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontSize: '10px' }}>
+                  <button type="button" disabled={currentStepIndex === navSteps.length - 1} onClick={() => setCurrentStepIndex(prev => prev + 1)} style={{ flex: 1, padding: '5px', borderRadius: '6px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontSize: '9.5px' }}>
                     Next
                   </button>
                 </div>
