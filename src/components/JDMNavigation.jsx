@@ -556,14 +556,14 @@ export default function JDMNavigation({ onBack }) {
         simMarkerRef.current.remove();
         simMarkerRef.current = null;
       }
+      if (mapContainerRef.current) {
+        mapContainerRef.current.style.transform = 'none';
+      }
       return;
     }
 
     const currentStep = navSteps[currentStepIndex];
     if (!currentStep) return;
-
-    // Center map and follow vehicle closely (zoom: 18)
-    mapInstanceRef.current.setView([currentStep.lat, currentStep.lng], 18);
 
     // Calculate heading (bearing) to the next checkpoint if available to rotate the truck symbol
     let heading = 0;
@@ -576,6 +576,21 @@ export default function JDMNavigation({ onBack }) {
       const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
       heading = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
     }
+
+    // Dynamic map container rotation (Head-up mode) - scale by 1.4 to prevent showing white corners
+    if (mapContainerRef.current) {
+      mapContainerRef.current.style.transform = `scale(1.4) rotate(${-heading}deg)`;
+      mapContainerRef.current.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+    }
+
+    // Offset map center 65 meters ahead along the heading vector to keep the vehicle in the bottom-middle of the screen
+    const offsetDistance = 65; // meters ahead
+    const R = 6378137;
+    const headingRad = heading * Math.PI / 180;
+    const dLat = (offsetDistance * Math.cos(headingRad)) / R * (180 / Math.PI);
+    const dLng = (offsetDistance * Math.sin(headingRad)) / (R * Math.cos(currentStep.lat * Math.PI / 180)) * (180 / Math.PI);
+
+    mapInstanceRef.current.setView([currentStep.lat + dLat, currentStep.lng + dLng], 18);
 
     const simHtmlIcon = L.divIcon({
       html: `
