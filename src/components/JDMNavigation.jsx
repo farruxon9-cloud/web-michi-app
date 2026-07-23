@@ -184,7 +184,7 @@ export default function JDMNavigation({ onBack }) {
       blockedStatus: { uz: 'Yo\'l to\'siq! Harakatlanish imkonsiz', ja: '運行不可・通行止め', en: 'Route Blocked', vi: 'Tuyến đường bị chặn', zh: '路线封锁', ne: 'मार्ग bised / nayaँ track prtibandh' },
       distance: { uz: 'Masofa', ja: '総走行距離', en: 'Distance', vi: 'Khoảng cách', zh: '距离', ne: 'duri' },
       time: { uz: 'Vaqt', ja: '所要時間', en: 'Est. Time', vi: 'Thời gian ước tính', zh: '预计时间', ne: 'अनुमानित समय' },
-      addStop: { uz: '+ Manzil qo\'shish', ja: '+ 経由地を追加', en: '+ Add Stop', vi: '+ Thêm điểm dừng', zh: '+ 添加途经点', ne: '+ बिन्दु थप्नुहोस्' },
+      addStop: { uz: 'Manzil qo\'shish', ja: '経由地を追加', en: 'Add Stop', vi: 'Thêm điểm dừng', zh: '添加途经点', ne: 'बिन्दु थप्नुहोस्' },
       saveRoute: { uz: '💾 Marshrutni Saqlash', ja: '💾 ルートを保存', en: '💾 Save Route', vi: '💾 Lưu tuyến đường', zh: '💾 保存路线', ne: '💾 मार्ग सुरक्षित गर्नुहोस्' },
       savedRoutesTitle: { uz: '📂 Saqlangan Marshrutlar', ja: '📂 保存済みルート', en: '📂 Saved Routes', vi: '📂 Tuyến đường đã lưu', zh: '📂 已保存路线', ne: '📂 सुरक्षित मार्गहरू' },
       enterRouteName: { uz: 'Marshrut nomini kiriting', ja: 'ルートの別名・ラベルを入力', en: 'Enter Route Label', vi: 'Nhập nhãn tuyến đường', zh: '输入路线标签', ne: 'मार्गको नाम प्रविष्ट गर्नुहोस्' },
