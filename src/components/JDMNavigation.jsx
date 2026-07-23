@@ -618,14 +618,32 @@ export default function JDMNavigation({ onBack }) {
 
     mapInstanceRef.current.setView([currentStep.lat + dLat, currentStep.lng + dLng], 18);
 
+    const activeVehicle = VEHICLE_PRESETS[selectedVehicle];
+    const vehicleEmoji = activeVehicle?.type === 'passenger' 
+      ? '🚗' 
+      : activeVehicle?.type === 'bike' 
+        ? '🏍️' 
+        : activeVehicle?.type === 'trailer' 
+          ? '🚛' 
+          : '🚚';
+    
+    let markerDotStyle = "width: 14px; height: 22px; background: #30D158; border: 2.5px solid #fff; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); position: relative; display: flex; align-items: center; justify-content: center;";
+    if (activeVehicle?.type === 'bike') {
+      markerDotStyle = "width: 14px; height: 14px; background: #30D158; border: 2.5px solid #fff; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.4); position: relative; display: flex; align-items: center; justify-content: center;";
+    } else if (activeVehicle?.type === 'passenger') {
+      markerDotStyle = "width: 14px; height: 18px; background: #30D158; border: 2.5px solid #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); position: relative; display: flex; align-items: center; justify-content: center;";
+    }
+    
+    const vehicleLabelText = currentLang === 'ja' ? activeVehicle?.jaShort : activeVehicle?.short;
+
     const simHtmlIcon = L.divIcon({
       html: `
         <div class="custom-map-marker vehicle">
           <div class="marker-pulse"></div>
-          <div class="marker-dot" style="width: 14px; height: 22px; background: #30D158; border: 2.5px solid #fff; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); position: relative; display: flex; align-items: center; justify-content: center;">
+          <div class="marker-dot" style="${markerDotStyle}">
             <div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 7px solid #fff; position: absolute; top: -8px;"></div>
           </div>
-          <span class="marker-label" style="white-space: nowrap;">🚚 DRIVING</span>
+          <span class="marker-label" style="white-space: nowrap;">${vehicleEmoji} ${vehicleLabelText}</span>
         </div>
       `,
       className: 'custom-leaflet-icon-wrapper',
@@ -1121,7 +1139,7 @@ export default function JDMNavigation({ onBack }) {
 
       {/* Floating Turn-by-Turn Info Bar - Bottom (Only visible when navigating) */}
       {isNavigating && (
-        <div className="nav-card glass squircle floating-bottom-hud animate-slide-up" style={{ position: 'absolute', bottom: '84px', left: '12px', right: '12px', zIndex: 1000, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div className="nav-card glass squircle floating-bottom-hud animate-slide-up" style={{ position: 'absolute', bottom: '96px', left: '12px', right: '12px', zIndex: 1000, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '10px' }}>
             {/* ETA and Stats */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>

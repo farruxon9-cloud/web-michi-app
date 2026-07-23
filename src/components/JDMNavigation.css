@@ -1068,7 +1068,7 @@
 /* Floating Locate GPS Button inside map container */
 .map-gps-locate-btn {
   position: absolute;
-  bottom: 146px;
+  bottom: 172px;
   right: 16px;
   width: 40px;
   height: 40px;
@@ -1322,7 +1322,7 @@
 
 .floating-bottom-panel {
   position: absolute;
-  bottom: 84px;
+  bottom: 96px;
   left: 12px;
   right: 12px;
   z-index: 10;
@@ -1335,7 +1335,7 @@
 
 .floating-hud {
   position: absolute;
-  bottom: 84px;
+  bottom: 96px;
   left: 12px;
   right: 12px;
   z-index: 10;
