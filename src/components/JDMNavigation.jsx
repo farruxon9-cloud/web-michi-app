@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike, Plus, Trash2, Bookmark, X, Save, ChevronDown, ChevronUp } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import * as maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import './JDMNavigation.css';
 
 // Predefined JDM hubs with actual coordinates in Tokyo/Kanagawa/Chiba
@@ -105,11 +105,11 @@ export default function JDMNavigation({ onBack }) {
 
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
-  const routePolylineRef = useRef(null);
-  const markersGroupRef = useRef(null);
   const simMarkerRef = useRef(null);
+  const activeMarkersRef = useRef([]);
 
   // States
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState('elf_3t');
   const [height, setHeight] = useState(2.95);
   const [width, setWidth] = useState(2.18);
@@ -186,18 +186,6 @@ export default function JDMNavigation({ onBack }) {
     };
   }, [isNavigating, route, showSimControls, startCoord, destCoord, stops]);
 
-  const dragStartRef = useRef({ x: 0, y: 0, active: false });
-
-  // Disable Leaflet's built-in drag during active navigation to let our custom counter-rotated panning take over
-  useEffect(() => {
-    if (!mapInstanceRef.current) return;
-    if (isNavigating) {
-      mapInstanceRef.current.dragging.disable();
-    } else {
-      mapInstanceRef.current.dragging.enable();
-    }
-  }, [isNavigating]);
-
   // Helper to get active heading angle
   const getActiveHeading = () => {
     if (!isNavigating || navSteps.length === 0) return 0;
@@ -218,64 +206,6 @@ export default function JDMNavigation({ onBack }) {
     return heading;
   };
 
-  const handleMapMouseDown = (e) => {
-    if (!isNavigating) return;
-    dragStartRef.current = { x: e.clientX, y: e.clientY, active: true };
-  };
-
-  const handleMapMouseMove = (e) => {
-    if (!isNavigating || !dragStartRef.current.active) return;
-    const dx = e.clientX - dragStartRef.current.x;
-    const dy = e.clientY - dragStartRef.current.y;
-    
-    dragStartRef.current.x = e.clientX;
-    dragStartRef.current.y = e.clientY;
-
-    if (mapInstanceRef.current && (dx !== 0 || dy !== 0)) {
-      const heading = mapOrientation === 'north' ? 0 : getActiveHeading();
-      const theta = heading * Math.PI / 180;
-      
-      // Counter-rotate the screen drag delta vector by heading angle
-      const rotatedDx = dx * Math.cos(theta) - dy * Math.sin(theta);
-      const rotatedDy = dx * Math.sin(theta) + dy * Math.cos(theta);
-
-      mapInstanceRef.current.panBy([-rotatedDx, -rotatedDy], { animate: false });
-    }
-  };
-
-  const handleMapMouseUp = () => {
-    dragStartRef.current.active = false;
-  };
-
-  const handleMapTouchStart = (e) => {
-    if (!isNavigating || e.touches.length !== 1) return;
-    const touch = e.touches[0];
-    dragStartRef.current = { x: touch.clientX, y: touch.clientY, active: true };
-  };
-
-  const handleMapTouchMove = (e) => {
-    if (!isNavigating || !dragStartRef.current.active || e.touches.length !== 1) return;
-    const touch = e.touches[0];
-    const dx = touch.clientX - dragStartRef.current.x;
-    const dy = touch.clientY - dragStartRef.current.y;
-    
-    dragStartRef.current.x = touch.clientX;
-    dragStartRef.current.y = touch.clientY;
-
-    if (mapInstanceRef.current && (dx !== 0 || dy !== 0)) {
-      const heading = mapOrientation === 'north' ? 0 : getActiveHeading();
-      const theta = heading * Math.PI / 180;
-      
-      const rotatedDx = dx * Math.cos(theta) - dy * Math.sin(theta);
-      const rotatedDy = dx * Math.sin(theta) + dy * Math.cos(theta);
-
-      mapInstanceRef.current.panBy([-rotatedDx, -rotatedDy], { animate: false });
-    }
-  };
-
-  const handleMapTouchEnd = () => {
-    dragStartRef.current.active = false;
-  };
 
   // Local sound triggers
   const triggerSound = () => {
@@ -325,26 +255,27 @@ export default function JDMNavigation({ onBack }) {
     return dict[key]?.[currentLang] || dict[key]?.['uz'] || '';
   };
 
-  // Initialize Leaflet Map
+  // Initialize MapLibre Map
   useEffect(() => {
     if (mapContainerRef.current && !mapInstanceRef.current) {
-      mapInstanceRef.current = L.map(mapContainerRef.current, {
-        center: [35.6895, 139.6917], // Center on Tokyo
+      mapInstanceRef.current = new maplibregl.Map({
+        container: mapContainerRef.current,
+        style: 'https://tiles.openfreemap.org/styles/liberty',
+        center: [139.7741, 35.6841], // Tokyo center [lng, lat]
         zoom: 11,
-        zoomControl: false
+        attributionControl: false
       });
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-      }).addTo(mapInstanceRef.current);
-
-      markersGroupRef.current = L.featureGroup().addTo(mapInstanceRef.current);
+      mapInstanceRef.current.on('load', () => {
+        setIsMapLoaded(true);
+      });
     }
 
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
+        setIsMapLoaded(false);
       }
     };
   }, []);
@@ -357,16 +288,14 @@ export default function JDMNavigation({ onBack }) {
     if (isNavigating && navSteps.length > 0) {
       const currentStep = navSteps[currentStepIndex];
       if (currentStep && mapInstanceRef.current) {
-        // Calculate offset ahead to center it nicely
-        const heading = 0; // We just focus directly on active marker
-        mapInstanceRef.current.setView([currentStep.lat, currentStep.lng], 18);
+        mapInstanceRef.current.easeTo({ center: [currentStep.lng, currentStep.lat], zoom: 18, duration: 800 });
       }
       return;
     }
 
     // 2. If not navigating but startCoord is set, center on it
     if (startCoord && mapInstanceRef.current) {
-      mapInstanceRef.current.setView([startCoord.lat, startCoord.lng], 15);
+      mapInstanceRef.current.easeTo({ center: [startCoord.lng, startCoord.lat], zoom: 15, duration: 800 });
       return;
     }
 
@@ -375,7 +304,7 @@ export default function JDMNavigation({ onBack }) {
       setStartCoord(fallback);
       setStartQuery(currentLang === 'ja' ? '⛩️ 日本橋中心街' : '⛩️ Nihonbashi Center');
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.setView([fallback.lat, fallback.lng], 15);
+        mapInstanceRef.current.easeTo({ center: [fallback.lng, fallback.lat], zoom: 15, duration: 800 });
       }
       return;
     }
@@ -391,7 +320,7 @@ export default function JDMNavigation({ onBack }) {
         setStartCoord(newCoord);
         setStartQuery(currentLang === 'ja' ? '現在地 (GPS)' : 'Hozirgi joylashuv (GPS)');
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.setView([latitude, longitude], 15);
+          mapInstanceRef.current.easeTo({ center: [longitude, latitude], zoom: 15, duration: 800 });
         }
       },
       (error) => {
@@ -400,7 +329,7 @@ export default function JDMNavigation({ onBack }) {
         setStartCoord(fallback);
         setStartQuery(currentLang === 'ja' ? '⛩️ 日本橋中心街' : '⛩️ Nihonbashi Center');
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.setView([fallback.lat, fallback.lng], 15);
+          mapInstanceRef.current.easeTo({ center: [fallback.lng, fallback.lat], zoom: 15, duration: 800 });
         }
       }
     );
@@ -408,59 +337,72 @@ export default function JDMNavigation({ onBack }) {
 
   // Update map markers when start, intermediate stops, and final coordinates change
   useEffect(() => {
-    if (!mapInstanceRef.current || !markersGroupRef.current) return;
+    if (!mapInstanceRef.current || !isMapLoaded) return;
 
-    markersGroupRef.current.clearLayers();
+    // Clear existing markers
+    activeMarkersRef.current.forEach(m => m.remove());
+    activeMarkersRef.current = [];
+
     const bounds = [];
 
     // Start marker
     if (startCoord) {
-      const startHtmlIcon = L.divIcon({
-        html: `<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startCoord.name.split(' ')[1] || startCoord.name.split(',')[0]}</span></div>`,
-        className: 'custom-leaflet-icon-wrapper',
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
+      const el = document.createElement('div');
+      el.className = 'custom-leaflet-icon-wrapper';
+      el.innerHTML = `<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startCoord.name.split(' ')[1] || startCoord.name.split(',')[0]}</span></div>`;
 
-      L.marker([startCoord.lat, startCoord.lng], { icon: startHtmlIcon }).addTo(markersGroupRef.current);
-      bounds.push([startCoord.lat, startCoord.lng]);
+      const m = new maplibregl.Marker({ element: el })
+        .setLngLat([startCoord.lng, startCoord.lat])
+        .addTo(mapInstanceRef.current);
+      activeMarkersRef.current.push(m);
+      bounds.push([startCoord.lng, startCoord.lat]);
     }
 
     // Intermediate stops markers (orange color coding)
     stops.forEach((stop, index) => {
       if (stop.coord) {
-        const stopHtmlIcon = L.divIcon({
-          html: `<div class="custom-map-marker warning"><div class="marker-dot" style="background-color: #FF9500;"></div><span class="marker-label">Stop ${index + 1}</span></div>`,
-          className: 'custom-leaflet-icon-wrapper',
-          iconSize: [30, 30],
-          iconAnchor: [15, 15]
-        });
+        const el = document.createElement('div');
+        el.className = 'custom-leaflet-icon-wrapper';
+        el.innerHTML = `<div class="custom-map-marker warning"><div class="marker-dot" style="background-color: #FF9500;"></div><span class="marker-label">Stop ${index + 1}</span></div>`;
 
-        L.marker([stop.coord.lat, stop.coord.lng], { icon: stopHtmlIcon }).addTo(markersGroupRef.current);
-        bounds.push([stop.coord.lat, stop.coord.lng]);
+        const m = new maplibregl.Marker({ element: el })
+          .setLngLat([stop.coord.lng, stop.coord.lat])
+          .addTo(mapInstanceRef.current);
+        activeMarkersRef.current.push(m);
+        bounds.push([stop.coord.lng, stop.coord.lat]);
       }
     });
 
     // Destination marker
     if (destCoord) {
-      const destHtmlIcon = L.divIcon({
-        html: `<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destCoord.name.split(' ')[1] || destCoord.name.split(',')[0]}</span></div>`,
-        className: 'custom-leaflet-icon-wrapper',
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
+      const el = document.createElement('div');
+      el.className = 'custom-leaflet-icon-wrapper';
+      el.innerHTML = `<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destCoord.name.split(' ')[1] || destCoord.name.split(',')[0]}</span></div>`;
 
-      L.marker([destCoord.lat, destCoord.lng], { icon: destHtmlIcon }).addTo(markersGroupRef.current);
-      bounds.push([destCoord.lat, destCoord.lng]);
+      const m = new maplibregl.Marker({ element: el })
+        .setLngLat([destCoord.lng, destCoord.lat])
+        .addTo(mapInstanceRef.current);
+      activeMarkersRef.current.push(m);
+      bounds.push([destCoord.lng, destCoord.lat]);
     }
 
     if (bounds.length > 0) {
       try {
-        mapInstanceRef.current.fitBounds(bounds, { padding: [45, 45] });
+        const lngs = bounds.map(b => b[0]);
+        const lats = bounds.map(b => b[1]);
+        const minLng = Math.min(...lngs);
+        const maxLng = Math.max(...lngs);
+        const minLat = Math.min(...lats);
+        const maxLat = Math.max(...lats);
+
+        mapInstanceRef.current.fitBounds([
+          [minLng, minLat],
+          [maxLng, maxLat]
+        ], { padding: 45, maxZoom: 15 });
       } catch (e) {}
     }
 
-  }, [startCoord, destCoord, stops]);
+  }, [startCoord, destCoord, stops, isMapLoaded]);
 
   // Handle vehicle selection
   const handleVehicleSelect = (key) => {
@@ -547,6 +489,68 @@ export default function JDMNavigation({ onBack }) {
     }
   };
 
+  // Draw route polyline using MapLibre GeoJSON layer
+  const drawRouteOnMap = (coordinates, color, dashed = false) => {
+    if (!mapInstanceRef.current || !isMapLoaded) return;
+    const map = mapInstanceRef.current;
+    
+    // Remove existing layer and source
+    if (map.getLayer('route')) map.removeLayer('route');
+    if (map.getSource('route')) map.removeSource('route');
+
+    // Convert coordinates from [lat, lng] to [lng, lat]
+    const mapLibreCoords = coordinates.map(c => [c[1], c[0]]);
+
+    map.addSource('route', {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: mapLibreCoords
+        }
+      }
+    });
+
+    const paint = {
+      'line-color': color,
+      'line-width': 6,
+      'line-opacity': 0.8
+    };
+
+    if (dashed) {
+      paint['line-dasharray'] = [2, 4];
+    }
+
+    map.addLayer({
+      id: 'route',
+      type: 'line',
+      source: 'route',
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      paint
+    });
+
+    if (mapLibreCoords.length > 0) {
+      try {
+        const lngs = mapLibreCoords.map(c => c[0]);
+        const lats = mapLibreCoords.map(c => c[1]);
+        const minLng = Math.min(...lngs);
+        const maxLng = Math.max(...lngs);
+        const minLat = Math.min(...lats);
+        const maxLat = Math.max(...lats);
+
+        map.fitBounds([
+          [minLng, minLat],
+          [maxLng, maxLat]
+        ], { padding: 45, maxZoom: 15 });
+      } catch (e) {}
+    }
+  };
+
   // OSRM Routing Machine Integration with Dynamic Truck Constraints Check
   const calculateRoute = async () => {
     const validStops = stops.map(s => s.coord).filter(Boolean);
@@ -556,9 +560,10 @@ export default function JDMNavigation({ onBack }) {
     setIsCalculating(true);
     triggerSound();
 
-    if (routePolylineRef.current) {
-      routePolylineRef.current.remove();
-      routePolylineRef.current = null;
+    if (mapInstanceRef.current && isMapLoaded) {
+      const map = mapInstanceRef.current;
+      if (map.getLayer('route')) map.removeLayer('route');
+      if (map.getSource('route')) map.removeSource('route');
     }
 
     try {
@@ -621,15 +626,8 @@ export default function JDMNavigation({ onBack }) {
           }
         }
 
-        // Render Polyline on Leaflet Map
         const polylineColor = status === 'blocked' ? '#FF453A' : status === 'warning' ? '#FF9500' : '#0A84FF';
-        routePolylineRef.current = L.polyline(geojsonCoordinates, {
-          color: polylineColor,
-          weight: 6,
-          opacity: 0.85
-        }).addTo(mapInstanceRef.current);
-
-        mapInstanceRef.current.fitBounds(routePolylineRef.current.getBounds(), { padding: [30, 30] });
+        drawRouteOnMap(geojsonCoordinates, polylineColor);
 
         setRoute({
           status,
@@ -665,11 +663,7 @@ export default function JDMNavigation({ onBack }) {
       const directTime = Math.round(directDist * 1.8);
       const fallbackCoordinates = points.map(p => [p.lat, p.lng]);
 
-      routePolylineRef.current = L.polyline(fallbackCoordinates, {
-        color: '#30D158',
-        weight: 6,
-        dashArray: '5, 10'
-      }).addTo(mapInstanceRef.current);
+      drawRouteOnMap(fallbackCoordinates, '#30D158', true);
 
       setRoute({
         status: 'safe',
@@ -694,23 +688,26 @@ export default function JDMNavigation({ onBack }) {
     setIsCalculating(false);
   };
 
-  // Run calculation when any coordinate, stop or vehicle presets change
+  // Run calculation when any coordinate, stop, vehicle presets or map loaded state changes
   useEffect(() => {
-    if (startCoord && destCoord) {
+    if (startCoord && destCoord && isMapLoaded) {
       calculateRoute();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startCoord, destCoord, stops, selectedVehicle]);
+  }, [startCoord, destCoord, stops, selectedVehicle, isMapLoaded]);
 
   // Handle active vehicle marker during simulation step changes
   useEffect(() => {
-    if (!mapInstanceRef.current || !isNavigating || navSteps.length === 0) {
+    if (!mapInstanceRef.current || !isNavigating || navSteps.length === 0 || !isMapLoaded) {
       if (simMarkerRef.current) {
         simMarkerRef.current.remove();
         simMarkerRef.current = null;
       }
+      if (mapInstanceRef.current && isMapLoaded) {
+        mapInstanceRef.current.setBearing(0);
+        mapInstanceRef.current.setPitch(0);
+      }
       if (mapContainerRef.current) {
-        mapContainerRef.current.style.transform = 'none';
         mapContainerRef.current.style.setProperty('--map-bearing', '0deg');
       }
       return;
@@ -731,17 +728,10 @@ export default function JDMNavigation({ onBack }) {
       heading = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
     }
 
-    // Dynamic map container rotation (Head-up mode vs North-up mode)
+    // Dynamic map native camera rotation (Head-up mode vs North-up mode) and --map-bearing CSS var updates
+    const activeBearing = mapOrientation === 'north' ? 0 : heading;
     if (mapContainerRef.current) {
-      if (mapOrientation === 'north') {
-        mapContainerRef.current.style.transform = 'none';
-        mapContainerRef.current.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
-        mapContainerRef.current.style.setProperty('--map-bearing', '0deg');
-      } else {
-        mapContainerRef.current.style.transform = `scale(1.4) rotate(${-heading}deg)`;
-        mapContainerRef.current.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
-        mapContainerRef.current.style.setProperty('--map-bearing', `${heading}deg`);
-      }
+      mapContainerRef.current.style.setProperty('--map-bearing', `${activeBearing}deg`);
     }
 
     // Offset map center 65 meters ahead along the heading vector (or straight North for North-Up) to keep the vehicle in the bottom-middle of the screen
@@ -752,7 +742,14 @@ export default function JDMNavigation({ onBack }) {
     const dLat = (offsetDistance * Math.cos(headingRad)) / R * (180 / Math.PI);
     const dLng = (offsetDistance * Math.sin(headingRad)) / (R * Math.cos(currentStep.lat * Math.PI / 180)) * (180 / Math.PI);
 
-    mapInstanceRef.current.setView([currentStep.lat + dLat, currentStep.lng + dLng], 18);
+    // Apply WebGL easeTo centering, bearing and pitch (3D slant of 45 degrees in Head-Up mode!)
+    mapInstanceRef.current.easeTo({
+      center: [currentStep.lng + dLng, currentStep.lat + dLat],
+      zoom: 18,
+      bearing: activeBearing,
+      pitch: mapOrientation === 'north' ? 0 : 45,
+      duration: 800
+    });
 
     const activeVehicle = VEHICLE_PRESETS[selectedVehicle];
     const vehicleEmoji = activeVehicle?.type === 'passenger' 
@@ -772,29 +769,30 @@ export default function JDMNavigation({ onBack }) {
     
     const vehicleLabelText = currentLang === 'ja' ? activeVehicle?.jaShort : activeVehicle?.short;
 
-    const simHtmlIcon = L.divIcon({
-      html: `
-        <div class="custom-map-marker vehicle" style="transform: rotate(${mapOrientation === 'north' ? heading : 0}deg); transition: transform 0.3s ease;">
-          <div class="marker-pulse"></div>
-          <div class="marker-dot" style="${markerDotStyle}">
-            <div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 7px solid #fff; position: absolute; top: -8px;"></div>
-          </div>
-          <span class="marker-label" style="white-space: nowrap;">${vehicleEmoji} ${vehicleLabelText}</span>
+    const htmlContent = `
+      <div class="custom-map-marker vehicle" style="transform: rotate(${mapOrientation === 'north' ? heading : 0}deg); transition: transform 0.3s ease;">
+        <div class="marker-pulse"></div>
+        <div class="marker-dot" style="${markerDotStyle}">
+          <div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 7px solid #fff; position: absolute; top: -8px;"></div>
         </div>
-      `,
-      className: 'custom-leaflet-icon-wrapper',
-      iconSize: [36, 36],
-      iconAnchor: [18, 18]
-    });
+        <span class="marker-label" style="white-space: nowrap;">${vehicleEmoji} ${vehicleLabelText}</span>
+      </div>
+    `;
 
     if (simMarkerRef.current) {
-      simMarkerRef.current.setLatLng([currentStep.lat, currentStep.lng]);
-      simMarkerRef.current.setIcon(simHtmlIcon);
+      simMarkerRef.current.setLngLat([currentStep.lng, currentStep.lat]);
+      simMarkerRef.current.getElement().innerHTML = htmlContent;
     } else {
-      simMarkerRef.current = L.marker([currentStep.lat, currentStep.lng], { icon: simHtmlIcon }).addTo(mapInstanceRef.current);
+      const el = document.createElement('div');
+      el.className = 'custom-leaflet-icon-wrapper';
+      el.innerHTML = htmlContent;
+      
+      simMarkerRef.current = new maplibregl.Marker({ element: el })
+        .setLngLat([currentStep.lng, currentStep.lat])
+        .addTo(mapInstanceRef.current);
     }
 
-  }, [currentStepIndex, isNavigating, navSteps, mapOrientation, selectedVehicle]);
+  }, [currentStepIndex, isNavigating, navSteps, mapOrientation, selectedVehicle, isMapLoaded]);
 
   // Auto-play simulation interval
   useEffect(() => {
@@ -886,17 +884,7 @@ export default function JDMNavigation({ onBack }) {
     <div className="jdm-nav-container animate-fade-in">
       
       {/* Real Full Screen Map */}
-      <div 
-        ref={mapContainerRef} 
-        className="map-canvas-container-fullscreen"
-        onMouseDown={handleMapMouseDown}
-        onMouseMove={handleMapMouseMove}
-        onMouseUp={handleMapMouseUp}
-        onMouseLeave={handleMapMouseUp}
-        onTouchStart={handleMapTouchStart}
-        onTouchMove={handleMapTouchMove}
-        onTouchEnd={handleMapTouchEnd}
-      ></div>
+      <div ref={mapContainerRef} className="map-canvas-container-fullscreen"></div>
       
       {/* Map Orientation Toggle Button (North-Up vs Head-Up) */}
       <button 
