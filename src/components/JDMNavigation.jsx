@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause } from 'lucide-react';
+import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -55,6 +55,7 @@ export default function JDMNavigation({ onBack }) {
   const routePolylineRef = useRef(null);
   const markersGroupRef = useRef(null);
   const simMarkerRef = useRef(null);
+  const userLocMarkerRef = useRef(null);
 
   // States
   const [selectedVehicle, setSelectedVehicle] = useState('elf_3t');
@@ -67,8 +68,9 @@ export default function JDMNavigation({ onBack }) {
   const [startSuggestions, setStartSuggestions] = useState([]);
   const [destSuggestions, setDestSuggestions] = useState([]);
 
-  const [startCoord, setStartCoord] = useState({ lat: 35.7915, lng: 139.9015, name: '🏞️ Matsudo Hub' });
-  const [destCoord, setDestCoord] = useState({ lat: 35.4439, lng: 139.6380, name: '🚢 Yokohama Warehouse' });
+  // Default coordinate states are empty initially
+  const [startCoord, setStartCoord] = useState(null);
+  const [destCoord, setDestCoord] = useState(null);
 
   const [isCalculating, setIsCalculating] = useState(false);
   const [route, setRoute] = useState({
@@ -84,6 +86,7 @@ export default function JDMNavigation({ onBack }) {
   const [navSteps, setNavSteps] = useState([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [showSimControls, setShowSimControls] = useState(false);
 
   // Feedback modal states
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
@@ -103,12 +106,10 @@ export default function JDMNavigation({ onBack }) {
     const dict = {
       title: { uz: 'Aqlli JDM Navigatsiyasi', ja: 'JDMトラックスマートナビ', en: 'JDM Smart Route Map', vi: 'Định vị thông minh JDM', zh: 'JDM 智能导航', ne: 'JDM स्मार्ट मार्ग नक्सा' },
       subtitle: { uz: 'Cheklovlar va taqiqlar xaritasi', ja: '大型・一般車両規制対応ルート検索', en: 'Offline Traffic Restrictions Router', vi: 'Bản đồ hạn chế giao thông ngoại tuyến', zh: '离线交通限制与避堵路网规划', ne: 'अफ्ライン ट्राफिक प्रतिबन्ध राउटर' },
-      vehicleHUD: { uz: 'Transport Parametrlari', ja: '車両寸法・カテゴリー', en: 'Vehicle Settings', vi: 'Cài đặt phương tiện', zh: '车辆尺寸与规格设置', ne: 'सवारी साधन设置' },
+      vehicleHUD: { uz: 'Transport Parametrlari', ja: '車両寸法・カテゴリー', en: 'Vehicle Settings', vi: 'Cài đặt phương tiện', zh: '车辆尺寸与规格设置', ne: 'सवारी साधन सेटअप' },
       routeSettings: { uz: 'Yo\'nalish Sharoitlari', ja: 'ルート検索条件', en: 'Route Settings', vi: 'Cài đặt tuyến đường', zh: '路线规划条件', ne: 'मार्ग सेटिङ्हरू' },
       startLabel: { uz: 'Boshlang\'ich manzil', ja: '出発地（例: 新宿、まいばすけっと）', en: 'Start Location (e.g. My Basket)', vi: 'Điểm xuất phát', zh: '起点', ne: 'प्रारम्भिक स्थान' },
-      destLabel: { uz: 'Boradigan manzil', ja: '目的地を入力', en: 'Destination', vi: 'Điểm đến', zh: '终点', ne: 'गन्तव्य' },
-      timeLabel: { uz: 'Harakatlanish vaqti', ja: '出発・運行時間帯', en: 'Departure Time', vi: 'Thời gian khởi hành', zh: '运行时间段', ne: 'प्रस्थान समय' },
-      dayLabel: { uz: 'Hafta kuni', ja: '運行曜日', en: 'Departure Day', vi: 'Ngày trong tuần', zh: '运行日期', ne: 'प्रस्थान दिन' },
+      destLabel: { uz: 'Boradigan manzil', ja: '目的地（例: 横浜港、お台場）', en: 'Destination Location', vi: 'Điểm đến', zh: '终点', ne: 'गन्तव्य' },
       height: { uz: 'Balandlik', ja: '車高 (高さ)', en: 'Height', vi: 'Chiều cao', zh: '高度', ne: 'उचाइ' },
       width: { uz: 'Eni', ja: '車幅 (幅)', en: 'Width', vi: 'Chiều rộng', zh: '宽度', ne: 'चौडाइ' },
       weight: { uz: 'Vazni', ja: '総重量', en: 'Weight', vi: 'Trọng lượng', zh: '总重量', ne: 'वजन' },
@@ -127,7 +128,7 @@ export default function JDMNavigation({ onBack }) {
       fb_other: { uz: 'Boshqa muammo (Xarita / Nomlar)', ja: 'その他・住所地名の誤りなど', en: 'Other Map Metadata Error', vi: 'Lỗi siêu dữ liệu bản đồ khác', zh: '其他地图信息错误', ne: 'अन्य नक्सा त्रुटi' },
       feedbackTextPlaceholder: { uz: 'Iltimos, xato ketgan joy yoki ko\'rsatkich haqida yozing...', ja: '例: 金町高架下の高さ制限は実際には3.2mです。', en: 'Provide details about the incorrect limit (e.g. Underpass near Matsudo is 3.2m, not 3.0m)...', vi: 'Vui lòng cung cấp chi tiết về lỗi giới hạn này...', zh: '请提供限额错误处的具体描述（例如：松户附近的下通道限高实际上是 3.2 米，而不是 3.0 米）...', ne: 'कृपया विवरणहरू प्रदान गर्नुहोस्...' },
       sendBtn: { uz: 'Yuborish (support@michi.jp.net)', ja: '報告を送信 (support@michi.jp.net)', en: 'Submit Report (support@michi.jp.net)', vi: 'Gửi báo cáo (support@michi.jp.net)', zh: '发送报告 (support@michi.jp.net)', ne: 'रिपोर्ट पठाउनुहोस् (support@michi.jp.net)' },
-      feedbackSuccessMsg: { uz: 'Xabaringiz support@michi.jp.net ko\'mak bo\'limiga yuborildi!', ja: 'ご報告が support@michi.jp.net 宛に送信されました。', en: 'Report successfully queued for support@michi.jp.net!', vi: 'Báo cáo đã gửi tới support@michi.jp.net!', zh: '报告已发送至 support@michi.jp.net 邮箱，非常感谢您的反馈！', ne: 'रिपोर्ट support@michi.jp.net मा सफलतापूर्वक पठाइयो!' }
+      feedbackSuccessMsg: { uz: 'Xabaringiz support@michi.jp.net ko\'mak bo\'limiga yuborildi!', ja: 'ご報告が support@michi.jp.net 宛に送信されました。', en: 'Report successfully queued for support@michi.jp.net!', vi: 'Báo cáo đã gửi tới support@michi.jp.net!', zh: '报告已发送至 support@michi.jp.net 邮箱，非常感谢您的反馈！', ne: 'रिपोर्ट support@michi.jp.net ma successfully sent!' }
     };
     return dict[key]?.[currentLang] || dict[key]?.['uz'] || '';
   };
@@ -137,11 +138,11 @@ export default function JDMNavigation({ onBack }) {
     if (mapContainerRef.current && !mapInstanceRef.current) {
       mapInstanceRef.current = L.map(mapContainerRef.current, {
         center: [35.6895, 139.6917], // Center on Tokyo
-        zoom: 10,
+        zoom: 11,
         zoomControl: false
       });
 
-      // Standard OSM Tile Layer with high performance CDN
+      // OSM tile layer optimized for Japan
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap'
       }).addTo(mapInstanceRef.current);
@@ -157,6 +158,42 @@ export default function JDMNavigation({ onBack }) {
     };
   }, []);
 
+  // Locate user using standard HTML5 Geolocation API
+  const handleLocateUser = () => {
+    triggerSound();
+    if (!navigator.geolocation) {
+      alert(currentLang === 'ja' ? 'お使いのブラウザはGPS位置情報をサポートしていません。' : 'Sizning brauzeringiz GPS-ni qo\'llab-quvvatlamaydi.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const newCoord = {
+          lat: latitude,
+          lng: longitude,
+          name: currentLang === 'ja' ? '📍 現在地 (GPS)' : '📍 Hozirgi joylashuv (GPS)'
+        };
+        setStartCoord(newCoord);
+        setStartQuery(currentLang === 'ja' ? '現在地 (GPS)' : 'Hozirgi joylashuv (GPS)');
+
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setView([latitude, longitude], 13);
+        }
+      },
+      (error) => {
+        console.error('GPS error', error);
+        // Fallback to Tokyo Nihonbashi if GPS fails or permission denied
+        const fallback = { lat: 35.6841, lng: 139.7741, name: '⛩️ Nihonbashi Center' };
+        setStartCoord(fallback);
+        setStartQuery(currentLang === 'ja' ? '⛩️ 日本橋中心街' : '⛩️ Nihonbashi Center');
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setView([fallback.lat, fallback.lng], 13);
+        }
+      }
+    );
+  };
+
   // Update map markers when start/destination coordinates change
   useEffect(() => {
     if (!mapInstanceRef.current || !markersGroupRef.current) return;
@@ -164,36 +201,42 @@ export default function JDMNavigation({ onBack }) {
     // Clear existing markers
     markersGroupRef.current.clearLayers();
 
-    // Start marker custom HTML
-    const startHtmlIcon = L.divIcon({
-      html: `<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startCoord.name.split(' ')[1] || startCoord.name}</span></div>`,
-      className: 'custom-leaflet-icon-wrapper',
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
-    });
+    const bounds = [];
 
-    const startMarker = L.marker([startCoord.lat, startCoord.lng], { icon: startHtmlIcon });
-    startMarker.addTo(markersGroupRef.current);
+    // Start marker custom HTML
+    if (startCoord) {
+      const startHtmlIcon = L.divIcon({
+        html: `<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startCoord.name.split(' ')[1] || startCoord.name}</span></div>`,
+        className: 'custom-leaflet-icon-wrapper',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+
+      const startMarker = L.marker([startCoord.lat, startCoord.lng], { icon: startHtmlIcon });
+      startMarker.addTo(markersGroupRef.current);
+      bounds.push([startCoord.lat, startCoord.lng]);
+    }
 
     // Destination marker custom HTML
-    const destHtmlIcon = L.divIcon({
-      html: `<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destCoord.name.split(' ')[1] || destCoord.name}</span></div>`,
-      className: 'custom-leaflet-icon-wrapper',
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
-    });
+    if (destCoord) {
+      const destHtmlIcon = L.divIcon({
+        html: `<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destCoord.name.split(' ')[1] || destCoord.name}</span></div>`,
+        className: 'custom-leaflet-icon-wrapper',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
 
-    const destMarker = L.marker([destCoord.lat, destCoord.lng], { icon: destHtmlIcon });
-    destMarker.addTo(markersGroupRef.current);
+      const destMarker = L.marker([destCoord.lat, destCoord.lng], { icon: destHtmlIcon });
+      destMarker.addTo(markersGroupRef.current);
+      bounds.push([destCoord.lat, destCoord.lng]);
+    }
 
-    // Fit bounds to fit both points
-    try {
-      const bounds = L.latLngBounds([
-        [startCoord.lat, startCoord.lng],
-        [destCoord.lat, destCoord.lng]
-      ]);
-      mapInstanceRef.current.fitBounds(bounds, { padding: [40, 40] });
-    } catch (e) {}
+    // Fit bounds to fit both points if both exist
+    if (bounds.length > 0) {
+      try {
+        mapInstanceRef.current.fitBounds(bounds, { padding: [45, 45] });
+      } catch (e) {}
+    }
 
   }, [startCoord, destCoord]);
 
@@ -254,6 +297,7 @@ export default function JDMNavigation({ onBack }) {
 
   // OSRM Routing Machine Integration with Dynamic Truck Constraints Check
   const calculateRoute = async () => {
+    if (!startCoord || !destCoord) return;
     setIsCalculating(true);
     triggerSound();
 
@@ -400,9 +444,11 @@ export default function JDMNavigation({ onBack }) {
     setIsCalculating(false);
   };
 
-  // Run OSRM calculation when start/destination coordinates are finalized
+  // Run OSRM calculation ONLY when both coordinates are valid and change
   useEffect(() => {
-    calculateRoute();
+    if (startCoord && destCoord) {
+      calculateRoute();
+    }
   }, [startCoord, destCoord, selectedVehicle]);
 
   // Handle active vehicle marker during simulation step changes
@@ -468,6 +514,15 @@ export default function JDMNavigation({ onBack }) {
     }, 3000);
   };
 
+  // Helper to format arrival time (ETA)
+  const getETA = (minutes) => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() + minutes);
+    const hrs = d.getHours().toString().padStart(2, '0');
+    const mins = d.getMinutes().toString().padStart(2, '0');
+    return `${hrs}:${mins}`;
+  };
+
   const currentStep = navSteps[currentStepIndex];
 
   return (
@@ -488,90 +543,111 @@ export default function JDMNavigation({ onBack }) {
       <div className="jdm-nav-content-grid">
         
         {/* Real Leaflet Map Container Block */}
-        <div className="nav-card glass squircle panel-map" style={{ padding: '0', overflow: 'hidden', height: '320px' }}>
+        <div className="nav-card glass squircle panel-map" style={{ padding: '0', overflow: 'hidden', height: '320px', position: 'relative' }}>
           <div ref={mapContainerRef} className="map-canvas-container" style={{ height: '100%', width: '100%', borderRadius: '20px' }}></div>
+          
+          {/* Floating GPS Locate Button */}
+          <button 
+            type="button" 
+            className="map-gps-locate-btn" 
+            onClick={handleLocateUser} 
+            title="Locate me"
+          >
+            <Locate size={18} />
+          </button>
         </div>
 
         {/* Navigation Sim HUD Panel */}
         {isNavigating ? (
-          <div className="nav-card glass squircle panel-hud animate-slide-up">
-            <div className="panel-section-title">
-              <Compass className="animate-spin-slow" size={16} color="#0A84FF" />
-              <h3>GPS ACTIVE ROAD GUIDANCE</h3>
+          <div className="nav-card glass squircle panel-hud animate-slide-up" style={{ gap: '0' }}>
+            {/* Top Instruction Banner (Google/Yandex style) */}
+            <div className="nav-top-banner">
+              <div className="nav-turn-icon-wrap">
+                <Navigation size={26} color="#ffffff" style={{ transform: 'rotate(45deg)' }} />
+              </div>
+              <div className="nav-turn-details">
+                <h3 className="nav-turn-road">
+                  {currentLang === 'ja' 
+                    ? (currentStep?.jaText || '直進してください') 
+                    : (currentStep?.text || 'Proceed Straight')
+                  }
+                </h3>
+                <span className="nav-turn-sub">
+                  {currentLang === 'ja' 
+                    ? `次の目的地まで: ${currentStep?.landmark || 'デポ'}` 
+                    : `Next Landmark: ${currentStep?.landmark || 'Depot'}`
+                  }
+                </span>
+              </div>
             </div>
 
-            {currentStep ? (
-              <div className="guidance-hud-body">
-                <div className="guidance-banner" style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '14px', background: 'rgba(10, 132, 255, 0.08)', padding: '12px', borderRadius: '14px', border: '1px solid rgba(10,132,255,0.2)' }}>
-                  <Navigation size={22} color="#0A84FF" style={{ transform: 'rotate(45deg)' }} />
-                  <div style={{ flex: 1 }}>
-                    <h2 style={{ fontSize: '13.5px', fontWeight: 'bold', margin: '0', color: 'var(--text-main)' }}>
-                      {currentLang === 'ja' ? currentStep.jaText : currentStep.text}
-                    </h2>
-                  </div>
-                </div>
+            {/* Bottom Info HUD */}
+            <div className="nav-bottom-stat-row">
+              <div className="nav-stat-time">
+                <span className="time-value">
+                  {route.time}
+                </span>
+                <span className="time-unit">
+                  {currentLang === 'ja' ? '分' : 'min'}
+                </span>
+              </div>
+              
+              <div className="nav-stat-divider"></div>
+              
+              <div className="nav-stat-details">
+                <span className="stat-eta">
+                  ETA {getETA(route.time)}
+                </span>
+                <span className="stat-dist">
+                  {route.distance} km
+                </span>
+              </div>
+              
+              <button 
+                type="button" 
+                className="nav-exit-btn"
+                onClick={() => {
+                  triggerSound();
+                  setIsNavigating(false);
+                  setIsAutoPlaying(false);
+                  setCurrentStepIndex(0);
+                }}
+              >
+                {currentLang === 'ja' ? '終了' : 'Exit'}
+              </button>
+            </div>
 
-                <div className="guidance-meta-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '16px' }}>
-                  <div className="meta-card" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', padding: '10px 8px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                    <span className="meta-label" style={{ fontSize: '8px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>Landmark</span>
-                    <strong className="meta-value text-truncate" style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-main)', maxWidth: '100%' }}>
-                      {currentStep.landmark}
-                    </strong>
-                  </div>
+            {/* Simulation controls (Gear-expandable for testing) */}
+            <div className="simulation-settings-wrap" style={{ marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px' }}>
+              <button 
+                type="button" 
+                className="sim-toggle-btn"
+                onClick={() => setShowSimControls(!showSimControls)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '10px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', margin: '0 auto' }}
+              >
+                <span>⚙️ {showSimControls ? 'Hide Sim Controls' : 'Show Sim Controls'}</span>
+              </button>
 
-                  <div className="meta-card" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', padding: '10px 8px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                    <span className="meta-label" style={{ fontSize: '8px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>Speed Limit</span>
-                    <strong className="meta-value" style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--text-main)' }}>
-                      {currentStep.speedLimit > 0 ? `${currentStep.speedLimit} km/h` : 'STOP'}
-                    </strong>
-                  </div>
-
-                  <div className="meta-card" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', padding: '8px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span className="meta-label" style={{ fontSize: '8px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>Signal</span>
-                    {currentStep.signal !== 'none' ? (
-                      <div className="jdm-traffic-light" style={{ display: 'flex', gap: '3px', background: '#222', padding: '4px 6px', borderRadius: '6px' }}>
-                        <div className="light red" style={{ width: '8px', height: '8px', borderRadius: '50%', background: currentStep.signal === 'red' ? '#FF453A' : '#400' }}></div>
-                        <div className="light yellow" style={{ width: '8px', height: '8px', borderRadius: '50%', background: currentStep.signal === 'yellow' ? '#FFD60A' : '#440' }}></div>
-                        <div className="light green" style={{ width: '8px', height: '8px', borderRadius: '50%', background: currentStep.signal === 'green' ? '#30D158' : '#040' }}></div>
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: '8px', fontWeight: 'bold', color: 'var(--success)' }}>FREE FLOW</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Progress bar */}
-                <div className="nav-progress-container" style={{ marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'bold', marginBottom: '4px' }}>
-                    <span>Progress</span>
+              {showSimControls && (
+                <div className="sim-panel-content animate-fade-in" style={{ marginTop: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                    <span>Checkpoint Progress</span>
                     <span>{currentStepIndex + 1} / {navSteps.length}</span>
                   </div>
-                  <div style={{ height: '6px', background: 'var(--glass-bg)', borderRadius: '3px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', background: 'var(--primary)', width: `${((currentStepIndex + 1) / navSteps.length) * 100}%` }}></div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button type="button" disabled={currentStepIndex === 0} onClick={() => setCurrentStepIndex(prev => prev - 1)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '11px' }}>
+                      Back
+                    </button>
+                    <button type="button" onClick={() => setIsAutoPlaying(!isAutoPlaying)} style={{ flex: 1.2, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: isAutoPlaying ? 'rgba(255,149,0,0.15)' : 'var(--glass-bg)', color: isAutoPlaying ? '#FF9500' : 'var(--text-main)', cursor: 'pointer', fontSize: '11px' }}>
+                      {isAutoPlaying ? 'Pause' : 'Play'}
+                    </button>
+                    <button type="button" disabled={currentStepIndex === navSteps.length - 1} onClick={() => setCurrentStepIndex(prev => prev + 1)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontSize: '11px' }}>
+                      Next
+                    </button>
                   </div>
                 </div>
-
-                {/* Simulation Control Row */}
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                  <button type="button" className="sim-step-btn" disabled={currentStepIndex === 0} onClick={() => setCurrentStepIndex(prev => prev - 1)} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', cursor: 'pointer' }}>
-                    Back
-                  </button>
-                  <button type="button" className="sim-play-btn" onClick={() => setIsAutoPlaying(!isAutoPlaying)} style={{ flex: 1.2, padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', background: isAutoPlaying ? 'rgba(255,149,0,0.15)' : 'var(--glass-bg)', color: isAutoPlaying ? '#FF9500' : 'var(--text-main)', cursor: 'pointer' }}>
-                    {isAutoPlaying ? <Pause size={12} /> : <Play size={12} />}
-                    <span>{isAutoPlaying ? 'PAUSE' : 'PLAY'}</span>
-                  </button>
-                  <button type="button" className="sim-step-btn" disabled={currentStepIndex === navSteps.length - 1} onClick={() => setCurrentStepIndex(prev => prev + 1)} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer' }}>
-                    Next
-                  </button>
-                </div>
-
-                <button type="button" onClick={() => setIsNavigating(false)} style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,69,58,0.3)', background: 'rgba(255,69,58,0.1)', color: '#FF453A', fontWeight: 'bold', cursor: 'pointer' }}>
-                  Finish Navigation
-                </button>
-              </div>
-            ) : (
-              <p>No steps available.</p>
-            )}
+              )}
+            </div>
           </div>
         ) : (
           /* Panel 1: Settings panel with OSM address query suggestions */
@@ -589,7 +665,7 @@ export default function JDMNavigation({ onBack }) {
                   <MapPin size={14} className="input-pin-icon start" />
                   <input 
                     type="text"
-                    placeholder="Departing from..."
+                    placeholder="Enter start location..."
                     value={startQuery}
                     onChange={e => {
                       setStartQuery(e.target.value);
@@ -598,20 +674,26 @@ export default function JDMNavigation({ onBack }) {
                   />
                   {startSuggestions.length > 0 && (
                     <div className="nav-suggestions-dropdown glass">
-                      {startSuggestions.map(item => (
-                        <div 
-                          key={item.id} 
-                          className="suggestion-item text-truncate"
-                          onClick={() => {
-                            setStartCoord({ lat: item.lat, lng: item.lng, name: item.name });
-                            setStartQuery(item.name.substring(0, 30) + '...');
-                            setStartSuggestions([]);
-                            triggerSound();
-                          }}
-                        >
-                          {item.name}
-                        </div>
-                      ))}
+                      {startSuggestions.map(item => {
+                        const parts = item.name.split(',');
+                        const title = parts[0];
+                        const subtitle = parts.slice(1).join(',').trim();
+                        return (
+                          <div 
+                            key={item.id} 
+                            className="suggestion-item"
+                            onClick={() => {
+                              setStartCoord({ lat: item.lat, lng: item.lng, name: item.name });
+                              setStartQuery(title);
+                              setStartSuggestions([]);
+                              triggerSound();
+                            }}
+                          >
+                            <div className="suggestion-title">{title}</div>
+                            <div className="suggestion-subtitle">{subtitle}</div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -633,20 +715,26 @@ export default function JDMNavigation({ onBack }) {
                   />
                   {destSuggestions.length > 0 && (
                     <div className="nav-suggestions-dropdown glass">
-                      {destSuggestions.map(item => (
-                        <div 
-                          key={item.id} 
-                          className="suggestion-item text-truncate"
-                          onClick={() => {
-                            setDestCoord({ lat: item.lat, lng: item.lng, name: item.name });
-                            setDestQuery(item.name.substring(0, 30) + '...');
-                            setDestSuggestions([]);
-                            triggerSound();
-                          }}
-                        >
-                          {item.name}
-                        </div>
-                      ))}
+                      {destSuggestions.map(item => {
+                        const parts = item.name.split(',');
+                        const title = parts[0];
+                        const subtitle = parts.slice(1).join(',').trim();
+                        return (
+                          <div 
+                            key={item.id} 
+                            className="suggestion-item"
+                            onClick={() => {
+                              setDestCoord({ lat: item.lat, lng: item.lng, name: item.name });
+                              setDestQuery(title);
+                              setDestSuggestions([]);
+                              triggerSound();
+                            }}
+                          >
+                            <div className="suggestion-title">{title}</div>
+                            <div className="suggestion-subtitle">{subtitle}</div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -677,7 +765,7 @@ export default function JDMNavigation({ onBack }) {
         )}
 
         {/* Panel 2: Instructions and clearance warning output */}
-        {!isNavigating && (
+        {!isNavigating && startCoord && destCoord && (
           <div className="nav-card glass squircle panel-instructions animate-slide-up">
             <div className={`route-status-banner ${route.status}`}>
               {route.status === 'safe' ? (

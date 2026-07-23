@@ -24,7 +24,8 @@ vi.mock('lucide-react', () => ({
   CornerUpRight: () => 'CornerUpRight',
   ArrowUp: () => 'ArrowUp',
   Play: () => 'Play',
-  Pause: () => 'Pause'
+  Pause: () => 'Pause',
+  Locate: () => 'Locate'
 }));
 
 // Mock react-i18next translation hook
@@ -71,7 +72,7 @@ describe('JDMNavigation Component Tests', () => {
   it('renders successfully without crashing', () => {
     const html = renderToString(<JDMNavigation onBack={() => {}} />);
     expect(html).toContain('JDM');
-    expect(html).toContain('Matsudo');
+    expect(html).toContain('Depots');
   });
 
   it('supports fallback translations when no props are provided', () => {
