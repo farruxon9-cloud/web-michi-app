@@ -27,7 +27,12 @@ vi.mock('lucide-react', () => ({
   Pause: () => 'Pause',
   Locate: () => 'Locate',
   Car: () => 'Car',
-  Bike: () => 'Bike'
+  Bike: () => 'Bike',
+  Plus: () => 'Plus',
+  Trash2: () => 'Trash2',
+  Bookmark: () => 'Bookmark',
+  X: () => 'X',
+  Save: () => 'Save'
 }));
 
 // Mock react-i18next translation hook

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike } from 'lucide-react';
+import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike, Plus, Trash2, Bookmark, X, Save } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -14,17 +14,6 @@ const NODES = {
   oi_wharf: { id: 'oi_wharf', name: '⚓ Oi Container Wharf', jaName: '⚓ 大井コンテナ埠頭', lat: 35.6033, lng: 139.7523, desc: 'Tokyo Port Terminal' },
   yokohama: { id: 'yokohama', name: '🚢 Yokohama Warehouse', jaName: '🚢 横浜港本牧倉庫', lat: 35.4439, lng: 139.6380, desc: 'Kanagawa Pier Hub' }
 };
-
-// Fallback local edges for Dijkstra simulation when offline
-const EDGES = [
-  { from: 'matsudo', to: 'nihonbashi', name: 'Route 6 (Local Arterial)', jaName: '国道6号線 (一般道)', heightLimit: 3.0, widthLimit: 3.0, weightLimit: 12.0, dist: 18.2, time: 35 },
-  { from: 'matsudo', to: 'oi_wharf', name: 'Wangan Expressway (Chiba Line)', jaName: '首都高速湾岸線 (千葉方面)', heightLimit: 4.5, widthLimit: 9.9, weightLimit: 45.0, dist: 28.5, time: 22 },
-  { from: 'nihonbashi', to: 'shinjuku', name: 'Shinjuku-Dori (Narrow Street)', jaName: '新宿通り (狭隘道路)', heightLimit: 3.5, widthLimit: 2.2, weightLimit: 8.0, dist: 7.4, time: 20, truckBan: true },
-  { from: 'nihonbashi', to: 'oi_wharf', name: 'Ginza Chuo-Dori (Pedestrian Zone)', jaName: '銀座中央通り (歩行者天国)', heightLimit: 4.0, widthLimit: 3.5, weightLimit: 10.0, dist: 8.1, time: 15, pedestrianBan: true },
-  { from: 'shinjuku', to: 'oi_wharf', name: 'Route 20 & Yamate Tunnel', jaName: '国道20号・山手トンネル', heightLimit: 4.1, widthLimit: 3.2, weightLimit: 20.0, dist: 14.8, time: 18 },
-  { from: 'oi_wharf', to: 'yokohama', name: 'Wangan Expressway (Yokohama Line)', jaName: '首都高速湾岸線 (横浜方面)', heightLimit: 4.5, widthLimit: 9.9, weightLimit: 45.0, dist: 24.1, time: 16 },
-  { from: 'shinjuku', to: 'yokohama', name: 'Third Keihin Highway', jaName: '第三京浜道路', heightLimit: 4.3, widthLimit: 3.5, weightLimit: 25.0, dist: 29.8, time: 25 }
-];
 
 // Presets matching actual commercial vehicles and driving licenses in Japan
 const VEHICLE_PRESETS = {
@@ -102,8 +91,16 @@ const getDistanceFromLatLng = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
+const getETA = (minutes) => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() + minutes);
+  const hrs = d.getHours().toString().padStart(2, '0');
+  const mins = d.getMinutes().toString().padStart(2, '0');
+  return `${hrs}:${mins}`;
+};
+
 export default function JDMNavigation({ onBack }) {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const currentLang = i18n.language || 'uz';
 
   const mapContainerRef = useRef(null);
@@ -127,6 +124,12 @@ export default function JDMNavigation({ onBack }) {
   const [startCoord, setStartCoord] = useState(null);
   const [destCoord, setDestCoord] = useState(null);
 
+  // Multi-stop state
+  const [stops, setStops] = useState([]); // array of { id, query, coord, suggestions }
+  const [savedRoutes, setSavedRoutes] = useState([]);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [routeAlias, setRouteAlias] = useState('');
+
   const [isCalculating, setIsCalculating] = useState(false);
   const [route, setRoute] = useState({
     status: 'safe',
@@ -143,18 +146,24 @@ export default function JDMNavigation({ onBack }) {
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [showSimControls, setShowSimControls] = useState(false);
 
-  // Feedback modal states
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-  const [feedbackType, setFeedbackType] = useState('bridge_height');
-  const [feedbackText, setFeedbackText] = useState('');
-  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
-
   // Local sound triggers
   const triggerSound = () => {
     try {
       playHapticClick();
     } catch (e) {}
   };
+
+  // Load saved routes on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('michi_saved_routes');
+      if (raw) {
+        setSavedRoutes(JSON.parse(raw));
+      }
+    } catch (e) {
+      console.error('LocalStorage load failed', e);
+    }
+  }, []);
 
   // Translations
   const getNavText = (key) => {
@@ -163,29 +172,24 @@ export default function JDMNavigation({ onBack }) {
       subtitle: { uz: 'Cheklovlar va taqiqlar xaritasi', ja: '大型・一般車両規制対応ルート検索', en: 'Offline Traffic Restrictions Router', vi: 'Bản đồ hạn chế giao thông ngoại tuyến', zh: '离线交通限制与避堵路网规划', ne: 'अफ्ライン ट्राफिक प्रतिबन्ध राउटर' },
       vehicleHUD: { uz: 'Transport Parametrlari', ja: '車両寸法・カテゴリー', en: 'Vehicle Settings', vi: 'Cài đặt phương tiện', zh: '车辆尺寸与规格设置', ne: 'सवारी साधन सेटअप' },
       routeSettings: { uz: 'Yo\'nalish Sharoitlari', ja: 'ルート検索条件', en: 'Route Settings', vi: 'Cài đặt tuyến đường', zh: '路线规划条件', ne: 'मार्ग सेटिङ्हरू' },
-      startLabel: { uz: 'Boshlang\'ich manzil', ja: '出発地（例: 新宿、まいばすけっと）', en: 'Start Location (e.g. My Basket)', vi: 'Điểm xuất phát', zh: '起点', ne: 'प्रारम्भिक स्थान' },
+      startLabel: { uz: 'Boshlang\'ich manzil', ja: '出発地（例: 新宿、まいばすけっと）', en: 'Start Location', vi: 'Điểm xuất phát', zh: '起点', ne: 'प्रारम्भिक स्थान' },
       destLabel: { uz: 'Boradigan manzil', ja: '目的地（例: 横浜港、お台場）', en: 'Destination Location', vi: 'Điểm đến', zh: '终点', ne: 'गन्तव्य' },
       startPlaceholder: { uz: 'Boshlang\'ich manzilni kiriting...', ja: '出発地を入力してください...', en: 'Enter start location...', vi: 'Nhập điểm xuất phát...', zh: '输入起点...', ne: 'प्रस्थान बिन्दु...' },
-      destPlaceholder: { uz: 'Boradigan manzilni kiriting...', ja: '目的地を入力してください...', en: 'Enter destination...', vi: 'Nhập điểm đến...', zh: '输入终点...', ne: 'गन्तव्य बिन्दु...' },
+      destPlaceholder: { uz: 'Boradigan manzilni kiriting...', ja: '目的地を入力してください...', en: 'Enter destination...', vi: 'Nhập điểm đến...', zh: '输入终点...', ne: 'गन्तavy biन्दु...' },
       height: { uz: 'Balandlik', ja: '車高 (高さ)', en: 'Height', vi: 'Chiều cao', zh: '高度', ne: 'उचाइ' },
-      width: { uz: 'Eni', ja: '車幅 (幅)', en: 'Width', vi: 'Chiều rộng', zh: '宽度', ne: 'चौдائ' },
+      width: { uz: 'Eni', ja: '車幅 (幅)', en: 'Width', vi: 'Chiều rộng', zh: '宽度', ne: 'चौडाइ' },
       weight: { uz: 'Vazni', ja: '総重量', en: 'Weight', vi: 'Trọng lượng', zh: '总重量', ne: 'वजन' },
       safeStatus: { uz: 'Xavfsiz marshrut (Taqiqlar yo\'q)', ja: '安全ルート確認 (規制なし)', en: 'Safe Route (No restrictions)', vi: 'Tuyến đường an toàn (Không hạn chế)', zh: '安全路线 (无限制)', ne: 'सुरक्षित मार्ग (कुनै प्रतिबन्ध छैन)' },
       warningStatus: { uz: 'Chetlab o\'tish marshruti faol', ja: '規制回避迂回ルート案内中', en: 'Detour Route Active', vi: 'Đang hoạt động tuyến đường vòng', zh: '避堵绕行路线激活', ne: 'घुमाуро मार्ग सक्रिय' },
       blockedStatus: { uz: 'Yo\'l to\'siq! Harakatlanish imkonsiz', ja: '運行不可・通行止め', en: 'Route Blocked', vi: 'Tuyến đường bị chặn', zh: '路线封锁', ne: 'मार्ग bised / nayaँ track prtibandh' },
-      distance: { uz: 'Masofa', ja: '総走行距離', en: 'Distance', vi: 'Khoảng cách', zh: '距离', ne: 'दूरी' },
+      distance: { uz: 'Masofa', ja: '総走行距離', en: 'Distance', vi: 'Khoảng cách', zh: '距离', ne: 'duri' },
       time: { uz: 'Vaqt', ja: '所要時間', en: 'Est. Time', vi: 'Thời gian ước tính', zh: '预计时间', ne: 'अनुमानित समय' },
-      routeInstructions: { uz: 'Marshrut Yo\'nalishlari', ja: '右左折・走行指示', en: 'Route Instructions', vi: 'Chỉ dẫn tuyến đường', zh: '行车指引', ne: 'मार्ग निर्देशनहरू' },
-      reportBugBtn: { uz: 'Xaritada xatolik topdingizmi?', ja: '地図・規制情報の誤りを報告', en: 'Report Map / Restriction Error', vi: 'Báo cáo lỗi bản đồ / hạn chế', zh: '上报地图或限制错误', ne: 'नक्सा / प्रतिबन्ध त्रुटि रिपोर्ट गर्नुहोस्' },
-      feedbackTitle: { uz: 'Yo\'nalish Cheklovi Xatosi Haqida Xabar', ja: 'ルート規制情報の修正提案', en: 'Report Route Constraint Error', vi: 'Báo cáo lỗi giới hạn tuyến đường', zh: '上报路线规划限制错误', ne: 'मार्ग प्रतिबन्ध त्रुटि रिपोर्ट गर्नुहोस्' },
-      feedbackTypeLabel: { uz: 'Xatolik turi', ja: '誤りの内容', en: 'Error Type', vi: 'Loại lỗi', zh: '错误类型', ne: 'ترुटि प्रकार' },
-      fb_bridge: { uz: 'Balandlik cheklovi noto\'g\'ri', ja: '高架下・高さ制限値の相違', en: 'Incorrect Bridge Height Limit', vi: 'Sai giới hạn chiều cao gầm cầu', zh: '桥梁限高错误', ne: 'गलत पुल उचाइ सीमा' },
-      fb_road: { uz: 'Yo\'l yopiq yoki taqiqlangan', ja: '通行止め・通行規制の新設/廃止', en: 'Road Closed / New Truck Ban', vi: 'Đường bị đóng / Cấm xe tải mới', zh: '道路关闭或货车禁行', ne: 'सडक bised / nayaँ track prtibandh' },
-      fb_weight: { uz: 'Ko\'prik vazn taqiqi noto\'g\'ri', ja: '橋梁等の重量制限値の相違', en: 'Incorrect Bridge Weight Limit', vi: 'Sai giới hạn trọng lượng cầu', zh: '桥梁限重错误', ne: 'गलत पुल वजन सीमा' },
-      fb_other: { uz: 'Boshqa muammo (Xarita / Nomlar)', ja: 'その他・住所地名の誤りなど', en: 'Other Map Metadata Error', vi: 'Lỗi siêu dữ liệu bản đồ khác', zh: '其他地图信息错误', ne: 'अन्य नक्सा त्रुटi' },
-      feedbackTextPlaceholder: { uz: 'Iltimos, xato ketgan joy yoki ko\'rsatkich haqida yozing...', ja: '例: 金町高架下の高さ制限は実際には3.2mです。', en: 'Provide details about the incorrect limit (e.g. Underpass near Matsudo is 3.2m, not 3.0m)...', vi: 'Vui lòng cung cấp chi tiết về lỗi giới hạn này...', zh: '请提供限额错误处的具体描述（例如：松户附近的下通道限高实际上是 3.2 米，而不是 3.0 米）...', ne: 'कृपया विवरणहरू प्रदान गर्नुहोस्...' },
-      sendBtn: { uz: 'Yuborish (support@michi.jp.net)', ja: '報告を送信 (support@michi.jp.net)', en: 'Submit Report (support@michi.jp.net)', vi: 'Gửi báo cáo (support@michi.jp.net)', zh: '发送报告 (support@michi.jp.net)', ne: 'रिपोर्ट पठाउनुहोस् (support@michi.jp.net)' },
-      feedbackSuccessMsg: { uz: 'Xabaringiz support@michi.jp.net ko\'mak bo\'limiga yuborildi!', ja: 'ご報告が support@michi.jp.net 宛に送信されました。', en: 'Report successfully queued for support@michi.jp.net!', vi: 'Báo cáo đã gửi tới support@michi.jp.net!', zh: '报告已发送至 support@michi.jp.net 邮箱，非常感謝您的反馈！', ne: 'रिपोर्ट support@michi.jp.net ma successfully sent!' }
+      addStop: { uz: '+ Manzil qo\'shish', ja: '+ 経由地を追加', en: '+ Add Stop', vi: '+ Thêm điểm dừng', zh: '+ 添加途经点', ne: '+ बिन्दु थप्नुहोस्' },
+      saveRoute: { uz: '💾 Marshrutni Saqlash', ja: '💾 ルートを保存', en: '💾 Save Route', vi: '💾 Lưu tuyến đường', zh: '💾 保存路线', ne: '💾 मार्ग सुरक्षित गर्नुहोस्' },
+      savedRoutesTitle: { uz: '📂 Saqlangan Marshrutlar', ja: '📂 保存済みルート', en: '📂 Saved Routes', vi: '📂 Tuyến đường đã lưu', zh: '📂 已保存路线', ne: '📂 सुरक्षित मार्गहरू' },
+      enterRouteName: { uz: 'Marshrut nomini kiriting', ja: 'ルートの別名・ラベルを入力', en: 'Enter Route Label', vi: 'Nhập nhãn tuyến đường', zh: '输入路线标签', ne: 'मार्गको नाम प्रविष्ट गर्नुहोस्' },
+      saveLabel: { uz: 'Saqlash', ja: '保存する', en: 'Save', vi: 'Lưu', zh: '保存', ne: 'बचत गर्नुहोस्' },
+      cancelLabel: { uz: 'Bekor qilish', ja: 'キャンセル', en: 'Cancel', vi: 'Hủy', zh: '取消', ne: 'रद्द गर्नुहोस्' }
     };
     return dict[key]?.[currentLang] || dict[key]?.['uz'] || '';
   };
@@ -199,7 +203,6 @@ export default function JDMNavigation({ onBack }) {
         zoomControl: false
       });
 
-      // OSM tile layer optimized for Japan
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap'
       }).addTo(mapInstanceRef.current);
@@ -240,7 +243,6 @@ export default function JDMNavigation({ onBack }) {
       },
       (error) => {
         console.error('GPS error', error);
-        // Fallback to Tokyo Nihonbashi if GPS fails or permission denied
         const fallback = { lat: 35.6841, lng: 139.7741, name: '⛩️ Nihonbashi Center' };
         setStartCoord(fallback);
         setStartQuery(currentLang === 'ja' ? '⛩️ 日本橋中心街' : '⛩️ Nihonbashi Center');
@@ -251,53 +253,63 @@ export default function JDMNavigation({ onBack }) {
     );
   };
 
-  // Update map markers when start/destination coordinates change
+  // Update map markers when start, intermediate stops, and final coordinates change
   useEffect(() => {
     if (!mapInstanceRef.current || !markersGroupRef.current) return;
 
-    // Clear existing markers
     markersGroupRef.current.clearLayers();
-
     const bounds = [];
 
-    // Start marker custom HTML
+    // Start marker
     if (startCoord) {
       const startHtmlIcon = L.divIcon({
-        html: `<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startCoord.name.split(' ')[1] || startCoord.name}</span></div>`,
+        html: `<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startCoord.name.split(' ')[1] || startCoord.name.split(',')[0]}</span></div>`,
         className: 'custom-leaflet-icon-wrapper',
         iconSize: [30, 30],
         iconAnchor: [15, 15]
       });
 
-      const startMarker = L.marker([startCoord.lat, startCoord.lng], { icon: startHtmlIcon });
-      startMarker.addTo(markersGroupRef.current);
+      L.marker([startCoord.lat, startCoord.lng], { icon: startHtmlIcon }).addTo(markersGroupRef.current);
       bounds.push([startCoord.lat, startCoord.lng]);
     }
 
-    // Destination marker custom HTML
+    // Intermediate stops markers (orange color coding)
+    stops.forEach((stop, index) => {
+      if (stop.coord) {
+        const stopHtmlIcon = L.divIcon({
+          html: `<div class="custom-map-marker warning"><div class="marker-dot" style="background-color: #FF9500;"></div><span class="marker-label">Stop ${index + 1}</span></div>`,
+          className: 'custom-leaflet-icon-wrapper',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+
+        L.marker([stop.coord.lat, stop.coord.lng], { icon: stopHtmlIcon }).addTo(markersGroupRef.current);
+        bounds.push([stop.coord.lat, stop.coord.lng]);
+      }
+    });
+
+    // Destination marker
     if (destCoord) {
       const destHtmlIcon = L.divIcon({
-        html: `<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destCoord.name.split(' ')[1] || destCoord.name}</span></div>`,
+        html: `<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destCoord.name.split(' ')[1] || destCoord.name.split(',')[0]}</span></div>`,
         className: 'custom-leaflet-icon-wrapper',
         iconSize: [30, 30],
         iconAnchor: [15, 15]
       });
 
-      const destMarker = L.marker([destCoord.lat, destCoord.lng], { icon: destHtmlIcon });
-      destMarker.addTo(markersGroupRef.current);
+      L.marker([destCoord.lat, destCoord.lng], { icon: destHtmlIcon }).addTo(markersGroupRef.current);
       bounds.push([destCoord.lat, destCoord.lng]);
     }
 
-    // Fit bounds to fit both points if both exist
     if (bounds.length > 0) {
       try {
         mapInstanceRef.current.fitBounds(bounds, { padding: [45, 45] });
       } catch (e) {}
     }
 
-  }, [startCoord, destCoord]);
+  }, [startCoord, destCoord, stops]);
 
-  // Handle vehicle select
+  // Handle vehicle selection
   const handleVehicleSelect = (key) => {
     triggerSound();
     setSelectedVehicle(key);
@@ -307,16 +319,39 @@ export default function JDMNavigation({ onBack }) {
     setWeight(v.weight);
   };
 
-  // Search Address suggestions using OSM Nominatim (Japan Only)
-  const searchAddress = async (query, type) => {
+  // Add intermediate stop
+  const handleAddStop = () => {
+    triggerSound();
+    if (stops.length >= 4) {
+      alert(currentLang === 'ja' ? '追加できる経由地は最大4件までです。' : 'Ko\'pi bilan 4 ta oraliq manzil qo\'shish mumkin.');
+      return;
+    }
+    setStops([...stops, { id: Math.random().toString(), query: '', coord: null, suggestions: [] }]);
+  };
+
+  // Remove stop
+  const handleRemoveStop = (id) => {
+    triggerSound();
+    setStops(stops.filter(s => s.id !== id));
+  };
+
+  // Update stop query
+  const handleStopQueryChange = (id, query) => {
+    setStops(stops.map(s => s.id === id ? { ...s, query } : s));
+  };
+
+  // Search Address suggestions using OSM Nominatim
+  const searchAddress = async (query, type, stopId = null) => {
     if (!query || query.trim().length < 2) {
       if (type === 'start') setStartSuggestions([]);
-      else setDestSuggestions([]);
+      else if (type === 'dest') setDestSuggestions([]);
+      else if (type === 'stop' && stopId) {
+        setStops(stops.map(s => s.id === stopId ? { ...s, suggestions: [] } : s));
+      }
       return;
     }
 
     try {
-      // Prioritize Aeon My Basket stores if typed "my basket" or "まいばすけっと"
       let searchQ = query;
       if (query.toLowerCase().includes('my basket') || query.includes('basket')) {
         searchQ = 'まいばすけっと ' + query.replace(/my basket/gi, '').trim();
@@ -332,11 +367,14 @@ export default function JDMNavigation({ onBack }) {
           lat: parseFloat(item.lat),
           lng: parseFloat(item.lon)
         }));
+        
         if (type === 'start') setStartSuggestions(formatted);
-        else setDestSuggestions(formatted);
+        else if (type === 'dest') setDestSuggestions(formatted);
+        else if (type === 'stop' && stopId) {
+          setStops(stops.map(s => s.id === stopId ? { ...s, suggestions: formatted } : s));
+        }
       }
     } catch (e) {
-      // Offline fallback: Search local hubs NODES
       const local = Object.values(NODES).filter(n =>
         n.name.toLowerCase().includes(query.toLowerCase()) ||
         n.jaName.includes(query)
@@ -347,14 +385,21 @@ export default function JDMNavigation({ onBack }) {
         lat: n.lat,
         lng: n.lng
       }));
+
       if (type === 'start') setStartSuggestions(formatted);
-      else setDestSuggestions(formatted);
+      else if (type === 'dest') setDestSuggestions(formatted);
+      else if (type === 'stop' && stopId) {
+        setStops(stops.map(s => s.id === stopId ? { ...s, suggestions: formatted } : s));
+      }
     }
   };
 
   // OSRM Routing Machine Integration with Dynamic Truck Constraints Check
   const calculateRoute = async () => {
-    if (!startCoord || !destCoord) return;
+    const validStops = stops.map(s => s.coord).filter(Boolean);
+    const points = [startCoord, ...validStops, destCoord].filter(Boolean);
+    
+    if (points.length < 2) return;
     setIsCalculating(true);
     triggerSound();
 
@@ -364,24 +409,25 @@ export default function JDMNavigation({ onBack }) {
     }
 
     try {
-      const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${startCoord.lng},${startCoord.lat};${destCoord.lng},${destCoord.lat}?overview=full&geometries=geojson`);
+      const coordsString = points.map(p => `${p.lng},${p.lat}`).join(';');
+      const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`);
       const data = await res.json();
 
       if (data.routes && data.routes.length > 0) {
         const routeData = data.routes[0];
         const distanceKm = parseFloat((routeData.distance / 1000).toFixed(1));
         const timeMin = Math.round(routeData.duration / 60);
-        const geojsonCoordinates = routeData.geometry.coordinates.map(c => [c[1], c[0]]); // Leaflet [lat, lng] format
+        const geojsonCoordinates = routeData.geometry.coordinates.map(c => [c[1], c[0]]);
 
         // Check truck clearance limit conflicts
         let status = 'safe';
         let warnings = [];
 
-        // Height violation check: Low clearance points in Tokyo area (Simulated near Matsudo)
+        // Height check
         if (height > 3.0) {
           const nearMatsudo = geojsonCoordinates.some(coord => {
             const dist = getDistanceFromLatLng(coord[0], coord[1], 35.7915, 139.9015);
-            return dist < 2.5; // Within 2.5km of Matsudo underpass
+            return dist < 2.5;
           });
           if (nearMatsudo) {
             status = 'warning';
@@ -392,7 +438,7 @@ export default function JDMNavigation({ onBack }) {
           }
         }
 
-        // Width violation check: Narrow cargo truck restricted zones
+        // Width check
         if (width > 2.2) {
           const nearShinjuku = geojsonCoordinates.some(coord => {
             const dist = getDistanceFromLatLng(coord[0], coord[1], 35.6909, 139.7003);
@@ -407,7 +453,7 @@ export default function JDMNavigation({ onBack }) {
           }
         }
 
-        // Weight violation check
+        // Weight check
         if (weight > 12.0) {
           const nearNihonbashi = geojsonCoordinates.some(coord => {
             const dist = getDistanceFromLatLng(coord[0], coord[1], 35.6841, 139.7741);
@@ -438,17 +484,10 @@ export default function JDMNavigation({ onBack }) {
           time: timeMin,
           coordinates: geojsonCoordinates,
           warnings,
-          edgesUsed: [
-            {
-              name: 'OSRM Highway Path',
-              jaName: '推奨一般道・高速道路ルート',
-              dist: distanceKm,
-              time: timeMin
-            }
-          ]
+          edgesUsed: []
         });
 
-        // Set simulation steps along the route coordinate nodes
+        // Set simulation steps
         const stepCount = 7;
         const steps = [];
         const interval = Math.floor(geojsonCoordinates.length / stepCount) || 1;
@@ -466,16 +505,12 @@ export default function JDMNavigation({ onBack }) {
           });
         }
         setNavSteps(steps);
-
       }
     } catch (e) {
-      // Offline fallback: Plot direct geodesic line
+      // Geodesic fallback
       const directDist = parseFloat(getDistanceFromLatLng(startCoord.lat, startCoord.lng, destCoord.lat, destCoord.lng).toFixed(1));
       const directTime = Math.round(directDist * 1.8);
-      const fallbackCoordinates = [
-        [startCoord.lat, startCoord.lng],
-        [destCoord.lat, destCoord.lng]
-      ];
+      const fallbackCoordinates = points.map(p => [p.lat, p.lng]);
 
       routePolylineRef.current = L.polyline(fallbackCoordinates, {
         color: '#30D158',
@@ -489,24 +524,30 @@ export default function JDMNavigation({ onBack }) {
         time: directTime,
         coordinates: fallbackCoordinates,
         warnings: [currentLang === 'ja' ? '【オフライン】直接ルートを表示中。' : 'Offline Mode: Displaying fallback direct route.'],
-        edgesUsed: [{ name: 'Direct Line (Offline)', jaName: '直接直線ルート (オフライン)', dist: directDist, time: directTime }]
+        edgesUsed: []
       });
 
-      setNavSteps([
-        { lat: startCoord.lat, lng: startCoord.lng, text: 'Start offline path', jaText: 'オフライン出発', landmark: 'Start', speedLimit: 40, signal: 'green' },
-        { lat: destCoord.lat, lng: destCoord.lng, text: 'Arrived at destination', jaText: '目的地到着', landmark: 'End', speedLimit: 0, signal: 'none' }
-      ]);
+      setNavSteps(points.map((p, i) => ({
+        lat: p.lat,
+        lng: p.lng,
+        text: `Stop ${i + 1}`,
+        jaText: `経由点 ${i + 1}`,
+        landmark: `Point ${i + 1}`,
+        speedLimit: 40,
+        signal: 'green'
+      })));
     }
 
     setIsCalculating(false);
   };
 
-  // Run OSRM calculation ONLY when both coordinates are valid and change
+  // Run calculation when any coordinate, stop or vehicle presets change
   useEffect(() => {
     if (startCoord && destCoord) {
       calculateRoute();
     }
-  }, [startCoord, destCoord, selectedVehicle]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startCoord, destCoord, stops, selectedVehicle]);
 
   // Handle active vehicle marker during simulation step changes
   useEffect(() => {
@@ -521,10 +562,8 @@ export default function JDMNavigation({ onBack }) {
     const currentStep = navSteps[currentStepIndex];
     if (!currentStep) return;
 
-    // Pan map to simulation location
     mapInstanceRef.current.panTo([currentStep.lat, currentStep.lng]);
 
-    // Create or update simulation marker icon
     const simHtmlIcon = L.divIcon({
       html: `<div class="custom-map-marker vehicle"><div class="marker-pulse"></div><div class="marker-dot"></div><span class="marker-label">🚚 DRIVING</span></div>`,
       className: 'custom-leaflet-icon-wrapper',
@@ -559,25 +598,69 @@ export default function JDMNavigation({ onBack }) {
     };
   }, [isAutoPlaying, isNavigating, navSteps]);
 
-  // Feedback form submit handler
-  const handleFeedbackSubmit = (e) => {
-    e.preventDefault();
+  // Route saving handlers
+  const handleSaveRoute = () => {
     triggerSound();
-    setFeedbackSuccess(true);
-    setTimeout(() => {
-      setFeedbackSuccess(false);
-      setIsFeedbackOpen(false);
-      setFeedbackText('');
-    }, 3000);
+    if (!startCoord || !destCoord) {
+      alert(currentLang === 'ja' ? '出発地と目的地を設定してください。' : 'Boshlang\'ich va yakuniy manzilni kiriting.');
+      return;
+    }
+    setIsSaveModalOpen(true);
   };
 
-  // Helper to format arrival time (ETA)
-  const getETA = (minutes) => {
-    const d = new Date();
-    d.setMinutes(d.getMinutes() + minutes);
-    const hrs = d.getHours().toString().padStart(2, '0');
-    const mins = d.getMinutes().toString().padStart(2, '0');
-    return `${hrs}:${mins}`;
+  const confirmSaveRoute = () => {
+    triggerSound();
+    if (!routeAlias.trim()) return;
+
+    const newRoute = {
+      id: Math.random().toString(),
+      alias: routeAlias,
+      startCoord,
+      stops: stops.map(s => s.coord).filter(Boolean),
+      destCoord,
+      selectedVehicle
+    };
+
+    const updated = [newRoute, ...savedRoutes];
+    setSavedRoutes(updated);
+    localStorage.setItem('michi_saved_routes', JSON.stringify(updated));
+    setIsSaveModalOpen(false);
+    setRouteAlias('');
+  };
+
+  const handleDeleteSavedRoute = (id, e) => {
+    e.stopPropagation();
+    triggerSound();
+    const updated = savedRoutes.filter(r => r.id !== id);
+    setSavedRoutes(updated);
+    localStorage.setItem('michi_saved_routes', JSON.stringify(updated));
+  };
+
+  const handleLoadRoute = (r) => {
+    triggerSound();
+    setStartCoord(r.startCoord);
+    setStartQuery(r.startCoord.name.split(',')[0]);
+
+    const mapped = (r.stops || []).map(coord => ({
+      id: Math.random().toString(),
+      query: coord.name.split(',')[0],
+      coord,
+      suggestions: []
+    }));
+    setStops(mapped);
+
+    setDestCoord(r.destCoord);
+    setDestQuery(r.destCoord.name.split(',')[0]);
+
+    if (r.selectedVehicle) {
+      setSelectedVehicle(r.selectedVehicle);
+      const preset = VEHICLE_PRESETS[r.selectedVehicle];
+      if (preset) {
+        setHeight(preset.height);
+        setWidth(preset.width);
+        setWeight(preset.weight);
+      }
+    }
   };
 
   const currentStep = navSteps[currentStepIndex];
@@ -585,7 +668,7 @@ export default function JDMNavigation({ onBack }) {
   return (
     <div className="jdm-nav-container animate-fade-in">
       
-      {/* Real Full Screen Leaflet Map Container Block (Occupies 100% viewport) */}
+      {/* Real Full Screen Map */}
       <div ref={mapContainerRef} className="map-canvas-container-fullscreen"></div>
       
       {/* Floating GPS Locate Button */}
@@ -609,11 +692,11 @@ export default function JDMNavigation({ onBack }) {
         </div>
       </header>
 
-      {/* Floating Settings Card - Top under header (Only visible when not navigating) */}
+      {/* Floating Settings Card - Top (Only visible when not navigating) */}
       {!isNavigating && (
         <div className="nav-card glass squircle panel-settings floating-top-panel">
           
-          {/* Transport Mode & Driving License Category Selector (Google Maps style) */}
+          {/* Transport Mode Row */}
           <div className="nav-mode-selector-row hide-scrollbar">
             {Object.entries(VEHICLE_PRESETS).map(([key, val]) => {
               const Icon = val.type === 'passenger' ? Car : val.type === 'bike' ? Bike : Truck;
@@ -633,7 +716,9 @@ export default function JDMNavigation({ onBack }) {
             })}
           </div>
 
+          {/* Sequential Inputs Column */}
           <div className="nav-input-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            
             {/* Start location field */}
             <div className="form-group-nav flex-1" style={{ margin: '0' }}>
               <div className="nav-input-wrapper">
@@ -673,6 +758,55 @@ export default function JDMNavigation({ onBack }) {
                 )}
               </div>
             </div>
+
+            {/* Intermediate dynamic waypoints */}
+            {stops.map((stop, index) => (
+              <div key={stop.id} className="form-group-nav flex-1" style={{ margin: '0' }}>
+                <div className="nav-input-wrapper">
+                  <MapPin size={14} className="input-pin-icon warning" style={{ color: '#FF9500' }} />
+                  <input 
+                    type="text"
+                    placeholder={currentLang === 'ja' ? `経由地 ${index + 1} を入力...` : `Oraliq manzil ${index + 1} ni kiriting...`}
+                    value={stop.query}
+                    onChange={e => {
+                      handleStopQueryChange(stop.id, e.target.value);
+                      searchAddress(e.target.value, 'stop', stop.id);
+                    }}
+                  />
+                  <button 
+                    type="button" 
+                    className="remove-stop-btn"
+                    onClick={() => handleRemoveStop(stop.id)}
+                    aria-label="Remove stop"
+                    style={{ background: 'none', border: 'none', color: '#FF453A', padding: '0 8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                  {stop.suggestions && stop.suggestions.length > 0 && (
+                    <div className="nav-suggestions-dropdown glass">
+                      {stop.suggestions.map(item => {
+                        const parts = item.name.split(',');
+                        const title = parts[0];
+                        const subtitle = parts.slice(1).join(',').trim();
+                        return (
+                          <div 
+                            key={item.id} 
+                            className="suggestion-item"
+                            onClick={() => {
+                              setStops(stops.map(s => s.id === stop.id ? { ...s, coord: { lat: item.lat, lng: item.lng, name: item.name }, query: title, suggestions: [] } : s));
+                              triggerSound();
+                            }}
+                          >
+                            <div className="suggestion-title">{title}</div>
+                            <div className="suggestion-subtitle">{subtitle}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
 
             {/* Destination location field */}
             <div className="form-group-nav flex-1" style={{ margin: '0' }}>
@@ -715,6 +849,57 @@ export default function JDMNavigation({ onBack }) {
             </div>
           </div>
 
+          {/* Action Row: Add stops & Save route */}
+          <div className="actions-button-row" style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+            <button 
+              type="button" 
+              className="action-pill-btn"
+              onClick={handleAddStop}
+              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-main)', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
+            >
+              <Plus size={13} />
+              <span>{getNavText('addStop')}</span>
+            </button>
+
+            <button 
+              type="button" 
+              className="action-pill-btn"
+              onClick={handleSaveRoute}
+              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(48,209,88,0.1)', color: '#30D158', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
+            >
+              <Bookmark size={13} />
+              <span>{getNavText('saveRoute')}</span>
+            </button>
+          </div>
+
+          {/* Saved Routes Listing */}
+          {savedRoutes.length > 0 && (
+            <div className="saved-routes-section" style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <span className="saved-routes-title" style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
+                {getNavText('savedRoutesTitle')}
+              </span>
+              <div className="saved-routes-list hide-scrollbar" style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
+                {savedRoutes.map(r => (
+                  <div 
+                    key={r.id} 
+                    className="saved-route-pill"
+                    onClick={() => handleLoadRoute(r)}
+                    style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontSize: '10.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <span>{r.alias}</span>
+                    <button 
+                      type="button" 
+                      onClick={(e) => handleDeleteSavedRoute(r.id, e)}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0 2px', display: 'flex', alignItems: 'center' }}
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Quick JDM nodes shortcuts */}
           <div className="quick-hubs-bar" style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             <div className="quick-hub-chips hide-scrollbar" style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
@@ -737,7 +922,7 @@ export default function JDMNavigation({ onBack }) {
         </div>
       )}
 
-      {/* Floating Instructions/Warnings Card - Bottom above vehicles bar (Only visible when route exists and not navigating) */}
+      {/* Floating Instructions/Warnings Card - Bottom (Only visible when route exists and not navigating) */}
       {!isNavigating && startCoord && destCoord && (
         <div className="nav-card glass squircle panel-instructions floating-bottom-panel animate-slide-up">
           <div className={`route-status-banner ${route.status}`} style={{ padding: '8px 12px', borderRadius: '8px', marginBottom: '8px' }}>
@@ -814,7 +999,7 @@ export default function JDMNavigation({ onBack }) {
       {/* Floating Turn-by-Turn Guidance Overlay Card - Bottom (Only visible when navigating) */}
       {isNavigating && (
         <div className="nav-card glass squircle panel-hud floating-hud animate-slide-up" style={{ gap: '0' }}>
-          {/* Top Turn Instruction Banner (Google/Yandex style) */}
+          {/* Top Turn Instruction Banner */}
           <div className="nav-top-banner" style={{ margin: '0 0 10px 0' }}>
             <div className="nav-turn-icon-wrap">
               <Navigation size={22} color="#ffffff" style={{ transform: 'rotate(45deg)' }} />
@@ -902,6 +1087,50 @@ export default function JDMNavigation({ onBack }) {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Rich Frosted Glass Route Save Modal */}
+      {isSaveModalOpen && (
+        <div className="save-route-modal-backdrop glass">
+          <div className="save-route-modal-content nav-card glass squircle animate-scale-up" style={{ width: '280px', padding: '16px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)' }}>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '12.5px', fontWeight: '900', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Save size={14} color="#30D158" />
+              <span>{getNavText('saveRoute')}</span>
+            </h3>
+            
+            <div className="form-group-nav" style={{ margin: '0 0 14px 0' }}>
+              <input 
+                type="text" 
+                placeholder={getNavText('enterRouteName')} 
+                value={routeAlias}
+                onChange={e => setRouteAlias(e.target.value)}
+                style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', fontSize: '11.5px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)', color: 'var(--text-main)' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button 
+                type="button" 
+                onClick={() => {
+                  triggerSound();
+                  setIsSaveModalOpen(false);
+                  setRouteAlias('');
+                }}
+                style={{ flex: 1, padding: '8px', fontSize: '11px', fontWeight: '800', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              >
+                {getNavText('cancelLabel')}
+              </button>
+              <button 
+                type="button" 
+                onClick={confirmSaveRoute}
+                disabled={!routeAlias.trim()}
+                style={{ flex: 1, padding: '8px', fontSize: '11px', fontWeight: '900', borderRadius: '8px', border: 'none', background: '#30D158', color: '#fff', cursor: 'pointer', opacity: routeAlias.trim() ? 1 : 0.5 }}
+              >
+                {getNavText('saveLabel')}
+              </button>
+            </div>
           </div>
         </div>
       )}
