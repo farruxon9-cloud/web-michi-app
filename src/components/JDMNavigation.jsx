@@ -147,6 +147,7 @@ export default function JDMNavigation({ onBack }) {
   const [showSimControls, setShowSimControls] = useState(false);
   const [showNavVehicleMenu, setShowNavVehicleMenu] = useState(false);
   const [isSettingsCollapsed, setIsSettingsCollapsed] = useState(false);
+  const [mapOrientation, setMapOrientation] = useState('heading'); // 'heading' (Head-Up) or 'north' (North-Up)
 
   const bottomPanelRef = useRef(null);
   const [gpsBottomOffset, setGpsBottomOffset] = useState(96);
@@ -231,7 +232,7 @@ export default function JDMNavigation({ onBack }) {
     dragStartRef.current.y = e.clientY;
 
     if (mapInstanceRef.current && (dx !== 0 || dy !== 0)) {
-      const heading = getActiveHeading();
+      const heading = mapOrientation === 'north' ? 0 : getActiveHeading();
       const theta = heading * Math.PI / 180;
       
       // Counter-rotate the screen drag delta vector by heading angle
@@ -262,7 +263,7 @@ export default function JDMNavigation({ onBack }) {
     dragStartRef.current.y = touch.clientY;
 
     if (mapInstanceRef.current && (dx !== 0 || dy !== 0)) {
-      const heading = getActiveHeading();
+      const heading = mapOrientation === 'north' ? 0 : getActiveHeading();
       const theta = heading * Math.PI / 180;
       
       const rotatedDx = dx * Math.cos(theta) - dy * Math.sin(theta);
@@ -730,17 +731,24 @@ export default function JDMNavigation({ onBack }) {
       heading = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
     }
 
-    // Dynamic map container rotation (Head-up mode) - scale by 1.4 to prevent showing white corners
+    // Dynamic map container rotation (Head-up mode vs North-up mode)
     if (mapContainerRef.current) {
-      mapContainerRef.current.style.transform = `scale(1.4) rotate(${-heading}deg)`;
-      mapContainerRef.current.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
-      mapContainerRef.current.style.setProperty('--map-bearing', `${heading}deg`);
+      if (mapOrientation === 'north') {
+        mapContainerRef.current.style.transform = 'none';
+        mapContainerRef.current.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+        mapContainerRef.current.style.setProperty('--map-bearing', '0deg');
+      } else {
+        mapContainerRef.current.style.transform = `scale(1.4) rotate(${-heading}deg)`;
+        mapContainerRef.current.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+        mapContainerRef.current.style.setProperty('--map-bearing', `${heading}deg`);
+      }
     }
 
-    // Offset map center 65 meters ahead along the heading vector to keep the vehicle in the bottom-middle of the screen
+    // Offset map center 65 meters ahead along the heading vector (or straight North for North-Up) to keep the vehicle in the bottom-middle of the screen
     const offsetDistance = 65; // meters ahead
     const R = 6378137;
-    const headingRad = heading * Math.PI / 180;
+    const effHeading = mapOrientation === 'north' ? 0 : heading;
+    const headingRad = effHeading * Math.PI / 180;
     const dLat = (offsetDistance * Math.cos(headingRad)) / R * (180 / Math.PI);
     const dLng = (offsetDistance * Math.sin(headingRad)) / (R * Math.cos(currentStep.lat * Math.PI / 180)) * (180 / Math.PI);
 
@@ -766,7 +774,7 @@ export default function JDMNavigation({ onBack }) {
 
     const simHtmlIcon = L.divIcon({
       html: `
-        <div class="custom-map-marker vehicle">
+        <div class="custom-map-marker vehicle" style="transform: rotate(${mapOrientation === 'north' ? heading : 0}deg); transition: transform 0.3s ease;">
           <div class="marker-pulse"></div>
           <div class="marker-dot" style="${markerDotStyle}">
             <div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 7px solid #fff; position: absolute; top: -8px;"></div>
@@ -786,7 +794,7 @@ export default function JDMNavigation({ onBack }) {
       simMarkerRef.current = L.marker([currentStep.lat, currentStep.lng], { icon: simHtmlIcon }).addTo(mapInstanceRef.current);
     }
 
-  }, [currentStepIndex, isNavigating, navSteps]);
+  }, [currentStepIndex, isNavigating, navSteps, mapOrientation, selectedVehicle]);
 
   // Auto-play simulation interval
   useEffect(() => {
@@ -890,6 +898,27 @@ export default function JDMNavigation({ onBack }) {
         onTouchEnd={handleMapTouchEnd}
       ></div>
       
+      {/* Map Orientation Toggle Button (North-Up vs Head-Up) */}
+      <button 
+        type="button" 
+        className="map-orientation-toggle-btn"
+        onClick={() => {
+          triggerSound();
+          setMapOrientation(prev => prev === 'heading' ? 'north' : 'heading');
+        }} 
+        title={mapOrientation === 'heading' ? 'Head-Up (3D)' : 'North-Up (2D)'}
+        style={{ bottom: `${gpsBottomOffset + 52}px` }}
+      >
+        <Compass 
+          size={18} 
+          style={{ 
+            transform: `rotate(${mapOrientation === 'heading' ? -getActiveHeading() : 0}deg)`, 
+            transition: 'transform 0.3s ease',
+            color: mapOrientation === 'heading' ? '#30D158' : 'var(--text-main)'
+          }} 
+        />
+      </button>
+
       {/* Floating GPS Locate Button */}
       <button 
         type="button" 

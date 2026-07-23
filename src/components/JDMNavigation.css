@@ -1082,7 +1082,7 @@
   justify-content: center;
   cursor: pointer;
   z-index: 1000;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .map-gps-locate-btn:hover {
@@ -1091,6 +1091,34 @@
 }
 
 .map-gps-locate-btn:active {
+  transform: scale(0.95);
+}
+
+/* Floating Map Orientation Toggle Button */
+.map-orientation-toggle-btn {
+  position: absolute;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--card-bg);
+  color: var(--text-main);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.map-orientation-toggle-btn:hover {
+  background: var(--glass-bg);
+  transform: scale(1.05);
+}
+
+.map-orientation-toggle-btn:active {
   transform: scale(0.95);
 }
 
