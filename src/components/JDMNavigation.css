@@ -1066,7 +1066,8 @@
 /* Floating Locate GPS Button inside map container */
 .map-gps-locate-btn {
   position: absolute;
-  top: 235px;
+  top: 50%;
+  transform: translateY(-50%);
   right: 16px;
   width: 40px;
   height: 40px;
@@ -1085,11 +1086,11 @@
 
 .map-gps-locate-btn:hover {
   background: var(--glass-bg);
-  transform: scale(1.05);
+  transform: translateY(-50%) scale(1.05);
 }
 
 .map-gps-locate-btn:active {
-  transform: scale(0.95);
+  transform: translateY(-50%) scale(0.95);
 }
 
 /* User Location marker style (Radar dot) */
@@ -1440,13 +1441,26 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Remove button hover effect */
+/* Remove button absolute layout styling */
 .remove-stop-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #FF453A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   transition: all 0.2s ease;
 }
 
 .remove-stop-btn:hover {
-  transform: scale(1.1);
+  transform: translateY(-50%) scale(1.1);
   color: #ff3b30 !important;
 }
 

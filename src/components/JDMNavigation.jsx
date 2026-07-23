@@ -772,13 +772,13 @@ export default function JDMNavigation({ onBack }) {
                       handleStopQueryChange(stop.id, e.target.value);
                       searchAddress(e.target.value, 'stop', stop.id);
                     }}
+                    style={{ paddingRight: '32px' }}
                   />
                   <button 
                     type="button" 
                     className="remove-stop-btn"
                     onClick={() => handleRemoveStop(stop.id)}
                     aria-label="Remove stop"
-                    style={{ background: 'none', border: 'none', color: '#FF453A', padding: '0 8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                   >
                     <Trash2 size={13} />
                   </button>
