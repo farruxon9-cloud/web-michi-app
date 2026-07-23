@@ -35,6 +35,38 @@ vi.mock('react-i18next', () => ({
   })
 }));
 
+// Mock leaflet library to avoid DOM reference crashes during test execution
+vi.mock('leaflet', () => {
+  const LMock = {
+    map: () => ({
+      setView: vi.fn(),
+      fitBounds: vi.fn(),
+      panTo: vi.fn(),
+      remove: vi.fn()
+    }),
+    tileLayer: () => ({
+      addTo: vi.fn()
+    }),
+    featureGroup: () => ({
+      addTo: vi.fn(),
+      clearLayers: vi.fn()
+    }),
+    divIcon: (obj) => obj,
+    marker: () => ({
+      addTo: vi.fn(),
+      setLatLng: vi.fn(),
+      remove: vi.fn()
+    }),
+    latLngBounds: () => ({}),
+    polyline: () => ({
+      addTo: vi.fn(),
+      getBounds: () => ({}),
+      remove: vi.fn()
+    })
+  };
+  return { default: LMock };
+});
+
 describe('JDMNavigation Component Tests', () => {
   it('renders successfully without crashing', () => {
     const html = renderToString(<JDMNavigation onBack={() => {}} />);

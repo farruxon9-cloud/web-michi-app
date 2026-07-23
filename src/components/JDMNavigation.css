@@ -978,3 +978,88 @@
   filter: brightness(1.05);
 }
 
+/* Leaflet Container Overrides and Custom Elements styling */
+.leaflet-container {
+  font-family: inherit;
+  background-color: var(--bg-color);
+}
+
+/* Hide default leaflet control buttons to keep interface minimal */
+.leaflet-control-zoom,
+.leaflet-control-attribution {
+  display: none !important;
+}
+
+/* Custom Marker wrapper */
+.custom-leaflet-icon-wrapper {
+  overflow: visible !important;
+}
+
+.custom-map-marker {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-map-marker .marker-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  background-color: var(--primary);
+  transition: all 0.3s ease;
+}
+
+/* Distinct color codings for map actions */
+.custom-map-marker.start .marker-dot {
+  background-color: #0A84FF; /* Blue start */
+}
+
+.custom-map-marker.end .marker-dot {
+  background-color: #FF453A; /* Red end */
+}
+
+.custom-map-marker.vehicle .marker-dot {
+  background-color: #BF5AF2; /* Purple vehicle */
+  width: 14px;
+  height: 14px;
+}
+
+/* Glowing vehicle marker pulse */
+.custom-map-marker.vehicle .marker-pulse {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  background-color: rgba(191, 90, 242, 0.25);
+  border-radius: 50%;
+  animation: markerPulseRing 1.8s infinite ease-out;
+}
+
+@keyframes markerPulseRing {
+  0% { transform: scale(0.4); opacity: 1; }
+  100% { transform: scale(1.1); opacity: 0; }
+}
+
+/* Elegant Text tags for map markers */
+.custom-map-marker .marker-label {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 3px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
