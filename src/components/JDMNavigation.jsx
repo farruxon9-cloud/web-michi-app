@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike, Plus, Trash2, Bookmark, X, Save } from 'lucide-react';
+import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike, Plus, Trash2, Bookmark, X, Save, ChevronDown, ChevronUp } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -146,6 +146,7 @@ export default function JDMNavigation({ onBack }) {
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [showSimControls, setShowSimControls] = useState(false);
   const [showNavVehicleMenu, setShowNavVehicleMenu] = useState(false);
+  const [isSettingsCollapsed, setIsSettingsCollapsed] = useState(false);
 
   // Local sound triggers
   const triggerSound = () => {
@@ -756,231 +757,277 @@ export default function JDMNavigation({ onBack }) {
 
       {/* Floating Settings Card - Top (Only visible when not navigating) */}
       {!isNavigating && (
-        <div className="nav-card glass squircle panel-settings floating-top-panel">
-          
-          {/* Transport Mode Row */}
-          <div className="nav-mode-selector-row hide-scrollbar">
-            {Object.entries(VEHICLE_PRESETS).map(([key, val]) => {
-              const Icon = val.type === 'passenger' ? Car : val.type === 'bike' ? Bike : Truck;
-              const isActive = selectedVehicle === key;
-              return (
+        <div className={`nav-card glass squircle panel-settings floating-top-panel ${isSettingsCollapsed ? 'collapsed' : ''}`} style={{ padding: isSettingsCollapsed ? '8px 12px' : '14px', gap: isSettingsCollapsed ? '0' : '10px', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+          {isSettingsCollapsed ? (
+            /* Collapsed Summary Mode */
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, overflow: 'hidden' }}>
+                <span style={{ fontSize: '10.5px', background: 'var(--primary)', color: '#fff', padding: '3px 7px', borderRadius: '6px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
+                  <span>🚚</span>
+                  <span>{currentLang === 'ja' ? VEHICLE_PRESETS[selectedVehicle]?.jaShort : VEHICLE_PRESETS[selectedVehicle]?.short}</span>
+                </span>
+                <span style={{ fontSize: '11px', color: 'var(--text-main)', fontWeight: '800', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {startCoord ? (currentLang === 'ja' ? '現在地' : 'Start') : '...'} ➔ {destCoord ? (currentLang === 'ja' ? destCoord.jaName || destCoord.name : destCoord.name) : (currentLang === 'ja' ? '目的地を入力...' : 'Enter Destination...')}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  triggerSound();
+                  setIsSettingsCollapsed(false);
+                }}
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)' }}
+                title="Expand settings"
+              >
+                <ChevronDown size={14} />
+              </button>
+            </div>
+          ) : (
+            /* Expanded Full Settings Mode */
+            <>
+              {/* Header Row with Collapse Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '6px', marginBottom: '2px' }}>
+                <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  {currentLang === 'ja' ? 'ルート検索設定' : 'Route Settings'}
+                </span>
                 <button
-                  key={key}
                   type="button"
-                  className={`mode-tab-btn ${isActive ? 'active' : ''}`}
-                  onClick={() => handleVehicleSelect(key)}
+                  onClick={() => {
+                    triggerSound();
+                    setIsSettingsCollapsed(true);
+                  }}
+                  style={{ background: 'none', border: 'none', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer', fontSize: '10px', fontWeight: '800', padding: '2px 4px' }}
                 >
-                  <Icon size={14} />
-                  <span className="mode-tab-label">{currentLang === 'ja' ? val.jaShort : val.short}</span>
-                  <span className="license-tag">{currentLang === 'ja' ? val.licenseJa : val.license}</span>
+                  <span>{currentLang === 'ja' ? '折りたたむ' : 'Collapse'}</span>
+                  <ChevronUp size={12} />
                 </button>
-              );
-            })}
-          </div>
-
-          {/* Sequential Inputs Column */}
-          <div className="nav-input-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            
-            {/* Start location field */}
-            <div className="form-group-nav flex-1" style={{ margin: '0' }}>
-              <div className="nav-input-wrapper">
-                <MapPin size={14} className="input-pin-icon start" />
-                <input 
-                  type="text"
-                  placeholder={getNavText('startPlaceholder')}
-                  value={startQuery}
-                  onChange={e => {
-                    setStartQuery(e.target.value);
-                    searchAddress(e.target.value, 'start');
-                  }}
-                />
-                {startSuggestions.length > 0 && (
-                  <div className="nav-suggestions-dropdown glass">
-                    {startSuggestions.map(item => {
-                      const parts = item.name.split(',');
-                      const title = parts[0];
-                      const subtitle = parts.slice(1).join(',').trim();
-                      return (
-                        <div 
-                          key={item.id} 
-                          className="suggestion-item"
-                          onClick={() => {
-                            setStartCoord({ lat: item.lat, lng: item.lng, name: item.name });
-                            setStartQuery(title);
-                            setStartSuggestions([]);
-                            triggerSound();
-                          }}
-                        >
-                          <div className="suggestion-title">{title}</div>
-                          <div className="suggestion-subtitle">{subtitle}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
-            </div>
 
-            {/* Intermediate dynamic waypoints */}
-            {stops.map((stop, index) => (
-              <div key={stop.id} className="form-group-nav flex-1" style={{ margin: '0' }}>
-                <div className="nav-input-wrapper">
-                  <MapPin size={14} className="input-pin-icon warning" style={{ color: '#FF9500' }} />
-                  <input 
-                    type="text"
-                    placeholder={currentLang === 'ja' ? `経由地 ${index + 1} を入力...` : `Oraliq manzil ${index + 1} ni kiriting...`}
-                    value={stop.query}
-                    onChange={e => {
-                      handleStopQueryChange(stop.id, e.target.value);
-                      searchAddress(e.target.value, 'stop', stop.id);
-                    }}
-                    style={{ paddingRight: '32px' }}
-                  />
-                  <button 
-                    type="button" 
-                    className="remove-stop-btn"
-                    onClick={() => handleRemoveStop(stop.id)}
-                    aria-label="Remove stop"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                  {stop.suggestions && stop.suggestions.length > 0 && (
-                    <div className="nav-suggestions-dropdown glass">
-                      {stop.suggestions.map(item => {
-                        const parts = item.name.split(',');
-                        const title = parts[0];
-                        const subtitle = parts.slice(1).join(',').trim();
-                        return (
-                          <div 
-                            key={item.id} 
-                            className="suggestion-item"
-                            onClick={() => {
-                              setStops(stops.map(s => s.id === stop.id ? { ...s, coord: { lat: item.lat, lng: item.lng, name: item.name }, query: title, suggestions: [] } : s));
-                              triggerSound();
-                            }}
-                          >
-                            <div className="suggestion-title">{title}</div>
-                            <div className="suggestion-subtitle">{subtitle}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {/* Destination location field */}
-            <div className="form-group-nav flex-1" style={{ margin: '0' }}>
-              <div className="nav-input-wrapper">
-                <MapPin size={14} className="input-pin-icon end" />
-                <input 
-                  type="text"
-                  placeholder={getNavText('destPlaceholder')}
-                  value={destQuery}
-                  onChange={e => {
-                    setDestQuery(e.target.value);
-                    searchAddress(e.target.value, 'dest');
-                  }}
-                />
-                {destSuggestions.length > 0 && (
-                  <div className="nav-suggestions-dropdown glass">
-                    {destSuggestions.map(item => {
-                      const parts = item.name.split(',');
-                      const title = parts[0];
-                      const subtitle = parts.slice(1).join(',').trim();
-                      return (
-                        <div 
-                          key={item.id} 
-                          className="suggestion-item"
-                          onClick={() => {
-                            setDestCoord({ lat: item.lat, lng: item.lng, name: item.name });
-                            setDestQuery(title);
-                            setDestSuggestions([]);
-                            triggerSound();
-                          }}
-                        >
-                          <div className="suggestion-title">{title}</div>
-                          <div className="suggestion-subtitle">{subtitle}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Action Row: Add stops & Save route */}
-          <div className="actions-button-row" style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-            <button 
-              type="button" 
-              className="action-pill-btn"
-              onClick={handleAddStop}
-              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-main)', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
-            >
-              <Plus size={13} />
-              <span>{getNavText('addStop')}</span>
-            </button>
-
-            <button 
-              type="button" 
-              className="action-pill-btn"
-              onClick={handleSaveRoute}
-              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(48,209,88,0.1)', color: '#30D158', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
-            >
-              <Bookmark size={13} />
-              <span>{getNavText('saveRoute')}</span>
-            </button>
-          </div>
-
-          {/* Saved Routes Listing */}
-          {savedRoutes.length > 0 && (
-            <div className="saved-routes-section" style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              <span className="saved-routes-title" style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-                {getNavText('savedRoutesTitle')}
-              </span>
-              <div className="saved-routes-list hide-scrollbar" style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
-                {savedRoutes.map(r => (
-                  <div 
-                    key={r.id} 
-                    className="saved-route-pill"
-                    onClick={() => handleLoadRoute(r)}
-                    style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontSize: '10.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <span>{r.alias}</span>
-                    <button 
-                      type="button" 
-                      onClick={(e) => handleDeleteSavedRoute(r.id, e)}
-                      style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0 2px', display: 'flex', alignItems: 'center' }}
+              {/* Transport Mode Row */}
+              <div className="nav-mode-selector-row hide-scrollbar">
+                {Object.entries(VEHICLE_PRESETS).map(([key, val]) => {
+                  const Icon = val.type === 'passenger' ? Car : val.type === 'bike' ? Bike : Truck;
+                  const isActive = selectedVehicle === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      className={`mode-tab-btn ${isActive ? 'active' : ''}`}
+                      onClick={() => handleVehicleSelect(key)}
                     >
-                      <X size={11} />
+                      <Icon size={14} />
+                      <span className="mode-tab-label">{currentLang === 'ja' ? val.jaShort : val.short}</span>
+                      <span className="license-tag">{currentLang === 'ja' ? val.licenseJa : val.license}</span>
                     </button>
+                  );
+                })}
+              </div>
+
+              {/* Sequential Inputs Column */}
+              <div className="nav-input-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                
+                {/* Start location field */}
+                <div className="form-group-nav flex-1" style={{ margin: '0' }}>
+                  <div className="nav-input-wrapper">
+                    <MapPin size={14} className="input-pin-icon start" />
+                    <input 
+                      type="text"
+                      placeholder={getNavText('startPlaceholder')}
+                      value={startQuery}
+                      onChange={e => {
+                        setStartQuery(e.target.value);
+                        searchAddress(e.target.value, 'start');
+                      }}
+                    />
+                    {startSuggestions.length > 0 && (
+                      <div className="nav-suggestions-dropdown glass">
+                        {startSuggestions.map(item => {
+                          const parts = item.name.split(',');
+                          const title = parts[0];
+                          const subtitle = parts.slice(1).join(',').trim();
+                          return (
+                            <div 
+                              key={item.id} 
+                              className="suggestion-item"
+                              onClick={() => {
+                                setStartCoord({ lat: item.lat, lng: item.lng, name: item.name });
+                                setStartQuery(title);
+                                setStartSuggestions([]);
+                                triggerSound();
+                              }}
+                            >
+                              <div className="suggestion-title">{title}</div>
+                              <div className="suggestion-subtitle">{subtitle}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Intermediate dynamic waypoints */}
+                {stops.map((stop, index) => (
+                  <div key={stop.id} className="form-group-nav flex-1" style={{ margin: '0' }}>
+                    <div className="nav-input-wrapper">
+                      <MapPin size={14} className="input-pin-icon warning" style={{ color: '#FF9500' }} />
+                      <input 
+                        type="text"
+                        placeholder={currentLang === 'ja' ? `経由地 ${index + 1} を入力...` : `Oraliq manzil ${index + 1} ni kiriting...`}
+                        value={stop.query}
+                        onChange={e => {
+                          handleStopQueryChange(stop.id, e.target.value);
+                          searchAddress(e.target.value, 'stop', stop.id);
+                        }}
+                        style={{ paddingRight: '32px' }}
+                      />
+                      <button 
+                        type="button" 
+                        className="remove-stop-btn"
+                        onClick={() => handleRemoveStop(stop.id)}
+                        aria-label="Remove stop"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                      {stop.suggestions && stop.suggestions.length > 0 && (
+                        <div className="nav-suggestions-dropdown glass">
+                          {stop.suggestions.map(item => {
+                            const parts = item.name.split(',');
+                            const title = parts[0];
+                            const subtitle = parts.slice(1).join(',').trim();
+                            return (
+                              <div 
+                                key={item.id} 
+                                className="suggestion-item"
+                                onClick={() => {
+                                  setStops(stops.map(s => s.id === stop.id ? { ...s, coord: { lat: item.lat, lng: item.lng, name: item.name }, query: title, suggestions: [] } : s));
+                                  triggerSound();
+                                }}
+                              >
+                                <div className="suggestion-title">{title}</div>
+                                <div className="suggestion-subtitle">{subtitle}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
 
-          {/* Quick JDM nodes shortcuts */}
-          <div className="quick-hubs-bar" style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            <div className="quick-hub-chips hide-scrollbar" style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
-              {Object.entries(NODES).map(([key, node]) => (
+                {/* Destination location field */}
+                <div className="form-group-nav flex-1" style={{ margin: '0' }}>
+                  <div className="nav-input-wrapper">
+                    <MapPin size={14} className="input-pin-icon end" />
+                    <input 
+                      type="text"
+                      placeholder={getNavText('destPlaceholder')}
+                      value={destQuery}
+                      onChange={e => {
+                        setDestQuery(e.target.value);
+                        searchAddress(e.target.value, 'dest');
+                      }}
+                    />
+                    {destSuggestions.length > 0 && (
+                      <div className="nav-suggestions-dropdown glass">
+                        {destSuggestions.map(item => {
+                          const parts = item.name.split(',');
+                          const title = parts[0];
+                          const subtitle = parts.slice(1).join(',').trim();
+                          return (
+                            <div 
+                              key={item.id} 
+                              className="suggestion-item"
+                              onClick={() => {
+                                setDestCoord({ lat: item.lat, lng: item.lng, name: item.name });
+                                setDestQuery(title);
+                                setDestSuggestions([]);
+                                triggerSound();
+                              }}
+                            >
+                              <div className="suggestion-title">{title}</div>
+                              <div className="suggestion-subtitle">{subtitle}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Row: Add stops & Save route */}
+              <div className="actions-button-row" style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
                 <button 
-                  key={key}
-                  type="button"
-                  className="hub-chip"
-                  onClick={() => {
-                    setDestCoord({ lat: node.lat, lng: node.lng, name: node.name });
-                    setDestQuery(currentLang === 'ja' ? node.jaName : node.name);
-                    triggerSound();
-                  }}
+                  type="button" 
+                  className="action-pill-btn"
+                  onClick={handleAddStop}
+                  style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-main)', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
                 >
-                  {currentLang === 'ja' ? node.jaName.split(' ')[1] : node.name.split(' ')[1]}
+                  <Plus size={13} />
+                  <span>{getNavText('addStop')}</span>
                 </button>
-              ))}
-            </div>
-          </div>
+
+                <button 
+                  type="button" 
+                  className="action-pill-btn"
+                  onClick={handleSaveRoute}
+                  style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(48,209,88,0.1)', color: '#30D158', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
+                >
+                  <Bookmark size={13} />
+                  <span>{getNavText('saveRoute')}</span>
+                </button>
+              </div>
+
+              {/* Saved Routes Listing */}
+              {savedRoutes.length > 0 && (
+                <div className="saved-routes-section" style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span className="saved-routes-title" style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
+                    {getNavText('savedRoutesTitle')}
+                  </span>
+                  <div className="saved-routes-list hide-scrollbar" style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
+                    {savedRoutes.map(r => (
+                      <div 
+                        key={r.id} 
+                        className="saved-route-pill"
+                        onClick={() => handleLoadRoute(r)}
+                        style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontSize: '10.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <span>{r.alias}</span>
+                        <button 
+                          type="button" 
+                          onClick={(e) => handleDeleteSavedRoute(r.id, e)}
+                          style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0 2px', display: 'flex', alignItems: 'center' }}
+                        >
+                          <X size={11} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Quick JDM nodes shortcuts */}
+              <div className="quick-hubs-bar" style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="quick-hub-chips hide-scrollbar" style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
+                  {Object.entries(NODES).map(([key, node]) => (
+                    <button 
+                      key={key}
+                      type="button"
+                      className="hub-chip"
+                      onClick={() => {
+                        setDestCoord({ lat: node.lat, lng: node.lng, name: node.name });
+                        setDestQuery(currentLang === 'ja' ? node.jaName : node.name);
+                        triggerSound();
+                      }}
+                    >
+                      {currentLang === 'ja' ? node.jaName.split(' ')[1] : node.name.split(' ')[1]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 
