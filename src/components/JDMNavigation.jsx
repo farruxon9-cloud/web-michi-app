@@ -674,7 +674,7 @@ export default function JDMNavigation({ onBack }) {
       {/* Floating GPS Locate Button */}
       <button 
         type="button" 
-        className="map-gps-locate-btn" 
+        className={`map-gps-locate-btn ${isNavigating ? 'nav-active' : (startCoord && destCoord ? 'route-active' : '')}`}
         onClick={handleLocateUser} 
         title="Locate me"
       >

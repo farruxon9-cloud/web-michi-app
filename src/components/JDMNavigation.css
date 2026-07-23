@@ -1066,8 +1066,7 @@
 /* Floating Locate GPS Button inside map container */
 .map-gps-locate-btn {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  bottom: 90px;
   right: 16px;
   width: 40px;
   height: 40px;
@@ -1081,16 +1080,24 @@
   justify-content: center;
   cursor: pointer;
   z-index: 1000;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.map-gps-locate-btn.route-active {
+  bottom: 250px;
+}
+
+.map-gps-locate-btn.nav-active {
+  bottom: 190px;
 }
 
 .map-gps-locate-btn:hover {
   background: var(--glass-bg);
-  transform: translateY(-50%) scale(1.05);
+  transform: scale(1.05);
 }
 
 .map-gps-locate-btn:active {
-  transform: translateY(-50%) scale(0.95);
+  transform: scale(0.95);
 }
 
 /* User Location marker style (Radar dot) */
