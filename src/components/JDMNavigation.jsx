@@ -558,6 +558,7 @@ export default function JDMNavigation({ onBack }) {
       }
       if (mapContainerRef.current) {
         mapContainerRef.current.style.transform = 'none';
+        mapContainerRef.current.style.setProperty('--map-bearing', '0deg');
       }
       return;
     }
@@ -581,6 +582,7 @@ export default function JDMNavigation({ onBack }) {
     if (mapContainerRef.current) {
       mapContainerRef.current.style.transform = `scale(1.4) rotate(${-heading}deg)`;
       mapContainerRef.current.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+      mapContainerRef.current.style.setProperty('--map-bearing', `${heading}deg`);
     }
 
     // Offset map center 65 meters ahead along the heading vector to keep the vehicle in the bottom-middle of the screen
@@ -594,12 +596,12 @@ export default function JDMNavigation({ onBack }) {
 
     const simHtmlIcon = L.divIcon({
       html: `
-        <div class="custom-map-marker vehicle" style="transform: rotate(${heading}deg); transition: transform 0.2s ease;">
+        <div class="custom-map-marker vehicle">
           <div class="marker-pulse"></div>
           <div class="marker-dot" style="width: 14px; height: 22px; background: #30D158; border: 2.5px solid #fff; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); position: relative; display: flex; align-items: center; justify-content: center;">
             <div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 7px solid #fff; position: absolute; top: -8px;"></div>
           </div>
-          <span class="marker-label" style="transform: rotate(${-heading}deg); white-space: nowrap;">🚚 DRIVING</span>
+          <span class="marker-label" style="white-space: nowrap;">🚚 DRIVING</span>
         </div>
       `,
       className: 'custom-leaflet-icon-wrapper',
