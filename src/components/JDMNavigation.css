@@ -1337,15 +1337,73 @@
   border-radius: 16px !important;
 }
 
-/* Floating Bottom vehicles chip selector bar inside JDM Frame */
-.nav-bottom-vehicles-bar.absolute-bottom {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  right: 12px;
-  border-radius: 14px;
-  z-index: 10;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+/* Google Maps style mode tab bar inside top panel */
+.nav-mode-selector-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
 }
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.mode-tab-btn {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 8px 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 68px;
+}
+
+.mode-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  transform: translateY(-1px);
+}
+
+.mode-tab-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.3);
+}
+
+.mode-tab-label {
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.license-tag {
+  font-size: 7.5px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+}
+
+.mode-tab-btn.active .license-tag {
+  background: rgba(0, 0, 0, 0.2);
+}
+
 
 

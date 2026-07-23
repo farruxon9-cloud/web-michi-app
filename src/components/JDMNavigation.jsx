@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate } from 'lucide-react';
+import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -26,12 +26,68 @@ const EDGES = [
   { from: 'shinjuku', to: 'yokohama', name: 'Third Keihin Highway', jaName: '第三京浜道路', heightLimit: 4.3, widthLimit: 3.5, weightLimit: 25.0, dist: 29.8, time: 25 }
 ];
 
-// Presets matching actual commercial vehicles in Japan
+// Presets matching actual commercial vehicles and driving licenses in Japan
 const VEHICLE_PRESETS = {
-  harrier: { name: 'Toyota Harrier (SUV)', jaName: 'ハリアー (乗用車)', height: 1.69, width: 1.85, weight: 1.7, type: 'passenger' },
-  elf_3t: { name: 'Isuzu Elf (3t Box)', jaName: 'エルフ (3t平ボディー)', height: 2.95, width: 2.18, weight: 5.8, type: 'truck' },
-  ranger_4t: { name: 'Hino Ranger (4t Wing)', jaName: 'レンジャー (4tウィング)', height: 3.42, width: 2.49, weight: 7.9, type: 'truck' },
-  giga_heavy: { name: 'Isuzu Giga (Heavy Trailer)', jaName: 'ギガ (連結コンテナトレーラー)', height: 3.78, width: 2.50, weight: 24.5, type: 'trailer' }
+  harrier: { 
+    name: 'Toyota Harrier (SUV)', 
+    jaName: 'ハリアー (乗用車)', 
+    short: 'Car',
+    jaShort: '乗用車',
+    license: 'Futsuu Menkyo',
+    licenseJa: '普通車',
+    height: 1.69, 
+    width: 1.85, 
+    weight: 1.7, 
+    type: 'passenger' 
+  },
+  elf_3t: { 
+    name: 'Isuzu Elf (3t Box)', 
+    jaName: 'エルフ (3tトラック)', 
+    short: '3t Truck',
+    jaShort: '2t/3t車',
+    license: 'Jun-Chuugata',
+    licenseJa: '準中型',
+    height: 2.95, 
+    width: 2.18, 
+    weight: 5.8, 
+    type: 'truck' 
+  },
+  ranger_4t: { 
+    name: 'Hino Ranger (4t Wing)', 
+    jaName: 'レンジャー (4tトラック)', 
+    short: '4t Truck',
+    jaShort: '4t中型',
+    license: 'Chuugata',
+    licenseJa: '中型',
+    height: 3.42, 
+    width: 2.49, 
+    weight: 7.9, 
+    type: 'truck' 
+  },
+  giga_heavy: { 
+    name: 'Isuzu Giga (Heavy Trailer)', 
+    jaName: 'ギガ (10tトレーラー)', 
+    short: '10t Trailer',
+    jaShort: '大型・特車',
+    license: 'Oogata Menkyo',
+    licenseJa: '大型車',
+    height: 3.78, 
+    width: 2.50, 
+    weight: 24.5, 
+    type: 'trailer' 
+  },
+  bike: {
+    name: 'Motorcycle',
+    jaName: 'バイク (二輪車)',
+    short: 'Motorcycle',
+    jaShort: '二輪バイク',
+    license: 'Nirin Menkyo',
+    licenseJa: 'バイク',
+    height: 1.20,
+    width: 0.80,
+    weight: 0.25,
+    type: 'bike'
+  }
 };
 
 // Haversine distance calculator
@@ -112,7 +168,7 @@ export default function JDMNavigation({ onBack }) {
       startPlaceholder: { uz: 'Boshlang\'ich manzilni kiriting...', ja: '出発地を入力してください...', en: 'Enter start location...', vi: 'Nhập điểm xuất phát...', zh: '输入起点...', ne: 'प्रस्थान बिन्दु...' },
       destPlaceholder: { uz: 'Boradigan manzilni kiriting...', ja: '目的地を入力してください...', en: 'Enter destination...', vi: 'Nhập điểm đến...', zh: '输入终点...', ne: 'गन्तव्य बिन्दु...' },
       height: { uz: 'Balandlik', ja: '車高 (高さ)', en: 'Height', vi: 'Chiều cao', zh: '高度', ne: 'उचाइ' },
-      width: { uz: 'Eni', ja: '車幅 (幅)', en: 'Width', vi: 'Chiều rộng', zh: '宽度', ne: 'चौडाइ' },
+      width: { uz: 'Eni', ja: '車幅 (幅)', en: 'Width', vi: 'Chiều rộng', zh: '宽度', ne: 'चौдائ' },
       weight: { uz: 'Vazni', ja: '総重量', en: 'Weight', vi: 'Trọng lượng', zh: '总重量', ne: 'वजन' },
       safeStatus: { uz: 'Xavfsiz marshrut (Taqiqlar yo\'q)', ja: '安全ルート確認 (規制なし)', en: 'Safe Route (No restrictions)', vi: 'Tuyến đường an toàn (Không hạn chế)', zh: '安全路线 (无限制)', ne: 'सुरक्षित मार्ग (कुनै प्रतिबन्ध छैन)' },
       warningStatus: { uz: 'Chetlab o\'tish marshruti faol', ja: '規制回避迂回ルート案内中', en: 'Detour Route Active', vi: 'Đang hoạt động tuyến đường vòng', zh: '避堵绕行路线激活', ne: 'घुमाуро मार्ग सक्रिय' },
@@ -129,7 +185,7 @@ export default function JDMNavigation({ onBack }) {
       fb_other: { uz: 'Boshqa muammo (Xarita / Nomlar)', ja: 'その他・住所地名の誤りなど', en: 'Other Map Metadata Error', vi: 'Lỗi siêu dữ liệu bản đồ khác', zh: '其他地图信息错误', ne: 'अन्य नक्सा त्रुटi' },
       feedbackTextPlaceholder: { uz: 'Iltimos, xato ketgan joy yoki ko\'rsatkich haqida yozing...', ja: '例: 金町高架下の高さ制限は実際には3.2mです。', en: 'Provide details about the incorrect limit (e.g. Underpass near Matsudo is 3.2m, not 3.0m)...', vi: 'Vui lòng cung cấp chi tiết về lỗi giới hạn này...', zh: '请提供限额错误处的具体描述（例如：松户附近的下通道限高实际上是 3.2 米，而不是 3.0 米）...', ne: 'कृपया विवरणहरू प्रदान गर्नुहोस्...' },
       sendBtn: { uz: 'Yuborish (support@michi.jp.net)', ja: '報告を送信 (support@michi.jp.net)', en: 'Submit Report (support@michi.jp.net)', vi: 'Gửi báo cáo (support@michi.jp.net)', zh: '发送报告 (support@michi.jp.net)', ne: 'रिपोर्ट पठाउनुहोस् (support@michi.jp.net)' },
-      feedbackSuccessMsg: { uz: 'Xabaringiz support@michi.jp.net ko\'mak bo\'limiga yuborildi!', ja: 'ご報告が support@michi.jp.net 宛に送信されました。', en: 'Report successfully queued for support@michi.jp.net!', vi: 'Báo cáo đã gửi tới support@michi.jp.net!', zh: '报告已发送至 support@michi.jp.net 邮箱，非常感謝您的反馈！', ne: 'रिपोर्ट support@michi.jp.net मा सफलतापूर्वक पठाइयो!' }
+      feedbackSuccessMsg: { uz: 'Xabaringiz support@michi.jp.net ko\'mak bo\'limiga yuborildi!', ja: 'ご報告が support@michi.jp.net 宛に送信されました。', en: 'Report successfully queued for support@michi.jp.net!', vi: 'Báo cáo đã gửi tới support@michi.jp.net!', zh: '报告已发送至 support@michi.jp.net 邮箱，非常感謝您的反馈！', ne: 'रिपोर्ट support@michi.jp.net ma successfully sent!' }
     };
     return dict[key]?.[currentLang] || dict[key]?.['uz'] || '';
   };
@@ -556,9 +612,25 @@ export default function JDMNavigation({ onBack }) {
       {/* Floating Settings Card - Top under header (Only visible when not navigating) */}
       {!isNavigating && (
         <div className="nav-card glass squircle panel-settings floating-top-panel">
-          <div className="panel-section-title" style={{ marginBottom: '8px' }}>
-            <Navigation size={14} color="#30D158" />
-            <h3>{getNavText('routeSettings')}</h3>
+          
+          {/* Transport Mode & Driving License Category Selector (Google Maps style) */}
+          <div className="nav-mode-selector-row hide-scrollbar">
+            {Object.entries(VEHICLE_PRESETS).map(([key, val]) => {
+              const Icon = val.type === 'passenger' ? Car : val.type === 'bike' ? Bike : Truck;
+              const isActive = selectedVehicle === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  className={`mode-tab-btn ${isActive ? 'active' : ''}`}
+                  onClick={() => handleVehicleSelect(key)}
+                >
+                  <Icon size={14} />
+                  <span className="mode-tab-label">{currentLang === 'ja' ? val.jaShort : val.short}</span>
+                  <span className="license-tag">{currentLang === 'ja' ? val.licenseJa : val.license}</span>
+                </button>
+              );
+            })}
           </div>
 
           <div className="nav-input-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -831,25 +903,6 @@ export default function JDMNavigation({ onBack }) {
               </div>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Floating Bottom Vehicles Bar selector (Only visible when not navigating) */}
-      {!isNavigating && (
-        <div className="nav-bottom-vehicles-bar absolute-bottom">
-          {Object.entries(VEHICLE_PRESETS).map(([key, val]) => (
-            <button 
-              key={key}
-              className={`vehicle-chip ${selectedVehicle === key ? 'active' : ''}`}
-              onClick={() => handleVehicleSelect(key)}
-            >
-              <Truck size={14} className="vehicle-chip-icon" />
-              <div className="vehicle-chip-text">
-                <span className="v-name">{currentLang === 'ja' ? val.jaName.split(' ')[0] : val.name}</span>
-                <span className="v-limits">{val.height.toFixed(1)}m • {val.weight.toFixed(0)}t</span>
-              </div>
-            </button>
-          ))}
         </div>
       )}
 
