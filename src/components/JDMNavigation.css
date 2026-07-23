@@ -1295,6 +1295,7 @@
   position: absolute;
   z-index: 10;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+  width: auto !important;
 }
 
 .jdm-nav-header.floating-card {
@@ -1303,6 +1304,7 @@
   right: 12px;
   border-radius: 16px;
   border: 1px solid var(--glass-border);
+  width: auto !important;
 }
 
 .floating-top-panel {
@@ -1313,6 +1315,7 @@
   z-index: 10;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
   border-radius: 16px !important;
+  width: auto !important;
 }
 
 .floating-bottom-panel {
@@ -1325,6 +1328,7 @@
   border-radius: 16px !important;
   max-height: 220px;
   overflow-y: auto;
+  width: auto !important;
 }
 
 .floating-hud {
@@ -1335,6 +1339,7 @@
   z-index: 10;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
   border-radius: 16px !important;
+  width: auto !important;
 }
 
 /* Google Maps style mode tab bar inside top panel */
