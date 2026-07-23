@@ -185,6 +185,97 @@ export default function JDMNavigation({ onBack }) {
     };
   }, [isNavigating, route, showSimControls, startCoord, destCoord, stops]);
 
+  const dragStartRef = useRef({ x: 0, y: 0, active: false });
+
+  // Disable Leaflet's built-in drag during active navigation to let our custom counter-rotated panning take over
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    if (isNavigating) {
+      mapInstanceRef.current.dragging.disable();
+    } else {
+      mapInstanceRef.current.dragging.enable();
+    }
+  }, [isNavigating]);
+
+  // Helper to get active heading angle
+  const getActiveHeading = () => {
+    if (!isNavigating || navSteps.length === 0) return 0;
+    const currentStep = navSteps[currentStepIndex];
+    if (!currentStep) return 0;
+    let heading = 0;
+    if (currentStepIndex < navSteps.length - 1) {
+      const nextStep = navSteps[currentStepIndex + 1];
+      if (nextStep) {
+        const dLon = (nextStep.lng - currentStep.lng) * Math.PI / 180;
+        const lat1 = currentStep.lat * Math.PI / 180;
+        const lat2 = nextStep.lat * Math.PI / 180;
+        const y = Math.sin(dLon) * Math.cos(lat2);
+        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+        heading = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+      }
+    }
+    return heading;
+  };
+
+  const handleMapMouseDown = (e) => {
+    if (!isNavigating) return;
+    dragStartRef.current = { x: e.clientX, y: e.clientY, active: true };
+  };
+
+  const handleMapMouseMove = (e) => {
+    if (!isNavigating || !dragStartRef.current.active) return;
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+    
+    dragStartRef.current.x = e.clientX;
+    dragStartRef.current.y = e.clientY;
+
+    if (mapInstanceRef.current && (dx !== 0 || dy !== 0)) {
+      const heading = getActiveHeading();
+      const theta = heading * Math.PI / 180;
+      
+      // Counter-rotate the screen drag delta vector by heading angle
+      const rotatedDx = dx * Math.cos(theta) - dy * Math.sin(theta);
+      const rotatedDy = dx * Math.sin(theta) + dy * Math.cos(theta);
+
+      mapInstanceRef.current.panBy([-rotatedDx, -rotatedDy], { animate: false });
+    }
+  };
+
+  const handleMapMouseUp = () => {
+    dragStartRef.current.active = false;
+  };
+
+  const handleMapTouchStart = (e) => {
+    if (!isNavigating || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    dragStartRef.current = { x: touch.clientX, y: touch.clientY, active: true };
+  };
+
+  const handleMapTouchMove = (e) => {
+    if (!isNavigating || !dragStartRef.current.active || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - dragStartRef.current.x;
+    const dy = touch.clientY - dragStartRef.current.y;
+    
+    dragStartRef.current.x = touch.clientX;
+    dragStartRef.current.y = touch.clientY;
+
+    if (mapInstanceRef.current && (dx !== 0 || dy !== 0)) {
+      const heading = getActiveHeading();
+      const theta = heading * Math.PI / 180;
+      
+      const rotatedDx = dx * Math.cos(theta) - dy * Math.sin(theta);
+      const rotatedDy = dx * Math.sin(theta) + dy * Math.cos(theta);
+
+      mapInstanceRef.current.panBy([-rotatedDx, -rotatedDy], { animate: false });
+    }
+  };
+
+  const handleMapTouchEnd = () => {
+    dragStartRef.current.active = false;
+  };
+
   // Local sound triggers
   const triggerSound = () => {
     try {
@@ -787,7 +878,17 @@ export default function JDMNavigation({ onBack }) {
     <div className="jdm-nav-container animate-fade-in">
       
       {/* Real Full Screen Map */}
-      <div ref={mapContainerRef} className="map-canvas-container-fullscreen"></div>
+      <div 
+        ref={mapContainerRef} 
+        className="map-canvas-container-fullscreen"
+        onMouseDown={handleMapMouseDown}
+        onMouseMove={handleMapMouseMove}
+        onMouseUp={handleMapMouseUp}
+        onMouseLeave={handleMapMouseUp}
+        onTouchStart={handleMapTouchStart}
+        onTouchMove={handleMapTouchMove}
+        onTouchEnd={handleMapTouchEnd}
+      ></div>
       
       {/* Floating GPS Locate Button */}
       <button 
