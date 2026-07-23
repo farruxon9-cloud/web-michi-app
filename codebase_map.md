@@ -217,7 +217,7 @@
   - `lucide-react`
 
 ### 📦 [JDMNavigation.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.css)
-* **Fayl yo'li:** `src/components/JDMNavigation.css` (1470 qator, 29531 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.css` (1473 qator, 29601 bayt)
 * **Import qilgan bog'liqliklari:**
   - *Bog'liqliklar mavjud emas*
 
