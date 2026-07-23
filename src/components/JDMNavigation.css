@@ -1473,6 +1473,86 @@
   color: #ff3b30 !important;
 }
 
+/* Compact layout overrides for settings top panel to maximize map space */
+.floating-top-panel {
+  padding: 8px 10px !important;
+  gap: 6px !important;
+  border-radius: 12px !important;
+}
+
+.floating-top-panel .nav-mode-selector-row {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 4px !important;
+  margin-bottom: 4px !important;
+  overflow-x: auto !important;
+  width: 100% !important;
+  padding: 2px 12px 4px 2px !important;
+}
+
+.floating-top-panel .mode-tab-btn {
+  flex-direction: row !important;
+  padding: 4px 8px !important;
+  height: 26px !important;
+  gap: 3px !important;
+  border-radius: 6px !important;
+  font-size: 10px !important;
+  width: auto !important;
+}
+
+.floating-top-panel .mode-tab-label {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+}
+
+.floating-top-panel .nav-input-wrapper input {
+  padding: 6px 8px 6px 26px !important;
+  font-size: 11px !important;
+  border-radius: 6px !important;
+  height: 28px !important;
+}
+
+.floating-top-panel .input-pin-icon {
+  left: 8px !important;
+  font-size: 12px !important;
+}
+
+.floating-top-panel .remove-stop-btn {
+  right: 6px !important;
+}
+
+.floating-top-panel .action-pill-btn {
+  padding: 5px 8px !important;
+  font-size: 10px !important;
+  border-radius: 6px !important;
+  height: 26px !important;
+}
+
+.floating-top-panel .quick-hubs-bar {
+  margin-top: 4px !important;
+  padding-top: 4px !important;
+}
+
+.floating-top-panel .hub-chip {
+  padding: 3px 6px !important;
+  font-size: 9px !important;
+  border-radius: 5px !important;
+}
+
+.active-vehicle-info-strip {
+  font-size: 9.5px;
+  color: var(--text-secondary);
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+  background: rgba(255,255,255,0.03);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
 
 
 

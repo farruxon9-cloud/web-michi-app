@@ -815,12 +815,22 @@ export default function JDMNavigation({ onBack }) {
                       className={`mode-tab-btn ${isActive ? 'active' : ''}`}
                       onClick={() => handleVehicleSelect(key)}
                     >
-                      <Icon size={14} />
+                      <Icon size={12} />
                       <span className="mode-tab-label">{currentLang === 'ja' ? val.jaShort : val.short}</span>
-                      <span className="license-tag">{currentLang === 'ja' ? val.licenseJa : val.license}</span>
                     </button>
                   );
                 })}
+              </div>
+
+              {/* Compact Active Vehicle Spec & License Warning Strip */}
+              <div className="active-vehicle-info-strip">
+                <span>⚠️</span>
+                <span>
+                  {currentLang === 'ja'
+                    ? `${VEHICLE_PRESETS[selectedVehicle]?.jaName} (高: ${VEHICLE_PRESETS[selectedVehicle]?.height}m | 免許: ${VEHICLE_PRESETS[selectedVehicle]?.licenseJa})`
+                    : `${VEHICLE_PRESETS[selectedVehicle]?.name} (H: ${VEHICLE_PRESETS[selectedVehicle]?.height}m | License: ${VEHICLE_PRESETS[selectedVehicle]?.license})`
+                  }
+                </span>
               </div>
 
               {/* Sequential Inputs Column */}
