@@ -148,6 +148,43 @@ export default function JDMNavigation({ onBack }) {
   const [showNavVehicleMenu, setShowNavVehicleMenu] = useState(false);
   const [isSettingsCollapsed, setIsSettingsCollapsed] = useState(false);
 
+  const bottomPanelRef = useRef(null);
+  const [gpsBottomOffset, setGpsBottomOffset] = useState(96);
+
+  // Dynamic GPS button bottom position calculator based on bottom panel height to prevent any overlap
+  useEffect(() => {
+    const updateGpsPosition = () => {
+      if (bottomPanelRef.current) {
+        const rect = bottomPanelRef.current.getBoundingClientRect();
+        // The bottom panels are positioned at bottom: 96px.
+        // We add a 12px gap between the panel's top edge and the GPS button.
+        setGpsBottomOffset(96 + rect.height + 12);
+      } else {
+        // Only bottom tab bar is visible. Tab bar starts at bottom: 0, height is ~84px.
+        // Let's place it at bottom: 96px to leave a 12px gap above the tab bar.
+        setGpsBottomOffset(96);
+      }
+    };
+
+    updateGpsPosition();
+
+    // Small delay to capture rendering height changes
+    const timeoutId = setTimeout(updateGpsPosition, 100);
+
+    let resizeObserver = null;
+    if (bottomPanelRef.current && window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(() => {
+        updateGpsPosition();
+      });
+      resizeObserver.observe(bottomPanelRef.current);
+    }
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (resizeObserver) resizeObserver.disconnect();
+    };
+  }, [isNavigating, route, showSimControls, startCoord, destCoord, stops]);
+
   // Local sound triggers
   const triggerSound = () => {
     try {
@@ -758,6 +795,7 @@ export default function JDMNavigation({ onBack }) {
         className="map-gps-locate-btn"
         onClick={handleLocateUser} 
         title="Locate me"
+        style={{ bottom: `${gpsBottomOffset}px` }}
       >
         <Locate size={18} />
       </button>
@@ -1061,7 +1099,7 @@ export default function JDMNavigation({ onBack }) {
 
       {/* Floating Instructions/Warnings Card - Bottom (Only visible when route exists and not navigating) */}
       {!isNavigating && startCoord && destCoord && (
-        <div className="nav-card glass squircle panel-instructions floating-bottom-panel animate-slide-up" style={{ padding: '10px 14px' }}>
+        <div ref={bottomPanelRef} className="nav-card glass squircle panel-instructions floating-bottom-panel animate-slide-up" style={{ padding: '10px 14px' }}>
           <div className="compact-route-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '12px' }}>
             {/* Left Info: Distance, Time, and Status */}
             <div className="compact-info-col" style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
@@ -1139,7 +1177,7 @@ export default function JDMNavigation({ onBack }) {
 
       {/* Floating Turn-by-Turn Info Bar - Bottom (Only visible when navigating) */}
       {isNavigating && (
-        <div className="nav-card glass squircle floating-bottom-hud animate-slide-up" style={{ position: 'absolute', bottom: '96px', left: '12px', right: '12px', zIndex: 1000, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div ref={bottomPanelRef} className="nav-card glass squircle floating-bottom-hud animate-slide-up" style={{ position: 'absolute', bottom: '96px', left: '12px', right: '12px', zIndex: 1000, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '10px' }}>
             {/* ETA and Stats */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
