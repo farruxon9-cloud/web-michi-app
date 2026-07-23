@@ -562,10 +562,31 @@ export default function JDMNavigation({ onBack }) {
     const currentStep = navSteps[currentStepIndex];
     if (!currentStep) return;
 
-    mapInstanceRef.current.panTo([currentStep.lat, currentStep.lng]);
+    // Center map and follow vehicle closely (zoom: 18)
+    mapInstanceRef.current.setView([currentStep.lat, currentStep.lng], 18);
+
+    // Calculate heading (bearing) to the next checkpoint if available to rotate the truck symbol
+    let heading = 0;
+    if (currentStepIndex < navSteps.length - 1) {
+      const nextStep = navSteps[currentStepIndex + 1];
+      const dLon = (nextStep.lng - currentStep.lng) * Math.PI / 180;
+      const lat1 = currentStep.lat * Math.PI / 180;
+      const lat2 = nextStep.lat * Math.PI / 180;
+      const y = Math.sin(dLon) * Math.cos(lat2);
+      const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+      heading = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+    }
 
     const simHtmlIcon = L.divIcon({
-      html: `<div class="custom-map-marker vehicle"><div class="marker-pulse"></div><div class="marker-dot"></div><span class="marker-label">🚚 DRIVING</span></div>`,
+      html: `
+        <div class="custom-map-marker vehicle" style="transform: rotate(${heading}deg); transition: transform 0.2s ease;">
+          <div class="marker-pulse"></div>
+          <div class="marker-dot" style="width: 14px; height: 22px; background: #30D158; border: 2.5px solid #fff; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); position: relative; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 7px solid #fff; position: absolute; top: -8px;"></div>
+          </div>
+          <span class="marker-label" style="transform: rotate(${-heading}deg); white-space: nowrap;">🚚 DRIVING</span>
+        </div>
+      `,
       className: 'custom-leaflet-icon-wrapper',
       iconSize: [36, 36],
       iconAnchor: [18, 18]
@@ -573,6 +594,7 @@ export default function JDMNavigation({ onBack }) {
 
     if (simMarkerRef.current) {
       simMarkerRef.current.setLatLng([currentStep.lat, currentStep.lng]);
+      simMarkerRef.current.setIcon(simHtmlIcon);
     } else {
       simMarkerRef.current = L.marker([currentStep.lat, currentStep.lng], { icon: simHtmlIcon }).addTo(mapInstanceRef.current);
     }
@@ -962,25 +984,8 @@ export default function JDMNavigation({ onBack }) {
             </div>
           </div>
 
-          {route.coordinates.length > 0 && (
-            <button 
-              type="button" 
-              className="go-to-nav-btn animate-pulse" 
-              onClick={() => {
-                triggerSound();
-                setIsNavigating(true);
-                setCurrentStepIndex(0);
-                setIsAutoPlaying(true);
-              }}
-              style={{ width: '100%', padding: '10px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #0A84FF 0%, #30D158 100%)', color: '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyRules: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px', boxShadow: '0 4px 14px rgba(48,209,88,0.2)' }}
-            >
-              <Navigation size={13} style={{ transform: 'rotate(45deg)' }} />
-              <span>START ROAD ROUTING</span>
-            </button>
-          )}
-
           {/* Preset parameters readouts */}
-          <div className="dimensions-hud-bar" style={{ marginTop: '8px', background: 'rgba(255,255,255,0.03)', padding: '6px', borderRadius: '8px' }}>
+          <div className="dimensions-hud-bar" style={{ marginTop: '8px', background: 'rgba(255,255,255,0.03)', padding: '6px', borderRadius: '8px', marginBottom: '8px' }}>
             <div className="dim-badges-row" style={{ display: 'flex', gap: '6px' }}>
               <div className="dim-badge flex-1" style={{ fontSize: '10px', textAlign: 'center' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>{getNavText('height')}:</span> <strong>{height.toFixed(2)}m</strong>
@@ -993,6 +998,23 @@ export default function JDMNavigation({ onBack }) {
               </div>
             </div>
           </div>
+
+          {route.coordinates.length > 0 && (
+            <button 
+              type="button" 
+              className="go-to-nav-btn animate-pulse" 
+              onClick={() => {
+                triggerSound();
+                setIsNavigating(true);
+                setCurrentStepIndex(0);
+                setIsAutoPlaying(false); // Do not auto-play by default, wait for driver
+              }}
+              style={{ width: '100%', padding: '10px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #0A84FF 0%, #30D158 100%)', color: '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyRules: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px', boxShadow: '0 4px 14px rgba(48,209,88,0.2)' }}
+            >
+              <Navigation size={13} style={{ transform: 'rotate(45deg)' }} />
+              <span>START ROAD ROUTING</span>
+            </button>
+          )}
         </div>
       )}
 

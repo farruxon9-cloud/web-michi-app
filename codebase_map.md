@@ -222,7 +222,7 @@
   - *Bog'liqliklar mavjud emas*
 
 ### 📦 [JDMNavigation.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1141 qator, 48371 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1163 qator, 49784 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
 * **Import qilgan bog'liqliklari:**
