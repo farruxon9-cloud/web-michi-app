@@ -961,75 +961,59 @@ export default function JDMNavigation({ onBack }) {
 
       {/* Floating Instructions/Warnings Card - Bottom (Only visible when route exists and not navigating) */}
       {!isNavigating && startCoord && destCoord && (
-        <div className="nav-card glass squircle panel-instructions floating-bottom-panel animate-slide-up">
-          <div className={`route-status-banner ${route.status}`} style={{ padding: '8px 12px', borderRadius: '8px', marginBottom: '8px' }}>
-            {route.status === 'safe' ? (
-              <>
-                <CheckCircle2 size={16} color="#30D158" />
-                <span>{getNavText('safeStatus')}</span>
-              </>
-            ) : (
-              <>
-                <ShieldAlert size={16} color="#FF9500" />
-                <span>{getNavText('warningStatus')}</span>
-              </>
+        <div className="nav-card glass squircle panel-instructions floating-bottom-panel animate-slide-up" style={{ padding: '10px 14px' }}>
+          <div className="compact-route-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '12px' }}>
+            {/* Left Info: Distance, Time, and Status */}
+            <div className="compact-info-col" style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="compact-time" style={{ fontSize: '18px', fontWeight: '900', color: 'var(--text-main)' }}>
+                  {route.time} {currentLang === 'ja' ? '分' : 'min'}
+                </span>
+                <span className="compact-dist" style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
+                  ({route.distance} km)
+                </span>
+                {route.status === 'safe' ? (
+                  <CheckCircle2 size={13} color="#30D158" />
+                ) : (
+                  <ShieldAlert size={13} color="#FF9500" />
+                )}
+              </div>
+              
+              {/* Mini Specs Readout */}
+              <div className="compact-specs" style={{ fontSize: '10px', color: 'var(--text-secondary)', display: 'flex', gap: '5px', flexWrap: 'wrap', fontWeight: '700' }}>
+                <span>{getNavText('height')}: <strong>{height.toFixed(2)}m</strong></span>
+                <span>•</span>
+                <span>{getNavText('width')}: <strong>{width.toFixed(2)}m</strong></span>
+                <span>•</span>
+                <span>{weight.toFixed(1)}t</span>
+              </div>
+
+              {/* Mini Warnings list if any */}
+              {route.warnings.length > 0 && (
+                <span style={{ fontSize: '9.5px', color: '#FF453A', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+                  <AlertTriangle size={10} /> {route.warnings[0]}
+                </span>
+              )}
+            </div>
+
+            {/* Right Action: Start Routing Button */}
+            {route.coordinates.length > 0 && (
+              <button 
+                type="button" 
+                className="go-to-nav-btn animate-pulse" 
+                onClick={() => {
+                  triggerSound();
+                  setIsNavigating(true);
+                  setCurrentStepIndex(0);
+                  setIsAutoPlaying(false); // Do not auto-play by default, wait for driver
+                }}
+                style={{ padding: '10px 16px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #0A84FF 0%, #30D158 100%)', color: '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', boxShadow: '0 4px 12px rgba(48,209,88,0.25)', height: '40px', whiteSpace: 'nowrap' }}
+              >
+                <Navigation size={12} style={{ transform: 'rotate(45deg)' }} />
+                <span>{currentLang === 'ja' ? 'ナビ開始' : 'START'}</span>
+              </button>
             )}
           </div>
-
-          {/* Clear Warning Alerts */}
-          {route.warnings.length > 0 && (
-            <div className="route-warnings-hud" style={{ background: 'rgba(255, 69, 58, 0.08)', border: '1px solid rgba(255,69,58,0.2)', padding: '10px', borderRadius: '10px', marginBottom: '8px' }}>
-              {route.warnings.map((w, idx) => (
-                <div key={idx} style={{ display: 'flex', gap: '6px', alignItems: 'center', color: '#FF453A', fontSize: '10.5px', fontWeight: 'bold' }}>
-                  <AlertTriangle size={12} />
-                  <span>{w}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="route-stats-row" style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
-            <div className="stat-item flex-1">
-              <span className="stat-label" style={{ fontSize: '9px' }}>{getNavText('distance')}</span>
-              <span className="stat-value" style={{ fontSize: '15px', fontWeight: '800' }}>{route.distance} km</span>
-            </div>
-            <div className="stat-item flex-1">
-              <span className="stat-label" style={{ fontSize: '9px' }}>{getNavText('time')}</span>
-              <span className="stat-value" style={{ fontSize: '15px', fontWeight: '800' }}>{route.time} {currentLang === 'ja' ? '分' : 'daq'}</span>
-            </div>
-          </div>
-
-          {/* Preset parameters readouts */}
-          <div className="dimensions-hud-bar" style={{ marginTop: '8px', background: 'rgba(255,255,255,0.03)', padding: '6px', borderRadius: '8px', marginBottom: '8px' }}>
-            <div className="dim-badges-row" style={{ display: 'flex', gap: '6px' }}>
-              <div className="dim-badge flex-1" style={{ fontSize: '10px', textAlign: 'center' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>{getNavText('height')}:</span> <strong>{height.toFixed(2)}m</strong>
-              </div>
-              <div className="dim-badge flex-1" style={{ fontSize: '10px', textAlign: 'center' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>{getNavText('width')}:</span> <strong>{width.toFixed(2)}m</strong>
-              </div>
-              <div className="dim-badge flex-1" style={{ fontSize: '10px', textAlign: 'center' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>{getNavText('weight')}:</span> <strong>{weight.toFixed(1)}t</strong>
-              </div>
-            </div>
-          </div>
-
-          {route.coordinates.length > 0 && (
-            <button 
-              type="button" 
-              className="go-to-nav-btn animate-pulse" 
-              onClick={() => {
-                triggerSound();
-                setIsNavigating(true);
-                setCurrentStepIndex(0);
-                setIsAutoPlaying(false); // Do not auto-play by default, wait for driver
-              }}
-              style={{ width: '100%', padding: '10px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #0A84FF 0%, #30D158 100%)', color: '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyRules: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px', boxShadow: '0 4px 14px rgba(48,209,88,0.2)' }}
-            >
-              <Navigation size={13} style={{ transform: 'rotate(45deg)' }} />
-              <span>START ROAD ROUTING</span>
-            </button>
-          )}
         </div>
       )}
 

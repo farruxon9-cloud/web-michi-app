@@ -1084,11 +1084,11 @@
 }
 
 .map-gps-locate-btn.route-active {
-  bottom: 330px;
+  bottom: 160px;
 }
 
 .map-gps-locate-btn.nav-active {
-  bottom: 230px;
+  bottom: 190px;
 }
 
 .map-gps-locate-btn:hover {
@@ -1353,8 +1353,8 @@
 /* Google Maps style mode tab bar inside top panel */
 .nav-mode-selector-row {
   display: flex;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 5px;
+  margin-bottom: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
 }
@@ -1373,18 +1373,17 @@
 .mode-tab-btn {
   flex-shrink: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 8px 10px;
+  border-radius: 8px;
+  padding: 5px 8px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  min-width: 68px;
 }
 
 .mode-tab-btn:hover {
