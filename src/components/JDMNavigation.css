@@ -1084,7 +1084,7 @@
 }
 
 .map-gps-locate-btn.route-active {
-  bottom: 275px;
+  bottom: 330px;
 }
 
 .map-gps-locate-btn.nav-active {
@@ -1334,7 +1334,7 @@
   z-index: 10;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
   border-radius: 16px !important;
-  max-height: 220px;
+  max-height: 350px;
   overflow-y: auto;
   width: auto !important;
 }
