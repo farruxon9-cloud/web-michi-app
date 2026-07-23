@@ -218,11 +218,34 @@ export default function JDMNavigation({ onBack }) {
     };
   }, []);
 
-  // Locate user using standard HTML5 Geolocation API
+  // Locate user using standard HTML5 Geolocation API or active vehicle follow
   const handleLocateUser = () => {
     triggerSound();
+    
+    // 1. If actively navigating, center map on the simulated vehicle marker
+    if (isNavigating && navSteps.length > 0) {
+      const currentStep = navSteps[currentStepIndex];
+      if (currentStep && mapInstanceRef.current) {
+        // Calculate offset ahead to center it nicely
+        const heading = 0; // We just focus directly on active marker
+        mapInstanceRef.current.setView([currentStep.lat, currentStep.lng], 18);
+      }
+      return;
+    }
+
+    // 2. If not navigating but startCoord is set, center on it
+    if (startCoord && mapInstanceRef.current) {
+      mapInstanceRef.current.setView([startCoord.lat, startCoord.lng], 15);
+      return;
+    }
+
     if (!navigator.geolocation) {
-      alert(currentLang === 'ja' ? 'お使いのブラウザはGPS位置情報をサポートしていません。' : 'Sizning brauzeringiz GPS-ni qo\'llab-quvvatlamaydi.');
+      const fallback = { lat: 35.6841, lng: 139.7741, name: '⛩️ Nihonbashi Center' };
+      setStartCoord(fallback);
+      setStartQuery(currentLang === 'ja' ? '⛩️ 日本橋中心街' : '⛩️ Nihonbashi Center');
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setView([fallback.lat, fallback.lng], 15);
+      }
       return;
     }
 
@@ -236,9 +259,8 @@ export default function JDMNavigation({ onBack }) {
         };
         setStartCoord(newCoord);
         setStartQuery(currentLang === 'ja' ? '現在地 (GPS)' : 'Hozirgi joylashuv (GPS)');
-
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.setView([latitude, longitude], 13);
+          mapInstanceRef.current.setView([latitude, longitude], 15);
         }
       },
       (error) => {
@@ -247,7 +269,7 @@ export default function JDMNavigation({ onBack }) {
         setStartCoord(fallback);
         setStartQuery(currentLang === 'ja' ? '⛩️ 日本橋中心街' : '⛩️ Nihonbashi Center');
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.setView([fallback.lat, fallback.lng], 13);
+          mapInstanceRef.current.setView([fallback.lat, fallback.lng], 15);
         }
       }
     );
@@ -713,7 +735,7 @@ export default function JDMNavigation({ onBack }) {
       {/* Floating GPS Locate Button */}
       <button 
         type="button" 
-        className={`map-gps-locate-btn ${isNavigating ? 'nav-active' : (startCoord && destCoord ? 'route-active' : '')}`}
+        className="map-gps-locate-btn"
         onClick={handleLocateUser} 
         title="Locate me"
       >

@@ -1068,7 +1068,7 @@
 /* Floating Locate GPS Button inside map container */
 .map-gps-locate-btn {
   position: absolute;
-  bottom: 96px;
+  top: 310px;
   right: 16px;
   width: 40px;
   height: 40px;
@@ -1082,15 +1082,7 @@
   justify-content: center;
   cursor: pointer;
   z-index: 1000;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.map-gps-locate-btn.route-active {
-  bottom: 160px;
-}
-
-.map-gps-locate-btn.nav-active {
-  bottom: 190px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .map-gps-locate-btn:hover {
