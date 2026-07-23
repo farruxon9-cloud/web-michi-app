@@ -217,12 +217,12 @@
   - `lucide-react`
 
 ### 📦 [JDMNavigation.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.css)
-* **Fayl yo'li:** `src/components/JDMNavigation.css` (1274 qator, 25560 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.css` (1352 qator, 27088 bayt)
 * **Import qilgan bog'liqliklari:**
   - *Bog'liqliklar mavjud emas*
 
 ### 📦 [JDMNavigation.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (929 qator, 42371 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (859 qator, 40589 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
 * **Import qilgan bog'liqliklari:**
@@ -233,7 +233,7 @@
   - `leaflet`
 
 ### 📦 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.test.jsx` (83 qator, 2223 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.test.jsx` (83 qator, 2224 bayt)
 * **Import qilgan bog'liqliklari:**
   - `vitest`
   - `react`

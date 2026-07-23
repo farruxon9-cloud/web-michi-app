@@ -72,7 +72,7 @@ describe('JDMNavigation Component Tests', () => {
   it('renders successfully without crashing', () => {
     const html = renderToString(<JDMNavigation onBack={() => {}} />);
     expect(html).toContain('JDM');
-    expect(html).toContain('Depots');
+    expect(html).toContain('Matsudo');
   });
 
   it('supports fallback translations when no props are provided', () => {

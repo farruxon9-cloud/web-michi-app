@@ -55,7 +55,6 @@ export default function JDMNavigation({ onBack }) {
   const routePolylineRef = useRef(null);
   const markersGroupRef = useRef(null);
   const simMarkerRef = useRef(null);
-  const userLocMarkerRef = useRef(null);
 
   // States
   const [selectedVehicle, setSelectedVehicle] = useState('elf_3t');
@@ -68,7 +67,7 @@ export default function JDMNavigation({ onBack }) {
   const [startSuggestions, setStartSuggestions] = useState([]);
   const [destSuggestions, setDestSuggestions] = useState([]);
 
-  // Default coordinate states are empty initially
+  // Default coordinate states are empty initially to avoid startup route rendering
   const [startCoord, setStartCoord] = useState(null);
   const [destCoord, setDestCoord] = useState(null);
 
@@ -110,6 +109,8 @@ export default function JDMNavigation({ onBack }) {
       routeSettings: { uz: 'Yo\'nalish Sharoitlari', ja: 'ルート検索条件', en: 'Route Settings', vi: 'Cài đặt tuyến đường', zh: '路线规划条件', ne: 'मार्ग सेटिङ्हरू' },
       startLabel: { uz: 'Boshlang\'ich manzil', ja: '出発地（例: 新宿、まいばすけっと）', en: 'Start Location (e.g. My Basket)', vi: 'Điểm xuất phát', zh: '起点', ne: 'प्रारम्भिक स्थान' },
       destLabel: { uz: 'Boradigan manzil', ja: '目的地（例: 横浜港、お台場）', en: 'Destination Location', vi: 'Điểm đến', zh: '终点', ne: 'गन्तव्य' },
+      startPlaceholder: { uz: 'Boshlang\'ich manzilni kiriting...', ja: '出発地を入力してください...', en: 'Enter start location...', vi: 'Nhập điểm xuất phát...', zh: '输入起点...', ne: 'प्रस्थान बिन्दु...' },
+      destPlaceholder: { uz: 'Boradigan manzilni kiriting...', ja: '目的地を入力してください...', en: 'Enter destination...', vi: 'Nhập điểm đến...', zh: '输入终点...', ne: 'गन्तव्य बिन्दु...' },
       height: { uz: 'Balandlik', ja: '車高 (高さ)', en: 'Height', vi: 'Chiều cao', zh: '高度', ne: 'उचाइ' },
       width: { uz: 'Eni', ja: '車幅 (幅)', en: 'Width', vi: 'Chiều rộng', zh: '宽度', ne: 'चौडाइ' },
       weight: { uz: 'Vazni', ja: '総重量', en: 'Weight', vi: 'Trọng lượng', zh: '总重量', ne: 'वजन' },
@@ -121,14 +122,14 @@ export default function JDMNavigation({ onBack }) {
       routeInstructions: { uz: 'Marshrut Yo\'nalishlari', ja: '右左折・走行指示', en: 'Route Instructions', vi: 'Chỉ dẫn tuyến đường', zh: '行车指引', ne: 'मार्ग निर्देशनहरू' },
       reportBugBtn: { uz: 'Xaritada xatolik topdingizmi?', ja: '地図・規制情報の誤りを報告', en: 'Report Map / Restriction Error', vi: 'Báo cáo lỗi bản đồ / hạn chế', zh: '上报地图或限制错误', ne: 'नक्सा / प्रतिबन्ध त्रुटि रिपोर्ट गर्नुहोस्' },
       feedbackTitle: { uz: 'Yo\'nalish Cheklovi Xatosi Haqida Xabar', ja: 'ルート規制情報の修正提案', en: 'Report Route Constraint Error', vi: 'Báo cáo lỗi giới hạn tuyến đường', zh: '上报路线规划限制错误', ne: 'मार्ग प्रतिबन्ध त्रुटि रिपोर्ट गर्नुहोस्' },
-      feedbackTypeLabel: { uz: 'Xatolik turi', ja: '誤りの内容', en: 'Error Type', vi: 'Loại lỗi', zh: '错误类型', ne: 'त्रुटि प्रकार' },
+      feedbackTypeLabel: { uz: 'Xatolik turi', ja: '誤りの内容', en: 'Error Type', vi: 'Loại lỗi', zh: '错误类型', ne: 'ترुटि प्रकार' },
       fb_bridge: { uz: 'Balandlik cheklovi noto\'g\'ri', ja: '高架下・高さ制限値の相違', en: 'Incorrect Bridge Height Limit', vi: 'Sai giới hạn chiều cao gầm cầu', zh: '桥梁限高错误', ne: 'गलत पुल उचाइ सीमा' },
       fb_road: { uz: 'Yo\'l yopiq yoki taqiqlangan', ja: '通行止め・通行規制の新設/廃止', en: 'Road Closed / New Truck Ban', vi: 'Đường bị đóng / Cấm xe tải mới', zh: '道路关闭或货车禁行', ne: 'सडक bised / nayaँ track prtibandh' },
       fb_weight: { uz: 'Ko\'prik vazn taqiqi noto\'g\'ri', ja: '橋梁等の重量制限値の相違', en: 'Incorrect Bridge Weight Limit', vi: 'Sai giới hạn trọng lượng cầu', zh: '桥梁限重错误', ne: 'गलत पुल वजन सीमा' },
       fb_other: { uz: 'Boshqa muammo (Xarita / Nomlar)', ja: 'その他・住所地名の誤りなど', en: 'Other Map Metadata Error', vi: 'Lỗi siêu dữ liệu bản đồ khác', zh: '其他地图信息错误', ne: 'अन्य नक्सा त्रुटi' },
       feedbackTextPlaceholder: { uz: 'Iltimos, xato ketgan joy yoki ko\'rsatkich haqida yozing...', ja: '例: 金町高架下の高さ制限は実際には3.2mです。', en: 'Provide details about the incorrect limit (e.g. Underpass near Matsudo is 3.2m, not 3.0m)...', vi: 'Vui lòng cung cấp chi tiết về lỗi giới hạn này...', zh: '请提供限额错误处的具体描述（例如：松户附近的下通道限高实际上是 3.2 米，而不是 3.0 米）...', ne: 'कृपया विवरणहरू प्रदान गर्नुहोस्...' },
       sendBtn: { uz: 'Yuborish (support@michi.jp.net)', ja: '報告を送信 (support@michi.jp.net)', en: 'Submit Report (support@michi.jp.net)', vi: 'Gửi báo cáo (support@michi.jp.net)', zh: '发送报告 (support@michi.jp.net)', ne: 'रिपोर्ट पठाउनुहोस् (support@michi.jp.net)' },
-      feedbackSuccessMsg: { uz: 'Xabaringiz support@michi.jp.net ko\'mak bo\'limiga yuborildi!', ja: 'ご報告が support@michi.jp.net 宛に送信されました。', en: 'Report successfully queued for support@michi.jp.net!', vi: 'Báo cáo đã gửi tới support@michi.jp.net!', zh: '报告已发送至 support@michi.jp.net 邮箱，非常感谢您的反馈！', ne: 'रिपोर्ट support@michi.jp.net ma successfully sent!' }
+      feedbackSuccessMsg: { uz: 'Xabaringiz support@michi.jp.net ko\'mak bo\'limiga yuborildi!', ja: 'ご報告が support@michi.jp.net 宛に送信されました。', en: 'Report successfully queued for support@michi.jp.net!', vi: 'Báo cáo đã gửi tới support@michi.jp.net!', zh: '报告已发送至 support@michi.jp.net 邮箱，非常感謝您的反馈！', ne: 'रिपोर्ट support@michi.jp.net मा सफलतापूर्वक पठाइयो!' }
     };
     return dict[key]?.[currentLang] || dict[key]?.['uz'] || '';
   };
@@ -528,8 +529,21 @@ export default function JDMNavigation({ onBack }) {
   return (
     <div className="jdm-nav-container animate-fade-in">
       
-      {/* Sleek Minimalist Map Header */}
-      <header className="jdm-nav-header">
+      {/* Real Full Screen Leaflet Map Container Block (Occupies 100% viewport) */}
+      <div ref={mapContainerRef} className="map-canvas-container-fullscreen"></div>
+      
+      {/* Floating GPS Locate Button */}
+      <button 
+        type="button" 
+        className="map-gps-locate-btn" 
+        onClick={handleLocateUser} 
+        title="Locate me"
+      >
+        <Locate size={18} />
+      </button>
+
+      {/* Floating Header */}
+      <header className="jdm-nav-header floating-card">
         <button type="button" className="nav-back-btn" onClick={onBack} aria-label="Go back to Dashboard">
           <ArrowLeft size={16} />
         </button>
@@ -539,322 +553,290 @@ export default function JDMNavigation({ onBack }) {
         </div>
       </header>
 
-      {/* Main Grid Content */}
-      <div className="jdm-nav-content-grid">
-        
-        {/* Real Leaflet Map Container Block */}
-        <div className="nav-card glass squircle panel-map" style={{ padding: '0', overflow: 'hidden', height: '320px', position: 'relative' }}>
-          <div ref={mapContainerRef} className="map-canvas-container" style={{ height: '100%', width: '100%', borderRadius: '20px' }}></div>
-          
-          {/* Floating GPS Locate Button */}
-          <button 
-            type="button" 
-            className="map-gps-locate-btn" 
-            onClick={handleLocateUser} 
-            title="Locate me"
-          >
-            <Locate size={18} />
-          </button>
+      {/* Floating Settings Card - Top under header (Only visible when not navigating) */}
+      {!isNavigating && (
+        <div className="nav-card glass squircle panel-settings floating-top-panel">
+          <div className="panel-section-title" style={{ marginBottom: '8px' }}>
+            <Navigation size={14} color="#30D158" />
+            <h3>{getNavText('routeSettings')}</h3>
+          </div>
+
+          <div className="nav-input-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* Start location field */}
+            <div className="form-group-nav flex-1" style={{ margin: '0' }}>
+              <div className="nav-input-wrapper">
+                <MapPin size={14} className="input-pin-icon start" />
+                <input 
+                  type="text"
+                  placeholder={getNavText('startPlaceholder')}
+                  value={startQuery}
+                  onChange={e => {
+                    setStartQuery(e.target.value);
+                    searchAddress(e.target.value, 'start');
+                  }}
+                />
+                {startSuggestions.length > 0 && (
+                  <div className="nav-suggestions-dropdown glass">
+                    {startSuggestions.map(item => {
+                      const parts = item.name.split(',');
+                      const title = parts[0];
+                      const subtitle = parts.slice(1).join(',').trim();
+                      return (
+                        <div 
+                          key={item.id} 
+                          className="suggestion-item"
+                          onClick={() => {
+                            setStartCoord({ lat: item.lat, lng: item.lng, name: item.name });
+                            setStartQuery(title);
+                            setStartSuggestions([]);
+                            triggerSound();
+                          }}
+                        >
+                          <div className="suggestion-title">{title}</div>
+                          <div className="suggestion-subtitle">{subtitle}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Destination location field */}
+            <div className="form-group-nav flex-1" style={{ margin: '0' }}>
+              <div className="nav-input-wrapper">
+                <MapPin size={14} className="input-pin-icon end" />
+                <input 
+                  type="text"
+                  placeholder={getNavText('destPlaceholder')}
+                  value={destQuery}
+                  onChange={e => {
+                    setDestQuery(e.target.value);
+                    searchAddress(e.target.value, 'dest');
+                  }}
+                />
+                {destSuggestions.length > 0 && (
+                  <div className="nav-suggestions-dropdown glass">
+                    {destSuggestions.map(item => {
+                      const parts = item.name.split(',');
+                      const title = parts[0];
+                      const subtitle = parts.slice(1).join(',').trim();
+                      return (
+                        <div 
+                          key={item.id} 
+                          className="suggestion-item"
+                          onClick={() => {
+                            setDestCoord({ lat: item.lat, lng: item.lng, name: item.name });
+                            setDestQuery(title);
+                            setDestSuggestions([]);
+                            triggerSound();
+                          }}
+                        >
+                          <div className="suggestion-title">{title}</div>
+                          <div className="suggestion-subtitle">{subtitle}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick JDM nodes shortcuts */}
+          <div className="quick-hubs-bar" style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="quick-hub-chips hide-scrollbar" style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
+              {Object.entries(NODES).map(([key, node]) => (
+                <button 
+                  key={key}
+                  type="button"
+                  className="hub-chip"
+                  onClick={() => {
+                    setDestCoord({ lat: node.lat, lng: node.lng, name: node.name });
+                    setDestQuery(currentLang === 'ja' ? node.jaName : node.name);
+                    triggerSound();
+                  }}
+                >
+                  {currentLang === 'ja' ? node.jaName.split(' ')[1] : node.name.split(' ')[1]}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
+      )}
 
-        {/* Navigation Sim HUD Panel */}
-        {isNavigating ? (
-          <div className="nav-card glass squircle panel-hud animate-slide-up" style={{ gap: '0' }}>
-            {/* Top Instruction Banner (Google/Yandex style) */}
-            <div className="nav-top-banner">
-              <div className="nav-turn-icon-wrap">
-                <Navigation size={26} color="#ffffff" style={{ transform: 'rotate(45deg)' }} />
-              </div>
-              <div className="nav-turn-details">
-                <h3 className="nav-turn-road">
-                  {currentLang === 'ja' 
-                    ? (currentStep?.jaText || '直進してください') 
-                    : (currentStep?.text || 'Proceed Straight')
-                  }
-                </h3>
-                <span className="nav-turn-sub">
-                  {currentLang === 'ja' 
-                    ? `次の目的地まで: ${currentStep?.landmark || 'デポ'}` 
-                    : `Next Landmark: ${currentStep?.landmark || 'Depot'}`
-                  }
-                </span>
-              </div>
-            </div>
+      {/* Floating Instructions/Warnings Card - Bottom above vehicles bar (Only visible when route exists and not navigating) */}
+      {!isNavigating && startCoord && destCoord && (
+        <div className="nav-card glass squircle panel-instructions floating-bottom-panel animate-slide-up">
+          <div className={`route-status-banner ${route.status}`} style={{ padding: '8px 12px', borderRadius: '8px', marginBottom: '8px' }}>
+            {route.status === 'safe' ? (
+              <>
+                <CheckCircle2 size={16} color="#30D158" />
+                <span>{getNavText('safeStatus')}</span>
+              </>
+            ) : (
+              <>
+                <ShieldAlert size={16} color="#FF9500" />
+                <span>{getNavText('warningStatus')}</span>
+              </>
+            )}
+          </div>
 
-            {/* Bottom Info HUD */}
-            <div className="nav-bottom-stat-row">
-              <div className="nav-stat-time">
-                <span className="time-value">
-                  {route.time}
-                </span>
-                <span className="time-unit">
-                  {currentLang === 'ja' ? '分' : 'min'}
-                </span>
-              </div>
-              
-              <div className="nav-stat-divider"></div>
-              
-              <div className="nav-stat-details">
-                <span className="stat-eta">
-                  ETA {getETA(route.time)}
-                </span>
-                <span className="stat-dist">
-                  {route.distance} km
-                </span>
-              </div>
-              
-              <button 
-                type="button" 
-                className="nav-exit-btn"
-                onClick={() => {
-                  triggerSound();
-                  setIsNavigating(false);
-                  setIsAutoPlaying(false);
-                  setCurrentStepIndex(0);
-                }}
-              >
-                {currentLang === 'ja' ? '終了' : 'Exit'}
-              </button>
-            </div>
-
-            {/* Simulation controls (Gear-expandable for testing) */}
-            <div className="simulation-settings-wrap" style={{ marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px' }}>
-              <button 
-                type="button" 
-                className="sim-toggle-btn"
-                onClick={() => setShowSimControls(!showSimControls)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '10px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', margin: '0 auto' }}
-              >
-                <span>⚙️ {showSimControls ? 'Hide Sim Controls' : 'Show Sim Controls'}</span>
-              </button>
-
-              {showSimControls && (
-                <div className="sim-panel-content animate-fade-in" style={{ marginTop: '10px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                    <span>Checkpoint Progress</span>
-                    <span>{currentStepIndex + 1} / {navSteps.length}</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button type="button" disabled={currentStepIndex === 0} onClick={() => setCurrentStepIndex(prev => prev - 1)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '11px' }}>
-                      Back
-                    </button>
-                    <button type="button" onClick={() => setIsAutoPlaying(!isAutoPlaying)} style={{ flex: 1.2, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: isAutoPlaying ? 'rgba(255,149,0,0.15)' : 'var(--glass-bg)', color: isAutoPlaying ? '#FF9500' : 'var(--text-main)', cursor: 'pointer', fontSize: '11px' }}>
-                      {isAutoPlaying ? 'Pause' : 'Play'}
-                    </button>
-                    <button type="button" disabled={currentStepIndex === navSteps.length - 1} onClick={() => setCurrentStepIndex(prev => prev + 1)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontSize: '11px' }}>
-                      Next
-                    </button>
-                  </div>
+          {/* Clear Warning Alerts */}
+          {route.warnings.length > 0 && (
+            <div className="route-warnings-hud" style={{ background: 'rgba(255, 69, 58, 0.08)', border: '1px solid rgba(255,69,58,0.2)', padding: '10px', borderRadius: '10px', marginBottom: '8px' }}>
+              {route.warnings.map((w, idx) => (
+                <div key={idx} style={{ display: 'flex', gap: '6px', alignItems: 'center', color: '#FF453A', fontSize: '10.5px', fontWeight: 'bold' }}>
+                  <AlertTriangle size={12} />
+                  <span>{w}</span>
                 </div>
-              )}
+              ))}
+            </div>
+          )}
+
+          <div className="route-stats-row" style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
+            <div className="stat-item flex-1">
+              <span className="stat-label" style={{ fontSize: '9px' }}>{getNavText('distance')}</span>
+              <span className="stat-value" style={{ fontSize: '15px', fontWeight: '800' }}>{route.distance} km</span>
+            </div>
+            <div className="stat-item flex-1">
+              <span className="stat-label" style={{ fontSize: '9px' }}>{getNavText('time')}</span>
+              <span className="stat-value" style={{ fontSize: '15px', fontWeight: '800' }}>{route.time} {currentLang === 'ja' ? '分' : 'daq'}</span>
             </div>
           </div>
-        ) : (
-          /* Panel 1: Settings panel with OSM address query suggestions */
-          <div className="nav-card glass squircle panel-settings">
-            <div className="panel-section-title">
-              <Navigation size={16} color="#30D158" />
-              <h3>{getNavText('routeSettings')}</h3>
-            </div>
 
-            <div className="nav-input-row">
-              {/* Start location field */}
-              <div className="form-group-nav flex-1">
-                <label>{getNavText('startLabel')}</label>
-                <div className="nav-input-wrapper">
-                  <MapPin size={14} className="input-pin-icon start" />
-                  <input 
-                    type="text"
-                    placeholder="Enter start location..."
-                    value={startQuery}
-                    onChange={e => {
-                      setStartQuery(e.target.value);
-                      searchAddress(e.target.value, 'start');
-                    }}
-                  />
-                  {startSuggestions.length > 0 && (
-                    <div className="nav-suggestions-dropdown glass">
-                      {startSuggestions.map(item => {
-                        const parts = item.name.split(',');
-                        const title = parts[0];
-                        const subtitle = parts.slice(1).join(',').trim();
-                        return (
-                          <div 
-                            key={item.id} 
-                            className="suggestion-item"
-                            onClick={() => {
-                              setStartCoord({ lat: item.lat, lng: item.lng, name: item.name });
-                              setStartQuery(title);
-                              setStartSuggestions([]);
-                              triggerSound();
-                            }}
-                          >
-                            <div className="suggestion-title">{title}</div>
-                            <div className="suggestion-subtitle">{subtitle}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+          {route.coordinates.length > 0 && (
+            <button 
+              type="button" 
+              className="go-to-nav-btn animate-pulse" 
+              onClick={() => {
+                triggerSound();
+                setIsNavigating(true);
+                setCurrentStepIndex(0);
+                setIsAutoPlaying(true);
+              }}
+              style={{ width: '100%', padding: '10px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #0A84FF 0%, #30D158 100%)', color: '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyRules: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px', boxShadow: '0 4px 14px rgba(48,209,88,0.2)' }}
+            >
+              <Navigation size={13} style={{ transform: 'rotate(45deg)' }} />
+              <span>START ROAD ROUTING</span>
+            </button>
+          )}
+
+          {/* Preset parameters readouts */}
+          <div className="dimensions-hud-bar" style={{ marginTop: '8px', background: 'rgba(255,255,255,0.03)', padding: '6px', borderRadius: '8px' }}>
+            <div className="dim-badges-row" style={{ display: 'flex', gap: '6px' }}>
+              <div className="dim-badge flex-1" style={{ fontSize: '10px', textAlign: 'center' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>{getNavText('height')}:</span> <strong>{height.toFixed(2)}m</strong>
               </div>
-
-              {/* Destination location field */}
-              <div className="form-group-nav flex-1">
-                <label>{getNavText('destLabel')}</label>
-                <div className="nav-input-wrapper">
-                  <MapPin size={14} className="input-pin-icon end" />
-                  <input 
-                    type="text"
-                    placeholder="Enter destination..."
-                    value={destQuery}
-                    onChange={e => {
-                      setDestQuery(e.target.value);
-                      searchAddress(e.target.value, 'dest');
-                    }}
-                  />
-                  {destSuggestions.length > 0 && (
-                    <div className="nav-suggestions-dropdown glass">
-                      {destSuggestions.map(item => {
-                        const parts = item.name.split(',');
-                        const title = parts[0];
-                        const subtitle = parts.slice(1).join(',').trim();
-                        return (
-                          <div 
-                            key={item.id} 
-                            className="suggestion-item"
-                            onClick={() => {
-                              setDestCoord({ lat: item.lat, lng: item.lng, name: item.name });
-                              setDestQuery(title);
-                              setDestSuggestions([]);
-                              triggerSound();
-                            }}
-                          >
-                            <div className="suggestion-title">{title}</div>
-                            <div className="suggestion-subtitle">{subtitle}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+              <div className="dim-badge flex-1" style={{ fontSize: '10px', textAlign: 'center' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>{getNavText('width')}:</span> <strong>{width.toFixed(2)}m</strong>
               </div>
-            </div>
-
-            {/* Quick JDM nodes shortcuts */}
-            <div className="quick-hubs-bar">
-              <span className="quick-hub-label">⚡ AEON Depots:</span>
-              <div className="quick-hub-chips hide-scrollbar">
-                {Object.entries(NODES).map(([key, node]) => (
-                  <button 
-                    key={key}
-                    type="button"
-                    className="hub-chip"
-                    onClick={() => {
-                      setDestCoord({ lat: node.lat, lng: node.lng, name: node.name });
-                      setDestQuery(currentLang === 'ja' ? node.jaName : node.name);
-                      triggerSound();
-                    }}
-                  >
-                    {currentLang === 'ja' ? node.jaName.split(' ')[1] : node.name.split(' ')[1]}
-                  </button>
-                ))}
+              <div className="dim-badge flex-1" style={{ fontSize: '10px', textAlign: 'center' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>{getNavText('weight')}:</span> <strong>{weight.toFixed(1)}t</strong>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Panel 2: Instructions and clearance warning output */}
-        {!isNavigating && startCoord && destCoord && (
-          <div className="nav-card glass squircle panel-instructions animate-slide-up">
-            <div className={`route-status-banner ${route.status}`}>
-              {route.status === 'safe' ? (
-                <>
-                  <CheckCircle2 size={18} color="#30D158" />
-                  <span>{getNavText('safeStatus')}</span>
-                </>
-              ) : (
-                <>
-                  <ShieldAlert size={18} color="#FF9500" />
-                  <span>{getNavText('warningStatus')}</span>
-                </>
-              )}
+      {/* Floating Turn-by-Turn Guidance Overlay Card - Bottom (Only visible when navigating) */}
+      {isNavigating && (
+        <div className="nav-card glass squircle panel-hud floating-hud animate-slide-up" style={{ gap: '0' }}>
+          {/* Top Turn Instruction Banner (Google/Yandex style) */}
+          <div className="nav-top-banner" style={{ margin: '0 0 10px 0' }}>
+            <div className="nav-turn-icon-wrap">
+              <Navigation size={22} color="#ffffff" style={{ transform: 'rotate(45deg)' }} />
             </div>
-
-            {/* Clear Warning Alerts */}
-            {route.warnings.length > 0 && (
-              <div className="route-warnings-hud" style={{ background: 'rgba(255, 69, 58, 0.08)', border: '1px solid rgba(255,69,58,0.2)', padding: '12px', borderRadius: '12px', marginBottom: '14px' }}>
-                {route.warnings.map((w, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center', color: '#FF453A', fontSize: '11px', fontWeight: 'bold' }}>
-                    <AlertTriangle size={14} />
-                    <span>{w}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="route-stats-row">
-              <div className="stat-item flex-1">
-                <span className="stat-label">{getNavText('distance')}</span>
-                <span className="stat-value">{route.distance} km</span>
-              </div>
-              <div className="stat-item flex-1">
-                <span className="stat-label">{getNavText('time')}</span>
-                <span className="stat-value">{route.time} {currentLang === 'ja' ? '分' : 'daq'}</span>
-              </div>
+            <div className="nav-turn-details">
+              <h3 className="nav-turn-road" style={{ fontSize: '13.5px' }}>
+                {currentLang === 'ja' 
+                  ? (currentStep?.jaText || '直進してください') 
+                  : (currentStep?.text || 'Proceed Straight')
+                }
+              </h3>
+              <span className="nav-turn-sub" style={{ fontSize: '9.5px' }}>
+                {currentLang === 'ja' 
+                  ? `次のチェックポイント: ${currentStep?.landmark || 'デポ'}` 
+                  : `Next Checkpoint: ${currentStep?.landmark || 'Depot'}`
+                }
+              </span>
             </div>
+          </div>
 
-            {route.coordinates.length > 0 && (
-              <button 
-                type="button" 
-                className="go-to-nav-btn animate-pulse" 
-                onClick={() => {
-                  triggerSound();
-                  setIsNavigating(true);
-                  setCurrentStepIndex(0);
-                  setIsAutoPlaying(true);
-                }}
-                style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #0A84FF 0%, #30D158 100%)', color: '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '8px', boxShadow: '0 6px 20px rgba(48,209,88,0.25)' }}
-              >
-                <Navigation size={15} style={{ transform: 'rotate(45deg)' }} />
-                <span>START ROAD ROUTING</span>
-              </button>
-            )}
-
-            {/* Preset parameters readouts */}
-            <div className="dimensions-hud-bar" style={{ marginTop: '14px' }}>
-              <div className="dim-bar-title">
-                <Info size={11} color="var(--text-secondary)" />
-                <span>{getNavText('vehicleHUD')}</span>
-              </div>
-              <div className="dim-badges-row">
-                <div className="dim-badge flex-1">
-                  <span>{getNavText('height')}</span>
-                  <strong>{height.toFixed(2)}m</strong>
-                </div>
-                <div className="dim-badge flex-1">
-                  <span>{getNavText('width')}</span>
-                  <strong>{width.toFixed(2)}m</strong>
-                </div>
-                <div className="dim-badge flex-1">
-                  <span>{getNavText('weight')}</span>
-                  <strong>{weight.toFixed(1)}t</strong>
-                </div>
-              </div>
+          {/* Bottom ETA Info Bar */}
+          <div className="nav-bottom-stat-row" style={{ padding: '10px 14px' }}>
+            <div className="nav-stat-time">
+              <span className="time-value" style={{ fontSize: '22px' }}>
+                {route.time}
+              </span>
+              <span className="time-unit">
+                {currentLang === 'ja' ? '分' : 'min'}
+              </span>
             </div>
-
-            <button className="report-bug-btn" onClick={() => setIsFeedbackOpen(true)} style={{ marginTop: '12px' }}>
-              <MessageSquare size={14} />
-              <span>{getNavText('reportBugBtn')}</span>
+            
+            <div className="nav-stat-divider" style={{ height: '24px', margin: '0 12px' }}></div>
+            
+            <div className="nav-stat-details">
+              <span className="stat-eta" style={{ fontSize: '11px' }}>
+                ETA {getETA(route.time)}
+              </span>
+              <span className="stat-dist" style={{ fontSize: '10px' }}>
+                {route.distance} km
+              </span>
+            </div>
+            
+            <button 
+              type="button" 
+              className="nav-exit-btn"
+              onClick={() => {
+                triggerSound();
+                setIsNavigating(false);
+                setIsAutoPlaying(false);
+                setCurrentStepIndex(0);
+              }}
+              style={{ padding: '8px 16px', fontSize: '11.5px' }}
+            >
+              {currentLang === 'ja' ? '終了' : 'Exit'}
             </button>
           </div>
-        )}
 
-      </div>
+          {/* Hidden/expandable simulation debugging tools */}
+          <div className="simulation-settings-wrap" style={{ marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '6px' }}>
+            <button 
+              type="button" 
+              className="sim-toggle-btn"
+              onClick={() => setShowSimControls(!showSimControls)}
+              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '9px', display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer', margin: '0 auto' }}
+            >
+              <span>⚙️ {showSimControls ? 'Hide Sim Controls' : 'Show Sim Controls'}</span>
+            </button>
 
-      {/* Dynamic Vehicle Quick Selector (Bottom Sticky HUD) - Hidden when navigating */}
+            {showSimControls && (
+              <div className="sim-panel-content animate-fade-in" style={{ marginTop: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                  <span>Sim Progress</span>
+                  <span>{currentStepIndex + 1} / {navSteps.length}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button type="button" disabled={currentStepIndex === 0} onClick={() => setCurrentStepIndex(prev => prev - 1)} style={{ flex: 1, padding: '6px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '10px' }}>
+                    Back
+                  </button>
+                  <button type="button" onClick={() => setIsAutoPlaying(!isAutoPlaying)} style={{ flex: 1.2, padding: '6px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: isAutoPlaying ? 'rgba(255,149,0,0.15)' : 'var(--glass-bg)', color: isAutoPlaying ? '#FF9500' : 'var(--text-main)', cursor: 'pointer', fontSize: '10px' }}>
+                    {isAutoPlaying ? 'Pause' : 'Play'}
+                  </button>
+                  <button type="button" disabled={currentStepIndex === navSteps.length - 1} onClick={() => setCurrentStepIndex(prev => prev + 1)} style={{ flex: 1, padding: '6px', borderRadius: '6px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontSize: '10px' }}>
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Floating Bottom Vehicles Bar selector (Only visible when not navigating) */}
       {!isNavigating && (
-        <div className="nav-bottom-vehicles-bar glass">
+        <div className="nav-bottom-vehicles-bar absolute-bottom">
           {Object.entries(VEHICLE_PRESETS).map(([key, val]) => (
             <button 
               key={key}
@@ -868,58 +850,6 @@ export default function JDMNavigation({ onBack }) {
               </div>
             </button>
           ))}
-        </div>
-      )}
-
-      {/* Feedback Modal Popup */}
-      {isFeedbackOpen && (
-        <div className="feedback-modal-overlay animate-fade-in">
-          <div className="feedback-modal-card glass squircle animate-scale-up">
-            <div className="fb-card-header">
-              <MessageSquare size={20} color="var(--primary)" />
-              <h3>{getNavText('feedbackTitle')}</h3>
-              <button className="fb-close-btn" onClick={() => setIsFeedbackOpen(false)}>
-                ❌
-              </button>
-            </div>
-
-            <form onSubmit={handleFeedbackSubmit} className="fb-card-body">
-              {feedbackSuccess ? (
-                <div className="feedback-success-screen animate-fade-in">
-                  <div className="success-icon-wrap">
-                    <Check size={32} color="#fff" />
-                  </div>
-                  <p>{getNavText('feedbackSuccessMsg')}</p>
-                </div>
-              ) : (
-                <>
-                  <div className="form-group-fb">
-                    <label>{getNavText('feedbackTypeLabel')}</label>
-                    <select value={feedbackType} onChange={e => setFeedbackType(e.target.value)}>
-                      <option value="bridge_height">{getNavText('fb_bridge')}</option>
-                      <option value="road_closed">{getNavText('fb_road')}</option>
-                      <option value="limit_error">{getNavText('fb_weight')}</option>
-                      <option value="other">{getNavText('fb_other')}</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group-fb">
-                    <textarea 
-                      placeholder={getNavText('feedbackTextPlaceholder')}
-                      value={feedbackText}
-                      onChange={e => setFeedbackText(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <button type="submit" className="fb-submit-btn">
-                    <Send size={14} />
-                    <span>{getNavText('sendBtn')}</span>
-                  </button>
-                </>
-              )}
-            </form>
-          </div>
         </div>
       )}
 
