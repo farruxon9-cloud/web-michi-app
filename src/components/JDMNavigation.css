@@ -1068,7 +1068,7 @@
 /* Floating Locate GPS Button inside map container */
 .map-gps-locate-btn {
   position: absolute;
-  top: 310px;
+  bottom: 146px;
   right: 16px;
   width: 40px;
   height: 40px;
@@ -1344,13 +1344,12 @@
   width: auto !important;
 }
 
-/* Google Maps style mode tab bar inside top panel */
+/* Google Maps style mode tab bar inside top panel (using Grid to avoid WebKit scroll layout clipping) */
 .nav-mode-selector-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   margin-bottom: 8px;
-  overflow-x: auto;
-  padding: 2px 14px 6px 2px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -1369,18 +1368,20 @@
 .mode-tab-btn {
   flex-shrink: 0;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--glass-border);
   border-radius: 8px;
-  padding: 5px 8px;
+  padding: 6px 4px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mode-tab-btn:hover {
@@ -1397,18 +1398,18 @@
 }
 
 .mode-tab-label {
-  font-size: 11px;
+  font-size: 9.5px;
   font-weight: 800;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .license-tag {
-  font-size: 9.5px;
+  font-size: 7.5px;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 1px 4px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
   color: inherit;
   white-space: nowrap;
   display: inline-block;
@@ -1416,7 +1417,7 @@
 }
 
 .mode-tab-btn.active .license-tag {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* Saved routes custom pill transitions */
