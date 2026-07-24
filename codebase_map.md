@@ -514,7 +514,7 @@
 * **Importlari:** *Yo'q*
 
 ### 📄 [main.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/main.jsx)
-* **Yo'li:** `src/main.jsx` (12 qator)
+* **Yo'li:** `src/main.jsx` (69 qator)
 * **Importlari:** `react`, `react-dom/client`, `./App.jsx`
 
 ### ⚙️ [haptics.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/haptics.js)
