@@ -431,6 +431,11 @@ export default function JDMNavigation({ onBack }) {
 
     const bounds = [];
 
+    const cleanLabel = (text) => {
+      if (!text) return '';
+      return text.replace(/[🏞⛩🚉⚓🚢📍🗺🚗🏍🚛🚚]/gu, '').trim();
+    };
+
     const createMarkerElement = (htmlContent) => {
       const el = document.createElement('div');
       el.className = 'custom-leaflet-icon-wrapper';
@@ -446,7 +451,7 @@ export default function JDMNavigation({ onBack }) {
 
     // Start marker
     if (startCoord) {
-      const startLabel = startCoord.name ? startCoord.name.split(',')[0] : '';
+      const startLabel = startCoord.name ? cleanLabel(startCoord.name.split(',')[0]) : '';
       const el = createMarkerElement(`<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startLabel}</span></div>`);
 
       const m = new Marker({ element: el })
@@ -459,7 +464,7 @@ export default function JDMNavigation({ onBack }) {
     // Intermediate stops markers (orange color coding)
     stops.forEach((stop, index) => {
       if (stop.coord) {
-        const stopLabel = stop.coord.name ? stop.coord.name.split(',')[0] : `Stop ${index + 1}`;
+        const stopLabel = stop.coord.name ? cleanLabel(stop.coord.name.split(',')[0]) : `Stop ${index + 1}`;
         const el = createMarkerElement(`<div class="custom-map-marker warning"><div class="marker-dot" style="background-color: #FF9500;"></div><span class="marker-label">${stopLabel}</span></div>`);
 
         const m = new Marker({ element: el })
@@ -472,7 +477,7 @@ export default function JDMNavigation({ onBack }) {
 
     // Destination marker
     if (destCoord) {
-      const destLabel = destCoord.name ? destCoord.name.split(',')[0] : '';
+      const destLabel = destCoord.name ? cleanLabel(destCoord.name.split(',')[0]) : '';
       const el = createMarkerElement(`<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destLabel}</span></div>`);
 
       const m = new Marker({ element: el })
@@ -495,7 +500,7 @@ export default function JDMNavigation({ onBack }) {
           [minLng, minLat],
           [maxLng, maxLat]
         ], { 
-          padding: { top: 190, bottom: 240, left: 40, right: 40 }, 
+          padding: { top: 340, bottom: 280, left: 50, right: 50 }, 
           maxZoom: 15 
         });
       } catch (e) {}
@@ -646,7 +651,7 @@ export default function JDMNavigation({ onBack }) {
           [minLng, minLat],
           [maxLng, maxLat]
         ], { 
-          padding: { top: 190, bottom: 240, left: 40, right: 40 }, 
+          padding: { top: 340, bottom: 280, left: 50, right: 50 }, 
           maxZoom: 15 
         });
       } catch (e) {}
@@ -1308,7 +1313,7 @@ export default function JDMNavigation({ onBack }) {
                       type="button"
                       className="hub-chip"
                       onClick={() => {
-                        setDestCoord({ lat: node.lat, lng: node.lng, name: node.name });
+                        setDestCoord({ lat: node.lat, lng: node.lng, name: currentLang === 'ja' ? node.jaName : node.name });
                         setDestQuery(currentLang === 'ja' ? node.jaName : node.name);
                         triggerSound();
                       }}
