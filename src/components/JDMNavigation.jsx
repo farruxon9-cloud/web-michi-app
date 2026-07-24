@@ -268,7 +268,7 @@ export default function JDMNavigation({ onBack }) {
       try {
         mapInstanceRef.current = new Map({
           container: mapContainerRef.current,
-          style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+          style: 'https://tiles.openfreemap.org/styles/positron',
           center: [139.7741, 35.6841], // Tokyo center [lng, lat]
           zoom: 11,
           attributionControl: false
@@ -308,11 +308,39 @@ export default function JDMNavigation({ onBack }) {
   const handleLocateUser = () => {
     triggerSound();
     
-    // 1. If actively navigating, center map on the simulated vehicle marker
+    // 1. If actively navigating, center map on the simulated vehicle marker with active orientation settings
     if (isNavigating && navSteps.length > 0) {
       const currentStep = navSteps[currentStepIndex];
       if (currentStep && mapInstanceRef.current) {
-        mapInstanceRef.current.easeTo({ center: [currentStep.lng, currentStep.lat], zoom: 18, duration: 800 });
+        // Calculate current step heading
+        let heading = 0;
+        if (currentStepIndex < navSteps.length - 1) {
+          const nextStep = navSteps[currentStepIndex + 1];
+          const dLon = (nextStep.lng - currentStep.lng) * Math.PI / 180;
+          const lat1 = currentStep.lat * Math.PI / 180;
+          const lat2 = nextStep.lat * Math.PI / 180;
+          const y = Math.sin(dLon) * Math.cos(lat2);
+          const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+          heading = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+        }
+
+        const activeBearing = mapOrientation === 'north' ? 0 : heading;
+        const activePitch = mapOrientation === 'north' ? 0 : 45;
+
+        const offsetDistance = 65; // meters ahead
+        const R = 6378137;
+        const effHeading = mapOrientation === 'north' ? 0 : heading;
+        const headingRad = effHeading * Math.PI / 180;
+        const dLat = (offsetDistance * Math.cos(headingRad)) / R * (180 / Math.PI);
+        const dLng = (offsetDistance * Math.sin(headingRad)) / (R * Math.cos(currentStep.lat * Math.PI / 180)) * (180 / Math.PI);
+
+        mapInstanceRef.current.easeTo({
+          center: [currentStep.lng + dLng, currentStep.lat + dLat],
+          zoom: 18,
+          bearing: activeBearing,
+          pitch: activePitch,
+          duration: 1000
+        });
       }
       return;
     }
