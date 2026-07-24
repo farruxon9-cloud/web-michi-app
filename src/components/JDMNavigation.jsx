@@ -379,9 +379,37 @@ export default function JDMNavigation({ onBack }) {
       return;
     }
 
-    // 2. If not navigating but startCoord is set, center on it
+    // 2. If not navigating but startCoord is set
     if (startCoord && mapInstanceRef.current) {
-      mapInstanceRef.current.easeTo({ center: [startCoord.lng, startCoord.lat], zoom: 15, duration: 800 });
+      if (destCoord) {
+        const bounds = [
+          [startCoord.lng, startCoord.lat],
+          [destCoord.lng, destCoord.lat]
+        ];
+        stops.forEach(stop => {
+          if (stop.coord) bounds.push([stop.coord.lng, stop.coord.lat]);
+        });
+        const lngs = bounds.map(b => b[0]);
+        const lats = bounds.map(b => b[1]);
+        const minLng = Math.min(...lngs);
+        const maxLng = Math.max(...lngs);
+        const minLat = Math.min(...lats);
+        const maxLat = Math.max(...lats);
+
+        const fitPadding = isSettingsCollapsed 
+          ? { top: 120, bottom: 240, left: 40, right: 40 }
+          : { top: 340, bottom: 280, left: 50, right: 50 };
+
+        mapInstanceRef.current.fitBounds([
+          [minLng, minLat],
+          [maxLng, maxLat]
+        ], { 
+          padding: fitPadding, 
+          maxZoom: 15 
+        });
+      } else {
+        mapInstanceRef.current.easeTo({ center: [startCoord.lng, startCoord.lat], zoom: 15, duration: 800 });
+      }
       return;
     }
 
@@ -389,7 +417,7 @@ export default function JDMNavigation({ onBack }) {
       const fallback = { lat: 35.6841, lng: 139.7741, name: '⛩️ Nihonbashi Center' };
       setStartCoord(fallback);
       setStartQuery(currentLang === 'ja' ? '⛩️ 日本橋中心街' : '⛩️ Nihonbashi Center');
-      if (mapInstanceRef.current) {
+      if (mapInstanceRef.current && !destCoord) {
         mapInstanceRef.current.easeTo({ center: [fallback.lng, fallback.lat], zoom: 15, duration: 800 });
       }
       return;
@@ -405,7 +433,7 @@ export default function JDMNavigation({ onBack }) {
         };
         setStartCoord(newCoord);
         setStartQuery(currentLang === 'ja' ? '現在地 (GPS)' : 'Hozirgi joylashuv (GPS)');
-        if (mapInstanceRef.current) {
+        if (mapInstanceRef.current && !destCoord) {
           mapInstanceRef.current.easeTo({ center: [longitude, latitude], zoom: 15, duration: 800 });
         }
       },
@@ -414,7 +442,7 @@ export default function JDMNavigation({ onBack }) {
         const fallback = { lat: 35.6841, lng: 139.7741, name: '⛩️ Nihonbashi Center' };
         setStartCoord(fallback);
         setStartQuery(currentLang === 'ja' ? '⛩️ 日本橋中心街' : '⛩️ Nihonbashi Center');
-        if (mapInstanceRef.current) {
+        if (mapInstanceRef.current && !destCoord) {
           mapInstanceRef.current.easeTo({ center: [fallback.lng, fallback.lat], zoom: 15, duration: 800 });
         }
       }
