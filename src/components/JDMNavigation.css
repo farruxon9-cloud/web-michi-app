@@ -1608,6 +1608,35 @@
   border: 1px solid rgba(255,255,255,0.04);
 }
 
+/* Remove default focus outlines and mobile tap highlights to prevent black boxes/shadows */
+button,
+.map-gps-locate-btn,
+.map-orientation-toggle-btn,
+.map-back-btn,
+.custom-map-marker,
+.custom-leaflet-icon-wrapper,
+.map-canvas-container-fullscreen,
+.maplibregl-canvas,
+.maplibre-canvas,
+.mapboxgl-canvas {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+button:focus,
+.map-gps-locate-btn:focus,
+.map-orientation-toggle-btn:focus,
+.map-back-btn:focus {
+  outline: none !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+}
+
+.map-gps-locate-btn:focus-visible,
+.map-orientation-toggle-btn:focus-visible,
+.map-back-btn:focus-visible {
+  outline: none !important;
+}
+
 
 
 
