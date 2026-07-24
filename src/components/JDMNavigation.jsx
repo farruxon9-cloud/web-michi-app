@@ -1100,34 +1100,36 @@ export default function JDMNavigation({ onBack }) {
         {isNavigating ? <Navigation size={18} /> : <Locate size={18} />}
       </button>
 
-      {/* Floating Back Button */}
-      <button 
-        type="button" 
-        className="map-back-btn" 
-        onClick={onBack} 
-        aria-label="Go back to Dashboard"
-        style={{
-          position: 'absolute',
-          top: '14px',
-          left: '12px',
-          width: '40px',
-          height: '40px',
-          borderRadius: '50%',
-          border: '1px solid var(--glass-border)',
-          background: 'var(--card-bg)',
-          color: 'var(--text-main)',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10,
-          cursor: 'pointer',
-          backdropFilter: 'blur(8px)',
-          transition: 'all 0.2s ease'
-        }}
-      >
-        <ArrowLeft size={18} />
-      </button>
+      {/* Floating Back Button (Only visible during active navigation simulation) */}
+      {isNavigating && (
+        <button 
+          type="button" 
+          className="map-back-btn" 
+          onClick={onBack} 
+          aria-label="Go back to Dashboard"
+          style={{
+            position: 'absolute',
+            top: '14px',
+            left: '12px',
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            border: '1px solid var(--glass-border)',
+            background: 'var(--card-bg)',
+            color: 'var(--text-main)',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+            cursor: 'pointer',
+            backdropFilter: 'blur(8px)',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          <ArrowLeft size={18} />
+        </button>
+      )}
 
       {/* Floating Settings Card - Top (Only visible when not navigating) */}
       {!isNavigating && (
@@ -1136,6 +1138,27 @@ export default function JDMNavigation({ onBack }) {
             /* Collapsed Summary Mode */
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, overflow: 'hidden' }}>
+                {/* Embedded Back Button */}
+                <button
+                  type="button"
+                  onClick={onBack}
+                  style={{
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: '50%',
+                    width: '28px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: 'var(--text-main)',
+                    flexShrink: 0
+                  }}
+                  title="Go back"
+                >
+                  <ArrowLeft size={14} />
+                </button>
                 <span style={{ fontSize: '10.5px', background: 'var(--primary)', color: '#fff', padding: '3px 7px', borderRadius: '6px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
                   <span>🚚</span>
                   <span>{currentLang === 'ja' ? VEHICLE_PRESETS[selectedVehicle]?.jaShort : VEHICLE_PRESETS[selectedVehicle]?.short}</span>
@@ -1159,11 +1182,33 @@ export default function JDMNavigation({ onBack }) {
           ) : (
             /* Expanded Full Settings Mode */
             <>
-              {/* Header Row with Collapse Toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '6px', marginBottom: '2px' }}>
-                <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  {currentLang === 'ja' ? 'ルート検索設定' : 'Route Settings'}
-                </span>
+              {/* Header Row with Collapse Toggle and Embedded Back Button */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '6px', marginBottom: '2px', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {/* Embedded Back Button */}
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid var(--glass-border)',
+                      borderRadius: '50%',
+                      width: '28px',
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      color: 'var(--text-main)'
+                    }}
+                    title="Go back"
+                  >
+                    <ArrowLeft size={14} />
+                  </button>
+                  <span style={{ fontSize: '11px', fontWeight: '900', color: 'var(--text-main)', letterSpacing: '0.5px' }}>
+                    {currentLang === 'ja' ? 'ルート検索設定' : 'Route Settings'}
+                  </span>
+                </div>
                 <button
                   type="button"
                   onClick={() => {
