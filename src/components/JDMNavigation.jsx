@@ -268,7 +268,7 @@ export default function JDMNavigation({ onBack }) {
       try {
         mapInstanceRef.current = new Map({
           container: mapContainerRef.current,
-          style: 'https://tiles.openfreemap.org/styles/positron',
+          style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
           center: [139.7741, 35.6841], // Tokyo center [lng, lat]
           zoom: 11,
           attributionControl: false
@@ -276,6 +276,40 @@ export default function JDMNavigation({ onBack }) {
 
         mapInstanceRef.current.on('load', () => {
           setIsMapLoaded(true);
+
+          // Force all CartoDB layers to use strictly local Japanese names ({name}) instead of English ({name_en})
+          try {
+            const style = mapInstanceRef.current.getStyle();
+            if (style && style.layers) {
+              style.layers.forEach(layer => {
+                if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
+                  const currentTextField = layer.layout['text-field'];
+
+                  if (typeof currentTextField === 'string') {
+                    if (currentTextField.includes('{name_en}') || currentTextField.includes('{name_latin}')) {
+                      const newTextField = currentTextField.replace(/{name_en}/g, '{name}').replace(/{name_latin}/g, '{name}');
+                      mapInstanceRef.current.setLayoutProperty(layer.id, 'text-field', newTextField);
+                    }
+                  } else if (currentTextField && typeof currentTextField === 'object' && currentTextField.stops) {
+                    const updatedStops = currentTextField.stops.map(stop => {
+                      let val = stop[1];
+                      if (typeof val === 'string') {
+                        val = val.replace(/{name_en}/g, '{name}').replace(/{name_latin}/g, '{name}');
+                      }
+                      return [stop[0], val];
+                    });
+                    mapInstanceRef.current.setLayoutProperty(layer.id, 'text-field', {
+                      ...currentTextField,
+                      stops: updatedStops
+                    });
+                  }
+                }
+              });
+            }
+          } catch (e) {
+            console.warn('Failed to customize map language layers:', e);
+          }
+
           setTimeout(() => {
             if (mapInstanceRef.current) mapInstanceRef.current.resize();
           }, 100);
