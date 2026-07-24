@@ -106,6 +106,7 @@ export default function JDMNavigation({ onBack }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const simMarkerRef = useRef(null);
+  const isFollowingRef = useRef(true);
   const activeMarkersRef = useRef([]);
 
   // States
@@ -149,6 +150,7 @@ export default function JDMNavigation({ onBack }) {
   const [showNavVehicleMenu, setShowNavVehicleMenu] = useState(false);
   const [isSettingsCollapsed, setIsSettingsCollapsed] = useState(false);
   const [mapOrientation, setMapOrientation] = useState('heading'); // 'heading' (Head-Up) or 'north' (North-Up)
+  const [isFollowingVehicle, setIsFollowingVehicle] = useState(true);
 
   const bottomPanelRef = useRef(null);
   const [gpsBottomOffset, setGpsBottomOffset] = useState(96);
@@ -314,6 +316,14 @@ export default function JDMNavigation({ onBack }) {
             if (mapInstanceRef.current) mapInstanceRef.current.resize();
           }, 100);
         });
+
+          // Detect user interaction to break camera follow during navigation
+          mapInstanceRef.current.on('dragstart', () => {
+            if (isFollowingRef.current) {
+              isFollowingRef.current = false;
+              setIsFollowingVehicle(false);
+            }
+          });
 
         mapInstanceRef.current.on('error', (e) => {
           console.error('MapLibre GL error event:', e);
@@ -886,41 +896,51 @@ export default function JDMNavigation({ onBack }) {
     const dLat = (offsetDistance * Math.cos(headingRad)) / R * (180 / Math.PI);
     const dLng = (offsetDistance * Math.sin(headingRad)) / (R * Math.cos(currentStep.lat * Math.PI / 180)) * (180 / Math.PI);
 
-    // Apply WebGL easeTo centering, bearing and pitch (3D slant of 45 degrees in Head-Up mode!)
-    mapInstanceRef.current.easeTo({
-      center: [currentStep.lng + dLng, currentStep.lat + dLat],
-      zoom: 18,
-      bearing: activeBearing,
-      pitch: mapOrientation === 'north' ? 0 : 45,
-      duration: 800
-    });
+    // Apply WebGL easeTo centering, bearing and pitch only when following the vehicle
+    if (isFollowingRef.current) {
+      mapInstanceRef.current.easeTo({
+        center: [currentStep.lng + dLng, currentStep.lat + dLat],
+        zoom: 18,
+        bearing: activeBearing,
+        pitch: mapOrientation === 'north' ? 0 : 45,
+        duration: 800
+      });
+    }
 
     const activeVehicle = VEHICLE_PRESETS[selectedVehicle];
-    const vehicleEmoji = activeVehicle?.type === 'passenger' 
-      ? '🚗' 
-      : activeVehicle?.type === 'bike' 
-        ? '🏍️' 
-        : activeVehicle?.type === 'trailer' 
-          ? '🚛' 
-          : '🚚';
-    
-    let markerDotStyle = "width: 14px; height: 22px; background: #30D158; border: 2.5px solid #fff; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); position: relative; display: flex; align-items: center; justify-content: center;";
-    if (activeVehicle?.type === 'bike') {
-      markerDotStyle = "width: 14px; height: 14px; background: #30D158; border: 2.5px solid #fff; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.4); position: relative; display: flex; align-items: center; justify-content: center;";
-    } else if (activeVehicle?.type === 'passenger') {
-      markerDotStyle = "width: 14px; height: 18px; background: #30D158; border: 2.5px solid #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); position: relative; display: flex; align-items: center; justify-content: center;";
-    }
-    
     const vehicleLabelText = currentLang === 'ja' ? activeVehicle?.jaShort : activeVehicle?.short;
-
     const rotation = mapOrientation === 'north' ? heading : 0;
+
+    // Determine vehicle dimensions and colors based on type
+    let vW = 18, vH = 36, bodyColor = '#1A73E8', roofColor = '#4A90D9', rearColor = '#FF3B30';
+    let frontRadius = '4px 4px 0 0', bodyRadius = '4px';
+    if (activeVehicle?.type === 'bike') {
+      vW = 10; vH = 24; bodyColor = '#FF9500'; roofColor = '#FFB84D'; rearColor = '#FF6600';
+      frontRadius = '50% 50% 0 0'; bodyRadius = '5px';
+    } else if (activeVehicle?.type === 'passenger') {
+      vW = 16; vH = 30; bodyColor = '#30D158'; roofColor = '#5EE088'; rearColor = '#E53935';
+      frontRadius = '6px 6px 0 0'; bodyRadius = '5px';
+    } else if (activeVehicle?.type === 'trailer') {
+      vW = 20; vH = 44; bodyColor = '#5856D6'; roofColor = '#7A79E8'; rearColor = '#FF3B30';
+    }
+
     const htmlContent = `
       <div class="custom-map-marker vehicle">
         <div class="marker-pulse"></div>
-        <div class="marker-dot" style="${markerDotStyle} transform: rotate(${rotation}deg); transition: transform 0.3s ease;">
-          <div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 7px solid #fff; position: absolute; top: -8px;"></div>
+        <div class="vehicle-topdown" style="width:${vW}px; height:${vH}px; transform:rotate(${rotation}deg); transition:transform 0.3s ease;">
+          <div class="vehicle-front" style="width:100%; height:30%; background:${roofColor}; border-radius:${frontRadius}; position:relative; display:flex; align-items:center; justify-content:center;">
+            <div style="width:${vW - 6}px; height:4px; background:rgba(180,220,255,0.7); border-radius:2px;"></div>
+          </div>
+          <div style="width:100%; flex:1; background:${bodyColor}; position:relative;">
+            <div style="position:absolute; top:1px; left:1px; width:2px; height:calc(100% - 2px); background:rgba(255,255,255,0.15); border-radius:1px;"></div>
+            <div style="position:absolute; top:1px; right:1px; width:2px; height:calc(100% - 2px); background:rgba(255,255,255,0.15); border-radius:1px;"></div>
+          </div>
+          <div class="vehicle-rear" style="width:100%; height:16%; background:${rearColor}; border-radius:0 0 2px 2px; display:flex; align-items:center; justify-content:space-between; padding:0 2px;">
+            <div style="width:3px; height:3px; background:#FF6B6B; border-radius:50%; box-shadow:0 0 3px #FF6B6B;"></div>
+            <div style="width:3px; height:3px; background:#FF6B6B; border-radius:50%; box-shadow:0 0 3px #FF6B6B;"></div>
+          </div>
         </div>
-        <span class="marker-label" style="white-space: nowrap;">${vehicleEmoji} ${vehicleLabelText}</span>
+        <span class="marker-label" style="white-space: nowrap;">${vehicleLabelText}</span>
       </div>
     `;
 
@@ -1062,11 +1082,22 @@ export default function JDMNavigation({ onBack }) {
       <button 
         type="button" 
         className="map-gps-locate-btn"
-        onClick={handleLocateUser} 
-        title="Locate me"
-        style={{ bottom: `${gpsBottomOffset}px` }}
+        onClick={() => {
+          if (isNavigating) {
+            // Re-center on vehicle during navigation
+            isFollowingRef.current = true;
+            setIsFollowingVehicle(true);
+          } else {
+            handleLocateUser();
+          }
+        }} 
+        title={isNavigating ? (isFollowingVehicle ? 'Following' : 'Re-center') : 'Locate me'}
+        style={{ 
+          bottom: `${gpsBottomOffset}px`,
+          ...(isNavigating && !isFollowingVehicle ? { background: '#30D158', color: '#fff', border: '2px solid #30D158', animation: 'pulse-glow 1.5s ease-in-out infinite' } : {})
+        }}
       >
-        <Locate size={18} />
+        {isNavigating ? <Navigation size={18} /> : <Locate size={18} />}
       </button>
 
       {/* Floating Back Button */}

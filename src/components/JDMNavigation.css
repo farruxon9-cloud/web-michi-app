@@ -1029,12 +1029,23 @@
   height: 14px;
 }
 
+/* Top-down vehicle shape container */
+.vehicle-topdown {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(26, 115, 232, 0.3);
+  overflow: hidden;
+  position: relative;
+}
+
 /* Glowing vehicle marker pulse */
 .custom-map-marker.vehicle .marker-pulse {
   position: absolute;
-  width: 36px;
-  height: 36px;
-  background-color: rgba(191, 90, 242, 0.25);
+  width: 50px;
+  height: 50px;
+  background-color: rgba(26, 115, 232, 0.2);
   border-radius: 50%;
   animation: markerPulseRing 1.8s infinite ease-out;
 }
@@ -1042,6 +1053,11 @@
 @keyframes markerPulseRing {
   0% { transform: scale(0.4); opacity: 1; }
   100% { transform: scale(1.1); opacity: 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(48, 209, 88, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(48, 209, 88, 0.9); }
 }
 
 /* Elegant Text tags for map markers */
