@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike, Plus, Trash2, Bookmark, X, Save, ChevronDown, ChevronUp } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
-import * as maplibregl from 'maplibre-gl';
+import { Map, Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './JDMNavigation.css';
 
@@ -258,7 +258,7 @@ export default function JDMNavigation({ onBack }) {
   // Initialize MapLibre Map
   useEffect(() => {
     if (mapContainerRef.current && !mapInstanceRef.current) {
-      mapInstanceRef.current = new maplibregl.Map({
+      mapInstanceRef.current = new Map({
         container: mapContainerRef.current,
         style: 'https://tiles.openfreemap.org/styles/liberty',
         center: [139.7741, 35.6841], // Tokyo center [lng, lat]
@@ -351,7 +351,7 @@ export default function JDMNavigation({ onBack }) {
       el.className = 'custom-leaflet-icon-wrapper';
       el.innerHTML = `<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startCoord.name.split(' ')[1] || startCoord.name.split(',')[0]}</span></div>`;
 
-      const m = new maplibregl.Marker({ element: el })
+      const m = new Marker({ element: el })
         .setLngLat([startCoord.lng, startCoord.lat])
         .addTo(mapInstanceRef.current);
       activeMarkersRef.current.push(m);
@@ -365,7 +365,7 @@ export default function JDMNavigation({ onBack }) {
         el.className = 'custom-leaflet-icon-wrapper';
         el.innerHTML = `<div class="custom-map-marker warning"><div class="marker-dot" style="background-color: #FF9500;"></div><span class="marker-label">Stop ${index + 1}</span></div>`;
 
-        const m = new maplibregl.Marker({ element: el })
+        const m = new Marker({ element: el })
           .setLngLat([stop.coord.lng, stop.coord.lat])
           .addTo(mapInstanceRef.current);
         activeMarkersRef.current.push(m);
@@ -379,7 +379,7 @@ export default function JDMNavigation({ onBack }) {
       el.className = 'custom-leaflet-icon-wrapper';
       el.innerHTML = `<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destCoord.name.split(' ')[1] || destCoord.name.split(',')[0]}</span></div>`;
 
-      const m = new maplibregl.Marker({ element: el })
+      const m = new Marker({ element: el })
         .setLngLat([destCoord.lng, destCoord.lat])
         .addTo(mapInstanceRef.current);
       activeMarkersRef.current.push(m);
@@ -787,7 +787,7 @@ export default function JDMNavigation({ onBack }) {
       el.className = 'custom-leaflet-icon-wrapper';
       el.innerHTML = htmlContent;
       
-      simMarkerRef.current = new maplibregl.Marker({ element: el })
+      simMarkerRef.current = new Marker({ element: el })
         .setLngLat([currentStep.lng, currentStep.lat])
         .addTo(mapInstanceRef.current);
     }
