@@ -6,9 +6,9 @@
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 50 ta
+* **Jami skanerlangan fayllar:** 51 ta
 * **Komponentlar soni:** 39 ta
-* **Yordamchi funksiyalar (utils):** 6 ta
+* **Yordamchi funksiyalar (utils):** 7 ta
 
 ---
 
@@ -222,7 +222,7 @@
   - *Bog'liqliklar mavjud emas*
 
 ### 📦 [JDMNavigation.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1726 qator, 76385 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1800 qator, 81209 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
 * **Import qilgan bog'liqliklari:**
@@ -231,6 +231,7 @@
   - `lucide-react`
   - `../utils/haptics`
   - `maplibre-gl`
+  - `../utils/mlitRestrictions`
 
 ### 📦 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
 * **Fayl yo'li:** `src/components/JDMNavigation.test.jsx` (92 qator, 2461 bayt)
@@ -532,6 +533,10 @@
 ### ⚙️ [japaneseEra.test.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/japaneseEra.test.js)
 * **Yo'li:** `src/utils/japaneseEra.test.js` (62 qator)
 * **Importlari:** `vitest`, `./japaneseEra`
+
+### ⚙️ [mlitRestrictions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/mlitRestrictions.js)
+* **Yo'li:** `src/utils/mlitRestrictions.js` (157 qator)
+* **Importlari:** *Yo'q*
 
 ### ⚙️ [resumeGenerator.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/resumeGenerator.js)
 * **Yo'li:** `src/utils/resumeGenerator.js` (554 qator)

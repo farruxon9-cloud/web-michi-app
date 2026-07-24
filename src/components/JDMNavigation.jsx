@@ -5,6 +5,7 @@ import { playHapticClick } from '../utils/haptics';
 import { Map, Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './JDMNavigation.css';
+import { checkClearanceLimits } from '../utils/mlitRestrictions';
 
 // Predefined JDM hubs with actual coordinates in Tokyo/Kanagawa/Chiba
 const NODES = {
@@ -721,83 +722,83 @@ export default function JDMNavigation({ onBack }) {
 
     try {
       const coordsString = points.map(p => `${p.lng},${p.lat}`).join(';');
-      const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`);
+      // Request alternatives=true to find detour bypassing restrictions
+      const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson&alternatives=true`);
       const data = await res.json();
 
       if (data.routes && data.routes.length > 0) {
-        const routeData = data.routes[0];
-        const distanceKm = parseFloat((routeData.distance / 1000).toFixed(1));
-        const timeMin = Math.round(routeData.duration / 60);
-        const geojsonCoordinates = routeData.geometry.coordinates.map(c => [c[1], c[0]]);
+        let selectedRoute = null;
+        let selectedGeoCoordinates = null;
+        let selectedStatus = 'blocked';
+        let selectedWarnings = [];
+        let detourApplied = false;
 
-        // Check truck clearance limit conflicts
-        let status = 'safe';
-        let warnings = [];
+        // Iterate through all alternative routes to find a safer one
+        for (let rIdx = 0; rIdx < data.routes.length; rIdx++) {
+          const currentRoute = data.routes[rIdx];
+          const geojsonCoordinates = currentRoute.geometry.coordinates.map(c => [c[1], c[0]]);
+          const { status, warnings } = checkClearanceLimits(geojsonCoordinates, height, width, weight, currentLang);
 
-        // Height check
-        if (height > 3.0) {
-          const nearMatsudo = geojsonCoordinates.some(coord => {
-            const dist = getDistanceFromLatLng(coord[0], coord[1], 35.7915, 139.9015);
-            return dist < 2.5;
-          });
-          if (nearMatsudo) {
-            status = 'warning';
-            warnings.push(currentLang === 'ja'
-              ? '【車高注意】金町高架下（高さ制限3.0m）の付近を通過します。迂回ルートに移行。'
-              : 'Height Warning: Near Kanamachi low bridge (3.0m Height Limit)!'
-            );
+          // Best case: completely safe route
+          if (status === 'safe') {
+            selectedRoute = currentRoute;
+            selectedGeoCoordinates = geojsonCoordinates;
+            selectedStatus = status;
+            selectedWarnings = warnings;
+            if (rIdx > 0) detourApplied = true;
+            break;
+          }
+
+          // Fallback case: warning route is better than blocked
+          if (status === 'warning' && selectedStatus !== 'safe') {
+            selectedRoute = currentRoute;
+            selectedGeoCoordinates = geojsonCoordinates;
+            selectedStatus = status;
+            selectedWarnings = warnings;
+            if (rIdx > 0) detourApplied = true;
           }
         }
 
-        // Width check
-        if (width > 2.2) {
-          const nearShinjuku = geojsonCoordinates.some(coord => {
-            const dist = getDistanceFromLatLng(coord[0], coord[1], 35.6909, 139.7003);
-            return dist < 1.8;
-          });
-          if (nearShinjuku) {
-            status = 'blocked';
-            warnings.push(currentLang === 'ja'
-              ? '【車幅制限】新宿通り（制限2.2m）の車幅制限区域に入ります。運行不可！'
-              : 'Blocked: Route violates Shinjuku width constraints (2.2m limit)!'
-            );
-          }
+        // If no safe or warning route was found, use the default route (route 0)
+        if (!selectedRoute) {
+          selectedRoute = data.routes[0];
+          selectedGeoCoordinates = selectedRoute.geometry.coordinates.map(c => [c[1], c[0]]);
+          const { status, warnings } = checkClearanceLimits(selectedGeoCoordinates, height, width, weight, currentLang);
+          selectedStatus = status;
+          selectedWarnings = warnings;
         }
 
-        // Weight check
-        if (weight > 12.0) {
-          const nearNihonbashi = geojsonCoordinates.some(coord => {
-            const dist = getDistanceFromLatLng(coord[0], coord[1], 35.6841, 139.7741);
-            return dist < 1.2;
-          });
-          if (nearNihonbashi) {
-            status = 'warning';
-            warnings.push(currentLang === 'ja'
-              ? '【総重量規制】日本橋中央通り高架橋（12.0t制限）の重量規制を検知。'
-              : 'Weight Warning: Passes Nihonbashi highway weight limit (12t limit).'
-            );
-          }
+        const distanceKm = parseFloat((selectedRoute.distance / 1000).toFixed(1));
+        const timeMin = Math.round(selectedRoute.duration / 60);
+
+        // Prepend success detour warning message if bypassed successfully
+        if (detourApplied) {
+          const detourMsg = currentLang === 'ja'
+            ? '🛡️【迂回ルート適用】MLIT高さ/重量制限エリアを自動回避しました。'
+            : '🛡️ Detour Applied: Safely bypassed MLIT clearance limits.';
+          selectedWarnings = [{ id: 'detour_success', message: detourMsg, status: 'success' }, ...selectedWarnings];
         }
 
-        const polylineColor = status === 'blocked' ? '#FF453A' : status === 'warning' ? '#FF9500' : '#0A84FF';
-        drawRouteOnMap(geojsonCoordinates, polylineColor);
+        const polylineColor = selectedStatus === 'blocked' ? '#FF453A' : selectedStatus === 'warning' ? '#FF9500' : '#0A84FF';
+        drawRouteOnMap(selectedGeoCoordinates, polylineColor);
 
         setRoute({
-          status,
+          status: selectedStatus,
           distance: distanceKm,
           time: timeMin,
-          coordinates: geojsonCoordinates,
-          warnings,
+          coordinates: selectedGeoCoordinates,
+          warnings: selectedWarnings.map(w => w.message || w),
+          rawWarnings: selectedWarnings,
           edgesUsed: []
         });
 
         // Set simulation steps
         const stepCount = 7;
         const steps = [];
-        const interval = Math.floor(geojsonCoordinates.length / stepCount) || 1;
+        const interval = Math.floor(selectedGeoCoordinates.length / stepCount) || 1;
         for (let i = 0; i < stepCount; i++) {
-          const idx = Math.min(i * interval, geojsonCoordinates.length - 1);
-          const coord = geojsonCoordinates[idx];
+          const idx = Math.min(i * interval, selectedGeoCoordinates.length - 1);
+          const coord = selectedGeoCoordinates[idx];
           steps.push({
             lat: coord[0],
             lng: coord[1],
@@ -848,7 +849,7 @@ export default function JDMNavigation({ onBack }) {
       calculateRoute();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startCoord, destCoord, stops, selectedVehicle, isMapLoaded]);
+  }, [startCoord, destCoord, stops, selectedVehicle, height, width, weight, isMapLoaded]);
 
   // Handle active vehicle marker during simulation step changes
   useEffect(() => {
@@ -1252,6 +1253,58 @@ export default function JDMNavigation({ onBack }) {
                 </span>
               </div>
 
+              {/* Custom Vehicle Specifications Controls */}
+              <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '8px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-secondary)' }}>
+                    {currentLang === 'ja' ? '車高 (m)' : 'Height (m)'}
+                  </label>
+                  <input
+                    type="number"
+                    min="1.0"
+                    max="5.0"
+                    step="0.05"
+                    value={height}
+                    onChange={e => {
+                      setHeight(parseFloat(e.target.value) || 0);
+                    }}
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '4px 6px', fontSize: '11px', color: 'var(--text-main)', width: '100%', outline: 'none' }}
+                  />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-secondary)' }}>
+                    {currentLang === 'ja' ? '車幅 (m)' : 'Width (m)'}
+                  </label>
+                  <input
+                    type="number"
+                    min="1.0"
+                    max="3.0"
+                    step="0.05"
+                    value={width}
+                    onChange={e => {
+                      setWidth(parseFloat(e.target.value) || 0);
+                    }}
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '4px 6px', fontSize: '11px', color: 'var(--text-main)', width: '100%', outline: 'none' }}
+                  />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-secondary)' }}>
+                    {currentLang === 'ja' ? '総重量 (t)' : 'Weight (t)'}
+                  </label>
+                  <input
+                    type="number"
+                    min="0.5"
+                    max="50.0"
+                    step="0.1"
+                    value={weight}
+                    onChange={e => {
+                      setWeight(parseFloat(e.target.value) || 0);
+                    }}
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '4px 6px', fontSize: '11px', color: 'var(--text-main)', width: '100%', outline: 'none' }}
+                  />
+                </div>
+              </div>
+
               {/* Sequential Inputs Column */}
               <div className="nav-input-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 
@@ -1475,6 +1528,8 @@ export default function JDMNavigation({ onBack }) {
                 </span>
                 {route.status === 'safe' ? (
                   <CheckCircle2 size={13} color="#30D158" />
+                ) : route.status === 'blocked' ? (
+                  <ShieldAlert size={13} color="#FF453A" style={{ filter: 'drop-shadow(0 0 4px rgba(255, 69, 58, 0.6))' }} />
                 ) : (
                   <ShieldAlert size={13} color="#FF9500" />
                 )}
@@ -1491,8 +1546,18 @@ export default function JDMNavigation({ onBack }) {
 
               {/* Mini Warnings list if any */}
               {route.warnings.length > 0 && (
-                <span style={{ fontSize: '9.5px', color: '#FF453A', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
-                  <AlertTriangle size={10} /> {route.warnings[0]}
+                <span style={{ 
+                  fontSize: '9.5px', 
+                  color: route.warnings[0].includes('🛡️') ? '#30D158' : (route.status === 'blocked' ? '#FF453A' : '#FF9500'), 
+                  fontWeight: '800', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '4px', 
+                  marginTop: '2px',
+                  textShadow: route.warnings[0].includes('🛡️') ? '0 0 6px rgba(48,209,88,0.2)' : (route.status === 'blocked' ? '0 0 6px rgba(255,69,58,0.2)' : 'none')
+                }}>
+                  {route.warnings[0].includes('🛡️') ? <CheckCircle2 size={10} /> : <AlertTriangle size={10} />}
+                  <span>{route.warnings[0]}</span>
                 </span>
               )}
             </div>
@@ -1532,8 +1597,17 @@ export default function JDMNavigation({ onBack }) {
               {currentLang === 'ja' ? `次のチェックポイント: ${currentStep?.landmark || 'デポ'}` : `Next Checkpoint: ${currentStep?.landmark || 'Depot'}`}
             </span>
           </div>
-          <div style={{ fontSize: '8px', background: 'rgba(48,209,88,0.2)', color: '#30D158', padding: '3px 6px', borderRadius: '6px', fontWeight: '900' }}>
-            {route.status === 'safe' ? 'SAFE' : 'DETOUR'}
+          <div style={{ 
+            fontSize: '8px', 
+            background: route.status === 'safe' ? 'rgba(48,209,88,0.2)' : (route.status === 'blocked' ? 'rgba(255,69,58,0.2)' : 'rgba(255,149,0,0.2)'), 
+            color: route.status === 'safe' ? '#30D158' : (route.status === 'blocked' ? '#FF453A' : '#FF9500'), 
+            padding: '3.5px 7px', 
+            borderRadius: '6px', 
+            fontWeight: '900',
+            border: `1px solid ${route.status === 'safe' ? 'rgba(48,209,88,0.2)' : (route.status === 'blocked' ? 'rgba(255,69,58,0.3)' : 'rgba(255,149,0,0.3)')}`,
+            boxShadow: route.status === 'blocked' ? '0 0 8px rgba(255,69,58,0.4)' : 'none'
+          }}>
+            {route.status === 'safe' ? 'SAFE' : (route.status === 'blocked' ? 'BLOCKED' : 'DETOUR')}
           </div>
         </div>
       )}
