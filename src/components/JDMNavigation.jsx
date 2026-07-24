@@ -482,7 +482,7 @@ export default function JDMNavigation({ onBack }) {
       const startLabel = startCoord.name ? cleanLabel(startCoord.name.split(',')[0]) : '';
       const el = createMarkerElement(`<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startLabel}</span></div>`);
 
-      const m = new Marker({ element: el })
+      const m = new Marker({ element: el, rotationAlignment: 'viewport' })
         .setLngLat([startCoord.lng, startCoord.lat])
         .addTo(mapInstanceRef.current);
       activeMarkersRef.current.push(m);
@@ -495,7 +495,7 @@ export default function JDMNavigation({ onBack }) {
         const stopLabel = stop.coord.name ? cleanLabel(stop.coord.name.split(',')[0]) : `Stop ${index + 1}`;
         const el = createMarkerElement(`<div class="custom-map-marker warning"><div class="marker-dot" style="background-color: #FF9500;"></div><span class="marker-label">${stopLabel}</span></div>`);
 
-        const m = new Marker({ element: el })
+        const m = new Marker({ element: el, rotationAlignment: 'viewport' })
           .setLngLat([stop.coord.lng, stop.coord.lat])
           .addTo(mapInstanceRef.current);
         activeMarkersRef.current.push(m);
@@ -508,7 +508,7 @@ export default function JDMNavigation({ onBack }) {
       const destLabel = destCoord.name ? cleanLabel(destCoord.name.split(',')[0]) : '';
       const el = createMarkerElement(`<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destLabel}</span></div>`);
 
-      const m = new Marker({ element: el })
+      const m = new Marker({ element: el, rotationAlignment: 'viewport' })
         .setLngLat([destCoord.lng, destCoord.lat])
         .addTo(mapInstanceRef.current);
       activeMarkersRef.current.push(m);
@@ -913,10 +913,11 @@ export default function JDMNavigation({ onBack }) {
     
     const vehicleLabelText = currentLang === 'ja' ? activeVehicle?.jaShort : activeVehicle?.short;
 
+    const rotation = mapOrientation === 'north' ? heading : 0;
     const htmlContent = `
-      <div class="custom-map-marker vehicle" style="transform: rotate(${mapOrientation === 'north' ? heading : 0}deg); transition: transform 0.3s ease;">
+      <div class="custom-map-marker vehicle">
         <div class="marker-pulse"></div>
-        <div class="marker-dot" style="${markerDotStyle}">
+        <div class="marker-dot" style="${markerDotStyle} transform: rotate(${rotation}deg); transition: transform 0.3s ease;">
           <div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 7px solid #fff; position: absolute; top: -8px;"></div>
         </div>
         <span class="marker-label" style="white-space: nowrap;">${vehicleEmoji} ${vehicleLabelText}</span>
@@ -937,7 +938,7 @@ export default function JDMNavigation({ onBack }) {
       el.style.overflow = 'visible';
       el.innerHTML = htmlContent;
       
-      simMarkerRef.current = new Marker({ element: el })
+      simMarkerRef.current = new Marker({ element: el, rotationAlignment: 'viewport' })
         .setLngLat([currentStep.lng, currentStep.lat])
         .addTo(mapInstanceRef.current);
     }
