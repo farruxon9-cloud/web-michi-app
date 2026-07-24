@@ -496,17 +496,21 @@ export default function JDMNavigation({ onBack }) {
         const minLat = Math.min(...lats);
         const maxLat = Math.max(...lats);
 
+        const fitPadding = isSettingsCollapsed 
+          ? { top: 120, bottom: 240, left: 40, right: 40 }
+          : { top: 340, bottom: 280, left: 50, right: 50 };
+
         mapInstanceRef.current.fitBounds([
           [minLng, minLat],
           [maxLng, maxLat]
         ], { 
-          padding: { top: 340, bottom: 280, left: 50, right: 50 }, 
+          padding: fitPadding, 
           maxZoom: 15 
         });
       } catch (e) {}
     }
 
-  }, [startCoord, destCoord, stops, isMapLoaded]);
+  }, [startCoord, destCoord, stops, isMapLoaded, isSettingsCollapsed]);
 
   // Handle vehicle selection
   const handleVehicleSelect = (key) => {
@@ -647,11 +651,15 @@ export default function JDMNavigation({ onBack }) {
         const minLat = Math.min(...lats);
         const maxLat = Math.max(...lats);
 
+        const fitPadding = isSettingsCollapsed 
+          ? { top: 120, bottom: 240, left: 40, right: 40 }
+          : { top: 340, bottom: 280, left: 50, right: 50 };
+
         map.fitBounds([
           [minLng, minLat],
           [maxLng, maxLat]
         ], { 
-          padding: { top: 340, bottom: 280, left: 50, right: 50 }, 
+          padding: fitPadding, 
           maxZoom: 15 
         });
       } catch (e) {}
@@ -792,6 +800,7 @@ export default function JDMNavigation({ onBack }) {
       })));
     }
 
+    setIsSettingsCollapsed(true);
     setIsCalculating(false);
   };
 
