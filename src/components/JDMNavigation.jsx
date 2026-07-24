@@ -361,7 +361,7 @@ export default function JDMNavigation({ onBack }) {
         const activeBearing = mapOrientation === 'north' ? 0 : heading;
         const activePitch = mapOrientation === 'north' ? 0 : 45;
 
-        const offsetDistance = 115; // meters ahead
+        const offsetDistance = 0; // centered exactly on vehicle
         const R = 6378137;
         const effHeading = mapOrientation === 'north' ? 0 : heading;
         const headingRad = effHeading * Math.PI / 180;
@@ -878,8 +878,8 @@ export default function JDMNavigation({ onBack }) {
       mapContainerRef.current.style.setProperty('--map-bearing', `${activeBearing}deg`);
     }
 
-    // Offset map center 115 meters ahead along the heading vector (or straight North for North-Up) to keep the vehicle in the bottom-middle of the screen
-    const offsetDistance = 115; // meters ahead
+    // Offset map center to keep the vehicle in the exact center of the screen
+    const offsetDistance = 0; 
     const R = 6378137;
     const effHeading = mapOrientation === 'north' ? 0 : heading;
     const headingRad = effHeading * Math.PI / 180;
