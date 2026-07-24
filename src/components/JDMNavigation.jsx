@@ -110,6 +110,7 @@ export default function JDMNavigation({ onBack }) {
 
   // States
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [mapErrorMsg, setMapErrorMsg] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState('elf_3t');
   const [height, setHeight] = useState(2.95);
   const [width, setWidth] = useState(2.18);
@@ -165,6 +166,12 @@ export default function JDMNavigation({ onBack }) {
         // Let's place it at bottom: 96px to leave a 12px gap above the tab bar.
         setGpsBottomOffset(96);
       }
+
+      if (mapInstanceRef.current && isMapLoaded) {
+        try {
+          mapInstanceRef.current.resize();
+        } catch (e) {}
+      }
     };
 
     updateGpsPosition();
@@ -184,7 +191,7 @@ export default function JDMNavigation({ onBack }) {
       clearTimeout(timeoutId);
       if (resizeObserver) resizeObserver.disconnect();
     };
-  }, [isNavigating, route, showSimControls, startCoord, destCoord, stops]);
+  }, [isNavigating, route, showSimControls, startCoord, destCoord, stops, isMapLoaded]);
 
   // Helper to get active heading angle
   const getActiveHeading = () => {
@@ -258,17 +265,34 @@ export default function JDMNavigation({ onBack }) {
   // Initialize MapLibre Map
   useEffect(() => {
     if (mapContainerRef.current && !mapInstanceRef.current) {
-      mapInstanceRef.current = new Map({
-        container: mapContainerRef.current,
-        style: 'https://tiles.openfreemap.org/styles/liberty',
-        center: [139.7741, 35.6841], // Tokyo center [lng, lat]
-        zoom: 11,
-        attributionControl: false
-      });
+      try {
+        mapInstanceRef.current = new Map({
+          container: mapContainerRef.current,
+          style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+          center: [139.7741, 35.6841], // Tokyo center [lng, lat]
+          zoom: 11,
+          attributionControl: false
+        });
 
-      mapInstanceRef.current.on('load', () => {
-        setIsMapLoaded(true);
-      });
+        mapInstanceRef.current.on('load', () => {
+          setIsMapLoaded(true);
+          setTimeout(() => {
+            if (mapInstanceRef.current) mapInstanceRef.current.resize();
+          }, 100);
+        });
+
+        mapInstanceRef.current.on('error', (e) => {
+          console.error('MapLibre GL error event:', e);
+          if (e && e.error && e.error.message) {
+            setMapErrorMsg(prev => prev ? prev : `MapLibre error: ${e.error.message}`);
+          } else if (e && e.message) {
+            setMapErrorMsg(prev => prev ? prev : `MapLibre error: ${e.message}`);
+          }
+        });
+      } catch (err) {
+        console.error('MapLibre GL Map initialization failed:', err);
+        setMapErrorMsg(`MapLibre initialization failed: ${err.message || err}`);
+      }
     }
 
     return () => {
@@ -1432,6 +1456,46 @@ export default function JDMNavigation({ onBack }) {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {mapErrorMsg && (
+        <div style={{
+          position: 'absolute',
+          top: '40%',
+          left: '20px',
+          right: '20px',
+          zIndex: 99999,
+          background: 'rgba(255, 69, 58, 0.95)',
+          color: '#fff',
+          padding: '16px',
+          borderRadius: '12px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+          fontFamily: 'monospace',
+          fontSize: '11px',
+          wordBreak: 'break-all'
+        }}>
+          <strong style={{ display: 'block', fontSize: '12.5px', marginBottom: '4px' }}>⚠️ Map rendering error:</strong>
+          <p style={{ margin: '0 0 12px 0', lineHeight: '1.4' }}>{mapErrorMsg}</p>
+          <button 
+            type="button"
+            onClick={() => {
+              setMapErrorMsg(null);
+              window.location.reload();
+            }}
+            style={{
+              background: '#fff',
+              color: '#FF453A',
+              border: 'none',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              fontWeight: '900',
+              cursor: 'pointer',
+              fontSize: '10.5px'
+            }}
+          >
+            Reload Page
+          </button>
         </div>
       )}
 
