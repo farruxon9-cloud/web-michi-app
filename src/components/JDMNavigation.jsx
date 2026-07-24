@@ -446,7 +446,8 @@ export default function JDMNavigation({ onBack }) {
 
     // Start marker
     if (startCoord) {
-      const el = createMarkerElement(`<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startCoord.name.split(' ')[1] || startCoord.name.split(',')[0]}</span></div>`);
+      const startLabel = startCoord.name ? startCoord.name.split(',')[0] : '';
+      const el = createMarkerElement(`<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startLabel}</span></div>`);
 
       const m = new Marker({ element: el })
         .setLngLat([startCoord.lng, startCoord.lat])
@@ -458,7 +459,8 @@ export default function JDMNavigation({ onBack }) {
     // Intermediate stops markers (orange color coding)
     stops.forEach((stop, index) => {
       if (stop.coord) {
-        const el = createMarkerElement(`<div class="custom-map-marker warning"><div class="marker-dot" style="background-color: #FF9500;"></div><span class="marker-label">Stop ${index + 1}</span></div>`);
+        const stopLabel = stop.coord.name ? stop.coord.name.split(',')[0] : `Stop ${index + 1}`;
+        const el = createMarkerElement(`<div class="custom-map-marker warning"><div class="marker-dot" style="background-color: #FF9500;"></div><span class="marker-label">${stopLabel}</span></div>`);
 
         const m = new Marker({ element: el })
           .setLngLat([stop.coord.lng, stop.coord.lat])
@@ -470,7 +472,8 @@ export default function JDMNavigation({ onBack }) {
 
     // Destination marker
     if (destCoord) {
-      const el = createMarkerElement(`<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destCoord.name.split(' ')[1] || destCoord.name.split(',')[0]}</span></div>`);
+      const destLabel = destCoord.name ? destCoord.name.split(',')[0] : '';
+      const el = createMarkerElement(`<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destLabel}</span></div>`);
 
       const m = new Marker({ element: el })
         .setLngLat([destCoord.lng, destCoord.lat])
@@ -491,7 +494,10 @@ export default function JDMNavigation({ onBack }) {
         mapInstanceRef.current.fitBounds([
           [minLng, minLat],
           [maxLng, maxLat]
-        ], { padding: 45, maxZoom: 15 });
+        ], { 
+          padding: { top: 190, bottom: 240, left: 40, right: 40 }, 
+          maxZoom: 15 
+        });
       } catch (e) {}
     }
 
@@ -639,7 +645,10 @@ export default function JDMNavigation({ onBack }) {
         map.fitBounds([
           [minLng, minLat],
           [maxLng, maxLat]
-        ], { padding: 45, maxZoom: 15 });
+        ], { 
+          padding: { top: 190, bottom: 240, left: 40, right: 40 }, 
+          maxZoom: 15 
+        });
       } catch (e) {}
     }
   };
