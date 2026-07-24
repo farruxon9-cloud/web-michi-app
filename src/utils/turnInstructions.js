@@ -1,0 +1,271 @@
+/**
+ * OSRM Turn-by-Turn Instruction Parser & Japanese Maneuver Translator
+ * 
+ * Converts OSRM step maneuvers into rich Japanese navigation instructions
+ * with proper turn angle classification, distance formatting, and landmark hints.
+ * 
+ * Based on OSRM v5 API maneuver types:
+ * https://project-osrm.org/docs/v5.24.0/api/#stepmaneuver-object
+ */
+
+// OSRM maneuver type → Japanese instruction mapping
+const MANEUVER_TYPE_JA = {
+  'turn':           { base: '曲がる',     icon: '↗' },
+  'new name':       { base: '道なりに進む', icon: '↑' },
+  'depart':         { base: '出発',       icon: '🚀' },
+  'arrive':         { base: '到着',       icon: '🏁' },
+  'merge':          { base: '合流',       icon: '⤵' },
+  'on ramp':        { base: 'ランプに入る', icon: '⤴' },
+  'off ramp':       { base: 'ランプを降りる', icon: '⤵' },
+  'fork':           { base: '分岐',       icon: '⑂' },
+  'end of road':    { base: '突き当たり',  icon: '⊥' },
+  'continue':       { base: '直進',       icon: '↑' },
+  'roundabout':     { base: 'ロータリー',  icon: '⟳' },
+  'rotary':         { base: 'ロータリー',  icon: '⟳' },
+  'roundabout turn':{ base: 'ロータリー',  icon: '⟳' },
+  'notification':   { base: '注意',       icon: '⚠' },
+  'exit roundabout':{ base: 'ロータリーを出る', icon: '↑' },
+  'exit rotary':    { base: 'ロータリーを出る', icon: '↑' }
+};
+
+// OSRM modifier → Japanese direction and turn arrow
+const MODIFIER_JA = {
+  'uturn':          { text: 'Uターン',     arrow: '↩',  arrowAngle: 180 },
+  'sharp right':    { text: '大きく右折',   arrow: '↪',  arrowAngle: 135 },
+  'right':          { text: '右折',        arrow: '→',  arrowAngle: 90 },
+  'slight right':   { text: '斜め右方向',   arrow: '↗',  arrowAngle: 45 },
+  'straight':       { text: '直進',        arrow: '↑',  arrowAngle: 0 },
+  'slight left':    { text: '斜め左方向',   arrow: '↖',  arrowAngle: -45 },
+  'left':           { text: '左折',        arrow: '←',  arrowAngle: -90 },
+  'sharp left':     { text: '大きく左折',   arrow: '↙',  arrowAngle: -135 }
+};
+
+/**
+ * Calculate the forward azimuth (bearing) between two geographic points
+ * @param {number} lat1 - Start latitude in degrees
+ * @param {number} lng1 - Start longitude in degrees
+ * @param {number} lat2 - End latitude in degrees
+ * @param {number} lng2 - End longitude in degrees
+ * @returns {number} Bearing in degrees (0-360)
+ */
+export function calculateBearing(lat1, lng1, lat2, lng2) {
+  const toRad = (deg) => deg * Math.PI / 180;
+  const toDeg = (rad) => rad * 180 / Math.PI;
+  
+  const dLon = toRad(lng2 - lng1);
+  const phi1 = toRad(lat1);
+  const phi2 = toRad(lat2);
+  
+  const y = Math.sin(dLon) * Math.cos(phi2);
+  const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLon);
+  
+  return (toDeg(Math.atan2(y, x)) + 360) % 360;
+}
+
+/**
+ * Classify a relative turn angle into a maneuver direction
+ * @param {number} deltaTheta - Relative turn angle in degrees (0-360)
+ * @returns {{ direction: string, arrow: string, arrowAngle: number }}
+ */
+export function classifyTurnAngle(deltaTheta) {
+  // Normalize to 0-360
+  const angle = ((deltaTheta % 360) + 360) % 360;
+  
+  if (angle >= 340 || angle < 20)   return MODIFIER_JA['straight'];
+  if (angle >= 20 && angle < 45)    return MODIFIER_JA['slight right'];
+  if (angle >= 45 && angle < 135)   return MODIFIER_JA['right'];
+  if (angle >= 135 && angle < 179)  return MODIFIER_JA['sharp right'];
+  if (angle >= 179 && angle <= 181) return MODIFIER_JA['uturn'];
+  if (angle > 181 && angle <= 225)  return MODIFIER_JA['sharp left'];
+  if (angle > 225 && angle <= 315)  return MODIFIER_JA['left'];
+  if (angle > 315 && angle < 340)   return MODIFIER_JA['slight left'];
+  
+  return MODIFIER_JA['straight'];
+}
+
+/**
+ * Format distance for Japanese navigation display
+ * @param {number} meters - Distance in meters
+ * @returns {string} Formatted distance string
+ */
+export function formatDistanceJa(meters) {
+  if (meters < 10) return '';
+  if (meters < 100) return `${Math.round(meters / 10) * 10}m`;
+  if (meters < 1000) return `${Math.round(meters / 50) * 50}m`;
+  return `${(meters / 1000).toFixed(1)}km`;
+}
+
+/**
+ * Build a rich Japanese instruction string from an OSRM step
+ * @param {Object} step - OSRM route step object
+ * @returns {string} Human-readable Japanese instruction
+ */
+function buildJapaneseInstruction(step) {
+  const maneuver = step.maneuver;
+  const type = maneuver.type || 'turn';
+  const modifier = maneuver.modifier || 'straight';
+  const roadName = step.name || '';
+  
+  // Get base type info
+  const typeInfo = MANEUVER_TYPE_JA[type] || MANEUVER_TYPE_JA['turn'];
+  const modInfo = MODIFIER_JA[modifier] || MODIFIER_JA['straight'];
+  
+  // Special cases
+  if (type === 'depart') {
+    return roadName ? `${roadName}を出発` : '出発します';
+  }
+  
+  if (type === 'arrive') {
+    return '目的地に到着しました';
+  }
+  
+  if (type === 'roundabout' || type === 'rotary') {
+    const exit = maneuver.exit || 1;
+    const exitText = ['', '第1', '第2', '第3', '第4', '第5'][Math.min(exit, 5)];
+    return roadName
+      ? `ロータリー${exitText}出口、${roadName}方面へ`
+      : `ロータリー${exitText}出口を出る`;
+  }
+  
+  if (type === 'merge') {
+    return roadName ? `${roadName}に合流` : '合流します';
+  }
+  
+  if (type === 'on ramp') {
+    return roadName ? `${roadName}のランプに入る` : 'ランプに入ります';
+  }
+  
+  if (type === 'off ramp') {
+    return roadName ? `${roadName}のランプを降りる` : 'ランプを降ります';
+  }
+  
+  if (type === 'fork') {
+    return roadName
+      ? `${modInfo.text}、${roadName}方面へ`
+      : `分岐を${modInfo.text}`;
+  }
+  
+  if (type === 'end of road') {
+    return roadName
+      ? `突き当たりを${modInfo.text}、${roadName}へ`
+      : `突き当たりを${modInfo.text}`;
+  }
+  
+  if (type === 'new name' || type === 'continue') {
+    if (modifier === 'straight') {
+      return roadName ? `${roadName}を道なりに直進` : '道なりに直進';
+    }
+    return roadName
+      ? `${modInfo.text}して${roadName}へ`
+      : `${modInfo.text}して道なりに進む`;
+  }
+  
+  // Default turn instruction
+  if (roadName) {
+    return `${roadName}を${modInfo.text}`;
+  }
+  return modInfo.text;
+}
+
+/**
+ * Parse OSRM route response legs/steps into rich navigation step objects
+ * 
+ * @param {Object} osrmRoute - Single OSRM route object with legs[].steps[]
+ * @param {Array} routeCoordinates - Full route coordinates [[lat, lng], ...]
+ * @returns {Array} Array of navigation step objects
+ */
+export function parseOSRMSteps(osrmRoute) {
+  if (!osrmRoute?.legs) return [];
+  
+  const navSteps = [];
+  
+  for (const leg of osrmRoute.legs) {
+    if (!leg.steps) continue;
+    
+    for (let i = 0; i < leg.steps.length; i++) {
+      const step = leg.steps[i];
+      const maneuver = step.maneuver;
+      
+      if (!maneuver || !maneuver.location) continue;
+      
+      // Skip zero-distance steps (except depart/arrive)
+      if (step.distance < 1 && maneuver.type !== 'depart' && maneuver.type !== 'arrive') continue;
+      
+      const modifier = maneuver.modifier || 'straight';
+      const modInfo = MODIFIER_JA[modifier] || MODIFIER_JA['straight'];
+      const typeInfo = MANEUVER_TYPE_JA[maneuver.type] || MANEUVER_TYPE_JA['turn'];
+      
+      // Build the instruction text
+      const jaText = buildJapaneseInstruction(step);
+      
+      // Distance to next maneuver
+      const distanceToNext = step.distance || 0;
+      const durationToNext = step.duration || 0;
+      
+      // Speed annotation (from step speed if available)
+      const speedLimit = step.speed_limit 
+        ? Math.round(step.speed_limit * 3.6) // m/s to km/h
+        : (step.distance > 0 && step.duration > 0 
+          ? Math.min(Math.round((step.distance / step.duration) * 3.6), 100)
+          : 50);
+      
+      navSteps.push({
+        lat: maneuver.location[1],        // OSRM returns [lng, lat]
+        lng: maneuver.location[0],
+        text: step.name || 'Continue',
+        jaText: jaText,
+        roadName: step.name || '',
+        landmark: step.ref || step.destinations || '',
+        maneuverType: maneuver.type,
+        modifier: modifier,
+        arrow: modInfo.arrow,
+        arrowAngle: modInfo.arrowAngle,
+        icon: typeInfo.icon,
+        bearingBefore: maneuver.bearing_before || 0,
+        bearingAfter: maneuver.bearing_after || 0,
+        distanceToNext: distanceToNext,
+        distanceToNextFormatted: formatDistanceJa(distanceToNext),
+        durationToNext: durationToNext,
+        speedLimit: speedLimit,
+        exit: maneuver.exit || null
+      });
+    }
+  }
+  
+  return navSteps;
+}
+
+/**
+ * Calculate the remaining distance from a given step to the end of the route
+ * @param {Array} navSteps - All navigation steps
+ * @param {number} currentIndex - Current step index
+ * @returns {{ remainingDistance: number, remainingTime: number }}
+ */
+export function getRemainingMetrics(navSteps, currentIndex) {
+  let remainingDistance = 0;
+  let remainingTime = 0;
+  
+  for (let i = currentIndex; i < navSteps.length; i++) {
+    remainingDistance += navSteps[i].distanceToNext || 0;
+    remainingTime += navSteps[i].durationToNext || 0;
+  }
+  
+  return {
+    remainingDistance,
+    remainingDistanceFormatted: formatDistanceJa(remainingDistance),
+    remainingTime: Math.round(remainingTime / 60) // in minutes
+  };
+}
+
+/**
+ * Get countdown text for approaching the next maneuver
+ * @param {number} distanceMeters - Distance to next maneuver in meters
+ * @returns {string} Japanese countdown guidance text
+ */
+export function getCountdownText(distanceMeters) {
+  if (distanceMeters > 1000) return `あと${(distanceMeters / 1000).toFixed(1)}km`;
+  if (distanceMeters > 500) return `あと${Math.round(distanceMeters / 100) * 100}m`;
+  if (distanceMeters > 100) return `あと${Math.round(distanceMeters / 50) * 50}m`;
+  if (distanceMeters > 30) return `あと${Math.round(distanceMeters / 10) * 10}m`;
+  return 'まもなく';
+}

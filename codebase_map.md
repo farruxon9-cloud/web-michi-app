@@ -6,9 +6,9 @@
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 51 ta
+* **Jami skanerlangan fayllar:** 54 ta
 * **Komponentlar soni:** 39 ta
-* **Yordamchi funksiyalar (utils):** 7 ta
+* **Yordamchi funksiyalar (utils):** 10 ta
 
 ---
 
@@ -222,7 +222,7 @@
   - *Bog'liqliklar mavjud emas*
 
 ### 📦 [JDMNavigation.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1800 qator, 81209 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1911 qator, 87016 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
 * **Import qilgan bog'liqliklari:**
@@ -232,6 +232,9 @@
   - `../utils/haptics`
   - `maplibre-gl`
   - `../utils/mlitRestrictions`
+  - `../utils/turnInstructions`
+  - `../utils/overpassRestrictions`
+  - `../utils/voiceGuidance`
 
 ### 📦 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
 * **Fayl yo'li:** `src/components/JDMNavigation.test.jsx` (92 qator, 2461 bayt)
@@ -538,9 +541,21 @@
 * **Yo'li:** `src/utils/mlitRestrictions.js` (157 qator)
 * **Importlari:** *Yo'q*
 
+### ⚙️ [overpassRestrictions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/overpassRestrictions.js)
+* **Yo'li:** `src/utils/overpassRestrictions.js` (393 qator)
+* **Importlari:** *Yo'q*
+
 ### ⚙️ [resumeGenerator.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/resumeGenerator.js)
 * **Yo'li:** `src/utils/resumeGenerator.js` (554 qator)
 * **Importlari:** `pdfmake/build/pdfmake`, `./japaneseEra`
+
+### ⚙️ [turnInstructions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/turnInstructions.js)
+* **Yo'li:** `src/utils/turnInstructions.js` (272 qator)
+* **Importlari:** *Yo'q*
+
+### ⚙️ [voiceGuidance.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/voiceGuidance.js)
+* **Yo'li:** `src/utils/voiceGuidance.js` (164 qator)
+* **Importlari:** *Yo'q*
 
 ### ⚙️ [voiceLexicon.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/voiceLexicon.js)
 * **Yo'li:** `src/utils/voiceLexicon.js` (384 qator)

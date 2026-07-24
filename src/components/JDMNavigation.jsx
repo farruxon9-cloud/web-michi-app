@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike, Plus, Trash2, Bookmark, X, Save, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike, Plus, Trash2, Bookmark, X, Save, ChevronDown, ChevronUp, Volume2, VolumeX } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import { Map, Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './JDMNavigation.css';
 import { checkClearanceLimits } from '../utils/mlitRestrictions';
+import { parseOSRMSteps, getRemainingMetrics, getCountdownText, formatDistanceJa } from '../utils/turnInstructions';
+import { fetchOverpassRestrictions, checkOverpassRestrictions, mergeRestrictionResults } from '../utils/overpassRestrictions';
+import { initVoiceGuidance, speakManeuver, speakArrival, toggleMute, isSpeechMuted, stopSpeech } from '../utils/voiceGuidance';
 
 // Predefined JDM hubs with actual coordinates in Tokyo/Kanagawa/Chiba
 const NODES = {
@@ -152,6 +155,7 @@ export default function JDMNavigation({ onBack }) {
   const [isSettingsCollapsed, setIsSettingsCollapsed] = useState(false);
   const [mapOrientation, setMapOrientation] = useState('heading'); // 'heading' (Head-Up) or 'north' (North-Up)
   const [isFollowingVehicle, setIsFollowingVehicle] = useState(true);
+  const [voiceMuted, setVoiceMuted] = useState(false);
 
   const bottomPanelRef = useRef(null);
   const [gpsBottomOffset, setGpsBottomOffset] = useState(96);
@@ -723,7 +727,7 @@ export default function JDMNavigation({ onBack }) {
     try {
       const coordsString = points.map(p => `${p.lng},${p.lat}`).join(';');
       // Request alternatives=true to find detour bypassing restrictions
-      const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson&alternatives=true`);
+      const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson&alternatives=true&steps=true&annotations=true`);
       const data = await res.json();
 
       if (data.routes && data.routes.length > 0) {
@@ -733,11 +737,33 @@ export default function JDMNavigation({ onBack }) {
         let selectedWarnings = [];
         let detourApplied = false;
 
+        // Fetch dynamic Overpass restrictions for the route area (uses first route's bbox)
+        const firstRouteCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+        let overpassData = [];
+        try {
+          overpassData = await fetchOverpassRestrictions(firstRouteCoords);
+        } catch (e) {
+          // Overpass fetch failed silently — continue with MLIT-only checks
+        }
+
+        const activeVehicle = VEHICLE_PRESETS[selectedVehicle];
+        const vehicleType = activeVehicle?.type || 'truck';
+
         // Iterate through all alternative routes to find a safer one
         for (let rIdx = 0; rIdx < data.routes.length; rIdx++) {
           const currentRoute = data.routes[rIdx];
           const geojsonCoordinates = currentRoute.geometry.coordinates.map(c => [c[1], c[0]]);
-          const { status, warnings } = checkClearanceLimits(geojsonCoordinates, height, width, weight, currentLang);
+          
+          // Check against static MLIT database
+          const mlitResult = checkClearanceLimits(geojsonCoordinates, height, width, weight, currentLang);
+          
+          // Check against dynamic Overpass restrictions
+          const overpassResult = checkOverpassRestrictions(
+            geojsonCoordinates, overpassData, height, width, weight, vehicleType
+          );
+          
+          // Merge both restriction check results
+          const { status, warnings } = mergeRestrictionResults(mlitResult, overpassResult);
 
           // Best case: completely safe route
           if (status === 'safe') {
@@ -763,9 +789,11 @@ export default function JDMNavigation({ onBack }) {
         if (!selectedRoute) {
           selectedRoute = data.routes[0];
           selectedGeoCoordinates = selectedRoute.geometry.coordinates.map(c => [c[1], c[0]]);
-          const { status, warnings } = checkClearanceLimits(selectedGeoCoordinates, height, width, weight, currentLang);
-          selectedStatus = status;
-          selectedWarnings = warnings;
+          const mlitFallback = checkClearanceLimits(selectedGeoCoordinates, height, width, weight, currentLang);
+          const overpassFallback = checkOverpassRestrictions(selectedGeoCoordinates, overpassData, height, width, weight, vehicleType);
+          const merged = mergeRestrictionResults(mlitFallback, overpassFallback);
+          selectedStatus = merged.status;
+          selectedWarnings = merged.warnings;
         }
 
         const distanceKm = parseFloat((selectedRoute.distance / 1000).toFixed(1));
@@ -792,24 +820,32 @@ export default function JDMNavigation({ onBack }) {
           edgesUsed: []
         });
 
-        // Set simulation steps
-        const stepCount = 7;
-        const steps = [];
-        const interval = Math.floor(selectedGeoCoordinates.length / stepCount) || 1;
-        for (let i = 0; i < stepCount; i++) {
-          const idx = Math.min(i * interval, selectedGeoCoordinates.length - 1);
-          const coord = selectedGeoCoordinates[idx];
-          steps.push({
-            lat: coord[0],
-            lng: coord[1],
-            text: `Proceed along Route (${(distanceKm * (i / stepCount)).toFixed(1)} km)`,
-            jaText: `ルートに沿って直進・交差点進行 (${(distanceKm * (i / stepCount)).toFixed(1)} km)`,
-            landmark: i === 0 ? 'Start Location' : i === stepCount - 1 ? 'Destination Depot' : 'Interstate junction',
-            speedLimit: 50,
-            signal: i % 3 === 0 ? 'green' : i % 3 === 1 ? 'red' : 'yellow'
-          });
+        // Parse real OSRM turn-by-turn steps from the selected route
+        const realSteps = parseOSRMSteps(selectedRoute);
+        if (realSteps.length > 0) {
+          setNavSteps(realSteps);
+        } else {
+          // Fallback: basic steps from coordinates if OSRM steps parsing fails
+          const stepCount = 7;
+          const fallbackSteps = [];
+          const interval = Math.floor(selectedGeoCoordinates.length / stepCount) || 1;
+          for (let i = 0; i < stepCount; i++) {
+            const idx = Math.min(i * interval, selectedGeoCoordinates.length - 1);
+            const coord = selectedGeoCoordinates[idx];
+            fallbackSteps.push({
+              lat: coord[0], lng: coord[1],
+              text: `Proceed (${(distanceKm * (i / stepCount)).toFixed(1)} km)`,
+              jaText: `直進 (${(distanceKm * (i / stepCount)).toFixed(1)} km)`,
+              roadName: '', landmark: '', arrow: '↑', arrowAngle: 0,
+              maneuverType: 'continue', modifier: 'straight',
+              distanceToNext: (selectedRoute.distance || 0) / stepCount,
+              distanceToNextFormatted: formatDistanceJa((selectedRoute.distance || 0) / stepCount),
+              durationToNext: (selectedRoute.duration || 0) / stepCount,
+              speedLimit: 50, bearingBefore: 0, bearingAfter: 0
+            });
+          }
+          setNavSteps(fallbackSteps);
         }
-        setNavSteps(steps);
       }
     } catch (e) {
       // Geodesic fallback
@@ -984,6 +1020,29 @@ export default function JDMNavigation({ onBack }) {
       if (intervalId) clearInterval(intervalId);
     };
   }, [isAutoPlaying, isNavigating, navSteps]);
+
+  // Initialize voice guidance engine when navigation starts
+  useEffect(() => {
+    if (isNavigating) {
+      initVoiceGuidance();
+    } else {
+      stopSpeech();
+    }
+  }, [isNavigating]);
+
+  // Speak turn instruction when step changes during navigation
+  useEffect(() => {
+    if (!isNavigating || navSteps.length === 0 || voiceMuted) return;
+    const step = navSteps[currentStepIndex];
+    if (!step) return;
+
+    // Speak the current maneuver instruction
+    if (step.maneuverType === 'arrive') {
+      speakArrival();
+    } else {
+      speakManeuver(step, step.distanceToNextFormatted || '');
+    }
+  }, [currentStepIndex, isNavigating, voiceMuted]);
 
   // Route saving handlers
   const handleSaveRoute = () => {
@@ -1586,28 +1645,62 @@ export default function JDMNavigation({ onBack }) {
       {/* Floating Turn-by-Turn Guidance Overlay Card - Top (Only visible when navigating) */}
       {isNavigating && (
         <div className="nav-top-banner floating-top-hud glass squircle animate-slide-down" style={{ position: 'absolute', top: '12px', left: '12px', right: '12px', zIndex: 1000, margin: 0, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(28,28,30,0.85)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <div className="nav-turn-icon-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#30D158', borderRadius: '50%', width: '28px', height: '28px' }}>
-            <Navigation size={15} color="#ffffff" style={{ transform: 'rotate(45deg)' }} />
-          </div>
-          <div className="nav-turn-details" style={{ flex: 1 }}>
-            <h3 className="nav-turn-road" style={{ fontSize: '13px', fontWeight: '800', margin: 0, color: '#fff', textAlign: 'left' }}>
-              {currentLang === 'ja' ? (currentStep?.jaText || '直進してください') : (currentStep?.text || 'Proceed Straight')}
-            </h3>
-            <span className="nav-turn-sub" style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', display: 'block', textAlign: 'left', marginTop: '1px' }}>
-              {currentLang === 'ja' ? `次のチェックポイント: ${currentStep?.landmark || 'デポ'}` : `Next Checkpoint: ${currentStep?.landmark || 'Depot'}`}
+          {/* Turn Arrow Icon */}
+          <div className="nav-turn-icon-wrap" style={{ 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+            background: currentStep?.maneuverType === 'arrive' ? '#30D158' : '#0A84FF', 
+            borderRadius: '12px', width: '42px', height: '42px', flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(10,132,255,0.3)'
+          }}>
+            <span style={{ fontSize: '22px', lineHeight: 1, transform: `rotate(${currentStep?.arrowAngle || 0}deg)`, transition: 'transform 0.3s ease' }}>
+              {currentStep?.maneuverType === 'arrive' ? '🏁' : (currentStep?.arrow || '↑')}
             </span>
           </div>
-          <div style={{ 
-            fontSize: '8px', 
-            background: route.status === 'safe' ? 'rgba(48,209,88,0.2)' : (route.status === 'blocked' ? 'rgba(255,69,58,0.2)' : 'rgba(255,149,0,0.2)'), 
-            color: route.status === 'safe' ? '#30D158' : (route.status === 'blocked' ? '#FF453A' : '#FF9500'), 
-            padding: '3.5px 7px', 
-            borderRadius: '6px', 
-            fontWeight: '900',
-            border: `1px solid ${route.status === 'safe' ? 'rgba(48,209,88,0.2)' : (route.status === 'blocked' ? 'rgba(255,69,58,0.3)' : 'rgba(255,149,0,0.3)')}`,
-            boxShadow: route.status === 'blocked' ? '0 0 8px rgba(255,69,58,0.4)' : 'none'
-          }}>
-            {route.status === 'safe' ? 'SAFE' : (route.status === 'blocked' ? 'BLOCKED' : 'DETOUR')}
+          {/* Instruction Text */}
+          <div className="nav-turn-details" style={{ flex: 1, minWidth: 0 }}>
+            <h3 className="nav-turn-road" style={{ fontSize: '14px', fontWeight: '900', margin: 0, color: '#fff', textAlign: 'left', lineHeight: 1.3 }}>
+              {currentStep?.jaText || '直進してください'}
+            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
+              {currentStep?.distanceToNextFormatted && (
+                <span style={{ fontSize: '10px', color: '#0A84FF', fontWeight: '800', background: 'rgba(10,132,255,0.15)', padding: '1px 5px', borderRadius: '4px' }}>
+                  {currentStep.distanceToNextFormatted}
+                </span>
+              )}
+              {currentStep?.roadName && (
+                <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {currentStep.roadName}
+                </span>
+              )}
+            </div>
+            {/* Next step preview */}
+            {currentStepIndex < navSteps.length - 1 && navSteps[currentStepIndex + 1] && (
+              <span style={{ fontSize: '8.5px', color: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+                <span style={{ fontSize: '10px' }}>{navSteps[currentStepIndex + 1]?.arrow || '↑'}</span>
+                次: {navSteps[currentStepIndex + 1]?.jaText || '直進'}
+              </span>
+            )}
+          </div>
+          {/* Speed + Status Badges */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
+            <div style={{ 
+              fontSize: '12px', fontWeight: '900', color: '#fff',
+              background: 'rgba(255,255,255,0.1)', padding: '3px 8px', borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '3px'
+            }}>
+              <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.5)' }}>制限</span>
+              {currentStep?.speedLimit || 50}
+              <span style={{ fontSize: '7px', color: 'rgba(255,255,255,0.4)' }}>km/h</span>
+            </div>
+            <div style={{ 
+              fontSize: '7.5px', 
+              background: route.status === 'safe' ? 'rgba(48,209,88,0.2)' : (route.status === 'blocked' ? 'rgba(255,69,58,0.2)' : 'rgba(255,149,0,0.2)'), 
+              color: route.status === 'safe' ? '#30D158' : (route.status === 'blocked' ? '#FF453A' : '#FF9500'), 
+              padding: '2px 6px', borderRadius: '5px', fontWeight: '900',
+              border: `1px solid ${route.status === 'safe' ? 'rgba(48,209,88,0.15)' : (route.status === 'blocked' ? 'rgba(255,69,58,0.2)' : 'rgba(255,149,0,0.2)')}`
+            }}>
+              {route.status === 'safe' ? 'SAFE' : (route.status === 'blocked' ? 'BLOCKED' : 'DETOUR')}
+            </div>
           </div>
         </div>
       )}
@@ -1618,12 +1711,17 @@ export default function JDMNavigation({ onBack }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '10px' }}>
             {/* ETA and Stats */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-              <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--text-main)' }}>
-                {route.time} {currentLang === 'ja' ? '分' : 'min'}
-              </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
-                ETA {getETA(route.time)} ({route.distance} km)
-              </span>
+              {(() => {
+                const remaining = getRemainingMetrics(navSteps, currentStepIndex);
+                return (<>
+                  <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--text-main)' }}>
+                    {remaining.remainingTime > 0 ? remaining.remainingTime : route.time} 分
+                  </span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
+                    ETA {getETA(remaining.remainingTime > 0 ? remaining.remainingTime : route.time)} ({remaining.remainingDistanceFormatted || `${route.distance} km`})
+                  </span>
+                </>);
+              })()}
             </div>
 
             {/* Clickable Active Vehicle Selector badge */}
@@ -1637,6 +1735,19 @@ export default function JDMNavigation({ onBack }) {
             >
               <span>🚚</span>
               <span>{currentLang === 'ja' ? VEHICLE_PRESETS[selectedVehicle]?.jaShort : VEHICLE_PRESETS[selectedVehicle]?.short}</span>
+            </button>
+
+            {/* Voice Toggle Button */}
+            <button
+              type="button"
+              onClick={() => {
+                triggerSound();
+                const newMuted = toggleMute();
+                setVoiceMuted(newMuted);
+              }}
+              style={{ padding: '6px 8px', fontSize: '11px', background: voiceMuted ? 'rgba(255,69,58,0.15)' : 'rgba(48,209,88,0.15)', color: voiceMuted ? '#FF453A' : '#30D158', border: `1px solid ${voiceMuted ? 'rgba(255,69,58,0.2)' : 'rgba(48,209,88,0.2)'}`, borderRadius: '8px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+            >
+              {voiceMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
             </button>
 
             {/* Exit Button */}
