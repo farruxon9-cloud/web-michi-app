@@ -1068,16 +1068,34 @@ export default function JDMNavigation({ onBack }) {
         <Locate size={18} />
       </button>
 
-      {/* Floating Header */}
-      <header className="jdm-nav-header floating-card">
-        <button type="button" className="nav-back-btn" onClick={onBack} aria-label="Go back to Dashboard">
-          <ArrowLeft size={16} />
-        </button>
-        <div className="nav-header-title">
-          <h2>{getNavText('title')}</h2>
-          <p>{getNavText('subtitle')}</p>
-        </div>
-      </header>
+      {/* Floating Back Button */}
+      <button 
+        type="button" 
+        className="map-back-btn" 
+        onClick={onBack} 
+        aria-label="Go back to Dashboard"
+        style={{
+          position: 'absolute',
+          top: '14px',
+          left: '12px',
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          border: '1px solid var(--glass-border)',
+          background: 'var(--card-bg)',
+          color: 'var(--text-main)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10,
+          cursor: 'pointer',
+          backdropFilter: 'blur(8px)',
+          transition: 'all 0.2s ease'
+        }}
+      >
+        <ArrowLeft size={18} />
+      </button>
 
       {/* Floating Settings Card - Top (Only visible when not navigating) */}
       {!isNavigating && (

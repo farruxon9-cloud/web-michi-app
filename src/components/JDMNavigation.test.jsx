@@ -80,7 +80,7 @@ vi.mock('leaflet', () => {
 describe('JDMNavigation Component Tests', () => {
   it('renders successfully without crashing', () => {
     const html = renderToString(<JDMNavigation onBack={() => {}} />);
-    expect(html).toContain('JDM');
+    expect(html).toContain('Route Settings');
     expect(html).toContain('Matsudo');
   });
 

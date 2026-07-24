@@ -222,7 +222,7 @@
   - *Bog'liqliklar mavjud emas*
 
 ### 📦 [JDMNavigation.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1631 qator, 72258 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1649 qator, 72679 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
 * **Import qilgan bog'liqliklari:**
@@ -233,7 +233,7 @@
   - `maplibre-gl`
 
 ### 📦 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.test.jsx` (92 qator, 2450 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.test.jsx` (92 qator, 2461 bayt)
 * **Import qilgan bog'liqliklari:**
   - `vitest`
   - `react`
