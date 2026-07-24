@@ -431,13 +431,24 @@ export default function JDMNavigation({ onBack }) {
 
     const bounds = [];
 
-    // Start marker
-    if (startCoord) {
+    const createMarkerElement = (htmlContent) => {
       const el = document.createElement('div');
       el.className = 'custom-leaflet-icon-wrapper';
-      el.innerHTML = `<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startCoord.name.split(' ')[1] || startCoord.name.split(',')[0]}</span></div>`;
+      el.style.width = '36px';
+      el.style.height = '36px';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+      el.style.overflow = 'visible';
+      el.innerHTML = htmlContent;
+      return el;
+    };
 
-      const m = new Marker({ element: el })
+    // Start marker
+    if (startCoord) {
+      const el = createMarkerElement(`<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startCoord.name.split(' ')[1] || startCoord.name.split(',')[0]}</span></div>`);
+
+      const m = new Marker(el)
         .setLngLat([startCoord.lng, startCoord.lat])
         .addTo(mapInstanceRef.current);
       activeMarkersRef.current.push(m);
@@ -447,11 +458,9 @@ export default function JDMNavigation({ onBack }) {
     // Intermediate stops markers (orange color coding)
     stops.forEach((stop, index) => {
       if (stop.coord) {
-        const el = document.createElement('div');
-        el.className = 'custom-leaflet-icon-wrapper';
-        el.innerHTML = `<div class="custom-map-marker warning"><div class="marker-dot" style="background-color: #FF9500;"></div><span class="marker-label">Stop ${index + 1}</span></div>`;
+        const el = createMarkerElement(`<div class="custom-map-marker warning"><div class="marker-dot" style="background-color: #FF9500;"></div><span class="marker-label">Stop ${index + 1}</span></div>`);
 
-        const m = new Marker({ element: el })
+        const m = new Marker(el)
           .setLngLat([stop.coord.lng, stop.coord.lat])
           .addTo(mapInstanceRef.current);
         activeMarkersRef.current.push(m);
@@ -461,11 +470,9 @@ export default function JDMNavigation({ onBack }) {
 
     // Destination marker
     if (destCoord) {
-      const el = document.createElement('div');
-      el.className = 'custom-leaflet-icon-wrapper';
-      el.innerHTML = `<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destCoord.name.split(' ')[1] || destCoord.name.split(',')[0]}</span></div>`;
+      const el = createMarkerElement(`<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destCoord.name.split(' ')[1] || destCoord.name.split(',')[0]}</span></div>`);
 
-      const m = new Marker({ element: el })
+      const m = new Marker(el)
         .setLngLat([destCoord.lng, destCoord.lat])
         .addTo(mapInstanceRef.current);
       activeMarkersRef.current.push(m);
@@ -871,9 +878,15 @@ export default function JDMNavigation({ onBack }) {
     } else {
       const el = document.createElement('div');
       el.className = 'custom-leaflet-icon-wrapper';
+      el.style.width = '36px';
+      el.style.height = '36px';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+      el.style.overflow = 'visible';
       el.innerHTML = htmlContent;
       
-      simMarkerRef.current = new Marker({ element: el })
+      simMarkerRef.current = new Marker(el)
         .setLngLat([currentStep.lng, currentStep.lat])
         .addTo(mapInstanceRef.current);
     }
