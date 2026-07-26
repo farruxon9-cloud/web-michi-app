@@ -9,6 +9,7 @@ import { checkClearanceLimits } from '../utils/mlitRestrictions';
 import { parseOSRMSteps, getRemainingMetrics, getCountdownText, formatDistanceJa } from '../utils/turnInstructions';
 import { fetchOverpassRestrictions, checkOverpassRestrictions, mergeRestrictionResults } from '../utils/overpassRestrictions';
 import { initVoiceGuidance, speakManeuver, speakArrival, toggleMute, isSpeechMuted, stopSpeech } from '../utils/voiceGuidance';
+import LaneIndicator from './LaneIndicator';
 
 // Predefined JDM hubs with actual coordinates in Tokyo/Kanagawa/Chiba
 const NODES = {
@@ -821,7 +822,7 @@ export default function JDMNavigation({ onBack }) {
         });
 
         // Parse real OSRM turn-by-turn steps from the selected route
-        const realSteps = parseOSRMSteps(selectedRoute, selectedVehicle);
+        const realSteps = parseOSRMSteps(selectedRoute, selectedVehicle, overpassData);
         if (realSteps.length > 0) {
           setNavSteps(realSteps);
         } else {
@@ -1690,6 +1691,13 @@ export default function JDMNavigation({ onBack }) {
                 <span style={{ fontSize: '10px' }}>{navSteps[currentStepIndex + 1]?.arrow || '↑'}</span>
                 次: {navSteps[currentStepIndex + 1]?.jaText || '直進'}
               </span>
+            )}
+            
+            {/* Lane Guidance Indicators */}
+            {currentStep?.lanes && currentStep.lanes.length > 0 && (
+              <div style={{ marginTop: '5px', display: 'flex', justifyContent: 'flex-start' }}>
+                <LaneIndicator lanes={currentStep.lanes} />
+              </div>
             )}
           </div>
           {/* Speed + Status Badges */}

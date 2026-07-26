@@ -31,6 +31,9 @@ function buildOverpassQuery(minLat, minLng, maxLat, maxLng) {
   way["hgv"="destination"](${bbox});
   way["goods"="no"](${bbox});
   way["motor_vehicle"="no"](${bbox});
+  way["turn:lanes"](${bbox});
+  way["turn:lanes:forward"](${bbox});
+  way["lanes"](${bbox});
 );
 out body;
 >;
@@ -219,6 +222,18 @@ function parseOverpassResult(overpassResult) {
     
     if (tags.hgv === 'destination') {
       restriction.hgvDestinationOnly = true;
+    }
+    
+    // Lane structures
+    if (tags['turn:lanes'] || tags['turn:lanes:forward']) {
+      restriction.turnLanes = tags['turn:lanes'] || tags['turn:lanes:forward'];
+    }
+    
+    if (tags.lanes) {
+      const val = parseInt(tags.lanes, 10);
+      if (!isNaN(val)) {
+        restriction.laneCount = val;
+      }
     }
     
     restrictions.push(restriction);

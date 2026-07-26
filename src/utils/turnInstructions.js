@@ -9,6 +9,7 @@
  */
 
 import { evaluateTurnFeasibility } from './turnRadiusPhysics';
+import { getLaneGuidanceForStep, estimateLanesFromStep } from './laneGuidance';
 
 // OSRM maneuver type → Japanese instruction mapping
 const MANEUVER_TYPE_JA = {
@@ -176,7 +177,7 @@ function buildJapaneseInstruction(step) {
  * @param {string} vehicleKey - Vehicle preset key for physics checks (e.g., 'ranger_4t')
  * @returns {Array} Array of navigation step objects
  */
-export function parseOSRMSteps(osrmRoute, vehicleKey = '') {
+export function parseOSRMSteps(osrmRoute, vehicleKey = '', laneData = []) {
   if (!osrmRoute?.legs) return [];
   
   const navSteps = [];
@@ -230,6 +231,24 @@ export function parseOSRMSteps(osrmRoute, vehicleKey = '') {
         turnWarning = result.message;
         turnDetails = result.details;
       }
+
+      // Get lane guidance (real from Overpass or estimated from OSRM lanes info)
+      let lanes = getLaneGuidanceForStep(
+        { lat: maneuver.location[1], lng: maneuver.location[0], modifier },
+        laneData
+      );
+      if (!lanes && step.lanes) {
+        // Fallback: build from OSRM step lanes array if present
+        lanes = step.lanes.map((l, index) => ({
+          directions: l.validations ? Object.keys(l.validations).filter(k => l.validations[k]) : ['through'],
+          valid: l.valid,
+          index
+        }));
+      }
+      if (!lanes) {
+        // Ultimate fallback: estimate from maneuver modifier
+        lanes = estimateLanesFromStep({ modifier }, 2);
+      }
       
       navSteps.push({
         lat: maneuver.location[1],        // OSRM returns [lng, lat]
@@ -253,7 +272,9 @@ export function parseOSRMSteps(osrmRoute, vehicleKey = '') {
         // Turn physics fields
         turnFeasibility: turnFeasibility,
         turnWarning: turnWarning,
-        turnDetails: turnDetails
+        turnDetails: turnDetails,
+        // Lane guidance fields
+        lanes: lanes
       });
     }
   }

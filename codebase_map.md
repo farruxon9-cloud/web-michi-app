@@ -6,9 +6,9 @@
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 55 ta
-* **Komponentlar soni:** 39 ta
-* **Yordamchi funksiyalar (utils):** 11 ta
+* **Jami skanerlangan fayllar:** 57 ta
+* **Komponentlar soni:** 40 ta
+* **Yordamchi funksiyalar (utils):** 12 ta
 
 ---
 
@@ -222,7 +222,7 @@
   - *Bog'liqliklar mavjud emas*
 
 ### 📦 [JDMNavigation.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1979 qator, 90136 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1987 qator, 90514 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
 * **Import qilgan bog'liqliklari:**
@@ -235,6 +235,7 @@
   - `../utils/turnInstructions`
   - `../utils/overpassRestrictions`
   - `../utils/voiceGuidance`
+  - `./LaneIndicator`
 
 ### 📦 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
 * **Fayl yo'li:** `src/components/JDMNavigation.test.jsx` (92 qator, 2461 bayt)
@@ -266,6 +267,15 @@
   - `react-i18next`
   - `lucide-react`
   - `./VerifiedBadge`
+
+### 📦 [LaneIndicator.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/LaneIndicator.jsx)
+* **Fayl yo'li:** `src/components/LaneIndicator.jsx` (90 qator, 2830 bayt)
+* **Qabul qiladigan parametrlari (Props):**
+  - `lanes`
+  - `theme`
+* **Import qilgan bog'liqliklari:**
+  - `react`
+  - `../utils/laneGuidance`
 
 ### 📦 [LanguageSelect.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/LanguageSelect.css)
 * **Fayl yo'li:** `src/components/LanguageSelect.css` (177 qator, 3273 bayt)
@@ -537,12 +547,16 @@
 * **Yo'li:** `src/utils/japaneseEra.test.js` (62 qator)
 * **Importlari:** `vitest`, `./japaneseEra`
 
+### ⚙️ [laneGuidance.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/laneGuidance.js)
+* **Yo'li:** `src/utils/laneGuidance.js` (181 qator)
+* **Importlari:** *Yo'q*
+
 ### ⚙️ [mlitRestrictions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/mlitRestrictions.js)
 * **Yo'li:** `src/utils/mlitRestrictions.js` (157 qator)
 * **Importlari:** *Yo'q*
 
 ### ⚙️ [overpassRestrictions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/overpassRestrictions.js)
-* **Yo'li:** `src/utils/overpassRestrictions.js` (393 qator)
+* **Yo'li:** `src/utils/overpassRestrictions.js` (408 qator)
 * **Importlari:** *Yo'q*
 
 ### ⚙️ [resumeGenerator.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/resumeGenerator.js)
@@ -550,8 +564,8 @@
 * **Importlari:** `pdfmake/build/pdfmake`, `./japaneseEra`
 
 ### ⚙️ [turnInstructions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/turnInstructions.js)
-* **Yo'li:** `src/utils/turnInstructions.js` (298 qator)
-* **Importlari:** `./turnRadiusPhysics`
+* **Yo'li:** `src/utils/turnInstructions.js` (319 qator)
+* **Importlari:** `./turnRadiusPhysics`, `./laneGuidance`
 
 ### ⚙️ [turnRadiusPhysics.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/turnRadiusPhysics.js)
 * **Yo'li:** `src/utils/turnRadiusPhysics.js` (295 qator)
