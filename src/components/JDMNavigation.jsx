@@ -8,9 +8,10 @@ import './JDMNavigation.css';
 import { checkClearanceLimits } from '../utils/mlitRestrictions';
 import { parseOSRMSteps, getRemainingMetrics, getCountdownText, formatDistanceJa } from '../utils/turnInstructions';
 import { fetchOverpassRestrictions, checkOverpassRestrictions, mergeRestrictionResults } from '../utils/overpassRestrictions';
-import { initVoiceGuidance, speakManeuver, speakArrival, toggleMute, isSpeechMuted, stopSpeech } from '../utils/voiceGuidance';
+import { initVoiceGuidance, speakManeuver, speakArrival, speakRerouting, toggleMute, isSpeechMuted, stopSpeech } from '../utils/voiceGuidance';
 import LaneIndicator from './LaneIndicator';
 import { generateRouteKey, cacheRoute, getCachedRoute } from '../utils/offlineManager';
+import { snapToRoute, smoothBearing, isOffRoute, getDistance } from '../utils/gpsMatching';
 
 // Predefined JDM hubs with actual coordinates in Tokyo/Kanagawa/Chiba
 const NODES = {
@@ -159,6 +160,8 @@ export default function JDMNavigation({ onBack }) {
   const [isFollowingVehicle, setIsFollowingVehicle] = useState(true);
   const [voiceMuted, setVoiceMuted] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [gpsLocation, setGpsLocation] = useState(null);
+  const [lastGpsBearing, setLastGpsBearing] = useState(0);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -972,9 +975,16 @@ export default function JDMNavigation({ onBack }) {
     const currentStep = navSteps[currentStepIndex];
     if (!currentStep) return;
 
+    // Use GPS details if not in auto-play simulation mode
+    const isLiveGps = !isAutoPlaying && gpsLocation;
+    const activeLat = isLiveGps ? gpsLocation.lat : currentStep.lat;
+    const activeLng = isLiveGps ? gpsLocation.lng : currentStep.lng;
+
     // Calculate heading (bearing) to the next checkpoint if available to rotate the truck symbol
     let heading = 0;
-    if (currentStepIndex < navSteps.length - 1) {
+    if (isLiveGps) {
+      heading = lastGpsBearing;
+    } else if (currentStepIndex < navSteps.length - 1) {
       const nextStep = navSteps[currentStepIndex + 1];
       const dLon = (nextStep.lng - currentStep.lng) * Math.PI / 180;
       const lat1 = currentStep.lat * Math.PI / 180;
@@ -996,12 +1006,12 @@ export default function JDMNavigation({ onBack }) {
     const effHeading = mapOrientation === 'north' ? 0 : heading;
     const headingRad = effHeading * Math.PI / 180;
     const dLat = (offsetDistance * Math.cos(headingRad)) / R * (180 / Math.PI);
-    const dLng = (offsetDistance * Math.sin(headingRad)) / (R * Math.cos(currentStep.lat * Math.PI / 180)) * (180 / Math.PI);
+    const dLng = (offsetDistance * Math.sin(headingRad)) / (R * Math.cos(activeLat * Math.PI / 180)) * (180 / Math.PI);
 
     // Apply WebGL easeTo centering, bearing and pitch only when following the vehicle
     if (isFollowingRef.current) {
       mapInstanceRef.current.easeTo({
-        center: [currentStep.lng + dLng, currentStep.lat + dLat],
+        center: [activeLng + dLng, activeLat + dLat],
         zoom: 18,
         bearing: activeBearing,
         pitch: mapOrientation === 'north' ? 0 : 45,
@@ -1027,15 +1037,13 @@ export default function JDMNavigation({ onBack }) {
     }
 
     const htmlContent = `
-      <div class="custom-map-marker vehicle">
-        <div class="marker-pulse"></div>
-        <div class="vehicle-topdown" style="width:${vW}px; height:${vH}px; transform:rotate(${rotation}deg); transition:transform 0.3s ease;">
-          <div class="vehicle-front" style="width:100%; height:30%; background:${roofColor}; border-radius:${frontRadius}; position:relative; display:flex; align-items:center; justify-content:center;">
-            <div style="width:${vW - 6}px; height:4px; background:rgba(180,220,255,0.7); border-radius:2px;"></div>
+      <div class="custom-vehicle-marker" style="transform: rotate(${rotation}deg); width: ${vW}px; height: ${vH}px; transition: transform 0.2s ease;">
+        <div class="vehicle-body" style="background:${bodyColor}; border-radius:${bodyRadius}; width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 3px 8px rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15);">
+          <div class="vehicle-front" style="width:100%; height:20%; background:rgba(255,255,255,0.2); border-radius:${frontRadius}; display:flex; align-items:center; justify-content:space-between; padding:0 2px;">
+            <div style="width:3px; height:3px; background:#FFE0B2; border-radius:50%; box-shadow:0 0 3px #FFE0B2;"></div>
+            <div style="width:3px; height:3px; background:#FFE0B2; border-radius:50%; box-shadow:0 0 3px #FFE0B2;"></div>
           </div>
-          <div style="width:100%; flex:1; background:${bodyColor}; position:relative;">
-            <div style="position:absolute; top:1px; left:1px; width:2px; height:calc(100% - 2px); background:rgba(255,255,255,0.15); border-radius:1px;"></div>
-            <div style="position:absolute; top:1px; right:1px; width:2px; height:calc(100% - 2px); background:rgba(255,255,255,0.15); border-radius:1px;"></div>
+          <div class="vehicle-cabin" style="background:${roofColor}; width:80%; height:35%; margin:0 auto; border-radius:2px; border:1.5px solid rgba(0,0,0,0.15); box-shadow:inset 0 1px 3px rgba(255,255,255,0.3);">
           </div>
           <div class="vehicle-rear" style="width:100%; height:16%; background:${rearColor}; border-radius:0 0 2px 2px; display:flex; align-items:center; justify-content:space-between; padding:0 2px;">
             <div style="width:3px; height:3px; background:#FF6B6B; border-radius:50%; box-shadow:0 0 3px #FF6B6B;"></div>
@@ -1085,6 +1093,88 @@ export default function JDMNavigation({ onBack }) {
       if (intervalId) clearInterval(intervalId);
     };
   }, [isAutoPlaying, isNavigating, navSteps]);
+
+  // Real GPS watchPosition Tracker
+  useEffect(() => {
+    if (!isNavigating || isAutoPlaying || route.coordinates.length === 0) {
+      setGpsLocation(null);
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      console.warn('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    const handleGpsUpdate = (position) => {
+      const { latitude, longitude, heading: gpsHeading } = position.coords;
+      const rawGps = [latitude, longitude];
+
+      // 1. Snap GPS position to the route polyline (max snap distance 40m)
+      const { snappedPoint, segmentIndex, distance } = snapToRoute(rawGps, route.coordinates, 40);
+      
+      // 2. Smooth the bearing/heading changes using EMA
+      let rawHeading = gpsHeading || 0;
+      if (!gpsHeading && segmentIndex < route.coordinates.length - 1) {
+        // Calculate bearing between snapped segment points if GPS heading is not available
+        const p1 = route.coordinates[segmentIndex];
+        const p2 = route.coordinates[segmentIndex + 1];
+        const dLon = (p2[1] - p1[1]) * Math.PI / 180;
+        const lat1 = p1[0] * Math.PI / 180;
+        const lat2 = p2[0] * Math.PI / 180;
+        const y = Math.sin(dLon) * Math.cos(lat2);
+        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+        rawHeading = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+      }
+
+      setLastGpsBearing(prev => {
+        const smoothed = smoothBearing(rawHeading, prev, 0.25);
+        return smoothed;
+      });
+
+      // 3. Update the active GPS location state
+      setGpsLocation({
+        lat: snappedPoint[0],
+        lng: snappedPoint[1]
+      });
+
+      // 4. Automatic maneuver detection (Advance step index if within 30m of the next checkpoint)
+      if (currentStepIndex < navSteps.length - 1) {
+        const nextStep = navSteps[currentStepIndex + 1];
+        const distToNextManeuver = getDistance(snappedPoint[0], snappedPoint[1], nextStep.lat, nextStep.lng);
+        if (distToNextManeuver < 30) {
+          setCurrentStepIndex(prev => prev + 1);
+        }
+      }
+
+      // 5. Off-Route Detection (Reroute automatically if > 50m off route)
+      if (isOffRoute(rawGps, route.coordinates, 50)) {
+        console.warn('Driver is off-route! Recalculating path...');
+        speakRerouting();
+        
+        // Temporarily override start position to current raw GPS coordinates to trigger recalculation
+        setStartCoord({
+          lat: latitude,
+          lng: longitude,
+          name: currentLang === 'ja' ? '📍 現在地 (GPS)' : '📍 Hozirgi joylashuv (GPS)'
+        });
+      }
+    };
+
+    const handleGpsError = (err) => {
+      console.warn('GPS tracking error:', err.message);
+    };
+
+    const watchId = navigator.geolocation.watchPosition(handleGpsUpdate, handleGpsError, {
+      enableHighAccuracy: true,
+      maximumAge: 1000,
+      timeout: 5000
+    });
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, [isNavigating, isAutoPlaying, route.coordinates, currentStepIndex, navSteps]);
 
   // Initialize voice guidance engine when navigation starts
   useEffect(() => {

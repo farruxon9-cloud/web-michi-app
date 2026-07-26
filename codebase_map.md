@@ -6,9 +6,9 @@
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 58 ta
+* **Jami skanerlangan fayllar:** 59 ta
 * **Komponentlar soni:** 40 ta
-* **Yordamchi funksiyalar (utils):** 13 ta
+* **Yordamchi funksiyalar (utils):** 14 ta
 
 ---
 
@@ -222,7 +222,7 @@
   - *Bog'liqliklar mavjud emas*
 
 ### 📦 [JDMNavigation.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (2075 qator, 93625 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (2165 qator, 97334 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
 * **Import qilgan bog'liqliklari:**
@@ -237,6 +237,7 @@
   - `../utils/voiceGuidance`
   - `./LaneIndicator`
   - `../utils/offlineManager`
+  - `../utils/gpsMatching`
 
 ### 📦 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
 * **Fayl yo'li:** `src/components/JDMNavigation.test.jsx` (92 qator, 2461 bayt)
@@ -531,6 +532,10 @@
 ### 📄 [main.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/main.jsx)
 * **Yo'li:** `src/main.jsx` (69 qator)
 * **Importlari:** `react`, `react-dom/client`, `./App.jsx`
+
+### ⚙️ [gpsMatching.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/gpsMatching.js)
+* **Yo'li:** `src/utils/gpsMatching.js` (135 qator)
+* **Importlari:** *Yo'q*
 
 ### ⚙️ [haptics.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/haptics.js)
 * **Yo'li:** `src/utils/haptics.js` (38 qator)
