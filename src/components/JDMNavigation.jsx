@@ -10,6 +10,7 @@ import { parseOSRMSteps, getRemainingMetrics, getCountdownText, formatDistanceJa
 import { fetchOverpassRestrictions, checkOverpassRestrictions, mergeRestrictionResults } from '../utils/overpassRestrictions';
 import { initVoiceGuidance, speakManeuver, speakArrival, toggleMute, isSpeechMuted, stopSpeech } from '../utils/voiceGuidance';
 import LaneIndicator from './LaneIndicator';
+import { generateRouteKey, cacheRoute, getCachedRoute } from '../utils/offlineManager';
 
 // Predefined JDM hubs with actual coordinates in Tokyo/Kanagawa/Chiba
 const NODES = {
@@ -157,6 +158,20 @@ export default function JDMNavigation({ onBack }) {
   const [mapOrientation, setMapOrientation] = useState('heading'); // 'heading' (Head-Up) or 'north' (North-Up)
   const [isFollowingVehicle, setIsFollowingVehicle] = useState(true);
   const [voiceMuted, setVoiceMuted] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const bottomPanelRef = useRef(null);
   const [gpsBottomOffset, setGpsBottomOffset] = useState(96);
@@ -725,6 +740,25 @@ export default function JDMNavigation({ onBack }) {
       if (map.getSource('route')) map.removeSource('route');
     }
 
+    const routeKey = generateRouteKey(startCoord, destCoord, selectedVehicle);
+    
+    // Check IndexedDB cache first if offline
+    if (!navigator.onLine) {
+      try {
+        const cached = await getCachedRoute(routeKey);
+        if (cached) {
+          setRoute(cached.route);
+          setNavSteps(cached.navSteps);
+          const polylineColor = cached.route.status === 'blocked' ? '#FF453A' : cached.route.status === 'warning' ? '#FF9500' : '#0A84FF';
+          drawRouteOnMap(cached.route.coordinates, polylineColor);
+          setIsCalculating(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('Failed to fetch from route cache:', err);
+      }
+    }
+
     try {
       const coordsString = points.map(p => `${p.lng},${p.lat}`).join(';');
       // Request alternatives=true to find detour bypassing restrictions
@@ -823,6 +857,7 @@ export default function JDMNavigation({ onBack }) {
 
         // Parse real OSRM turn-by-turn steps from the selected route
         const realSteps = parseOSRMSteps(selectedRoute, selectedVehicle, overpassData);
+        let finalSteps = realSteps;
         if (realSteps.length > 0) {
           setNavSteps(realSteps);
         } else {
@@ -846,9 +881,38 @@ export default function JDMNavigation({ onBack }) {
             });
           }
           setNavSteps(fallbackSteps);
+          finalSteps = fallbackSteps;
         }
+        // Cache the parsed route details in IndexedDB
+        cacheRoute(routeKey, {
+          route: {
+            status: selectedStatus,
+            distance: distanceKm,
+            time: timeMin,
+            coordinates: selectedGeoCoordinates,
+            warnings: selectedWarnings.map(w => w.message || w),
+            rawWarnings: selectedWarnings,
+            edgesUsed: []
+          },
+          navSteps: finalSteps
+        });
       }
     } catch (e) {
+      console.warn('Network routing failed, attempting to serve from cache...', e);
+      try {
+        const cached = await getCachedRoute(routeKey);
+        if (cached) {
+          setRoute(cached.route);
+          setNavSteps(cached.navSteps);
+          const polylineColor = cached.route.status === 'blocked' ? '#FF453A' : cached.route.status === 'warning' ? '#FF9500' : '#0A84FF';
+          drawRouteOnMap(cached.route.coordinates, polylineColor);
+          setIsCalculating(false);
+          return;
+        }
+      } catch (cacheErr) {
+        console.warn('Failed to read from route cache on recovery:', cacheErr);
+      }
+
       // Geodesic fallback
       const directDist = parseFloat(getDistanceFromLatLng(startCoord.lat, startCoord.lng, destCoord.lat, destCoord.lng).toFixed(1));
       const directTime = Math.round(directDist * 1.8);
@@ -1171,6 +1235,30 @@ export default function JDMNavigation({ onBack }) {
       >
         {isNavigating ? <Navigation size={18} /> : <Locate size={18} />}
       </button>
+
+      {/* Offline Status Badge */}
+      {!isOnline && (
+        <div className="offline-status-badge animate-pulse" style={{
+          position: 'absolute',
+          top: isNavigating ? '74px' : '14px',
+          right: '12px',
+          zIndex: 1002,
+          padding: '4px 8px',
+          borderRadius: '8px',
+          background: 'rgba(255, 69, 58, 0.85)',
+          color: '#fff',
+          fontSize: '9px',
+          fontWeight: '900',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+        }}>
+          <span>📴</span>
+          <span>OFFLINE</span>
+        </div>
+      )}
 
       {/* Floating Back Button (Only visible during active navigation simulation) */}
       {isNavigating && (

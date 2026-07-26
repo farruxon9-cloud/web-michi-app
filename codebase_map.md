@@ -6,9 +6,9 @@
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 57 ta
+* **Jami skanerlangan fayllar:** 58 ta
 * **Komponentlar soni:** 40 ta
-* **Yordamchi funksiyalar (utils):** 12 ta
+* **Yordamchi funksiyalar (utils):** 13 ta
 
 ---
 
@@ -222,7 +222,7 @@
   - *Bog'liqliklar mavjud emas*
 
 ### 📦 [JDMNavigation.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1987 qator, 90514 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (2075 qator, 93625 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
 * **Import qilgan bog'liqliklari:**
@@ -236,6 +236,7 @@
   - `../utils/overpassRestrictions`
   - `../utils/voiceGuidance`
   - `./LaneIndicator`
+  - `../utils/offlineManager`
 
 ### 📦 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
 * **Fayl yo'li:** `src/components/JDMNavigation.test.jsx` (92 qator, 2461 bayt)
@@ -553,6 +554,10 @@
 
 ### ⚙️ [mlitRestrictions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/mlitRestrictions.js)
 * **Yo'li:** `src/utils/mlitRestrictions.js` (157 qator)
+* **Importlari:** *Yo'q*
+
+### ⚙️ [offlineManager.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/offlineManager.js)
+* **Yo'li:** `src/utils/offlineManager.js` (120 qator)
 * **Importlari:** *Yo'q*
 
 ### ⚙️ [overpassRestrictions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/overpassRestrictions.js)
