@@ -8,6 +8,8 @@
  * https://project-osrm.org/docs/v5.24.0/api/#stepmaneuver-object
  */
 
+import { evaluateTurnFeasibility } from './turnRadiusPhysics';
+
 // OSRM maneuver type → Japanese instruction mapping
 const MANEUVER_TYPE_JA = {
   'turn':           { base: '曲がる',     icon: '↗' },
@@ -171,10 +173,10 @@ function buildJapaneseInstruction(step) {
  * Parse OSRM route response legs/steps into rich navigation step objects
  * 
  * @param {Object} osrmRoute - Single OSRM route object with legs[].steps[]
- * @param {Array} routeCoordinates - Full route coordinates [[lat, lng], ...]
+ * @param {string} vehicleKey - Vehicle preset key for physics checks (e.g., 'ranger_4t')
  * @returns {Array} Array of navigation step objects
  */
-export function parseOSRMSteps(osrmRoute) {
+export function parseOSRMSteps(osrmRoute, vehicleKey = '') {
   if (!osrmRoute?.legs) return [];
   
   const navSteps = [];
@@ -209,6 +211,26 @@ export function parseOSRMSteps(osrmRoute) {
           ? Math.min(Math.round((step.distance / step.duration) * 3.6), 100)
           : 50);
       
+      // Evaluate turn feasibility using vehicle physics
+      let turnFeasibility = 'possible';
+      let turnWarning = '';
+      let turnDetails = {};
+      
+      if (evaluateTurnFeasibility && vehicleKey) {
+        const turnAngle = ((maneuver.bearing_after - maneuver.bearing_before) + 360) % 360;
+        const result = evaluateTurnFeasibility({
+          vehicleKey,
+          turnAngle,
+          bearingBefore: maneuver.bearing_before,
+          bearingAfter: maneuver.bearing_after,
+          roadName: step.name || '',
+          maneuverType: maneuver.type
+        });
+        turnFeasibility = result.feasibility;
+        turnWarning = result.message;
+        turnDetails = result.details;
+      }
+      
       navSteps.push({
         lat: maneuver.location[1],        // OSRM returns [lng, lat]
         lng: maneuver.location[0],
@@ -227,7 +249,11 @@ export function parseOSRMSteps(osrmRoute) {
         distanceToNextFormatted: formatDistanceJa(distanceToNext),
         durationToNext: durationToNext,
         speedLimit: speedLimit,
-        exit: maneuver.exit || null
+        exit: maneuver.exit || null,
+        // Turn physics fields
+        turnFeasibility: turnFeasibility,
+        turnWarning: turnWarning,
+        turnDetails: turnDetails
       });
     }
   }

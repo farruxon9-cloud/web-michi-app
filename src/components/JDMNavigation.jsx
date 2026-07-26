@@ -821,7 +821,7 @@ export default function JDMNavigation({ onBack }) {
         });
 
         // Parse real OSRM turn-by-turn steps from the selected route
-        const realSteps = parseOSRMSteps(selectedRoute);
+        const realSteps = parseOSRMSteps(selectedRoute, selectedVehicle);
         if (realSteps.length > 0) {
           setNavSteps(realSteps);
         } else {
@@ -1041,6 +1041,17 @@ export default function JDMNavigation({ onBack }) {
       speakArrival();
     } else {
       speakManeuver(step, step.distanceToNextFormatted || '');
+      
+      // Speak turn physics warning if applicable
+      if (step.turnFeasibility === 'impossible') {
+        setTimeout(() => {
+          speakManeuver({ jaText: `注意！${step.turnWarning || 'この交差点は大型車両では曲がれません'}` }, '');
+        }, 2500);
+      } else if (step.turnFeasibility === 'tight' && step.turnWarning) {
+        setTimeout(() => {
+          speakManeuver({ jaText: step.turnWarning }, '');
+        }, 2500);
+      }
     }
   }, [currentStepIndex, isNavigating, voiceMuted]);
 
@@ -1701,6 +1712,63 @@ export default function JDMNavigation({ onBack }) {
             }}>
               {route.status === 'safe' ? 'SAFE' : (route.status === 'blocked' ? 'BLOCKED' : 'DETOUR')}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Turn Physics Warning Panel (visible when upcoming turn has feasibility issues) */}
+      {isNavigating && currentStep?.turnFeasibility && currentStep.turnFeasibility !== 'possible' && (
+        <div className="turn-physics-warning animate-slide-down" style={{
+          position: 'absolute',
+          top: '90px',
+          left: '12px',
+          right: '12px',
+          zIndex: 999,
+          padding: '8px 12px',
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: currentStep.turnFeasibility === 'impossible'
+            ? 'rgba(255,59,48,0.15)'
+            : 'rgba(255,149,0,0.12)',
+          backdropFilter: 'blur(12px)',
+          border: `1px solid ${currentStep.turnFeasibility === 'impossible' 
+            ? 'rgba(255,59,48,0.3)' 
+            : 'rgba(255,149,0,0.25)'}`,
+          boxShadow: currentStep.turnFeasibility === 'impossible'
+            ? '0 0 16px rgba(255,59,48,0.25)'
+            : '0 0 12px rgba(255,149,0,0.15)'
+        }}>
+          <div style={{
+            width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: currentStep.turnFeasibility === 'impossible'
+              ? 'rgba(255,59,48,0.2)' : 'rgba(255,149,0,0.2)',
+            fontSize: '16px'
+          }}>
+            {currentStep.turnFeasibility === 'impossible' ? '⛔' : '⚠️'}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              fontSize: '11px', fontWeight: '900', lineHeight: 1.3,
+              color: currentStep.turnFeasibility === 'impossible' ? '#FF453A' : '#FF9500'
+            }}>
+              {currentStep.turnFeasibility === 'impossible' ? '通行不可' : '注意'}
+            </div>
+            <div style={{
+              fontSize: '9.5px', fontWeight: '700', marginTop: '1px',
+              color: 'rgba(255,255,255,0.7)', lineHeight: 1.3
+            }}>
+              {currentStep.turnWarning}
+            </div>
+            {currentStep.turnDetails?.innerDiff > 0 && (
+              <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', marginTop: '2px', display: 'flex', gap: '8px' }}>
+                <span>内輪差: {currentStep.turnDetails.innerDiff.toFixed(1)}m</span>
+                {currentStep.turnDetails.sweptPath > 0 && <span>通行幅: {currentStep.turnDetails.sweptPath.toFixed(1)}m</span>}
+                {currentStep.turnDetails.estimatedWidth > 0 && <span>道路幅: ~{currentStep.turnDetails.estimatedWidth.toFixed(0)}m</span>}
+              </div>
+            )}
           </div>
         </div>
       )}

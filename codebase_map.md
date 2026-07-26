@@ -6,9 +6,9 @@
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 54 ta
+* **Jami skanerlangan fayllar:** 55 ta
 * **Komponentlar soni:** 39 ta
-* **Yordamchi funksiyalar (utils):** 10 ta
+* **Yordamchi funksiyalar (utils):** 11 ta
 
 ---
 
@@ -222,7 +222,7 @@
   - *Bog'liqliklar mavjud emas*
 
 ### 📦 [JDMNavigation.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1911 qator, 87016 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (1979 qator, 90136 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
 * **Import qilgan bog'liqliklari:**
@@ -550,7 +550,11 @@
 * **Importlari:** `pdfmake/build/pdfmake`, `./japaneseEra`
 
 ### ⚙️ [turnInstructions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/turnInstructions.js)
-* **Yo'li:** `src/utils/turnInstructions.js` (272 qator)
+* **Yo'li:** `src/utils/turnInstructions.js` (298 qator)
+* **Importlari:** `./turnRadiusPhysics`
+
+### ⚙️ [turnRadiusPhysics.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/turnRadiusPhysics.js)
+* **Yo'li:** `src/utils/turnRadiusPhysics.js` (295 qator)
 * **Importlari:** *Yo'q*
 
 ### ⚙️ [voiceGuidance.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/voiceGuidance.js)
