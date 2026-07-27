@@ -1951,7 +1951,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
       )}
 
       {/* Floating Expandable Google-style Bottom Sheet (Only visible when route exists and not navigating) */}
-      {!isNavigating && startCoord && destCoord && (
+      {!isNavigating && (
         <div 
           ref={bottomPanelRef} 
           className={`nav-card glass squircle panel-instructions floating-bottom-panel google-bottom-sheet ${bottomSheetState}`} 
@@ -1970,123 +1970,207 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
           </div>
 
           <div className="bottom-sheet-scrollable-content hide-scrollbar" style={{ maxHeight: '280px', overflowY: 'auto' }}>
-            {/* Header / Collapsed view: Distance, Time, ETA, Safety state, and GO Button */}
-            <div className="compact-route-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '12px', padding: '0 16px 12px 16px' }}>
-              <div className="compact-info-col" style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span className="compact-time" style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-main)' }}>
-                    {route.time} {currentLang === 'ja' ? '分' : 'min'}
-                  </span>
-                  <span className="compact-dist" style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
-                    ({route.distance} km)
-                  </span>
-                  {route.status === 'safe' ? (
-                    <CheckCircle2 size={15} color="#30D158" />
-                  ) : route.status === 'blocked' ? (
-                    <ShieldAlert size={15} color="#FF453A" style={{ filter: 'drop-shadow(0 0 4px rgba(255, 69, 58, 0.6))' }} />
-                  ) : (
-                    <ShieldAlert size={15} color="#FF9500" />
-                  )}
-                </div>
-                
-                <div className="compact-specs" style={{ fontSize: '10.5px', color: 'var(--text-secondary)', display: 'flex', gap: '5px', fontWeight: '700' }}>
-                  <span>ETA: {getETA(route.time)}</span>
-                  <span>•</span>
-                  <span>{height.toFixed(2)}m</span>
-                  <span>•</span>
-                  <span>{weight.toFixed(1)}t</span>
-                </div>
-              </div>
-
-              {route.coordinates.length > 0 && (
-                <button 
-                  type="button" 
-                  className="go-to-nav-btn animate-pulse" 
-                  onClick={() => {
-                    triggerSound();
-                    setIsNavigating(true);
-                    setCurrentStepIndex(0);
-                    setIsAutoPlaying(false);
-                  }}
-                  style={{ padding: '10px 18px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #0A84FF 0%, #30D158 100%)', color: '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', boxShadow: '0 4px 12px rgba(48,209,88,0.25)', height: '40px', whiteSpace: 'nowrap' }}
-                >
-                  <Navigation size={12} style={{ transform: 'rotate(45deg)' }} />
-                  <span>{currentLang === 'ja' ? 'ナビ開始' : 'START'}</span>
-                </button>
-              )}
-            </div>
-
-            {/* Expanded Detailed Sections */}
-            {bottomSheetState === 'expanded' && (
-              <div style={{ padding: '0 16px 16px 16px', display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
-                
-                {/* 1. Warnings List */}
-                <div className="expanded-section">
-                  <h4 style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px', marginTop: 0 }}>
-                    {currentLang === 'ja' ? '安全警告・規制' : 'Safety Alerts'}
-                  </h4>
-                  {route.warnings.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {route.warnings.map((w, idx) => (
-                        <div key={idx} style={{ 
-                          padding: '8px 10px', 
-                          borderRadius: '8px', 
-                          background: w.includes('🛡️') ? 'rgba(48, 209, 88, 0.08)' : (route.status === 'blocked' ? 'rgba(255, 69, 58, 0.08)' : 'rgba(255, 149, 0, 0.08)'),
-                          border: `1px solid ${w.includes('🛡️') ? 'rgba(48, 209, 88, 0.15)' : (route.status === 'blocked' ? 'rgba(255, 69, 58, 0.15)' : 'rgba(255, 149, 0, 0.15)')}`,
-                          fontSize: '11px',
-                          color: w.includes('🛡️') ? '#30D158' : (route.status === 'blocked' ? '#FF453A' : '#FF9500'),
-                          fontWeight: '800',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}>
-                          {w.includes('🛡️') ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
-                          <span>{w}</span>
-                        </div>
-                      ))}
+            {startCoord && destCoord ? (
+              /* ACTIVE ROUTE VIEW */
+              <>
+                <div className="compact-route-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '12px', padding: '0 16px 12px 16px' }}>
+                  <div className="compact-info-col" style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="compact-time" style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-main)' }}>
+                        {route.time} {currentLang === 'ja' ? '分' : 'min'}
+                      </span>
+                      <span className="compact-dist" style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
+                        ({route.distance} km)
+                      </span>
+                      {route.status === 'safe' ? (
+                        <CheckCircle2 size={15} color="#30D158" />
+                      ) : route.status === 'blocked' ? (
+                        <ShieldAlert size={15} color="#FF453A" style={{ filter: 'drop-shadow(0 0 4px rgba(255, 69, 58, 0.6))' }} />
+                      ) : (
+                        <ShieldAlert size={15} color="#FF9500" />
+                      )}
                     </div>
-                  ) : (
-                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                      {currentLang === 'ja' ? '規制はありません。安全です。' : 'No warnings. Secure route.'}
-                    </span>
+                    
+                    <div className="compact-specs" style={{ fontSize: '10.5px', color: 'var(--text-secondary)', display: 'flex', gap: '5px', fontWeight: '700' }}>
+                      <span>ETA: {getETA(route.time)}</span>
+                      <span>•</span>
+                      <span>{height.toFixed(2)}m</span>
+                      <span>•</span>
+                      <span>{weight.toFixed(1)}t</span>
+                    </div>
+                  </div>
+
+                  {route.coordinates.length > 0 && (
+                    <button 
+                      type="button" 
+                      className="go-to-nav-btn animate-pulse" 
+                      onClick={() => {
+                        triggerSound();
+                        setIsNavigating(true);
+                        setCurrentStepIndex(0);
+                        setIsAutoPlaying(false);
+                      }}
+                      style={{ padding: '10px 18px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #0A84FF 0%, #30D158 100%)', color: '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', boxShadow: '0 4px 12px rgba(48,209,88,0.25)', height: '40px', whiteSpace: 'nowrap' }}
+                    >
+                      <Navigation size={12} style={{ transform: 'rotate(45deg)' }} />
+                      <span>{currentLang === 'ja' ? 'ナビ開始' : 'START'}</span>
+                    </button>
                   )}
                 </div>
 
-                {/* 2. Style & Traffic Toggles */}
-                <div className="expanded-section">
-                  <h4 style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px', marginTop: 0 }}>
-                    {currentLang === 'ja' ? '表示オプション' : 'Map Layers'}
-                  </h4>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button 
-                      type="button"
-                      className={`action-pill-btn ${mapStyleMode === 'satellite' ? 'active' : ''}`}
-                      onClick={() => {
-                        triggerSound();
-                        setMapStyleMode(prev => prev === 'vector' ? 'satellite' : 'vector');
-                      }}
-                      style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: mapStyleMode === 'satellite' ? 'rgba(10,132,255,0.15)' : 'rgba(255,255,255,0.03)', color: mapStyleMode === 'satellite' ? '#0A84FF' : 'var(--text-main)', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
-                    >
-                      <span>🛰️</span>
-                      <span>{currentLang === 'ja' ? '航空写真' : 'Satellite'}</span>
-                    </button>
+                {/* Expanded Detailed Sections */}
+                {bottomSheetState === 'expanded' && (
+                  <div style={{ padding: '0 16px 16px 16px', display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
+                    
+                    {/* 1. Warnings List */}
+                    <div className="expanded-section">
+                      <h4 style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px', marginTop: 0 }}>
+                        {currentLang === 'ja' ? '安全警告・規制' : 'Safety Alerts'}
+                      </h4>
+                      {route.warnings.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {route.warnings.map((w, idx) => (
+                            <div key={idx} style={{ 
+                              padding: '8px 10px', 
+                              borderRadius: '8px', 
+                              background: w.includes('🛡️') ? 'rgba(48, 209, 88, 0.08)' : (route.status === 'blocked' ? 'rgba(255, 69, 58, 0.08)' : 'rgba(255, 149, 0, 0.08)'),
+                              border: `1px solid ${w.includes('🛡️') ? 'rgba(48, 209, 88, 0.15)' : (route.status === 'blocked' ? 'rgba(255, 69, 58, 0.15)' : 'rgba(255, 149, 0, 0.15)')}`,
+                              fontSize: '11px',
+                              color: w.includes('🛡️') ? '#30D158' : (route.status === 'blocked' ? '#FF453A' : '#FF9500'),
+                              fontWeight: '800',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}>
+                              {w.includes('🛡️') ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
+                              <span>{w}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                          {currentLang === 'ja' ? '規制はありません。安全です。' : 'No warnings. Secure route.'}
+                        </span>
+                      )}
+                    </div>
 
-                    <button 
-                      type="button"
-                      className={`action-pill-btn ${showTrafficLayer ? 'active' : ''}`}
-                      onClick={() => {
-                        triggerSound();
-                        setShowTrafficLayer(prev => !prev);
-                      }}
-                      style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: showTrafficLayer ? 'rgba(48,209,88,0.15)' : 'rgba(255,255,255,0.03)', color: showTrafficLayer ? '#30D158' : 'var(--text-main)', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
-                    >
-                      <span>🚦</span>
-                      <span>{currentLang === 'ja' ? '渋滞表示' : 'Traffic'}</span>
-                    </button>
+                    {/* 2. Style & Traffic Toggles */}
+                    <div className="expanded-section">
+                      <h4 style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px', marginTop: 0 }}>
+                        {currentLang === 'ja' ? '表示オプション' : 'Map Layers'}
+                      </h4>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          type="button"
+                          className={`action-pill-btn ${mapStyleMode === 'satellite' ? 'active' : ''}`}
+                          onClick={() => {
+                            triggerSound();
+                            setMapStyleMode(prev => prev === 'vector' ? 'satellite' : 'vector');
+                          }}
+                          style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: mapStyleMode === 'satellite' ? 'rgba(10,132,255,0.15)' : 'rgba(255,255,255,0.03)', color: mapStyleMode === 'satellite' ? '#0A84FF' : 'var(--text-main)', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
+                        >
+                          <span>🛰️</span>
+                          <span>{currentLang === 'ja' ? '航空写真' : 'Satellite'}</span>
+                        </button>
+
+                        <button 
+                          type="button"
+                          className={`action-pill-btn ${showTrafficLayer ? 'active' : ''}`}
+                          onClick={() => {
+                            triggerSound();
+                            setShowTrafficLayer(prev => !prev);
+                          }}
+                          style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: showTrafficLayer ? 'rgba(48,209,88,0.15)' : 'rgba(255,255,255,0.03)', color: showTrafficLayer ? '#30D158' : 'var(--text-main)', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
+                        >
+                          <span>🚦</span>
+                          <span>{currentLang === 'ja' ? '渋滞表示' : 'Traffic'}</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
+                )}
+              </>
+            ) : (
+              /* WELCOME / PRESETS VIEW (when no active route is calculated) */
+              <>
+                <div className="compact-route-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '12px', padding: '0 16px 12px 16px', cursor: 'pointer' }} onClick={() => setBottomSheetState(prev => prev === 'collapsed' ? 'expanded' : 'collapsed')}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                    <span style={{ fontSize: '18px' }}>📍</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '900', color: 'var(--text-main)' }}>
+                        {currentLang === 'ja' ? '目的地を選択してください' : 'Yonalish belgilash...'}
+                      </span>
+                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
+                        {currentLang === 'ja' ? `車両: ${VEHICLE_PRESETS[selectedVehicle]?.jaName}` : `Mashina: ${VEHICLE_PRESETS[selectedVehicle]?.name}`}
+                      </span>
+                    </div>
+                  </div>
+                  <button 
+                    type="button" 
+                    className="go-to-nav-btn" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      triggerSound();
+                      setIsSettingsCollapsed(false);
+                    }}
+                    style={{ padding: '8px 14px', borderRadius: '10px', border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '11px' }}
+                  >
+                    🔍 {currentLang === 'ja' ? '検索' : 'Qidiruv'}
+                  </button>
                 </div>
 
-              </div>
+                {/* Expanded presets and saved routes */}
+                {bottomSheetState === 'expanded' && (
+                  <div style={{ padding: '0 16px 16px 16px', display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
+                    {/* Saved routes presets */}
+                    <div className="expanded-section">
+                      <h4 style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px', marginTop: 0 }}>
+                        {currentLang === 'ja' ? '保存されたルート' : 'Saqlangan marshrutlar'}
+                      </h4>
+                      {savedRoutes.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '160px', overflowY: 'auto' }}>
+                          {savedRoutes.map((r) => (
+                            <div 
+                              key={r.id} 
+                              onClick={() => {
+                                handleLoadRoute(r);
+                                setBottomSheetState('collapsed');
+                              }}
+                              style={{ 
+                                padding: '8px 10px', 
+                                borderRadius: '8px', 
+                                background: 'rgba(255,255,255,0.04)',
+                                border: '1px solid var(--glass-border)',
+                                fontSize: '11px',
+                                color: 'var(--text-main)',
+                                fontWeight: '800',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                cursor: 'pointer',
+                                transition: 'background 0.2s'
+                              }}
+                              className="saved-route-item-row"
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span>⭐</span>
+                                <span>{r.alias}</span>
+                              </div>
+                              <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>
+                                {VEHICLE_PRESETS[r.selectedVehicle]?.short || 'Truck'}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                          {currentLang === 'ja' ? '保存されたルートはありません。' : 'Saqlangan marshrutlar yo\'q.'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

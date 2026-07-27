@@ -185,7 +185,7 @@ graph TD
   - `lucide-react`
 
 ### 📦 [JDMNavigation](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (2425 qator, 108081 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (2509 qator, 113423 bayt)
 * **Komponent Stillari:** 🎨 [JDMNavigation.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.css)
 * **Unit Testlari:** 🧪 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
