@@ -233,7 +233,20 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
       clearTimeout(timeoutId);
       if (resizeObserver) resizeObserver.disconnect();
     };
-  }, [isNavigating, route, showSimControls, startCoord, destCoord, stops, isMapLoaded]);
+  }, [isNavigating, route, showSimControls, startCoord, destCoord, stops, isMapLoaded, bottomSheetState, isSettingsCollapsed]);
+
+  // Synchronize top settings panel and bottom sheet states to prevent any overlap/clutter
+  useEffect(() => {
+    if (!isSettingsCollapsed) {
+      setBottomSheetState('collapsed');
+    }
+  }, [isSettingsCollapsed]);
+
+  useEffect(() => {
+    if (bottomSheetState === 'expanded') {
+      setIsSettingsCollapsed(true);
+    }
+  }, [bottomSheetState]);
 
   // Helper to get active heading angle
   const getActiveHeading = () => {
@@ -1955,7 +1968,12 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
         <div 
           ref={bottomPanelRef} 
           className={`nav-card glass squircle panel-instructions floating-bottom-panel google-bottom-sheet ${bottomSheetState}`} 
-          style={{ padding: '0px', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', zIndex: 100 }}
+          style={{ 
+            padding: '0px', 
+            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', 
+            zIndex: 100,
+            display: isSettingsCollapsed ? 'block' : 'none'
+          }}
         >
           {/* Grab Handle */}
           <div 
