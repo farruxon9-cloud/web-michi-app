@@ -352,35 +352,64 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
             console.warn('Failed to customize map language layers:', e);
           }
 
-          // Add 3D building extrusion layer for realistic Google/Yandex Maps look
+          // Add 3D building extrusion layer dynamically detecting correct vector source (e.g. 'carto' or 'openmaptiles')
           try {
-            mapInstanceRef.current.addLayer({
-              'id': '3d-buildings',
-              'source': 'openmaptiles',
-              'source-layer': 'building',
-              'type': 'fill-extrusion',
-              'minzoom': 14,
-              'paint': {
-                'fill-extrusion-color': [
-                  'interpolate', ['linear'], ['zoom'],
-                  14, '#e6e6e6',
-                  16, '#cdcdcd'
-                ],
-                'fill-extrusion-height': [
-                  'coalesce', 
-                  ['get', 'render_height'], 
-                  ['get', 'height'], 
-                  15
-                ],
-                'fill-extrusion-base': [
-                  'coalesce', 
-                  ['get', 'render_min_height'], 
-                  ['get', 'min_height'], 
-                  0
-                ],
-                'fill-extrusion-opacity': 0.65
+            let buildingSource = null;
+            let buildingSourceLayer = null;
+            const style = mapInstanceRef.current.getStyle();
+            
+            // Detect from layers
+            if (style && style.layers) {
+              const buildingLayer = style.layers.find(l => l['source-layer'] === 'building' || l['source-layer'] === 'buildings');
+              if (buildingLayer) {
+                buildingSource = buildingLayer.source;
+                buildingSourceLayer = buildingLayer['source-layer'];
               }
-            });
+            }
+            
+            // Detect from sources if not found in layers
+            if (!buildingSource && style && style.sources) {
+              if (style.sources.carto) {
+                buildingSource = 'carto';
+              } else if (style.sources.openmaptiles) {
+                buildingSource = 'openmaptiles';
+              } else {
+                const vectorKey = Object.keys(style.sources).find(k => style.sources[k].type === 'vector');
+                if (vectorKey) buildingSource = vectorKey;
+              }
+            }
+            
+            if (!buildingSourceLayer) buildingSourceLayer = 'building';
+            
+            if (buildingSource) {
+              mapInstanceRef.current.addLayer({
+                'id': '3d-buildings',
+                'source': buildingSource,
+                'source-layer': buildingSourceLayer,
+                'type': 'fill-extrusion',
+                'minzoom': 14,
+                'paint': {
+                  'fill-extrusion-color': [
+                    'interpolate', ['linear'], ['zoom'],
+                    14, '#e6e6e6',
+                    16, '#cdcdcd'
+                  ],
+                  'fill-extrusion-height': [
+                    'coalesce', 
+                    ['get', 'render_height'], 
+                    ['get', 'height'], 
+                    15
+                  ],
+                  'fill-extrusion-base': [
+                    'coalesce', 
+                    ['get', 'render_min_height'], 
+                    ['get', 'min_height'], 
+                    0
+                  ],
+                  'fill-extrusion-opacity': 0.65
+                }
+              });
+            }
           } catch (err) {
             console.warn('Failed to add 3D buildings layer:', err);
           }
