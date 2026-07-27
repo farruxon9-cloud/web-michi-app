@@ -1330,7 +1330,7 @@
 
 /* Full Screen Layout overrides for Google/Yandex maps feel */
 .jdm-nav-container {
-  height: 100vh;
+  height: 100%;
   overflow: hidden !important;
   position: relative;
   padding-bottom: 0 !important;
