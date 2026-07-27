@@ -7,7 +7,6 @@
 
 let isMuted = false;
 let currentUtterance = null;
-let voiceReady = false;
 let jaVoice = null;
 
 /**
@@ -26,7 +25,6 @@ export function initVoiceGuidance() {
       || voices.find(v => v.lang === 'ja-JP')
       || voices.find(v => v.lang.startsWith('ja'))
       || null;
-    voiceReady = !!jaVoice;
   };
   
   // Voices may load asynchronously

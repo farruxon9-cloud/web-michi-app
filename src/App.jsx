@@ -105,7 +105,7 @@ class ChunkErrorBoundary extends React.Component {
     super(props);
     this.state = { hasError: false };
   }
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(_error) {
     return { hasError: true };
   }
   componentDidCatch(error, errorInfo) {
@@ -141,6 +141,7 @@ function App() {
   const [userRole, setUserRole] = useState(null); // Temporarily disable auto-login
   const [activeTab, setActiveTab] = useState('home');
   const [showJDMNavigation, setShowJDMNavigation] = useState(false);
+  const [hasOpenedJDM, setHasOpenedJDM] = useState(false);
   const [isVoiceStandby, setIsVoiceStandby] = useState(() => {
     const saved = localStorage.getItem('michi_voice_standby');
     return saved === 'true';
@@ -154,6 +155,12 @@ function App() {
   useEffect(() => {
     localStorage.setItem('michi_voice_standby', isVoiceStandby);
   }, [isVoiceStandby]);
+
+  useEffect(() => {
+    if (showJDMNavigation) {
+      setHasOpenedJDM(true);
+    }
+  }, [showJDMNavigation]);
 
   const handleVoiceActivate = () => {
     setIsVoiceActive(true);
@@ -1055,16 +1062,35 @@ function App() {
         </ChunkErrorBoundary>
       )}
 
-      {showJDMNavigation && (
-        <ChunkErrorBoundary>
-          <JDMNavigation onBack={() => setShowJDMNavigation(false)} />
-        </ChunkErrorBoundary>
+      {hasOpenedJDM && (
+        <div 
+          className="jdm-nav-overlay-container" 
+          style={{ 
+            display: showJDMNavigation ? 'block' : 'none',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1000
+          }}
+        >
+          <ChunkErrorBoundary>
+            <JDMNavigation 
+              onBack={() => setShowJDMNavigation(false)} 
+              showJDMNavigation={showJDMNavigation}
+            />
+          </ChunkErrorBoundary>
+        </div>
       )}
 
       {!(activeTab === 'profile' && profileActivePage === 'resume_builder') && (
         <BottomNav 
           activeTab={activeTab} 
           setActiveTab={(tab) => {
+            // Close JDM Navigation when switching tabs
+            setShowJDMNavigation(false);
+            
             // Agar foydalanuvchi faol turgan profile tabini takroran (2-marta) bossa, profilning asosiy oynasiga qaytaradi
             if (tab === 'profile' && activeTab === 'profile') {
               setProfileActivePage('main');

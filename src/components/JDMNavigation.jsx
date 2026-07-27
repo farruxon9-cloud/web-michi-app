@@ -106,9 +106,20 @@ const getETA = (minutes) => {
   return `${hrs}:${mins}`;
 };
 
-export default function JDMNavigation({ onBack }) {
+export default function JDMNavigation({ onBack, showJDMNavigation }) {
   const { i18n } = useTranslation();
   const currentLang = i18n.language || 'uz';
+
+  // Handle map container resizing when JDM navigation is toggled back to visible
+  useEffect(() => {
+    if (showJDMNavigation && mapInstanceRef.current) {
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.resize();
+        }
+      }, 100);
+    }
+  }, [showJDMNavigation]);
 
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);

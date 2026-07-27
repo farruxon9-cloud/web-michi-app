@@ -24,7 +24,6 @@ graph TD
   App --> BottomNav
   App --> CompanyHome
   App --> Dashboard
-  App --> DriverFeed
   App --> DrivingAcademy
   App --> ErrorBoundary
   App --> JDMNavigation
@@ -37,16 +36,15 @@ graph TD
   App --> Splash
   App --> VoiceAssistant
   CompanyHome --> VerifiedBadge
-  DriverFeed --> VerifiedBadge
   DrivingAcademy --> VerifiedBadge
   JDMNavigation --> LaneIndicator
   JobDetail --> VerifiedBadge
   LanguageSelect --> MichiLogo
   Profile --> CompanyHome
-  Profile --> DriverFeed
   Profile --> DrivingAcademy
   Profile --> ResumeBuilder
   Profile --> VerifiedBadge
+  SkeletonCard --> VerifiedBadge
   Splash --> MichiLogo
   
   style App fill:#5E5CE6,stroke:#333,stroke-width:2px,color:#fff
@@ -136,41 +134,12 @@ graph TD
   - `lucide-react`
   - `../utils/haptics`
 
-### 📦 [DriverFeed](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.jsx)
-* **Fayl yo'li:** `src/components/DriverFeed.jsx` (786 qator, 34903 bayt)
+### 📦 [SkeletonCard](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.jsx)
+* **Fayl yo'li:** `src/components/DriverFeed.jsx` (841 qator, 38123 bayt)
 * **Komponent Stillari:** 🎨 [DriverFeed.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.css)
 * **Unit Testlari:** 🧪 [DriverFeed.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
-  - `onJobClick`
-  - `isContractActive`
-  - `verifiedCompanies`
-  - `onShoukai`
-  - `jobs`
-  - `userRole`
-  - `profileData`
-  - `onEditJob`
-  - `onApply`
-  - `applications`
-  - `searchQuery`
-  - `setSearchQuery`
-  - `activeSegment`
-  - `setActiveSegment`
-  - `selectedLicenses`
-  - `setSelectedLicenses`
-  - `selectedLangLevel`
-  - `setSelectedLangLevel`
-  - `selectedBenefits`
-  - `setSelectedBenefits`
-  - `minSalary`
-  - `setMinSalary`
-  - `selectedPrefecture`
-  - `setSelectedPrefecture`
-  - `selectedCity`
-  - `setSelectedCity`
-  - `stationQuery`
-  - `setStationQuery`
-  - `onlyNearStation`
-  - `setOnlyNearStation`
+  - *Parametrlar mavjud emas*
 * **Import qilgan bog'liqliklari:**
   - `react`
   - `react-dom`
@@ -216,11 +185,12 @@ graph TD
   - `lucide-react`
 
 ### 📦 [JDMNavigation](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (2165 qator, 97334 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (2176 qator, 97675 bayt)
 * **Komponent Stillari:** 🎨 [JDMNavigation.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.css)
 * **Unit Testlari:** 🧪 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
+  - `showJDMNavigation`
 * **Import qilgan bog'liqliklari:**
   - `react`
   - `react-i18next`
@@ -527,20 +497,20 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### ⚙️ [overpassRestrictions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/overpassRestrictions.js)
-* **Yo'li:** `src/utils/overpassRestrictions.js` (408 qator, 12744 bayt)
+* **Yo'li:** `src/utils/overpassRestrictions.js` (408 qator, 12736 bayt)
 * **Eksport qilingan funksiyalari:**
   - `checkOverpassRestrictions()`
   - `mergeRestrictionResults()`
 * **Importlari:** *Yo'q*
 
 ### ⚙️ [resumeGenerator.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/resumeGenerator.js)
-* **Yo'li:** `src/utils/resumeGenerator.js` (554 qator, 19045 bayt)
+* **Yo'li:** `src/utils/resumeGenerator.js` (554 qator, 19065 bayt)
 * **Eksport qilingan funksiyalari:**
   - *Eksportlar aniqlanmadi yoki yo'q*
 * **Importlari:** `pdfmake/build/pdfmake`, `./japaneseEra`
 
 ### ⚙️ [turnInstructions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/turnInstructions.js)
-* **Yo'li:** `src/utils/turnInstructions.js` (319 qator, 11403 bayt)
+* **Yo'li:** `src/utils/turnInstructions.js` (318 qator, 11332 bayt)
 * **Eksport qilingan funksiyalari:**
   - `calculateBearing()`
   - `classifyTurnAngle()`
@@ -561,7 +531,7 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### ⚙️ [voiceGuidance.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/voiceGuidance.js)
-* **Yo'li:** `src/utils/voiceGuidance.js` (164 qator, 3928 bayt)
+* **Yo'li:** `src/utils/voiceGuidance.js` (162 qator, 3876 bayt)
 * **Eksport qilingan funksiyalari:**
   - `initVoiceGuidance()`
   - `speak()`
@@ -592,11 +562,11 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### 📄 [App.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/App.jsx)
-* **Yo'li:** `src/App.jsx` (1248 qator)
+* **Yo'li:** `src/App.jsx` (1274 qator)
 * **Importlari:** `react`, `lucide-react`, `react-i18next`, `./components/Splash`, `./components/LanguageSelect`, `./components/RoleSelect`, `./components/BottomNav`, `./components/Dashboard`, `./components/DriverFeed`, `./components/JobDetail`, `./components/DrivingAcademy`, `./components/ServiceComingSoon`, `./components/Profile`, `./components/AdminDashboard`, `./components/CompanyHome`, `./components/VoiceAssistant`, `./components/RobotAvatar`, `./components/JDMNavigation`, `./components/ErrorBoundary`
 
 ### 📄 [i18n.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/i18n.js)
-* **Yo'li:** `src/i18n.js` (3823 qator)
+* **Yo'li:** `src/i18n.js` (4021 qator)
 * **Importlari:** `i18next`, `react-i18next`
 
 ### 📄 [index.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/index.css)

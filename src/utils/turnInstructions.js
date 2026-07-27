@@ -110,7 +110,6 @@ function buildJapaneseInstruction(step) {
   const roadName = step.name || '';
   
   // Get base type info
-  const typeInfo = MANEUVER_TYPE_JA[type] || MANEUVER_TYPE_JA['turn'];
   const modInfo = MODIFIER_JA[modifier] || MODIFIER_JA['straight'];
   
   // Special cases

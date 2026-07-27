@@ -127,7 +127,7 @@ export async function generateRirekisho(profileData, options = {}) {
           eduWorkRows.push({
             year: eraYear,
             month: `${month}`,
-            detail: `${edu.school || ''}　入学`
+            detail: `${edu.school || ''}\u3000入学`
           });
         }
       }
@@ -143,7 +143,7 @@ export async function generateRirekisho(profileData, options = {}) {
           eduWorkRows.push({
             year: eraYear,
             month: `${month}`,
-            detail: `${edu.school || ''}　${degreeText}`
+            detail: `${edu.school || ''}\u3000${degreeText}`
           });
         }
       }
@@ -162,7 +162,7 @@ export async function generateRirekisho(profileData, options = {}) {
         eduWorkRows.push({
           year: eraYear,
           month: `${month}`,
-          detail: `${work.company || ''}　入社`
+          detail: `${work.company || ''}\u3000入社`
         });
       }
       if (work.isCurrent) {
@@ -179,7 +179,7 @@ export async function generateRirekisho(profileData, options = {}) {
         eduWorkRows.push({
           year: eraYear,
           month: `${month}`,
-          detail: `${work.company || ''}　一身上の都合により退社`
+          detail: `${work.company || ''}\u3000一身上の都合により退社`
         });
       }
     });

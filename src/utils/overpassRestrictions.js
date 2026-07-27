@@ -98,7 +98,7 @@ export async function fetchOverpassRestrictions(routeCoordinates) {
         return data;
       }
     }
-  } catch (e) {
+  } catch {
     // Cache read failed, continue with fetch
   }
   
@@ -124,7 +124,7 @@ export async function fetchOverpassRestrictions(routeCoordinates) {
         data: restrictions,
         timestamp: Date.now()
       }));
-    } catch (e) {
+    } catch {
       // Cache write failed (storage full), continue
     }
     

@@ -151,6 +151,38 @@ export const MOCK_JOBS = [
 ];
 
 // ============================================================
+// SkeletonCard — premium shishasimon (glassmorphism shimmer) yuklagich
+// ============================================================
+export function SkeletonCard() {
+  return (
+    <div className="job-card-hz skeleton-card glass" style={{ minHeight: '156px', width: '100%', marginBottom: '12px' }}>
+      <div className="job-card-main-layout">
+        {/* Chap qism: Rasm o'rniga shimmer */}
+        <div className="job-card-img skeleton-shimmer" style={{ height: '100px', borderRadius: '8px' }} />
+
+        {/* O'ng qism: Ma'lumotlar o'rniga shimmer */}
+        <div className="job-card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 8px' }}>
+          <div className="skeleton-shimmer" style={{ width: '40%', height: '12px', borderRadius: '4px' }} />
+          <div className="skeleton-shimmer" style={{ width: '80%', height: '18px', borderRadius: '4px', marginTop: '4px' }} />
+          <div className="skeleton-shimmer" style={{ width: '50%', height: '14px', borderRadius: '4px' }} />
+          
+          <div className="job-card-chips" style={{ display: 'flex', gap: '6px', marginTop: '8px', border: 'none', padding: '0' }}>
+            <div className="skeleton-shimmer" style={{ width: '60px', height: '22px', borderRadius: '12px' }} />
+            <div className="skeleton-shimmer" style={{ width: '70px', height: '22px', borderRadius: '12px' }} />
+          </div>
+        </div>
+      </div>
+      
+      {/* Pastki qism: Tugmalar */}
+      <div className="job-card-actions" style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--glass-border)', paddingTop: '10px', marginTop: '10px' }}>
+        <div className="skeleton-shimmer" style={{ flex: 1, height: '32px', borderRadius: '8px' }} />
+        <div className="skeleton-shimmer" style={{ flex: 1, height: '32px', borderRadius: '8px' }} />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // DriverFeed — Ish e'lonlari ro'yxati (Goo-net uslubida gorizontal kartochkalar)
 // Har bir kartochkada: chapda rasm, o'ngda ma'lumotlar, pastda ikonkali chiplar
 // ============================================================
@@ -165,20 +197,29 @@ export default function DriverFeed({
   selectedPrefecture = 'all', setSelectedPrefecture,
   selectedCity = 'all', setSelectedCity,
   stationQuery = '', setStationQuery,
-  onlyNearStation = false, setOnlyNearStation
+  onlyNearStation = false, setOnlyNearStation,
+  isLoading = false
 }) {
   const { t } = useTranslation();
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(10);
+  const [localLoading, setLocalLoading] = useState(false);
 
   // Reset pagination when any filter changes
   useEffect(() => {
     setVisibleCount(10);
+    setLocalLoading(true);
+    const timer = setTimeout(() => {
+      setLocalLoading(false);
+    }, 450);
+    return () => clearTimeout(timer);
   }, [
     searchQuery, activeSegment, selectedLicenses,
     selectedLangLevel, selectedBenefits, minSalary,
     selectedPrefecture, selectedCity, stationQuery, onlyNearStation
   ]);
+
+  const showLoading = isLoading || localLoading;
 
   const getSalaryNumber = (salaryStr) => {
     if (!salaryStr) return 0;
@@ -334,174 +375,188 @@ export default function DriverFeed({
 
       {/* ====== E'LONLAR RO'YXATI (GOO-NET USLUBIDA) ====== */}
       <div className="jobs-list hide-scrollbar">
-        {filteredJobs.slice(0, visibleCount).map(job => {
-          const showVerified = (verifiedCompanies || []).includes(job.company) || isContractActive;
-          return (
-            <div key={job.id} className={`job-card-hz glass ${job.isInternational ? 'job-card-international' : ''}`} onClick={() => onJobClick({...job, verified: showVerified})}>
-              <div className="job-card-main-layout">
-                {/* ---- Chap qism: E'lon rasmi ---- */}
-                <div className="job-card-img">
-                  <img 
-                    src={job.image} 
-                    alt={t(`job_${job.id}_title`, job.title)} 
-                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
-                  />
-                  {/* Ish turi belgisi (rasm ustida) */}
-                  <span className={`job-type-badge type-${job.type}`}>
-                    {t(`jobType_${job.type}`, job.type === 'fulltime' ? '正社員' : job.type === 'parttime' ? 'アルバイト' : '契約')}
-                  </span>
+        {showLoading ? (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : filteredJobs.length === 0 ? (
+          <div className="no-jobs glass" style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-secondary)', border: '1px solid var(--glass-border)', borderRadius: '12px', width: '100%' }}>
+            {t('noJobsFound', 'Mos ish e\'lonlari topilmadi')}
+          </div>
+        ) : (
+          filteredJobs.slice(0, visibleCount).map(job => {
+            const showVerified = (verifiedCompanies || []).includes(job.company) || isContractActive;
+            return (
+              <div key={job.id} className={`job-card-hz glass ${job.isInternational ? 'job-card-international' : ''}`} onClick={() => onJobClick({...job, verified: showVerified})}>
+                <div className="job-card-main-layout">
+                  {/* ---- Chap qism: E'lon rasmi ---- */}
+                  <div className="job-card-img">
+                    <img 
+                      src={job.image} 
+                      alt={t(`job_${job.id}_title`, job.title)} 
+                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800"; }}
+                    />
+                    {/* Ish turi belgisi (rasm ustida) */}
+                    <span className={`job-type-badge type-${job.type}`}>
+                      {t(`jobType_${job.type}`, job.type === 'fulltime' ? '正社員' : job.type === 'parttime' ? 'アルバイト' : '契約')}
+                    </span>
+                  </div>
+
+                  {/* ---- O'ng qism: Ma'lumotlar ---- */}
+                  <div className="job-card-body">
+                    {job.isInternational ? (
+                      <div className="international-card-tag">
+                        <Globe size={10} style={{ marginRight: '2px' }} />
+                        <span>{t('foreigners_visa', 'Tokutei Ginou • Xalqaro Ish')}</span>
+                      </div>
+                    ) : job.foreigners === 'foreigners_visa_renew' ? (
+                      <div className="local-visa-renew-tag">
+                        <span className="briefcase-icon">💼</span>
+                        <span>{t('foreigners_visa_renew', 'Vizani Uzaytirish Ko\'magi')}</span>
+                      </div>
+                    ) : job.foreigners === 'foreigners_ok' ? (
+                      <div className="local-foreigner-ok-tag">
+                        <span className="users-icon">👥</span>
+                        <span>{t('foreigners_ok', 'Chet elliklar ochiq (Vizasiz)')}</span>
+                      </div>
+                    ) : null}
+                    {/* Kompaniya nomi va tasdiqlash belgisi */}
+                    <div className="job-card-company">
+                      <img src={job.logo} alt={job.company} className="job-card-company-logo" />
+                      <span>{job.company}</span>
+                      {showVerified && <VerifiedBadge size={14} />}
+                    </div>
+
+                    {/* E'lon sarlavhasi */}
+                    <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
+
+                    {/* Maosh — eng muhim ma'lumot */}
+                    <div className="job-card-salary">
+                      <Banknote size={15} />
+                      <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}</span>
+                    </div>
+
+                    {/* Qisqa ma'lumot chiplari (minimalistik ikonkalar bilan) */}
+                    <div className="job-card-chips">
+                      <span className="job-chip">
+                        <MapPin size={12} />
+                        {t(`job_${job.id}_location`, job.location)}
+                      </span>
+                      <span className="job-chip">
+                        <Clock size={12} />
+                        {job.hours === 'shift' ? t('shiftWork', 'Smenali') : (job.hours ? t(job.hours, job.hours) : '')}
+                      </span>
+                      {job.foreigners && job.foreigners !== 'foreigners_none' && (
+                        <span className="job-chip chip-highlight">
+                          <Globe size={12} />
+                          {t(job.foreigners, 'Chet elliklar')}
+                        </span>
+                      )}
+                      {job.housing && job.housing !== 'housing_none' && (
+                        <span className="job-chip chip-green">
+                          <Home size={12} />
+                          {t(job.housing, 'Uy-joy')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* ---- O'ng qism: Ma'lumotlar ---- */}
-                <div className="job-card-body">
-                  {job.isInternational ? (
-                    <div className="international-card-tag">
-                      <Globe size={10} style={{ marginRight: '2px' }} />
-                      <span>{t('foreigners_visa', 'Tokutei Ginou • Xalqaro Ish')}</span>
-                    </div>
-                  ) : job.foreigners === 'foreigners_visa_renew' ? (
-                    <div className="local-visa-renew-tag">
-                      <span className="briefcase-icon">💼</span>
-                      <span>{t('foreigners_visa_renew', 'Vizani Uzaytirish Ko\'magi')}</span>
-                    </div>
-                  ) : job.foreigners === 'foreigners_ok' ? (
-                    <div className="local-foreigner-ok-tag">
-                      <span className="users-icon">👥</span>
-                      <span>{t('foreigners_ok', 'Chet elliklar ochiq (Vizasiz)')}</span>
-                    </div>
-                  ) : null}
-                  {/* Kompaniya nomi va tasdiqlash belgisi */}
-                  <div className="job-card-company">
-                    <img src={job.logo} alt={job.company} className="job-card-company-logo" />
-                    <span>{job.company}</span>
-                    {showVerified && <VerifiedBadge size={14} />}
-                  </div>
-
-                  {/* E'lon sarlavhasi */}
-                  <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
-
-                  {/* Maosh — eng muhim ma'lumot */}
-                  <div className="job-card-salary">
-                    <Banknote size={15} />
-                    <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}</span>
-                  </div>
-
-                  {/* Qisqa ma'lumot chiplari (minimalistik ikonkalar bilan) */}
-                  <div className="job-card-chips">
-                    <span className="job-chip">
-                      <MapPin size={12} />
-                      {t(`job_${job.id}_location`, job.location)}
-                    </span>
-                    <span className="job-chip">
-                      <Clock size={12} />
-                      {job.hours === 'shift' ? t('shiftWork', 'Smenali') : (job.hours ? t(job.hours, job.hours) : '')}
-                    </span>
-                    {job.foreigners && job.foreigners !== 'foreigners_none' && (
-                      <span className="job-chip chip-highlight">
-                        <Globe size={12} />
-                        {t(job.foreigners, 'Chet elliklar')}
-                      </span>
-                    )}
-                    {job.housing && job.housing !== 'housing_none' && (
-                      <span className="job-chip chip-green">
-                        <Home size={12} />
-                        {t(job.housing, 'Uy-joy')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Pastki qism: Tugmalar (job-card-main-layout tashqarisida) */}
-              <div className="job-card-actions">
-                {userRole === 'company' ? (
-                  // KOMPANIYA: O'z e'lonlarida "Tahrirlash", boshqalarda "Tel" va "Shoukai"
-                  profileData?.fullName === job.company ? (
-                    <button 
-                      className="job-card-btn btn-apply"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditJob && onEditJob(job);
-                      }}
-                      style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
-                    >
-                      <Edit3 size={13} />
-                      {t('editJob', 'Tahrirlash')}
-                    </button>
-                  ) : (
-                    <>
-                      <a 
-                        href={`tel:${job.phone || '+81 90-1234-5678'}`}
-                        className="job-card-btn btn-apply"
-                        onClick={(e) => e.stopPropagation()}
-                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', fontWeight: '700' }}
-                      >
-                        <Phone size={13} />
-                        {t('callSchool', "Qo'ng'iroq")}
-                      </a>
+                {/* Pastki qism: Tugmalar (job-card-main-layout tashqarisida) */}
+                <div className="job-card-actions">
+                  {userRole === 'company' ? (
+                    // KOMPANIYA: O'z e'lonlarida "Tahrirlash", boshqalarda "Tel" va "Shoukai"
+                    profileData?.fullName === job.company ? (
                       <button 
-                        className="job-card-btn btn-shoukai"
+                        className="job-card-btn btn-apply"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditJob && onEditJob(job);
+                        }}
+                        style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
+                      >
+                        <Edit3 size={13} />
+                        {t('editJob', 'Tahrirlash')}
+                      </button>
+                    ) : (
+                      <>
+                        <a 
+                          href={`tel:${job.phone || '+81 90-1234-5678'}`}
+                          className="job-card-btn btn-apply"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', fontWeight: '700' }}
+                        >
+                          <Phone size={13} />
+                          {t('callSchool', "Qo'ng'iroq")}
+                        </a>
+                        <button 
+                          className="job-card-btn btn-shoukai"
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            onShoukai && onShoukai(job); 
+                          }}
+                          style={{ flex: 1 }}
+                        >
+                          <Share2 size={13} />
+                          {((job.shoukai && job.shoukai !== "0") || job.hasShoukai) 
+                            ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` 
+                            : t('shoukai', 'Shoukai')}
+                        </button>
+                      </>
+                    )
+                  ) : (
+                    // HAYDOVCHI / MEHMON: Ariza topshirish + Shoukai
+                    <>
+                  {(() => {
+                    const alreadyApplied = (applications || []).some(a => a.jobId === job.id && !a.isSimulatedReferral);
+                    if (alreadyApplied) {
+                      return (
+                        <button 
+                          className="job-card-btn btn-apply applied"
+                          disabled
+                          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                        >
+                          <CheckCircle2 size={13} />
+                          {t('appliedStatus', 'Topshirilgan')}
+                        </button>
+                      );
+                    }
+                    return (
+                      <button 
+                        className="job-card-btn btn-apply"
                         onClick={(e) => { 
                           e.stopPropagation(); 
-                          onShoukai && onShoukai(job); 
+                          onApply && onApply(job); 
                         }}
-                        style={{ flex: 1 }}
+                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                       >
-                        <Share2 size={13} />
-                        {((job.shoukai && job.shoukai !== "0") || job.hasShoukai) 
-                          ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` 
-                          : t('shoukai', 'Shoukai')}
+                        <Briefcase size={13} />
+                        {t('applyJob', 'Ishga topshirish')}
                       </button>
+                    );
+                  })()}
+                  <button 
+                    className="job-card-btn btn-shoukai"
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      onShoukai && onShoukai(job); 
+                    }}
+                    style={{ flex: 1 }}
+                  >
+                    <Share2 size={13} />
+                    {((job.shoukai && job.shoukai !== "0") || job.hasShoukai) 
+                      ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` 
+                      : t('shoukai', 'Shoukai')}
+                  </button>
                     </>
-                  )
-                ) : (
-                  // HAYDOVCHI / MEHMON: Ariza topshirish + Shoukai
-                  <>
-                {(() => {
-                  const alreadyApplied = (applications || []).some(a => a.jobId === job.id && !a.isSimulatedReferral);
-                  return alreadyApplied ? (
-                    <button 
-                      className="job-card-btn btn-apply applied" 
-                      disabled
-                      onClick={(e) => e.stopPropagation()}
-                      style={{ flex: 1, cursor: 'default' }}
-                    >
-                      <CheckCircle2 size={13} />
-                      {t('applied', 'Topshirilgan')}
-                    </button>
-                  ) : (
-                    <button 
-                      className="job-card-btn btn-apply" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onApply && onApply(job);
-                      }}
-                      style={{ flex: 1 }}
-                    >
-                      <Briefcase size={13} />
-                      {t('applyJob', 'Ishga topshirish')}
-                    </button>
-                  );
-                })()}
-                <button 
-                  className="job-card-btn btn-shoukai"
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    onShoukai && onShoukai(job); 
-                  }}
-                  style={{ flex: 1 }}
-                >
-                  <Share2 size={13} />
-                  {((job.shoukai && job.shoukai !== "0") || job.hasShoukai) 
-                    ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` 
-                    : t('shoukai', 'Shoukai')}
-                </button>
-                  </>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
 
         {visibleCount < filteredJobs.length && (
           <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0 8px 0', width: '100%' }}>
