@@ -135,6 +135,11 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
   const [width, setWidth] = useState(2.18);
   const [weight, setWeight] = useState(5.8);
 
+  // Google / Yandex style layers & drawer states
+  const [bottomSheetState, setBottomSheetState] = useState('collapsed'); // 'collapsed' or 'expanded'
+  const [mapStyleMode, setMapStyleMode] = useState('vector'); // 'vector' or 'satellite'
+  const [showTrafficLayer, setShowTrafficLayer] = useState(false);
+
   const [startQuery, setStartQuery] = useState('');
   const [destQuery, setDestQuery] = useState('');
   const [startSuggestions, setStartSuggestions] = useState([]);
@@ -382,6 +387,50 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
       }
     };
   }, []);
+
+  // Handle map style switching between vector and satellite view dynamically
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isMapLoaded) return;
+    const map = mapInstanceRef.current;
+
+    const applyMapStyle = () => {
+      try {
+        if (mapStyleMode === 'satellite') {
+          if (!map.getSource('satellite')) {
+            map.addSource('satellite', {
+              type: 'raster',
+              tiles: [
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+              ],
+              tileSize: 256,
+              attribution: 'Esri Satellite'
+            });
+          }
+          if (!map.getLayer('satellite-layer')) {
+            map.addLayer({
+              id: 'satellite-layer',
+              type: 'raster',
+              source: 'satellite',
+              minzoom: 0,
+              maxzoom: 19
+            }, map.getStyle().layers[0]?.id); // Render at the very bottom
+          }
+        } else {
+          if (map.getLayer('satellite-layer')) {
+            map.removeLayer('satellite-layer');
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to switch map style mode:', err);
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      applyMapStyle();
+    } else {
+      map.on('style.load', applyMapStyle);
+    }
+  }, [mapStyleMode, isMapLoaded]);
 
   // Locate user using standard HTML5 Geolocation API or active vehicle follow
   const handleLocateUser = () => {
@@ -682,20 +731,62 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
     // Convert coordinates from [lat, lng] to [lng, lat]
     const mapLibreCoords = coordinates.map(c => [c[1], c[0]]);
 
-    map.addSource('route', {
-      type: 'geojson',
-      data: {
+    let geojsonData;
+    if (showTrafficLayer) {
+      const features = [];
+      const len = mapLibreCoords.length;
+      const segmentSize = Math.max(1, Math.floor(len / 4));
+      
+      for (let i = 0; i < len - 1; i += segmentSize) {
+        const segmentCoords = mapLibreCoords.slice(i, Math.min(i + segmentSize + 1, len));
+        if (segmentCoords.length < 2) continue;
+        
+        let trafficType = 'free';
+        const segmentIndex = Math.floor(i / segmentSize);
+        if (segmentIndex === 1) trafficType = 'moderate';
+        else if (segmentIndex === 2) trafficType = 'heavy';
+        
+        features.push({
+          type: 'Feature',
+          properties: { traffic: trafficType },
+          geometry: {
+            type: 'LineString',
+            coordinates: segmentCoords
+          }
+        });
+      }
+      
+      geojsonData = {
+        type: 'FeatureCollection',
+        features: features
+      };
+    } else {
+      geojsonData = {
         type: 'Feature',
         properties: {},
         geometry: {
           type: 'LineString',
           coordinates: mapLibreCoords
         }
-      }
+      };
+    }
+
+    map.addSource('route', {
+      type: 'geojson',
+      data: geojsonData
     });
 
     const paint = {
-      'line-color': color,
+      'line-color': showTrafficLayer
+        ? [
+            'match',
+            ['get', 'traffic'],
+            'heavy', '#FF453A',
+            'moderate', '#FF9500',
+            'free', '#30D158',
+            color
+          ]
+        : color,
       'line-width': 6,
       'line-opacity': 0.8
     };
@@ -964,7 +1055,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
       calculateRoute();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startCoord, destCoord, stops, selectedVehicle, height, width, weight, isMapLoaded]);
+  }, [startCoord, destCoord, stops, selectedVehicle, height, width, weight, isMapLoaded, showTrafficLayer]);
 
   // Handle active vehicle marker during simulation step changes
   useEffect(() => {
@@ -1396,19 +1487,28 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
       {!isNavigating && (
         <div className={`nav-card glass squircle panel-settings floating-top-panel ${isSettingsCollapsed ? 'collapsed' : ''}`} style={{ padding: isSettingsCollapsed ? '8px 12px' : '14px', gap: isSettingsCollapsed ? '0' : '10px', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
           {isSettingsCollapsed ? (
-            /* Collapsed Summary Mode */
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
+            /* Collapsed Summary Mode (Google Maps Search Bar style) */
+            <div 
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px', cursor: 'pointer' }}
+              onClick={() => {
+                triggerSound();
+                setIsSettingsCollapsed(false);
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, overflow: 'hidden' }}>
                 {/* Embedded Back Button */}
                 <button
                   type="button"
-                  onClick={onBack}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onBack();
+                  }}
                   style={{
                     background: 'rgba(255,255,255,0.06)',
                     border: '1px solid var(--glass-border)',
                     borderRadius: '50%',
-                    width: '28px',
-                    height: '28px',
+                    width: '32px',
+                    height: '32px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1418,27 +1518,20 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
                   }}
                   title="Go back"
                 >
-                  <ArrowLeft size={14} />
+                  <ArrowLeft size={16} />
                 </button>
-                <span style={{ fontSize: '10.5px', background: 'var(--primary)', color: '#fff', padding: '3px 7px', borderRadius: '6px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '10.5px', background: 'var(--primary)', color: '#fff', padding: '4px 8px', borderRadius: '8px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
                   <span>🚚</span>
                   <span>{currentLang === 'ja' ? VEHICLE_PRESETS[selectedVehicle]?.jaShort : VEHICLE_PRESETS[selectedVehicle]?.short}</span>
                 </span>
-                <span style={{ fontSize: '11px', color: 'var(--text-main)', fontWeight: '800', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {startCoord ? (currentLang === 'ja' ? '現在地' : 'Start') : '...'} ➔ {destCoord ? (currentLang === 'ja' ? destCoord.jaName || destCoord.name : destCoord.name) : (currentLang === 'ja' ? '目的地を入力...' : 'Enter Destination...')}
+                <span style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '800', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {destCoord 
+                    ? `${startCoord ? (currentLang === 'ja' ? '現在地' : 'Start') : '...'} ➔ ${currentLang === 'ja' ? destCoord.jaName || destCoord.name : destCoord.name}`
+                    : (currentLang === 'ja' ? '目的地を検索...' : 'Manzilni qidirish...')
+                  }
                 </span>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  triggerSound();
-                  setIsSettingsCollapsed(false);
-                }}
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)' }}
-                title="Expand settings"
-              >
-                <ChevronDown size={14} />
-              </button>
+              <ChevronDown size={16} style={{ color: 'var(--text-secondary)', marginRight: '4px' }} />
             </div>
           ) : (
             /* Expanded Full Settings Mode */
@@ -1773,71 +1866,143 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
         </div>
       )}
 
-      {/* Floating Instructions/Warnings Card - Bottom (Only visible when route exists and not navigating) */}
+      {/* Floating Expandable Google-style Bottom Sheet (Only visible when route exists and not navigating) */}
       {!isNavigating && startCoord && destCoord && (
-        <div ref={bottomPanelRef} className="nav-card glass squircle panel-instructions floating-bottom-panel animate-slide-up" style={{ padding: '10px 14px' }}>
-          <div className="compact-route-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '12px' }}>
-            {/* Left Info: Distance, Time, and Status */}
-            <div className="compact-info-col" style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span className="compact-time" style={{ fontSize: '18px', fontWeight: '900', color: 'var(--text-main)' }}>
-                  {route.time} {currentLang === 'ja' ? '分' : 'min'}
-                </span>
-                <span className="compact-dist" style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
-                  ({route.distance} km)
-                </span>
-                {route.status === 'safe' ? (
-                  <CheckCircle2 size={13} color="#30D158" />
-                ) : route.status === 'blocked' ? (
-                  <ShieldAlert size={13} color="#FF453A" style={{ filter: 'drop-shadow(0 0 4px rgba(255, 69, 58, 0.6))' }} />
-                ) : (
-                  <ShieldAlert size={13} color="#FF9500" />
-                )}
-              </div>
-              
-              {/* Mini Specs Readout */}
-              <div className="compact-specs" style={{ fontSize: '10px', color: 'var(--text-secondary)', display: 'flex', gap: '5px', flexWrap: 'wrap', fontWeight: '700' }}>
-                <span>{getNavText('height')}: <strong>{height.toFixed(2)}m</strong></span>
-                <span>•</span>
-                <span>{getNavText('width')}: <strong>{width.toFixed(2)}m</strong></span>
-                <span>•</span>
-                <span>{weight.toFixed(1)}t</span>
+        <div 
+          ref={bottomPanelRef} 
+          className={`nav-card glass squircle panel-instructions floating-bottom-panel google-bottom-sheet ${bottomSheetState}`} 
+          style={{ padding: '0px', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', zIndex: 100 }}
+        >
+          {/* Grab Handle */}
+          <div 
+            className="bottom-sheet-handle-bar" 
+            onClick={() => {
+              triggerSound();
+              setBottomSheetState(prev => prev === 'collapsed' ? 'expanded' : 'collapsed');
+            }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '18px', cursor: 'pointer' }}
+          >
+            <div style={{ width: '36px', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.2)' }} />
+          </div>
+
+          <div className="bottom-sheet-scrollable-content hide-scrollbar" style={{ maxHeight: '280px', overflowY: 'auto' }}>
+            {/* Header / Collapsed view: Distance, Time, ETA, Safety state, and GO Button */}
+            <div className="compact-route-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '12px', padding: '0 16px 12px 16px' }}>
+              <div className="compact-info-col" style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span className="compact-time" style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-main)' }}>
+                    {route.time} {currentLang === 'ja' ? '分' : 'min'}
+                  </span>
+                  <span className="compact-dist" style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
+                    ({route.distance} km)
+                  </span>
+                  {route.status === 'safe' ? (
+                    <CheckCircle2 size={15} color="#30D158" />
+                  ) : route.status === 'blocked' ? (
+                    <ShieldAlert size={15} color="#FF453A" style={{ filter: 'drop-shadow(0 0 4px rgba(255, 69, 58, 0.6))' }} />
+                  ) : (
+                    <ShieldAlert size={15} color="#FF9500" />
+                  )}
+                </div>
+                
+                <div className="compact-specs" style={{ fontSize: '10.5px', color: 'var(--text-secondary)', display: 'flex', gap: '5px', fontWeight: '700' }}>
+                  <span>ETA: {getETA(route.time)}</span>
+                  <span>•</span>
+                  <span>{height.toFixed(2)}m</span>
+                  <span>•</span>
+                  <span>{weight.toFixed(1)}t</span>
+                </div>
               </div>
 
-              {/* Mini Warnings list if any */}
-              {route.warnings.length > 0 && (
-                <span style={{ 
-                  fontSize: '9.5px', 
-                  color: route.warnings[0].includes('🛡️') ? '#30D158' : (route.status === 'blocked' ? '#FF453A' : '#FF9500'), 
-                  fontWeight: '800', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '4px', 
-                  marginTop: '2px',
-                  textShadow: route.warnings[0].includes('🛡️') ? '0 0 6px rgba(48,209,88,0.2)' : (route.status === 'blocked' ? '0 0 6px rgba(255,69,58,0.2)' : 'none')
-                }}>
-                  {route.warnings[0].includes('🛡️') ? <CheckCircle2 size={10} /> : <AlertTriangle size={10} />}
-                  <span>{route.warnings[0]}</span>
-                </span>
+              {route.coordinates.length > 0 && (
+                <button 
+                  type="button" 
+                  className="go-to-nav-btn animate-pulse" 
+                  onClick={() => {
+                    triggerSound();
+                    setIsNavigating(true);
+                    setCurrentStepIndex(0);
+                    setIsAutoPlaying(false);
+                  }}
+                  style={{ padding: '10px 18px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #0A84FF 0%, #30D158 100%)', color: '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', boxShadow: '0 4px 12px rgba(48,209,88,0.25)', height: '40px', whiteSpace: 'nowrap' }}
+                >
+                  <Navigation size={12} style={{ transform: 'rotate(45deg)' }} />
+                  <span>{currentLang === 'ja' ? 'ナビ開始' : 'START'}</span>
+                </button>
               )}
             </div>
 
-            {/* Right Action: Start Routing Button */}
-            {route.coordinates.length > 0 && (
-              <button 
-                type="button" 
-                className="go-to-nav-btn animate-pulse" 
-                onClick={() => {
-                  triggerSound();
-                  setIsNavigating(true);
-                  setCurrentStepIndex(0);
-                  setIsAutoPlaying(false); // Do not auto-play by default, wait for driver
-                }}
-                style={{ padding: '10px 16px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #0A84FF 0%, #30D158 100%)', color: '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', boxShadow: '0 4px 12px rgba(48,209,88,0.25)', height: '40px', whiteSpace: 'nowrap' }}
-              >
-                <Navigation size={12} style={{ transform: 'rotate(45deg)' }} />
-                <span>{currentLang === 'ja' ? 'ナビ開始' : 'START'}</span>
-              </button>
+            {/* Expanded Detailed Sections */}
+            {bottomSheetState === 'expanded' && (
+              <div style={{ padding: '0 16px 16px 16px', display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
+                
+                {/* 1. Warnings List */}
+                <div className="expanded-section">
+                  <h4 style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px', marginTop: 0 }}>
+                    {currentLang === 'ja' ? '安全警告・規制' : 'Safety Alerts'}
+                  </h4>
+                  {route.warnings.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {route.warnings.map((w, idx) => (
+                        <div key={idx} style={{ 
+                          padding: '8px 10px', 
+                          borderRadius: '8px', 
+                          background: w.includes('🛡️') ? 'rgba(48, 209, 88, 0.08)' : (route.status === 'blocked' ? 'rgba(255, 69, 58, 0.08)' : 'rgba(255, 149, 0, 0.08)'),
+                          border: `1px solid ${w.includes('🛡️') ? 'rgba(48, 209, 88, 0.15)' : (route.status === 'blocked' ? 'rgba(255, 69, 58, 0.15)' : 'rgba(255, 149, 0, 0.15)')}`,
+                          fontSize: '11px',
+                          color: w.includes('🛡️') ? '#30D158' : (route.status === 'blocked' ? '#FF453A' : '#FF9500'),
+                          fontWeight: '800',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          {w.includes('🛡️') ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
+                          <span>{w}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                      {currentLang === 'ja' ? '規制はありません。安全です。' : 'No warnings. Secure route.'}
+                    </span>
+                  )}
+                </div>
+
+                {/* 2. Style & Traffic Toggles */}
+                <div className="expanded-section">
+                  <h4 style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px', marginTop: 0 }}>
+                    {currentLang === 'ja' ? '表示オプション' : 'Map Layers'}
+                  </h4>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      type="button"
+                      className={`action-pill-btn ${mapStyleMode === 'satellite' ? 'active' : ''}`}
+                      onClick={() => {
+                        triggerSound();
+                        setMapStyleMode(prev => prev === 'vector' ? 'satellite' : 'vector');
+                      }}
+                      style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: mapStyleMode === 'satellite' ? 'rgba(10,132,255,0.15)' : 'rgba(255,255,255,0.03)', color: mapStyleMode === 'satellite' ? '#0A84FF' : 'var(--text-main)', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
+                    >
+                      <span>🛰️</span>
+                      <span>{currentLang === 'ja' ? '航空写真' : 'Satellite'}</span>
+                    </button>
+
+                    <button 
+                      type="button"
+                      className={`action-pill-btn ${showTrafficLayer ? 'active' : ''}`}
+                      onClick={() => {
+                        triggerSound();
+                        setShowTrafficLayer(prev => !prev);
+                      }}
+                      style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: showTrafficLayer ? 'rgba(48,209,88,0.15)' : 'rgba(255,255,255,0.03)', color: showTrafficLayer ? '#30D158' : 'var(--text-main)', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
+                    >
+                      <span>🚦</span>
+                      <span>{currentLang === 'ja' ? '渋滞表示' : 'Traffic'}</span>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
             )}
           </div>
         </div>
