@@ -352,6 +352,39 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
             console.warn('Failed to customize map language layers:', e);
           }
 
+          // Add 3D building extrusion layer for realistic Google/Yandex Maps look
+          try {
+            mapInstanceRef.current.addLayer({
+              'id': '3d-buildings',
+              'source': 'openmaptiles',
+              'source-layer': 'building',
+              'type': 'fill-extrusion',
+              'minzoom': 14,
+              'paint': {
+                'fill-extrusion-color': [
+                  'interpolate', ['linear'], ['zoom'],
+                  14, '#e6e6e6',
+                  16, '#cdcdcd'
+                ],
+                'fill-extrusion-height': [
+                  'coalesce', 
+                  ['get', 'render_height'], 
+                  ['get', 'height'], 
+                  15
+                ],
+                'fill-extrusion-base': [
+                  'coalesce', 
+                  ['get', 'render_min_height'], 
+                  ['get', 'min_height'], 
+                  0
+                ],
+                'fill-extrusion-opacity': 0.65
+              }
+            });
+          } catch (err) {
+            console.warn('Failed to add 3D buildings layer:', err);
+          }
+
           setTimeout(() => {
             if (mapInstanceRef.current) mapInstanceRef.current.resize();
           }, 100);
@@ -431,6 +464,25 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
       map.on('style.load', applyMapStyle);
     }
   }, [mapStyleMode, isMapLoaded]);
+
+  // Handle map orientation (pitch and bearing) dynamically when not actively simulating navigation
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isMapLoaded || isNavigating) return;
+    const map = mapInstanceRef.current;
+    if (mapOrientation === 'heading') {
+      map.easeTo({
+        pitch: 60,
+        zoom: map.getZoom() < 13 ? 14 : map.getZoom(),
+        duration: 800
+      });
+    } else {
+      map.easeTo({
+        pitch: 0,
+        bearing: 0,
+        duration: 800
+      });
+    }
+  }, [mapOrientation, isNavigating, isMapLoaded]);
 
   // Locate user using standard HTML5 Geolocation API or active vehicle follow
   const handleLocateUser = () => {
@@ -1049,10 +1101,13 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
     setIsCalculating(false);
   };
 
-  // Run calculation when any coordinate, stop, vehicle presets or map loaded state changes
+  // Run calculation when any coordinate, stop, vehicle presets or map loaded state changes with 500ms debounce to avoid OSRM/Overpass overload
   useEffect(() => {
     if (startCoord && destCoord && isMapLoaded) {
-      calculateRoute();
+      const timer = setTimeout(() => {
+        calculateRoute();
+      }, 500);
+      return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startCoord, destCoord, stops, selectedVehicle, height, width, weight, isMapLoaded, showTrafficLayer]);
