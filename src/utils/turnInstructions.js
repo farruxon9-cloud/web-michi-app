@@ -315,3 +315,239 @@ export function getCountdownText(distanceMeters) {
   if (distanceMeters > 30) return `あと${Math.round(distanceMeters / 10) * 10}m`;
   return 'まもなく';
 }
+
+/**
+ * Maps Valhalla maneuver type integer codes to OSRM type and modifier strings
+ * @param {number} valhallaType - Valhalla maneuver type code
+ * @returns {{ type: string, modifier: string }}
+ */
+export function mapValhallaTypeToOSRM(valhallaType) {
+  let type = 'turn';
+  let modifier = 'straight';
+
+  switch (valhallaType) {
+    case 1: // kStart
+    case 2: // kStartRight
+    case 3: // kStartLeft
+      type = 'depart';
+      modifier = 'straight';
+      break;
+    case 4: // kDestination
+    case 5: // kDestinationRight
+    case 6: // kDestinationLeft
+      type = 'arrive';
+      modifier = 'straight';
+      break;
+    case 7: // kBecomes
+    case 8: // kContinue
+    case 22: // kStayStraight
+      type = 'continue';
+      modifier = 'straight';
+      break;
+    case 9: // kSlightRight
+    case 23: // kStayRight
+      type = 'turn';
+      modifier = 'slight right';
+      break;
+    case 10: // kRight
+      type = 'turn';
+      modifier = 'right';
+      break;
+    case 11: // kSharpRight
+      type = 'turn';
+      modifier = 'sharp right';
+      break;
+    case 12: // kUturnRight
+    case 13: // kUturnLeft
+      type = 'continue';
+      modifier = 'uturn';
+      break;
+    case 14: // kSlightLeft
+    case 24: // kStayLeft
+      type = 'turn';
+      modifier = 'slight left';
+      break;
+    case 15: // kLeft
+      type = 'turn';
+      modifier = 'left';
+      break;
+    case 16: // kSharpLeft
+      type = 'turn';
+      modifier = 'sharp left';
+      break;
+    case 17: // kRampStraight
+      type = 'on ramp';
+      modifier = 'straight';
+      break;
+    case 18: // kRampRight
+      type = 'on ramp';
+      modifier = 'right';
+      break;
+    case 19: // kRampLeft
+      type = 'on ramp';
+      modifier = 'left';
+      break;
+    case 20: // kExitRight
+      type = 'off ramp';
+      modifier = 'right';
+      break;
+    case 21: // kExitLeft
+      type = 'off ramp';
+      modifier = 'left';
+      break;
+    case 25: // kMerge
+    case 36: // kMergeRight
+    case 37: // kMergeLeft
+      type = 'merge';
+      modifier = 'straight';
+      break;
+    case 26: // kRoundaboutEnter
+      type = 'roundabout';
+      modifier = 'straight';
+      break;
+    case 27: // kRoundaboutExit
+      type = 'exit roundabout';
+      modifier = 'straight';
+      break;
+    default:
+      type = 'turn';
+      modifier = 'straight';
+  }
+
+  return { type, modifier };
+}
+
+/**
+ * Parse Valhalla trip maneuvers into structured navigation steps matching OSRM steps
+ * @param {Object} valhallaTrip - The trip object from Valhalla API
+ * @param {string} vehicleKey - Active vehicle preset key
+ * @param {Array} decodedCoordinates - Decoded shape coordinates of the route ([lat, lng])
+ * @param {Array} laneData - Overpass lane data
+ * @returns {Array} Rich navigation step objects
+ */
+export function parseValhallaSteps(valhallaTrip, vehicleKey = '', decodedCoordinates = [], laneData = []) {
+  if (!valhallaTrip?.legs) return [];
+  
+  const navSteps = [];
+  
+  for (let legIdx = 0; legIdx < valhallaTrip.legs.length; legIdx++) {
+    const leg = valhallaTrip.legs[legIdx];
+    if (!leg.maneuvers) continue;
+    
+    for (let i = 0; i < leg.maneuvers.length; i++) {
+      const maneuver = leg.maneuvers[i];
+      
+      const { type, modifier } = mapValhallaTypeToOSRM(maneuver.type);
+      const modInfo = MODIFIER_JA[modifier] || MODIFIER_JA['straight'];
+      const typeInfo = MANEUVER_TYPE_JA[type] || MANEUVER_TYPE_JA['turn'];
+      
+      // Get the coordinate for this step
+      const coordIdx = maneuver.begin_shape_index || 0;
+      const stepCoord = decodedCoordinates[coordIdx] || [0, 0];
+      
+      const jaText = maneuver.instruction || '';
+      
+      const distanceToNext = (maneuver.length || 0) * 1000; // convert km to meters
+      const durationToNext = maneuver.time || 0; // seconds
+      
+      // Estimate speed limit
+      const speedLimit = (distanceToNext > 0 && durationToNext > 0)
+        ? Math.min(Math.round((distanceToNext / durationToNext) * 3.6), 100)
+        : 50;
+
+      // Evaluate turn physics
+      let turnFeasibility = 'possible';
+      let turnWarning = '';
+      let turnDetails = {};
+      
+      if (evaluateTurnFeasibility && vehicleKey) {
+        const bearingBefore = maneuver.bearing_before || 0;
+        const bearingAfter = maneuver.bearing_after || 0;
+        const turnAngle = ((bearingAfter - bearingBefore) + 360) % 360;
+        
+        const result = evaluateTurnFeasibility({
+          vehicleKey,
+          turnAngle,
+          bearingBefore,
+          bearingAfter,
+          roadName: maneuver.street_names ? maneuver.street_names[0] : '',
+          maneuverType: type
+        });
+        turnFeasibility = result.feasibility;
+        turnWarning = result.message;
+        turnDetails = result.details;
+      }
+      
+      // Lane guidance
+      let lanes = getLaneGuidanceForStep(
+        { lat: stepCoord[0], lng: stepCoord[1], modifier },
+        laneData
+      );
+      if (!lanes) {
+        lanes = estimateLanesFromStep({ modifier }, 2);
+      }
+      
+      navSteps.push({
+        lat: stepCoord[0],
+        lng: stepCoord[1],
+        text: maneuver.street_names ? maneuver.street_names[0] : 'Route',
+        jaText: jaText,
+        roadName: maneuver.street_names ? maneuver.street_names.join(', ') : '',
+        landmark: '',
+        maneuverType: type,
+        modifier: modifier,
+        arrow: modInfo.arrow,
+        arrowAngle: modInfo.arrowAngle,
+        icon: typeInfo.icon,
+        bearingBefore: maneuver.bearing_before || 0,
+        bearingAfter: maneuver.bearing_after || 0,
+        distanceToNext: distanceToNext,
+        distanceToNextFormatted: formatDistanceJa(distanceToNext),
+        durationToNext: durationToNext,
+        speedLimit: speedLimit,
+        exit: null,
+        turnFeasibility: turnFeasibility,
+        turnWarning: turnWarning,
+        turnDetails: turnDetails,
+        lanes: lanes
+      });
+    }
+  }
+  
+  return navSteps;
+}
+
+/**
+ * Decodes a Valhalla polyline6 string into an array of [lat, lng] coordinates
+ * @param {string} str - Encoded polyline6 string
+ * @returns {Array} Array of [lat, lng] coordinates
+ */
+export function decodePolyline6(str) {
+  let index = 0, lat = 0, lng = 0;
+  const coordinates = [];
+  const factor = 1e6; // precision 6
+
+  while (index < str.length) {
+    let b, shift = 0, result = 0;
+    do {
+      b = str.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+    lat += dlat;
+
+    shift = 0;
+    result = 0;
+    do {
+      b = str.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+    lng += dlng;
+
+    coordinates.push([lat / factor, lng / factor]);
+  }
+  return coordinates;
+}

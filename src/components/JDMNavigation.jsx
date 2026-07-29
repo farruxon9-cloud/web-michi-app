@@ -8,7 +8,7 @@ const { Marker } = maplibregl;
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './JDMNavigation.css';
 import { checkClearanceLimits } from '../utils/mlitRestrictions';
-import { parseOSRMSteps, getRemainingMetrics, getCountdownText, formatDistanceJa } from '../utils/turnInstructions';
+import { parseOSRMSteps, parseValhallaSteps, decodePolyline6, getRemainingMetrics, getCountdownText, formatDistanceJa } from '../utils/turnInstructions';
 import { fetchOverpassRestrictions, checkOverpassRestrictions, mergeRestrictionResults } from '../utils/overpassRestrictions';
 import { initVoiceGuidance, speakManeuver, speakArrival, speakRerouting, toggleMute, isSpeechMuted, stopSpeech } from '../utils/voiceGuidance';
 import LaneIndicator from './LaneIndicator';
@@ -36,6 +36,7 @@ const VEHICLE_PRESETS = {
     height: 1.69, 
     width: 1.85, 
     weight: 1.7, 
+    length: 4.74,
     type: 'passenger' 
   },
   elf_3t: { 
@@ -48,6 +49,7 @@ const VEHICLE_PRESETS = {
     height: 2.95, 
     width: 2.18, 
     weight: 5.8, 
+    length: 5.95,
     type: 'truck' 
   },
   ranger_4t: { 
@@ -60,6 +62,7 @@ const VEHICLE_PRESETS = {
     height: 3.42, 
     width: 2.49, 
     weight: 7.9, 
+    length: 8.55,
     type: 'truck' 
   },
   giga_heavy: { 
@@ -72,6 +75,7 @@ const VEHICLE_PRESETS = {
     height: 3.78, 
     width: 2.50, 
     weight: 24.5, 
+    length: 12.0,
     type: 'trailer' 
   },
   bike: {
@@ -84,6 +88,7 @@ const VEHICLE_PRESETS = {
     height: 1.20,
     width: 0.80,
     weight: 0.25,
+    length: 2.1,
     type: 'bike'
   }
 };
@@ -145,6 +150,8 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   const [is3D, setIs3D] = useState(false);
   const [showLayerMenu, setShowLayerMenu] = useState(false);
   const [mapBearing, setMapBearing] = useState(0);
+  const [avoidTolls, setAvoidTolls] = useState(false);
+  const [avoidHighways, setAvoidHighways] = useState(false);
 
   const [startQuery, setStartQuery] = useState('');
   const [destQuery, setDestQuery] = useState('');
@@ -903,88 +910,175 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
     }
 
     try {
-      const coordsString = points.map(p => `${p.lng},${p.lat}`).join(';');
-      // Request alternatives=true to find detour bypassing restrictions
-      const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson&alternatives=true&steps=true&annotations=true`);
-      const data = await res.json();
+      const activeVehicle = VEHICLE_PRESETS[selectedVehicle];
+      const vehicleType = activeVehicle?.type || 'truck';
 
-      if (data.routes && data.routes.length > 0) {
-        let selectedRoute = null;
-        let selectedGeoCoordinates = null;
-        let selectedStatus = 'blocked';
-        let selectedWarnings = [];
-        let detourApplied = false;
+      let costing = 'truck';
+      if (vehicleType === 'bike') {
+        costing = 'motorcycle';
+      } else if (vehicleType === 'passenger') {
+        costing = 'auto';
+      }
 
-        // Fetch dynamic Overpass restrictions for the route area (uses first route's bbox)
-        const firstRouteCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-        let overpassData = [];
+      // Configure costing options for Valhalla routing parameters
+      const costingOptions = {};
+      if (costing === 'truck') {
+        costingOptions.truck = {
+          height: height,
+          width: width,
+          weight: weight,
+          length: activeVehicle.length || 6.0
+        };
+        if (avoidTolls) costingOptions.truck.use_tolls = 0.0;
+        if (avoidHighways) costingOptions.truck.use_highways = 0.0;
+      } else if (costing === 'auto') {
+        costingOptions.auto = {};
+        if (avoidTolls) costingOptions.auto.use_tolls = 0.0;
+        if (avoidHighways) costingOptions.auto.use_highways = 0.0;
+      } else if (costing === 'motorcycle') {
+        costingOptions.motorcycle = {};
+        if (avoidTolls) costingOptions.motorcycle.use_tolls = 0.0;
+        if (avoidHighways) costingOptions.motorcycle.use_highways = 0.0;
+      }
+
+      const valhallaPayload = {
+        locations: points.map(p => ({ lat: p.lat, lon: p.lng })),
+        costing,
+        costing_options: costingOptions,
+        language: 'ja-JP'
+      };
+
+      let valhallaData = null;
+      let isValhallaActive = false;
+
+      try {
+        const valhallaRes = await fetch('https://valhalla1.openstreetmap.de/route', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Client-Id': 'michi-truck-nav'
+          },
+          body: JSON.stringify(valhallaPayload)
+        });
+        if (valhallaRes.status === 200) {
+          valhallaData = await valhallaRes.json();
+          if (valhallaData.trip && valhallaData.trip.legs && valhallaData.trip.legs.length > 0) {
+            isValhallaActive = true;
+          }
+        }
+      } catch (err) {
+        console.warn('Valhalla routing failed, falling back to OSRM...', err);
+      }
+
+      let selectedGeoCoordinates = null;
+      let selectedStatus = 'blocked';
+      let selectedWarnings = [];
+      let distanceKm = 0;
+      let timeMin = 0;
+      let finalSteps = [];
+      let overpassData = [];
+
+      if (isValhallaActive) {
+        // Decode Valhalla polyline shape
+        const leg = valhallaData.trip.legs[0];
+        selectedGeoCoordinates = decodePolyline6(leg.shape);
+
+        // Fetch dynamic Overpass restrictions for the route area
         try {
-          overpassData = await fetchOverpassRestrictions(firstRouteCoords);
+          overpassData = await fetchOverpassRestrictions(selectedGeoCoordinates);
         } catch (e) {
-          // Overpass fetch failed silently — continue with MLIT-only checks
+          // Overpass fetch failed silently
         }
 
-        const activeVehicle = VEHICLE_PRESETS[selectedVehicle];
-        const vehicleType = activeVehicle?.type || 'truck';
+        // Validate clearance limits on Valhalla route as double check
+        const mlitResult = checkClearanceLimits(selectedGeoCoordinates, height, width, weight, currentLang);
+        const overpassResult = checkOverpassRestrictions(selectedGeoCoordinates, overpassData, height, width, weight, vehicleType);
+        const merged = mergeRestrictionResults(mlitResult, overpassResult);
+        selectedStatus = merged.status;
+        selectedWarnings = merged.warnings;
 
-        // Iterate through all alternative routes to find a safer one
-        for (let rIdx = 0; rIdx < data.routes.length; rIdx++) {
-          const currentRoute = data.routes[rIdx];
-          const geojsonCoordinates = currentRoute.geometry.coordinates.map(c => [c[1], c[0]]);
-          
-          // Check against static MLIT database
-          const mlitResult = checkClearanceLimits(geojsonCoordinates, height, width, weight, currentLang);
-          
-          // Check against dynamic Overpass restrictions
-          const overpassResult = checkOverpassRestrictions(
-            geojsonCoordinates, overpassData, height, width, weight, vehicleType
-          );
-          
-          // Merge both restriction check results
-          const { status, warnings } = mergeRestrictionResults(mlitResult, overpassResult);
+        distanceKm = parseFloat((valhallaData.trip.summary.length).toFixed(1));
+        timeMin = Math.round(valhallaData.trip.summary.time / 60);
 
-          // Best case: completely safe route
-          if (status === 'safe') {
-            selectedRoute = currentRoute;
-            selectedGeoCoordinates = geojsonCoordinates;
-            selectedStatus = status;
-            selectedWarnings = warnings;
-            if (rIdx > 0) detourApplied = true;
-            break;
+        // Add info warning that Valhalla Routing is active
+        const valhallaInfoMsg = currentLang === 'ja'
+          ? '🗺️【Valhallaエンジン】 yuk mashinasi marshruti hisoblandi.'
+          : '🗺️ Route computed using Valhalla commercial truck routing.';
+        selectedWarnings = [{ id: 'valhalla_routing', message: valhallaInfoMsg, status: 'info' }, ...selectedWarnings];
+
+        // Parse turn instructions using parseValhallaSteps
+        finalSteps = parseValhallaSteps(valhallaData.trip, selectedVehicle, selectedGeoCoordinates, overpassData);
+      } else {
+        // Fallback to OSRM
+        const coordsString = points.map(p => `${p.lng},${p.lat}`).join(';');
+        const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson&alternatives=true&steps=true&annotations=true`);
+        const osrmData = await osrmRes.json();
+
+        if (osrmData.routes && osrmData.routes.length > 0) {
+          let selectedRoute = null;
+          let detourApplied = false;
+
+          // Fetch dynamic Overpass restrictions for the route area (uses first route's bbox)
+          const firstRouteCoords = osrmData.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+          try {
+            overpassData = await fetchOverpassRestrictions(firstRouteCoords);
+          } catch (e) {
+            // Overpass fetch failed silently
           }
 
-          // Fallback case: warning route is better than blocked
-          if (status === 'warning' && selectedStatus !== 'safe') {
-            selectedRoute = currentRoute;
-            selectedGeoCoordinates = geojsonCoordinates;
-            selectedStatus = status;
-            selectedWarnings = warnings;
-            if (rIdx > 0) detourApplied = true;
+          // Iterate through all alternative routes to find a safer one
+          for (let rIdx = 0; rIdx < osrmData.routes.length; rIdx++) {
+            const currentRoute = osrmData.routes[rIdx];
+            const geojsonCoordinates = currentRoute.geometry.coordinates.map(c => [c[1], c[0]]);
+            
+            const mlitResult = checkClearanceLimits(geojsonCoordinates, height, width, weight, currentLang);
+            const overpassResult = checkOverpassRestrictions(geojsonCoordinates, overpassData, height, width, weight, vehicleType);
+            const { status, warnings } = mergeRestrictionResults(mlitResult, overpassResult);
+
+            if (status === 'safe') {
+              selectedRoute = currentRoute;
+              selectedGeoCoordinates = geojsonCoordinates;
+              selectedStatus = status;
+              selectedWarnings = warnings;
+              if (rIdx > 0) detourApplied = true;
+              break;
+            }
+
+            if (status === 'warning' && selectedStatus !== 'safe') {
+              selectedRoute = currentRoute;
+              selectedGeoCoordinates = geojsonCoordinates;
+              selectedStatus = status;
+              selectedWarnings = warnings;
+              if (rIdx > 0) detourApplied = true;
+            }
           }
+
+          if (!selectedRoute) {
+            selectedRoute = osrmData.routes[0];
+            selectedGeoCoordinates = selectedRoute.geometry.coordinates.map(c => [c[1], c[0]]);
+            const mlitFallback = checkClearanceLimits(selectedGeoCoordinates, height, width, weight, currentLang);
+            const overpassFallback = checkOverpassRestrictions(selectedGeoCoordinates, overpassData, height, width, weight, vehicleType);
+            const merged = mergeRestrictionResults(mlitFallback, overpassFallback);
+            selectedStatus = merged.status;
+            selectedWarnings = merged.warnings;
+          }
+
+          distanceKm = parseFloat((selectedRoute.distance / 1000).toFixed(1));
+          timeMin = Math.round(selectedRoute.duration / 60);
+
+          if (detourApplied) {
+            const detourMsg = currentLang === 'ja'
+              ? '🛡️【迂回ルート適用】OSRM高さ/重量制限エリアを自動回避しました。'
+              : '🛡️ Detour Applied: Safely bypassed OSRM clearance limits.';
+            selectedWarnings = [{ id: 'detour_success', message: detourMsg, status: 'success' }, ...selectedWarnings];
+          }
+
+          // Parse OSRM steps
+          finalSteps = parseOSRMSteps(selectedRoute, selectedVehicle, overpassData);
         }
+      }
 
-        // If no safe or warning route was found, use the default route (route 0)
-        if (!selectedRoute) {
-          selectedRoute = data.routes[0];
-          selectedGeoCoordinates = selectedRoute.geometry.coordinates.map(c => [c[1], c[0]]);
-          const mlitFallback = checkClearanceLimits(selectedGeoCoordinates, height, width, weight, currentLang);
-          const overpassFallback = checkOverpassRestrictions(selectedGeoCoordinates, overpassData, height, width, weight, vehicleType);
-          const merged = mergeRestrictionResults(mlitFallback, overpassFallback);
-          selectedStatus = merged.status;
-          selectedWarnings = merged.warnings;
-        }
-
-        const distanceKm = parseFloat((selectedRoute.distance / 1000).toFixed(1));
-        const timeMin = Math.round(selectedRoute.duration / 60);
-
-        // Prepend success detour warning message if bypassed successfully
-        if (detourApplied) {
-          const detourMsg = currentLang === 'ja'
-            ? '🛡️【迂回ルート適用】MLIT高さ/重量制限エリアを自動回避しました。'
-            : '🛡️ Detour Applied: Safely bypassed MLIT clearance limits.';
-          selectedWarnings = [{ id: 'detour_success', message: detourMsg, status: 'success' }, ...selectedWarnings];
-        }
-
+      if (selectedGeoCoordinates && selectedGeoCoordinates.length > 0) {
         const polylineColor = selectedStatus === 'blocked' ? '#FF453A' : selectedStatus === 'warning' ? '#FF9500' : '#0A84FF';
         drawRouteOnMap(selectedGeoCoordinates, polylineColor);
 
@@ -998,13 +1092,10 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
           edgesUsed: []
         });
 
-        // Parse real OSRM turn-by-turn steps from the selected route
-        const realSteps = parseOSRMSteps(selectedRoute, selectedVehicle, overpassData);
-        let finalSteps = realSteps;
-        if (realSteps.length > 0) {
-          setNavSteps(realSteps);
+        if (finalSteps.length > 0) {
+          setNavSteps(finalSteps);
         } else {
-          // Fallback: basic steps from coordinates if OSRM steps parsing fails
+          // Fallback: basic steps from coordinates
           const stepCount = 7;
           const fallbackSteps = [];
           const interval = Math.floor(selectedGeoCoordinates.length / stepCount) || 1;
@@ -1017,9 +1108,9 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
               jaText: `直進 (${(distanceKm * (i / stepCount)).toFixed(1)} km)`,
               roadName: '', landmark: '', arrow: '↑', arrowAngle: 0,
               maneuverType: 'continue', modifier: 'straight',
-              distanceToNext: (selectedRoute.distance || 0) / stepCount,
-              distanceToNextFormatted: formatDistanceJa((selectedRoute.distance || 0) / stepCount),
-              durationToNext: (selectedRoute.duration || 0) / stepCount,
+              distanceToNext: (distanceKm * 1000) / stepCount,
+              distanceToNextFormatted: formatDistanceJa((distanceKm * 1000) / stepCount),
+              durationToNext: (timeMin * 60) / stepCount,
               speedLimit: 50, bearingBefore: 0, bearingAfter: 0
             });
           }
@@ -1096,7 +1187,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startCoord, destCoord, stops, selectedVehicle, height, width, weight, isMapLoaded, showTrafficLayer]);
+  }, [startCoord, destCoord, stops, selectedVehicle, height, width, weight, avoidTolls, avoidHighways, isMapLoaded, showTrafficLayer]);
 
   // Handle active vehicle marker during simulation step changes
   useEffect(() => {
@@ -1939,6 +2030,60 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
                     style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '4px 6px', fontSize: '11px', color: 'var(--text-main)', width: '100%', outline: 'none' }}
                   />
                 </div>
+              </div>
+
+              {/* Toll/Expressway Preferences */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerSound();
+                    setAvoidTolls(prev => !prev);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '6px 8px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--glass-border)',
+                    background: avoidTolls ? 'rgba(255, 149, 0, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                    color: avoidTolls ? '#FF9500' : 'var(--text-main)',
+                    fontSize: '10px',
+                    fontWeight: '800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <span>{currentLang === 'ja' ? '有料道路を避ける' : 'Avoid Tolls'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerSound();
+                    setAvoidHighways(prev => !prev);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '6px 8px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--glass-border)',
+                    background: avoidHighways ? 'rgba(255, 149, 0, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                    color: avoidHighways ? '#FF9500' : 'var(--text-main)',
+                    fontSize: '10px',
+                    fontWeight: '800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <span>{currentLang === 'ja' ? '高速道路を避ける' : 'Avoid Highways'}</span>
+                </button>
               </div>
 
               {/* Sequential Inputs Column */}

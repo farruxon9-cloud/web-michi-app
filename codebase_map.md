@@ -6,11 +6,11 @@
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 59 ta
+* **Jami skanerlangan fayllar:** 60 ta
 * **React Komponentlari:** 20 ta
 * **Komponent Stillari (CSS):** 16 ta
 * **Unit Testlar (Vitest):** 4 ta
-* **Yordamchi funksiyalar (utils):** 14 ta
+* **Yordamchi funksiyalar (utils):** 15 ta
 * **Boshqa asosiy fayllar (root):** 5 ta
 
 ---
@@ -185,7 +185,7 @@ graph TD
   - `lucide-react`
 
 ### 📦 [JDMNavigation](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (2713 qator, 120531 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (2858 qator, 126228 bayt)
 * **Komponent Stillari:** 🎨 [JDMNavigation.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.css)
 * **Unit Testlari:** 🧪 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -512,7 +512,7 @@ graph TD
 * **Importlari:** `pdfmake/build/pdfmake`, `./japaneseEra`
 
 ### ⚙️ [turnInstructions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/turnInstructions.js)
-* **Yo'li:** `src/utils/turnInstructions.js` (318 qator, 11332 bayt)
+* **Yo'li:** `src/utils/turnInstructions.js` (554 qator, 18208 bayt)
 * **Eksport qilingan funksiyalari:**
   - `calculateBearing()`
   - `classifyTurnAngle()`
@@ -520,7 +520,16 @@ graph TD
   - `parseOSRMSteps()`
   - `getRemainingMetrics()`
   - `getCountdownText()`
+  - `mapValhallaTypeToOSRM()`
+  - `parseValhallaSteps()`
+  - `decodePolyline6()`
 * **Importlari:** `./turnRadiusPhysics`, `./laneGuidance`
+
+### ⚙️ [turnInstructions.test.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/turnInstructions.test.js)
+* **Yo'li:** `src/utils/turnInstructions.test.js` (89 qator, 3199 bayt)
+* **Eksport qilingan funksiyalari:**
+  - *Eksportlar aniqlanmadi yoki yo'q*
+* **Importlari:** `vitest`, `./turnInstructions`
 
 ### ⚙️ [turnRadiusPhysics.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/turnRadiusPhysics.js)
 * **Yo'li:** `src/utils/turnRadiusPhysics.js` (295 qator, 10111 bayt)
