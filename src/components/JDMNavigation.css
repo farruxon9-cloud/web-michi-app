@@ -1092,11 +1092,18 @@
   width: 0;
 }
 
-/* Floating Locate GPS Button inside map container */
-.map-gps-locate-btn {
+/* Elegant Unified Vertical Map Controls Panel */
+.map-control-vertical-bar {
   position: absolute;
-  bottom: 172px;
   right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+  transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.map-control-btn {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -1108,45 +1115,154 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 1000;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.map-gps-locate-btn:hover {
+.map-control-btn:hover {
   background: var(--glass-bg);
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
-.map-gps-locate-btn:active {
-  transform: scale(0.95);
+.map-control-btn:active {
+  transform: scale(0.94);
 }
 
-/* Floating Map Orientation Toggle Button */
-.map-orientation-toggle-btn {
+.map-control-btn.active {
+  background: rgba(10, 132, 255, 0.2) !important;
+  color: #0A84FF !important;
+  border-color: rgba(10, 132, 255, 0.5) !important;
+  box-shadow: 0 0 12px rgba(10, 132, 255, 0.35);
+}
+
+/* Hide compass unless bearing is non-zero */
+.map-control-btn.compass-btn {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.8);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.map-control-btn.compass-btn.visible-active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) rotate(var(--map-bearing-rot, 0deg));
+}
+
+/* Pulse glow for locating centering action button */
+.map-control-btn.locate-btn.gps-pulse-active {
+  background: #30D158 !important;
+  color: #ffffff !important;
+  border-color: #30D158 !important;
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+/* Modern Glassmorphic Layer Selector Popup */
+.map-layer-selector-popup {
   position: absolute;
-  right: 16px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid var(--glass-border);
+  right: 68px;
+  width: 240px;
   background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.map-layer-selector-popup .popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text-main);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.map-layer-selector-popup .popup-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 2px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.map-layer-selector-popup .popup-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+}
+
+.map-layer-selector-popup .layer-options-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.layer-option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   cursor: pointer;
-  z-index: 1000;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.map-orientation-toggle-btn:hover {
-  background: var(--glass-bg);
-  transform: scale(1.05);
+.layer-option-card span {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  transition: color 0.2s;
 }
 
-.map-orientation-toggle-btn:active {
-  transform: scale(0.95);
+.layer-option-card .layer-preview {
+  width: 100%;
+  height: 52px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-size: cover;
+  background-position: center;
+  transition: all 0.2s;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.layer-option-card .layer-preview.vector-light {
+  background-color: #f3f4f6;
+  background-image: linear-gradient(135deg, #e5e7eb 25%, transparent 25%), linear-gradient(225deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(315deg, #e5e7eb 25%, #f3f4f6 25%);
+}
+
+.layer-option-card .layer-preview.vector-traffic {
+  background-color: #e5f6e8;
+  background-image: linear-gradient(135deg, #30D158 10%, transparent 10%), linear-gradient(225deg, #30D158 10%, transparent 10%);
+}
+
+.layer-option-card .layer-preview.satellite-hybrid {
+  background-image: radial-gradient(circle, #0e1e2d 10%, #030708 90%);
+}
+
+.layer-option-card:hover .layer-preview {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.layer-option-card.selected .layer-preview {
+  border-color: #0A84FF;
+  box-shadow: 0 0 8px rgba(10, 132, 255, 0.4);
+}
+
+.layer-option-card.selected span {
+  color: #0A84FF;
+  font-weight: 700;
 }
 
 /* User Location marker style (Radar dot) */
@@ -1610,8 +1726,7 @@
 
 /* Remove default focus outlines and mobile tap highlights to prevent black boxes/shadows */
 button,
-.map-gps-locate-btn,
-.map-orientation-toggle-btn,
+.map-control-btn,
 .map-back-btn,
 .custom-map-marker,
 .custom-leaflet-icon-wrapper,
@@ -1624,15 +1739,13 @@ button,
 }
 
 button:focus,
-.map-gps-locate-btn:focus,
-.map-orientation-toggle-btn:focus,
+.map-control-btn:focus,
 .map-back-btn:focus {
   outline: none !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
 }
 
-.map-gps-locate-btn:focus-visible,
-.map-orientation-toggle-btn:focus-visible,
+.map-control-btn:focus-visible,
 .map-back-btn:focus-visible {
   outline: none !important;
 }

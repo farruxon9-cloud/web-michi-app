@@ -185,18 +185,20 @@ graph TD
   - `lucide-react`
 
 ### 📦 [JDMNavigation](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (2537 qator, 114230 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (2713 qator, 120531 bayt)
 * **Komponent Stillari:** 🎨 [JDMNavigation.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.css)
 * **Unit Testlari:** 🧪 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
   - `showJDMNavigation`
+  - `darkMode`
 * **Import qilgan bog'liqliklari:**
   - `react`
   - `react-i18next`
   - `lucide-react`
   - `../utils/haptics`
   - `maplibre-gl`
+  - `react-map-gl/maplibre`
   - `../utils/mlitRestrictions`
   - `../utils/turnInstructions`
   - `../utils/overpassRestrictions`
@@ -562,7 +564,7 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### 📄 [App.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/App.jsx)
-* **Yo'li:** `src/App.jsx` (1277 qator)
+* **Yo'li:** `src/App.jsx` (1278 qator)
 * **Importlari:** `react`, `lucide-react`, `react-i18next`, `./components/Splash`, `./components/LanguageSelect`, `./components/RoleSelect`, `./components/BottomNav`, `./components/Dashboard`, `./components/DriverFeed`, `./components/JobDetail`, `./components/DrivingAcademy`, `./components/ServiceComingSoon`, `./components/Profile`, `./components/AdminDashboard`, `./components/CompanyHome`, `./components/VoiceAssistant`, `./components/RobotAvatar`, `./components/JDMNavigation`, `./components/ErrorBoundary`
 
 ### 📄 [i18n.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/i18n.js)

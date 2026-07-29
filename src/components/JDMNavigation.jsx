@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike, Plus, Trash2, Bookmark, X, Save, ChevronDown, ChevronUp, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike, Plus, Minus, Layers, Trash2, Bookmark, X, Save, ChevronDown, ChevronUp, Volume2, VolumeX } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
-import { Map, Marker } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import ReactMap from 'react-map-gl/maplibre';
+const { Marker } = maplibregl;
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './JDMNavigation.css';
 import { checkClearanceLimits } from '../utils/mlitRestrictions';
@@ -106,7 +108,7 @@ const getETA = (minutes) => {
   return `${hrs}:${mins}`;
 };
 
-export default function JDMNavigation({ onBack, showJDMNavigation }) {
+export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   const { i18n } = useTranslation();
   const currentLang = i18n.language || 'uz';
 
@@ -126,6 +128,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
   const simMarkerRef = useRef(null);
   const isFollowingRef = useRef(true);
   const activeMarkersRef = useRef([]);
+  const routeFlowAnimRef = useRef(null);
 
   // States
   const [isMapLoaded, setIsMapLoaded] = useState(false);
@@ -139,6 +142,9 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
   const [bottomSheetState, setBottomSheetState] = useState('collapsed'); // 'collapsed' or 'expanded'
   const [mapStyleMode, setMapStyleMode] = useState('vector'); // 'vector' or 'satellite'
   const [showTrafficLayer, setShowTrafficLayer] = useState(false);
+  const [is3D, setIs3D] = useState(false);
+  const [showLayerMenu, setShowLayerMenu] = useState(false);
+  const [mapBearing, setMapBearing] = useState(0);
 
   const [startQuery, setStartQuery] = useState('');
   const [destQuery, setDestQuery] = useState('');
@@ -327,148 +333,13 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
     return dict[key]?.[currentLang] || dict[key]?.['uz'] || '';
   };
 
-  // Initialize MapLibre Map
+  // Cleanup map instance on unmount
   useEffect(() => {
-    if (mapContainerRef.current && !mapInstanceRef.current) {
-      try {
-        mapInstanceRef.current = new Map({
-          container: mapContainerRef.current,
-          style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-          center: [139.7741, 35.6841], // Tokyo center [lng, lat]
-          zoom: 11,
-          attributionControl: false
-        });
-
-        mapInstanceRef.current.on('load', () => {
-          setIsMapLoaded(true);
-
-          // Force all CartoDB layers to use strictly local Japanese names ({name}) instead of English ({name_en})
-          try {
-            const style = mapInstanceRef.current.getStyle();
-            if (style && style.layers) {
-              style.layers.forEach(layer => {
-                if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
-                  const currentTextField = layer.layout['text-field'];
-
-                  if (typeof currentTextField === 'string') {
-                    if (currentTextField.includes('{name_en}') || currentTextField.includes('{name_latin}')) {
-                      const newTextField = currentTextField.replace(/{name_en}/g, '{name}').replace(/{name_latin}/g, '{name}');
-                      mapInstanceRef.current.setLayoutProperty(layer.id, 'text-field', newTextField);
-                    }
-                  } else if (currentTextField && typeof currentTextField === 'object' && currentTextField.stops) {
-                    const updatedStops = currentTextField.stops.map(stop => {
-                      let val = stop[1];
-                      if (typeof val === 'string') {
-                        val = val.replace(/{name_en}/g, '{name}').replace(/{name_latin}/g, '{name}');
-                      }
-                      return [stop[0], val];
-                    });
-                    mapInstanceRef.current.setLayoutProperty(layer.id, 'text-field', {
-                      ...currentTextField,
-                      stops: updatedStops
-                    });
-                  }
-                }
-              });
-            }
-          } catch (e) {
-            console.warn('Failed to customize map language layers:', e);
-          }
-
-          // Add 3D building extrusion layer dynamically detecting correct vector source (e.g. 'carto' or 'openmaptiles')
-          try {
-            let buildingSource = null;
-            let buildingSourceLayer = null;
-            const style = mapInstanceRef.current.getStyle();
-            
-            // Detect from layers
-            if (style && style.layers) {
-              const buildingLayer = style.layers.find(l => l['source-layer'] === 'building' || l['source-layer'] === 'buildings');
-              if (buildingLayer) {
-                buildingSource = buildingLayer.source;
-                buildingSourceLayer = buildingLayer['source-layer'];
-              }
-            }
-            
-            // Detect from sources if not found in layers
-            if (!buildingSource && style && style.sources) {
-              if (style.sources.carto) {
-                buildingSource = 'carto';
-              } else if (style.sources.openmaptiles) {
-                buildingSource = 'openmaptiles';
-              } else {
-                const vectorKey = Object.keys(style.sources).find(k => style.sources[k].type === 'vector');
-                if (vectorKey) buildingSource = vectorKey;
-              }
-            }
-            
-            if (!buildingSourceLayer) buildingSourceLayer = 'building';
-            
-            if (buildingSource) {
-              mapInstanceRef.current.addLayer({
-                'id': '3d-buildings',
-                'source': buildingSource,
-                'source-layer': buildingSourceLayer,
-                'type': 'fill-extrusion',
-                'minzoom': 14,
-                'paint': {
-                  'fill-extrusion-color': [
-                    'interpolate', ['linear'], ['zoom'],
-                    14, '#e6e6e6',
-                    16, '#cdcdcd'
-                  ],
-                  'fill-extrusion-height': [
-                    'coalesce', 
-                    ['get', 'render_height'], 
-                    ['get', 'height'], 
-                    15
-                  ],
-                  'fill-extrusion-base': [
-                    'coalesce', 
-                    ['get', 'render_min_height'], 
-                    ['get', 'min_height'], 
-                    0
-                  ],
-                  'fill-extrusion-opacity': 0.65
-                }
-              });
-            }
-          } catch (err) {
-            console.warn('Failed to add 3D buildings layer:', err);
-          }
-
-          setTimeout(() => {
-            if (mapInstanceRef.current) mapInstanceRef.current.resize();
-          }, 100);
-        });
-
-          // Detect user interaction to break camera follow during navigation
-          mapInstanceRef.current.on('dragstart', () => {
-            if (isFollowingRef.current) {
-              isFollowingRef.current = false;
-              setIsFollowingVehicle(false);
-            }
-          });
-
-        mapInstanceRef.current.on('error', (e) => {
-          console.error('MapLibre GL error event:', e);
-          if (e && e.error && e.error.message) {
-            setMapErrorMsg(prev => prev ? prev : `MapLibre error: ${e.error.message}`);
-          } else if (e && e.message) {
-            setMapErrorMsg(prev => prev ? prev : `MapLibre error: ${e.message}`);
-          }
-        });
-      } catch (err) {
-        console.error('MapLibre GL Map initialization failed:', err);
-        setMapErrorMsg(`MapLibre initialization failed: ${err.message || err}`);
-      }
-    }
-
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-        setIsMapLoaded(false);
+      mapInstanceRef.current = null;
+      setIsMapLoaded(false);
+      if (routeFlowAnimRef.current) {
+        cancelAnimationFrame(routeFlowAnimRef.current);
       }
     };
   }, []);
@@ -517,24 +388,33 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
     }
   }, [mapStyleMode, isMapLoaded]);
 
-  // Handle map orientation (pitch and bearing) dynamically when not actively simulating navigation
+  // Handle map orientation (pitch) dynamically when not actively simulating navigation
   useEffect(() => {
     if (!mapInstanceRef.current || !isMapLoaded || isNavigating) return;
     const map = mapInstanceRef.current;
-    if (mapOrientation === 'heading') {
-      map.easeTo({
-        pitch: 60,
-        zoom: map.getZoom() < 13 ? 14 : map.getZoom(),
-        duration: 800
-      });
-    } else {
-      map.easeTo({
-        pitch: 0,
-        bearing: 0,
-        duration: 800
-      });
-    }
-  }, [mapOrientation, isNavigating, isMapLoaded]);
+    map.easeTo({
+      pitch: is3D ? 60 : 0,
+      bearing: mapOrientation === 'heading' ? map.getBearing() : 0,
+      duration: 800
+    });
+  }, [is3D, mapOrientation, isNavigating, isMapLoaded]);
+
+  // Track map rotation/bearing changes in real-time
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isMapLoaded) return;
+    const map = mapInstanceRef.current;
+    
+    const updateBearing = () => {
+      setMapBearing(map.getBearing());
+    };
+    
+    map.on('rotate', updateBearing);
+    updateBearing();
+    
+    return () => {
+      map.off('rotate', updateBearing);
+    };
+  }, [isMapLoaded]);
 
   // Locate user using standard HTML5 Geolocation API or active vehicle follow
   const handleLocateUser = () => {
@@ -829,8 +709,14 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
     const map = mapInstanceRef.current;
     
     // Remove existing layer and source
+    if (map.getLayer('route-flow')) map.removeLayer('route-flow');
     if (map.getLayer('route')) map.removeLayer('route');
     if (map.getSource('route')) map.removeSource('route');
+    
+    if (routeFlowAnimRef.current) {
+      cancelAnimationFrame(routeFlowAnimRef.current);
+      routeFlowAnimRef.current = null;
+    }
 
     // Convert coordinates from [lat, lng] to [lng, lat]
     const mapLibreCoords = coordinates.map(c => [c[1], c[0]]);
@@ -909,6 +795,54 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
       },
       paint
     });
+
+    if (!dashed) {
+      map.addLayer({
+        id: 'route-flow',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': 4,
+          'line-opacity': 0.6,
+          'line-dasharray': [0, 4, 3, 0]
+        }
+      });
+
+      const dashArraySequence = [
+        [0, 4, 3, 0],
+        [0.5, 4, 2.5, 0],
+        [1, 4, 2, 0],
+        [1.5, 4, 1.5, 0],
+        [2, 4, 1, 0],
+        [2.5, 4, 0.5, 0],
+        [3, 4, 0, 0],
+        [0, 1, 3, 3]
+      ];
+      let step = 0;
+      let lastTime = 0;
+
+      const animateDash = (timestamp) => {
+        if (!mapInstanceRef.current || !isMapLoaded) return;
+        if (!mapInstanceRef.current.getLayer('route-flow')) return;
+
+        if (!lastTime) lastTime = timestamp;
+        const elapsed = timestamp - lastTime;
+        if (elapsed > 80) {
+          step = (step + 1) % dashArraySequence.length;
+          try {
+            mapInstanceRef.current.setPaintProperty('route-flow', 'line-dasharray', dashArraySequence[step]);
+          } catch (e) {}
+          lastTime = timestamp;
+        }
+        routeFlowAnimRef.current = requestAnimationFrame(animateDash);
+      };
+      routeFlowAnimRef.current = requestAnimationFrame(animateDash);
+    }
 
     if (mapLibreCoords.length > 0) {
       try {
@@ -1490,50 +1424,292 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
     <div className="jdm-nav-container animate-fade-in">
       
       {/* Real Full Screen Map */}
-      <div ref={mapContainerRef} className="map-canvas-container-fullscreen"></div>
-      
-      {/* Map Orientation Toggle Button (North-Up vs Head-Up) */}
-      <button 
-        type="button" 
-        className="map-orientation-toggle-btn"
-        onClick={() => {
-          triggerSound();
-          setMapOrientation(prev => prev === 'heading' ? 'north' : 'heading');
-        }} 
-        title={mapOrientation === 'heading' ? 'Head-Up (3D)' : 'North-Up (2D)'}
-        style={{ bottom: `${gpsBottomOffset + 52}px` }}
-      >
-        <Compass 
-          size={18} 
-          style={{ 
-            transform: `rotate(${mapOrientation === 'heading' ? -getActiveHeading() : 0}deg)`, 
-            transition: 'transform 0.3s ease',
-            color: mapOrientation === 'heading' ? '#30D158' : 'var(--text-main)'
-          }} 
-        />
-      </button>
+      <div ref={mapContainerRef} className="map-canvas-container-fullscreen">
+        <ReactMap
+          initialViewState={{
+            longitude: 139.7741,
+            latitude: 35.6841,
+            zoom: 11
+          }}
+          style={{ width: '100%', height: '100%' }}
+          mapStyle={darkMode ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' : 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'}
+          mapLib={maplibregl}
+          onLoad={(e) => {
+            const map = e.target;
+            mapInstanceRef.current = map;
+            setIsMapLoaded(true);
 
-      {/* Floating GPS Locate Button */}
-      <button 
-        type="button" 
-        className="map-gps-locate-btn"
-        onClick={() => {
-          if (isNavigating) {
-            // Re-center on vehicle during navigation
-            isFollowingRef.current = true;
-            setIsFollowingVehicle(true);
-          } else {
-            handleLocateUser();
-          }
-        }} 
-        title={isNavigating ? (isFollowingVehicle ? 'Following' : 'Re-center') : 'Locate me'}
-        style={{ 
-          bottom: `${gpsBottomOffset}px`,
-          ...(isNavigating && !isFollowingVehicle ? { background: '#30D158', color: '#fff', border: '2px solid #30D158', animation: 'pulse-glow 1.5s ease-in-out infinite' } : {})
-        }}
-      >
-        {isNavigating ? <Navigation size={18} /> : <Locate size={18} />}
-      </button>
+            // Configure layers (Japanese labels and 3D buildings) dynamically
+            const setupStyle = () => {
+              // Force all CartoDB layers to use strictly local Japanese names ({name}) instead of English ({name_en})
+              try {
+                const style = map.getStyle();
+                if (style && style.layers) {
+                  style.layers.forEach(layer => {
+                    if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
+                      const currentTextField = layer.layout['text-field'];
+
+                      if (typeof currentTextField === 'string') {
+                        if (currentTextField.includes('{name_en}') || currentTextField.includes('{name_latin}')) {
+                          const newTextField = currentTextField.replace(/{name_en}/g, '{name}').replace(/{name_latin}/g, '{name}');
+                          map.setLayoutProperty(layer.id, 'text-field', newTextField);
+                        }
+                      } else if (currentTextField && typeof currentTextField === 'object' && currentTextField.stops) {
+                        const updatedStops = currentTextField.stops.map(stop => {
+                          let val = stop[1];
+                          if (typeof val === 'string') {
+                            val = val.replace(/{name_en}/g, '{name}').replace(/{name_latin}/g, '{name}');
+                          }
+                          return [stop[0], val];
+                        });
+                        map.setLayoutProperty(layer.id, 'text-field', {
+                          ...currentTextField,
+                          stops: updatedStops
+                        });
+                      }
+                    }
+                  });
+                }
+              } catch (err) {
+                console.warn('Failed to customize map language layers:', err);
+              }
+
+              // Add 3D building extrusion layer dynamically detecting correct vector source (e.g. 'carto' or 'openmaptiles')
+              try {
+                let buildingSource = null;
+                let buildingSourceLayer = null;
+                const style = map.getStyle();
+                
+                if (style && style.layers) {
+                  const buildingLayer = style.layers.find(l => l['source-layer'] === 'building' || l['source-layer'] === 'buildings');
+                  if (buildingLayer) {
+                    buildingSource = buildingLayer.source;
+                    buildingSourceLayer = buildingLayer['source-layer'];
+                  }
+                }
+                
+                if (!buildingSource && style && style.sources) {
+                  if (style.sources.carto) {
+                    buildingSource = 'carto';
+                  } else if (style.sources.openmaptiles) {
+                    buildingSource = 'openmaptiles';
+                  } else {
+                    const vectorKey = Object.keys(style.sources).find(k => style.sources[k].type === 'vector');
+                    if (vectorKey) buildingSource = vectorKey;
+                  }
+                }
+                
+                if (!buildingSourceLayer) buildingSourceLayer = 'building';
+                
+                if (buildingSource && !map.getLayer('3d-buildings')) {
+                  map.addLayer({
+                    'id': '3d-buildings',
+                    'source': buildingSource,
+                    'source-layer': buildingSourceLayer,
+                    'type': 'fill-extrusion',
+                    'minzoom': 14,
+                    'paint': {
+                      'fill-extrusion-color': darkMode ? '#1f2937' : '#e6e6e6',
+                      'fill-extrusion-height': [
+                        'coalesce', 
+                        ['get', 'render_height'], 
+                        ['get', 'height'], 
+                        15
+                      ],
+                      'fill-extrusion-base': [
+                        'coalesce', 
+                        ['get', 'render_min_height'], 
+                        ['get', 'min_height'], 
+                        0
+                      ],
+                      'fill-extrusion-opacity': 0.65
+                    }
+                  });
+                }
+              } catch (err) {
+                console.warn('Failed to add 3D buildings layer:', err);
+              }
+              // Add 3D terrain
+              try {
+                if (!map.getSource('terrain-source')) {
+                  map.addSource('terrain-source', {
+                    type: 'raster-dem',
+                    tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+                    encoding: 'terrarium',
+                    tileSize: 256,
+                    maxzoom: 14
+                  });
+                }
+                map.setTerrain({
+                  source: 'terrain-source',
+                  exaggeration: 1.2
+                });
+              } catch (err) {
+                console.warn('Failed to add 3D terrain:', err);
+              }
+            };
+
+            // Run on loaded style and bind to style.load event
+            setupStyle();
+            map.on('style.load', setupStyle);
+
+            // Detect user interaction to break camera follow during navigation
+            map.on('dragstart', () => {
+              if (isFollowingRef.current) {
+                isFollowingRef.current = false;
+                setIsFollowingVehicle(false);
+              }
+            });
+
+            map.on('error', (errEvt) => {
+              console.error('MapLibre GL error event:', errEvt);
+              if (errEvt && errEvt.error && errEvt.error.message) {
+                setMapErrorMsg(prev => prev ? prev : `MapLibre error: ${errEvt.error.message}`);
+              } else if (errEvt && errEvt.message) {
+                setMapErrorMsg(prev => prev ? prev : `MapLibre error: ${errEvt.message}`);
+              }
+            });
+          }}
+          attributionControl={false}
+        />
+      </div>
+      
+      {/* Elegant Unified Vertical Map Controls Panel */}
+      <div className="map-control-vertical-bar" style={{ bottom: `${gpsBottomOffset}px` }}>
+        
+        {/* Layer style toggler */}
+        <button
+          type="button"
+          className={`map-control-btn ${showLayerMenu ? 'active' : ''}`}
+          onClick={() => {
+            triggerSound();
+            setShowLayerMenu(prev => !prev);
+          }}
+          title={currentLang === 'ja' ? '地図レイヤー' : 'Xarita qatlamlari'}
+        >
+          <Layers size={18} />
+        </button>
+
+        {/* 3D Tilt button */}
+        <button
+          type="button"
+          className={`map-control-btn ${is3D ? 'active' : ''}`}
+          onClick={() => {
+            triggerSound();
+            setIs3D(prev => !prev);
+          }}
+          title="3D Tilt View"
+        >
+          <span style={{ fontSize: '10px', fontWeight: '800' }}>3D</span>
+        </button>
+
+        {/* Compass reset bearing button */}
+        <button
+          type="button"
+          className={`map-control-btn compass-btn ${Math.abs(mapBearing) > 1 ? 'visible-active' : ''}`}
+          onClick={() => {
+            triggerSound();
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.easeTo({ bearing: 0, duration: 500 });
+            }
+          }}
+          style={{
+            transform: `rotate(${-mapBearing}deg)`
+          }}
+          title={currentLang === 'ja' ? '北を上にする' : 'Shimolni tepaga tekislash'}
+        >
+          <Compass size={18} style={{ color: Math.abs(mapBearing) > 1 ? '#0A84FF' : 'var(--text-main)' }} />
+        </button>
+
+        {/* Zoom In Button */}
+        <button
+          type="button"
+          className="map-control-btn"
+          onClick={() => {
+            triggerSound();
+            mapInstanceRef.current?.zoomIn({ duration: 300 });
+          }}
+          title="Zoom In"
+        >
+          <Plus size={18} />
+        </button>
+
+        {/* Zoom Out Button */}
+        <button
+          type="button"
+          className="map-control-btn"
+          onClick={() => {
+            triggerSound();
+            mapInstanceRef.current?.zoomOut({ duration: 300 });
+          }}
+          title="Zoom Out"
+        >
+          <Minus size={18} />
+        </button>
+
+        {/* Floating GPS Locate Button */}
+        <button 
+          type="button" 
+          className={`map-control-btn locate-btn ${isNavigating && !isFollowingVehicle ? 'gps-pulse-active' : ''}`}
+          onClick={() => {
+            if (isNavigating) {
+              isFollowingRef.current = true;
+              setIsFollowingVehicle(true);
+            } else {
+              handleLocateUser();
+            }
+          }} 
+          title={isNavigating ? (isFollowingVehicle ? 'Following' : 'Re-center') : 'Locate me'}
+        >
+          {isNavigating ? <Navigation size={18} /> : <Locate size={18} />}
+        </button>
+      </div>
+
+      {/* Modern Glassmorphic Layer Selector Popup */}
+      {showLayerMenu && (
+        <div className="map-layer-selector-popup animate-fade-in" style={{ bottom: `${gpsBottomOffset + 50}px` }}>
+          <div className="popup-header">
+            <span>{currentLang === 'ja' ? '地図の種類' : 'Xarita turi'}</span>
+            <button className="popup-close-btn" onClick={() => setShowLayerMenu(false)}>
+              <X size={14} />
+            </button>
+          </div>
+          <div className="layer-options-grid">
+            <div 
+              className={`layer-option-card ${mapStyleMode === 'vector' && !showTrafficLayer ? 'selected' : ''}`}
+              onClick={() => {
+                triggerSound();
+                setMapStyleMode('vector');
+                setShowTrafficLayer(false);
+              }}
+            >
+              <div className="layer-preview vector-light"></div>
+              <span>{currentLang === 'ja' ? '標準' : 'Standart'}</span>
+            </div>
+            <div 
+              className={`layer-option-card ${mapStyleMode === 'vector' && showTrafficLayer ? 'selected' : ''}`}
+              onClick={() => {
+                triggerSound();
+                setMapStyleMode('vector');
+                setShowTrafficLayer(true);
+              }}
+            >
+              <div className="layer-preview vector-traffic"></div>
+              <span>{currentLang === 'ja' ? '交通状況' : 'Tirbandlik'}</span>
+            </div>
+            <div 
+              className={`layer-option-card ${mapStyleMode === 'satellite' ? 'selected' : ''}`}
+              onClick={() => {
+                triggerSound();
+                setMapStyleMode('satellite');
+              }}
+            >
+              <div className="layer-preview satellite-hybrid"></div>
+              <span>{currentLang === 'ja' ? '航空写真' : 'Yo\'ldosh (Hybrid)'}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Offline Status Badge */}
       {!isOnline && (

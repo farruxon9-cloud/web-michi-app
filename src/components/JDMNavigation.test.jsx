@@ -29,12 +29,16 @@ vi.mock('lucide-react', () => ({
   Car: () => 'Car',
   Bike: () => 'Bike',
   Plus: () => 'Plus',
+  Minus: () => 'Minus',
+  Layers: () => 'Layers',
   Trash2: () => 'Trash2',
   Bookmark: () => 'Bookmark',
   X: () => 'X',
   Save: () => 'Save',
   ChevronDown: () => 'ChevronDown',
-  ChevronUp: () => 'ChevronUp'
+  ChevronUp: () => 'ChevronUp',
+  Volume2: () => 'Volume2',
+  VolumeX: () => 'VolumeX'
 }));
 
 // Mock react-i18next translation hook

@@ -1082,6 +1082,7 @@ function App() {
             <JDMNavigation 
               onBack={() => setShowJDMNavigation(false)} 
               showJDMNavigation={showJDMNavigation}
+              darkMode={darkMode}
             />
           </ChunkErrorBoundary>
         </div>
