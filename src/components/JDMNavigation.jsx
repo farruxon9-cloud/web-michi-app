@@ -233,7 +233,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
       clearTimeout(timeoutId);
       if (resizeObserver) resizeObserver.disconnect();
     };
-  }, [isNavigating, route, showSimControls, startCoord, destCoord, stops, isMapLoaded, bottomSheetState, isSettingsCollapsed]);
+  }, [isNavigating, route, showSimControls, startCoord, destCoord, stops, isMapLoaded]);
 
   // Synchronize top settings panel and bottom sheet states to prevent any overlap/clutter
   useEffect(() => {
@@ -247,6 +247,16 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
       setIsSettingsCollapsed(true);
     }
   }, [bottomSheetState]);
+
+  // Recalculate GPS button offset when bottom sheet or settings panel toggles
+  useEffect(() => {
+    if (bottomPanelRef.current) {
+      const rect = bottomPanelRef.current.getBoundingClientRect();
+      setGpsBottomOffset(96 + rect.height + 12);
+    } else {
+      setGpsBottomOffset(96);
+    }
+  }, [bottomSheetState, isSettingsCollapsed]);
 
   // Helper to get active heading angle
   const getActiveHeading = () => {
@@ -273,7 +283,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation }) {
   const triggerSound = () => {
     try {
       playHapticClick();
-    } catch (e) {}
+    } catch (_) {}
   };
 
   // Load saved routes on mount
