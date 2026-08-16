@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Home, Briefcase, GraduationCap, Bot, User } from 'lucide-react';
+import { Home, Briefcase, GraduationCap, Wrench, User } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import './BottomNav.css';
 
@@ -10,7 +10,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
   const navItems = [
     { id: 'home', icon: Home, label: t('navHome', 'Asosiy') },
     { id: 'jobs', icon: Briefcase, label: t('navJobs', 'Ishlar') },
-    { id: 'assist', icon: Bot, label: t('navAssist', 'AI Assist'), isSpecial: true },
+    { id: 'service', icon: Wrench, label: t('navService', 'Servis'), isSpecial: true },
     { id: 'academy', icon: GraduationCap, label: t('navAcademy', 'Maktablar') },
     { id: 'profile', icon: User, label: t('navProfile', 'Profil') },
   ];

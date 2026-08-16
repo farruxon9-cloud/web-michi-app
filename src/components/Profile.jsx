@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2 } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
@@ -2007,6 +2007,26 @@ const getLicenseLabel = (type) => {
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)' }}>{t('michiTeam', 'Michi Ekotizimi Jamoasi')}</div>
                   <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>International Halal Capital Group</div>
+                </div>
+              </div>
+            </div>
+
+            {/* 🤖 Michi AI Assist Intelligence Feature Card (Span 2) */}
+            <div className="about-glass-card card-primary about-span-2 about-animate-item" style={{ background: 'linear-gradient(135deg, rgba(0, 132, 255, 0.08) 0%, rgba(96, 177, 255, 0.04) 100%)', border: '1px solid rgba(0, 132, 255, 0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', width: '100%' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                    <Sparkles size={14} color="#0084FF" />
+                    <span style={{ fontSize: '10px', fontWeight: '800', color: '#0084FF', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                      Michi AI Assist (AI Inteligentsiya)
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
+                    {t('aboutAiDesc', 'Yuk mashinasi haydovchilari uchun aqlli ovozli navigatsiya va sun\'iy intellektga asoslangan masofaviy AI yordamchisi.')}
+                  </p>
+                </div>
+                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #0084FF 0%, #00C6FF 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,132,255,0.3)' }}>
+                  <Bot size={20} color="#FFF" />
                 </div>
               </div>
             </div>

@@ -83,7 +83,7 @@ graph TD
   - `lucide-react`
 
 ### 📦 [BottomNav](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/BottomNav.jsx)
-* **Fayl yo'li:** `src/components/BottomNav.jsx` (172 qator, 6067 bayt)
+* **Fayl yo'li:** `src/components/BottomNav.jsx` (172 qator, 6072 bayt)
 * **Komponent Stillari:** 🎨 [BottomNav.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/BottomNav.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `activeTab`
@@ -126,7 +126,7 @@ graph TD
   - `../utils/imageCompressor`
 
 ### 📦 [Dashboard](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Dashboard.jsx)
-* **Fayl yo'li:** `src/components/Dashboard.jsx` (660 qator, 29168 bayt)
+* **Fayl yo'li:** `src/components/Dashboard.jsx` (606 qator, 25897 bayt)
 * **Komponent Stillari:** 🎨 [Dashboard.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Dashboard.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `setActiveTab`
@@ -275,7 +275,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (4799 qator, 253904 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (4819 qator, 255532 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`

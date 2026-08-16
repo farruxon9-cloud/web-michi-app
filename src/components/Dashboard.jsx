@@ -599,60 +599,6 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
         </div>
       </div>
 
-      {/* 🤖 Assist. AI Hero Showcase & Automation Roadmap Bento Card */}
-      {onOpenAssistShowcase && (
-        <div 
-          className="bento-action-card bento-assist-hero-card squircle" 
-          onClick={() => { triggerSound(); onOpenAssistShowcase(); }}
-          style={{ 
-            padding: '20px 24px', 
-            cursor: 'pointer', 
-            marginTop: '16px',
-            background: 'linear-gradient(135deg, rgba(0, 132, 255, 0.12) 0%, rgba(96, 177, 255, 0.05) 100%)',
-            border: '1px solid rgba(0, 132, 255, 0.25)',
-            boxShadow: '0 8px 32px rgba(0, 132, 255, 0.06)'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
-            <div style={{ flex: 1, paddingRight: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1.5px', color: '#0084FF', textTransform: 'uppercase' }}>
-                  ⚡ ASSIST. AI VISION
-                </span>
-                <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#0084FF' }}></span>
-                <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                  Roadmap 2026
-                </span>
-              </div>
-              
-              <h3 style={{ fontSize: '20px', fontWeight: '900', margin: '0 0 6px 0', color: 'var(--text-main)', letterSpacing: '-0.03em', lineHeight: '1.2' }}>
-                Robotimiz Rivoji & Avtomatlashtirish
-              </h3>
-              
-              <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0 0 12px 0', opacity: 0.85, lineHeight: '1.4' }}>
-                Michi Assist roboti imkoniyatlari, jonli simulyator va kelajakdagi rivojlanish xaritasini ko'ring.
-              </p>
-
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
-                  🗣️ Ovozli muloqot
-                </span>
-                <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
-                  🤖 AI Simulyator
-                </span>
-                <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
-                  🚀 Kelajak Xaritasi
-                </span>
-              </div>
-            </div>
-            
-            <div className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #0084FF 0%, #0066CC 100%)', boxShadow: '0 8px 24px rgba(0, 132, 255, 0.3)' }}>
-              <Sparkles size={24} color="#FFF" />
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }
