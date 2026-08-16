@@ -10,7 +10,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
   const navItems = [
     { id: 'home', icon: Home, label: t('navHome', 'Asosiy') },
     { id: 'jobs', icon: Briefcase, label: t('navJobs', 'Ishlar') },
-    { id: 'service', icon: Wrench, label: t('navService', 'Servis'), isSpecial: true },
+    { id: 'service', icon: Wrench, label: t('navService', 'Servis') },
     { id: 'academy', icon: GraduationCap, label: t('navAcademy', 'Maktablar') },
     { id: 'profile', icon: User, label: t('navProfile', 'Profil') },
   ];

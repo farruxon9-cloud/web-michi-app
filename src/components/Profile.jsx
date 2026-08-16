@@ -2011,23 +2011,41 @@ const getLicenseLabel = (type) => {
               </div>
             </div>
 
-            {/* 🤖 Michi AI Assist Intelligence Feature Card (Span 2) */}
-            <div className="about-glass-card card-primary about-span-2 about-animate-item" style={{ background: 'linear-gradient(135deg, rgba(0, 132, 255, 0.08) 0%, rgba(96, 177, 255, 0.04) 100%)', border: '1px solid rgba(0, 132, 255, 0.2)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', width: '100%' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                    <Sparkles size={14} color="#0084FF" />
-                    <span style={{ fontSize: '10px', fontWeight: '800', color: '#0084FF', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                      Michi AI Assist (AI Inteligentsiya)
-                    </span>
-                  </div>
-                  <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
-                    {t('aboutAiDesc', 'Yuk mashinasi haydovchilari uchun aqlli ovozli navigatsiya va sun\'iy intellektga asoslangan masofaviy AI yordamchisi.')}
-                  </p>
+            {/* ⚡ ASSIST. AI VISION — Robotimiz Rivoji & Avtomatlashtirish Card (Span 2) */}
+            <div className="about-glass-card card-primary about-span-2 about-animate-item" style={{ background: 'linear-gradient(135deg, rgba(0, 132, 255, 0.08) 0%, rgba(96, 177, 255, 0.04) 100%)', border: '1px solid rgba(0, 132, 255, 0.2)', padding: '14px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', width: '100%', marginBottom: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1.2px', color: '#0084FF', textTransform: 'uppercase' }}>
+                    ⚡ ASSIST. AI VISION
+                  </span>
+                  <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#0084FF' }}></span>
+                  <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '0.8px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                    Roadmap 2026
+                  </span>
                 </div>
-                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #0084FF 0%, #00C6FF 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,132,255,0.3)' }}>
-                  <Bot size={20} color="#FFF" />
+                <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, #0084FF 0%, #0066CC 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 10px rgba(0,132,255,0.25)' }}>
+                  <Sparkles size={16} color="#FFF" />
                 </div>
+              </div>
+              
+              <h4 style={{ fontSize: '13.5px', fontWeight: '800', margin: '0 0 4px 0', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                Robotimiz Rivoji & Avtomatlashtirish
+              </h4>
+              
+              <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '0 0 8px 0', lineHeight: '1.4', opacity: 0.9 }}>
+                Michi Assist roboti imkoniyatlari, jonli simulyator va kelajakdagi rivojlanish xaritasini ko'ring.
+              </p>
+
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
+                  🗣️ Ovozli muloqot
+                </span>
+                <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
+                  🤖 AI Simulyator
+                </span>
+                <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
+                  🚀 Kelajak Xaritasi
+                </span>
               </div>
             </div>
 
