@@ -2026,98 +2026,59 @@ const getLicenseLabel = (type) => {
               </div>
             </div>
 
-            {/* 🚀 AI FLAGSHIP SUB-PROJECT SECTION: Michi Assist Voice AI */}
+            {/* 🤖 Assist. AI Hero Showcase & Automation Roadmap Bento Card (Moved from Home Page) */}
             <div 
-              className="about-glass-card card-primary about-span-2 about-animate-item" 
+              className="about-glass-card card-primary about-span-2 about-animate-item about-delay-3" 
               onClick={() => setActivePage('assist_showcase')}
               style={{ 
-                background: 'linear-gradient(135deg, rgba(0, 132, 255, 0.12) 0%, rgba(175, 82, 222, 0.06) 50%, rgba(52, 199, 89, 0.05) 100%)', 
-                border: '1.5px solid rgba(0, 132, 255, 0.3)', 
-                boxShadow: '0 8px 28px rgba(0, 132, 255, 0.12)', 
-                padding: '16px 18px',
-                cursor: 'pointer'
+                padding: '20px 24px', 
+                cursor: 'pointer',
+                background: 'linear-gradient(135deg, rgba(0, 132, 255, 0.12) 0%, rgba(96, 177, 255, 0.05) 100%)',
+                border: '1px solid rgba(0, 132, 255, 0.25)',
+                boxShadow: '0 8px 32px rgba(0, 132, 255, 0.06)'
               }}
             >
-              {/* Header & Flagship Badge */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #0084FF 0%, #AF52DE 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', boxShadow: '0 4px 12px rgba(0, 132, 255, 0.3)', flexShrink: 0 }}>
-                    <Bot size={18} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
+                <div style={{ flex: 1, paddingRight: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1.5px', color: '#0084FF', textTransform: 'uppercase' }}>
+                      ⚡ ASSIST. AI VISION
+                    </span>
+                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#0084FF' }}></span>
+                    <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                      Roadmap 2026
+                    </span>
                   </div>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '9px', fontWeight: '900', letterSpacing: '1.2px', color: '#0084FF', textTransform: 'uppercase' }}>
-                        ⚡ ASSIST. AI VISION 2026
-                      </span>
-                      <span style={{ fontSize: '8.5px', background: 'rgba(0, 132, 255, 0.12)', border: '1px solid rgba(0, 132, 255, 0.2)', padding: '1px 6px', borderRadius: '6px', color: '#0084FF', fontWeight: '800' }}>
-                        ASOSIY LOYIHA
-                      </span>
-                    </div>
-                    <h4 style={{ fontSize: '14.5px', fontWeight: '900', margin: '2px 0 0 0', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                      Michi Voice AI Yordamchisi & Avtomatlashtirish
-                    </h4>
-                  </div>
-                </div>
-                <ChevronRight size={20} color="#0084FF" />
-              </div>
-
-              <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: '0 0 12px 0', lineHeight: '1.45', opacity: 0.9 }}>
-                Ovozli buyruqlar orqali navigatsiya, Lawson & POI topish, JLPT vakansiyalarni saralash va yaponcha rezyumeni (履歴書) avtomatik boshqaring (10,000+ haydovchilar tanlovi).
-              </p>
-
-              {/* 3 Core Capability Columns */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '10px' }}>
-                <div style={{ background: 'var(--glass-bg)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '3px', color: '#0084FF', fontSize: '10.5px', fontWeight: '800' }}>
-                    <Navigation size={12} /> Truck Nav
-                  </div>
-                  <p style={{ fontSize: '9.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.3' }}>
-                    Lawson, Eneos va MLIT 3.8m cheklovlari.
+                  
+                  <h3 style={{ fontSize: '20px', fontWeight: '900', margin: '0 0 6px 0', color: 'var(--text-main)', letterSpacing: '-0.03em', lineHeight: '1.2' }}>
+                    Robotimiz Rivoji & Avtomatlashtirish
+                  </h3>
+                  
+                  <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0 0 12px 0', opacity: 0.85, lineHeight: '1.4' }}>
+                    Michi Assist roboti imkoniyatlari, jonli simulyator va kelajakdagi rivojlanish xaritasini ko'ring.
                   </p>
-                </div>
 
-                <div style={{ background: 'var(--glass-bg)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '3px', color: '#34C759', fontSize: '10.5px', fontWeight: '800' }}>
-                    <FileText size={12} /> Ovozli Rezyume
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
+                      🗣️ Ovozli muloqot
+                    </span>
+                    <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
+                      🤖 AI Simulyator
+                    </span>
+                    <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
+                      🚀 Kelajak Xaritasi
+                    </span>
                   </div>
-                  <p style={{ fontSize: '9.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.3' }}>
-                    Rezyumega (大型免許・経験4年) saqlash.
-                  </p>
                 </div>
-
-                <div style={{ background: 'var(--glass-bg)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '3px', color: '#AF52DE', fontSize: '10.5px', fontWeight: '800' }}>
-                    <Building2 size={12} /> Aqlli Vakansiya
-                  </div>
-                  <p style={{ fontSize: '9.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.3' }}>
-                    JLPT N3/N2 darajasiga mos ishlarni saralash.
-                  </p>
+                
+                <div className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #0084FF 0%, #0066CC 100%)', boxShadow: '0 8px 24px rgba(0, 132, 255, 0.3)', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Sparkles size={24} color="#FFF" />
                 </div>
-              </div>
-
-              {/* Interactive Open Full Page Banner */}
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justify: 'space-between', 
-                background: 'linear-gradient(135deg, #0084FF 0%, #0066CC 100%)', 
-                borderRadius: '10px', 
-                padding: '8px 14px', 
-                color: '#FFFFFF',
-                fontWeight: '800',
-                fontSize: '11px',
-                boxShadow: '0 4px 14px rgba(0, 132, 255, 0.3)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Sparkles size={14} color="#FFF" />
-                  <span>AI Roboti Video Animatsiyasi va Jonli Simulyatorni Ochish</span>
-                </div>
-                <ArrowRight size={15} color="#FFF" />
               </div>
             </div>
 
             {/* Vision Card (Span 1) */}
-            <div className="about-glass-card about-span-1 about-animate-item about-delay-3">
+            <div className="about-glass-card about-span-1 about-animate-item about-delay-4">
               <div>
                 <h4 style={{ color: '#0A84FF', fontSize: '12.5px' }}>
                   <Globe size={16} />
@@ -2130,7 +2091,7 @@ const getLicenseLabel = (type) => {
             </div>
 
             {/* Active Jobs Card (Span 1) */}
-            <div className="about-glass-card card-primary about-span-1 about-animate-item about-delay-4" style={{ textAlign: 'center', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="about-glass-card card-primary about-span-1 about-animate-item about-delay-5" style={{ textAlign: 'center', alignItems: 'center', justifyContent: 'center' }}>
               <Briefcase size={20} style={{ color: 'var(--primary)', marginBottom: '4px' }} />
               <strong className="about-shimmer-text" style={{ display: 'block', fontSize: '18px', fontWeight: '900', marginBottom: '1px' }}>
                 <StatCounter target={10} suffix="k+" />
@@ -2139,7 +2100,7 @@ const getLicenseLabel = (type) => {
             </div>
 
             {/* Corporate Backup & Guarantees Card (Span 2) */}
-            <div className="about-glass-card card-success about-span-2 about-animate-item about-delay-5">
+            <div className="about-glass-card card-success about-span-2 about-animate-item about-delay-6">
               <div>
                 <h4 style={{ color: '#34C759', fontSize: '12.5px' }}>
                   <ShieldCheck size={16} />
@@ -2152,7 +2113,7 @@ const getLicenseLabel = (type) => {
             </div>
 
             {/* Future Perks / Benefits Card (Span 2) */}
-            <div className="about-glass-card card-primary about-span-2 about-animate-item about-delay-6">
+            <div className="about-glass-card card-primary about-span-2 about-animate-item about-delay-7">
               <div>
                 <h4 style={{ fontSize: '12.5px' }}>
                   <Sparkles size={16} style={{ color: 'var(--primary)' }} />
@@ -2188,7 +2149,7 @@ const getLicenseLabel = (type) => {
             </div>
 
             {/* Companies Card (Span 1) */}
-            <div className="about-glass-card card-primary about-span-1 about-animate-item about-delay-7" style={{ padding: '16px 8px', textAlign: 'center', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="about-glass-card card-primary about-span-1 about-animate-item about-delay-8" style={{ padding: '16px 8px', textAlign: 'center', alignItems: 'center', justifyContent: 'center' }}>
               <Building2 size={18} style={{ color: 'var(--primary)', marginBottom: '4px' }} />
               <strong className="about-shimmer-text" style={{ display: 'block', fontSize: '17px', fontWeight: '900', marginBottom: '1px' }}>
                 <StatCounter target={500} suffix="+" />
@@ -2197,7 +2158,7 @@ const getLicenseLabel = (type) => {
             </div>
 
             {/* Support Card (Span 1) */}
-            <div className="about-glass-card card-primary about-span-1 about-animate-item about-delay-8" style={{ padding: '16px 8px', textAlign: 'center', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="about-glass-card card-primary about-span-1 about-animate-item about-delay-9" style={{ padding: '16px 8px', textAlign: 'center', alignItems: 'center', justifyContent: 'center' }}>
               <Phone size={18} style={{ color: 'var(--primary)', marginBottom: '4px' }} />
               <strong className="about-shimmer-text" style={{ display: 'block', fontSize: '17px', fontWeight: '900', marginBottom: '1px' }}>
                 <StatCounter target={24} suffix="/7" />
