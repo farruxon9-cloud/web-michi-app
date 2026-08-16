@@ -4770,7 +4770,7 @@ const getLicenseLabel = (type) => {
             <div className="menu-icon"><Bell size={20} /></div>
             <span>{t('notifications')}</span>
             {showProfileBadges && unreadCount > 0 && (
-              <span className="menu-badge notif-badge">{unreadCount}</span>
+              <span className="menu-badge notif-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
             )}
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
