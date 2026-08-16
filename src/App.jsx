@@ -112,21 +112,21 @@ class ChunkErrorBoundary extends React.Component {
   }
   componentDidCatch(error, errorInfo) {
     console.error("ChunkErrorBoundary caught an error:", error, errorInfo);
-    // If it's a chunk load error or dynamic import failure, reload the page
-    if (error.name === 'ChunkLoadError' || error.message.includes('Failed to fetch dynamically imported module') || error.message.includes('dynamically imported module') || error.message.includes('fetch')) {
-      if (!sessionStorage.getItem('michi_chunk_reloaded')) {
-        sessionStorage.setItem('michi_chunk_reloaded', 'true');
-        window.location.reload(true);
-      }
-    }
   }
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: 40, textAlign: 'center', color: '#8E8E93' }}>
-          Yangi versiya mavjud. Iltimos sahifani yangilang (Ctrl+F5 yoki tepadan pastga torting).
-          <br/><br/>
-          <button onClick={() => window.location.reload(true)} style={{ padding: '10px 20px', borderRadius: '20px', background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer' }}>
+        <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-secondary, #8E8E93)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+          <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main, #1C1C1E)' }}>
+            Yangi versiya mavjud. Iltimos sahifani yangilang.
+          </div>
+          <button 
+            onClick={() => {
+              this.setState({ hasError: false });
+              window.location.reload();
+            }} 
+            style={{ padding: '12px 24px', borderRadius: '14px', background: '#0084FF', color: 'white', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '13px', boxShadow: '0 4px 14px rgba(0,132,255,0.3)' }}
+          >
             Sahifani Yangilash
           </button>
         </div>
