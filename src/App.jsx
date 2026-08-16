@@ -945,7 +945,15 @@ function App() {
           />
         );
       case 'service':
-        return <ServiceComingSoon />;
+        return (
+          <ServiceComingSoon 
+            onOpenAssistShowcase={() => {
+              setProfileActivePage('assist_showcase');
+              setActiveTab('profile');
+            }}
+            onNavigate={setActiveTab}
+          />
+        );
       case 'profile':
         return (
           <Profile 

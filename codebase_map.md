@@ -380,10 +380,11 @@ graph TD
   - `../utils/imageCompressor`
 
 ### 📦 [ServiceComingSoon](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/ServiceComingSoon.jsx)
-* **Fayl yo'li:** `src/components/ServiceComingSoon.jsx` (21 qator, 541 bayt)
+* **Fayl yo'li:** `src/components/ServiceComingSoon.jsx` (106 qator, 4068 bayt)
 * **Komponent Stillari:** 🎨 [ServiceComingSoon.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/ServiceComingSoon.css)
 * **Qabul qiladigan parametrlari (Props):**
-  - *Parametrlar mavjud emas*
+  - `onOpenAssistShowcase`
+  - `onNavigate`
 * **Import qilgan bog'liqliklari:**
   - `react`
   - `react-i18next`
@@ -659,7 +660,7 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### 📄 [App.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/App.jsx)
-* **Yo'li:** `src/App.jsx` (1336 qator)
+* **Yo'li:** `src/App.jsx` (1344 qator)
 * **Importlari:** `react`, `lucide-react`, `react-i18next`, `./components/Splash`, `./components/LanguageSelect`, `./components/RoleSelect`, `./components/BottomNav`, `./components/Dashboard`, `./components/DriverFeed`, `./components/JobDetail`, `./components/DrivingAcademy`, `./components/ServiceComingSoon`, `./components/Profile`, `./components/AdminDashboard`, `./components/CompanyHome`, `./components/VoiceAssistant`, `./components/RobotAvatar`, `./components/JDMNavigation`, `./components/AssistHeroShowcase`, `./components/ErrorBoundary`
 
 ### 📄 [en.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/en.js)
