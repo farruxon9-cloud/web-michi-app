@@ -275,7 +275,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (4837 qator, 256917 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (4884 qator, 260163 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`

@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot, Navigation, Zap } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
@@ -2011,41 +2011,88 @@ const getLicenseLabel = (type) => {
               </div>
             </div>
 
-            {/* ⚡ ASSIST. AI VISION — Robotimiz Rivoji & Avtomatlashtirish Card (Span 2) */}
-            <div className="about-glass-card card-primary about-span-2 about-animate-item" style={{ background: 'linear-gradient(135deg, rgba(0, 132, 255, 0.08) 0%, rgba(96, 177, 255, 0.04) 100%)', border: '1px solid rgba(0, 132, 255, 0.2)', padding: '14px 16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', width: '100%', marginBottom: '6px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1.2px', color: '#0084FF', textTransform: 'uppercase' }}>
-                    ⚡ ASSIST. AI VISION
-                  </span>
-                  <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#0084FF' }}></span>
-                  <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '0.8px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                    Roadmap 2026
-                  </span>
-                </div>
-                <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, #0084FF 0%, #0066CC 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 10px rgba(0,132,255,0.25)' }}>
-                  <Sparkles size={16} color="#FFF" />
+            {/* 🚀 AI FLAGSHIP SUB-PROJECT SECTION: Michi Assist Voice AI */}
+            <div className="about-glass-card card-primary about-span-2 about-animate-item" style={{ 
+              background: 'linear-gradient(135deg, rgba(0, 132, 255, 0.09) 0%, rgba(175, 82, 222, 0.05) 50%, rgba(52, 199, 89, 0.04) 100%)', 
+              border: '1.5px solid rgba(0, 132, 255, 0.25)', 
+              boxShadow: '0 8px 28px rgba(0, 132, 255, 0.08)', 
+              padding: '16px 18px' 
+            }}>
+              {/* Header & Flagship Badge */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #0084FF 0%, #AF52DE 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', boxShadow: '0 4px 12px rgba(0, 132, 255, 0.3)', flexShrink: 0 }}>
+                    <Bot size={18} />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '9px', fontWeight: '900', letterSpacing: '1.2px', color: '#0084FF', textTransform: 'uppercase' }}>
+                        ⚡ ASSIST. AI VISION 2026
+                      </span>
+                      <span style={{ fontSize: '8.5px', background: 'rgba(0, 132, 255, 0.12)', border: '1px solid rgba(0, 132, 255, 0.2)', padding: '1px 6px', borderRadius: '6px', color: '#0084FF', fontWeight: '800' }}>
+                        ASOSIY LOYIHA
+                      </span>
+                    </div>
+                    <h4 style={{ fontSize: '14.5px', fontWeight: '900', margin: '2px 0 0 0', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                      Michi Voice AI Yordamchisi & Avtomatlashtirish
+                    </h4>
+                  </div>
                 </div>
               </div>
-              
-              <h4 style={{ fontSize: '13.5px', fontWeight: '800', margin: '0 0 4px 0', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                Robotimiz Rivoji & Avtomatlashtirish
-              </h4>
-              
-              <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '0 0 8px 0', lineHeight: '1.4', opacity: 0.9 }}>
-                Michi Assist roboti imkoniyatlari, jonli simulyator va kelajakdagi rivojlanish xaritasini ko'ring.
+
+              <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: '0 0 12px 0', lineHeight: '1.45', opacity: 0.9 }}>
+                Ovozli buyruqlar orqali navigatsiya, Lawson & POI topish, JLPT vakansiyalarni saralash va yaponcha rezyumeni (履歴書) avtomatik boshqaring (10,000+ haydovchilar tanlovi).
               </p>
 
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
-                  🗣️ Ovozli muloqot
-                </span>
-                <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
-                  🤖 AI Simulyator
-                </span>
-                <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
-                  🚀 Kelajak Xaritasi
-                </span>
+              {/* 3 Core Capability Columns */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '12px' }}>
+                <div style={{ background: 'var(--glass-bg)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '3px', color: '#0084FF', fontSize: '10.5px', fontWeight: '800' }}>
+                    <Navigation size={12} /> Truck Nav
+                  </div>
+                  <p style={{ fontSize: '9.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.3' }}>
+                    Lawson, Eneos va MLIT 3.8m cheklovlarini izlash.
+                  </p>
+                </div>
+
+                <div style={{ background: 'var(--glass-bg)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '3px', color: '#34C759', fontSize: '10.5px', fontWeight: '800' }}>
+                    <FileText size={12} /> Ovozli Rezyume
+                  </div>
+                  <p style={{ fontSize: '9.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.3' }}>
+                    Rezyumega (大型免許・経験4年) ovozda saqlash.
+                  </p>
+                </div>
+
+                <div style={{ background: 'var(--glass-bg)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '3px', color: '#AF52DE', fontSize: '10.5px', fontWeight: '800' }}>
+                    <Building2 size={12} /> Aqlli Vakansiya
+                  </div>
+                  <p style={{ fontSize: '9.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.3' }}>
+                    JLPT N3/N2 darajaga mos ishlarni avtomatik saralash.
+                  </p>
+                </div>
+              </div>
+
+              {/* Sample Live Voice Commands Showcase */}
+              <div style={{ background: 'rgba(0, 0, 0, 0.03)', borderRadius: '10px', padding: '8px 10px', border: '1px solid var(--glass-border)' }}>
+                <div style={{ fontSize: '9.5px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Zap size={11} color="#0084FF" /> Jonli Ovozli Buyruqlar Namunalari:
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '10px' }}>
+                  <div style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ fontWeight: '800', color: '#0084FF' }}>🗣️ "Lawson topish":</span>
+                    <span style={{ opacity: 0.85 }}>Lawson (450m) va Eneos (1.2km) xaritaga sozlandi</span>
+                  </div>
+                  <div style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ fontWeight: '800', color: '#34C759' }}>📝 "Rezyume":</span>
+                    <span style={{ opacity: 0.85 }}>"4 yillik Oogata tajribasi" (大型免許・経験4年) saqlandi</span>
+                  </div>
+                  <div style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ fontWeight: '800', color: '#AF52DE' }}>🚚 "3.8m Navigatsiya":</span>
+                    <span style={{ opacity: 0.85 }}>Tokiodan Nagoyaga MLIT safe marshrut tuzildi</span>
+                  </div>
+                </div>
               </div>
             </div>
 
