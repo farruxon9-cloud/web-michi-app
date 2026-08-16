@@ -1,6 +1,10 @@
 # 🗺️ Michi Ilovasi: Loyiha Mundarijasi va Arxitektura Xaritasi (MUNDARIJA.md)
 
+> [!IMPORTANT]
+> **AI AGENTLAR VA DASTURCHILAR UCHUN QAT'IY MAJBURIY QOIDA:** Loyiha ustida ishlashni va kod yozishni boshlashdan oldin, har safar ushbu mundarijani (`MUNDARIJA.md`) va loyiha xaritasini (`codebase_map.md`) to'liq o'qib chiqing! Bu tokenlar sarfini sezilarli darajada kamaytirishga, xatolarsiz tezroq kod yozishga va loyiha tuzilishini to'g'ri saqlab qolishga yordam beradi.
+
 Ushbu hujjat loyihaning to'liq tarkibiy qismlari, fayllar tuzilishi va ularning o'zaro bog'liqligini osongina tushunish hamda kelajakda kodga tez va xatosiz o'zgartirishlar kiritish uchun yo'riqnoma bo'lib xizmat qiladi.
+
 
 ---
 
@@ -77,8 +81,19 @@ Loyiha ustida ishlashni tezlashtirish va har safar AI buyruqlarini bittalab tasd
    *Bu orqali siz faqat bitta "Approve" (Submit) tugmasini bosib, barcha ishlarni bittada yakunlaysiz.*
 
 2. **Xarita ustida ishlash qoidalari**:
-   * Xarita kamerasi va marker joylashuvini o'zgartirganda `isSettingsCollapsed` (marshrut sozlamalari paneli yig'ilganligi) holatini inobatga oling va dinamik padding ishlatishni davom ettiring.
-   * Yangi marker qo'shishda Safari mosligi uchun `new Marker({ element: el })` formatidan foydalaning va element o'lchamlarini `36px` qilib dasturlang.
+    * Xarita kamerasi va marker joylashuvini o'zgartirganda `isSettingsCollapsed` (marshrut sozlamalari paneli yig'ilganligi) holatini inobatga oling va dinamik padding ishlatishni davom ettiring.
+    * Yangi marker qo'shishda Safari mosligi uchun `new Marker({ element: el })` formatidan foydalaning va element o'lchamlarini `36px` qilib dasturlang.
 
 3. **Tarjimalar (i18n) qo'shish**:
-   * Yangi til kalitlari har doim `src/i18n.js` faylining mos ravishda Yapon, O'zbek va Ingliz bo'limlariga kiritiladi.
+    * Yangi til kalitlari har doim `src/i18n.js` faylining mos ravishda Yapon, O'zbek va Ingliz bo'limlariga kiritiladi.
+
+---
+
+## ⚙️ 5. Loyihaning Muhim Sozlamalari va API-lari
+
+Loyiha to'liq va xatosiz ishlashi uchun quyidagi tashqi xizmatlar va APIdan foydalanadi:
+1. **OSM Nominatim API (`https://nominatim.openstreetmap.org/search`)**: Yaponiyadagi manzillarni matnli qidiruv yordamida koordinatalarga geokodlash uchun ishlatiladi. Agar tarmoq uzilsa yoki xatolik yuz bersa, ilova avtomatik ravishda `NODES` (predefined logistika markazlari) orqali lokal qidiruvga o'tadi.
+2. **OSRM Route Engine (`https://router.project-osrm.org/route/v1`)**: Avtomobil va engil yuk mashinalari uchun marshrutlarni hisoblash uchun asosiy routing xizmati.
+3. **Valhalla Route Engine (`https://valhalla1.openstreetmap.de/route`)**: Og'ir yuk mashinalari (Truck) uchun yaponiya yo'llaridagi balandlik, og'irlik va kenglik cheklovlarini hisobga olgan holda marshrut hisoblashda ishlatiladi.
+4. **MapLibre GL JS & ReactMapGL**: Vector xaritalar, marshrut chiziqlari, 3D binolar, qatlamlar va markerlarni rendering qilish uchun asosiy vizual kutubxonalar.
+5. **Vitest (Unit Tests)** va **Playwright (E2E Tests)**: Loyihada barcha mantiqlar to'g'ri ishlashini va qidiruv tizimi, xaritalar renderlanishi qulamasligini tekshirish uchun test platformalari.

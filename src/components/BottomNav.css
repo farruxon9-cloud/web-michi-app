@@ -64,7 +64,7 @@ html.dark-mode .nav-item {
   transform: scale(1.05); /* Refined magnifying lens zoom */
 }
 
-.nav-item span {
+.nav-item > span {
   width: 100%;
   white-space: nowrap;
   overflow: hidden;
@@ -127,17 +127,13 @@ html.dark-mode .nav-icon-wrap {
   left: 6px;
   width: calc(100% - 12px);
   height: 100%;
-  border-radius: 16px; /* Concentric rounded-rectangle shape matching Bottom Nav background */
+  border-radius: 16px;
   background: linear-gradient(135deg, 
     rgba(255, 255, 255, 0) 0%, 
-    rgba(255, 255, 255, 0) 30%, 
-    rgba(255, 255, 255, 0.4) 45%, 
-    rgba(255, 255, 255, 0.55) 50%, 
-    rgba(255, 255, 255, 0.4) 55%, 
-    rgba(255, 255, 255, 0) 70%, 
+    rgba(255, 255, 255, 0.15) 50%, 
     rgba(255, 255, 255, 0) 100%
   );
-  background-size: 250% 100%;
+  background-size: 200% 100%;
   background-position: calc(var(--active-index) * 25%) 0%;
   transition: background-position 0.54s cubic-bezier(0.25, 1, 0.4, 1);
   z-index: 2;
@@ -147,27 +143,39 @@ html.dark-mode .nav-icon-wrap {
 
 .bottom-nav-indicator::after {
   content: '';
-  width: calc(100% - 12px); /* Tighter fit for compact look */
+  width: calc(100% - 8px); /* Fuller rounded capsule volume */
   height: 100%;
-  border-radius: 16px; /* Concentric rounded-rectangle shape matching Bottom Nav background */
-  background: rgba(255, 255, 255, 0.14); /* Semi-transparent clear glass (perfect visibility without fogginess) */
-  border: 1.2px solid rgba(255, 255, 255, 0.95); /* Crisp specular glass rim highlight */
+  border-radius: 18px; /* Thick rounded glass capsule */
+  background: linear-gradient(180deg, 
+    rgba(255, 255, 255, 0.65) 0%, 
+    rgba(255, 255, 255, 0.28) 50%, 
+    rgba(240, 245, 255, 0.45) 100%
+  );
+  border: 1.5px solid rgba(255, 255, 255, 0.95); /* Crisp thick 3D glass rim outline */
   box-shadow: 
-    0 4px 14px rgba(94, 92, 230, 0.15), /* Soft violet-blue halo shadow (outlines the glass boundary perfectly) */
-    0 2px 4px rgba(0, 0, 0, 0.02),
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.95), /* Specular top light edge */
-    inset 0 -2.5px 5px rgba(0, 0, 0, 0.02); /* Bottom refraction shadow simulating glass thickness */
+    0 6px 20px rgba(94, 92, 230, 0.22), /* Soft 3D ambient drop shadow */
+    0 2px 6px rgba(0, 0, 0, 0.05),
+    inset 0 2px 3.5px rgba(255, 255, 255, 0.98), /* Top thick specular light ridge */
+    inset 0 -3px 6px rgba(0, 0, 0, 0.06), /* Bottom optical refraction shadow simulating glass thickness */
+    inset 2.5px 0 4px rgba(255, 255, 255, 0.5), /* Left edge glass curve highlight */
+    inset -2.5px 0 4px rgba(255, 255, 255, 0.5); /* Right edge glass curve highlight */
   display: block;
 }
 
 html.dark-mode .bottom-nav-indicator::after {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.22);
+  background: linear-gradient(180deg, 
+    rgba(255, 255, 255, 0.16) 0%, 
+    rgba(255, 255, 255, 0.06) 50%, 
+    rgba(255, 255, 255, 0.12) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.35);
   box-shadow: 
-    0 6px 16px rgba(0, 0, 0, 0.4), 
-    0 2px 10px rgba(94, 92, 230, 0.25), 
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.22), 
-    inset 0 -2.5px 5px rgba(0, 0, 0, 0.25);
+    0 6px 20px rgba(0, 0, 0, 0.45), 
+    0 2px 12px rgba(94, 92, 230, 0.28), 
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.4), 
+    inset 0 -3px 6px rgba(0, 0, 0, 0.25),
+    inset 2px 0 3px rgba(255, 255, 255, 0.2),
+    inset -2px 0 3px rgba(255, 255, 255, 0.2);
 }
 
 .nav-item.active .nav-icon-wrap {
@@ -176,28 +184,43 @@ html.dark-mode .bottom-nav-indicator::after {
 
 .nav-badge {
   position: absolute;
-  top: -4px;
-  right: -8px;
-  background: rgba(255, 59, 48, 0.94);
-  color: white;
-  font-size: 9px;
-  font-weight: 700;
-  min-width: 17px;
-  height: 17px;
-  border-radius: 5px;
-  display: flex;
+  top: -2px;
+  right: 8px;
+  z-index: 10;
+  background: linear-gradient(135deg, #FF3B30 0%, #FF2D55 100%);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  width: auto;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 3px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 2px 6px rgba(255, 59, 48, 0.3);
-  backdrop-filter: blur(4px);
-  transition: all 0.3s ease;
+  padding: 0 4px;
+  border: 1.5px solid #FFFFFF;
+  box-shadow:
+    0 2px 6px rgba(255, 45, 85, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.4, 1), background 0.3s ease;
+  animation: badgePopIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
 }
 
-.dark-mode .nav-badge {
-  border-color: rgba(255, 59, 48, 0.5);
-  box-shadow: 0 0 8px rgba(255, 59, 48, 0.5);
+@keyframes badgePopIn {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.18); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+html.dark-mode .nav-badge {
+  background: linear-gradient(135deg, #FF453A 0%, #FF375F 100%);
+  border-color: #1C1C1E;
+  box-shadow:
+    0 2px 8px rgba(255, 69, 58, 0.45),
+    0 0 10px rgba(255, 55, 95, 0.3);
 }
 
 /* Active Tab Bounce Animation */
@@ -211,3 +234,40 @@ html.dark-mode .bottom-nav-indicator::after {
 .nav-item.active .nav-icon-wrap {
   animation: bounceTab 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
+/* AI Assist Special Center Button Styles */
+.nav-item-special {
+  color: #0084FF;
+}
+
+.nav-item-special .special-icon-wrap {
+  background: linear-gradient(135deg, rgba(0, 132, 255, 0.15) 0%, rgba(96, 177, 255, 0.08) 100%);
+  border: 1px solid rgba(0, 132, 255, 0.3);
+  color: #0084FF;
+  box-shadow: 0 4px 14px rgba(0, 132, 255, 0.2);
+  transition: all 0.25s ease;
+}
+
+.nav-item-special.active .special-icon-wrap {
+  background: linear-gradient(135deg, #0084FF 0%, #00C6FF 100%);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 6px 20px rgba(0, 132, 255, 0.45), 0 0 12px rgba(0, 198, 255, 0.3);
+}
+
+html.dark-mode .nav-item-special {
+  color: #38BDF8;
+}
+
+html.dark-mode .nav-item-special .special-icon-wrap {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(14, 165, 233, 0.1) 100%);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38BDF8;
+}
+
+html.dark-mode .nav-item-special.active .special-icon-wrap {
+  background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+}
+

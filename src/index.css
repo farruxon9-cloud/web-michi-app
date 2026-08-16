@@ -1,6 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fustat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 :root {
+  --font-outfit: "Outfit", sans-serif;
+  --font-fustat: "Fustat", sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
   /* Brand colors: Refined & Sophisticated, escaping overly high saturation for ultra-minimalist UX */
   --primary: #5E5CE6; /* iOS Premium Indigo */
   --primary-hover: #4c4ac2;
@@ -103,30 +107,39 @@ body {
 
 #root {
   width: 100%;
-  max-width: 480px; /* Mobile width container for desktop view */
+  max-width: 430px; /* iPhone 16 Pro width for mobile layout */
   margin: 0 auto;
   min-height: 100vh;
   min-height: 100dvh;
   background-color: var(--bg-color);
   position: relative;
-  box-shadow: 0 0 50px rgba(0,0,0,0.06);
   display: flex;
   flex-direction: column;
 }
 
 @media (min-width: 481px) {
   body {
-    background-color: #e5e5ea;
+    background-color: #0c0e14; /* Deep dark mobile showcase canvas */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    padding: 24px 0;
   }
+  
+  html.light-mode body {
+    background-color: #dce2f0;
+  }
+
   #root {
-    height: 90vh;
-    border-radius: 40px;
+    height: 880px;
+    max-height: calc(100vh - 48px);
+    border-radius: 48px;
     overflow: hidden;
-    border: 8px solid #1c1c1e;
+    border: 10px solid #1c1c24;
+    box-shadow: 
+      0 25px 65px rgba(0, 0, 0, 0.45),
+      0 0 0 1px rgba(255, 255, 255, 0.12);
   }
 }
 

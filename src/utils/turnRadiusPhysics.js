@@ -15,6 +15,50 @@
  * Keyed by VEHICLE_PRESETS key names from JDMNavigation.jsx
  */
 export const VEHICLE_PHYSICS = {
+  light: {
+    wheelbase: 2.50,          // ホイールベース (m)
+    trackWidth: 1.60,         // トレッド幅 (m)
+    minTurnRadius: 4.8,       // 最小回転半径 (m)
+    rearOverhang: 1.10,       // リアオーバーハング (m)
+    frontOverhang: 0.95,      // フロントオーバーハング (m)
+    vehicleLength: 4.69,      // 全長 (m)
+    vehicleWidth: 1.69,       // 全幅 (m)
+    axleLoad: 2.25,           // 軸重 (t)
+    type: 'passenger'
+  },
+  medium: {
+    wheelbase: 3.36,
+    trackWidth: 1.69,
+    minTurnRadius: 5.5,
+    rearOverhang: 1.40,
+    frontOverhang: 1.05,
+    vehicleLength: 5.99,
+    vehicleWidth: 2.18,
+    axleLoad: 2.9,
+    type: 'truck'
+  },
+  heavy: {
+    wheelbase: 7.20,
+    trackWidth: 2.05,
+    minTurnRadius: 9.2,
+    rearOverhang: 2.30,
+    frontOverhang: 1.40,
+    vehicleLength: 11.99,
+    vehicleWidth: 2.49,
+    axleLoad: 10.0,
+    type: 'truck'
+  },
+  special: {
+    wheelbase: 11.50,
+    trackWidth: 2.05,
+    minTurnRadius: 10.5,
+    rearOverhang: 2.50,
+    frontOverhang: 1.45,
+    vehicleLength: 16.50,
+    vehicleWidth: 2.50,
+    axleLoad: 10.0,
+    type: 'trailer'
+  },
   harrier: {
     wheelbase: 2.66,          // ホイールベース (m)
     trackWidth: 1.60,         // トレッド幅 (m)
@@ -23,6 +67,29 @@ export const VEHICLE_PHYSICS = {
     frontOverhang: 0.90,      // フロントオーバーハング (m)
     vehicleLength: 4.74,      // 全長 (m)
     vehicleWidth: 1.85,       // 全幅 (m)
+    axleLoad: 0.85,           // 軸重 (t)
+    type: 'passenger'
+  },
+  bike: {
+    wheelbase: 1.40,
+    trackWidth: 0.50,
+    minTurnRadius: 2.0,
+    rearOverhang: 0.30,
+    frontOverhang: 0.20,
+    vehicleLength: 2.10,
+    vehicleWidth: 0.80,
+    axleLoad: 0.15,
+    type: 'bike'
+  },
+  kei_truck: {
+    wheelbase: 1.90,
+    trackWidth: 1.29,
+    minTurnRadius: 3.6,
+    rearOverhang: 0.65,
+    frontOverhang: 0.55,
+    vehicleLength: 3.40,
+    vehicleWidth: 1.48,
+    axleLoad: 0.35,
     type: 'passenger'
   },
   elf_3t: {
@@ -33,6 +100,18 @@ export const VEHICLE_PHYSICS = {
     frontOverhang: 1.05,
     vehicleLength: 5.99,
     vehicleWidth: 2.18,
+    axleLoad: 2.9,
+    type: 'truck'
+  },
+  truck_2t: {
+    wheelbase: 2.50,
+    trackWidth: 1.60,
+    minTurnRadius: 4.8,
+    rearOverhang: 1.10,
+    frontOverhang: 0.95,
+    vehicleLength: 4.69,
+    vehicleWidth: 1.69,
+    axleLoad: 2.25,
     type: 'truck'
   },
   ranger_4t: {
@@ -43,6 +122,29 @@ export const VEHICLE_PHYSICS = {
     frontOverhang: 1.20,
     vehicleLength: 8.20,
     vehicleWidth: 2.49,
+    axleLoad: 4.0,
+    type: 'truck'
+  },
+  truck_4t: {
+    wheelbase: 4.80,
+    trackWidth: 1.87,
+    minTurnRadius: 7.0,
+    rearOverhang: 1.80,
+    frontOverhang: 1.20,
+    vehicleLength: 8.20,
+    vehicleWidth: 2.49,
+    axleLoad: 4.0,
+    type: 'truck'
+  },
+  truck_10t: {
+    wheelbase: 7.20,
+    trackWidth: 2.05,
+    minTurnRadius: 9.2,
+    rearOverhang: 2.30,
+    frontOverhang: 1.40,
+    vehicleLength: 11.99,
+    vehicleWidth: 2.49,
+    axleLoad: 10.0,
     type: 'truck'
   },
   giga_heavy: {
@@ -53,17 +155,30 @@ export const VEHICLE_PHYSICS = {
     frontOverhang: 1.45,
     vehicleLength: 12.00,
     vehicleWidth: 2.50,
+    axleLoad: 10.0,
     type: 'trailer'
   },
-  bike: {
-    wheelbase: 1.40,
-    trackWidth: 0.50,
-    minTurnRadius: 2.0,
-    rearOverhang: 0.30,
-    frontOverhang: 0.20,
-    vehicleLength: 2.10,
-    vehicleWidth: 0.80,
-    type: 'bike'
+  trailer: {
+    wheelbase: 11.50,
+    trackWidth: 2.05,
+    minTurnRadius: 10.5,
+    rearOverhang: 2.50,
+    frontOverhang: 1.45,
+    vehicleLength: 16.50,
+    vehicleWidth: 2.50,
+    axleLoad: 10.0,
+    type: 'trailer'
+  },
+  tanker: {
+    wheelbase: 7.00,
+    trackWidth: 2.05,
+    minTurnRadius: 9.5,
+    rearOverhang: 2.20,
+    frontOverhang: 1.40,
+    vehicleLength: 11.95,
+    vehicleWidth: 2.49,
+    axleLoad: 10.0,
+    type: 'truck'
   }
 };
 

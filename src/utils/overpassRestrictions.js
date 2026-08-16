@@ -27,6 +27,7 @@ function buildOverpassQuery(minLat, minLng, maxLat, maxLng) {
   way["maxwidth"](${bbox});
   way["maxweight"](${bbox});
   way["maxlength"](${bbox});
+  way["maxaxleload"](${bbox});
   way["hgv"="no"](${bbox});
   way["hgv"="destination"](${bbox});
   way["goods"="no"](${bbox});
@@ -214,6 +215,24 @@ function parseOverpassResult(overpassResult) {
         restriction.lengthLimit = val;
       }
     }
+
+    // Parse axle load restriction
+    if (tags.maxaxleload) {
+      const val = parseFloat(tags.maxaxleload);
+      if (!isNaN(val)) {
+        restriction.axleLoadLimit = val;
+      }
+    }
+
+    // Check if narrow road for turn radius warning
+    if (tags.highway === 'residential' || tags.highway === 'service' || tags.highway === 'living_street') {
+      restriction.isNarrow = true;
+    } else if (tags.width) {
+      const wVal = parseFloat(tags.width);
+      if (!isNaN(wVal) && wVal < 3.0) {
+        restriction.isNarrow = true;
+      }
+    }
     
     // HGV access restrictions
     if (tags.hgv === 'no' || tags.goods === 'no' || tags.motor_vehicle === 'no') {
@@ -291,7 +310,10 @@ export function checkOverpassRestrictions(
   vehicleHeight,
   vehicleWidth,
   vehicleWeight,
-  vehicleType = 'truck'
+  vehicleType = 'truck',
+  vehicleLength = 6.0,
+  vehicleAxleLoad = 5.0,
+  vehicleMinTurnRadius = 5.5
 ) {
   if (!overpassRestrictions || overpassRestrictions.length === 0) {
     return { status: 'safe', warnings: [] };
@@ -370,6 +392,45 @@ export function checkOverpassRestrictions(
       });
       if (severity === 'blocked') overallStatus = 'blocked';
       else if (overallStatus !== 'blocked') overallStatus = 'warning';
+    }
+
+    // Check length
+    if (restriction.lengthLimit && vehicleLength > restriction.lengthLimit) {
+      const margin = restriction.lengthLimit + 1.0;
+      const severity = vehicleLength > margin ? 'blocked' : 'warning';
+      warnings.push({
+        id: `osm_length_${restriction.osmId}`,
+        message: `${severity === 'blocked' ? '🚫' : '⚠️'}【全長制限】${restriction.name} — 制限${restriction.lengthLimit}m（車両長${vehicleLength}m）`,
+        status: severity,
+        restriction
+      });
+      if (severity === 'blocked') overallStatus = 'blocked';
+      else if (overallStatus !== 'blocked') overallStatus = 'warning';
+    }
+
+    // Check axle load
+    if (restriction.axleLoadLimit && vehicleAxleLoad > restriction.axleLoadLimit) {
+      const margin = restriction.axleLoadLimit + 1.0;
+      const severity = vehicleAxleLoad > margin ? 'blocked' : 'warning';
+      warnings.push({
+        id: `osm_axle_${restriction.osmId}`,
+        message: `${severity === 'blocked' ? '🚫' : '⚠️'}【軸重制限】${restriction.name} — 制限${restriction.axleLoadLimit}t（車両軸重${vehicleAxleLoad}t）`,
+        status: severity,
+        restriction
+      });
+      if (severity === 'blocked') overallStatus = 'blocked';
+      else if (overallStatus !== 'blocked') overallStatus = 'warning';
+    }
+
+    // Check narrow road turning capability
+    if (restriction.isNarrow && vehicleMinTurnRadius > 6.0) {
+      warnings.push({
+        id: `osm_turn_${restriction.osmId}`,
+        message: `⚠️【回転半径警告】${restriction.name} — 狭隘道路（最小回転半径${vehicleMinTurnRadius}mでは旋回困難の可能性あり）`,
+        status: 'warning',
+        restriction
+      });
+      if (overallStatus !== 'blocked') overallStatus = 'warning';
     }
   }
   

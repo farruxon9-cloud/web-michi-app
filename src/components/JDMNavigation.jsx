@@ -1,19 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike, Plus, Minus, Layers, Trash2, Bookmark, X, Save, ChevronDown, ChevronUp, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike, Plus, Minus, Layers, Trash2, Bookmark, X, Save, ChevronDown, ChevronUp, Volume2, VolumeX, Menu, Search, Share2, Star, Cloud, Train, Binoculars, ArrowUpDown, User } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import * as maplibregl from 'maplibre-gl';
 import ReactMap from 'react-map-gl/maplibre';
 const { Marker } = maplibregl;
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './JDMNavigation.css';
-import { checkClearanceLimits } from '../utils/mlitRestrictions';
+import { checkClearanceLimits, MLIT_RESTRICTIONS } from '../utils/mlitRestrictions';
 import { parseOSRMSteps, parseValhallaSteps, decodePolyline6, getRemainingMetrics, getCountdownText, formatDistanceJa } from '../utils/turnInstructions';
 import { fetchOverpassRestrictions, checkOverpassRestrictions, mergeRestrictionResults } from '../utils/overpassRestrictions';
-import { initVoiceGuidance, speakManeuver, speakArrival, speakRerouting, toggleMute, isSpeechMuted, stopSpeech } from '../utils/voiceGuidance';
+import { downloadRegionTiles, isRegionCached, getPrefectureTilePresets } from '../utils/offlineTileDownloader';
+import { getDistanceMeters, findClosestSegmentIndex, extrapolatePositionAlongRoute, isPositionInTunnel } from '../utils/deadReckoning';
+import { initVoiceGuidance, speakManeuver, speakArrival, speakRerouting, toggleMute, isSpeechMuted, stopSpeech, setSpeechLanguage, setSpeechVolume, setSpeechRate, setSpeechPitch, setWarningOnlyMode, translateWarningToUz, speak } from '../utils/voiceGuidance';
 import LaneIndicator from './LaneIndicator';
 import { generateRouteKey, cacheRoute, getCachedRoute } from '../utils/offlineManager';
 import { snapToRoute, smoothBearing, isOffRoute, getDistance } from '../utils/gpsMatching';
+import { loadBookmarks, addBookmark, removeBookmark, updateBookmark, BOOKMARK_CATEGORIES } from '../utils/bookmarkManager';
+import { searchNearbyPOI, getAvailablePOITypes } from '../utils/poiSearch';
 
 // Predefined JDM hubs with actual coordinates in Tokyo/Kanagawa/Chiba
 const NODES = {
@@ -25,72 +29,346 @@ const NODES = {
 };
 
 // Presets matching actual commercial vehicles and driving licenses in Japan
+// Presets matching actual commercial vehicles and driving licenses in Japan
 const VEHICLE_PRESETS = {
-  harrier: { 
-    name: 'Toyota Harrier (SUV)', 
-    jaName: 'ハリアー (乗用車)', 
-    short: 'Car',
-    jaShort: '乗用車',
-    license: 'Futsuu Menkyo',
-    licenseJa: '普通車',
-    height: 1.69, 
-    width: 1.85, 
-    weight: 1.7, 
-    length: 4.74,
-    type: 'passenger' 
-  },
-  elf_3t: { 
-    name: 'Isuzu Elf (3t Box)', 
-    jaName: 'エルフ (3tトラック)', 
-    short: '3t Truck',
-    jaShort: '2t/3t車',
-    license: 'Jun-Chuugata',
-    licenseJa: '準中型',
+  light: { 
+    name: 'Light Vehicle (Car/2-3t)', 
+    jaName: '軽・中小型車 (乗用/2-3t)', 
+    uzName: 'Yengil transport (Moshina/2-3t)',
+    short: 'Light',
+    jaShort: '軽・中小型',
+    uzShort: 'Yengil',
+    license: 'Futsuu / Jun-Chugata',
+    licenseJa: '普通・準中型',
     height: 2.95, 
     width: 2.18, 
     weight: 5.8, 
     length: 5.95,
-    type: 'truck' 
+    axleLoad: 2.9,
+    minTurnRadius: 5.8,
+    type: 'passenger' 
   },
-  ranger_4t: { 
-    name: 'Hino Ranger (4t Wing)', 
-    jaName: 'レンジャー (4tトラック)', 
+  medium: {
+    name: 'Medium Truck (4t)',
+    jaName: '中型トラック (4t)',
+    uzName: 'O\'rta yuk mashinasi (4t)',
     short: '4t Truck',
-    jaShort: '4t中型',
+    jaShort: '4t車',
+    uzShort: '4t yuk',
     license: 'Chuugata',
     licenseJa: '中型',
-    height: 3.42, 
-    width: 2.49, 
-    weight: 7.9, 
+    height: 3.42,
+    width: 2.49,
+    weight: 7.9,
     length: 8.55,
-    type: 'truck' 
+    axleLoad: 4.0,
+    minTurnRadius: 7.0,
+    type: 'truck'
   },
-  giga_heavy: { 
-    name: 'Isuzu Giga (Heavy Trailer)', 
-    jaName: 'ギガ (10tトレーラー)', 
-    short: '10t Trailer',
-    jaShort: '大型・特車',
+  heavy: {
+    name: 'Heavy Truck (10t)',
+    jaName: '大型トラック (10t)',
+    uzName: 'Katta yuk mashinasi (10t)',
+    short: '10t Truck',
+    jaShort: '大型車',
+    uzShort: '10t yuk',
     license: 'Oogata Menkyo',
-    licenseJa: '大型車',
-    height: 3.78, 
-    width: 2.50, 
-    weight: 24.5, 
-    length: 12.0,
-    type: 'trailer' 
+    licenseJa: '大型',
+    height: 3.78,
+    width: 2.49,
+    weight: 19.9,
+    length: 11.99,
+    axleLoad: 10.0,
+    minTurnRadius: 9.2,
+    type: 'truck'
+  },
+  trailer: {
+    name: 'Trailer / Heavy Cargo',
+    jaName: 'トレーラー・特車',
+    uzName: 'Tirkamali yuk mashinasi (Trailer)',
+    short: 'Trailer',
+    jaShort: '特車',
+    uzShort: 'Trailer',
+    license: 'Oogata + Ken-in',
+    licenseJa: '大型＋牽引',
+    height: 3.80,
+    width: 2.50,
+    weight: 25.0,
+    length: 16.5,
+    axleLoad: 10.0,
+    minTurnRadius: 10.5,
+    type: 'trailer'
   },
   bike: {
     name: 'Motorcycle',
-    jaName: 'バイク (二輪車)',
+    jaName: 'バイク',
+    uzName: 'Motosikl',
     short: 'Motorcycle',
-    jaShort: '二輪バイク',
+    jaShort: 'バイク',
+    uzShort: 'Motosikl',
     license: 'Nirin Menkyo',
-    licenseJa: 'バイク',
+    licenseJa: '二輪',
     height: 1.20,
     width: 0.80,
     weight: 0.25,
     length: 2.1,
+    axleLoad: 0.15,
+    minTurnRadius: 2.0,
     type: 'bike'
   }
+};
+
+// Enrichment function to detect location categories and translate them automatically
+const enrichLocationDetails = (coord) => {
+  if (!coord) return coord;
+  const nameLower = (coord.name || '').toLowerCase();
+  const jaNameLower = (coord.jaName || '').toLowerCase();
+  
+  // Check for convenience stores / Konbini
+  if (
+    nameLower.includes('7-eleven') || nameLower.includes('familymart') || nameLower.includes('lawson') || 
+    nameLower.includes('dailymart') || nameLower.includes('yamazaki') || nameLower.includes('ministop') || 
+    nameLower.includes('convenience') || nameLower.includes('コンビニ') || nameLower.includes('seven-eleven') ||
+    jaNameLower.includes('コンビニ') || jaNameLower.includes('ファミリーマート') || jaNameLower.includes('ローソン') || jaNameLower.includes('セブン')
+  ) {
+    return {
+      ...coord,
+      type: 'convenience',
+      icon: '🏪',
+      jaLabel: 'コンビニ',
+      label: 'Convenience Store'
+    };
+  }
+  
+  // Check for gas stations / fuel
+  if (
+    nameLower.includes('eneos') || nameLower.includes('apollostation') || nameLower.includes('idemitsu') || 
+    nameLower.includes('showa shell') || nameLower.includes('cosmo') || nameLower.includes('gas station') || 
+    nameLower.includes('fuel') || nameLower.includes('ガソリンスタンド') || nameLower.includes('給油所') ||
+    jaNameLower.includes('ガソリンスタンド') || jaNameLower.includes('給油所') || jaNameLower.includes('エネオス') || jaNameLower.includes('出光')
+  ) {
+    return {
+      ...coord,
+      type: 'fuel',
+      icon: '⛽',
+      jaLabel: 'ガソリンスタンド',
+      label: 'Gas Station'
+    };
+  }
+  
+  // Check for rest areas (SA/PA) / michi-no-eki
+  if (
+    nameLower.includes('rest area') || nameLower.includes('parking area') || nameLower.includes('service area') || 
+    nameLower.includes('道の駅') || nameLower.includes('休憩所') || nameLower.includes('パーキングエリア') || 
+    nameLower.includes('サービスエリア') || nameLower.includes('sa/pa') ||
+    jaNameLower.includes('道の駅') || jaNameLower.includes('休憩所') || jaNameLower.includes('パーキングエリア') || jaNameLower.includes('サービスエリア')
+  ) {
+    return {
+      ...coord,
+      type: 'rest_area',
+      icon: '🅿️',
+      jaLabel: '休憩所 (SA/PA)',
+      label: 'Rest Area'
+    };
+  }
+
+  // Check for transit stations
+  if (
+    nameLower.includes('station') || nameLower.includes('駅') || nameLower.includes('えき') ||
+    jaNameLower.includes('駅')
+  ) {
+    return {
+      ...coord,
+      type: 'station',
+      icon: '🚉',
+      jaLabel: '駅',
+      label: 'Station'
+    };
+  }
+
+  // Check for parks
+  if (
+    nameLower.includes('park') || nameLower.includes('公園') ||
+    jaNameLower.includes('公園')
+  ) {
+    return {
+      ...coord,
+      type: 'park',
+      icon: '🌳',
+      jaLabel: '公園',
+      label: 'Park'
+    };
+  }
+
+  return coord;
+};
+
+const getPoiDetails = (coord, language) => {
+  if (!coord) return null;
+  const name = coord.name || '';
+  const nameLower = name.toLowerCase();
+  
+  let brand = '';
+  let color = '#5E5CE6'; // Default iOS Indigo
+  let categoryLabel = language === 'uz' ? 'Belgilangan joy' : (language === 'ja' ? '登録地点' : 'Marked Location');
+  let isHGVFriendly = false;
+  let amenities = [];
+  let phone = coord.phone || '03-5555-0199'; // Mock local Tokyo phone number
+  let hours = coord.openingHours || '08:00 - 22:00';
+
+  if (coord.type === 'convenience') {
+    categoryLabel = language === 'uz' ? 'Do`kon (Konbini)' : (language === 'ja' ? 'コンビニ' : 'Convenience Store');
+    isHGVFriendly = true;
+    hours = language === 'ja' ? '24時間営業' : (language === 'uz' ? '24 soat' : '24 Hours');
+    if (nameLower.includes('7-eleven') || nameLower.includes('seven-eleven') || nameLower.includes('セブン')) {
+      brand = language === 'ja' ? 'セブン-イレブン' : '7-Eleven';
+      color = '#34c759'; // Success green
+      amenities = language === 'uz' 
+        ? ['Katta yuk mashinalari to`xtash joyi (3 ta joy)', '24/7 bankomat', 'Issiq ovqatlar', 'Yumshoq ichimliklar']
+        : (language === 'ja' 
+          ? ['大型車駐車場 (3台)', '24時間ATM', 'お弁当・惣菜', 'ホットスナック']
+          : ['HGV Dedicated Parking (3 spaces)', '24/7 ATM', 'Hot Meals & Bento', 'Beverages & Coffee']);
+    } else if (nameLower.includes('lawson') || nameLower.includes('ローソン')) {
+      brand = language === 'ja' ? 'ローソン' : 'Lawson';
+      color = '#007aff'; // Premium Blue
+      amenities = language === 'uz'
+        ? ['Yuk mashinasi uchun to`xtash joyi', 'Machi Cafe kofesi', 'Kopiya/Faks xizmati']
+        : (language === 'ja'
+          ? ['大型車駐車スペース完備', 'マチカフェコーヒー', 'マルチコピー機']
+          : ['HGV Parking Space', 'Machi Cafe Coffee', 'Multi-copy Machine']);
+    } else {
+      brand = language === 'ja' ? 'ファミリーマート' : 'FamilyMart';
+      color = '#30d158'; // Green
+      amenities = language === 'uz'
+        ? ['Yuk mashinalari to`xtash joyi', 'FamiPort to`lovlar', 'Issiq gazaklar']
+        : (language === 'ja'
+          ? ['大型車対応駐車場', 'ファミポートサービス', 'ホットスナック']
+          : ['HGV Compatible Parking', 'FamiPort Services', 'Hot Fried Chicken']);
+    }
+  } else if (coord.type === 'fuel') {
+    categoryLabel = language === 'uz' ? 'Yoqilg`i quyish shoxobchasi' : (language === 'ja' ? 'ガソリンスタンド' : 'Gas Station');
+    isHGVFriendly = true;
+    hours = language === 'ja' ? '24時間営業' : (language === 'uz' ? '24 soat' : '24 Hours');
+    brand = coord.brand || name.split(' ')[0] || 'ENEOS';
+    if (brand.toLowerCase().includes('eneos') || nameLower.includes('エネオス')) {
+      brand = language === 'ja' ? 'ENEOS' : 'ENEOS';
+    } else if (brand.toLowerCase().includes('cosmo') || nameLower.includes('コスモ')) {
+      brand = language === 'ja' ? 'コスモ石油' : 'Cosmo Oil';
+    } else if (brand.toLowerCase().includes('apollostation') || nameLower.includes('apollostation') || nameLower.includes('出光')) {
+      brand = language === 'ja' ? 'apollostation' : 'apollostation';
+    }
+    color = '#ff9f0a'; // Warning Orange
+    amenities = language === 'uz'
+      ? ['Yuqori oqimli dizel dispenserlari', 'Yuk mashinasi kirish qulayligi', 'AdBlue sotuvi']
+      : (language === 'ja'
+        ? ['高流量トラック用軽油計量機', '大型トラック進入可能', 'AdBlue販売あり']
+        : ['High-flow Diesel Nozzles', 'HGV Clearance & Access', 'AdBlue Available']);
+  } else if (coord.type === 'rest_area') {
+    categoryLabel = language === 'uz' ? 'Dam olish maskani (SA/PA)' : (language === 'ja' ? 'SA/PA・道の駅' : 'Rest Area (SA/PA)');
+    isHGVFriendly = true;
+    hours = language === 'ja' ? '24時間営業' : (language === 'uz' ? '24 soat' : '24 Hours');
+    brand = coord.brand || name.split(' ')[0] || 'NEXCO';
+    color = '#5e5ce6'; // Indigo
+    amenities = language === 'uz'
+      ? ['Katta yuk mashinalari uchun maxsus hudud (15+ joy)', 'Dush xonalari mavjud', 'Tungi yoritish tizimi', 'Restoran & Do`konlar']
+      : (language === 'ja'
+        ? ['大型車専用駐車エリア (15台以上)', 'シャワー室完備', '夜間照明・防犯カメラ', 'フードコート・売店']
+        : ['HGV Dedicated Spots (15+ spaces)', 'Shower Rooms Available', 'Nighttime Illumination', 'Food Court & Shops']);
+  } else if (coord.type === 'station') {
+    categoryLabel = language === 'uz' ? 'Temir yo`l stansiyasi' : (language === 'ja' ? '駅' : 'Railway Station');
+    brand = name.split(' ')[0] || 'Station';
+    color = '#64d2ff'; // Light Blue
+    amenities = language === 'uz'
+      ? ['Yo`lovchilarni tushirish hududi', 'Taksilar to`xtash joyi', 'Yaqin atrofda qulay do`konlar']
+      : (language === 'ja'
+        ? ['乗降スペース', 'タクシー乗り場', '駅構内コンビニ']
+        : ['Passenger Drop-off Area', 'Taxi Stand', 'Station Convenience Store']);
+  } else if (coord.type === 'park') {
+    categoryLabel = language === 'uz' ? 'Istirohat bog`i' : (language === 'ja' ? '公園' : 'Park');
+    color = '#30d158'; // Green
+    hours = language === 'ja' ? '24時間開放' : (language === 'uz' ? '24 soat ochiq' : 'Open 24 hours');
+    amenities = language === 'uz'
+      ? ['Piyodalar yo`lakchalari', 'Jamoat hojatxonasi', 'Dam olish o`rindiqlari']
+      : (language === 'ja'
+        ? ['遊歩道', '公衆トイレ', 'ベンチ・休憩所']
+        : ['Walking Paths', 'Public Restrooms', 'Benches & Seating Area']);
+  }
+
+  return { brand, color, categoryLabel, isHGVFriendly, amenities, phone, hours };
+};
+
+// Generates simulated nearest POIs for offline-first distance sorted queries
+const getClosestPOIs = (lat, lng, categoryKey, language = 'uz') => {
+  let items = [];
+  
+  if (categoryKey === 'convenience') {
+    items = [
+      { name: '🏪 Lawson Matsudo Sakaecho / ローソン 松戸栄町店', nameJa: '🏪 ローソン 松戸栄町店', latOffset: 0.0031, lngOffset: -0.0025, brand: 'Lawson', phone: '047-361-1234', hours: '24 Hours (24時間営業)' },
+      { name: '🏪 7-Eleven Matsudo Station West / セブン-イレブン 松戸駅西口店', nameJa: '🏪 セブン-イレブン 松戸駅西口店', latOffset: -0.0052, lngOffset: 0.0041, brand: '7-Eleven', phone: '047-362-5678', hours: '24 Hours (24時間営業)' },
+      { name: '🏪 FamilyMart Matsudo Central / ファミリーマート 松戸中央店', nameJa: '🏪 ファミリーマート 松戸中央店', latOffset: 0.0084, lngOffset: 0.0092, brand: 'FamilyMart', phone: '047-363-9012', hours: '24 Hours (24時間営業)' },
+      { name: '🏪 Daily Yamazaki Matsudo / デイリーヤマザキ 松戸店', nameJa: '🏪 デイリーヤマザキ 松戸店', latOffset: -0.0071, lngOffset: -0.0095, brand: 'Daily Yamazaki', phone: '047-364-3456', hours: '06:00 - 24:00' },
+      { name: '🏪 Ministop Matsudo / ミニストップ 松戸栄町店', nameJa: '🏪 ミニストップ 松戸栄町店', latOffset: 0.0125, lngOffset: -0.0142, brand: 'Ministop', phone: '047-365-7890', hours: '24 Hours (24時間営業)' }
+    ];
+  } else if (categoryKey === 'fuel') {
+    items = [
+      { name: '⛽ Eneos Matsudo SS / ENEOS 松戸給油所', nameJa: '⛽ ENEOS 松戸給油所', latOffset: -0.0022, lngOffset: -0.0015, brand: 'Eneos', phone: '047-366-2244', hours: '24 Hours (24時間営業)' },
+      { name: '⛽ Cosmo Oil Matsudo / コスモ石油 松戸SS', nameJa: '⛽ コスモ石油 松戸SS', latOffset: 0.0061, lngOffset: -0.0073, brand: 'Cosmo', phone: '047-367-5566', hours: '07:00 - 23:00' },
+      { name: '⛽ apollostation Matsudo / apollostation 松戸栄町店', nameJa: '⛽ apollostation 松戸栄町店', latOffset: 0.0112, lngOffset: 0.0155, brand: 'apollostation', phone: '047-368-8899', hours: '06:00 - 22:00' },
+      { name: '⛽ Shell Matsudo / 昭和シェル 松戸バイパス店', nameJa: '⛽ 昭和シェル 松戸バイパス店', latOffset: -0.0135, lngOffset: 0.0118, brand: 'Shell', phone: '047-369-1122', hours: '24 Hours (24時間営業)' }
+    ];
+  } else if (categoryKey === 'parking') {
+    items = [
+      { name: '🅿️ Times Matsudo Station / タイムズ 松戸駅前第2', nameJa: '🅿️ タイムズ 松戸駅前第2', latOffset: 0.0025, lngOffset: 0.0031, brand: 'Times', phone: '0120-77-8924', hours: '24 Hours (24時間営業)' },
+      { name: '🅿️ Repark Matsudo / 三井のリパーク 松戸栄町', nameJa: '🅿️ 三井のリパーク 松戸栄町', latOffset: -0.0045, lngOffset: -0.0062, brand: 'Repark', phone: '0120-325-156', hours: '24/7' },
+      { name: '🅿️ NPC24H Matsudo / NPC24H 松戸パーキング', nameJa: '🅿️ NPC24H 松戸パーキング', latOffset: 0.0089, lngOffset: -0.0112, brand: 'NPC24H', phone: '---', hours: '24/7' }
+    ];
+  } else if (categoryKey === 'restaurant') {
+    items = [
+      { name: '🍜 Yoshinoya Matsudo / 吉野家 松戸駅前店', nameJa: '🍜 吉野家 松戸駅前店', latOffset: -0.0015, lngOffset: 0.0022, brand: 'Yoshinoya', phone: '047-370-1111', hours: '24 Hours (24時間営業)' },
+      { name: '🍜 Sukiya Matsudo / すき家 松戸栄町店', nameJa: '🍜 すき家 松戸栄町店', latOffset: 0.0055, lngOffset: -0.0042, brand: 'Sukiya', phone: '047-371-2222', hours: '24 Hours (24時間営業)' },
+      { name: '🍜 Coco Ichibanya / カレーハウスCoCo壱番屋', nameJa: '🍜 カレーハウスCoCo壱番屋', latOffset: -0.0092, lngOffset: 0.0081, brand: 'Coco Ichibanya', phone: '047-372-3333', hours: '11:00 - 23:00' }
+    ];
+  } else if (categoryKey === 'hospital') {
+    items = [
+      { name: '🏥 Matsudo City Hospital / 松戸市立総合医療センター', nameJa: '🏥 松戸市立総合医療センター', latOffset: 0.0152, lngOffset: 0.0185, brand: 'City Hospital', phone: '047-712-2511', hours: '24/7 Emergency' },
+      { name: '🏥 Shin-Matsudo Central General / 新松戸中央総合病院', nameJa: '🏥 新松戸中央総合病院', latOffset: -0.0245, lngOffset: -0.0212, brand: 'General Hospital', phone: '047-345-1111', hours: '24/7 Emergency' }
+    ];
+  } else if (categoryKey === 'atm') {
+    items = [
+      { name: '🏧 Seven Bank ATM / セブン銀行ATM 松戸駅前', nameJa: '🏧 セブン銀行ATM 松戸駅前', latOffset: -0.0012, lngOffset: 0.0018, brand: 'Seven Bank', phone: '---', hours: '24/7' },
+      { name: '🏧 E-Net ATM / イーネットATM ファミリーマート内', nameJa: '🏧 イーネットATM ファミリーマート内', latOffset: 0.0084, lngOffset: 0.0092, brand: 'E-Net', phone: '---', hours: '24/7' }
+    ];
+  } else {
+    return [];
+  }
+
+  // Convert offsets to actual coordinates based on current center
+  const results = items.map((item, idx) => {
+    const itemLat = lat + item.latOffset;
+    const itemLng = lng + item.lngOffset;
+    const dist = getDistance(lat, lng, itemLat, itemLng);
+    
+    // Construct localized names
+    const jaName = item.nameJa || item.name;
+    const name = language === 'ja' ? jaName : item.name;
+    
+    return {
+      id: `${categoryKey}_mock_${idx}`,
+      name,
+      jaName,
+      lat: itemLat,
+      lng: itemLng,
+      distance: dist,
+      type: categoryKey,
+      brand: item.brand,
+      phone: item.phone,
+      hours: item.hours
+    };
+  });
+
+  // Sort by distance (closest to furthest)
+  results.sort((a, b) => a.distance - b.distance);
+  return results;
 };
 
 // Haversine distance calculator
@@ -105,6 +383,38 @@ const getDistanceFromLatLng = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
+const calculateEstimatedJapanToll = (distanceKm, vehicleType, avoidTolls, avoidHighways) => {
+  if (avoidTolls || avoidHighways || distanceKm < 8) {
+    return { cash: 0, etc: 0 };
+  }
+  const expresswayDist = Math.max(0, (distanceKm - 5) * 0.7);
+  if (expresswayDist <= 0) return { cash: 0, etc: 0 };
+  
+  const baseRatePerKm = 24.6;
+  const terminalCharge = 150;
+  
+  let multiplier = 1.0;
+  if (vehicleType === 'kei_truck' || vehicleType === 'moto') {
+    multiplier = 0.8;
+  } else if (vehicleType === 'car') {
+    multiplier = 1.0;
+  } else if (vehicleType === 'truck_2t' || vehicleType === 'truck_3t') {
+    multiplier = 1.2;
+  } else if (vehicleType === 'truck_4t') {
+    multiplier = 1.65;
+  } else if (vehicleType === 'truck_10t' || vehicleType === 'tanker' || vehicleType === 'bus') {
+    multiplier = 2.75;
+  } else if (vehicleType === 'trailer') {
+    multiplier = 2.75;
+  }
+  
+  const rawToll = (expresswayDist * baseRatePerKm * multiplier + terminalCharge) * 1.1;
+  const cash = Math.round(rawToll / 10) * 10;
+  const etc = Math.round((rawToll * 0.7) / 10) * 10;
+  
+  return { cash, etc };
+};
+
 const getETA = (minutes) => {
   const d = new Date();
   d.setMinutes(d.getMinutes() + minutes);
@@ -113,9 +423,84 @@ const getETA = (minutes) => {
   return `${hrs}:${mins}`;
 };
 
+const cleanLabelText = (text) => {
+  if (!text) return '';
+  return text.replace(/[🏞⛩🚉⚓🚢📍🗺🚗🏍🚛🚚]/gu, '').trim();
+};
+
+const getDefaultStartCoord = (dest) => {
+  if (!dest) return NODES.matsudo;
+  const dist = getDistance(dest.lat, dest.lng, NODES.matsudo.lat, NODES.matsudo.lng);
+  if (dist < 500) {
+    return NODES.nihonbashi;
+  }
+  return NODES.matsudo;
+};
+
+const getDynamicFitPadding = (map, sheetDetentValue, isRoutePreviewActive = false) => {
+  try {
+    const container = map.getContainer();
+    const W = container.clientWidth || 400;
+    const H = container.clientHeight || 600;
+
+    const sheetEl = document.querySelector('.am-bottom-sheet');
+    const sheetH = sheetEl ? sheetEl.offsetHeight : 100;
+    const topInset = 56;
+    const sidePad = Math.max(32, Math.round(W * 0.08));
+
+    if (isRoutePreviewActive) {
+      const visibleH = H - sheetH - topInset;
+      const verticalBreath = Math.max(16, Math.round(visibleH * 0.08));
+      return {
+        top: topInset + verticalBreath,
+        bottom: sheetH + verticalBreath,
+        left: sidePad,
+        right: sidePad
+      };
+    }
+
+    return {
+      top: Math.max(40, Math.min(100, H * 0.15)),
+      bottom: Math.max(80, Math.min(180, H * 0.3)),
+      left: Math.max(20, Math.min(40, W * 0.1)),
+      right: Math.max(20, Math.min(40, W * 0.1))
+    };
+  } catch (e) {
+    return isRoutePreviewActive
+      ? { top: 80, bottom: 130, left: 32, right: 32 }
+      : { top: 80, bottom: 160, left: 30, right: 30 };
+  }
+};
+
 export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'uz';
+
+  const localize = (strings) => {
+    if (!strings || typeof strings !== 'object') return '';
+    return strings[currentLang]
+      || strings.uz
+      || strings.en
+      || strings.ja
+      || strings.vi
+      || strings.zh
+      || strings.ne
+      || '';
+  };
+
+  const localizePair = (jaText, uzText, enText, viText = '', zhText = '', neText = '', fallback = '') => {
+    switch (currentLang) {
+      case 'ja': return jaText || uzText || enText || viText || zhText || neText || fallback;
+      case 'uz': return uzText || enText || jaText || viText || zhText || neText || fallback;
+      case 'en': return enText || uzText || jaText || viText || zhText || neText || fallback;
+      case 'vi': return viText || enText || uzText || jaText || zhText || neText || fallback;
+      case 'zh': return zhText || enText || uzText || jaText || viText || neText || fallback;
+      case 'ne': return neText || enText || uzText || jaText || viText || zhText || fallback;
+      default: return uzText || enText || jaText || viText || zhText || neText || fallback;
+    }
+  };
+
+  const tr = (key, fallback) => t(key, fallback);
 
   // Handle map container resizing when JDM navigation is toggled back to visible
   useEffect(() => {
@@ -133,6 +518,8 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   const simMarkerRef = useRef(null);
   const isFollowingRef = useRef(true);
   const activeMarkersRef = useRef([]);
+  const poiMarkersRef = useRef([]);
+  const restrictionMarkersRef = useRef([]);
   const routeFlowAnimRef = useRef(null);
 
   // States
@@ -142,6 +529,66 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   const [height, setHeight] = useState(2.95);
   const [width, setWidth] = useState(2.18);
   const [weight, setWeight] = useState(5.8);
+  const [length, setLength] = useState(5.95);
+  const [axleLoad, setAxleLoad] = useState(2.9);
+  const [minTurnRadius, setMinTurnRadius] = useState(5.8);
+
+  const activeVehicleRef = useRef(null);
+
+  const loadActiveVehicle = () => {
+    try {
+      const savedVehicle = localStorage.getItem('michi_user_vehicle');
+      if (savedVehicle) {
+        const vehicle = JSON.parse(savedVehicle);
+        const presetKey = vehicle.presetKey || (vehicle.type === 'passenger' ? 'light' : 'medium');
+        setSelectedVehicle(presetKey);
+        const preset = VEHICLE_PRESETS[presetKey] || VEHICLE_PRESETS.light;
+        setHeight(parseFloat(vehicle.height || preset.height));
+        setWidth(parseFloat(vehicle.width || preset.width));
+        setWeight(parseFloat(vehicle.weight || preset.weight));
+        setLength(parseFloat(vehicle.length || preset.length));
+        setAxleLoad(parseFloat(vehicle.axleLoad || preset.axleLoad));
+        setMinTurnRadius(parseFloat(vehicle.minTurnRadius || preset.minTurnRadius));
+        activeVehicleRef.current = preset;
+        return;
+      }
+    } catch (e) {
+      console.warn('Failed to load active vehicle from storage', e);
+    }
+    
+    const fallback = VEHICLE_PRESETS['light'];
+    setSelectedVehicle('light');
+    setHeight(fallback.height);
+    setWidth(fallback.width);
+    setWeight(fallback.weight);
+    setLength(fallback.length);
+    setAxleLoad(fallback.axleLoad);
+    setMinTurnRadius(fallback.minTurnRadius);
+    activeVehicleRef.current = fallback;
+  };
+
+  useEffect(() => {
+    loadActiveVehicle();
+    
+    const handleVehicleUpdate = (e) => {
+      if (e.detail) {
+        const vehicle = e.detail;
+        setSelectedVehicle(vehicle.type || 'truck_3t');
+        setHeight(parseFloat(vehicle.height || 2.95));
+        setWidth(parseFloat(vehicle.width || 2.18));
+        setWeight(parseFloat(vehicle.weight || 5.8));
+        setLength(parseFloat(vehicle.length || 5.95));
+        setAxleLoad(parseFloat(vehicle.axleLoad || 2.9));
+        setMinTurnRadius(parseFloat(vehicle.minTurnRadius || 5.8));
+        activeVehicleRef.current = vehicle;
+      }
+    };
+    
+    window.addEventListener('michi-vehicle-updated', handleVehicleUpdate);
+    return () => {
+      window.removeEventListener('michi-vehicle-updated', handleVehicleUpdate);
+    };
+  }, []);
 
   // Google / Yandex style layers & drawer states
   const [bottomSheetState, setBottomSheetState] = useState('collapsed'); // 'collapsed' or 'expanded'
@@ -152,6 +599,24 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   const [mapBearing, setMapBearing] = useState(0);
   const [avoidTolls, setAvoidTolls] = useState(false);
   const [avoidHighways, setAvoidHighways] = useState(false);
+  const [activeNavPosition, setActiveNavPosition] = useState(null);
+  const [activeNavHeading, setActiveNavHeading] = useState(0);
+  const [isGpsLost, setIsGpsLost] = useState(false);
+  const [isInTunnel, setIsInTunnel] = useState(false);
+  const [lastValidGps, setLastValidGps] = useState(null);
+  const [overpassRestrictions, setOverpassRestrictions] = useState([]);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [cachedPrefectures, setCachedPrefectures] = useState({});
+  const [bookmarks, setBookmarks] = useState([]);
+  const [showBookmarksPanel, setShowBookmarksPanel] = useState(false);
+  const [showAddBookmark, setShowAddBookmark] = useState(false);
+  const [newBookmarkCategory, setNewBookmarkCategory] = useState('all');
+  const [poiResults, setPoiResults] = useState([]);
+  const [poiSearching, setPoiSearching] = useState(false);
+  const [showPOIPanel, setShowPOIPanel] = useState(false);
+  const [selectedPOIType, setSelectedPOIType] = useState('fuel');
+  const [showAttributionModal, setShowAttributionModal] = useState(false);
 
   const [startQuery, setStartQuery] = useState('');
   const [destQuery, setDestQuery] = useState('');
@@ -160,7 +625,19 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
 
   // Default coordinate states are empty initially to avoid startup route rendering
   const [startCoord, setStartCoord] = useState(null);
-  const [destCoord, setDestCoord] = useState(null);
+  const [destCoordRaw, setDestCoordRaw] = useState(null);
+  const setDestCoord = (val) => {
+    if (typeof val === 'function') {
+      setDestCoordRaw(prev => enrichLocationDetails(val(prev)));
+    } else if (val === null) {
+      setDestCoordRaw(null);
+    } else {
+      setDestCoordRaw(enrichLocationDetails(val));
+    }
+  };
+  const destCoord = destCoordRaw;
+  const [placeDetailsExpanded, setPlaceDetailsExpanded] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   // Multi-stop state
   const [stops, setStops] = useState([]); // array of { id, query, coord, suggestions }
@@ -185,12 +662,106 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   const [showSimControls, setShowSimControls] = useState(false);
   const [showNavVehicleMenu, setShowNavVehicleMenu] = useState(false);
   const [isSettingsCollapsed, setIsSettingsCollapsed] = useState(false);
+  const [sheetDetent, setSheetDetent] = useState('half');
+  const [isRoutingActive, setIsRoutingActive] = useState(false);
+  const [speechLanguage, setSpeechLanguageState] = useState(() => {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('michi_speech_lang') || 'ja';
+    }
+    return 'ja';
+  });
+  const [speechVolume, setSpeechVolumeState] = useState(() => {
+    if (typeof localStorage !== 'undefined') {
+      return parseFloat(localStorage.getItem('michi_speech_vol')) || 1.0;
+    }
+    return 1.0;
+  });
+  const [speechRate, setSpeechRateState] = useState(() => {
+    if (typeof localStorage !== 'undefined') {
+      return parseFloat(localStorage.getItem('michi_speech_rate')) || 1.0;
+    }
+    return 1.0;
+  });
+  const [speechPitch, setSpeechPitchState] = useState(() => {
+    if (typeof localStorage !== 'undefined') {
+      return parseFloat(localStorage.getItem('michi_speech_pitch')) || 1.0;
+    }
+    return 1.0;
+  });
+  const [isWarningOnly, setIsWarningOnlyState] = useState(() => {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('michi_speech_warning_only') === 'true';
+    }
+    return false;
+  });
+
+  // Sync voice guidance options to the voice engine
+  useEffect(() => {
+    setSpeechLanguage(speechLanguage);
+    setSpeechVolume(speechVolume);
+    setSpeechRate(speechRate);
+    setSpeechPitch(speechPitch);
+    setWarningOnlyMode(isWarningOnly);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('michi_speech_lang', speechLanguage);
+      localStorage.setItem('michi_speech_vol', speechVolume.toString());
+      localStorage.setItem('michi_speech_rate', speechRate.toString());
+      localStorage.setItem('michi_speech_pitch', speechPitch.toString());
+      localStorage.setItem('michi_speech_warning_only', isWarningOnly.toString());
+    }
+  }, [speechLanguage, speechVolume, speechRate, speechPitch, isWarningOnly]);
+
   const [mapOrientation, setMapOrientation] = useState('heading'); // 'heading' (Head-Up) or 'north' (North-Up)
   const [isFollowingVehicle, setIsFollowingVehicle] = useState(true);
+  const [showGpsConsentModal, setShowGpsConsentModal] = useState(false);
+  const [onConsentGranted, setOnConsentGranted] = useState(null);
   const [voiceMuted, setVoiceMuted] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [gpsLocation, setGpsLocation] = useState(null);
   const [lastGpsBearing, setLastGpsBearing] = useState(0);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [showTransitLayer, setShowTransitLayer] = useState(false);
+  const [isEtaSheetExpanded, setIsEtaSheetExpanded] = useState(false);
+  const [showSearchSheet, setShowSearchSheet] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchDebounceRef = useRef(null);
+  const [searchHistory, setSearchHistory] = useState(() => {
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('michi_search_history');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            return parsed.map(item => {
+              if (typeof item === 'string') {
+                return { name: item, lat: 35.6841, lng: 139.7741 };
+              }
+              if (item && typeof item === 'object' && typeof item.name === 'string') {
+                return item;
+              }
+              return null;
+            }).filter(Boolean);
+          }
+        }
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  });
+
+  const addToSearchHistory = (place) => {
+    if (!place || typeof place.name !== 'string') return;
+    setSearchHistory(prev => {
+      const filtered = prev.filter(item => item && item.name && item.name !== place.name && item.jaName !== place.jaName);
+      const updated = [place, ...filtered].slice(0, 5);
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('michi_search_history', JSON.stringify(updated));
+      }
+      return updated;
+    });
+  };
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -206,20 +777,20 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   }, []);
 
   const bottomPanelRef = useRef(null);
-  const [gpsBottomOffset, setGpsBottomOffset] = useState(96);
+  const [gpsBottomOffset, setGpsBottomOffset] = useState(100);
 
   // Dynamic GPS button bottom position calculator based on bottom panel height to prevent any overlap
   useEffect(() => {
     const updateGpsPosition = () => {
       if (bottomPanelRef.current) {
         const rect = bottomPanelRef.current.getBoundingClientRect();
-        // The bottom panels are positioned at bottom: 96px.
-        // We add a 12px gap between the panel's top edge and the GPS button.
-        setGpsBottomOffset(96 + rect.height + 12);
+        // The bottom panels are positioned at bottom: 0.
+        // We add a 16px gap between the panel's top edge and the GPS button.
+        setGpsBottomOffset(rect.height + 16);
       } else {
-        // Only bottom tab bar is visible. Tab bar starts at bottom: 0, height is ~84px.
-        // Let's place it at bottom: 96px to leave a 12px gap above the tab bar.
-        setGpsBottomOffset(96);
+        // Only bottom search bar is visible. Search bar is ~54px at bottom: 24px.
+        // Place buttons at bottom: 100px for a clean 22px gap above the search bar.
+        setGpsBottomOffset(100);
       }
 
       if (mapInstanceRef.current && isMapLoaded) {
@@ -265,9 +836,9 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   useEffect(() => {
     if (bottomPanelRef.current) {
       const rect = bottomPanelRef.current.getBoundingClientRect();
-      setGpsBottomOffset(96 + rect.height + 12);
+      setGpsBottomOffset(rect.height + 16);
     } else {
-      setGpsBottomOffset(96);
+      setGpsBottomOffset(100);
     }
   }, [bottomSheetState, isSettingsCollapsed]);
 
@@ -335,7 +906,91 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
       savedRoutesTitle: { uz: '📂 Saqlangan Marshrutlar', ja: '📂 保存済みルート', en: '📂 Saved Routes', vi: '📂 Tuyến đường đã lưu', zh: '📂 已保存路线', ne: '📂 सुरक्षित मार्गहरू' },
       enterRouteName: { uz: 'Marshrut nomini kiriting', ja: 'ルートの別名・ラベルを入力', en: 'Enter Route Label', vi: 'Nhập nhãn tuyến đường', zh: '输入路线标签', ne: 'मार्गको नाम प्रविष्ट गर्नुहोस्' },
       saveLabel: { uz: 'Saqlash', ja: '保存する', en: 'Save', vi: 'Lưu', zh: '保存', ne: 'बचत गर्नुहोस्' },
-      cancelLabel: { uz: 'Bekor qilish', ja: 'キャンセル', en: 'Cancel', vi: 'Hủy', zh: '取消', ne: 'रद्द गर्नुहोस्' }
+      unsave: { uz: 'Saqlashni bekor qilish', ja: '削除', en: 'Unsave', vi: 'Bỏ lưu', zh: '取消保存', ne: 'रद्द गर्नुहोस्' },
+      cancelLabel: { uz: 'Bekor qilish', ja: 'キャンセル', en: 'Cancel', vi: 'Hủy', zh: '取消', ne: 'रद्द गर्नुहोस्' },
+      voiceLanguage: { uz: 'Sayohat tili', ja: '案内言語', en: 'Voice Language', vi: 'Ngôn ngữ giọng nói', zh: '语音语言', ne: 'आवाज भाषा' },
+      departure: { uz: 'Boshlash nuqtasi', ja: '出発地', en: 'Departure', vi: 'Nơi khởi hành', zh: '出发地', ne: 'प्रस्थान' },
+      destination: { uz: 'Yakuniy manzil', ja: '目的地', en: 'Destination', vi: 'Điểm đến', zh: '目的地', ne: 'गन्तव्य' },
+      arrivalCompleted: { uz: 'Manzilga yetib kelingan', ja: '目的地に到着しました', en: 'Arrived at destination', vi: 'Đã đến đích', zh: '已到达目的地', ne: 'गन्तव्यमा पुगियो' },
+      activeRoute: { uz: 'Faol marshrut', ja: 'ルート進行中', en: 'Active Route', vi: 'Tuyến đường đang hoạt động', zh: '行进路线', ne: 'सक्रिय मार्ग' },
+      next: { uz: 'Keyingi', ja: '進む', en: 'Next', vi: 'Tiếp theo', zh: '下一步', ne: 'अर्को' },
+      endRoute: { uz: 'Marshrutni yakunlash', ja: 'ルート終了', en: 'End Route', vi: 'Kết thúc tuyến đường', zh: '结束路线', ne: 'मार्ग समाप्त गर्नुहोस्' },
+      mapSearchPlaceholder: { uz: 'Xaritada qidirish...', ja: 'マップで検索...', en: 'Map search...', vi: 'Tìm trên bản đồ...', zh: '地图搜索...', ne: 'नक्सामा खोजी...' },
+      back: { uz: 'Orqaga', ja: '戻る', en: 'Back', vi: 'Quay lại', zh: '戻る', ne: 'फिर्ता' },
+      mapLayers: { uz: 'Xarita qatlamlari', ja: '地図レイヤー', en: 'Map Layers', vi: 'Lớp bản đồ', zh: '地图图层', ne: 'नक्सा तहहरू' },
+      mapType: { uz: 'Xarita turi', ja: '地図の種類', en: 'Map Type', vi: 'Loại bản đồ', zh: '地图类型', ne: 'नक्साको प्रकार' },
+      routeLabel: { uz: 'Yo\'nalish', ja: 'ルート', en: 'Route', vi: 'Tuyến đường', zh: '路线', ne: 'मार्ग' },
+      defaultHubName: { uz: 'Matsudo Hub', ja: '松戸物流センター', en: 'Matsudo Hub', vi: 'Trung tâm Matsudo', zh: '松户物流中心', ne: 'मात्सुदो हब' },
+      avoidTolls: { uz: 'To`lovsiz yo`lni tanlash', ja: '料金所を避ける', en: 'Avoid Tolls', vi: 'Tránh phí cầu đường', zh: '避免收费公路', ne: 'टोलबाट बच्नुहोस्' },
+      avoidHighways: { uz: 'Avtomagistraldan chetlanish', ja: '高速道路を避ける', en: 'Avoid Highways', vi: 'Tránh xa đường cao tốc', zh: '避免高速公路', ne: 'हाइवेबाट बच्नुहोस्' },
+      routeSpecsVoiceOptions: { uz: 'Yo\'nalish va ovoz variantlari', ja: 'ルート仕様と音声', en: 'Route / Voice Options', vi: 'Tùy chọn tuyến đường / giọng nói', zh: '路线/语音选项', ne: 'मार्ग / आवाज विकल्प' },
+      vehicleHeight: { uz: 'Balandlik', ja: '高さ', en: 'Height', vi: 'Chiều cao', zh: '高度', ne: 'उचाइ' },
+      vehicleWidth: { uz: 'Eni', ja: '幅', en: 'Width', vi: 'Chiều rộng', zh: '宽度', ne: 'चौडाइ' },
+      vehicleWeight: { uz: 'Og\'irligi', ja: '重量', en: 'Weight', vi: 'Trọng lượng', zh: '重量', ne: 'तौल' },
+      stopPlaceholder: { uz: 'To`xtash joyini kiriting...', ja: '経由地を入力してください...', en: 'Enter stop location...', vi: 'Nhập điểm dừng...', zh: '途经点を入力してください...', ne: 'स्टप स्थान प्रविष्ट गर्नुहोस्...' },
+      now: { uz: 'Hozir', ja: '今', en: 'Now', vi: 'Bây giờ', zh: '现在', ne: 'अब' },
+      tunnelMode: { uz: 'Tunnel Mode', ja: 'トンネルモード', en: 'Tunnel Mode', vi: 'Chế độ đường hầm', zh: '隧道模式', ne: 'टनल मोड' },
+      gpsLost: { uz: 'GPS signali yo\'qoldi', ja: 'GPS信号が途切れました', en: 'GPS signal lost', vi: 'Mất tín hiệu GPS', zh: 'GPS 信号丢失', ne: 'GPS संकेत हरायो' },
+      routeLimitAlert: { uz: 'Marshrutga faqat 5 ta to\'xtash joyi qo\'shish mumkin.', ja: '経由地は最大5か所まで追加できます。', en: 'You can only add up to 5 stops on a route.', vi: 'Chỉ có thể thêm tối đa 5 điểm dừng trên tuyến đường.', zh: '路线最多只能添加 5 个途经点。', ne: 'मार्गमा अधिकतम ५ स्टपहरू मात्र थप्न सकिन्छ।' },
+      currentLocationLabel: { uz: '📍 Hozirgi joylashuv (GPS)', ja: '📍 現在地 (GPS)', en: '📍 Current Location (GPS)', vi: '📍 Vị trí hiện tại (GPS)', zh: '📍 当前所在地 (GPS)', ne: '📍 हालको स्थान (GPS)' },
+      turnDirection: { uz: 'Yo\'nalishni almashtirish', ja: '入れ替え', en: 'Swap', vi: 'Hoán đổi', zh: '切换', ne: 'स्वैप' },
+      arrivalLabel: { uz: 'Yetib borish', ja: '到着予定', en: 'Arrival', vi: 'Đến nơi', zh: '到达', ne: 'आगमन' },
+      minutesLabel: { uz: 'min', ja: '分', en: 'min', vi: 'phút', zh: '分', ne: 'मि' },
+      kmLabel: { uz: 'km', ja: 'km', en: 'km', vi: 'km', zh: 'km', ne: 'किमि' },
+      shareETA: { uz: 'Kutilayotgan vaqtni ulashish', ja: '到着予定を共有', en: 'Share ETA', vi: 'Chia sẻ ETA', zh: '分享预计到达时间', ne: 'ETA शेयर गर्नुहोस्' },
+      gpsReconnect: { uz: 'GPS qayta ulash', ja: 'GPS信号回復', en: 'GPS Re-connect', vi: 'Kết nối lại GPS', zh: '重新连接 GPS', ne: 'GPS पुनः जडान' },
+      reportGpsLoss: { uz: 'GPS yo\'qolgani haqida xabar berish', ja: 'GPSロストを報告', en: 'Report GPS Loss', vi: 'Báo cáo mất GPS', zh: '报告 GPS 丢失', ne: 'GPS हराउने रिपोर्ट गर्नुहोस्' },
+      vehicleSettings: { uz: 'Ulov sozlamalari', ja: '車両クラス設定', en: 'Vehicle Settings', vi: 'Cài đặt phương tiện', zh: '车辆设置', ne: 'सवारी साधन सेटिङहरू' },
+      bookmarks: { uz: '📌 Bookmarks', ja: '📌 お気に入り', en: '📌 Bookmarks', vi: '📌 Dấu trang', zh: '📌 书签', ne: '📌 बुकमार्कहरू' },
+      all: { uz: 'Hammasi', ja: 'すべて', en: 'All', vi: 'Tất cả', zh: '全部', ne: 'सबै' },
+      noBookmarks: { uz: 'Saqlangan belgilangan joylar yo\'q', ja: 'お気に入りがありません', en: 'No bookmarks saved', vi: 'Chưa có dấu trang', zh: '没有保存的书签', ne: 'कुनै बुकमार्कहरू सुरक्षित छैनन्' },
+      addCurrentLocationToBookmarks: { uz: 'Hozirgi joyni belgilangan joylarga qo\'shish', ja: '現在地をお気に入りに追加', en: 'Add current location to bookmarks', vi: 'Thêm vị trí hiện tại vào dấu trang', zh: '将当前位置添加到书签', ne: 'वर्तमान स्थानलाई बुकमार्कमा थप्नुहोस्' },
+      nearbyCategories: { uz: 'Atrofdagi kategoriyalar', ja: '周辺のカテゴリ', en: 'Find Nearby', vi: 'Tìm gần đây', zh: '附近类别', ne: 'नजिकका श्रेणीहरू' },
+      convenience: { uz: 'Do\'kon (Konbini)', ja: 'コンビニ', en: 'Convenience', vi: 'Tiện lợi', zh: '便利店', ne: 'सुविधा' },
+      logisticsHubs: { uz: 'Logistika markazlari', ja: '主要物流センター', en: 'Logistics Hubs', vi: 'Hubs hậu cần', zh: '物流枢纽', ne: 'लजिस्टिक हब' },
+      compassNorth: { uz: 'Shimolni tepaga tekislash', ja: '北を上にする', en: 'North Up', vi: 'Bắc lên trên', zh: '向北', ne: 'उत्तर माथि' },
+      savedPoint: { uz: 'Saqlangan joy', ja: '保存地点', en: 'Saved Point', vi: 'Điểm đã lưu', zh: '已保存地点', ne: 'सेभ गरिएको स्थान' },
+      dinner: { uz: 'Ovqat', ja: '食事処', en: 'Dinner', vi: 'Ăn tối', zh: '晚餐', ne: 'डिनर' },
+      gas: { uz: 'Yoqilg\'i', ja: '給油所', en: 'Gas', vi: 'Xăng', zh: '加油站', ne: 'इन्धन' },
+      parking: { uz: 'Avtoturargoh', ja: '駐車場', en: 'Parking', vi: 'Đỗ xe', zh: '停车场', ne: 'पार्किङ' },
+      transitStation: { uz: 'Poezd stansiyasi', ja: '駅・交通機関', en: 'Transit Station', vi: 'Trạm giao thông', zh: '交通枢纽', ne: 'ट्रान्ジット स्टेशन' },
+      hospital: { uz: 'Kasalxona', ja: '病院', en: 'Hospital', vi: 'Bệnh viện', zh: '医院', ne: 'अस्पताल' },
+      atm: { uz: 'ATM', ja: 'ATM', en: 'ATM', vi: 'ATM', zh: 'ATM', ne: 'एटीएम' },
+      markedLocation: { uz: 'Belgilangan joy', ja: '指定された場所', en: 'Marked Location', vi: 'Vị trí đã ghim', zh: '固定位置', ne: 'चिन्हित स्थान' },
+      searching: { uz: 'Qidirilmoqda...', ja: '検索中...', en: 'Searching...', vi: 'Đang tìm...', zh: '搜索中...', ne: 'खोज्दै...' },
+      searchNoResults: { uz: 'Natija yo\'q — xaritani siljitib qayta qidiring', ja: '結果なし — 地図を移動して再検索', en: 'No results — move map and search again', vi: 'Không có kết quả — di chuyển bản đồ và tìm lại', zh: '没有结果 — 移动地图重新搜索', ne: 'परिणाम छैन — नक्सा सारेर पुन: खोज्नुहोस्' },
+      openSourceLicenses: { uz: 'Open Source Litsenziyalar', ja: 'オープンソースライセンス', en: 'Open Source Licenses', vi: 'Giấy phép nguồn mở', zh: '开源许可证', ne: 'ओपन सोर्स अनुमति पत्र' },
+      developer: { uz: 'Developer', ja: '開発者', en: 'Developer', vi: 'Nhà phát triển', zh: '开发者', ne: 'डेभलपर' },
+      close: { uz: 'Yopish', ja: '閉じる', en: 'Close', vi: 'Đóng', zh: '关闭', ne: 'बन्द गर्नुहोस्' },
+      gpsConsentTitle: { uz: 'Geolokatsiyadan foydalanish ruxsati', ja: '位置情報の使用許可', en: 'Location Permission', vi: 'Cho phép vị trí', zh: '位置权限', ne: 'स्थान अनुमति' },
+      gpsConsentDescription: { uz: 'Michi ilovasi joriy joylashuvingizni aniqlash, optimal marshrutni chizish va real-vaqt rejimida tezlik cheklovlarini ogohlantirish uchun qurilmangizning GPS ma\'lumotlaridan foydalanadi. Bu ma\'lumotlar saqlanmaydi va uchinchi shaxslarga berilmaydi.', ja: 'Michiナビは、現在地の特定、最適なルート計算、リアルタイム速度制限警告の提供のために、お使いの端末の位置情報（GPS）を使用します。位置情報は他の目的で保存または共有されることはありません。', en: 'Michi uses your device GPS location to calculate routes, show your current position and provide real-time speed alerts. Location data is not stored or shared externally.', vi: 'Michi sử dụng GPS thiết bị của bạn để định tuyến, hiển thị vị trí hiện tại và cảnh báo tốc độ theo thời gian thực. Dữ liệu vị trí không được lưu hoặc chia sẻ bên ngoài.', zh: 'Michi 使用您的设备 GPS 定位来计算路线、显示当前位置并提供实时速度警报。位置数据不会被存储或外部共享。', ne: 'Michi ले मार्ग गणना गर्न, वर्तमान स्थान देखाउन र वास्तविक-समय गति चेतावनीहरू प्रदान गर्न तपाइन्डको उपकरणको GPS प्रयोग गर्दछ। स्थान डेटा बाह्य रूपमा भण्डारण वा साझा गरिँदैन।' },
+      decline: { uz: 'Rad etish', ja: '拒否する', en: 'Decline', vi: 'Từ chối', zh: '拒绝', ne: 'अस्वीकार गर्नुहोस्' },
+      allow: { uz: 'Ruxsat berish', ja: '許可する', en: 'Allow', vi: 'Cho phép', zh: '允许', ne: 'अनुमति दिनुहोस्' },
+      share: { uz: 'Ulashish', ja: '共有', en: 'Share', vi: 'Chia sẻ', zh: '分享', ne: 'शेयर गर्नुहोस्' },
+      placeDetails: { uz: 'Joy tafsilotlari', ja: '場所の詳細', en: 'Place Details', vi: 'Chi tiết địa điểm', zh: '地点详情', ne: 'स्थान विवरण' },
+      address: { uz: 'Manzil', ja: '住所', en: 'Address', vi: 'Địa chỉ', zh: '地址', ne: 'ठेगाना' },
+      coordinates: { uz: 'Kordinatalar', ja: '座標', en: 'Coordinates', vi: 'Tọa độ', zh: '坐标', ne: 'निर्देशन' },
+      warningOnly: { uz: 'Faqat ogohlantirishlar', ja: '警告のみ', en: 'Warning Only', vi: 'Chỉ cảnh báo', zh: '仅警告', ne: 'केवल चेतावनी' },
+      valhallaRoutingActive: { uz: '🗺️ Valhalla marshruti hisoblandi.', ja: '🗺️【Valhallaエンジン】 yuk mashinasi marshruti hisoblandi.', en: '🗺️ Route computed using Valhalla commercial truck routing.', vi: '🗺️ Lộ trình được tính bằng định tuyến Valhalla cho xe thương mại.', zh: '🗺️ 路线已使用 Valhalla 商业卡车路由计算。', ne: '🗺️ Valhalla व्यापारिक ट्रक मार्गनिर्देशन प्रयोग गरेर मार्ग गणना गरियो।' },
+      detourApplied: { uz: '🛡️ Detour Applied: Safely bypassed OSRM clearance limits.', ja: '🛡️【迂回ルート適用】OSRM高さ/重量制限エリアを自動回避しました。', en: '🛡️ Detour Applied: Safely bypassed OSRM clearance limits.', vi: '🛡️ Đã áp dụng đường vòng an toàn, tránh giới hạn tải trọng OSRM.', zh: '🛡️ 已应用绕行，安全绕过 OSRM 限制。', ne: '🛡️ रूट परिवर्तन गरियो: OSRM सीमा सुरक्षित रूपमा बाइपास गरियो।' },
+      offlineFallback: { uz: 'Offline rejim: Zaxira yo\'li ko\'rsatilyapti.', ja: '【オフライン】直接ルートを表示中。', en: 'Offline Mode: Displaying fallback direct route.', vi: 'Chế độ ngoại tuyến: Hiển thị đường dự phòng.', zh: '离线模式：显示备用直接路线。', ne: 'अफलाइन मोड: प्रत्यक्ष फallback मार्ग देखाइएको छ।' },
+      setStartDestAlert: { uz: 'Boshlang\'ich va yakuniy manzilni kiriting.', ja: '出発地と目的地を設定してください。', en: 'Please set both a start and destination.', vi: 'Vui lòng đặt điểm bắt đầu và điểm đến.', zh: '出発地と目的地を設定してください。', ne: 'कृपया आरम्भ र गन्तव्य दुबै सेट गर्नुहोस्।' },
+      searchPlaceholder: { uz: 'Qidiruv bering...', ja: '目的地を検索...', en: 'Search here...', vi: 'Tìm kiếm...', zh: '搜索...', ne: 'खोजी...' },
+      searchSheetTitle: { uz: 'Manzilni qidirish', ja: '目的地を検索', en: 'Search', vi: 'Tìm kiếm', zh: '搜索', ne: 'खोजी' },
+      recents: { uz: 'Yaqinda qidirilganlar', ja: '最近の検索履歴', en: 'Recents', vi: 'Gần đây', zh: '最近', ne: 'हालै' },
+      logisticsHubs: { uz: 'Logistika markazlari', ja: '主要物流センター', en: 'Logistics Hubs', vi: 'Hubs hậu cần', zh: '物流枢纽', ne: 'लजिस्टिक हब' },
+      nearbyCategories: { uz: 'Atrofdagi kategoriyalar', ja: '周辺のカテゴリ', en: 'Find Nearby', vi: 'Tìm gần đây', zh: '附近类别', ne: 'नजिकका श्रेणीहरू' },
+      convenience: { uz: 'Quyidagi do\'kon', ja: 'コンビニ', en: 'Convenience', vi: 'Tiện lợi', zh: '便利店', ne: 'सुविधा' },
+      dinner: { uz: 'Ovqat', ja: '食事処', en: 'Dinner', vi: 'Ăn tối', zh: '晚餐', ne: 'डिनर' },
+      gas: { uz: 'Yoqilg\'i', ja: '給油所', en: 'Gas', vi: 'Xăng', zh: '加油站', ne: 'इन्धन' },
+      parking: { uz: 'Avtoturargoh', ja: '駐車場', en: 'Parking', vi: 'Đỗ xe', zh: '停车场', ne: 'पार्किङ' },
+      transitStation: { uz: 'Poezd stansiyasi', ja: '駅・交通機関', en: 'Transit Station', vi: 'Trạm giao thông', zh: '交通枢纽', ne: 'ट्रान्जिट स्टेशन' },
+      markedLocation: { uz: 'Belgilangan joy', ja: '指定された場所', en: 'Marked Location', vi: 'Vị trí đã ghim', zh: '固定位置', ne: 'चिन्हित स्थान' },
+      compassNorth: { uz: 'Shimolni tepaga tekislash', ja: '北を上にする', en: 'North Up', vi: 'Bắc lên trên', zh: '向北', ne: 'उत्तर माथि' },
+      savedPoint: { uz: 'Saqlangan joy', ja: '保存地点', en: 'Saved Point', vi: 'Điểm đã lưu', zh: '已保存地点', ne: 'सेभ गरिएको स्थान' },
+      shareTextNavigating: { uz: 'Michi Navigatsiya - Manzil: {dest}. Qolgan masofa: {distance}, Qolgan vaqt: {time}.', ja: 'Michiナビ - 目的地: {dest}。残り距離: {distance}、残り時間: {time}。', en: 'Michi Navigation - Destination: {dest}. Remaining distance: {distance}, remaining time: {time}.', vi: 'Michi Điều hướng - Điểm đến: {dest}. Khoảng cách còn lại: {distance}, thời gian còn lại: {time}.', zh: 'Michi 导航 - 目的地: {dest}。剩余距离: {distance}，剩余时间: {time}。', ne: 'Michi नेभिगेसन - गन्तव्य: {dest}। बाँकी दूरी: {distance}, बाँकी समय: {time}।' },
+      shareTextDestination: { uz: 'Michi Navigatsiya - Manzil: {dest}. Koordinatalar: {lat}, {lng}', ja: 'Michiナビ - 目的地: {dest}。座標: {lat}, {lng}', en: 'Michi Navigation - Destination: {dest}. Coordinates: {lat}, {lng}', vi: 'Michi Điều hướng - Điểm đến: {dest}. Tọa độ: {lat}, {lng}', zh: 'Michi 导航 - 目的地: {dest}。坐标: {lat}, {lng}', ne: 'Michi नेभिगेसन - गन्तव्य: {dest}। निर्देशांक: {lat}, {lng}' },
+      shareTextDefault: { uz: 'Michi Navigatsiya', ja: 'Michiナビ', en: 'Michi Navigation', vi: 'Michi Điều hướng', zh: 'Michi 导航', ne: 'Michi नेभिगेसन' }
     };
     return dict[key]?.[currentLang] || dict[key]?.['uz'] || '';
   };
@@ -423,12 +1078,49 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
     };
   }, [isMapLoaded]);
 
+  const requestGpsConsent = (callback) => {
+    if (localStorage.getItem('michi_gps_consent') === 'granted') {
+      if (callback) callback();
+    } else {
+      setOnConsentGranted(() => callback);
+      setShowGpsConsentModal(true);
+    }
+  };
+
+  const handleAcceptGpsConsent = () => {
+    triggerSound();
+    localStorage.setItem('michi_gps_consent', 'granted');
+    setShowGpsConsentModal(false);
+    if (onConsentGranted) {
+      onConsentGranted();
+    }
+  };
+
+  const handleDeclineGpsConsent = () => {
+    triggerSound();
+    setShowGpsConsentModal(false);
+    alert(localize({
+      ja: 'GPS位置情報が拒否されたため、デモモード（松戸）が有効になります。',
+      uz: 'GPS rad etilganligi sababli, demo rejim (Matsudo) faollashadi.',
+      en: 'GPS access denied — demo mode enabled (Matsudo).'
+    }));
+    const fallback = { lat: 35.6841, lng: 139.7741, name: '⛩️ Nihonbashi Center' };
+    setStartCoord(fallback);
+    setStartQuery(localize({
+      ja: '⛩️ 日本橋中心街',
+      uz: '⛩️ Nihonbashi Center',
+      en: '⛩️ Nihonbashi Center'
+    }));
+  };
+
   // Locate user using standard HTML5 Geolocation API or active vehicle follow
   const handleLocateUser = () => {
     triggerSound();
     
     // 1. If actively navigating, center map on the simulated vehicle marker with active orientation settings
     if (isNavigating && navSteps.length > 0) {
+      isFollowingRef.current = true;
+      setIsFollowingVehicle(true);
       const currentStep = navSteps[currentStepIndex];
       if (currentStep && mapInstanceRef.current) {
         // Calculate current step heading
@@ -444,7 +1136,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
         }
 
         const activeBearing = mapOrientation === 'north' ? 0 : heading;
-        const activePitch = mapOrientation === 'north' ? 0 : 45;
+        const activePitch = mapOrientation === 'north' ? 0 : (is3D ? 60 : 0);
 
         const offsetDistance = 0; // centered exactly on vehicle
         const R = 6378137;
@@ -467,71 +1159,91 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
     // 2. If not navigating but startCoord is set
     if (startCoord && mapInstanceRef.current) {
       if (destCoord) {
-        const bounds = [
-          [startCoord.lng, startCoord.lat],
-          [destCoord.lng, destCoord.lat]
-        ];
+        const bounds = [];
+        if (startCoord && !isNaN(Number(startCoord.lng)) && !isNaN(Number(startCoord.lat))) {
+          bounds.push([Number(startCoord.lng), Number(startCoord.lat)]);
+        }
+        if (destCoord && !isNaN(Number(destCoord.lng)) && !isNaN(Number(destCoord.lat))) {
+          bounds.push([Number(destCoord.lng), Number(destCoord.lat)]);
+        }
         stops.forEach(stop => {
-          if (stop.coord) bounds.push([stop.coord.lng, stop.coord.lat]);
+          if (stop.coord && !isNaN(Number(stop.coord.lng)) && !isNaN(Number(stop.coord.lat))) {
+            bounds.push([Number(stop.coord.lng), Number(stop.coord.lat)]);
+          }
         });
-        const lngs = bounds.map(b => b[0]);
-        const lats = bounds.map(b => b[1]);
-        const minLng = Math.min(...lngs);
-        const maxLng = Math.max(...lngs);
-        const minLat = Math.min(...lats);
-        const maxLat = Math.max(...lats);
 
-        const fitPadding = isSettingsCollapsed 
-          ? { top: 120, bottom: 240, left: 40, right: 40 }
-          : { top: 340, bottom: 280, left: 50, right: 50 };
+        if (bounds.length > 0) {
+          const lngs = bounds.map(b => b[0]);
+          const lats = bounds.map(b => b[1]);
+          const minLng = Math.min(...lngs);
+          const maxLng = Math.max(...lngs);
+          const minLat = Math.min(...lats);
+          const maxLat = Math.max(...lats);
 
-        mapInstanceRef.current.fitBounds([
-          [minLng, minLat],
-          [maxLng, maxLat]
-        ], { 
-          padding: fitPadding, 
-          maxZoom: 15 
-        });
+          const fitPadding = getDynamicFitPadding(mapInstanceRef.current, sheetDetent, !!(startCoord && destCoord));
+
+          try {
+            mapInstanceRef.current.fitBounds([
+              [minLng, minLat],
+              [maxLng, maxLat]
+            ], { 
+              padding: fitPadding, 
+              maxZoom: 15 
+            });
+          } catch (fitErr) {
+            console.error("MapLibre fitBounds failed:", fitErr);
+          }
+        }
       } else {
         mapInstanceRef.current.easeTo({ center: [startCoord.lng, startCoord.lat], zoom: 15, duration: 800 });
       }
       return;
     }
 
-    if (!navigator.geolocation) {
-      const fallback = { lat: 35.6841, lng: 139.7741, name: '⛩️ Nihonbashi Center' };
-      setStartCoord(fallback);
-      setStartQuery(currentLang === 'ja' ? '⛩️ 日本橋中心街' : '⛩️ Nihonbashi Center');
-      if (mapInstanceRef.current && !destCoord) {
-        mapInstanceRef.current.easeTo({ center: [fallback.lng, fallback.lat], zoom: 15, duration: 800 });
-      }
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        const newCoord = {
-          lat: latitude,
-          lng: longitude,
-          name: currentLang === 'ja' ? '📍 現在地 (GPS)' : '📍 Hozirgi joylashuv (GPS)'
-        };
-        setStartCoord(newCoord);
-        setStartQuery(currentLang === 'ja' ? '現在地 (GPS)' : 'Hozirgi joylashuv (GPS)');
-        if (mapInstanceRef.current && !destCoord) {
-          mapInstanceRef.current.easeTo({ center: [longitude, latitude], zoom: 15, duration: 800 });
-        }
-      },
-      (error) => {
-        console.error('GPS error', error);
-        const fallback = { lat: 35.6841, lng: 139.7741, name: '⛩️ Nihonbashi Center' };
+    requestGpsConsent(() => {
+      if (!navigator.geolocation) {
+        const fallback = { lat: 35.6841, lng: 139.7741, name: getNavText('defaultHubName') };
         setStartCoord(fallback);
-        setStartQuery(currentLang === 'ja' ? '⛩️ 日本橋中心街' : '⛩️ Nihonbashi Center');
+        setStartQuery(getNavText('defaultHubName'));
         if (mapInstanceRef.current && !destCoord) {
           mapInstanceRef.current.easeTo({ center: [fallback.lng, fallback.lat], zoom: 15, duration: 800 });
         }
+        return;
       }
-    );
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const newCoord = {
+            lat: latitude,
+            lng: longitude,
+            name: localize({
+              ja: '📍 現在地 (GPS)',
+              uz: '📍 Hozirgi joylashuv (GPS)',
+              en: '📍 Current location (GPS)'
+            })
+          };
+          setStartCoord(newCoord);
+          setStartQuery(localize({
+            ja: '現在地 (GPS)',
+            uz: 'Hozirgi joylashuv (GPS)',
+            en: 'Current location (GPS)'
+          }));
+          if (mapInstanceRef.current && !destCoord) {
+            mapInstanceRef.current.easeTo({ center: [longitude, latitude], zoom: 15, duration: 800 });
+          }
+        },
+        (error) => {
+          console.error('GPS error', error);
+          const fallback = { lat: 35.6841, lng: 139.7741, name: getNavText('defaultHubName') };
+          setStartCoord(fallback);
+          setStartQuery(getNavText('defaultHubName'));
+          if (mapInstanceRef.current && !destCoord) {
+            mapInstanceRef.current.easeTo({ center: [fallback.lng, fallback.lat], zoom: 15, duration: 800 });
+          }
+        }
+      );
+    });
   };
 
   // Update map markers when start, intermediate stops, and final coordinates change
@@ -563,41 +1275,41 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
     };
 
     // Start marker
-    if (startCoord) {
+    if (startCoord && !isNaN(Number(startCoord.lng)) && !isNaN(Number(startCoord.lat))) {
       const startLabel = startCoord.name ? cleanLabel(startCoord.name.split(',')[0]) : '';
       const el = createMarkerElement(`<div class="custom-map-marker start"><div class="marker-dot"></div><span class="marker-label">${startLabel}</span></div>`);
 
       const m = new Marker({ element: el, rotationAlignment: 'viewport' })
-        .setLngLat([startCoord.lng, startCoord.lat])
+        .setLngLat([Number(startCoord.lng), Number(startCoord.lat)])
         .addTo(mapInstanceRef.current);
       activeMarkersRef.current.push(m);
-      bounds.push([startCoord.lng, startCoord.lat]);
+      bounds.push([Number(startCoord.lng), Number(startCoord.lat)]);
     }
 
     // Intermediate stops markers (orange color coding)
     stops.forEach((stop, index) => {
-      if (stop.coord) {
+      if (stop.coord && !isNaN(Number(stop.coord.lng)) && !isNaN(Number(stop.coord.lat))) {
         const stopLabel = stop.coord.name ? cleanLabel(stop.coord.name.split(',')[0]) : `Stop ${index + 1}`;
         const el = createMarkerElement(`<div class="custom-map-marker warning"><div class="marker-dot" style="background-color: #FF9500;"></div><span class="marker-label">${stopLabel}</span></div>`);
 
         const m = new Marker({ element: el, rotationAlignment: 'viewport' })
-          .setLngLat([stop.coord.lng, stop.coord.lat])
+          .setLngLat([Number(stop.coord.lng), Number(stop.coord.lat)])
           .addTo(mapInstanceRef.current);
         activeMarkersRef.current.push(m);
-        bounds.push([stop.coord.lng, stop.coord.lat]);
+        bounds.push([Number(stop.coord.lng), Number(stop.coord.lat)]);
       }
     });
 
     // Destination marker
-    if (destCoord) {
+    if (destCoord && !isNaN(Number(destCoord.lng)) && !isNaN(Number(destCoord.lat))) {
       const destLabel = destCoord.name ? cleanLabel(destCoord.name.split(',')[0]) : '';
       const el = createMarkerElement(`<div class="custom-map-marker end"><div class="marker-dot"></div><span class="marker-label">${destLabel}</span></div>`);
 
       const m = new Marker({ element: el, rotationAlignment: 'viewport' })
-        .setLngLat([destCoord.lng, destCoord.lat])
+        .setLngLat([Number(destCoord.lng), Number(destCoord.lat)])
         .addTo(mapInstanceRef.current);
       activeMarkersRef.current.push(m);
-      bounds.push([destCoord.lng, destCoord.lat]);
+      bounds.push([Number(destCoord.lng), Number(destCoord.lat)]);
     }
 
     if (bounds.length > 0) {
@@ -609,9 +1321,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
         const minLat = Math.min(...lats);
         const maxLat = Math.max(...lats);
 
-        const fitPadding = isSettingsCollapsed 
-          ? { top: 120, bottom: 240, left: 40, right: 40 }
-          : { top: 340, bottom: 280, left: 50, right: 50 };
+        const fitPadding = getDynamicFitPadding(mapInstanceRef.current, sheetDetent, !!(startCoord && destCoord));
 
         mapInstanceRef.current.fitBounds([
           [minLng, minLat],
@@ -623,7 +1333,121 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
       } catch (e) {}
     }
 
-  }, [startCoord, destCoord, stops, isMapLoaded, isSettingsCollapsed]);
+  }, [startCoord, destCoord, stops, isMapLoaded, isSettingsCollapsed, sheetDetent]);
+
+  // Auto-initialize startCoord to a default start node as soon as destCoord is set
+  // This enables automatic route calculation and map bounds fitting in the Place Details view
+  useEffect(() => {
+    if (!isRoutingActive) {
+      if (destCoord) {
+        if (!startCoord) {
+          const defaultStart = getDefaultStartCoord(destCoord);
+          setStartCoord(defaultStart);
+          setStartQuery(localizePair(defaultStart.jaName, defaultStart.name, defaultStart.name, defaultStart.name, defaultStart.name, defaultStart.name, '')); 
+        }
+      } else {
+        setStartCoord(null);
+        setStartQuery('');
+      }
+    }
+  }, [destCoord, isRoutingActive]);
+
+  // Update map POI markers when search results change
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isMapLoaded) return;
+
+    // Clear existing POI markers
+    poiMarkersRef.current.forEach(m => m.remove());
+    poiMarkersRef.current = [];
+
+    if (poiResults.length === 0) return;
+
+    poiResults.forEach(poi => {
+      // Create a modern Apple Maps style POI circular marker
+      const el = document.createElement('div');
+      el.className = 'am-poi-map-marker animate-scale-up';
+      
+      // Determine colors and icons based on category
+      let bg = '#007aff'; // default blue
+      let symbol = 'P';
+
+      if (poi.type === 'fuel' || poi.icon === '⛽') {
+        bg = '#ff9500'; // orange for gas
+        symbol = '⛽';
+      } else if (poi.type === 'parking' || poi.icon === '🅿️') {
+        bg = '#007aff'; // blue for parking
+        symbol = 'P';
+      } else if (poi.type === 'restaurant' || poi.icon === '🍜' || poi.icon === '🍛') {
+        bg = '#ff3b30'; // red for dining
+        symbol = '🍴';
+      } else if (poi.type === 'shop' || poi.icon === '🏪') {
+        bg = '#af52de'; // purple for convenience/shopping
+        symbol = '🏪';
+      } else if (poi.type === 'rest' || poi.icon === '🛌') {
+        bg = '#34c759'; // green for rest areas
+        symbol = '🛌';
+      } else {
+        symbol = poi.icon || '📍';
+      }
+
+      // Inline styles for high-fidelity premium appearance
+      el.style.width = '30px';
+      el.style.height = '30px';
+      el.style.borderRadius = '50%';
+      el.style.backgroundColor = bg;
+      el.style.border = '2.5px solid #ffffff';
+      el.style.boxShadow = '0 3px 8px rgba(0,0,0,0.3)';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+      el.style.cursor = 'pointer';
+      el.style.color = '#ffffff';
+      el.style.fontSize = '13px';
+      el.style.transition = 'transform 0.15s cubic-bezier(0.16, 1, 0.3, 1)';
+      el.style.zIndex = '100';
+
+      if (symbol === 'P') {
+        el.innerHTML = '<span style="font-family: -apple-system, sans-serif; font-weight: 900; font-size: 13px; margin-top: -1px;">P</span>';
+      } else {
+        el.innerHTML = `<span style="font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center;">${symbol}</span>`;
+      }
+
+      // Hover scale animations
+      el.onmouseenter = () => {
+        el.style.transform = 'scale(1.18)';
+        el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
+      };
+      el.onmouseleave = () => {
+        el.style.transform = 'scale(1)';
+        el.style.boxShadow = '0 3px 8px rgba(0,0,0,0.3)';
+      };
+
+      // Click to select destination
+      el.onclick = () => {
+        triggerSound();
+        setDestCoord({ 
+          lat: poi.lat, 
+          lng: poi.lng, 
+          name: poi.name,
+          type: poi.type || 'fuel',
+          brand: poi.brand,
+          openingHours: poi.openingHours,
+          phone: poi.phone,
+          hgv: poi.hgv
+        });
+        setDestQuery(poi.name);
+        setPlaceDetailsExpanded(false);
+      };
+
+      // Create MapLibre marker and add it
+      const m = new Marker({ element: el, rotationAlignment: 'viewport' })
+        .setLngLat([poi.lng, poi.lat])
+        .addTo(mapInstanceRef.current);
+      poiMarkersRef.current.push(m);
+    });
+
+  }, [poiResults, isMapLoaded]);
+
 
   // Handle vehicle selection
   const handleVehicleSelect = (key) => {
@@ -633,13 +1457,36 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
     setHeight(v.height);
     setWidth(v.width);
     setWeight(v.weight);
+    setLength(v.length || 6.0);
+    setAxleLoad(v.axleLoad || 5.0);
+    setMinTurnRadius(v.minTurnRadius || 5.5);
+    
+    const simulatedUserVehicle = {
+      id: 'v_selected_' + key,
+      presetKey: key,
+      type: v.type,
+      make: v.name.split(' ')[0],
+      model: v.name.split(' ').slice(1).join(' '),
+      bodyStyle: v.type === 'passenger' ? 'sedan' : 'box_truck',
+      height: (v.height || 2.0).toFixed(2),
+      width: (v.width || 2.0).toFixed(2),
+      weight: (v.weight || 5.0).toFixed(2),
+      length: (v.length || 6.0).toFixed(2),
+      axleLoad: (v.axleLoad || 3.0).toFixed(2),
+      minTurnRadius: (v.minTurnRadius || 5.5).toFixed(1),
+      platePrefecture: '品川',
+      plateClass: '100',
+      plateHira: 'あ',
+      plateNumber: '88-88'
+    };
+    localStorage.setItem('michi_user_vehicle', JSON.stringify(simulatedUserVehicle));
   };
 
   // Add intermediate stop
   const handleAddStop = () => {
     triggerSound();
     if (stops.length >= 4) {
-      alert(currentLang === 'ja' ? '追加できる経由地は最大4件までです。' : 'Ko\'pi bilan 4 ta oraliq manzil qo\'shish mumkin.');
+      alert(getNavText('routeLimitAlert'));
       return;
     }
     setStops([...stops, { id: Math.random().toString(), query: '', coord: null, suggestions: [] }]);
@@ -667,23 +1514,82 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
       return;
     }
 
+    const baseLat = startCoord ? startCoord.lat : 35.7915;
+    const baseLng = startCoord ? startCoord.lng : 139.9015;
+
+    // Direct mapping of categories to closest POIs
+    const getCategoryKey = (qStr) => {
+      const q = qStr.toLowerCase().trim();
+      if (q.includes('convenience') || q.includes('konbini') || q.includes('コンビニ') || q.includes('lawson') || q.includes('7-eleven') || q.includes('familymart') || q.includes('ローソン') || q.includes('セブン') || q.includes('ファミマ') || q.includes('🏪')) {
+        return 'convenience';
+      }
+      if (q.includes('fuel') || q.includes('gas station') || q.includes('gas') || q.includes('yoqilg') || q.includes('eneos') || q.includes('cosmo') || q.includes('apollostation') || q.includes('ガソリン') || q.includes('エネオス') || q.includes('コスモ') || q.includes('出光') || q.includes('⛽')) {
+        return 'fuel';
+      }
+      if (q.includes('parking') || q.includes('turargoh') || q.includes('times') || q.includes('repark') || q.includes('npc24h') || q.includes('駐車場') || q.includes('タイムズ') || q.includes('🅿️')) {
+        return 'parking';
+      }
+      if (q.includes('restaurant') || q.includes('food') || q.includes('ovqat') || q.includes('yoshinoya') || q.includes('sukiya') || q.includes('coco ichibanya') || q.includes('吉野家') || q.includes('すき家') || q.includes('ココイチ') || q.includes('🍜')) {
+        return 'restaurant';
+      }
+      if (q.includes('hospital') || q.includes('kasalxona') || q.includes('病院') || q.includes('クリニック') || q.includes('🏥')) {
+        return 'hospital';
+      }
+      if (q.includes('atm') || q.includes('seven bank') || q.includes('e-net') || q.includes('銀行') || q.includes('郵便局') || q.includes('🏧')) {
+        return 'atm';
+      }
+      return null;
+    };
+
+    const catKey = getCategoryKey(query);
+    if (catKey) {
+      const closest = getClosestPOIs(baseLat, baseLng, catKey, i18n.language);
+      if (type === 'start') setStartSuggestions(closest);
+      else if (type === 'dest') setDestSuggestions(closest);
+      else if (type === 'stop' && stopId) {
+        setStops(stops.map(s => s.id === stopId ? { ...s, suggestions: closest } : s));
+      }
+      return;
+    }
+
     try {
       let searchQ = query;
       if (query.toLowerCase().includes('my basket') || query.includes('basket')) {
         searchQ = 'まいばすけっと ' + query.replace(/my basket/gi, '').trim();
       }
       
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQ)}&countrycodes=jp&limit=5`);
+      // Bounding box bias around current map center or fallback location
+      const mapCenter = mapInstanceRef.current ? mapInstanceRef.current.getCenter() : null;
+      const biasLat = mapCenter ? mapCenter.lat : baseLat;
+      const biasLng = mapCenter ? mapCenter.lng : baseLng;
+      const viewboxOffset = 0.5; // ~50km radius
+      const xmin = biasLng - viewboxOffset;
+      const xmax = biasLng + viewboxOffset;
+      const ymin = biasLat - viewboxOffset;
+      const ymax = biasLat + viewboxOffset;
+
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQ)}&countrycodes=jp&viewbox=${xmin},${ymax},${xmax},${ymin}&bounded=0&limit=5`);
       const data = await res.json();
       
       if (Array.isArray(data)) {
-        const formatted = data.map(item => ({
-          id: item.place_id,
-          name: item.display_name,
-          lat: parseFloat(item.lat),
-          lng: parseFloat(item.lon)
-        }));
+        const formatted = data
+          .filter(item => item && typeof item.display_name === 'string' && !isNaN(parseFloat(item.lat)) && !isNaN(parseFloat(item.lon)))
+          .map(item => {
+            const latVal = parseFloat(item.lat);
+            const lngVal = parseFloat(item.lon);
+            const dist = getDistance(baseLat, baseLng, latVal, lngVal);
+            return {
+              id: String(item.place_id || Math.random().toString()),
+              name: item.display_name,
+              lat: latVal,
+              lng: lngVal,
+              distance: dist
+            };
+          });
         
+        // Sort by proximity
+        formatted.sort((a, b) => a.distance - b.distance);
+
         if (type === 'start') setStartSuggestions(formatted);
         else if (type === 'dest') setDestSuggestions(formatted);
         else if (type === 'stop' && stopId) {
@@ -692,15 +1598,28 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
       }
     } catch (e) {
       const local = Object.values(NODES).filter(n =>
-        n.name.toLowerCase().includes(query.toLowerCase()) ||
-        n.jaName.includes(query)
+        n && (
+          (n.name && typeof n.name === 'string' && n.name.toLowerCase().includes(query.toLowerCase())) ||
+          (n.jaName && typeof n.jaName === 'string' && n.jaName.includes(query))
+        )
       );
-      const formatted = local.map(n => ({
-        id: n.id,
-        name: currentLang === 'ja' ? n.jaName : n.name,
-        lat: n.lat,
-        lng: n.lng
-      }));
+      const formatted = local
+        .filter(n => n && !isNaN(parseFloat(n.lat)) && !isNaN(parseFloat(n.lng)))
+        .map(n => {
+          const latVal = parseFloat(n.lat);
+          const lngVal = parseFloat(n.lng);
+          const dist = getDistance(baseLat, baseLng, latVal, lngVal);
+          return {
+            id: String(n.id || Math.random().toString()),
+            name: localizePair(n.jaName, n.name, n.name, n.name, n.name, n.name, 'Marked Location'),
+            lat: latVal,
+            lng: lngVal,
+            distance: dist
+          };
+        });
+
+      // Sort by proximity
+      formatted.sort((a, b) => a.distance - b.distance);
 
       if (type === 'start') setStartSuggestions(formatted);
       else if (type === 'dest') setDestSuggestions(formatted);
@@ -710,15 +1629,36 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
     }
   };
 
+  // Debounced search input handler — waits 300ms before firing API call
+  const handleSearchInput = (value) => {
+    setDestQuery(value);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    
+    if (!value || value.trim().length < 2) {
+      setDestSuggestions([]);
+      setIsSearching(false);
+      return;
+    }
+    
+    setIsSearching(true);
+    searchDebounceRef.current = setTimeout(() => {
+      searchAddress(value, 'dest').then(() => setIsSearching(false)).catch(() => setIsSearching(false));
+    }, 300);
+  };
+
   // Draw route polyline using MapLibre GeoJSON layer
   const drawRouteOnMap = (coordinates, color, dashed = false) => {
-    if (!mapInstanceRef.current || !isMapLoaded) return;
+    if (!mapInstanceRef.current || !isMapLoaded || !coordinates || !Array.isArray(coordinates) || coordinates.length < 2) return;
     const map = mapInstanceRef.current;
     
-    // Remove existing layer and source
-    if (map.getLayer('route-flow')) map.removeLayer('route-flow');
-    if (map.getLayer('route')) map.removeLayer('route');
-    if (map.getSource('route')) map.removeSource('route');
+    try {
+      // Remove existing layer and source safely
+      if (map.getLayer('route-flow')) map.removeLayer('route-flow');
+      if (map.getLayer('route')) map.removeLayer('route');
+      if (map.getSource('route')) map.removeSource('route');
+    } catch (err) {
+      console.warn('Failed to clean up existing route layers/sources:', err);
+    }
     
     if (routeFlowAnimRef.current) {
       cancelAnimationFrame(routeFlowAnimRef.current);
@@ -768,87 +1708,152 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
       };
     }
 
-    map.addSource('route', {
-      type: 'geojson',
-      data: geojsonData
-    });
+    try {
+      map.addSource('route', {
+        type: 'geojson',
+        data: geojsonData
+      });
 
-    const paint = {
-      'line-color': showTrafficLayer
-        ? [
-            'match',
-            ['get', 'traffic'],
-            'heavy', '#FF453A',
-            'moderate', '#FF9500',
-            'free', '#30D158',
-            color
-          ]
-        : color,
-      'line-width': 6,
-      'line-opacity': 0.8
-    };
+      const paint = {
+        'line-color': showTrafficLayer
+          ? [
+              'match',
+              ['get', 'traffic'],
+              'heavy', '#FF453A',
+              'moderate', '#FF9500',
+              'free', '#30D158',
+              color
+            ]
+          : color,
+        'line-width': 8,
+        'line-opacity': 0.9
+      };
 
-    if (dashed) {
-      paint['line-dasharray'] = [2, 4];
-    }
+      if (dashed) {
+        paint['line-dasharray'] = [2, 4];
+      }
 
-    map.addLayer({
-      id: 'route',
-      type: 'line',
-      source: 'route',
-      layout: {
-        'line-join': 'round',
-        'line-cap': 'round'
-      },
-      paint
-    });
-
-    if (!dashed) {
       map.addLayer({
-        id: 'route-flow',
+        id: 'route',
         type: 'line',
         source: 'route',
         layout: {
           'line-join': 'round',
           'line-cap': 'round'
         },
-        paint: {
-          'line-color': '#ffffff',
-          'line-width': 4,
-          'line-opacity': 0.6,
-          'line-dasharray': [0, 4, 3, 0]
+        paint
+      });
+      
+      try {
+        if (map.getLayer('route-arrows')) map.removeLayer('route-arrows');
+        if (!map.hasImage('route-arrow')) {
+          const arrowImg = new Image(12, 12);
+          arrowImg.onload = () => {
+            if (!map.hasImage('route-arrow')) map.addImage('route-arrow', arrowImg);
+            if (!map.getLayer('route-arrows')) {
+              map.addLayer({
+                id: 'route-arrows',
+                type: 'symbol',
+                source: 'route',
+                layout: {
+                  'symbol-placement': 'line',
+                  'symbol-spacing': 120,
+                  'icon-image': 'route-arrow',
+                  'icon-size': 0.5,
+                  'icon-allow-overlap': true,
+                  'icon-rotation-alignment': 'map'
+                }
+              });
+            }
+          };
+          arrowImg.src = '/icons/routeArrow.svg';
+        } else if (!map.getLayer('route-arrows')) {
+          map.addLayer({
+            id: 'route-arrows',
+            type: 'symbol',
+            source: 'route',
+            layout: {
+              'symbol-placement': 'line',
+              'symbol-spacing': 120,
+              'icon-image': 'route-arrow',
+              'icon-size': 0.5,
+              'icon-allow-overlap': true,
+              'icon-rotation-alignment': 'map'
+            }
+          });
+        }
+      } catch (arrowErr) { /* arrows are non-critical */ }
+    } catch (err) {
+      console.error('Failed to add route source/layer to map:', err);
+    }
+
+    // Render Japanese MLIT road restriction signs along the route
+    try {
+      if (restrictionMarkersRef.current) {
+        restrictionMarkersRef.current.forEach(m => m.remove());
+        restrictionMarkersRef.current = [];
+      }
+
+      MLIT_RESTRICTIONS.forEach(restriction => {
+        // Show sign if the route passes near the restriction (within 1.5x its warning radius)
+        const isNear = coordinates.some(coord => {
+          const dist = getDistance(coord[0], coord[1], restriction.coord[0], restriction.coord[1]);
+          return dist <= (restriction.radiusMeters * 1.5);
+        });
+
+        if (isNear) {
+          // Check if this vehicle triggers the restriction
+          let isTriggered = false;
+          if (restriction.type === 'height' && height > restriction.limit) {
+            isTriggered = true;
+          } else if (restriction.type === 'width' && width > restriction.limit) {
+            isTriggered = true;
+          } else if (restriction.type === 'weight' && weight > restriction.limit) {
+            isTriggered = true;
+          }
+
+          let status = 'safe';
+          if (isTriggered) {
+            const margin = 0.2;
+            const isBlocked = 
+              (restriction.type === 'height' && height > restriction.limit + margin) ||
+              (restriction.type === 'width' && width > restriction.limit + margin) ||
+              (restriction.type === 'weight' && weight > restriction.limit + 2.0);
+            status = isBlocked ? 'blocked' : 'warning';
+          }
+
+          // Create the DOM element for the realistic Japanese road sign
+          const el = document.createElement('div');
+          el.className = `am-restriction-sign ${restriction.type} ${status}`;
+          
+          let labelText = `${restriction.limit}`;
+          if (restriction.type === 'weight') {
+            labelText += 't';
+          } else {
+            labelText += 'm';
+          }
+          el.innerHTML = `<span>${labelText}</span>`;
+
+          let msg = currentLang === 'ja' ? restriction.messageJa : restriction.messageEn;
+          if (currentLang === 'uz') {
+            msg = translateWarningToUz(msg);
+          }
+          el.title = `${restriction.name}\n${msg}`;
+
+          el.addEventListener('click', () => {
+            triggerSound();
+            speak(msg, { force: true, isWarning: true });
+          });
+
+          const m = new Marker({ element: el, rotationAlignment: 'viewport' })
+            .setLngLat([restriction.coord[1], restriction.coord[0]])
+            .addTo(map);
+
+          restrictionMarkersRef.current.push(m);
         }
       });
-
-      const dashArraySequence = [
-        [0, 4, 3, 0],
-        [0.5, 4, 2.5, 0],
-        [1, 4, 2, 0],
-        [1.5, 4, 1.5, 0],
-        [2, 4, 1, 0],
-        [2.5, 4, 0.5, 0],
-        [3, 4, 0, 0],
-        [0, 1, 3, 3]
-      ];
-      let step = 0;
-      let lastTime = 0;
-
-      const animateDash = (timestamp) => {
-        if (!mapInstanceRef.current || !isMapLoaded) return;
-        if (!mapInstanceRef.current.getLayer('route-flow')) return;
-
-        if (!lastTime) lastTime = timestamp;
-        const elapsed = timestamp - lastTime;
-        if (elapsed > 80) {
-          step = (step + 1) % dashArraySequence.length;
-          try {
-            mapInstanceRef.current.setPaintProperty('route-flow', 'line-dasharray', dashArraySequence[step]);
-          } catch (e) {}
-          lastTime = timestamp;
-        }
-        routeFlowAnimRef.current = requestAnimationFrame(animateDash);
-      };
-      routeFlowAnimRef.current = requestAnimationFrame(animateDash);
+    } catch (restErr) {
+      console.error('Failed to draw MLIT restriction signs on map:', restErr);
     }
 
     if (mapLibreCoords.length > 0) {
@@ -860,9 +1865,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
         const minLat = Math.min(...lats);
         const maxLat = Math.max(...lats);
 
-        const fitPadding = isSettingsCollapsed 
-          ? { top: 120, bottom: 240, left: 40, right: 40 }
-          : { top: 340, bottom: 280, left: 50, right: 50 };
+        const fitPadding = getDynamicFitPadding(map, sheetDetent, !!(startCoord && destCoord));
 
         map.fitBounds([
           [minLng, minLat],
@@ -871,7 +1874,41 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
           padding: fitPadding, 
           maxZoom: 15 
         });
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Failed to fit bounds of the route on map:', e);
+      }
+    }
+  };
+
+  // Clear all route paths, layers, animations and markers from the map
+  const clearRouteFromMap = () => {
+    if (mapInstanceRef.current && isMapLoaded) {
+      const map = mapInstanceRef.current;
+      if (map.getLayer('route-arrows')) map.removeLayer('route-arrows');
+      if (map.getLayer('route-flow')) map.removeLayer('route-flow');
+      if (map.getLayer('route')) map.removeLayer('route');
+      if (map.getSource('route')) map.removeSource('route');
+    }
+    if (routeFlowAnimRef.current) {
+      cancelAnimationFrame(routeFlowAnimRef.current);
+      routeFlowAnimRef.current = null;
+    }
+    if (activeMarkersRef.current) {
+      activeMarkersRef.current.forEach(m => m.remove());
+      activeMarkersRef.current = [];
+    }
+    if (poiMarkersRef.current) {
+      poiMarkersRef.current.forEach(m => m.remove());
+      poiMarkersRef.current = [];
+    }
+    if (restrictionMarkersRef.current) {
+      restrictionMarkersRef.current.forEach(m => m.remove());
+      restrictionMarkersRef.current = [];
+    }
+    setPoiResults([]);
+    if (simMarkerRef.current) {
+      simMarkerRef.current.remove();
+      simMarkerRef.current = null;
     }
   };
 
@@ -927,7 +1964,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
           height: height,
           width: width,
           weight: weight,
-          length: activeVehicle.length || 6.0
+          length: length || 6.0
         };
         if (avoidTolls) costingOptions.truck.use_tolls = 0.0;
         if (avoidHighways) costingOptions.truck.use_highways = 0.0;
@@ -986,13 +2023,14 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
         // Fetch dynamic Overpass restrictions for the route area
         try {
           overpassData = await fetchOverpassRestrictions(selectedGeoCoordinates);
+          setOverpassRestrictions(overpassData);
         } catch (e) {
           // Overpass fetch failed silently
         }
 
         // Validate clearance limits on Valhalla route as double check
         const mlitResult = checkClearanceLimits(selectedGeoCoordinates, height, width, weight, currentLang);
-        const overpassResult = checkOverpassRestrictions(selectedGeoCoordinates, overpassData, height, width, weight, vehicleType);
+        const overpassResult = checkOverpassRestrictions(selectedGeoCoordinates, overpassData, height, width, weight, vehicleType, length, axleLoad, minTurnRadius);
         const merged = mergeRestrictionResults(mlitResult, overpassResult);
         selectedStatus = merged.status;
         selectedWarnings = merged.warnings;
@@ -1001,9 +2039,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
         timeMin = Math.round(valhallaData.trip.summary.time / 60);
 
         // Add info warning that Valhalla Routing is active
-        const valhallaInfoMsg = currentLang === 'ja'
-          ? '🗺️【Valhallaエンジン】 yuk mashinasi marshruti hisoblandi.'
-          : '🗺️ Route computed using Valhalla commercial truck routing.';
+        const valhallaInfoMsg = getNavText('valhallaRoutingActive');
         selectedWarnings = [{ id: 'valhalla_routing', message: valhallaInfoMsg, status: 'info' }, ...selectedWarnings];
 
         // Parse turn instructions using parseValhallaSteps
@@ -1022,6 +2058,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
           const firstRouteCoords = osrmData.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
           try {
             overpassData = await fetchOverpassRestrictions(firstRouteCoords);
+            setOverpassRestrictions(overpassData);
           } catch (e) {
             // Overpass fetch failed silently
           }
@@ -1032,7 +2069,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
             const geojsonCoordinates = currentRoute.geometry.coordinates.map(c => [c[1], c[0]]);
             
             const mlitResult = checkClearanceLimits(geojsonCoordinates, height, width, weight, currentLang);
-            const overpassResult = checkOverpassRestrictions(geojsonCoordinates, overpassData, height, width, weight, vehicleType);
+            const overpassResult = checkOverpassRestrictions(geojsonCoordinates, overpassData, height, width, weight, vehicleType, length, axleLoad, minTurnRadius);
             const { status, warnings } = mergeRestrictionResults(mlitResult, overpassResult);
 
             if (status === 'safe') {
@@ -1057,7 +2094,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
             selectedRoute = osrmData.routes[0];
             selectedGeoCoordinates = selectedRoute.geometry.coordinates.map(c => [c[1], c[0]]);
             const mlitFallback = checkClearanceLimits(selectedGeoCoordinates, height, width, weight, currentLang);
-            const overpassFallback = checkOverpassRestrictions(selectedGeoCoordinates, overpassData, height, width, weight, vehicleType);
+            const overpassFallback = checkOverpassRestrictions(selectedGeoCoordinates, overpassData, height, width, weight, vehicleType, length, axleLoad, minTurnRadius);
             const merged = mergeRestrictionResults(mlitFallback, overpassFallback);
             selectedStatus = merged.status;
             selectedWarnings = merged.warnings;
@@ -1067,20 +2104,22 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
           timeMin = Math.round(selectedRoute.duration / 60);
 
           if (detourApplied) {
-            const detourMsg = currentLang === 'ja'
-              ? '🛡️【迂回ルート適用】OSRM高さ/重量制限エリアを自動回避しました。'
-              : '🛡️ Detour Applied: Safely bypassed OSRM clearance limits.';
+            const detourMsg = getNavText('detourApplied');
             selectedWarnings = [{ id: 'detour_success', message: detourMsg, status: 'success' }, ...selectedWarnings];
           }
 
           // Parse OSRM steps
           finalSteps = parseOSRMSteps(selectedRoute, selectedVehicle, overpassData);
+        } else {
+          throw new Error(osrmData.message || 'No route found by OSRM');
         }
       }
 
       if (selectedGeoCoordinates && selectedGeoCoordinates.length > 0) {
         const polylineColor = selectedStatus === 'blocked' ? '#FF453A' : selectedStatus === 'warning' ? '#FF9500' : '#0A84FF';
         drawRouteOnMap(selectedGeoCoordinates, polylineColor);
+
+        const estimatedTolls = calculateEstimatedJapanToll(distanceKm, vehicleType, avoidTolls, avoidHighways);
 
         setRoute({
           status: selectedStatus,
@@ -1089,19 +2128,21 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
           coordinates: selectedGeoCoordinates,
           warnings: selectedWarnings.map(w => w.message || w),
           rawWarnings: selectedWarnings,
-          edgesUsed: []
+          edgesUsed: [],
+          tollCost: estimatedTolls.cash,
+          etcTollCost: estimatedTolls.etc
         });
 
         if (finalSteps.length > 0) {
           setNavSteps(finalSteps);
-        } else {
+        } else if (selectedGeoCoordinates && selectedGeoCoordinates.length > 0) {
           // Fallback: basic steps from coordinates
           const stepCount = 7;
           const fallbackSteps = [];
           const interval = Math.floor(selectedGeoCoordinates.length / stepCount) || 1;
           for (let i = 0; i < stepCount; i++) {
             const idx = Math.min(i * interval, selectedGeoCoordinates.length - 1);
-            const coord = selectedGeoCoordinates[idx];
+            const coord = selectedGeoCoordinates[idx] || [35.6841, 139.7741];
             fallbackSteps.push({
               lat: coord[0], lng: coord[1],
               text: `Proceed (${(distanceKm * (i / stepCount)).toFixed(1)} km)`,
@@ -1116,6 +2157,8 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
           }
           setNavSteps(fallbackSteps);
           finalSteps = fallbackSteps;
+        } else {
+          setNavSteps([]);
         }
         // Cache the parsed route details in IndexedDB
         cacheRoute(routeKey, {
@@ -1159,7 +2202,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
         distance: directDist,
         time: directTime,
         coordinates: fallbackCoordinates,
-        warnings: [currentLang === 'ja' ? '【オフライン】直接ルートを表示中。' : 'Offline Mode: Displaying fallback direct route.'],
+        warnings: [getNavText('offlineFallback')],
         edgesUsed: []
       });
 
@@ -1187,11 +2230,269 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startCoord, destCoord, stops, selectedVehicle, height, width, weight, avoidTolls, avoidHighways, isMapLoaded, showTrafficLayer]);
+  }, [startCoord, destCoord, stops, selectedVehicle, height, width, weight, length, axleLoad, minTurnRadius, avoidTolls, avoidHighways, isMapLoaded, showTrafficLayer]);
+
+  // Handle active position calculation (Dead Reckoning & Tunnel Mode)
+  useEffect(() => {
+    if (!isNavigating || navSteps.length === 0 || route.coordinates.length === 0) {
+      setActiveNavPosition(null);
+      setIsInTunnel(false);
+      return;
+    }
+
+    const currentStep = navSteps[currentStepIndex];
+    if (!currentStep) return;
+
+    if (isAutoPlaying) {
+      if (isGpsLost) {
+        // Simulate dead reckoning along route: move vehicle forward by 35 meters
+        const startCoord = [currentStep.lat, currentStep.lng];
+        const deadReckonPos = extrapolatePositionAlongRoute(startCoord, route.coordinates, 35);
+        const nextPos = { lat: deadReckonPos.lat, lng: deadReckonPos.lng };
+        setActiveNavPosition(nextPos);
+        
+        // Fetch overpass data and check if position inside a tunnel
+        setIsInTunnel(isPositionInTunnel(nextPos, overpassRestrictions));
+      } else {
+        setActiveNavPosition({ lat: currentStep.lat, lng: currentStep.lng });
+        setIsInTunnel(false);
+      }
+    } else {
+      // Live GPS mode
+      if (isGpsLost || !gpsLocation) {
+        // Dead reckoning active if GPS lost
+        const startCoord = lastValidGps ? [lastValidGps.lat, lastValidGps.lng] : (route.coordinates[0] || [0, 0]);
+        const deadReckonPos = extrapolatePositionAlongRoute(startCoord, route.coordinates, 25);
+        const nextPos = { lat: deadReckonPos.lat, lng: deadReckonPos.lng };
+        setActiveNavPosition(nextPos);
+        setIsInTunnel(isPositionInTunnel(nextPos, overpassRestrictions));
+      } else {
+        setActiveNavPosition(gpsLocation);
+        setLastValidGps(gpsLocation);
+        setIsInTunnel(isPositionInTunnel(gpsLocation, overpassRestrictions));
+      }
+    }
+  }, [isNavigating, currentStepIndex, isAutoPlaying, isGpsLost, gpsLocation, lastValidGps, route.coordinates, overpassRestrictions, navSteps]);
+
+  // Load cache status of prefecture tile presets
+  useEffect(() => {
+    const checkCacheStatus = async () => {
+      const presets = getPrefectureTilePresets();
+      const status = {};
+      for (const pref of presets) {
+        status[pref.id] = await isRegionCached(pref.id);
+      }
+      setCachedPrefectures(status);
+    };
+    checkCacheStatus();
+  }, [isDownloading]);
+
+  // Load bookmarks from localStorage on mount
+  useEffect(() => {
+    setBookmarks(loadBookmarks());
+  }, []);
+
+  // Handle bookmark add/remove refresh
+  const handleAddBookmark = (name, lat, lng, category) => {
+    const bm = addBookmark({ name, lat, lng, category });
+    setBookmarks(loadBookmarks());
+    setShowAddBookmark(false);
+    return bm;
+  };
+
+  const handleRemoveBookmark = (id) => {
+    removeBookmark(id);
+    setBookmarks(loadBookmarks());
+  };
+
+  const fallbackCopyText = (text) => {
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.top = '0';
+      textArea.style.left = '0';
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      if (successful) {
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 1500);
+      }
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+    }
+  };
+
+  // Share route / place info
+const formatText = (template, vars = {}) => {
+        return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? '');
+      };
+
+      const handleShareRoute = () => {
+        triggerSound();
+        let shareText = '';
+        const remaining = getRemainingMetrics(navSteps, currentStepIndex);
+        const remTime = remaining.remainingTime > 0 ? remaining.remainingTime : route.time;
+        const remDist = remaining.remainingDistance > 0 ? remaining.remainingDistance : route.distance;
+        const remainingTimeText = getCountdownText ? getCountdownText(Math.round(remTime)) : Math.round(remTime) + 's';
+        const remainingDistanceText = (remDist / 1000).toFixed(1) + ' km';
+        const destinationName = destCoord?.jaName || destCoord?.name || getNavText('markedLocation');
+
+        if (isNavigating && navSteps.length > 0) {
+          shareText = formatText(getNavText('shareTextNavigating'), {
+            dest: destinationName,
+            distance: remainingDistanceText,
+            time: remainingTimeText
+          });
+        } else if (destCoord) {
+          shareText = formatText(getNavText('shareTextDestination'), {
+            dest: destCoord.jaName || destCoord.name || getNavText('markedLocation'),
+            lat: destCoord.lat.toFixed(6),
+            lng: destCoord.lng.toFixed(6)
+          });
+        } else {
+          shareText = getNavText('shareTextDefault');
+        }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareText)
+        .then(() => {
+          setShareCopied(true);
+          setTimeout(() => setShareCopied(false), 1500);
+        })
+        .catch(err => {
+          console.warn('Clipboard write failed, using fallback:', err);
+          fallbackCopyText(shareText);
+        });
+    } else {
+      fallbackCopyText(shareText);
+    }
+  };
+
+  const handleDirectionsClick = () => {
+    triggerSound();
+    setIsRoutingActive(true);
+    setIsSettingsCollapsed(false);
+    if (!startCoord) {
+      setStartCoord(NODES.matsudo);
+      setStartQuery(localize({
+        ja: NODES.matsudo.jaName,
+        uz: NODES.matsudo.name,
+        en: NODES.matsudo.name
+      }));
+    }
+  };
+
+  // POI search handler
+  const handlePOISearch = async (poiType) => {
+    const center = mapInstanceRef.current?.getCenter();
+    if (!center) return;
+    setPoiSearching(true);
+    setSelectedPOIType(poiType);
+    try {
+      const results = await searchNearbyPOI(center.lat, center.lng, poiType, 3000);
+      
+      // Calculate geodesic distance and sort closest first
+      const resultsWithDistance = results.map(poi => {
+        const dist = getDistance(center.lat, center.lng, poi.lat, poi.lng);
+        return {
+          ...poi,
+          distance: dist
+        };
+      });
+      resultsWithDistance.sort((a, b) => a.distance - b.distance);
+      
+      setPoiResults(resultsWithDistance);
+    } catch {
+      setPoiResults([]);
+    } finally {
+      setPoiSearching(false);
+    }
+  };
+
+  // Handle map click to set destination
+  const handleMapClick = async (e) => {
+    if (isRoutingActive && sheetDetent !== 'collapsed') {
+      setSheetDetent('collapsed');
+    }
+    if (isNavigating) return;
+
+    const { lng, lat } = e.lngLat;
+    triggerSound();
+
+    // Query features first to see if they clicked on a named POI/building on the map
+    const map = mapInstanceRef.current;
+    let clickedFeatureName = '';
+    if (map) {
+      try {
+        const features = map.queryRenderedFeatures(e.point);
+        const namedFeature = features.find(f => f.properties && (f.properties.name || f.properties.name_ja || f.properties.name_en));
+        if (namedFeature) {
+          clickedFeatureName = namedFeature.properties.name || namedFeature.properties.name_ja || namedFeature.properties.name_en;
+        }
+      } catch (err) {
+        console.warn('Error querying rendered features:', err);
+      }
+    }
+
+    const defaultName = clickedFeatureName || localize({
+      ja: '場所を読み込み中...',
+      uz: 'Manzil yuklanmoqda...',
+      en: 'Loading location...'
+    });
+    setDestCoord({
+      lat: lat,
+      lng: lng,
+      name: defaultName,
+      jaName: clickedFeatureName || undefined
+    });
+    setDestQuery(clickedFeatureName || localize({
+      ja: '地図上のピン',
+      uz: 'Xaritadagi pin',
+      en: 'Pinned Location'
+    }));
+    setPlaceDetailsExpanded(true);
+
+    try {
+        const reverseLanguage = currentLang || 'en';
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=${reverseLanguage}`);
+        const data = await res.json();
+      
+      let placeName = '';
+      if (data && data.display_name) {
+        placeName = data.display_name;
+      } else {
+        placeName = clickedFeatureName || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      }
+
+      const shortName = clickedFeatureName || data?.name || data?.address?.suburb || data?.address?.neighbourhood || placeName.split(',')[0];
+      setDestQuery(shortName);
+
+      setDestCoord({
+        lat: lat,
+        lng: lng,
+        name: placeName,
+        jaName: clickedFeatureName || data?.name || data?.address?.suburb || data?.address?.neighbourhood || undefined
+      });
+    } catch (err) {
+      console.error('Failed to reverse geocode coordinate:', err);
+      const fallbackName = clickedFeatureName || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      setDestQuery(fallbackName);
+      setDestCoord({
+        lat: lat,
+        lng: lng,
+        name: fallbackName
+      });
+    }
+  };
 
   // Handle active vehicle marker during simulation step changes
   useEffect(() => {
-    if (!mapInstanceRef.current || !isNavigating || navSteps.length === 0 || !isMapLoaded) {
+    if (!mapInstanceRef.current || !isNavigating || navSteps.length === 0 || !isMapLoaded || !activeNavPosition) {
       if (simMarkerRef.current) {
         simMarkerRef.current.remove();
         simMarkerRef.current = null;
@@ -1209,19 +2510,18 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
     const currentStep = navSteps[currentStepIndex];
     if (!currentStep) return;
 
-    // Use GPS details if not in auto-play simulation mode
-    const isLiveGps = !isAutoPlaying && gpsLocation;
-    const activeLat = isLiveGps ? gpsLocation.lat : currentStep.lat;
-    const activeLng = isLiveGps ? gpsLocation.lng : currentStep.lng;
+    const activeLat = activeNavPosition.lat;
+    const activeLng = activeNavPosition.lng;
 
     // Calculate heading (bearing) to the next checkpoint if available to rotate the truck symbol
     let heading = 0;
-    if (isLiveGps) {
+    const isLiveGps = !isAutoPlaying && gpsLocation;
+    if (isLiveGps && !isGpsLost) {
       heading = lastGpsBearing;
     } else if (currentStepIndex < navSteps.length - 1) {
       const nextStep = navSteps[currentStepIndex + 1];
-      const dLon = (nextStep.lng - currentStep.lng) * Math.PI / 180;
-      const lat1 = currentStep.lat * Math.PI / 180;
+      const dLon = (nextStep.lng - activeLng) * Math.PI / 180;
+      const lat1 = activeLat * Math.PI / 180;
       const lat2 = nextStep.lat * Math.PI / 180;
       const y = Math.sin(dLon) * Math.cos(lat2);
       const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
@@ -1242,72 +2542,99 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
     const dLat = (offsetDistance * Math.cos(headingRad)) / R * (180 / Math.PI);
     const dLng = (offsetDistance * Math.sin(headingRad)) / (R * Math.cos(activeLat * Math.PI / 180)) * (180 / Math.PI);
 
+    // Calculate dynamic zoom and pitch based on distance to the next turn maneuver
+    let dynamicZoom = 15; // Cruise zoom out
+    let dynamicPitch = mapOrientation === 'north' ? 0 : (is3D ? 40 : 0); // Cruise pitch angle
+
+    if (isNavigating && navSteps.length > 0) {
+      const nextPoint = (currentStepIndex < navSteps.length - 1) 
+        ? navSteps[currentStepIndex + 1] 
+        : destCoord;
+      
+      if (nextPoint) {
+        // Calculate distance to next maneuver in meters
+        const distMeters = getDistanceFromLatLng(activeLat, activeLng, nextPoint.lat, nextPoint.lng) * 1000;
+        
+        // Settings: approach thresholds
+        const maxDist = 300; // meters (fully zoomed out, cruising view)
+        const minDist = 80;  // meters (fully zoomed in, detailed junction view)
+        
+        if (distMeters <= minDist) {
+          dynamicZoom = 18.5;
+          if (mapOrientation !== 'north' && is3D) dynamicPitch = 65;
+        } else if (distMeters >= maxDist) {
+          dynamicZoom = 14.5;
+          if (mapOrientation !== 'north' && is3D) dynamicPitch = 40;
+        } else {
+          // Linear interpolation
+          const ratio = (distMeters - minDist) / (maxDist - minDist); // 0.0 at minDist, 1.0 at maxDist
+          dynamicZoom = 18.5 - ratio * (18.5 - 14.5);
+          if (mapOrientation !== 'north' && is3D) {
+            dynamicPitch = 65 - ratio * (65 - 40);
+          }
+        }
+      }
+    }
+
     // Apply WebGL easeTo centering, bearing and pitch only when following the vehicle
     if (isFollowingRef.current) {
       mapInstanceRef.current.easeTo({
         center: [activeLng + dLng, activeLat + dLat],
-        zoom: 18,
+        zoom: dynamicZoom,
         bearing: activeBearing,
-        pitch: mapOrientation === 'north' ? 0 : 45,
+        pitch: dynamicPitch,
         duration: 800
       });
     }
 
     const activeVehicle = VEHICLE_PRESETS[selectedVehicle];
-    const vehicleLabelText = currentLang === 'ja' ? activeVehicle?.jaShort : activeVehicle?.short;
-    const rotation = mapOrientation === 'north' ? heading : 0;
 
-    // Determine vehicle dimensions and colors based on type
-    let vW = 18, vH = 36, bodyColor = '#1A73E8', roofColor = '#4A90D9', rearColor = '#FF3B30';
-    let frontRadius = '4px 4px 0 0', bodyRadius = '4px';
+    // Determine pointer colors based on vehicle category (Organic Maps Style)
+    let arrowColor = '#E53935'; // Default passenger/car is bright red
     if (activeVehicle?.type === 'bike') {
-      vW = 10; vH = 24; bodyColor = '#FF9500'; roofColor = '#FFB84D'; rearColor = '#FF6600';
-      frontRadius = '50% 50% 0 0'; bodyRadius = '5px';
-    } else if (activeVehicle?.type === 'passenger') {
-      vW = 16; vH = 30; bodyColor = '#30D158'; roofColor = '#5EE088'; rearColor = '#E53935';
-      frontRadius = '6px 6px 0 0'; bodyRadius = '5px';
-    } else if (activeVehicle?.type === 'trailer') {
-      vW = 20; vH = 44; bodyColor = '#5856D6'; roofColor = '#7A79E8'; rearColor = '#FF3B30';
+      arrowColor = '#FF9500'; // Bike is amber
+    } else if (activeVehicle?.type === 'truck' || activeVehicle?.type === 'trailer') {
+      arrowColor = '#0A84FF'; // Truck/HGV is blue (Organic Maps standard)
     }
 
     const htmlContent = `
-      <div class="custom-vehicle-marker" style="transform: rotate(${rotation}deg); width: ${vW}px; height: ${vH}px; transition: transform 0.2s ease;">
-        <div class="vehicle-body" style="background:${bodyColor}; border-radius:${bodyRadius}; width:100%; height:100%; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 3px 8px rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15);">
-          <div class="vehicle-front" style="width:100%; height:20%; background:rgba(255,255,255,0.2); border-radius:${frontRadius}; display:flex; align-items:center; justify-content:space-between; padding:0 2px;">
-            <div style="width:3px; height:3px; background:#FFE0B2; border-radius:50%; box-shadow:0 0 3px #FFE0B2;"></div>
-            <div style="width:3px; height:3px; background:#FFE0B2; border-radius:50%; box-shadow:0 0 3px #FFE0B2;"></div>
-          </div>
-          <div class="vehicle-cabin" style="background:${roofColor}; width:80%; height:35%; margin:0 auto; border-radius:2px; border:1.5px solid rgba(0,0,0,0.15); box-shadow:inset 0 1px 3px rgba(255,255,255,0.3);">
-          </div>
-          <div class="vehicle-rear" style="width:100%; height:16%; background:${rearColor}; border-radius:0 0 2px 2px; display:flex; align-items:center; justify-content:space-between; padding:0 2px;">
-            <div style="width:3px; height:3px; background:#FF6B6B; border-radius:50%; box-shadow:0 0 3px #FF6B6B;"></div>
-            <div style="width:3px; height:3px; background:#FF6B6B; border-radius:50%; box-shadow:0 0 3px #FF6B6B;"></div>
-          </div>
-        </div>
-        <span class="marker-label" style="white-space: nowrap;">${vehicleLabelText}</span>
+      <div class="om-nav-arrow-marker" style="width: 44px; height: 44px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));">
+        <svg viewBox="0 0 100 100" width="100%" height="100%">
+          <!-- Translucent background aura for visibility -->
+          <circle cx="50" cy="50" r="42" fill="${arrowColor}" opacity="0.15" />
+          <circle cx="50" cy="50" r="42" fill="none" stroke="#ffffff" stroke-width="4.5" opacity="0.9" />
+          <!-- Sharp navigation chevron pointing UP (0deg) -->
+          <path d="M50 8 L85 82 L50 64 L15 82 Z" fill="${arrowColor}" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" />
+        </svg>
       </div>
     `;
 
     if (simMarkerRef.current) {
-      simMarkerRef.current.setLngLat([currentStep.lng, currentStep.lat]);
+      simMarkerRef.current.setLngLat([activeLng, activeLat]);
+      simMarkerRef.current.setRotation(heading);
       simMarkerRef.current.getElement().innerHTML = htmlContent;
     } else {
       const el = document.createElement('div');
       el.className = 'custom-leaflet-icon-wrapper';
-      el.style.width = '36px';
-      el.style.height = '36px';
+      el.style.width = '44px';
+      el.style.height = '44px';
       el.style.display = 'flex';
       el.style.alignItems = 'center';
       el.style.justifyContent = 'center';
       el.style.overflow = 'visible';
       el.innerHTML = htmlContent;
       
-      simMarkerRef.current = new Marker({ element: el, rotationAlignment: 'viewport' })
-        .setLngLat([currentStep.lng, currentStep.lat])
+      simMarkerRef.current = new Marker({ 
+        element: el, 
+        rotationAlignment: 'map',
+        pitchAlignment: 'map'
+      })
+        .setLngLat([activeLng, activeLat])
+        .setRotation(heading)
         .addTo(mapInstanceRef.current);
     }
 
-  }, [currentStepIndex, isNavigating, navSteps, mapOrientation, selectedVehicle, isMapLoaded]);
+  }, [currentStepIndex, isNavigating, navSteps, mapOrientation, selectedVehicle, isMapLoaded, activeNavPosition, isGpsLost, gpsLocation, lastGpsBearing]);
 
   // Auto-play simulation interval
   useEffect(() => {
@@ -1390,7 +2717,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
         setStartCoord({
           lat: latitude,
           lng: longitude,
-          name: currentLang === 'ja' ? '📍 現在地 (GPS)' : '📍 Hozirgi joylashuv (GPS)'
+          name: getNavText('currentLocationLabel')
         });
       }
     };
@@ -1434,21 +2761,46 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
       // Speak turn physics warning if applicable
       if (step.turnFeasibility === 'impossible') {
         setTimeout(() => {
-          speakManeuver({ jaText: `注意！${step.turnWarning || 'この交差点は大型車両では曲がれません'}` }, '');
+          const warningMsg = step.turnWarning || 'この交差点は大型車両では曲がれません';
+          if (speechLanguage === 'uz') {
+            speakManeuver({ 
+              jaText: `注意！${warningMsg}`,
+              uzText: `Diqqat! ${translateWarningToUz(warningMsg)}`
+            }, '');
+          } else {
+            speakManeuver({ jaText: `注意！${warningMsg}` }, '');
+          }
         }, 2500);
       } else if (step.turnFeasibility === 'tight' && step.turnWarning) {
         setTimeout(() => {
-          speakManeuver({ jaText: step.turnWarning }, '');
+          if (speechLanguage === 'uz') {
+            speakManeuver({ 
+              jaText: step.turnWarning,
+              uzText: translateWarningToUz(step.turnWarning)
+            }, '');
+          } else {
+            speakManeuver({ jaText: step.turnWarning }, '');
+          }
         }, 2500);
       }
     }
-  }, [currentStepIndex, isNavigating, voiceMuted]);
+  }, [currentStepIndex, isNavigating, voiceMuted, speechLanguage]);
+
+  const handleSwapStartDest = () => {
+    triggerSound();
+    const tempCoord = startCoord;
+    const tempQuery = startQuery;
+    setStartCoord(destCoord);
+    setStartQuery(destQuery);
+    setDestCoord(tempCoord);
+    setDestQuery(tempQuery);
+  };
 
   // Route saving handlers
   const handleSaveRoute = () => {
     triggerSound();
     if (!startCoord || !destCoord) {
-      alert(currentLang === 'ja' ? '出発地と目的地を設定してください。' : 'Boshlang\'ich va yakuniy manzilni kiriting.');
+      alert(getNavText('setStartDestAlert'));
       return;
     }
     setIsSaveModalOpen(true);
@@ -1484,19 +2836,39 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
 
   const handleLoadRoute = (r) => {
     triggerSound();
-    setStartCoord(r.startCoord);
-    setStartQuery(r.startCoord.name.split(',')[0]);
+    const safeStart = r.startCoord ? {
+      lat: Number(r.startCoord.lat || 35.6841),
+      lng: Number(r.startCoord.lng || 139.7741),
+      name: r.startCoord.name || 'Marked Location',
+      jaName: r.startCoord.jaName || undefined
+    } : null;
+    setStartCoord(safeStart);
+    setStartQuery(safeStart && safeStart.name ? safeStart.name.split(',')[0] : '');
 
-    const mapped = (r.stops || []).map(coord => ({
-      id: Math.random().toString(),
-      query: coord.name.split(',')[0],
-      coord,
-      suggestions: []
-    }));
+    const mapped = (r.stops || []).map(coord => {
+      const safeCoord = coord ? {
+        lat: Number(coord.lat || 35.6841),
+        lng: Number(coord.lng || 139.7741),
+        name: coord.name || 'Marked Location',
+        jaName: coord.jaName || undefined
+      } : null;
+      return {
+        id: Math.random().toString(),
+        query: safeCoord && safeCoord.name ? safeCoord.name.split(',')[0] : '',
+        coord: safeCoord,
+        suggestions: []
+      };
+    });
     setStops(mapped);
 
-    setDestCoord(r.destCoord);
-    setDestQuery(r.destCoord.name.split(',')[0]);
+    const safeDest = r.destCoord ? {
+      lat: Number(r.destCoord.lat || 35.6841),
+      lng: Number(r.destCoord.lng || 139.7741),
+      name: r.destCoord.name || 'Marked Location',
+      jaName: r.destCoord.jaName || undefined
+    } : null;
+    setDestCoord(safeDest);
+    setDestQuery(safeDest && safeDest.name ? safeDest.name.split(',')[0] : '');
 
     if (r.selectedVehicle) {
       setSelectedVehicle(r.selectedVehicle);
@@ -1512,7 +2884,41 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   const currentStep = navSteps[currentStepIndex];
 
   return (
-    <div className="jdm-nav-container animate-fade-in">
+    <div className="jdm-nav-container animate-fade-in" style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => {
+          if (typeof triggerSound === 'function') triggerSound();
+          if (typeof onBack === 'function') onBack();
+        }}
+        aria-label={getNavText('back')}
+        title={getNavText('back')}
+        style={{
+          position: 'absolute',
+          top: '16px',
+          left: '16px',
+          zIndex: 1005,
+          width: '44px',
+          height: '44px',
+          borderRadius: '14px',
+          border: '1px solid rgba(255,255,255,0.18)',
+          background: 'rgba(255,255,255,0.12)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          boxShadow: '0 18px 30px rgba(0,0,0,0.18)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--text-main)',
+          cursor: 'pointer',
+          padding: 0,
+          transition: 'transform 160ms ease, background 160ms ease'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+      >
+        <ArrowLeft size={20} />
+      </button>
       
       {/* Real Full Screen Map */}
       <div ref={mapContainerRef} className="map-canvas-container-fullscreen">
@@ -1522,6 +2928,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
             latitude: 35.6841,
             zoom: 11
           }}
+          onClick={handleMapClick}
           style={{ width: '100%', height: '100%' }}
           mapStyle={darkMode ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' : 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'}
           mapLib={maplibregl}
@@ -1665,102 +3072,105 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
         />
       </div>
       
-      {/* Elegant Unified Vertical Map Controls Panel */}
-      <div className="map-control-vertical-bar" style={{ bottom: `${gpsBottomOffset}px` }}>
-        
-        {/* Layer style toggler */}
+      {/* 🧭 Organic Maps — Compass Left (visible only when rotated, positioned below search bar/back button) */}
+      {Math.abs(mapBearing) > 1 && (
         <button
           type="button"
-          className={`map-control-btn ${showLayerMenu ? 'active' : ''}`}
-          onClick={() => {
-            triggerSound();
-            setShowLayerMenu(prev => !prev);
-          }}
-          title={currentLang === 'ja' ? '地図レイヤー' : 'Xarita qatlamlari'}
-        >
-          <Layers size={18} />
-        </button>
-
-        {/* 3D Tilt button */}
-        <button
-          type="button"
-          className={`map-control-btn ${is3D ? 'active' : ''}`}
-          onClick={() => {
-            triggerSound();
-            setIs3D(prev => !prev);
-          }}
-          title="3D Tilt View"
-        >
-          <span style={{ fontSize: '10px', fontWeight: '800' }}>3D</span>
-        </button>
-
-        {/* Compass reset bearing button */}
-        <button
-          type="button"
-          className={`map-control-btn compass-btn ${Math.abs(mapBearing) > 1 ? 'visible-active' : ''}`}
+          className="om-compass-btn"
           onClick={() => {
             triggerSound();
             if (mapInstanceRef.current) {
               mapInstanceRef.current.easeTo({ bearing: 0, duration: 500 });
             }
           }}
-          style={{
-            transform: `rotate(${-mapBearing}deg)`
+          style={{ 
+            transform: `rotate(${-mapBearing}deg)`,
+            top: '80px',
+            left: '16px'
           }}
-          title={currentLang === 'ja' ? '北を上にする' : 'Shimolni tepaga tekislash'}
+              title={getNavText('compassNorth')}
+          title={getNavText('back')}
         >
-          <Compass size={18} style={{ color: Math.abs(mapBearing) > 1 ? '#0A84FF' : 'var(--text-main)' }} />
+          <ArrowLeft size={20} />
         </button>
+      )}
 
-        {/* Zoom In Button */}
+      {/* 🍏 Apple Maps Weather Widget (Top Right) */}
+      {!isNavigating && !isRoutingActive && (
+        <div className="am-weather-widget">
+          <Cloud size={15} style={{ color: '#007aff' }} />
+          <span className="am-weather-temp">32°</span>
+        </div>
+      )}
+
+      {/* 🍏 Apple Maps Binoculars Button (Bottom Left - 3D/2D Text Toggle) */}
+      {!isNavigating && (
         <button
           type="button"
-          className="map-control-btn"
+          className="am-binoculars-btn"
           onClick={() => {
             triggerSound();
-            mapInstanceRef.current?.zoomIn({ duration: 300 });
+            setIs3D(prev => !prev);
           }}
-          title="Zoom In"
+          style={{ bottom: `${gpsBottomOffset}px`, left: '16px' }}
+          title="3D Tilt View"
         >
-          <Plus size={18} />
+          <span style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif', fontWeight: '800', fontSize: '14px', color: '#007aff', letterSpacing: '-0.3px' }}>{is3D ? '2D' : '3D'}</span>
         </button>
+      )}
 
-        {/* Zoom Out Button */}
+      {/* 🍏 Apple Maps Locate Button (Bottom Left during active navigation) */}
+      {isNavigating && (
         <button
           type="button"
-          className="map-control-btn"
+          className="am-locate-btn"
           onClick={() => {
             triggerSound();
-            mapInstanceRef.current?.zoomOut({ duration: 300 });
+            isFollowingRef.current = true;
+            setIsFollowingVehicle(true);
+            handleLocateUser();
           }}
-          title="Zoom Out"
+          style={{ bottom: `${gpsBottomOffset}px`, left: '16px' }}
+          title="Re-center"
         >
-          <Minus size={18} />
+          <Navigation size={20} style={{ transform: 'rotate(45deg)', color: '#007aff' }} fill="#007aff" />
         </button>
+      )}
 
-        {/* Floating GPS Locate Button */}
-        <button 
-          type="button" 
-          className={`map-control-btn locate-btn ${isNavigating && !isFollowingVehicle ? 'gps-pulse-active' : ''}`}
-          onClick={() => {
-            if (isNavigating) {
-              isFollowingRef.current = true;
-              setIsFollowingVehicle(true);
-            } else {
+      {/* 🍏 Apple Maps Stacked Controls (Bottom Right Capsule) */}
+      {!isNavigating && (
+        <div className="am-stacked-controls" style={{ bottom: `${gpsBottomOffset}px`, right: '16px' }}>
+          <button
+            type="button"
+            className="am-stacked-btn"
+            onClick={() => {
+              triggerSound();
+              setShowLayerMenu(prev => !prev);
+            }}
+            title={getNavText('mapLayers')}
+          >
+            <Train size={20} />
+          </button>
+          <div className="am-stacked-divider" />
+          <button
+            type="button"
+            className={`am-stacked-btn ${gpsLocation ? 'gps-active' : ''}`}
+            onClick={() => {
+              triggerSound();
               handleLocateUser();
-            }
-          }} 
-          title={isNavigating ? (isFollowingVehicle ? 'Following' : 'Re-center') : 'Locate me'}
-        >
-          {isNavigating ? <Navigation size={18} /> : <Locate size={18} />}
-        </button>
-      </div>
+            }}
+            title="Locate Me"
+          >
+            <Navigation size={20} style={{ transform: 'rotate(45deg)' }} />
+          </button>
+        </div>
+      )}
 
       {/* Modern Glassmorphic Layer Selector Popup */}
       {showLayerMenu && (
-        <div className="map-layer-selector-popup animate-fade-in" style={{ bottom: `${gpsBottomOffset + 50}px` }}>
+        <div className="map-layer-selector-popup animate-fade-in" style={{ bottom: `${gpsBottomOffset + 60}px`, left: 'auto', right: '16px' }}>
           <div className="popup-header">
-            <span>{currentLang === 'ja' ? '地図の種類' : 'Xarita turi'}</span>
+            <span>{getNavText('mapType')}</span>
             <button className="popup-close-btn" onClick={() => setShowLayerMenu(false)}>
               <X size={14} />
             </button>
@@ -1775,7 +3185,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
               }}
             >
               <div className="layer-preview vector-light"></div>
-              <span>{currentLang === 'ja' ? '標準' : 'Standart'}</span>
+              <span>{localize({ ja: '標準', uz: 'Standart', en: 'Standard' })}</span>
             </div>
             <div 
               className={`layer-option-card ${mapStyleMode === 'vector' && showTrafficLayer ? 'selected' : ''}`}
@@ -1786,7 +3196,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
               }}
             >
               <div className="layer-preview vector-traffic"></div>
-              <span>{currentLang === 'ja' ? '交通状況' : 'Tirbandlik'}</span>
+              <span>{localize({ ja: '交通状況', uz: 'Tirbandlik', en: 'Traffic' })}</span>
             </div>
             <div 
               className={`layer-option-card ${mapStyleMode === 'satellite' ? 'selected' : ''}`}
@@ -1796,305 +3206,194 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
               }}
             >
               <div className="layer-preview satellite-hybrid"></div>
-              <span>{currentLang === 'ja' ? '航空写真' : 'Yo\'ldosh (Hybrid)'}</span>
+              <span>{localize({ ja: '航空写真', uz: 'Yo\'ldosh (Hybrid)', en: 'Satellite' })}</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Offline Status Badge */}
-      {!isOnline && (
-        <div className="offline-status-badge animate-pulse" style={{
-          position: 'absolute',
-          top: isNavigating ? '74px' : '14px',
-          right: '12px',
-          zIndex: 1002,
-          padding: '4px 8px',
-          borderRadius: '8px',
-          background: 'rgba(255, 69, 58, 0.85)',
-          color: '#fff',
-          fontSize: '9px',
-          fontWeight: '900',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-        }}>
-          <span>📴</span>
-          <span>OFFLINE</span>
-        </div>
-      )}
-
-      {/* Floating Back Button (Only visible during active navigation simulation) */}
-      {isNavigating && (
-        <button 
-          type="button" 
-          className="map-back-btn" 
-          onClick={onBack} 
-          aria-label="Go back to Dashboard"
-          style={{
-            position: 'absolute',
-            top: '14px',
-            left: '12px',
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            border: '1px solid var(--glass-border)',
-            background: 'var(--card-bg)',
-            color: 'var(--text-main)',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+      {/* Dynamic Status Badges Column */}
+      <div style={{
+        position: 'absolute',
+        top: isNavigating ? '74px' : '62px',
+        right: '12px',
+        zIndex: 1002,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        gap: '6px'
+      }}>
+        {!isOnline && (
+          <div className="offline-status-badge animate-pulse" style={{
+            padding: '4px 8px',
+            borderRadius: '8px',
+            background: 'rgba(255, 69, 58, 0.85)',
+            color: '#fff',
+            fontSize: '9px',
+            fontWeight: '900',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10,
-            cursor: 'pointer',
-            backdropFilter: 'blur(8px)',
-            transition: 'all 0.2s ease'
-          }}
+            gap: '4px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+          }}>
+            <span>📴</span>
+            <span>OFFLINE</span>
+          </div>
+        )}
+
+        {isGpsLost && (
+          <div className="gps-lost-badge animate-pulse" style={{
+            padding: '4px 8px',
+            borderRadius: '8px',
+            background: 'rgba(255, 149, 0, 0.9)',
+            color: '#000',
+            fontSize: '9px',
+            fontWeight: '900',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+          }}>
+            <span>⚠️</span>
+            <span>{getNavText('gpsLost')}</span>
+          </div>
+        )}
+
+        {isInTunnel && (
+          <div className="tunnel-mode-badge" style={{
+            padding: '4px 8px',
+            borderRadius: '8px',
+            background: 'rgba(10, 132, 255, 0.9)',
+            color: '#fff',
+            fontSize: '9px',
+            fontWeight: '900',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+          }}>
+            <span>🚇</span>
+            <span>{getNavText('tunnelMode')}</span>
+          </div>
+        )}
+      </div>
+
+
+
+      {/* 🍏 Apple Maps Directions Routing Sheet */}
+      {!isNavigating && isRoutingActive && (
+        <div 
+          ref={bottomPanelRef} 
+          className={`am-bottom-sheet show am-sheet-${sheetDetent}`}
         >
-          <ArrowLeft size={18} />
-        </button>
-      )}
+          <div className="am-bottom-sheet-overlay">
+            {/* Drag Handle */}
+            <div className="am-drag-handle" onClick={() => {
+              setSheetDetent(prev => {
+                if (prev === 'collapsed') return 'half';
+                if (prev === 'half') return 'full';
+                return 'collapsed';
+              });
+            }} />
 
-      {/* Floating Settings Card - Top (Only visible when not navigating) */}
-      {!isNavigating && (
-        <div className={`nav-card glass squircle panel-settings floating-top-panel ${isSettingsCollapsed ? 'collapsed' : ''}`} style={{ padding: isSettingsCollapsed ? '8px 12px' : '14px', gap: isSettingsCollapsed ? '0' : '10px', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
-          {isSettingsCollapsed ? (
-            /* Collapsed Summary Mode (Google Maps Search Bar style) */
-            <div 
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px', cursor: 'pointer' }}
-              onClick={() => {
-                triggerSound();
-                setIsSettingsCollapsed(false);
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, overflow: 'hidden' }}>
-                {/* Embedded Back Button */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onBack();
-                  }}
-                  style={{
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid var(--glass-border)',
-                    borderRadius: '50%',
-                    width: '32px',
-                    height: '32px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    color: 'var(--text-main)',
-                    flexShrink: 0
-                  }}
-                  title="Go back"
-                >
-                  <ArrowLeft size={16} />
-                </button>
-                <span style={{ fontSize: '10.5px', background: 'var(--primary)', color: '#fff', padding: '4px 8px', borderRadius: '8px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
-                  <span>🚚</span>
-                  <span>{currentLang === 'ja' ? VEHICLE_PRESETS[selectedVehicle]?.jaShort : VEHICLE_PRESETS[selectedVehicle]?.short}</span>
+            {/* Compact ETA Bar — always visible */}
+            <div className="am-compact-bar">
+              <div className="am-eta-info-wrap">
+                <span className="am-eta-time">
+                  {route.time ? `${Math.round(route.time)} min` : '—'}
                 </span>
-                <span style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '800', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {destCoord 
-                    ? `${startCoord ? (currentLang === 'ja' ? '現在地' : 'Start') : '...'} ➔ ${currentLang === 'ja' ? destCoord.jaName || destCoord.name : destCoord.name}`
-                    : (currentLang === 'ja' ? '目的地を検索...' : 'Manzilni qidirish...')
-                  }
+                <span className="am-eta-sub">
+                  {route.time 
+                    ? `${getETA(route.time)} ETA • ${route.distance.toFixed(1)} km` 
+                    : ''}
                 </span>
               </div>
-              <ChevronDown size={16} style={{ color: 'var(--text-secondary)', marginRight: '4px' }} />
-            </div>
-          ) : (
-            /* Expanded Full Settings Mode */
-            <>
-              {/* Header Row with Collapse Toggle and Embedded Back Button */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '6px', marginBottom: '2px', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {/* Embedded Back Button */}
-                  <button
-                    type="button"
-                    onClick={onBack}
-                    style={{
-                      background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid var(--glass-border)',
-                      borderRadius: '50%',
-                      width: '28px',
-                      height: '28px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      color: 'var(--text-main)'
-                    }}
-                    title="Go back"
-                  >
-                    <ArrowLeft size={14} />
-                  </button>
-                  <span style={{ fontSize: '11px', fontWeight: '900', color: 'var(--text-main)', letterSpacing: '0.5px' }}>
-                    {currentLang === 'ja' ? 'ルート検索設定' : 'Route Settings'}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
+              <button 
+                type="button" 
+                className="am-btn-go"
+                onClick={() => {
+                  requestGpsConsent(() => {
                     triggerSound();
-                    setIsSettingsCollapsed(true);
-                  }}
-                  style={{ background: 'none', border: 'none', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer', fontSize: '10px', fontWeight: '800', padding: '2px 4px' }}
-                >
-                  <span>{currentLang === 'ja' ? '折りたたむ' : 'Collapse'}</span>
-                  <ChevronUp size={12} />
-                </button>
-              </div>
+                    setIsNavigating(true);
+                    setCurrentStepIndex(0);
+                    setIsAutoPlaying(true);
+                    isFollowingRef.current = true;
+                    setIsFollowingVehicle(true);
+                  });
+                }}
+              >
+                GO
+              </button>
+            </div>
+            
+            {sheetDetent !== 'collapsed' && (
+              <div className="am-sheet-scroll-body">
+                {/* Header Row */}
+                <div className="am-sheet-header">
+                  <span className="am-sheet-title">{localize({ ja: '経路', uz: 'Direktlar', en: 'Directions' })}</span>
+              <button 
+                type="button" 
+                className="am-close-circle-btn"
+                onClick={() => {
+                  triggerSound();
+                  setIsRoutingActive(false);
+                  setStartCoord(null);
+                  setStartQuery('');
+                  setDestCoord(null);
+                  setDestQuery('');
+                  setStops([]);
+                  setRoute({ time: 0, distance: 0, warnings: [], coordinates: [], status: 'safe' });
+                  clearRouteFromMap();
+                }}
+                title="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
 
-              {/* Transport Mode Row */}
-              <div className="nav-mode-selector-row hide-scrollbar">
+            {/* Content Container */}
+            <div className="am-sheet-content" style={{ paddingBottom: '24px' }}>
+              {/* Transport Mode Tabs (Specific truck presets) */}
+              <div className="am-transport-capsule">
                 {Object.entries(VEHICLE_PRESETS).map(([key, val]) => {
-                  const Icon = val.type === 'passenger' ? Car : val.type === 'bike' ? Bike : Truck;
                   const isActive = selectedVehicle === key;
                   return (
                     <button
                       key={key}
                       type="button"
-                      className={`mode-tab-btn ${isActive ? 'active' : ''}`}
+                      className={`am-transport-tab ${isActive ? 'active' : ''}`}
                       onClick={() => handleVehicleSelect(key)}
+                      title={localizePair(val.jaName, val.uzName, val.name, val.name, val.name, val.name, val.name)}
                     >
-                      <Icon size={12} />
-                      <span className="mode-tab-label">{currentLang === 'ja' ? val.jaShort : val.short}</span>
+                      <span style={{ fontSize: '11px', fontWeight: '800' }}>{localizePair(val.jaShort, val.uzShort, val.short, val.short, val.short, val.short, val.short)}</span>
                     </button>
                   );
                 })}
               </div>
 
-              {/* Compact Active Vehicle Spec & License Warning Strip */}
-              <div className="active-vehicle-info-strip">
-                <span>⚠️</span>
-                <span>
-                  {currentLang === 'ja'
-                    ? `${VEHICLE_PRESETS[selectedVehicle]?.jaName} (高: ${VEHICLE_PRESETS[selectedVehicle]?.height}m | 免許: ${VEHICLE_PRESETS[selectedVehicle]?.licenseJa})`
-                    : `${VEHICLE_PRESETS[selectedVehicle]?.name} (H: ${VEHICLE_PRESETS[selectedVehicle]?.height}m | License: ${VEHICLE_PRESETS[selectedVehicle]?.license})`
-                  }
-                </span>
-              </div>
-
-              {/* Custom Vehicle Specifications Controls */}
-              <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '8px' }}>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-secondary)' }}>
-                    {currentLang === 'ja' ? '車高 (m)' : 'Height (m)'}
-                  </label>
-                  <input
-                    type="number"
-                    min="1.0"
-                    max="5.0"
-                    step="0.05"
-                    value={height}
-                    onChange={e => {
-                      setHeight(parseFloat(e.target.value) || 0);
-                    }}
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '4px 6px', fontSize: '11px', color: 'var(--text-main)', width: '100%', outline: 'none' }}
-                  />
+              {/* Waypoints Input Stack with iOS style Dots Connector */}
+              <div className="am-routing-dots-panel">
+                <div className="am-dots-indicator">
+                  <div className="am-dot-blue" />
+                  <div className="am-dot-line" />
+                  {stops.map((_, idx) => (
+                    <React.Fragment key={idx}>
+                      <div className="am-dot-red" style={{ background: '#ff9500' }} />
+                      <div className="am-dot-line" />
+                    </React.Fragment>
+                  ))}
+                  <div className="am-dot-red" />
                 </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-secondary)' }}>
-                    {currentLang === 'ja' ? '車幅 (m)' : 'Width (m)'}
-                  </label>
-                  <input
-                    type="number"
-                    min="1.0"
-                    max="3.0"
-                    step="0.05"
-                    value={width}
-                    onChange={e => {
-                      setWidth(parseFloat(e.target.value) || 0);
-                    }}
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '4px 6px', fontSize: '11px', color: 'var(--text-main)', width: '100%', outline: 'none' }}
-                  />
-                </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-secondary)' }}>
-                    {currentLang === 'ja' ? '総重量 (t)' : 'Weight (t)'}
-                  </label>
-                  <input
-                    type="number"
-                    min="0.5"
-                    max="50.0"
-                    step="0.1"
-                    value={weight}
-                    onChange={e => {
-                      setWeight(parseFloat(e.target.value) || 0);
-                    }}
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '4px 6px', fontSize: '11px', color: 'var(--text-main)', width: '100%', outline: 'none' }}
-                  />
-                </div>
-              </div>
 
-              {/* Toll/Expressway Preferences */}
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerSound();
-                    setAvoidTolls(prev => !prev);
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '6px 8px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--glass-border)',
-                    background: avoidTolls ? 'rgba(255, 149, 0, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                    color: avoidTolls ? '#FF9500' : 'var(--text-main)',
-                    fontSize: '10px',
-                    fontWeight: '800',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <span>{currentLang === 'ja' ? '有料道路を避ける' : 'Avoid Tolls'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerSound();
-                    setAvoidHighways(prev => !prev);
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '6px 8px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--glass-border)',
-                    background: avoidHighways ? 'rgba(255, 149, 0, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                    color: avoidHighways ? '#FF9500' : 'var(--text-main)',
-                    fontSize: '10px',
-                    fontWeight: '800',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <span>{currentLang === 'ja' ? '高速道路を避ける' : 'Avoid Highways'}</span>
-                </button>
-              </div>
-
-              {/* Sequential Inputs Column */}
-              <div className="nav-input-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                
-                {/* Start location field */}
-                <div className="form-group-nav flex-1" style={{ margin: '0' }}>
-                  <div className="nav-input-wrapper">
-                    <MapPin size={14} className="input-pin-icon start" />
+                <div className="am-inputs-container">
+                  {/* Start Location Input */}
+                  <div className="am-input-group">
                     <input 
                       type="text"
+                      className="am-ios-input"
                       placeholder={getNavText('startPlaceholder')}
                       value={startQuery}
                       onChange={e => {
@@ -2103,87 +3402,108 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
                       }}
                     />
                     {startSuggestions.length > 0 && (
-                      <div className="nav-suggestions-dropdown glass">
+                      <div className="nav-suggestions-dropdown" style={{ background: '#ffffff', zIndex: 1005 }}>
                         {startSuggestions.map(item => {
-                          const parts = item.name.split(',');
+                          if (!item || !item.id || isNaN(Number(item.lat)) || isNaN(Number(item.lng))) return null;
+                          const parts = item.name ? item.name.split(',') : ['Marked Location'];
                           const title = parts[0];
                           const subtitle = parts.slice(1).join(',').trim();
                           return (
                             <div 
                               key={item.id} 
                               className="suggestion-item"
+                              style={{ color: '#1c1c1e', padding: '10px 12px', borderBottom: '1px solid #f2f2f7', cursor: 'pointer' }}
                               onClick={() => {
-                                setStartCoord({ lat: item.lat, lng: item.lng, name: item.name });
+                                setStartCoord({
+                                  lat: Number(item.lat),
+                                  lng: Number(item.lng),
+                                  name: item.name || 'Marked Location',
+                                  jaName: item.jaName || undefined
+                                });
                                 setStartQuery(title);
                                 setStartSuggestions([]);
                                 triggerSound();
                               }}
                             >
-                              <div className="suggestion-title">{title}</div>
-                              <div className="suggestion-subtitle">{subtitle}</div>
+                              <div style={{ fontWeight: '600' }}>{title}</div>
+                              <div style={{ fontSize: '11px', color: '#8e8e93' }}>{subtitle}</div>
                             </div>
                           );
                         })}
                       </div>
                     )}
                   </div>
-                </div>
 
-                {/* Intermediate dynamic waypoints */}
-                {stops.map((stop, index) => (
-                  <div key={stop.id} className="form-group-nav flex-1" style={{ margin: '0' }}>
-                    <div className="nav-input-wrapper">
-                      <MapPin size={14} className="input-pin-icon warning" style={{ color: '#FF9500' }} />
+                  {/* Waypoints / Stops */}
+                  {stops.map((stop, index) => (
+                    <div key={stop.id} className="am-input-group">
                       <input 
                         type="text"
-                        placeholder={currentLang === 'ja' ? `経由地 ${index + 1} を入力...` : `Oraliq manzil ${index + 1} ni kiriting...`}
+                        className="am-ios-input"
+                        style={{ paddingRight: '36px' }}
+                        placeholder={getNavText('stopPlaceholder').replace('{idx}', String(index + 1))}
                         value={stop.query}
                         onChange={e => {
                           handleStopQueryChange(stop.id, e.target.value);
                           searchAddress(e.target.value, 'stop', stop.id);
                         }}
-                        style={{ paddingRight: '32px' }}
                       />
                       <button 
                         type="button" 
-                        className="remove-stop-btn"
                         onClick={() => handleRemoveStop(stop.id)}
-                        aria-label="Remove stop"
+                        style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', color: '#ff3b30', cursor: 'pointer' }}
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={14} />
                       </button>
                       {stop.suggestions && stop.suggestions.length > 0 && (
-                        <div className="nav-suggestions-dropdown glass">
+                        <div className="nav-suggestions-dropdown" style={{ background: '#ffffff', zIndex: 1005 }}>
                           {stop.suggestions.map(item => {
-                            const parts = item.name.split(',');
+                            if (!item || !item.id || isNaN(Number(item.lat)) || isNaN(Number(item.lng))) return null;
+                            const parts = item.name ? item.name.split(',') : ['Marked Location'];
                             const title = parts[0];
                             const subtitle = parts.slice(1).join(',').trim();
                             return (
                               <div 
                                 key={item.id} 
                                 className="suggestion-item"
+                                style={{ color: '#1c1c1e', padding: '10px 12px', borderBottom: '1px solid #f2f2f7', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                                 onClick={() => {
-                                  setStops(stops.map(s => s.id === stop.id ? { ...s, coord: { lat: item.lat, lng: item.lng, name: item.name }, query: title, suggestions: [] } : s));
+                                  setStops(stops.map(s => s.id === stop.id ? { 
+                                    ...s, 
+                                    coord: { 
+                                      lat: Number(item.lat), 
+                                      lng: Number(item.lng), 
+                                      name: item.name || 'Marked Location',
+                                      jaName: item.jaName || undefined
+                                    }, 
+                                    query: title, 
+                                    suggestions: [] 
+                                  } : s));
                                   triggerSound();
                                 }}
                               >
-                                <div className="suggestion-title">{title}</div>
-                                <div className="suggestion-subtitle">{subtitle}</div>
+                                <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
+                                  <div style={{ fontWeight: '600', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{title}</div>
+                                  <div style={{ fontSize: '11px', color: '#8e8e93', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{subtitle}</div>
+                                </div>
+                                {item.distance !== undefined && (
+                                  <div style={{ fontSize: '11px', fontWeight: '600', color: '#007aff', whiteSpace: 'nowrap' }}>
+                                    {item.distance < 1000 ? `${Math.round(item.distance)} m` : `${(item.distance / 1000).toFixed(1)} km`}
+                                  </div>
+                                )}
                               </div>
                             );
                           })}
                         </div>
                       )}
                     </div>
-                  </div>
-                ))}
+                  ))}
 
-                {/* Destination location field */}
-                <div className="form-group-nav flex-1" style={{ margin: '0' }}>
-                  <div className="nav-input-wrapper">
-                    <MapPin size={14} className="input-pin-icon end" />
+                  {/* Destination Location Input */}
+                  <div className="am-input-group">
                     <input 
                       type="text"
+                      className="am-ios-input"
                       placeholder={getNavText('destPlaceholder')}
                       value={destQuery}
                       onChange={e => {
@@ -2192,405 +3512,791 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
                       }}
                     />
                     {destSuggestions.length > 0 && (
-                      <div className="nav-suggestions-dropdown glass">
+                      <div className="nav-suggestions-dropdown" style={{ background: '#ffffff', zIndex: 1005 }}>
                         {destSuggestions.map(item => {
-                          const parts = item.name.split(',');
+                          if (!item || !item.id || isNaN(Number(item.lat)) || isNaN(Number(item.lng))) return null;
+                          const parts = item.name ? item.name.split(',') : ['Marked Location'];
                           const title = parts[0];
                           const subtitle = parts.slice(1).join(',').trim();
                           return (
-                            <div 
-                              key={item.id} 
-                              className="suggestion-item"
-                              onClick={() => {
-                                setDestCoord({ lat: item.lat, lng: item.lng, name: item.name });
-                                setDestQuery(title);
-                                setDestSuggestions([]);
-                                triggerSound();
-                              }}
-                            >
-                              <div className="suggestion-title">{title}</div>
-                              <div className="suggestion-subtitle">{subtitle}</div>
-                            </div>
+                             <div 
+                               key={item.id} 
+                               className="suggestion-item"
+                               style={{ color: '#1c1c1e', padding: '10px 12px', borderBottom: '1px solid #f2f2f7', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                               onClick={() => {
+                                 setDestCoord({
+                                   lat: Number(item.lat),
+                                   lng: Number(item.lng),
+                                   name: item.name || 'Marked Location',
+                                   jaName: item.jaName || undefined
+                                 });
+                                 setDestQuery(title);
+                                 setDestSuggestions([]);
+                                 triggerSound();
+                               }}
+                             >
+                               <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
+                                 <div style={{ fontWeight: '600', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{title}</div>
+                                 <div style={{ fontSize: '11px', color: '#8e8e93', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{subtitle}</div>
+                                </div>
+                               {item.distance !== undefined && (
+                                 <div style={{ fontSize: '11px', fontWeight: '600', color: '#007aff', whiteSpace: 'nowrap' }}>
+                                   {item.distance < 1000 ? `${Math.round(item.distance)} m` : `${(item.distance / 1000).toFixed(1)} km`}
+                                 </div>
+                               )}
+                             </div>
                           );
                         })}
                       </div>
                     )}
                   </div>
+
+                  {/* Add Stop Button */}
+                  <button 
+                    type="button" 
+                    className="am-text-btn-blue"
+                    onClick={handleAddStop}
+                  >
+                    <Plus size={14} />
+                    <span>{getNavText('addStop')}</span>
+                  </button>
                 </div>
               </div>
 
-              {/* Action Row: Add stops & Save route */}
-              <div className="actions-button-row" style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-                <button 
-                  type="button" 
-                  className="action-pill-btn"
-                  onClick={handleAddStop}
-                  style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-main)', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
-                >
-                  <Plus size={13} />
-                  <span>{getNavText('addStop')}</span>
+              {/* Selector Pills Row */}
+              <div className="am-pills-row">
+                <button type="button" className="am-pill-selector">
+                  <span>{getNavText('now')}</span>
+                  <span>▼</span>
                 </button>
-
                 <button 
                   type="button" 
-                  className="action-pill-btn"
-                  onClick={handleSaveRoute}
-                  style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(48,209,88,0.1)', color: '#30D158', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
+                  className={`am-pill-selector ${avoidTolls ? 'blue-filled' : ''}`}
+                  onClick={() => {
+                    triggerSound();
+                    setAvoidTolls(prev => !prev);
+                  }}
                 >
-                  <Bookmark size={13} />
-                  <span>{getNavText('saveRoute')}</span>
+                  {getNavText('avoidTolls')}
+                </button>
+                <button 
+                  type="button" 
+                  className={`am-pill-selector ${avoidHighways ? 'blue-filled' : ''}`}
+                  onClick={() => {
+                    triggerSound();
+                    setAvoidHighways(prev => !prev);
+                  }}
+                >
+                  {getNavText('avoidHighways')}
                 </button>
               </div>
 
-              {/* Saved Routes Listing */}
-              {savedRoutes.length > 0 && (
-                <div className="saved-routes-section" style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span className="saved-routes-title" style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-                    {getNavText('savedRoutesTitle')}
-                  </span>
-                  <div className="saved-routes-list hide-scrollbar" style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
-                    {savedRoutes.map(r => (
-                      <div 
-                        key={r.id} 
-                        className="saved-route-pill"
-                        onClick={() => handleLoadRoute(r)}
-                        style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontSize: '10.5px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+              {/* Collapsible Options Button */}
+              <button 
+                type="button" 
+                className="am-text-btn-blue"
+                style={{ marginBottom: '12px' }}
+                onClick={() => {
+                  triggerSound();
+                  setShowAdvancedOptions(prev => !prev);
+                }}
+              >
+                <span>{getNavText('routeSpecsVoiceOptions')}</span>
+                <span>{showAdvancedOptions ? '▲' : '▼'}</span>
+              </button>
+
+              {showAdvancedOptions && (
+                <div style={{ background: '#f2f2f7', padding: '12px', borderRadius: '12px', marginBottom: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {/* Height / Width / Weight Inputs */}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '10px', fontWeight: '700', color: '#8e8e93' }}>
+                        {getNavText('vehicleHeight')}
+                      </label>
+                      <input
+                        type="number"
+                        min="1.0"
+                        max="5.0"
+                        step="0.05"
+                        value={height}
+                        onChange={e => setHeight(parseFloat(e.target.value) || 0)}
+                        style={{ border: 'none', background: '#ffffff', borderRadius: '6px', padding: '6px 8px', fontSize: '13px', color: '#1c1c1e' }}
+                      />
+                    </div>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '10px', fontWeight: '700', color: '#8e8e93' }}>
+                        {getNavText('vehicleWidth')}
+                      </label>
+                      <input
+                        type="number"
+                        min="1.0"
+                        max="3.0"
+                        step="0.05"
+                        value={width}
+                        onChange={e => setWidth(parseFloat(e.target.value) || 0)}
+                        style={{ border: 'none', background: '#ffffff', borderRadius: '6px', padding: '6px 8px', fontSize: '13px', color: '#1c1c1e' }}
+                      />
+                    </div>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '10px', fontWeight: '700', color: '#8e8e93' }}>
+                        {getNavText('vehicleWeight')}
+                      </label>
+                      <input
+                        type="number"
+                        min="0.5"
+                        max="40.0"
+                        step="0.5"
+                        value={weight}
+                        onChange={e => setWeight(parseFloat(e.target.value) || 0)}
+                        style={{ border: 'none', background: '#ffffff', borderRadius: '6px', padding: '6px 8px', fontSize: '13px', color: '#1c1c1e' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Language and Voice Controls */}
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '10px', fontWeight: '700', color: '#8e8e93' }}>
+                        {getNavText('voiceLanguage')}
+                      </label>
+                      <select
+                        value={speechLanguage}
+                        onChange={e => setSpeechLanguageState(e.target.value)}
+                        style={{ border: 'none', background: '#ffffff', borderRadius: '6px', padding: '6px 8px', fontSize: '13px', color: '#1c1c1e', outline: 'none' }}
                       >
-                        <span>{r.alias}</span>
-                        <button 
-                          type="button" 
-                          onClick={(e) => handleDeleteSavedRoute(r.id, e)}
-                          style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0 2px', display: 'flex', alignItems: 'center' }}
-                        >
-                          <X size={11} />
-                        </button>
-                      </div>
-                    ))}
+                        <option value="ja">日本語 (JA)</option>
+                        <option value="uz">O'zbekcha (UZ)</option>
+                      </select>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      className="am-pill-selector"
+                      style={{ alignSelf: 'flex-end', height: '34px', background: isWarningOnly ? 'rgba(255, 59, 48, 0.15)' : '#ffffff', color: isWarningOnly ? '#ff3b30' : '#007aff' }}
+                      onClick={() => {
+                        triggerSound();
+                        setIsWarningOnlyState(prev => !prev);
+                      }}
+                    >
+                      {getNavText('warningOnly')}
+                    </button>
                   </div>
                 </div>
               )}
 
-              {/* Quick JDM nodes shortcuts */}
-              <div className="quick-hubs-bar" style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                <div className="quick-hub-chips hide-scrollbar" style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
-                  {Object.entries(NODES).map(([key, node]) => (
-                    <button 
-                      key={key}
+              {/* Route Direction Switcher */}
+              {startCoord && destCoord && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  background: '#f2f2f7',
+                  borderRadius: '12px',
+                  padding: '8px 12px',
+                  marginBottom: '10px'
+                }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1, overflow: 'hidden' }}>
+                    <span style={{ fontSize: '10px', fontWeight: '700', color: '#8e8e93', textTransform: 'uppercase' }}>
+                      {getNavText('routeLabel')}
+                    </span>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#1c1c1e', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                      {startCoord?.name ? cleanLabelText(startCoord.name.split(',')[0]) : 'A'} ➔ {destCoord?.name ? cleanLabelText(destCoord.name.split(',')[0]) : 'B'}
+                    </span>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    className="am-swap-btn"
+                    onClick={handleSwapStartDest}
+                    title={getNavText('turnDirection')}
+                  >
+                    <ArrowUpDown size={16} />
+                  </button>
+                </div>
+              )}
+
+            </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 🍏 Apple Maps Collapsed Bottom Search Bar */}
+      {!isNavigating && !isRoutingActive && !showSearchSheet && !destCoord && (
+        <div 
+          className="am-bottom-search-bar animate-slide-up"
+          onClick={() => {
+            triggerSound();
+            setShowSearchSheet(true);
+          }}
+        >
+          <Search size={20} style={{ color: '#8e8e93' }} />
+          <span className="am-search-placeholder">
+            {getNavText('mapSearchPlaceholder')}
+          </span>
+          <span className="am-search-mic" style={{ fontSize: '18px' }}>🎙️</span>
+          <div 
+            className="am-search-profile"
+            onClick={(e) => {
+              e.stopPropagation();
+              triggerSound();
+              setShowAttributionModal(true);
+            }}
+            aria-label="Profile"
+          >
+            <User size={16} fill="none" stroke="currentColor" strokeWidth={2.5} />
+          </div>
+        </div>
+      )}
+
+      {/* 🍏 Professional Half-Sheet Search Overlay */}
+      {!isNavigating && !isRoutingActive && showSearchSheet && (
+        <>
+          {/* Semi-transparent backdrop — tap to dismiss */}
+          <div 
+            className="am-search-backdrop"
+            onClick={() => {
+              triggerSound();
+              setShowSearchSheet(false);
+              setDestSuggestions([]);
+              setIsSearching(false);
+            }}
+          />
+          
+          <div className="am-search-panel">
+            {/* Drag handle */}
+            <div className="am-drag-handle" />
+            
+            {/* Header Bar: Search icon + input + cancel */}
+            <div className="am-search-header-bar">
+              <div className="am-search-input-wrap">
+                <Search size={16} className="am-search-icon" />
+                <input
+                  type="text"
+                  placeholder={getNavText('searchPlaceholder')}
+                  value={destQuery}
+                  autoFocus
+                  onChange={e => handleSearchInput(e.target.value)}
+                />
+                {destQuery && (
+                  <button
+                    type="button"
+                    className="am-search-clear-btn"
+                    onClick={() => {
+                      setDestQuery('');
+                      setDestCoord(null);
+                      setDestSuggestions([]);
+                      setIsSearching(false);
+                      triggerSound();
+                    }}
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                className="am-search-cancel-btn"
+                onClick={() => {
+                  triggerSound();
+                  setShowSearchSheet(false);
+                  setDestSuggestions([]);
+                  setIsSearching(false);
+                }}
+              >
+                {getNavText('cancelBtn') || 'Bekor'}
+              </button>
+            </div>
+
+            {/* Scrollable body */}
+            <div className="am-search-body">
+              {/* Quick category pills — shown when no query */}
+              {!destQuery && (
+                <div className="am-search-quick-cats">
+                  {[
+                    { emoji: '🏪', label: 'Konbini', query: 'convenience store' },
+                    { emoji: '⛽', label: 'Yoqilg\'i', query: 'gas station' },
+                    { emoji: '🅿️', label: 'Turargoh', query: 'parking' },
+                    { emoji: '🍜', label: 'Ovqat', query: 'restaurant' },
+                    { emoji: '🏥', label: 'Kasalxona', query: 'hospital' },
+                    { emoji: '🏧', label: 'ATM', query: 'ATM' },
+                  ].map(cat => (
+                    <button
+                      key={cat.query}
                       type="button"
-                      className="hub-chip"
+                      className="am-search-cat-pill"
                       onClick={() => {
-                        setDestCoord({ lat: node.lat, lng: node.lng, name: currentLang === 'ja' ? node.jaName : node.name });
-                        setDestQuery(currentLang === 'ja' ? node.jaName : node.name);
                         triggerSound();
+                        handleSearchInput(cat.query);
                       }}
                     >
-                      {currentLang === 'ja' ? node.jaName.split(' ')[1] : node.name.split(' ')[1]}
+                      <span className="cat-emoji">{cat.emoji}</span>
+                      {cat.label}
                     </button>
                   ))}
                 </div>
-              </div>
-            </>
-          )}
-        </div>
+              )}
+
+              {/* Search results */}
+              {destQuery && destSuggestions.length > 0 && (
+                <div className="am-search-results-list">
+                  {destSuggestions.map(item => {
+                    if (!item || !item.id || isNaN(Number(item.lat)) || isNaN(Number(item.lng))) return null;
+                    const parts = item.name ? item.name.split(',') : ['Marked Location'];
+                    const title = parts[0];
+                    const subtitle = parts.slice(1).join(',').trim();
+                    return (
+                      <div 
+                        key={item.id} 
+                        className="am-search-result-item"
+                        onClick={() => {
+                          setDestCoord({
+                            lat: Number(item.lat),
+                            lng: Number(item.lng),
+                            name: item.name || 'Marked Location',
+                            jaName: item.jaName || undefined
+                          });
+                          setDestQuery(title);
+                          setDestSuggestions([]);
+                          setShowSearchSheet(false);
+                          setIsSearching(false);
+                          addToSearchHistory(item);
+                          triggerSound();
+                          if (mapInstanceRef.current) {
+                            mapInstanceRef.current.easeTo({ center: [Number(item.lng), Number(item.lat)], zoom: 15, duration: 900, easing: t => t * (2 - t) });
+                          }
+                        }}
+                      >
+                        <div className="am-search-result-icon">
+                          <MapPin size={16} />
+                        </div>
+                        <div className="am-search-result-text">
+                          <div className="am-search-result-title">{title}</div>
+                          {subtitle && <div className="am-search-result-subtitle">{subtitle}</div>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Loading spinner */}
+              {destQuery && isSearching && destSuggestions.length === 0 && (
+                <div className="am-search-loading">
+                  <div className="spinner" />
+                  Qidirmoqda...
+                </div>
+              )}
+
+              {/* No results */}
+              {destQuery && !isSearching && destSuggestions.length === 0 && destQuery.trim().length >= 2 && (
+                <div className="am-search-empty">
+                  {getNavText('noResultsFound')}
+                </div>
+              )}
+
+              {/* Search history — shown when no query */}
+              {!destQuery && searchHistory.length > 0 && (
+                <>
+                  <div className="am-search-history-title">Oxirgi qidiruvlar</div>
+                  {searchHistory.slice(0, 5).map((histItem, idx) => {
+                    const hParts = histItem.name ? histItem.name.split(',') : ['Marked'];
+                    const hTitle = hParts[0];
+                    const hSub = hParts.slice(1).join(',').trim();
+                    return (
+                      <div 
+                        key={histItem.id || idx}
+                        className="am-search-history-item"
+                        onClick={() => {
+                          setDestCoord({
+                            lat: Number(histItem.lat),
+                            lng: Number(histItem.lng),
+                            name: histItem.name || 'Marked Location',
+                            jaName: histItem.jaName || undefined
+                          });
+                          setDestQuery(hTitle);
+                          setShowSearchSheet(false);
+                          triggerSound();
+                          if (mapInstanceRef.current) {
+                            mapInstanceRef.current.easeTo({ center: [Number(histItem.lng), Number(histItem.lat)], zoom: 15, duration: 900, easing: t => t * (2 - t) });
+                          }
+                        }}
+                      >
+                        <div className="am-search-history-icon">
+                          <Clock size={14} />
+                        </div>
+                        <div className="am-search-history-text">
+                          <div className="am-search-history-name">{hTitle}</div>
+                          {hSub && <div className="am-search-history-sub">{hSub}</div>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+
+              {/* Default hint when no query and no history */}
+              {!destQuery && searchHistory.length === 0 && (
+                <div className="am-search-hint">
+                  {getNavText('searchHelpText')}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
       )}
 
-      {/* Floating Expandable Google-style Bottom Sheet (Only visible when route exists and not navigating) */}
-      {!isNavigating && (
-        <div 
-          ref={bottomPanelRef} 
-          className={`nav-card glass squircle panel-instructions floating-bottom-panel google-bottom-sheet ${bottomSheetState}`} 
-          style={{ 
-            padding: '0px', 
-            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', 
-            zIndex: 100,
-            display: isSettingsCollapsed ? 'block' : 'none'
-          }}
-        >
-          {/* Grab Handle */}
-          <div 
-            className="bottom-sheet-handle-bar" 
-            onClick={() => {
-              triggerSound();
-              setBottomSheetState(prev => prev === 'collapsed' ? 'expanded' : 'collapsed');
-            }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '18px', cursor: 'pointer' }}
+      {/* Selected Location Details Bottom Sheet (Apple Maps style) */}
+      {!isNavigating && !isRoutingActive && destCoord && (() => {
+        const poiDetails = getPoiDetails(destCoord, currentLang);
+        return (
+          <div
+            ref={bottomPanelRef}
+            className={`am-bottom-sheet show ${placeDetailsExpanded ? "am-sheet-full" : "am-sheet-collapsed"}`}
           >
-            <div style={{ width: '36px', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.2)' }} />
-          </div>
+            <div className="am-bottom-sheet-overlay" style={{ position: 'relative' }}>
+              <div className="am-drag-handle" onClick={() => setPlaceDetailsExpanded(prev => !prev)} />
 
-          <div className="bottom-sheet-scrollable-content hide-scrollbar" style={{ maxHeight: '280px', overflowY: 'auto' }}>
-            {startCoord && destCoord ? (
-              /* ACTIVE ROUTE VIEW */
-              <>
-                <div className="compact-route-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '12px', padding: '0 16px 12px 16px' }}>
-                  <div className="compact-info-col" style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span className="compact-time" style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-main)' }}>
-                        {route.time} {currentLang === 'ja' ? '分' : 'min'}
+              {/* Absolute positioned share/close actions to save vertical space */}
+              <div 
+                className="am-place-top-actions" 
+                style={{ 
+                  position: 'absolute', 
+                  top: '12px', 
+                  right: '16px', 
+                  display: 'flex', 
+                  gap: '8px', 
+                  zIndex: 10,
+                  margin: 0,
+                  padding: 0
+                }}
+              >
+                <button type="button" className="am-share-btn" onClick={handleShareRoute} title="Share">
+                  <Share2 size={16} />
+                </button>
+                <button
+                  type="button"
+                  className="am-close-circle-btn"
+                  onClick={() => {
+                    triggerSound();
+                    setDestCoord(null);
+                    setDestQuery('');
+                    setPlaceDetailsExpanded(false);
+                  }}
+                  aria-label="Close"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              {!placeDetailsExpanded ? (
+                /* COLLAPSED SINGLE-ROW PREMIUM VIEW */
+                <div 
+                  className="am-sheet-collapsed-row" 
+                  style={{ 
+                    padding: '0 18px 16px 18px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between', 
+                    gap: '12px',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setPlaceDetailsExpanded(true)}
+                >
+                  <div style={{ minWidth: 0, flex: 1, paddingRight: '64px' }}>
+                    <h2 className="am-sheet-title" style={{ fontSize: '17px', fontWeight: '800', margin: '0 0 5px 0', color: 'var(--sheet-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {destCoord.jaName || destCoord.name?.split(',')[0] || 'Marked Location'}
+                    </h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--sheet-secondary-text)', flexWrap: 'nowrap', overflow: 'hidden' }}>
+                      <span style={{ 
+                        fontWeight: '700', 
+                        background: poiDetails.color + '18', 
+                        color: poiDetails.color, 
+                        padding: '2px 5px', 
+                        borderRadius: '4px',
+                        fontSize: '9.5px',
+                        textTransform: 'uppercase'
+                      }}>
+                        {poiDetails.categoryLabel}
                       </span>
-                      <span className="compact-dist" style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
-                        ({route.distance} km)
-                      </span>
-                      {route.status === 'safe' ? (
-                        <CheckCircle2 size={15} color="#30D158" />
-                      ) : route.status === 'blocked' ? (
-                        <ShieldAlert size={15} color="#FF453A" style={{ filter: 'drop-shadow(0 0 4px rgba(255, 69, 58, 0.6))' }} />
-                      ) : (
-                        <ShieldAlert size={15} color="#FF9500" />
+                      {poiDetails.isHGVFriendly && (
+                        <span style={{ 
+                          fontWeight: '700', 
+                          background: 'rgba(255, 149, 0, 0.15)', 
+                          color: '#ff9500', 
+                          padding: '2px 5px', 
+                          borderRadius: '4px',
+                          fontSize: '9.5px'
+                        }}>
+                          🚚 HGV
+                        </span>
                       )}
-                    </div>
-                    
-                    <div className="compact-specs" style={{ fontSize: '10.5px', color: 'var(--text-secondary)', display: 'flex', gap: '5px', fontWeight: '700' }}>
-                      <span>ETA: {getETA(route.time)}</span>
-                      <span>•</span>
-                      <span>{height.toFixed(2)}m</span>
-                      <span>•</span>
-                      <span>{weight.toFixed(1)}t</span>
+                      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {destCoord.name || 'No address'}
+                      </span>
                     </div>
                   </div>
 
-                  {route.coordinates.length > 0 && (
-                    <button 
-                      type="button" 
-                      className="go-to-nav-btn animate-pulse" 
-                      onClick={() => {
-                        triggerSound();
-                        setIsNavigating(true);
-                        setCurrentStepIndex(0);
-                        setIsAutoPlaying(false);
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      type="button"
+                      className="am-btn-go"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDirectionsClick();
                       }}
-                      style={{ padding: '10px 18px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #0A84FF 0%, #30D158 100%)', color: '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', boxShadow: '0 4px 12px rgba(48,209,88,0.25)', height: '40px', whiteSpace: 'nowrap' }}
+                      style={{ 
+                        minWidth: '72px', 
+                        height: '36px', 
+                        borderRadius: '18px', 
+                        background: '#007aff', 
+                        color: '#ffffff', 
+                        border: 'none', 
+                        fontWeight: '700', 
+                        fontSize: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 6px rgba(0, 122, 255, 0.3)'
+                      }}
                     >
-                      <Navigation size={12} style={{ transform: 'rotate(45deg)' }} />
-                      <span>{currentLang === 'ja' ? 'ナビ開始' : 'START'}</span>
+                      GO
                     </button>
-                  )}
+                  </div>
                 </div>
-
-                {/* Expanded Detailed Sections */}
-                {bottomSheetState === 'expanded' && (
-                  <div style={{ padding: '0 16px 16px 16px', display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
-                    
-                    {/* 1. Warnings List */}
-                    <div className="expanded-section">
-                      <h4 style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px', marginTop: 0 }}>
-                        {currentLang === 'ja' ? '安全警告・規制' : 'Safety Alerts'}
-                      </h4>
-                      {route.warnings.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          {route.warnings.map((w, idx) => (
-                            <div key={idx} style={{ 
-                              padding: '8px 10px', 
-                              borderRadius: '8px', 
-                              background: w.includes('🛡️') ? 'rgba(48, 209, 88, 0.08)' : (route.status === 'blocked' ? 'rgba(255, 69, 58, 0.08)' : 'rgba(255, 149, 0, 0.08)'),
-                              border: `1px solid ${w.includes('🛡️') ? 'rgba(48, 209, 88, 0.15)' : (route.status === 'blocked' ? 'rgba(255, 69, 58, 0.15)' : 'rgba(255, 149, 0, 0.15)')}`,
-                              fontSize: '11px',
-                              color: w.includes('🛡️') ? '#30D158' : (route.status === 'blocked' ? '#FF453A' : '#FF9500'),
-                              fontWeight: '800',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px'
-                            }}>
-                              {w.includes('🛡️') ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
-                              <span>{w}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                          {currentLang === 'ja' ? '規制はありません。安全です。' : 'No warnings. Secure route.'}
+              ) : (
+                /* EXPANDED VIEW WITH SCROLLABLE CONTENT */
+                <>
+                  <div style={{ padding: '0 80px 12px 18px' }}>
+                    <h2 className="am-sheet-title" style={{ fontSize: '22px', margin: '4px 0 2px 0', color: 'var(--sheet-text)' }}>
+                      {destCoord.jaName || destCoord.name?.split(',')[0] || 'Marked Location'}
+                    </h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                      <span style={{ 
+                        fontSize: '11px', 
+                        fontWeight: '700', 
+                        background: poiDetails.color + '18', 
+                        color: poiDetails.color, 
+                        padding: '3px 7px', 
+                        borderRadius: '6px', 
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.02em'
+                      }}>
+                        {poiDetails.categoryLabel}
+                      </span>
+                      {poiDetails.isHGVFriendly && (
+                        <span style={{ 
+                          fontSize: '11px', 
+                          fontWeight: '700', 
+                          background: 'rgba(255, 149, 0, 0.15)', 
+                          color: '#ff9500', 
+                          padding: '3px 7px', 
+                          borderRadius: '6px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          🚚 HGV Friendly
                         </span>
                       )}
+                      <span style={{ fontSize: '12px', color: 'var(--sheet-secondary-text)', fontWeight: 500 }}>
+                        ⏱️ {poiDetails.hours}
+                      </span>
                     </div>
-
-                    {/* 2. Style & Traffic Toggles */}
-                    <div className="expanded-section">
-                      <h4 style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px', marginTop: 0 }}>
-                        {currentLang === 'ja' ? '表示オプション' : 'Map Layers'}
-                      </h4>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button 
-                          type="button"
-                          className={`action-pill-btn ${mapStyleMode === 'satellite' ? 'active' : ''}`}
-                          onClick={() => {
-                            triggerSound();
-                            setMapStyleMode(prev => prev === 'vector' ? 'satellite' : 'vector');
+                  </div>
+                <div className="am-sheet-content">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--sheet-btn-bg)', borderRadius: '12px', padding: '10px 14px', marginBottom: '14px', border: '1px solid var(--sheet-row-border)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1, position: 'relative' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#34c759' }} />
+                          <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--sheet-secondary-text)', textTransform: 'uppercase' }}>
+                            {getNavText('departure')}
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          style={{ background: 'var(--sheet-input-bg)', border: '1px solid var(--sheet-row-border)', borderRadius: '8px', padding: '6px 10px', fontSize: '13px', color: 'var(--sheet-text)', width: '100%', outline: 'none', boxSizing: 'border-box' }}
+                          placeholder={getNavText('startPlaceholder')}
+                          value={startQuery}
+                          onChange={e => {
+                            setStartQuery(e.target.value);
+                            searchAddress(e.target.value, 'start');
                           }}
-                          style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: mapStyleMode === 'satellite' ? 'rgba(10,132,255,0.15)' : 'rgba(255,255,255,0.03)', color: mapStyleMode === 'satellite' ? '#0A84FF' : 'var(--text-main)', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
-                        >
-                          <span>🛰️</span>
-                          <span>{currentLang === 'ja' ? '航空写真' : 'Satellite'}</span>
-                        </button>
+                        />
+                      </div>
 
-                        <button 
-                          type="button"
-                          className={`action-pill-btn ${showTrafficLayer ? 'active' : ''}`}
-                          onClick={() => {
-                            triggerSound();
-                            setShowTrafficLayer(prev => !prev);
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#007aff' }} />
+                          <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--sheet-secondary-text)', textTransform: 'uppercase' }}>
+                            {getNavText('destination')}
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          style={{ background: 'var(--sheet-input-bg)', border: '1px solid var(--sheet-row-border)', borderRadius: '8px', padding: '6px 10px', fontSize: '13px', color: 'var(--sheet-text)', width: '100%', outline: 'none', boxSizing: 'border-box' }}
+                          placeholder={getNavText('destPlaceholder')}
+                          value={destQuery}
+                          onChange={e => {
+                            setDestQuery(e.target.value);
+                            searchAddress(e.target.value, 'dest');
                           }}
-                          style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: showTrafficLayer ? 'rgba(48,209,88,0.15)' : 'rgba(255,255,255,0.03)', color: showTrafficLayer ? '#30D158' : 'var(--text-main)', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer' }}
-                        >
-                          <span>🚦</span>
-                          <span>{currentLang === 'ja' ? '渋滞表示' : 'Traffic'}</span>
-                        </button>
+                        />
                       </div>
                     </div>
+                    <button
+                      type="button"
+                      className="am-swap-btn"
+                      style={{ marginLeft: '12px' }}
+                      onClick={() => {
+                        triggerSound();
+                        const currentStart = startCoord || NODES.matsudo;
+                        const tempCoord = currentStart;
+                        const tempQuery = startQuery || getNavText('currentLocationLabel');
+                        setStartCoord(destCoord);
+                        setStartQuery(destQuery || (destCoord.name ? destCoord.name.split(',')[0] : ''));
+                        setDestCoord(tempCoord);
+                        setDestQuery(tempQuery);
+                      }}
+                      title={getNavText('turnDirection')}
+                    >
+                      <ArrowUpDown size={16} />
+                    </button>
                   </div>
-                )}
-              </>
-            ) : (
-              /* WELCOME / PRESETS VIEW (when no active route is calculated) */
-              <>
-                <div className="compact-route-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '12px', padding: '0 16px 12px 16px', cursor: 'pointer' }} onClick={() => setBottomSheetState(prev => prev === 'collapsed' ? 'expanded' : 'collapsed')}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-                    <span style={{ fontSize: '18px' }}>📍</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '900', color: 'var(--text-main)' }}>
-                        {currentLang === 'ja' ? '目的地を選択してください' : 'Yonalish belgilash...'}
-                      </span>
-                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
-                        {currentLang === 'ja' ? `車両: ${VEHICLE_PRESETS[selectedVehicle]?.jaName}` : `Mashina: ${VEHICLE_PRESETS[selectedVehicle]?.name}`}
-                      </span>
-                    </div>
-                  </div>
-                  <button 
-                    type="button" 
-                    className="go-to-nav-btn" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      triggerSound();
-                      setIsSettingsCollapsed(false);
-                    }}
-                    style={{ padding: '8px 14px', borderRadius: '10px', border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '11px' }}
-                  >
-                    🔍 {currentLang === 'ja' ? '検索' : 'Qidiruv'}
-                  </button>
-                </div>
 
-                {/* Expanded presets and saved routes */}
-                {bottomSheetState === 'expanded' && (
-                  <div style={{ padding: '0 16px 16px 16px', display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
-                    {/* Saved routes presets */}
-                    <div className="expanded-section">
-                      <h4 style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px', marginTop: 0 }}>
-                        {currentLang === 'ja' ? '保存されたルート' : 'Saqlangan marshrutlar'}
-                      </h4>
-                      {savedRoutes.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '160px', overflowY: 'auto' }}>
-                          {savedRoutes.map((r) => (
-                            <div 
-                              key={r.id} 
-                              onClick={() => {
-                                handleLoadRoute(r);
-                                setBottomSheetState('collapsed');
-                              }}
-                              style={{ 
-                                padding: '8px 10px', 
-                                borderRadius: '8px', 
-                                background: 'rgba(255,255,255,0.04)',
-                                border: '1px solid var(--glass-border)',
-                                fontSize: '11px',
-                                color: 'var(--text-main)',
-                                fontWeight: '800',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                cursor: 'pointer',
-                                transition: 'background 0.2s'
-                              }}
-                              className="saved-route-item-row"
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span>⭐</span>
-                                <span>{r.alias}</span>
-                              </div>
-                              <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>
-                                {VEHICLE_PRESETS[r.selectedVehicle]?.short || 'Truck'}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                          {currentLang === 'ja' ? '保存されたルートはありません。' : 'Saqlangan marshrutlar yo\'q.'}
-                        </span>
-                      )}
+                  <button type="button" className="am-big-blue-button" onClick={handleDirectionsClick}>
+                    <Car size={20} fill="#ffffff" />
+                    <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+                      <span style={{ fontSize: '14px', letterSpacing: '0.01em' }}>GO</span>
+                      <span style={{ fontSize: '12px', opacity: 0.85 }}>{(() => {
+                        const baseLat = startCoord ? startCoord.lat : 35.7915;
+                        const baseLng = startCoord ? startCoord.lng : 139.9015;
+                        const distMeters = getDistance(baseLat, baseLng, destCoord.lat, destCoord.lng);
+                        const estTime = Math.max(1, Math.round((distMeters / 1000) * 2));
+                        return `${estTime} min`;
+                      })()}</span>
+                    </span>
+                  </button>
+
+                  {poiDetails.amenities && poiDetails.amenities.length > 0 && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--sheet-text)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span>🚚</span>
+                        <span>{currentLang === 'uz' ? 'Yuk mashinasi uchun qulayliklar' : (currentLang === 'ja' ? '大型車向け設備・サービス' : 'HGV Amenities & Services')}</span>
+                      </div>
+                      <div style={{ 
+                        background: 'var(--sheet-row-border)', 
+                        borderRadius: '12px', 
+                        padding: '12px 14px', 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: '8px',
+                        border: '1px dashed rgba(255, 149, 0, 0.3)'
+                      }}>
+                        {poiDetails.amenities.map((amenity, idx) => (
+                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--sheet-text)', fontWeight: 500 }}>
+                            <span style={{ color: '#ff9500', fontWeight: 'bold' }}>✓</span>
+                            <span>{amenity}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="am-section-title">
+                    {getNavText('placeDetails')}
+                  </div>
+                  <div className="am-ios-list">
+                    <div className="am-meta-row">
+                      <div className="am-meta-label">{getNavText('address')}</div>
+                      <div className="am-meta-value">{destCoord.name}</div>
+                    </div>
+                    <div className="am-meta-row">
+                      <div className="am-meta-label">{currentLang === 'uz' ? 'Ish vaqti' : (currentLang === 'ja' ? '営業時間' : 'Hours')}</div>
+                      <div className="am-meta-value">{poiDetails.hours}</div>
+                    </div>
+                    <div className="am-meta-row">
+                      <div className="am-meta-label">{currentLang === 'uz' ? 'Telefon' : (currentLang === 'ja' ? '電話番号' : 'Phone')}</div>
+                      <div className="am-meta-value">
+                        <a href={`tel:${poiDetails.phone}`} style={{ color: '#007aff', textDecoration: 'none', fontWeight: 600 }}>
+                          {poiDetails.phone}
+                        </a>
+                      </div>
+                    </div>
+                    <div className="am-meta-row">
+                      <div className="am-meta-label">{getNavText('coordinates')}</div>
+                      <div className="am-meta-value">{(destCoord?.lat !== undefined && destCoord?.lat !== null) ? Number(destCoord.lat).toFixed(5) : '0.00000'}°, {(destCoord?.lng !== undefined && destCoord?.lng !== null) ? Number(destCoord.lng).toFixed(5) : '0.00000'}°</div>
                     </div>
                   </div>
-                )}
-              </>
-            )}
+
+                  <div className="am-capsule-actions-bar">
+                    <button type="button" className="am-capsule-btn" onClick={() => { triggerSound(); handleAddStop(); }}>
+                      <Plus size={16} />
+                      <span>{getNavText('addStop')}</span>
+                    </button>
+                    {(() => {
+                      const savedBookmark = bookmarks.find(b => Math.abs(b.lat - destCoord.lat) < 0.0003 && Math.abs(b.lng - destCoord.lng) < 0.0003);
+                      return (
+                        <button type="button" className="am-capsule-btn" onClick={() => {
+                          triggerSound();
+                          if (savedBookmark) {
+                            handleRemoveBookmark(savedBookmark.id);
+                          } else {
+                            handleAddBookmark(
+                              destCoord.jaName || (destCoord.name ? destCoord.name.split(',')[0] : 'Marked Location'),
+                              destCoord.lat,
+                              destCoord.lng,
+                              'custom'
+                            );
+                          }
+                        }}>
+                          <Star size={16} fill={savedBookmark ? '#ffcc00' : 'none'} style={{ color: savedBookmark ? '#ff9500' : '#007aff' }} />
+                          <span>{savedBookmark ? getNavText('unsave') : getNavText('saveLabel')}</span>
+                        </button>
+                      );
+                    })()}
+                    <button type="button" className="am-capsule-btn" onClick={() => { triggerSound(); setShowAttributionModal(true); }}>
+                      <span>•••</span>
+                    </button>
+                  </div>
+                </div>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
+      {/* Floating Expandable Google-style Bottom Sheet (Only visible when route exists and not navigating) */}      {/* Floating Expandable Google-style Bottom Sheet (Only visible when route exists and not navigating) */}
 
       {/* Floating Turn-by-Turn Guidance Overlay Card - Top (Only visible when navigating) */}
+      {/* 🍏 Apple Maps Top Guidance Dark Capsule Banner */}
       {isNavigating && (
-        <div className="nav-top-banner floating-top-hud glass squircle animate-slide-down" style={{ position: 'absolute', top: '12px', left: '12px', right: '12px', zIndex: 1000, margin: 0, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(28,28,30,0.85)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          {/* Turn Arrow Icon */}
-          <div className="nav-turn-icon-wrap" style={{ 
-            display: 'flex', alignItems: 'center', justifyContent: 'center', 
-            background: currentStep?.maneuverType === 'arrive' ? '#30D158' : '#0A84FF', 
-            borderRadius: '12px', width: '42px', height: '42px', flexShrink: 0,
-            boxShadow: '0 2px 8px rgba(10,132,255,0.3)'
-          }}>
-            <span style={{ fontSize: '22px', lineHeight: 1, transform: `rotate(${currentStep?.arrowAngle || 0}deg)`, transition: 'transform 0.3s ease' }}>
-              {currentStep?.maneuverType === 'arrive' ? '🏁' : (currentStep?.arrow || '↑')}
+        <div className="am-nav-dark-banner animate-slide-down">
+          <div className="am-nav-icon-circle">
+            <span style={{ 
+              transform: currentStep?.maneuverType === 'arrive' ? 'none' : `rotate(${currentStep?.arrowAngle || 0}deg)`,
+              display: 'inline-block'
+            }}>
+              {currentStep?.maneuverType === 'arrive' ? '🏁' : '↑'}
             </span>
           </div>
-          {/* Instruction Text */}
-          <div className="nav-turn-details" style={{ flex: 1, minWidth: 0 }}>
-            <h3 className="nav-turn-road" style={{ fontSize: '14px', fontWeight: '900', margin: 0, color: '#fff', textAlign: 'left', lineHeight: 1.3 }}>
-              {currentStep?.jaText || '直進してください'}
-            </h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
-              {currentStep?.distanceToNextFormatted && (
-                <span style={{ fontSize: '10px', color: '#0A84FF', fontWeight: '800', background: 'rgba(10,132,255,0.15)', padding: '1px 5px', borderRadius: '4px' }}>
-                  {currentStep.distanceToNextFormatted}
-                </span>
-              )}
-              {currentStep?.roadName && (
-                <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {currentStep.roadName}
-                </span>
-              )}
+          <div className="am-nav-text-container">
+            <div className="am-nav-main-instruction">
+              {currentStep?.maneuverType === 'arrive' 
+                ? getNavText('arrivalCompleted')
+                : (currentStep?.jaText || '直進してください')}
             </div>
-            {/* Next step preview */}
-            {currentStepIndex < navSteps.length - 1 && navSteps[currentStepIndex + 1] && (
-              <span style={{ fontSize: '8.5px', color: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
-                <span style={{ fontSize: '10px' }}>{navSteps[currentStepIndex + 1]?.arrow || '↑'}</span>
-                次: {navSteps[currentStepIndex + 1]?.jaText || '直進'}
-              </span>
-            )}
-            
-            {/* Lane Guidance Indicators */}
-            {currentStep?.lanes && currentStep.lanes.length > 0 && (
-              <div style={{ marginTop: '5px', display: 'flex', justifyContent: 'flex-start' }}>
-                <LaneIndicator lanes={currentStep.lanes} />
-              </div>
-            )}
+            <div className="am-nav-sub-instruction">
+              {currentStep?.distanceToNextFormatted ? `${currentStep.distanceToNextFormatted} • ` : ''}
+              {currentStep?.roadName || getNavText('activeRoute')}
+            </div>
           </div>
-          {/* Speed + Status Badges */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
-            <div style={{ 
-              fontSize: '12px', fontWeight: '900', color: '#fff',
-              background: 'rgba(255,255,255,0.1)', padding: '3px 8px', borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '3px'
-            }}>
-              <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.5)' }}>制限</span>
-              {currentStep?.speedLimit || 50}
-              <span style={{ fontSize: '7px', color: 'rgba(255,255,255,0.4)' }}>km/h</span>
-            </div>
-            <div style={{ 
-              fontSize: '7.5px', 
-              background: route.status === 'safe' ? 'rgba(48,209,88,0.2)' : (route.status === 'blocked' ? 'rgba(255,69,58,0.2)' : 'rgba(255,149,0,0.2)'), 
-              color: route.status === 'safe' ? '#30D158' : (route.status === 'blocked' ? '#FF453A' : '#FF9500'), 
-              padding: '2px 6px', borderRadius: '5px', fontWeight: '900',
-              border: `1px solid ${route.status === 'safe' ? 'rgba(48,209,88,0.15)' : (route.status === 'blocked' ? 'rgba(255,69,58,0.2)' : 'rgba(255,149,0,0.2)')}`
-            }}>
-              {route.status === 'safe' ? 'SAFE' : (route.status === 'blocked' ? 'BLOCKED' : 'DETOUR')}
-            </div>
+          {/* Speed Limit Sign */}
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', background: '#ffffff', borderRadius: '8px', border: '2px solid #ff3b30', width: '28px', height: '28px', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ color: '#1c1c1e', fontWeight: '900', fontSize: '12px' }}>{currentStep?.speedLimit || 50}</span>
           </div>
         </div>
       )}
@@ -2599,7 +4305,7 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
       {isNavigating && currentStep?.turnFeasibility && currentStep.turnFeasibility !== 'possible' && (
         <div className="turn-physics-warning animate-slide-down" style={{
           position: 'absolute',
-          top: '90px',
+          top: '135px',
           left: '12px',
           right: '12px',
           zIndex: 999,
@@ -2641,130 +4347,239 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
             }}>
               {currentStep.turnWarning}
             </div>
-            {currentStep.turnDetails?.innerDiff > 0 && (
-              <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', marginTop: '2px', display: 'flex', gap: '8px' }}>
-                <span>内輪差: {currentStep.turnDetails.innerDiff.toFixed(1)}m</span>
-                {currentStep.turnDetails.sweptPath > 0 && <span>通行幅: {currentStep.turnDetails.sweptPath.toFixed(1)}m</span>}
-                {currentStep.turnDetails.estimatedWidth > 0 && <span>道路幅: ~{currentStep.turnDetails.estimatedWidth.toFixed(0)}m</span>}
-              </div>
-            )}
+             {currentStep?.turnDetails && !isNaN(Number(currentStep.turnDetails.innerDiff)) && Number(currentStep.turnDetails.innerDiff) > 0 && (
+               <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', marginTop: '2px', display: 'flex', gap: '8px' }}>
+                 <span>内輪差: {Number(currentStep.turnDetails.innerDiff).toFixed(1)}m</span>
+                 {currentStep.turnDetails.sweptPath !== undefined && !isNaN(Number(currentStep.turnDetails.sweptPath)) && Number(currentStep.turnDetails.sweptPath) > 0 && (
+                   <span>通行幅: {Number(currentStep.turnDetails.sweptPath).toFixed(1)}m</span>
+                 )}
+                 {currentStep.turnDetails.estimatedWidth !== undefined && !isNaN(Number(currentStep.turnDetails.estimatedWidth)) && Number(currentStep.turnDetails.estimatedWidth) > 0 && (
+                   <span>道路幅: ~{Number(currentStep.turnDetails.estimatedWidth).toFixed(0)}m</span>
+                 )}
+               </div>
+             )}
           </div>
         </div>
       )}
 
-      {/* Floating Turn-by-Turn Info Bar - Bottom (Only visible when navigating) */}
+      {/* 🍏 Apple Maps Active Navigation ETA Bottom Sheet */}
       {isNavigating && (
-        <div ref={bottomPanelRef} className="nav-card glass squircle floating-bottom-hud animate-slide-up" style={{ position: 'absolute', bottom: '96px', left: '12px', right: '12px', zIndex: 1000, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '10px' }}>
-            {/* ETA and Stats */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-              {(() => {
-                const remaining = getRemainingMetrics(navSteps, currentStepIndex);
-                return (<>
-                  <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--text-main)' }}>
-                    {remaining.remainingTime > 0 ? remaining.remainingTime : route.time} 分
-                  </span>
-                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
-                    ETA {getETA(remaining.remainingTime > 0 ? remaining.remainingTime : route.time)} ({remaining.remainingDistanceFormatted || `${route.distance} km`})
-                  </span>
-                </>);
-              })()}
-            </div>
+        <div 
+          ref={bottomPanelRef} 
+          className="am-nav-eta-sheet show animate-slide-up"
+        >
+          {/* Drag handle */}
+          <div className="am-drag-handle" onClick={() => setIsEtaSheetExpanded(prev => !prev)} />
 
-            {/* Clickable Active Vehicle Selector badge */}
-            <button 
-              type="button"
-              onClick={() => {
-                triggerSound();
-                setShowNavVehicleMenu(!showNavVehicleMenu);
-              }}
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)', padding: '5px 8px', borderRadius: '8px', color: 'var(--text-main)', fontSize: '10.5px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
-            >
-              <span>🚚</span>
-              <span>{currentLang === 'ja' ? VEHICLE_PRESETS[selectedVehicle]?.jaShort : VEHICLE_PRESETS[selectedVehicle]?.short}</span>
-            </button>
-
-            {/* Voice Toggle Button */}
-            <button
-              type="button"
-              onClick={() => {
-                triggerSound();
-                const newMuted = toggleMute();
-                setVoiceMuted(newMuted);
-              }}
-              style={{ padding: '6px 8px', fontSize: '11px', background: voiceMuted ? 'rgba(255,69,58,0.15)' : 'rgba(48,209,88,0.15)', color: voiceMuted ? '#FF453A' : '#30D158', border: `1px solid ${voiceMuted ? 'rgba(255,69,58,0.2)' : 'rgba(48,209,88,0.2)'}`, borderRadius: '8px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-            >
-              {voiceMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
-            </button>
-
-            {/* Exit Button */}
-            <button 
-              type="button" 
-              className="nav-exit-btn"
-              onClick={() => {
-                triggerSound();
-                setIsNavigating(false);
-                setIsAutoPlaying(false);
-                setCurrentStepIndex(0);
-                setShowNavVehicleMenu(false);
-              }}
-              style={{ padding: '6px 12px', fontSize: '11px', background: '#FF453A', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '800', cursor: 'pointer' }}
-            >
-              {currentLang === 'ja' ? '終了' : 'Exit'}
-            </button>
+          {/* Core Columns (Arrival, Time remaining, Distance remaining) */}
+          <div 
+            className="am-nav-eta-columns"
+            onClick={() => setIsEtaSheetExpanded(prev => !prev)}
+            style={{ cursor: 'pointer' }}
+          >
+            {(() => {
+              const remaining = getRemainingMetrics(navSteps, currentStepIndex);
+              const remTime = remaining.remainingTime > 0 ? remaining.remainingTime : route.time;
+              const remDist = remaining.remainingDistance > 0 ? (remaining.remainingDistance / 1000).toFixed(1) : route.distance.toFixed(1);
+              return (
+                <>
+                  <div className="am-nav-column">
+                    <span className="am-nav-value" style={{ color: '#24b13a' }}>{getETA(remTime)}</span>
+                    <span className="am-nav-label">{getNavText('arrivalLabel')}</span>
+                  </div>
+                  <div className="am-nav-column">
+                    <span className="am-nav-value" style={{ color: '#1c1c1e' }}>{Math.round(remTime)}</span>
+                    <span className="am-nav-label">{getNavText('minutesLabel')}</span>
+                  </div>
+                  <div className="am-nav-column">
+                    <span className="am-nav-value" style={{ color: '#8e8e93' }}>{remDist}</span>
+                    <span className="am-nav-label">{getNavText('kmLabel')}</span>
+                  </div>
+                </>
+              );
+            })()}
           </div>
 
-          {/* Floating Nav Vehicle Quick Switcher Menu */}
-          {showNavVehicleMenu && (
-            <div className="nav-vehicle-dropdown glass squircle animate-scale-up" style={{ position: 'absolute', bottom: 'calc(100% + 8px)', right: '12px', background: 'rgba(30,30,32,0.95)', backdropFilter: 'blur(20px)', border: '1px solid var(--glass-border)', padding: '6px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 1001, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', minWidth: '160px' }}>
-              <span style={{ fontSize: '8px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', padding: '2px 8px', textTransform: 'uppercase', display: 'block', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: '4px' }}>
-                {currentLang === 'ja' ? '車両タイプを選択' : 'Select Vehicle Class'}
-              </span>
-              {Object.entries(VEHICLE_PRESETS).map(([key, val]) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => {
-                    triggerSound();
-                    handleVehicleSelect(key);
-                    setShowNavVehicleMenu(false);
-                  }}
-                  style={{ padding: '6px 10px', background: selectedVehicle === key ? 'var(--primary)' : 'none', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '10.5px', fontWeight: '800', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
-                >
-                  <span>{currentLang === 'ja' ? val.jaShort : val.short}</span>
-                  <span style={{ fontSize: '8.5px', color: selectedVehicle === key ? '#fff' : 'var(--text-secondary)' }}>{val.height}m</span>
-                </button>
-              ))}
-            </div>
+          {/* Share ETA Button (only visible when collapsed) */}
+          {!isEtaSheetExpanded && (
+            <button 
+              type="button"
+              className="am-nav-share-eta-btn"
+              onClick={handleShareRoute}
+            >
+              <Share2 size={14} />
+              <span>{getNavText('shareETA')}</span>
+            </button>
           )}
 
-          {/* Simulation settings toggle inside bottom panel */}
-          <div className="simulation-settings-wrap" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '4px' }}>
-            <button 
-              type="button" 
-              className="sim-toggle-btn"
-              onClick={() => setShowSimControls(!showSimControls)}
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '9px', display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer', margin: '0 auto' }}
-            >
-              <span>⚙️ {showSimControls ? 'Hide Sim Controls' : 'Show Sim Controls'}</span>
-            </button>
+          {/* Expanded Navigation Options List */}
+          {isEtaSheetExpanded && (
+            <div className="animate-slide-up" style={{ marginTop: '10px' }}>
+              <div className="am-nav-options-list">
+                {/* Active Destination */}
+                <div className="am-nav-option-row">
+                  <div className="am-circle-icon" style={{ background: '#ff3b30', width: '28px', height: '28px' }}>
+                    <MapPin size={14} />
+                  </div>
+                  <div className="am-nav-option-title" style={{ fontWeight: '700' }}>
+                    {destCoord?.jaName || destCoord?.name?.split(',')[0] || 'Destination'}
+                  </div>
+                </div>
 
-            {showSimControls && (
-              <div className="sim-panel-content animate-fade-in" style={{ marginTop: '4px' }}>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <button type="button" disabled={currentStepIndex === 0} onClick={() => setCurrentStepIndex(prev => prev - 1)} style={{ flex: 1, padding: '5px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '9.5px' }}>
-                    Back
-                  </button>
-                  <button type="button" onClick={() => setIsAutoPlaying(!isAutoPlaying)} style={{ flex: 1.2, padding: '5px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: isAutoPlaying ? 'rgba(255,149,0,0.15)' : 'var(--glass-bg)', color: isAutoPlaying ? '#FF9500' : 'var(--text-main)', cursor: 'pointer', fontSize: '9.5px' }}>
-                    {isAutoPlaying ? 'Pause' : 'Play'}
-                  </button>
-                  <button type="button" disabled={currentStepIndex === navSteps.length - 1} onClick={() => setCurrentStepIndex(prev => prev + 1)} style={{ flex: 1, padding: '5px', borderRadius: '6px', border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontSize: '9.5px' }}>
-                    Next
-                  </button>
+                {/* Add Stop */}
+                <div 
+                  className="am-nav-option-row"
+                  onClick={() => {
+                    triggerSound();
+                    handleAddStop();
+                  }}
+                >
+                  <div className="am-circle-icon" style={{ background: '#007aff', width: '28px', height: '28px' }}>
+                    <Plus size={14} />
+                  </div>
+                  <div className="am-nav-option-title">
+                    {getNavText('addStop')}
+                  </div>
+                </div>
+
+                {/* Share ETA */}
+                <div 
+                  className="am-nav-option-row"
+                  onClick={() => {
+                    triggerSound();
+                    handleShareRoute();
+                  }}
+                >
+                  <div className="am-circle-icon" style={{ background: '#30d158', width: '28px', height: '28px' }}>
+                    <Share2 size={14} />
+                  </div>
+                  <div className="am-nav-option-title">
+                    {getNavText('shareETA')}
+                  </div>
+                </div>
+
+                {/* Report an Incident */}
+                <div 
+                  className="am-nav-option-row"
+                  onClick={() => {
+                    triggerSound();
+                    setIsGpsLost(prev => !prev);
+                  }}
+                >
+                  <div className="am-circle-icon" style={{ background: '#ff3b30', width: '28px', height: '28px' }}>
+                    <AlertTriangle size={14} />
+                  </div>
+                  <div className="am-nav-option-title" style={{ color: '#ff3b30' }}>
+                    {isGpsLost ? getNavText('gpsReconnect') : getNavText('reportGpsLoss')}
+                  </div>
+                </div>
+
+                {/* Voice controls & Settings options */}
+                <div 
+                  className="am-nav-option-row"
+                  onClick={() => {
+                    triggerSound();
+                    setShowNavVehicleMenu(!showNavVehicleMenu);
+                  }}
+                >
+                  <div className="am-circle-icon" style={{ background: '#8e8e93', width: '28px', height: '28px' }}>
+                    <Truck size={14} />
+                  </div>
+                  <div className="am-nav-option-title">
+                    {getNavText('vehicleSettings')}
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
+
+              {/* Show Nav Vehicle Switcher Menu in Place details expanded view */}
+              {showNavVehicleMenu && (
+                <div style={{ background: '#e5e5ea', padding: '1px', borderRadius: '14px', overflow: 'hidden', marginBottom: '18px' }} className="am-nav-vehicle-dropdown-ios animate-scale-up">
+                  {Object.entries(VEHICLE_PRESETS).map(([key, val]) => (
+                    <div
+                      key={key}
+                      className="am-nav-option-row"
+                      style={{ background: selectedVehicle === key ? '#e5e5ea' : '#ffffff' }}
+                      onClick={() => {
+                        triggerSound();
+                        handleVehicleSelect(key);
+                        setShowNavVehicleMenu(false);
+                      }}
+                    >
+                      <span className="am-nav-option-title" style={{ fontWeight: '700' }}>{localizePair(val.jaName, val.uzName, val.name, val.name, val.name, val.name, val.name)}</span>
+                      <span style={{ fontSize: '12px', color: '#8e8e93' }}>{val.height}m</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Simulation Play/Pause Controls */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
+                <button 
+                  type="button" 
+                  className="am-capsule-btn" 
+                  style={{ flex: 1, height: '44px', justifyContent: 'center' }}
+                  disabled={currentStepIndex === 0} 
+                  onClick={() => setCurrentStepIndex(prev => prev - 1)}
+                >
+                  ◀ {getNavText('back')}
+                </button>
+                <button 
+                  type="button" 
+                  className="am-capsule-btn" 
+                  style={{ flex: 1, height: '44px', justifyContent: 'center', background: isAutoPlaying ? 'rgba(0,122,255,0.1)' : '' }}
+                  onClick={() => setIsAutoPlaying(!isAutoPlaying)}
+                >
+                  {isAutoPlaying ? '⏸ Pause' : '▶ Play'}
+                </button>
+                <button 
+                  type="button" 
+                  className="am-capsule-btn" 
+                  style={{ flex: 1, height: '44px', justifyContent: 'center' }}
+                  disabled={currentStepIndex === navSteps.length - 1} 
+                  onClick={() => setCurrentStepIndex(prev => prev + 1)}
+                >
+                  {getNavText('next')} ▶
+                </button>
+              </div>
+
+              {/* Red End Route Button */}
+              <button 
+                type="button" 
+                className="am-btn-end-route"
+                onClick={() => {
+                  triggerSound();
+                  setIsNavigating(false);
+                  setIsAutoPlaying(false);
+                  setCurrentStepIndex(0);
+                  setShowNavVehicleMenu(false);
+                  setIsEtaSheetExpanded(false);
+                  
+                  // Clear route and reset map
+                  setIsRoutingActive(false);
+                  setStartCoord(null);
+                  setStartQuery('');
+                  setDestCoord(null);
+                  setDestQuery('');
+                  setStops([]);
+                  setRoute({ time: 0, distance: 0, warnings: [], coordinates: [], status: 'safe' });
+                  clearRouteFromMap();
+
+                  // Reset map viewport back to initial state (Matsudo Hub)
+                  if (mapInstanceRef.current) {
+                    mapInstanceRef.current.easeTo({
+                      center: [139.9015, 35.7915], // Matsudo Hub
+                      zoom: 12,
+                      bearing: 0,
+                      pitch: 0,
+                      duration: 1000
+                    });
+                  }
+                }}
+              >
+                {getNavText('endRoute')}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -2849,6 +4664,285 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
           >
             Reload Page
           </button>
+        </div>
+      )}
+
+
+      {/* ===== BOOKMARKS / FAVORITES PANEL ===== */}
+      {!isRoutingActive && !isNavigating && showBookmarksPanel && (
+        <div className="bookmarks-panel glass animate-slide-up" style={{
+          position: 'absolute', bottom: showSearchSheet || destCoord ? '280px' : '100px', left: '12px', right: '64px', zIndex: 1100,
+          maxHeight: '50vh', overflowY: 'auto', borderRadius: '16px', padding: '14px',
+          background: 'var(--glass-bg)', backdropFilter: 'blur(20px)',
+          border: '1px solid var(--glass-border)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <span style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-main)' }}>
+              {getNavText('bookmarks')}
+            </span>
+            <button type="button" onClick={() => setShowBookmarksPanel(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+          </div>
+          {/* Category filter tabs */}
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '10px' }}>
+            {/* Virtual ALL tab */}
+            <button 
+              type="button" 
+              onClick={() => setNewBookmarkCategory('all')} 
+              style={{
+                padding: '3px 8px', borderRadius: '12px', fontSize: '9px', fontWeight: '800',
+                border: newBookmarkCategory === 'all' ? `1px solid var(--primary)` : '1px solid var(--glass-border)',
+                background: newBookmarkCategory === 'all' ? `rgba(10,132,255,0.15)` : 'transparent',
+                color: newBookmarkCategory === 'all' ? 'var(--primary)' : 'var(--text-secondary)',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              📂 {getNavText('all')}
+            </button>
+
+            {Object.values(BOOKMARK_CATEGORIES).map(cat => (
+              <button key={cat.id} type="button" onClick={() => setNewBookmarkCategory(cat.id)} style={{
+                padding: '3px 8px', borderRadius: '12px', fontSize: '9px', fontWeight: '800',
+                border: newBookmarkCategory === cat.id ? `1px solid ${cat.color}` : '1px solid var(--glass-border)',
+                background: newBookmarkCategory === cat.id ? `${cat.color}22` : 'transparent',
+                color: newBookmarkCategory === cat.id ? cat.color : 'var(--text-secondary)',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}>
+                {cat.icon} {localizePair(cat.jaLabel, cat.uzLabel, cat.label, cat.label, cat.label, cat.label, cat.label)}
+              </button>
+            ))}
+          </div>
+
+          {/* Bookmark list */}
+          {bookmarks.filter(b => newBookmarkCategory === 'all' || b.category === newBookmarkCategory).length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-secondary)', fontSize: '11px' }}>
+              {getNavText('noBookmarks')}
+            </div>
+          ) : (
+            bookmarks
+              .filter(b => newBookmarkCategory === 'all' || b.category === newBookmarkCategory)
+              .map(bm => {
+                const cat = BOOKMARK_CATEGORIES[bm.category] || BOOKMARK_CATEGORIES.custom;
+                return (
+                  <div key={bm.id} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '8px', borderRadius: '10px', marginBottom: '4px',
+                    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.04)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, cursor: 'pointer' }}
+                      onClick={() => {
+                        setDestCoord({
+                          lat: bm.lat,
+                          lng: bm.lng,
+                          name: bm.name,
+                          category: bm.category,
+                          address: bm.address,
+                          bookmarkId: bm.id
+                        });
+                        setDestQuery(bm.name);
+                        setShowBookmarksPanel(false);
+                      }}
+                    >
+                      <span style={{ fontSize: '16px' }}>{cat.icon}</span>
+                      <div>
+                        <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-main)' }}>{bm.name}</div>
+                        <div style={{ fontSize: '8px', color: 'var(--text-secondary)' }}>{bm.address || `${bm.lat.toFixed(4)}, ${bm.lng.toFixed(4)}`}</div>
+                      </div>
+                    </div>
+                    <button type="button" onClick={() => handleRemoveBookmark(bm.id)} style={{
+                      background: 'none', border: 'none', color: '#FF453A', cursor: 'pointer', fontSize: '12px', padding: '4px'
+                    }}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                );
+              })
+          )}
+
+          {/* Add bookmark from current map center */}
+          <button type="button" onClick={() => {
+            const center = mapInstanceRef.current?.getCenter();
+            if (center) {
+              handleAddBookmark(
+                `${getNavText('savedPoint')} ${bookmarks.length + 1}`,
+                center.lat, center.lng, 'custom'
+              );
+            }
+          }} style={{
+            width: '100%', padding: '8px', marginTop: '8px', borderRadius: '10px',
+            border: '1px dashed var(--glass-border)', background: 'transparent',
+            color: 'var(--primary)', fontSize: '10px', fontWeight: '800', cursor: 'pointer'
+          }}>
+            + {getNavText('addCurrentLocationToBookmarks')}
+          </button>
+        </div>
+      )}
+
+      {/* ===== POI SEARCH PANEL ===== */}
+      {!isRoutingActive && !isNavigating && showPOIPanel && (
+        <div className="poi-panel glass animate-slide-up" style={{
+          position: 'absolute', bottom: showSearchSheet || destCoord ? '280px' : '100px', left: '12px', right: '64px', zIndex: 1100,
+          maxHeight: '50vh', overflowY: 'auto', borderRadius: '16px', padding: '14px',
+          background: 'var(--glass-bg)', backdropFilter: 'blur(20px)',
+          border: '1px solid var(--glass-border)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <span style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-main)' }}>
+              {getNavText('nearbyPOI')}
+            </span>
+            <button type="button" onClick={() => setShowPOIPanel(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+          </div>
+
+          {/* POI type buttons */}
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '10px' }}>
+            {getAvailablePOITypes().map(poi => (
+              <button key={poi.id} type="button" onClick={() => handlePOISearch(poi.id)} style={{
+                padding: '5px 10px', borderRadius: '12px', fontSize: '9.5px', fontWeight: '800',
+                border: selectedPOIType === poi.id ? '1px solid var(--primary)' : '1px solid var(--glass-border)',
+                background: selectedPOIType === poi.id ? 'rgba(10,132,255,0.15)' : 'transparent',
+                color: selectedPOIType === poi.id ? 'var(--primary)' : 'var(--text-secondary)',
+                cursor: 'pointer'
+              }}>
+                {poi.icon} {localizePair(poi.jaLabel, poi.label, poi.label, poi.label, poi.label, poi.label, poi.label)}
+              </button>
+            ))}
+          </div>
+
+          {/* POI results */}
+          {poiSearching ? (
+            <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-secondary)', fontSize: '11px' }}>
+              {getNavText('searching')}
+            </div>
+          ) : poiResults.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-secondary)', fontSize: '11px' }}>
+              {getNavText('searchNoResults')}
+            </div>
+          ) : (
+            poiResults.map(poi => {
+              const formattedDist = poi.distance !== undefined
+                ? (poi.distance < 1000 ? `${Math.round(poi.distance)} m` : `${(poi.distance / 1000).toFixed(1)} km`)
+                : '';
+              return (
+                <div key={poi.id} style={{
+                  display: 'flex', alignItems: 'center', gap: '8px', padding: '8px',
+                  borderRadius: '10px', marginBottom: '4px',
+                  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.04)',
+                  cursor: 'pointer'
+                }} onClick={() => {
+                  setDestCoord({
+                    lat: poi.lat,
+                    lng: poi.lng,
+                    name: poi.name,
+                    type: poi.type,
+                    icon: poi.icon,
+                    label: poi.label,
+                    jaLabel: poi.jaLabel,
+                    brand: poi.brand,
+                    openingHours: poi.openingHours,
+                    phone: poi.phone,
+                    hgv: poi.hgv
+                  });
+                  setDestQuery(poi.name);
+                  setShowPOIPanel(false);
+                }}>
+                  <span style={{ fontSize: '18px' }}>{poi.icon}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{poi.name}</div>
+                      {formattedDist && (
+                        <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--primary)', marginLeft: '8px', whiteSpace: 'nowrap' }}>
+                          {formattedDist}
+                        </div>
+                      )}
+                    </div>
+                    {poi.brand && <div style={{ fontSize: '8px', color: 'var(--text-secondary)' }}>{poi.brand}</div>}
+                    {poi.openingHours && <div style={{ fontSize: '8px', color: 'var(--text-secondary)' }}>🕐 {poi.openingHours}</div>}
+                  </div>
+                  <Navigation size={14} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {/* ===== ATTRIBUTION / ABOUT MODAL ===== */}
+      {showAttributionModal && (
+        <div className="attribution-modal animate-fade-in" style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }} onClick={() => setShowAttributionModal(false)}>
+          <div style={{
+            maxWidth: '380px', width: '100%', maxHeight: '80vh', overflowY: 'auto',
+            background: 'var(--card-bg)', borderRadius: '20px', padding: '24px',
+            border: '1px solid var(--glass-border)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+              <div style={{ fontSize: '32px' }}>🚛</div>
+              <h2 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--text-main)', margin: '8px 0 4px' }}>道 Michi Navigation</h2>
+              <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>v1.0.0-beta — JDM Truck Navigation System</div>
+            </div>
+
+            <div style={{ fontSize: '10px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+              <p style={{ fontWeight: '800', color: 'var(--text-main)', marginBottom: '6px' }}>
+                {getNavText('openSourceLicenses')}
+              </p>
+
+              <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '8px' }}>
+                <p><strong>OpenStreetMap</strong> — © OpenStreetMap contributors (ODbL 1.0)</p>
+                <p><strong>CARTO Basemaps</strong> — © CARTO (CC BY 3.0)</p>
+                <p><strong>Organic Maps</strong> — Apache License 2.0</p>
+                <p><strong>OSRM</strong> — BSD 2-Clause License</p>
+                <p><strong>Valhalla</strong> — MIT License (Mapzen/Valhalla)</p>
+                <p><strong>MapLibre GL JS</strong> — BSD 3-Clause License</p>
+                <p><strong>Overpass API</strong> — AGPL v3</p>
+                <p><strong>国土交通省 (MLIT)</strong> — 道路制限情報データ</p>
+                <p><strong>Lucide Icons</strong> — ISC License</p>
+                <p><strong>React / Vite</strong> — MIT License</p>
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--glass-border)', marginTop: '10px', paddingTop: '8px' }}>
+                <p style={{ fontWeight: '800', color: 'var(--text-main)' }}>
+                  {getNavText('developer')}
+                </p>
+                <p>Michi Navigation Team — Built for Japanese truck drivers 🇯🇵</p>
+              </div>
+            </div>
+
+            <button type="button" onClick={() => setShowAttributionModal(false)} style={{
+              width: '100%', marginTop: '16px', padding: '10px', borderRadius: '12px',
+              border: 'none', background: 'var(--primary)', color: '#fff',
+              fontSize: '12px', fontWeight: '900', cursor: 'pointer'
+            }}>
+              {getNavText('close')}
+            </button>
+          </div>
+        </div>
+      )}
+      {/* 🛡️ Premium Geolocations Consent Modal */}
+      {showGpsConsentModal && (
+        <div className="om-consent-modal-overlay">
+          <div className="om-consent-modal animate-fade-in">
+            <div className="om-consent-icon-wrap">
+              <Navigation size={32} style={{ color: '#007aff', transform: 'rotate(45deg)' }} fill="#007aff" />
+            </div>
+            <h3 className="om-consent-title">
+              {getNavText('gpsConsentTitle')}
+            </h3>
+            <p className="om-consent-desc">
+              {getNavText('gpsConsentDescription')}
+            </p>
+            <div className="om-consent-actions">
+              <button type="button" className="om-consent-btn btn-decline" onClick={handleDeclineGpsConsent}>
+                {getNavText('decline')}
+              </button>
+              <button type="button" className="om-consent-btn btn-allow" onClick={handleAcceptGpsConsent}>
+                {getNavText('allow')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

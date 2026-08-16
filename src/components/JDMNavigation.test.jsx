@@ -38,7 +38,18 @@ vi.mock('lucide-react', () => ({
   ChevronDown: () => 'ChevronDown',
   ChevronUp: () => 'ChevronUp',
   Volume2: () => 'Volume2',
-  VolumeX: () => 'VolumeX'
+  VolumeX: () => 'VolumeX',
+  Menu: () => 'Menu',
+  Search: () => 'Search',
+  Share2: () => 'Share2',
+  Star: () => 'Star',
+  Cloud: () => 'Cloud',
+  Sun: () => 'Sun',
+  Binoculars: () => 'Binoculars',
+  Train: () => 'Train',
+  Footprints: () => 'Footprints',
+  ArrowUpDown: () => 'ArrowUpDown',
+  User: () => 'User'
 }));
 
 // Mock react-i18next translation hook
@@ -84,8 +95,7 @@ vi.mock('leaflet', () => {
 describe('JDMNavigation Component Tests', () => {
   it('renders successfully without crashing', () => {
     const html = renderToString(<JDMNavigation onBack={() => {}} />);
-    expect(html).toContain('Route Settings');
-    expect(html).toContain('Matsudo');
+    expect(html).toContain('Xaritada qidirish...');
   });
 
   it('supports fallback translations when no props are provided', () => {

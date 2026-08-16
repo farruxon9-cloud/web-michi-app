@@ -35,10 +35,10 @@ function initDB() {
 export function generateRouteKey(startCoord, destCoord, vehicleType) {
   if (!startCoord || !destCoord) return '';
   const precision = 4; // ~11m precision
-  const sLat = startCoord.lat.toFixed(precision);
-  const sLng = startCoord.lng.toFixed(precision);
-  const dLat = destCoord.lat.toFixed(precision);
-  const dLng = destCoord.lng.toFixed(precision);
+  const sLat = Number(startCoord.lat || 35.6841).toFixed(precision);
+  const sLng = Number(startCoord.lng || 139.7741).toFixed(precision);
+  const dLat = Number(destCoord.lat || 35.6841).toFixed(precision);
+  const dLng = Number(destCoord.lng || 139.7741).toFixed(precision);
   return `${sLat}_${sLng}_to_${dLat}_${dLng}_for_${vehicleType}`;
 }
 

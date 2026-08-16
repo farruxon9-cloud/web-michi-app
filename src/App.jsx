@@ -17,7 +17,9 @@ import CompanyHome from './components/CompanyHome';
 import VoiceAssistant from './components/VoiceAssistant';
 import RobotAvatar from './components/RobotAvatar';
 import JDMNavigation from './components/JDMNavigation';
+import AssistHeroShowcase from './components/AssistHeroShowcase';
 import ErrorBoundary from './components/ErrorBoundary';
+
 
 const TRACKS = [
   { id: 1, title: 'Tokyo Rain (東京の雨)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/chill-lofi-background-music-331434.mp3' },
@@ -141,7 +143,9 @@ function App() {
   const [userRole, setUserRole] = useState(null); // Temporarily disable auto-login
   const [activeTab, setActiveTab] = useState('home');
   const [showJDMNavigation, setShowJDMNavigation] = useState(false);
+  const [showAssistHeroShowcase, setShowAssistHeroShowcase] = useState(false);
   const [hasOpenedJDM, setHasOpenedJDM] = useState(false);
+
   const [isVoiceStandby, setIsVoiceStandby] = useState(() => {
     const saved = localStorage.getItem('michi_voice_standby');
     return saved === 'true';
@@ -212,6 +216,13 @@ function App() {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const audioRef = useRef(null);
+
+  // Status Bar Clock State
+  const [clockTime, setClockTime] = useState(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setClockTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Lifted Search and Filter States (For AI voice query control)
   const [jobSearchQuery, setJobSearchQuery] = useState('');
@@ -862,7 +873,9 @@ function App() {
             userRole={userRole}
             onNavigateToInternational={handleNavigateToInternationalJobs}
             onNavigateToJDM={() => setShowJDMNavigation(true)}
+            onOpenAssistShowcase={() => setShowAssistHeroShowcase(true)}
           />
+
         );
       case 'jobs':
         return (
@@ -998,6 +1011,20 @@ function App() {
       <div className="glass-blob blob-2"></div>
       <div className="glass-blob blob-3"></div>
 
+      {/* Native Mobile iOS Status Bar */}
+      <div className="mobile-status-bar">
+        <span className="status-time">{clockTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+        <div className="status-notch">
+          <div className="notch-camera"></div>
+        </div>
+        <div className="status-icons">
+          <span className="status-signal">5G</span>
+          <span className="status-battery">
+            <span className="battery-level"></span>
+          </span>
+        </div>
+      </div>
+
       <header className="global-header">
         {/* Left Side: Clickable MICHI Logo (redirects to Home) */}
         <div 
@@ -1087,6 +1114,37 @@ function App() {
           </ChunkErrorBoundary>
         </div>
       )}
+
+      {showAssistHeroShowcase && (
+        <div 
+          className="assist-showcase-overlay-container" 
+          style={{ 
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9000,
+            height: '100%',
+            width: '100%',
+            overflowY: 'auto',
+            borderRadius: '44px',
+            background: darkMode ? '#07090E' : '#FAFBFD'
+          }}
+        >
+          <ChunkErrorBoundary>
+            <AssistHeroShowcase 
+              onBack={() => setShowAssistHeroShowcase(false)} 
+              onActivateVoice={() => {
+                setShowAssistHeroShowcase(false);
+                handleVoiceActivate();
+              }}
+              darkMode={darkMode}
+            />
+          </ChunkErrorBoundary>
+        </div>
+      )}
+
 
       {!(activeTab === 'profile' && profileActivePage === 'resume_builder') && (
         <BottomNav 

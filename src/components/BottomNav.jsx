@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Home, Briefcase, GraduationCap, Wrench, User, Sparkles } from 'lucide-react';
+import { Home, Briefcase, GraduationCap, Bot, User } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import './BottomNav.css';
 
@@ -10,8 +10,8 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
   const navItems = [
     { id: 'home', icon: Home, label: t('navHome', 'Asosiy') },
     { id: 'jobs', icon: Briefcase, label: t('navJobs', 'Ishlar') },
+    { id: 'assist', icon: Bot, label: t('navAssist', 'AI Assist'), isSpecial: true },
     { id: 'academy', icon: GraduationCap, label: t('navAcademy', 'Maktablar') },
-    { id: 'service', icon: Wrench, label: t('navService', 'Servis') },
     { id: 'profile', icon: User, label: t('navProfile', 'Profil') },
   ];
 
@@ -28,14 +28,17 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
 
   const activeIndex = navItems.findIndex((item) => item.id === activeTab);
 
+  const containerRef = React.useRef(null);
   const trackRef = React.useRef(null);
   const indicatorRef = React.useRef(null);
   const isDragging = React.useRef(false);
   const startX = React.useRef(0);
   const startOffset = React.useRef(0);
+  const dragDistance = React.useRef(0);
 
   const handlePointerDown = (e) => {
     isDragging.current = true;
+    dragDistance.current = 0;
     const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
     startX.current = clientX;
     
@@ -59,13 +62,13 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
   const handlePointerMove = (e) => {
     if (!isDragging.current) return;
     
-    // Prevent screen scroll on mobile during drag
-    if (e.cancelable) {
-      e.preventDefault();
-    }
-    
     const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
     const deltaX = clientX - startX.current;
+    dragDistance.current = Math.abs(deltaX);
+    
+    if (dragDistance.current > 4 && e.cancelable) {
+      e.preventDefault();
+    }
     
     if (trackRef.current && indicatorRef.current) {
       const trackWidth = trackRef.current.getBoundingClientRect().width;
@@ -105,7 +108,9 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
       
       const closestIndex = Math.max(0, Math.min(4, Math.round(currentTranslateX / tabWidth)));
       
-      handleTabClick(navItems[closestIndex].id);
+      if (dragDistance.current > 5) {
+        handleTabClick(navItems[closestIndex].id);
+      }
     }
   };
 
@@ -119,14 +124,17 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
   }, []);
 
   return (
-    <div className="bottom-nav">
+    <div 
+      className="bottom-nav" 
+      ref={containerRef}
+      onMouseDown={handlePointerDown}
+      onTouchStart={handlePointerDown}
+    >
       {/* Sliding Active Indicator Pill */}
       <div className="bottom-nav-indicator-track" ref={trackRef}>
         <div 
           ref={indicatorRef}
           className="bottom-nav-indicator" 
-          onMouseDown={handlePointerDown}
-          onTouchStart={handlePointerDown}
           style={{ 
             transform: `translateX(${activeIndex * 100}%)`,
             '--active-index': activeIndex
@@ -141,11 +149,14 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
         return (
           <button
             key={item.id}
-            className={`nav-item ${isActive ? 'active' : ''}`}
-            onClick={() => handleTabClick(item.id)}
-            style={{ zIndex: 2 }}
+            className={`nav-item ${isActive ? 'active' : ''} ${item.isSpecial ? 'nav-item-special' : ''}`}
+            onClick={() => {
+              if (dragDistance.current <= 5) {
+                handleTabClick(item.id);
+              }
+            }}
           >
-            <div className="nav-icon-wrap">
+            <div className={`nav-icon-wrap ${item.isSpecial ? 'special-icon-wrap' : ''}`}>
               <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
               {showBadge && (
                 <span className="nav-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>

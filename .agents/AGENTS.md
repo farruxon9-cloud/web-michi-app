@@ -28,3 +28,23 @@ These rules govern the behavior, quality controls, and coding style of all AI ag
 - **Development Branch `b`:** All active work on the phases must be carried out only on branch `b`. Do not switch branches or create new feature branches unless explicitly told.
 - **NO MERGING:** Do not merge branch `b` back to `main` under any circumstances. Merging is strictly reserved for the user to execute manually.
 - **NO PUSHING:** Do not run `git push` or perform any remote pushes to origin unless the user explicitly requests it.
+
+## 🗺️ 7. Map & Coordinate Sanitization Constraints (MapLibre & API Integration)
+- **Always Validate Coordinates:** Before passing coordinates (latitude/longitude) from external APIs (like Nominatim search, OSRM/Valhalla routes, or local search histories) to MapLibre GL JS methods like `setLngLat`, `fitBounds`, `easeTo`, or marker creation, ALWAYS ensure they are valid numbers and not `NaN`.
+- **API Response Fallbacks:** Always wrap routing requests in `try/catch` and throw explicit errors if the API returns no routes, forcing a geodesic direct-line fallback instead of a blank or frozen UI screen.
+- **HUD Formatting Protection:** Always check if dynamic routing details (e.g. `innerDiff`, `sweptPath`, `estimatedWidth`) are valid numbers before calling formatting functions like `.toFixed()` on them.
+
+## 🗺️ 8. Mandatory Codebase Map Reading & Updating
+- **Read Map First:** At the beginning of every task, before writing any code or proposing changes, you MUST read the project's table of contents (`MUNDARIJA.md`) and automatic codebase map (`codebase_map.md`) to verify the file layout and understand component imports/dependencies.
+- **Keep it Updated:** Every time you add, modify, or delete files, run `npm run validate` to automatically regenerate `codebase_map.md`.
+
+## 🇺🇿 9. Uzbek Language Communication Rule
+- **Muloqot tili (Strict Uzbek):** Agent foydalanuvchi bilan muloqot qilganda, barcha rejalashtirishlar (`implementation_plan.md`), topshiriqlar roʻyxati (`task.md`), hisobotlar (`walkthrough.md`) va oʻrganish takliflarida (`learning_proposal.md`) faqat **Oʻzbek tilida** (lotin alifbosida) yozishi shart.
+- **Dasturlash va Texnik jarayonlar:** Kodlarni tuzishda, oʻzgaruvchilar nomlarida, logik mantiqlarda va kod ichidagi izohlarda (comments) ingliz tilidan yoki qulay texnik tillardan toʻliq foydalaniladi.
+
+## 🌐 10. Multi-Language Adaptability & i18n Rule
+- **Matnlarni qattiq kodlash taqiqlanadi:** Ilovadagi barcha yangi UI matnlari, tugmalar nomlari, placeholderlar, xabarnomalar va modal oynalardagi yozuvlar qattiq kodlanishi (hardcode) taqiqlanadi.
+- **i18n Integratsiyasi:** Har qanday yangi matnli kalit `src/i18n.js` faylining barcha tillar boʻlimiga (`uz`, `ja`, `en`) mos tarjimalari bilan birga qoʻshilishi shart.
+- **Dinamik Muloqot:** Komponentlarda matnlarni chiqarish uchun `useTranslation` hookidan foydalanish va `t('key')` orqali dinamik render qilish lozim.
+
+

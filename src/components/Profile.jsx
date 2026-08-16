@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2 } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
@@ -119,8 +119,9 @@ export default function Profile({
   const [aboutTab, setAboutTab] = useState('platform');
   const fileInputRef = useRef(null);
 
-  const [myVehicle, setMyVehicle] = useState(() => {
-    const defaultVehicle = {
+  const DEFAULT_VEHICLES = [
+    {
+      id: 'v_1',
       type: 'car',
       make: 'Toyota',
       model: 'Harrier',
@@ -138,55 +139,182 @@ export default function Profile({
       height: '1.69',
       width: '1.85',
       length: '4.74',
-      weight: '1.62'
-    };
-
-    try {
-      const saved = localStorage.getItem('michi_user_vehicle');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        
-        // 1. Migrate old format plateNumber "練馬 300 あ 12-34"
-        if (parsed.plateNumber && parsed.plateNumber.includes(' ')) {
-          const parts = parsed.plateNumber.split(' ');
-          if (parts.length >= 4) {
-            parsed.platePrefecture = parts[0];
-            parsed.plateClass = parts[1];
-            parsed.plateHira = parts[2];
-            parsed.plateNumber = parts[3];
-          }
-        }
-
-        // 2. Ensure all fields are filled
-        if (!parsed.platePrefecture) parsed.platePrefecture = '練馬';
-        if (!parsed.plateClass) parsed.plateClass = '300';
-        if (!parsed.plateHira) parsed.plateHira = 'あ';
-        if (!parsed.plateNumber || parsed.plateNumber.includes(' ')) parsed.plateNumber = '12-34';
-        if (!parsed.plateType) parsed.plateType = parsed.isCommercial ? 'commercial' : 'private';
-        if (!parsed.driverMark) parsed.driverMark = 'none';
-        
-        // 3. Ensure bodyStyle is defined and matches type presets
-        if (!parsed.bodyStyle) {
-          if (parsed.type === 'car') parsed.bodyStyle = 'sedan';
-          else if (parsed.type === 'moto') parsed.bodyStyle = 'scooter';
-          else if (parsed.type === 'velo') parsed.bodyStyle = 'standard';
-          else if (parsed.type === 'truck_3t') parsed.bodyStyle = 'box_truck';
-          else if (parsed.type === 'truck_4t') parsed.bodyStyle = 'wing_body';
-          else if (parsed.type === 'trailer') parsed.bodyStyle = 'trailer_container';
-          else if (parsed.type === 'bus') parsed.bodyStyle = 'standard';
-          else parsed.bodyStyle = 'sedan';
-        }
-        
-        return parsed;
-      }
-      return defaultVehicle;
-    } catch (e) {
-      return defaultVehicle;
+      weight: '1.70',
+      axleLoad: '0.85',
+      minTurnRadius: '5.3'
+    },
+    {
+      id: 'v_2',
+      type: 'truck_2t',
+      make: 'Isuzu',
+      model: 'Elf',
+      bodyStyle: 'box_truck',
+      trim: 'Standard',
+      year: '2023',
+      color: '#30D158',
+      platePrefecture: '品川',
+      plateClass: '100',
+      plateHira: 'い',
+      plateNumber: '56-78',
+      isCommercial: true,
+      plateType: 'commercial',
+      driverMark: 'none',
+      height: '1.98',
+      width: '1.69',
+      length: '4.69',
+      weight: '4.60',
+      axleLoad: '2.25',
+      minTurnRadius: '4.8'
+    },
+    {
+      id: 'v_3',
+      type: 'truck_4t',
+      make: 'Hino',
+      model: 'Ranger',
+      bodyStyle: 'wing_body',
+      trim: 'Pro',
+      year: '2022',
+      color: '#FF9500',
+      platePrefecture: '足立',
+      plateClass: '100',
+      plateHira: 'か',
+      plateNumber: '88-88',
+      isCommercial: true,
+      plateType: 'commercial',
+      driverMark: 'none',
+      height: '3.42',
+      width: '2.49',
+      length: '8.55',
+      weight: '7.90',
+      axleLoad: '4.00',
+      minTurnRadius: '7.0'
+    },
+    {
+      id: 'v_4',
+      type: 'truck_10t',
+      make: 'Isuzu',
+      model: 'Giga',
+      bodyStyle: 'box_truck',
+      trim: 'Premium',
+      year: '2024',
+      color: '#8E8E93',
+      platePrefecture: '多摩',
+      plateClass: '100',
+      plateHira: 'さ',
+      plateNumber: '99-99',
+      isCommercial: true,
+      plateType: 'commercial',
+      driverMark: 'none',
+      height: '3.78',
+      width: '2.49',
+      length: '11.99',
+      weight: '19.90',
+      axleLoad: '10.00',
+      minTurnRadius: '9.2'
+    },
+    {
+      id: 'v_5',
+      type: 'trailer',
+      make: 'Mitsubishi Fuso',
+      model: 'Super Great',
+      bodyStyle: 'trailer_container',
+      trim: 'Heavy Duty',
+      year: '2023',
+      color: '#FF3B30',
+      platePrefecture: '横浜',
+      plateClass: '100',
+      plateHira: 'た',
+      plateNumber: '10-00',
+      isCommercial: true,
+      plateType: 'commercial',
+      driverMark: 'none',
+      height: '3.80',
+      width: '2.50',
+      length: '16.50',
+      weight: '25.00',
+      axleLoad: '10.00',
+      minTurnRadius: '10.5'
+    },
+    {
+      id: 'v_6',
+      type: 'tanker',
+      make: 'UD Quon',
+      model: 'Chemical Tanker',
+      bodyStyle: 'box_truck',
+      trim: 'Chemical',
+      year: '2024',
+      color: '#0A84FF',
+      platePrefecture: '川崎',
+      plateClass: '100',
+      plateHira: 'な',
+      plateNumber: '77-77',
+      isCommercial: true,
+      plateType: 'commercial',
+      driverMark: 'none',
+      height: '3.40',
+      width: '2.49',
+      length: '11.95',
+      weight: '20.00',
+      axleLoad: '10.00',
+      minTurnRadius: '9.5'
+    },
+    {
+      id: 'v_7',
+      type: 'kei_truck',
+      make: 'Suzuki',
+      model: 'Carry',
+      bodyStyle: 'flatbed',
+      trim: 'KC',
+      year: '2021',
+      color: '#BF5AF2',
+      platePrefecture: '練馬',
+      plateClass: '480',
+      plateHira: 'り',
+      plateNumber: '25-25',
+      isCommercial: false,
+      plateType: 'private',
+      driverMark: 'none',
+      height: '1.88',
+      width: '1.47',
+      length: '3.39',
+      weight: '0.70',
+      axleLoad: '0.35',
+      minTurnRadius: '3.6'
     }
+  ];
+
+  const [myVehicles, setMyVehicles] = useState(() => {
+    try {
+      const savedList = localStorage.getItem('michi_user_vehicles');
+      if (savedList) {
+        return JSON.parse(savedList);
+      }
+      localStorage.setItem('michi_user_vehicles', JSON.stringify(DEFAULT_VEHICLES));
+      return DEFAULT_VEHICLES;
+    } catch {
+      return DEFAULT_VEHICLES;
+    }
+  });
+
+  const [myVehicle, setMyVehicle] = useState(() => {
+    try {
+      const savedActive = localStorage.getItem('michi_user_vehicle');
+      if (savedActive) {
+        return JSON.parse(savedActive);
+      }
+    } catch {}
+    
+    // Fallback to first vehicle in vehicles list
+    const initial = myVehicles && myVehicles.length > 0 ? myVehicles[0] : DEFAULT_VEHICLES[0];
+    try {
+      localStorage.setItem('michi_user_vehicle', JSON.stringify(initial));
+    } catch {}
+    return initial;
   });
 
   const [isEditingVehicle, setIsEditingVehicle] = useState(false);
   const [editVehicleData, setEditVehicleData] = useState({ ...myVehicle });
+
 
   // JDM Prefectures & Hiragana Lists
   const JDM_PREFECTURES = [
@@ -204,44 +332,118 @@ export default function Profile({
   const getVehiclePresetDimensions = (type, bodyStyle) => {
     const presets = {
       car: {
-        sedan: { height: '1.43', width: '1.76', length: '4.60', weight: '1.35' },
-        hatchback: { height: '1.45', width: '1.69', length: '3.99', weight: '1.05' },
-        suv: { height: '1.69', width: '1.85', length: '4.74', weight: '1.62' },
-        minivan: { height: '1.71', width: '1.69', length: '4.26', weight: '1.37' }
+        sedan: { height: '1.43', width: '1.76', length: '4.60', weight: '1.35', axleLoad: '0.70', minTurnRadius: '5.1' },
+        hatchback: { height: '1.45', width: '1.69', length: '3.99', weight: '1.05', axleLoad: '0.55', minTurnRadius: '4.7' },
+        suv: { height: '1.69', width: '1.85', length: '4.74', weight: '1.70', axleLoad: '0.85', minTurnRadius: '5.3' },
+        minivan: { height: '1.71', width: '1.69', length: '4.26', weight: '1.37', axleLoad: '0.75', minTurnRadius: '5.2' }
       },
-      moto: {
-        scooter: { height: '1.10', width: '0.80', length: '2.10', weight: '0.12' },
-        sportbike: { height: '1.15', width: '0.75', length: '2.05', weight: '0.19' }
+      kei_truck: {
+        flatbed: { height: '1.88', width: '1.47', length: '3.39', weight: '0.70', axleLoad: '0.35', minTurnRadius: '3.6' },
+        box_truck: { height: '1.95', width: '1.47', length: '3.39', weight: '0.80', axleLoad: '0.40', minTurnRadius: '3.6' }
       },
-      velo: {
-        standard: { height: '1.00', width: '0.60', length: '1.70', weight: '0.015' }
+      truck_2t: {
+        flatbed: { height: '1.98', width: '1.69', length: '4.69', weight: '4.60', axleLoad: '2.25', minTurnRadius: '4.8' },
+        box_truck: { height: '2.80', width: '1.80', length: '4.69', weight: '4.80', axleLoad: '2.40', minTurnRadius: '4.8' }
       },
       truck_3t: {
-        flatbed: { height: '2.20', width: '1.95', length: '4.69', weight: '3.50' },
-        box_truck: { height: '2.80', width: '2.10', length: '6.20', weight: '4.50' }
+        flatbed: { height: '2.20', width: '1.95', length: '4.69', weight: '5.50', axleLoad: '2.75', minTurnRadius: '5.5' },
+        box_truck: { height: '2.80', width: '2.10', length: '6.20', weight: '5.80', axleLoad: '2.90', minTurnRadius: '5.5' }
       },
       truck_4t: {
-        flatbed: { height: '2.40', width: '2.25', length: '8.15', weight: '7.50' },
-        box_truck: { height: '3.40', width: '2.30', length: '8.50', weight: '8.00' },
-        wing_body: { height: '3.45', width: '2.35', length: '8.60', weight: '8.20' },
-        dump_truck: { height: '2.60', width: '2.20', length: '5.90', weight: '7.90' }
+        flatbed: { height: '2.40', width: '2.25', length: '8.15', weight: '7.50', axleLoad: '3.75', minTurnRadius: '7.0' },
+        box_truck: { height: '3.40', width: '2.30', length: '8.50', weight: '7.80', axleLoad: '3.90', minTurnRadius: '7.0' },
+        wing_body: { height: '3.42', width: '2.49', length: '8.55', weight: '7.90', axleLoad: '4.00', minTurnRadius: '7.0' },
+        dump_truck: { height: '2.60', width: '2.20', length: '5.90', weight: '7.00', axleLoad: '3.50', minTurnRadius: '6.5' }
+      },
+      truck_10t: {
+        flatbed: { height: '3.20', width: '2.49', length: '11.99', weight: '19.00', axleLoad: '9.50', minTurnRadius: '9.2' },
+        box_truck: { height: '3.75', width: '2.49', length: '11.99', weight: '19.50', axleLoad: '9.75', minTurnRadius: '9.2' },
+        wing_body: { height: '3.78', width: '2.49', length: '11.99', weight: '19.90', axleLoad: '10.00', minTurnRadius: '9.2' },
+        dump_truck: { height: '3.30', width: '2.49', length: '9.50', weight: '18.00', axleLoad: '9.00', minTurnRadius: '8.5' }
       },
       trailer: {
-        trailer_container: { height: '3.80', width: '2.50', length: '16.50', weight: '25.00' }
+        trailer_container: { height: '3.80', width: '2.50', length: '16.50', weight: '25.00', axleLoad: '10.00', minTurnRadius: '10.5' }
+      },
+      tanker: {
+        box_truck: { height: '3.40', width: '2.49', length: '11.95', weight: '20.00', axleLoad: '10.00', minTurnRadius: '9.5' }
+      },
+      moto: {
+        scooter: { height: '1.10', width: '0.80', length: '2.10', weight: '0.12', axleLoad: '0.08', minTurnRadius: '2.0' },
+        sportbike: { height: '1.15', width: '0.75', length: '2.05', weight: '0.19', axleLoad: '0.12', minTurnRadius: '2.2' }
+      },
+      velo: {
+        standard: { height: '1.00', width: '0.60', length: '1.70', weight: '0.015', axleLoad: '0.01', minTurnRadius: '1.2' }
       },
       bus: {
-        standard: { height: '3.20', width: '2.50', length: '11.50', weight: '12.00' }
+        standard: { height: '3.20', width: '2.50', length: '11.50', weight: '12.00', axleLoad: '6.00', minTurnRadius: '9.0' }
       }
     };
-    return presets[type]?.[bodyStyle] || presets[type]?.standard || presets[type]?.sedan || { height: '1.50', width: '1.80', length: '4.50', weight: '1.50' };
+    return presets[type]?.[bodyStyle] || presets[type]?.standard || presets[type]?.box_truck || presets[type]?.flatbed || presets[type]?.sedan || { height: '1.50', width: '1.80', length: '4.50', weight: '1.50', axleLoad: '0.75', minTurnRadius: '5.0' };
   };
 
   const handleSaveVehicle = (e) => {
     e.preventDefault();
     setMyVehicle(editVehicleData);
     localStorage.setItem('michi_user_vehicle', JSON.stringify(editVehicleData));
+    
+    const updatedList = myVehicles.map(v => v.id === editVehicleData.id ? editVehicleData : v);
+    if (!myVehicles.some(v => v.id === editVehicleData.id)) {
+      updatedList.push(editVehicleData);
+    }
+    setMyVehicles(updatedList);
+    localStorage.setItem('michi_user_vehicles', JSON.stringify(updatedList));
+    
     setIsEditingVehicle(false);
     window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: editVehicleData }));
+  };
+
+  const handleSelectActiveVehicle = (vehicle) => {
+    setMyVehicle(vehicle);
+    localStorage.setItem('michi_user_vehicle', JSON.stringify(vehicle));
+    window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: vehicle }));
+  };
+
+  const handleAddNewVehicle = () => {
+    const newId = 'v_' + Date.now();
+    const newVehicle = {
+      id: newId,
+      type: 'car',
+      make: 'Toyota',
+      model: 'Harrier',
+      bodyStyle: 'suv',
+      trim: 'Z',
+      year: '2024',
+      color: '#5E5CE6',
+      platePrefecture: '練馬',
+      plateClass: '300',
+      plateHira: 'あ',
+      plateNumber: '12-34',
+      isCommercial: false,
+      plateType: 'private',
+      driverMark: 'none',
+      height: '1.69',
+      width: '1.85',
+      length: '4.74',
+      weight: '1.70',
+      axleLoad: '0.85',
+      minTurnRadius: '5.3'
+    };
+    setEditVehicleData(newVehicle);
+    setIsEditingVehicle(true);
+  };
+
+  const handleDeleteVehicle = (id, event) => {
+    event.stopPropagation();
+    if (myVehicles.length <= 1) {
+      alert('Kamida bitta transport boʻlishi kerak!');
+      return;
+    }
+    const updated = myVehicles.filter(v => v.id !== id);
+    setMyVehicles(updated);
+    localStorage.setItem('michi_user_vehicles', JSON.stringify(updated));
+    if (myVehicle.id === id) {
+      handleSelectActiveVehicle(updated[0]);
+    }
   };
 
   const renderVehicleSVG = (type, bodyStyle, color) => {
@@ -1251,6 +1453,37 @@ export default function Profile({
         ja: "バス",
         en: "Bus"
       },
+      type_kei_truck: {
+        uz: "軽トラ (Kei Truck)",
+        ja: "軽トラック",
+        en: "Kei Truck"
+      },
+      type_truck_2t: {
+        uz: "2t Yuk mashinasi",
+        ja: "2t トラック",
+        en: "2t Truck"
+      },
+      type_truck_10t: {
+        uz: "10t Yuk mashinasi",
+        ja: "10t トラック (大型)",
+        en: "10t Truck"
+      },
+      type_tanker: {
+        uz: "Tanker (Avtosisterna)",
+        ja: "タンクローリー",
+        en: "Tanker Truck"
+      },
+      axleLoadLabel: {
+        uz: "O'q yuki",
+        ja: "軸重",
+        en: "Axle Load"
+      },
+      minTurnRadiusLabel: {
+        uz: "Burilish radiusi",
+        ja: "最小回転半径",
+        en: "Turn Radius"
+      },
+
       // Body styles
       body_sedan: {
         uz: "Sedan",
@@ -3375,9 +3608,13 @@ const getLicenseLabel = (type) => {
                         {myVehicle.type === 'car' ? getProfileLangText('type_car') :
                          myVehicle.type === 'moto' ? getProfileLangText('type_moto') :
                          myVehicle.type === 'velo' ? getProfileLangText('type_velo') :
+                         myVehicle.type === 'kei_truck' ? getProfileLangText('type_kei_truck') :
+                         myVehicle.type === 'truck_2t' ? getProfileLangText('type_truck_2t') :
                          myVehicle.type === 'truck_3t' ? getProfileLangText('type_truck_3t') :
                          myVehicle.type === 'truck_4t' ? getProfileLangText('type_truck_4t') :
+                         myVehicle.type === 'truck_10t' ? getProfileLangText('type_truck_10t') :
                          myVehicle.type === 'trailer' ? getProfileLangText('type_trailer') :
+                         myVehicle.type === 'tanker' ? getProfileLangText('type_tanker') :
                          myVehicle.type === 'bus' ? getProfileLangText('type_bus') : myVehicle.type}
                       </span>
                     </div>
@@ -3416,10 +3653,10 @@ const getLicenseLabel = (type) => {
                       <span className="field-label" style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         📐 <span>{getProfileLangText('vehicleDimensionsLabel')}</span>
                         <span style={{ fontSize: '9px', background: '#34C759', color: 'white', padding: '1px 5px', borderRadius: '3px', fontWeight: 'normal', marginLeft: 'auto' }}>
-                          {i18n.language === 'ja' ? '自動計算' : i18n.language === 'en' ? 'AUTO CALCULATED' : 'AVTOMAT HISOBLANGAN'}
+                          {i18n.language === 'ja' ? '自動設定済み' : i18n.language === 'en' ? 'CONFIGURED' : 'SOZLANGAN'}
                         </span>
                       </span>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px 8px', width: '100%' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('heightLabel')}</span>
                           <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.height} m</span>
@@ -3436,7 +3673,114 @@ const getLicenseLabel = (type) => {
                           <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('weightLabel')}</span>
                           <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.weight} t</span>
                         </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('axleLoadLabel')}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.axleLoad || '-'} t</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('minTurnRadiusLabel')}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.minTurnRadius || '-'} m</span>
+                        </div>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* List of all vehicles */}
+                  <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '16px', marginTop: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                        {i18n.language === 'ja' ? '登録車両リスト' : i18n.language === 'en' ? 'My Fleet / Vehicles List' : 'Mening transportlarim roʻyxati'}
+                      </span>
+                      <button 
+                        onClick={handleAddNewVehicle}
+                        style={{
+                          background: 'var(--primary)',
+                          border: 'none',
+                          borderRadius: '6px',
+                          color: '#fff',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          padding: '4px 8px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <Plus size={12} /> {i18n.language === 'ja' ? '新規追加' : i18n.language === 'en' ? 'Add New' : 'Qoʻshish'}
+                      </button>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {myVehicles.map(veh => {
+                        const isActive = myVehicle.id === veh.id;
+                        return (
+                          <div 
+                            key={veh.id}
+                            onClick={() => handleSelectActiveVehicle(veh)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              background: isActive ? 'rgba(48, 209, 88, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                              border: isActive ? '1px solid #30D158' : '1px solid var(--glass-border)',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{ width: '40px', height: '22px' }}>
+                                {renderVehicleSVG(veh.type, veh.bodyStyle, veh.color)}
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                                  {veh.make} {veh.model}
+                                </span>
+                                <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>
+                                  {veh.type === 'car' ? getProfileLangText('type_car') :
+                                   veh.type === 'kei_truck' ? getProfileLangText('type_kei_truck') :
+                                   veh.type === 'truck_2t' ? getProfileLangText('type_truck_2t') :
+                                   veh.type === 'truck_3t' ? getProfileLangText('type_truck_3t') :
+                                   veh.type === 'truck_4t' ? getProfileLangText('type_truck_4t') :
+                                   veh.type === 'truck_10t' ? getProfileLangText('type_truck_10t') :
+                                   veh.type === 'trailer' ? getProfileLangText('type_trailer') :
+                                   veh.type === 'tanker' ? getProfileLangText('type_tanker') :
+                                   veh.type === 'bus' ? getProfileLangText('type_bus') : veh.type} 
+                                  {' • '} H: {veh.height}m W: {veh.width}m Wt: {veh.weight}t
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {isActive ? (
+                                <span style={{ fontSize: '9px', background: '#30D158', color: '#000', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                  {i18n.language === 'ja' ? '選択中' : i18n.language === 'en' ? 'ACTIVE' : 'FAOL'}
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={(e) => handleDeleteVehicle(veh.id, e)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#FF453A',
+                                    padding: '4px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '4px'
+                                  }}
+                                  title="Delete"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -3502,9 +3846,13 @@ const getLicenseLabel = (type) => {
                           
                           if (val === 'moto') { defaultStyle = 'scooter'; mk = 'Honda'; md = 'Super Cub'; }
                           else if (val === 'velo') { defaultStyle = 'standard'; mk = 'Bridgestone'; md = 'City Cycle'; }
+                          else if (val === 'kei_truck') { defaultStyle = 'flatbed'; mk = 'Suzuki'; md = 'Carry'; }
+                          else if (val === 'truck_2t') { defaultStyle = 'box_truck'; mk = 'Isuzu'; md = 'Elf'; }
                           else if (val === 'truck_3t') { defaultStyle = 'box_truck'; mk = 'Isuzu'; md = 'Elf'; }
                           else if (val === 'truck_4t') { defaultStyle = 'wing_body'; mk = 'Hino'; md = 'Ranger'; }
-                          else if (val === 'trailer') { defaultStyle = 'trailer_container'; mk = 'Fuso'; md = 'Super Great'; }
+                          else if (val === 'truck_10t') { defaultStyle = 'wing_body'; mk = 'Isuzu'; md = 'Giga'; }
+                          else if (val === 'trailer') { defaultStyle = 'trailer_container'; mk = 'Mitsubishi Fuso'; md = 'Super Great'; }
+                          else if (val === 'tanker') { defaultStyle = 'box_truck'; mk = 'UD Quon'; md = 'Chemical Tanker'; }
                           else if (val === 'bus') { defaultStyle = 'standard'; mk = 'Isuzu'; md = 'Gala'; }
                           
                           const dims = getVehiclePresetDimensions(val, defaultStyle);
@@ -3529,11 +3877,15 @@ const getLicenseLabel = (type) => {
                         }}
                       >
                         <option value="car">{getProfileLangText('type_car')}</option>
-                        <option value="moto">{getProfileLangText('type_moto')}</option>
-                        <option value="velo">{getProfileLangText('type_velo')}</option>
+                        <option value="kei_truck">{getProfileLangText('type_kei_truck')}</option>
+                        <option value="truck_2t">{getProfileLangText('type_truck_2t')}</option>
                         <option value="truck_3t">{getProfileLangText('type_truck_3t')}</option>
                         <option value="truck_4t">{getProfileLangText('type_truck_4t')}</option>
+                        <option value="truck_10t">{getProfileLangText('type_truck_10t')}</option>
                         <option value="trailer">{getProfileLangText('type_trailer')}</option>
+                        <option value="tanker">{getProfileLangText('type_tanker')}</option>
+                        <option value="moto">{getProfileLangText('type_moto')}</option>
+                        <option value="velo">{getProfileLangText('type_velo')}</option>
                         <option value="bus">{getProfileLangText('type_bus')}</option>
                       </select>
                     </div>
@@ -3610,17 +3962,28 @@ const getLicenseLabel = (type) => {
                             else if (val === 'Nissan') { defaultModel = 'Serena'; defaultBody = 'minivan'; }
                           } else if (editVehicleData.type === 'moto') {
                             if (val === 'Honda') { defaultModel = 'Super Cub'; defaultBody = 'scooter'; }
-                          } else if (editVehicleData.type === 'truck_3t') {
+                          } else if (editVehicleData.type === 'kei_truck') {
+                            if (val === 'Suzuki') { defaultModel = 'Carry'; defaultBody = 'flatbed'; }
+                          } else if (editVehicleData.type === 'truck_2t' || editVehicleData.type === 'truck_3t') {
                             if (val === 'Isuzu') { defaultModel = 'Elf'; defaultBody = 'box_truck'; }
                             else if (val === 'Mitsubishi Fuso') { defaultModel = 'Canter'; defaultBody = 'box_truck'; }
                           } else if (editVehicleData.type === 'truck_4t') {
                             if (val === 'Hino') { defaultModel = 'Ranger'; defaultBody = 'wing_body'; }
                             else if (val === 'Isuzu') { defaultModel = 'Forward'; defaultBody = 'wing_body'; }
                             else if (val === 'Mitsubishi Fuso') { defaultModel = 'Fighter'; defaultBody = 'wing_body'; }
+                          } else if (editVehicleData.type === 'truck_10t') {
+                            if (val === 'Isuzu') { defaultModel = 'Giga'; defaultBody = 'wing_body'; }
+                            else if (val === 'Hino') { defaultModel = 'Profia'; defaultBody = 'wing_body'; }
+                            else if (val === 'Mitsubishi Fuso') { defaultModel = 'Super Great'; defaultBody = 'wing_body'; }
+                            else if (val === 'UD Trucks') { defaultModel = 'Quon'; defaultBody = 'wing_body'; }
                           } else if (editVehicleData.type === 'trailer') {
                             if (val === 'Hino') { defaultModel = 'Profia'; defaultBody = 'trailer_container'; }
                             else if (val === 'Isuzu') { defaultModel = 'Giga'; defaultBody = 'trailer_container'; }
                             else if (val === 'Mitsubishi Fuso') { defaultModel = 'Super Great'; defaultBody = 'trailer_container'; }
+                            else if (val === 'UD Trucks') { defaultModel = 'Quon'; defaultBody = 'trailer_container'; }
+                          } else if (editVehicleData.type === 'tanker') {
+                            if (val === 'UD Trucks') { defaultModel = 'Quon'; defaultBody = 'box_truck'; }
+                            else if (val === 'Isuzu') { defaultModel = 'Giga'; defaultBody = 'box_truck'; }
                           } else if (editVehicleData.type === 'bus') {
                             defaultModel = 'Gala';
                             defaultBody = 'standard';
@@ -3652,9 +4015,11 @@ const getLicenseLabel = (type) => {
                         <option value="Toyota">Toyota</option>
                         <option value="Honda">Honda</option>
                         <option value="Nissan">Nissan</option>
+                        <option value="Suzuki">Suzuki</option>
                         <option value="Hino">Hino</option>
                         <option value="Isuzu">Isuzu</option>
                         <option value="Mitsubishi Fuso">Mitsubishi Fuso</option>
+                        <option value="UD Trucks">UD Trucks</option>
                         <option value="Boshqa">Boshqa (Other)</option>
                       </select>
                     </div>
@@ -3720,6 +4085,12 @@ const getLicenseLabel = (type) => {
                               <option value="Note">Note Hatchback</option>
                             </>
                           )}
+                          {editVehicleData.make === 'Suzuki' && (
+                            <>
+                              <option value="Carry">Carry</option>
+                              <option value="Every">Every</option>
+                            </>
+                          )}
                           {editVehicleData.make === 'Hino' && (
                             <>
                               <option value="Ranger">Ranger 4t</option>
@@ -3728,7 +4099,7 @@ const getLicenseLabel = (type) => {
                           )}
                           {editVehicleData.make === 'Isuzu' && (
                             <>
-                              <option value="Elf">Elf 3t</option>
+                              <option value="Elf">Elf 2t/3t</option>
                               <option value="Forward">Forward 4t</option>
                               <option value="Giga">Giga 10t</option>
                             </>
@@ -3738,6 +4109,12 @@ const getLicenseLabel = (type) => {
                               <option value="Canter">Canter 3t</option>
                               <option value="Fighter">Fighter 4t</option>
                               <option value="Super Great">Super Great 10t</option>
+                            </>
+                          )}
+                          {editVehicleData.make === 'UD Trucks' && (
+                            <>
+                              <option value="Quon">Quon</option>
+                              <option value="Condor">Condor</option>
                             </>
                           )}
                         </select>
@@ -4010,12 +4387,146 @@ const getLicenseLabel = (type) => {
                       </div>
                     </div>
 
-                    <div style={{ display: 'none' }}>
-                      {/* Sub-inputs strictly for form values mapping (locked parameters hidden from active clutter) */}
-                      <input type="hidden" value={editVehicleData.height} />
-                      <input type="hidden" value={editVehicleData.width} />
-                      <input type="hidden" value={editVehicleData.length} />
-                      <input type="hidden" value={editVehicleData.weight} />
+                    {/* Editable Vehicle Dimensions Grid */}
+                    <div style={{
+                      gridColumn: 'span 2',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      borderTop: '1px solid var(--glass-border)',
+                      paddingTop: '12px',
+                      marginTop: '8px'
+                    }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                        📐 {getProfileLangText('vehicleDimensionsLabel')}
+                      </span>
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: '10px',
+                        width: '100%',
+                        boxSizing: 'border-box'
+                      }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('heightLabel')} (m)</label>
+                          <input 
+                            type="number"
+                            step="0.01"
+                            value={editVehicleData.height || ''}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, height: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '8px',
+                              padding: '7px',
+                              fontSize: '13px',
+                              outline: 'none'
+                            }}
+                            required
+                          />
+                        </div>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('widthLabel')} (m)</label>
+                          <input 
+                            type="number"
+                            step="0.01"
+                            value={editVehicleData.width || ''}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, width: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '8px',
+                              padding: '7px',
+                              fontSize: '13px',
+                              outline: 'none'
+                            }}
+                            required
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('lengthLabel')} (m)</label>
+                          <input 
+                            type="number"
+                            step="0.01"
+                            value={editVehicleData.length || ''}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, length: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '8px',
+                              padding: '7px',
+                              fontSize: '13px',
+                              outline: 'none'
+                            }}
+                            required
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('weightLabel')} (t)</label>
+                          <input 
+                            type="number"
+                            step="0.01"
+                            value={editVehicleData.weight || ''}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, weight: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '8px',
+                              padding: '7px',
+                              fontSize: '13px',
+                              outline: 'none'
+                            }}
+                            required
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('axleLoadLabel')} (t)</label>
+                          <input 
+                            type="number"
+                            step="0.01"
+                            value={editVehicleData.axleLoad || ''}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, axleLoad: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '8px',
+                              padding: '7px',
+                              fontSize: '13px',
+                              outline: 'none'
+                            }}
+                            required
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('minTurnRadiusLabel')} (m)</label>
+                          <input 
+                            type="number"
+                            step="0.1"
+                            value={editVehicleData.minTurnRadius || ''}
+                            onChange={e => setEditVehicleData(prev => ({ ...prev, minTurnRadius: e.target.value }))}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '8px',
+                              padding: '7px',
+                              fontSize: '13px',
+                              outline: 'none'
+                            }}
+                            required
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     {/* Action Buttons Row at the bottom of the form (Prevents Header Horizontal Clutter) */}

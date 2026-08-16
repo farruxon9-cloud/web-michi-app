@@ -43,6 +43,150 @@ const MODIFIER_JA = {
   'sharp left':     { text: '大きく左折',   arrow: '↙',  arrowAngle: -135 }
 };
 
+// OSRM modifier -> Uzbek direction and turn arrow
+const MODIFIER_UZ = {
+  'uturn':          { text: "orqaga qayrilish (U-turn)",     arrow: '↩',  arrowAngle: 180 },
+  'sharp right':    { text: "keskin o'ngga burilish",   arrow: '↪',  arrowAngle: 135 },
+  'right':          { text: "o'ngga burilish",        arrow: '→',  arrowAngle: 90 },
+  'slight right':   { text: "sal o'ngga burilish",   arrow: '↗',  arrowAngle: 45 },
+  'straight':       { text: "to'g'riga",        arrow: '↑',  arrowAngle: 0 },
+  'slight left':    { text: "sal chapga burilish",   arrow: '↖',  arrowAngle: -45 },
+  'left':           { text: "chapga burilish",        arrow: '←',  arrowAngle: -90 },
+  'sharp left':     { text: "keskin chapga burilish",   arrow: '↙',  arrowAngle: -135 }
+};
+
+function buildUzbekInstruction(step) {
+  const maneuver = step.maneuver;
+  const type = maneuver.type || 'turn';
+  const modifier = maneuver.modifier || 'straight';
+  const roadName = step.name || '';
+  
+  const modInfo = MODIFIER_UZ[modifier] || MODIFIER_UZ['straight'];
+  
+  if (type === 'depart') {
+    return roadName ? `${roadName} bo'ylab jo'nang` : "Harakatni boshlang";
+  }
+  
+  if (type === 'arrive') {
+    return "Manzilga yetib keldingiz";
+  }
+  
+  if (type === 'roundabout' || type === 'rotary') {
+    const exit = maneuver.exit || 1;
+    return roadName
+      ? `Aylanma yo'ldan ${exit}-chiqish orqali ${roadName}ga kiring`
+      : `Aylanma yo'ldan ${exit}-chiqishga kiring`;
+  }
+  
+  if (type === 'merge') {
+    return roadName ? `${roadName}ga qo'shiling` : "Yo'lga qo'shiling";
+  }
+  
+  if (type === 'on ramp') {
+    return roadName ? `${roadName} estakadasiga kiring` : "Estakada (ramp)ga kiring";
+  }
+  
+  if (type === 'off ramp') {
+    return roadName ? `${roadName} estakadasidan tushing` : "Estakada (ramp)dan tushing";
+  }
+  
+  if (type === 'fork') {
+    return roadName
+      ? `Tarmoqdan ${modInfo.text} orqali ${roadName}ga o'ting`
+      : `Tarmoqdan ${modInfo.text}ga harakatlaning`;
+  }
+  
+  if (type === 'end of road') {
+    return roadName
+      ? `Yo'l oxiridan ${modInfo.text} orqali ${roadName}ga o'ting`
+      : `Yo'l oxiridan ${modInfo.text}ga`;
+  }
+  
+  if (type === 'new name' || type === 'continue') {
+    if (modifier === 'straight') {
+      return roadName ? `${roadName} bo'ylab to'g'riga davom eting` : "To'g'riga davom eting";
+    }
+    return roadName
+      ? `${modInfo.text} va ${roadName}ga kiring`
+      : `${modInfo.text} va yo'l bo'ylab davom eting`;
+  }
+  
+  if (roadName) {
+    return `${roadName}ga ${modInfo.text}`;
+  }
+  return modInfo.text;
+}
+
+export function translateJaInstructionToUz(jaText) {
+  if (!jaText) return '';
+  
+  let uz = jaText;
+  
+  if (uz.includes('到着しました')) return 'Manzilga yetib keldingiz. Sayohat yakunlandi.';
+  if (uz.includes('出発します')) {
+    const road = uz.replace('方面に向かって出発します。', '').replace('を出発します。', '');
+    return road !== uz ? `${road} yo'nalishi bo'ylab harakatni boshlang.` : 'Harakatni boshlang.';
+  }
+  
+  if (uz.includes('合流します')) {
+    const road = uz.replace('に合流します。', '');
+    return road !== uz ? `${road} ga qo'shiling.` : "Yo'lga qo'shiling.";
+  }
+  if (uz.includes('ランプに入ります')) {
+    const road = uz.replace('のランプに入ります。', '');
+    return road !== uz ? `${road} estakadasiga kiring.` : 'Estakada (ramp)ga kiring.';
+  }
+  if (uz.includes('ランプを降ります')) {
+    const road = uz.replace('のランプを降ります。', '');
+    return road !== uz ? `${road} estakadasidan tushing.` : 'Estakada (ramp)dan tushing.';
+  }
+  
+  if (uz.includes('右折します')) {
+    const road = uz.replace('を右折します。', '');
+    return road !== uz ? `${road}ga o'ngga buriling.` : "O'ngga buriling.";
+  }
+  if (uz.includes('左折します')) {
+    const road = uz.replace('を左折します。', '');
+    return road !== uz ? `${road}ga chapga buriling.` : "Chapga buriling.";
+  }
+  if (uz.includes('大きく右折します')) {
+    const road = uz.replace('を大きく右折します。', '');
+    return road !== uz ? `${road}ga keskin o'ngga buriling.` : "Keskin o'ngga buriling.";
+  }
+  if (uz.includes('大きく左折します')) {
+    const road = uz.replace('を大きく左折します。', '');
+    return road !== uz ? `${road}ga keskin chapga buriling.` : "Keskin chapga buriling.";
+  }
+  if (uz.includes('斜め右方向に進みます')) {
+    const road = uz.replace('に向かって斜め右方向に進みます。', '').replace('を斜め右方向に進みます。', '');
+    return road !== uz ? `${road} yo'nalishida sal o'ngga yuring.` : "Sal o'ngga yuring.";
+  }
+  if (uz.includes('斜め左方向に進みます')) {
+    const road = uz.replace('に向かって斜め左方向に進みます。', '').replace('を斜め左方向に進みます。', '');
+    return road !== uz ? `${road} yo'nalishida sal chapga yuring.` : "Sal chapga yuring.";
+  }
+  if (uz.includes('直進します')) {
+    const road = uz.replace('を直進します。', '');
+    return road !== uz ? `${road} bo'ylab to'g'riga davom eting.` : "To'g'riga davom eting.";
+  }
+  if (uz.includes('Uターンします')) {
+    return "Orqaga qayrilish (U-turn) qiling.";
+  }
+  
+  if (uz.includes('ロータリー')) {
+    const exitMatch = uz.match(/第([0-9])出口/);
+    const exit = exitMatch ? exitMatch[1] : '1';
+    return `Aylanma yo'ldan ${exit}-chiqishga kiring.`;
+  }
+  
+  uz = uz.replace('に入ります。', 'ga kiring.')
+         .replace('に進みます。', 'ga yuring.')
+         .replace('に向かいます。', 'ga qarab yuring.')
+         .replace('注意', 'Diqqat');
+         
+  return uz;
+}
+
 /**
  * Calculate the forward azimuth (bearing) between two geographic points
  * @param {number} lat1 - Start latitude in degrees

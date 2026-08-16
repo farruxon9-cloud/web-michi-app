@@ -5,6 +5,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 // https://vite.dev/config/
 export default defineConfig({
   base: './',
+  server: {
+    allowedHosts: true
+  },
   optimizeDeps: {
     exclude: ['maplibre-gl']
   },
@@ -93,6 +96,48 @@ export default defineConfig({
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 7 * 24 * 60 * 60 // 7 Days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/valhalla1\.openstreetmap\.de\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'valhalla-routing-cache',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/s3\.amazonaws\.com\/elevation-tiles-prod\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'aws-terrain-cache',
+              expiration: {
+                maxEntries: 2000,
+                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/server\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'esri-satellite-cache',
+              expiration: {
+                maxEntries: 2000,
+                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
               },
               cacheableResponse: {
                 statuses: [0, 200]

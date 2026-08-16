@@ -1,0 +1,499 @@
+/* AssistHeroShowcase.css - Mobile-Native Seamless Styling */
+
+.assist-showcase-container {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  background-color: #FAFBFD;
+  color: #1C1C1E;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  overflow-x: hidden;
+  overflow-y: auto;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 36px;
+  box-sizing: border-box;
+}
+
+.dark-mode .assist-showcase-container {
+  background-color: #07090E;
+  color: #F2F2F7;
+}
+
+/* Ambient Radial Spotlight */
+.assist-ambient-spotlight-1 {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, rgba(0, 132, 255, 0.15) 0%, rgba(0, 132, 255, 0) 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Pinned Glass Header */
+.assist-nav-wrapper {
+  position: sticky;
+  top: 10px;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.assist-nav-glass {
+  width: 100%;
+  height: 48px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.dark-mode .assist-nav-glass {
+  background: rgba(24, 28, 38, 0.88);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.assist-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.4px;
+  color: #1C1C1E;
+  cursor: pointer;
+}
+
+.dark-mode .assist-brand {
+  color: #FFFFFF;
+}
+
+.assist-brand-icon {
+  width: 20px;
+  height: 20px;
+  color: #0084FF;
+}
+
+.assist-nav-cta-sm {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: #0084FF;
+  color: #ffffff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.assist-close-btn {
+  background: rgba(120, 120, 128, 0.12);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: inherit;
+  transition: transform 0.15s ease;
+}
+
+.assist-close-btn:active {
+  transform: scale(0.92);
+}
+
+/* Mobile Content Container */
+.assist-hero-mobile-content {
+  padding: 16px 16px 0 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+.assist-social-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(0, 132, 255, 0.08);
+  border: 1px solid rgba(0, 132, 255, 0.18);
+  font-size: 11px;
+  color: #0084FF;
+  margin-bottom: 8px;
+}
+
+.assist-social-bold {
+  font-weight: 700;
+}
+
+.assist-display-heading {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.5px;
+  margin: 0 0 6px 0;
+  color: #1C1C1E;
+}
+
+.dark-mode .assist-display-heading {
+  color: #FFFFFF;
+}
+
+.assist-text-gradient {
+  background: linear-gradient(135deg, #0084FF 0%, #00C6FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.assist-body-lead {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #8E8E93;
+  margin: 0 0 16px 0;
+  max-width: 320px;
+}
+
+/* Robot Card - Seamless Integration with App's Original Light / Dark Background */
+.assist-hero-robot-card {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 132, 255, 0.15);
+  border-radius: 24px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 132, 255, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.dark-mode .assist-hero-robot-card {
+  background: #111723;
+  border-color: rgba(0, 132, 255, 0.25);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+}
+
+.assist-orbit-aura {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(0, 132, 255, 0.12) 0%, transparent 70%);
+  filter: blur(35px);
+  pointer-events: none;
+}
+
+.assist-video-wrapper {
+  width: 100%;
+  height: 210px;
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFFFFF; /* Seamlessly matches video's white background */
+}
+
+.dark-mode .assist-video-wrapper {
+  background: #FFFFFF;
+}
+
+.assist-robot-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* 100% of robot visible without clipping */
+  border-radius: 18px;
+  background: #FFFFFF;
+  animation: robotFloat 4s ease-in-out infinite;
+}
+
+.dark-mode .assist-robot-video {
+  mix-blend-mode: screen; /* In dark mode, blends white video background smoothly into dark card */
+}
+
+@keyframes robotFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Micro Floating Pills with Crisp Contrast & Full Text Support */
+.assist-floating-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  width: 100%;
+  z-index: 5;
+}
+
+.assist-pill-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 14px;
+  background: rgba(240, 244, 255, 0.95);
+  border: 1px solid rgba(0, 132, 255, 0.18);
+  font-size: 11px;
+  font-weight: 600;
+  color: #1C1C1E;
+  box-shadow: 0 2px 8px rgba(0, 132, 255, 0.06);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.dark-mode .assist-pill-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.assist-pill-item:active {
+  transform: scale(0.96);
+  background: rgba(0, 132, 255, 0.15);
+}
+
+/* Primary CTA Button */
+.assist-primary-cta-full {
+  width: 100%;
+  max-width: 340px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0084FF 0%, #0056C6 100%);
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 8px 24px rgba(0, 132, 255, 0.35);
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.assist-primary-cta-full:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 16px rgba(0, 132, 255, 0.25);
+}
+
+.assist-cta-bead {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Simulator Section */
+.assist-simulator-card {
+  width: 100%;
+  max-width: 340px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  padding: 14px;
+  box-sizing: border-box;
+  text-align: left;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.dark-mode .assist-simulator-card {
+  background: rgba(24, 28, 38, 0.88);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.assist-sim-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.assist-sim-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.assist-sim-status {
+  font-size: 10px;
+  font-weight: 700;
+  color: #34C759;
+  background: rgba(52, 199, 89, 0.12);
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+.assist-sim-cmds {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.assist-sim-cmd-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(120, 120, 128, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #1C1C1E;
+  cursor: pointer;
+  box-sizing: border-box;
+  text-align: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.dark-mode .assist-sim-cmd-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #F2F2F7;
+}
+
+.assist-sim-cmd-pill:hover {
+  background: rgba(0, 132, 255, 0.08);
+  border-color: rgba(0, 132, 255, 0.2);
+}
+
+.assist-sim-cmd-pill.active {
+  background: linear-gradient(135deg, rgba(0, 132, 255, 0.15) 0%, rgba(0, 86, 198, 0.22) 100%);
+  border-color: rgba(0, 132, 255, 0.4);
+  color: #0084FF;
+  font-weight: 700;
+  box-shadow: 0 3px 10px rgba(0, 132, 255, 0.15);
+}
+
+.dark-mode .assist-sim-cmd-pill.active {
+  background: linear-gradient(135deg, rgba(0, 132, 255, 0.25) 0%, rgba(0, 86, 198, 0.35) 100%);
+  border-color: rgba(0, 132, 255, 0.5);
+  color: #38ACFF;
+}
+
+.assist-sim-display {
+  background: rgba(120, 120, 128, 0.06);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dark-mode .assist-sim-display {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.assist-sim-user-msg {
+  font-size: 11px;
+  color: #8E8E93;
+  line-height: 1.35;
+}
+
+.assist-sim-ai-msg {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0084FF;
+  line-height: 1.4;
+}
+
+/* Features Grid */
+.assist-features-grid {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.assist-feature-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dark-mode .assist-feature-card {
+  background: rgba(24, 28, 38, 0.75);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.assist-ft-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.assist-ft-icon.blue { background: rgba(0, 132, 255, 0.12); color: #0084FF; }
+.assist-ft-icon.green { background: rgba(52, 199, 89, 0.12); color: #34C759; }
+.assist-ft-icon.purple { background: rgba(175, 82, 222, 0.12); color: #AF52DE; }
+
+.assist-ft-content h3 {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 3px 0;
+}
+
+.assist-ft-content p {
+  font-size: 11px;
+  color: #8E8E93;
+  margin: 0;
+  line-height: 1.38;
+}

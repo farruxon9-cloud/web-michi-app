@@ -18,49 +18,46 @@
   transform: scale(0.94) translateY(0.5px);
 }
 
-/* Head squircle screen - 3D Protruding Glossy White Ceramic (30px x 26px) */
+/* Head squircle screen - 3D Protruding Frame matching app background tone */
 .robot-head-screen {
   width: 30px;
   height: 26px;
-  background: #ffffff;
-  border: 1.2px solid rgba(0, 0, 0, 0.08);
+  background: var(--bg-color); /* Seamlessly matches overall app background! */
+  border: 1.2px solid rgba(94, 92, 230, 0.25);
   border-radius: 9px;
   position: relative;
   overflow: hidden;
   box-shadow: 
-    /* Physical drop shadow on header foni to create 3D protrusion height */
-    0 3px 8px rgba(0, 0, 0, 0.16),
-    0 1px 3px rgba(0, 0, 0, 0.12),
-    /* Top highlight - simulates light hitting the top edge */
-    inset 0 1.5px 2px rgba(255, 255, 255, 1),
-    /* Bottom inner shadow - simulates base depth */
-    inset 0 -1.5px 2px rgba(0, 0, 0, 0.08);
+    0 2px 8px rgba(94, 92, 230, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.4),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.4s cubic-bezier(0.25, 1, 0.4, 1);
 }
 
-/* Light Mode specific screen styling - Pure 3D White Ceramic */
+/* Light Mode specific screen styling */
 html:not(.dark-mode) .robot-head-screen {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.12);
+  background: var(--bg-color);
+  border-color: rgba(94, 92, 230, 0.25);
   box-shadow: 
-    0 3px 8px rgba(0, 0, 0, 0.1),
-    0 1px 2px rgba(0, 0, 0, 0.08),
-    inset 0 1.5px 2px rgba(255, 255, 255, 1),
-    inset 0 -1.5px 2px rgba(0, 0, 0, 0.05);
+    0 2px 8px rgba(94, 92, 230, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.6);
 }
 
-/* Dark Mode specific - Pops out with a tiny ambient backing purple tint shadow */
+/* Dark Mode specific */
 html.dark-mode .robot-head-screen {
-  border-color: rgba(255, 255, 255, 0.12);
+  background: var(--bg-color);
+  border-color: rgba(94, 92, 230, 0.35);
   box-shadow: 
-    0 4px 10px rgba(0, 0, 0, 0.35),
-    0 2px 4px rgba(94, 92, 230, 0.15),
-    inset 0 1.5px 2px rgba(255, 255, 255, 1),
-    inset 0 -1.5px 2px rgba(0, 0, 0, 0.12);
+    0 3px 10px rgba(0, 0, 0, 0.4),
+    0 0 8px rgba(94, 92, 230, 0.25),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.12);
 }
+
 
 /* Glow border on active state - Indigo glow */
 .robot-avatar-container.listening .robot-head-screen {

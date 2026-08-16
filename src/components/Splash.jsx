@@ -8,10 +8,10 @@ export default function Splash({ onFinish }) {
       onFinish();
     }, 2500);
     return () => clearTimeout(timer);
-  }, [onFinish]);
+  }, []);
 
   return (
-    <div className="splash-screen">
+    <div className="splash-screen" onClick={onFinish} style={{ cursor: 'pointer' }}>
       <div className="splash-content fade-in">
         <MichiLogo size={80} fontSize={48} borderRadius={24} className="splash-logo-component" />
         <div className="loader"></div>
