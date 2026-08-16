@@ -2090,16 +2090,29 @@ const getLicenseLabel = (type) => {
                     <Building2 size={12} /> Aqlli Vakansiya
                   </div>
                   <p style={{ fontSize: '9.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.3' }}>
-                  </div>
-                  <div style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <span style={{ fontWeight: '800', color: '#34C759' }}>📝 "Rezyume":</span>
-                    <span style={{ opacity: 0.85 }}>"4 yillik Oogata tajribasi" (大型免許・経験4年) saqlandi</span>
-                  </div>
-                  <div style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <span style={{ fontWeight: '800', color: '#AF52DE' }}>🚚 "3.8m Navigatsiya":</span>
-                    <span style={{ opacity: 0.85 }}>Tokiodan Nagoyaga MLIT safe marshrut tuzildi</span>
-                  </div>
+                    JLPT N3/N2 darajasiga mos ishlarni saralash.
+                  </p>
                 </div>
+              </div>
+
+              {/* Interactive Open Full Page Banner */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justify: 'space-between', 
+                background: 'linear-gradient(135deg, #0084FF 0%, #0066CC 100%)', 
+                borderRadius: '10px', 
+                padding: '8px 14px', 
+                color: '#FFFFFF',
+                fontWeight: '800',
+                fontSize: '11px',
+                boxShadow: '0 4px 14px rgba(0, 132, 255, 0.3)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Sparkles size={14} color="#FFF" />
+                  <span>AI Roboti Video Animatsiyasi va Jonli Simulyatorni Ochish</span>
+                </div>
+                <ArrowRight size={15} color="#FFF" />
               </div>
             </div>
 
