@@ -41,6 +41,7 @@ graph TD
   JDMNavigation --> LaneIndicator
   JobDetail --> VerifiedBadge
   LanguageSelect --> MichiLogo
+  Profile --> AssistHeroShowcase
   Profile --> CompanyHome
   Profile --> DrivingAcademy
   Profile --> ResumeBuilder
@@ -275,7 +276,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (4884 qator, 260163 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (4891 qator, 259678 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -336,6 +337,7 @@ graph TD
   - `./VerifiedBadge`
   - `./CompanyHome`
   - `./ResumeBuilder`
+  - `./AssistHeroShowcase`
 
 ### 📦 [ResumeBuilder](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/ResumeBuilder.jsx)
 * **Fayl yo'li:** `src/components/ResumeBuilder.jsx` (1271 qator, 51913 bayt)

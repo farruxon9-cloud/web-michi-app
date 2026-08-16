@@ -9,6 +9,7 @@ import { MOCK_SCHOOLS } from './DrivingAcademy';
 import VerifiedBadge from './VerifiedBadge';
 import CompanyHome from './CompanyHome';
 import ResumeBuilder from './ResumeBuilder';
+import AssistHeroShowcase from './AssistHeroShowcase';
 import './Profile.css';
 
 const StatCounter = ({ target, suffix = '', duration = 1200 }) => {
@@ -1946,6 +1947,20 @@ const getLicenseLabel = (type) => {
     );
   }
 
+  // ===== ASSIST AI SHOWCASE FULL PAGE =====
+  if (activePage === 'assist_showcase') {
+    return (
+      <AssistHeroShowcase 
+        onBack={() => setActivePage('about')} 
+        onActivateVoice={() => {
+          if (setIsVoiceActive) setIsVoiceActive(true);
+          if (setIsVoiceStandby) setIsVoiceStandby(true);
+        }}
+        darkMode={darkMode}
+      />
+    );
+  }
+
   // ===== ABOUT PAGE =====
   if (activePage === 'about') {
     return (
@@ -2012,12 +2027,17 @@ const getLicenseLabel = (type) => {
             </div>
 
             {/* 🚀 AI FLAGSHIP SUB-PROJECT SECTION: Michi Assist Voice AI */}
-            <div className="about-glass-card card-primary about-span-2 about-animate-item" style={{ 
-              background: 'linear-gradient(135deg, rgba(0, 132, 255, 0.09) 0%, rgba(175, 82, 222, 0.05) 50%, rgba(52, 199, 89, 0.04) 100%)', 
-              border: '1.5px solid rgba(0, 132, 255, 0.25)', 
-              boxShadow: '0 8px 28px rgba(0, 132, 255, 0.08)', 
-              padding: '16px 18px' 
-            }}>
+            <div 
+              className="about-glass-card card-primary about-span-2 about-animate-item" 
+              onClick={() => setActivePage('assist_showcase')}
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(0, 132, 255, 0.12) 0%, rgba(175, 82, 222, 0.06) 50%, rgba(52, 199, 89, 0.05) 100%)', 
+                border: '1.5px solid rgba(0, 132, 255, 0.3)', 
+                boxShadow: '0 8px 28px rgba(0, 132, 255, 0.12)', 
+                padding: '16px 18px',
+                cursor: 'pointer'
+              }}
+            >
               {/* Header & Flagship Badge */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2038,6 +2058,7 @@ const getLicenseLabel = (type) => {
                     </h4>
                   </div>
                 </div>
+                <ChevronRight size={20} color="#0084FF" />
               </div>
 
               <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: '0 0 12px 0', lineHeight: '1.45', opacity: 0.9 }}>
@@ -2045,13 +2066,13 @@ const getLicenseLabel = (type) => {
               </p>
 
               {/* 3 Core Capability Columns */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '10px' }}>
                 <div style={{ background: 'var(--glass-bg)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '3px', color: '#0084FF', fontSize: '10.5px', fontWeight: '800' }}>
                     <Navigation size={12} /> Truck Nav
                   </div>
                   <p style={{ fontSize: '9.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.3' }}>
-                    Lawson, Eneos va MLIT 3.8m cheklovlarini izlash.
+                    Lawson, Eneos va MLIT 3.8m cheklovlari.
                   </p>
                 </div>
 
@@ -2060,7 +2081,7 @@ const getLicenseLabel = (type) => {
                     <FileText size={12} /> Ovozli Rezyume
                   </div>
                   <p style={{ fontSize: '9.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.3' }}>
-                    Rezyumega (大型免許・経験4年) ovozda saqlash.
+                    Rezyumega (大型免許・経験4年) saqlash.
                   </p>
                 </div>
 
@@ -2069,20 +2090,6 @@ const getLicenseLabel = (type) => {
                     <Building2 size={12} /> Aqlli Vakansiya
                   </div>
                   <p style={{ fontSize: '9.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.3' }}>
-                    JLPT N3/N2 darajaga mos ishlarni avtomatik saralash.
-                  </p>
-                </div>
-              </div>
-
-              {/* Sample Live Voice Commands Showcase */}
-              <div style={{ background: 'rgba(0, 0, 0, 0.03)', borderRadius: '10px', padding: '8px 10px', border: '1px solid var(--glass-border)' }}>
-                <div style={{ fontSize: '9.5px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Zap size={11} color="#0084FF" /> Jonli Ovozli Buyruqlar Namunalari:
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '10px' }}>
-                  <div style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <span style={{ fontWeight: '800', color: '#0084FF' }}>🗣️ "Lawson topish":</span>
-                    <span style={{ opacity: 0.85 }}>Lawson (450m) va Eneos (1.2km) xaritaga sozlandi</span>
                   </div>
                   <div style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <span style={{ fontWeight: '800', color: '#34C759' }}>📝 "Rezyume":</span>
