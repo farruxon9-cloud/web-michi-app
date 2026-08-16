@@ -224,7 +224,9 @@
 }
 
 .dark-mode .assist-video-wrapper {
-  background: #FFFFFF;
+  background: #0E1422;
+  border: 1px solid rgba(0, 132, 255, 0.25);
+  box-shadow: inset 0 0 24px rgba(0, 132, 255, 0.12);
 }
 
 .assist-robot-video {
@@ -237,7 +239,9 @@
 }
 
 .dark-mode .assist-robot-video {
-  mix-blend-mode: screen; /* In dark mode, blends white video background smoothly into dark card */
+  background: transparent;
+  mix-blend-mode: multiply;
+  filter: contrast(1.15) brightness(1.2);
 }
 
 @keyframes robotFloat {
