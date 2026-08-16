@@ -105,10 +105,10 @@ const mockIncomingApplications = [
 class ChunkErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, error: null };
   }
-  static getDerivedStateFromError(_error) {
-    return { hasError: true };
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
   }
   componentDidCatch(error, errorInfo) {
     console.error("ChunkErrorBoundary caught an error:", error, errorInfo);
@@ -116,18 +116,17 @@ class ChunkErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-secondary, #8E8E93)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-          <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main, #1C1C1E)' }}>
-            Yangi versiya mavjud. Iltimos sahifani yangilang.
+        <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-secondary, #8E8E93)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+          <div style={{ fontSize: '13px', fontWeight: '700', color: '#FF3B30', background: 'rgba(255,59,48,0.1)', padding: '12px 16px', borderRadius: '12px', maxWidth: '90%', wordBreak: 'break-word' }}>
+            {this.state.error?.toString() || "Render Error"}
           </div>
           <button 
             onClick={() => {
-              this.setState({ hasError: false });
-              window.location.reload();
+              this.setState({ hasError: false, error: null });
             }} 
-            style={{ padding: '12px 24px', borderRadius: '14px', background: '#0084FF', color: 'white', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '13px', boxShadow: '0 4px 14px rgba(0,132,255,0.3)' }}
+            style={{ padding: '10px 20px', borderRadius: '12px', background: '#0084FF', color: 'white', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '12px' }}
           >
-            Sahifani Yangilash
+            Qayta Urinib Ko'rish
           </button>
         </div>
       );
