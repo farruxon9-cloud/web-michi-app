@@ -212,7 +212,7 @@ const translation = {
   "navHome": "ホーム",
   "navAcademy": "教習所",
   "navService": "サービス",
-  "navProfile": "プロフィール",
+  "navProfile": "マイページ",
   "roleDriver": "ドライバー (求職者)",
   "roleCompanyLabel": "企業",
   "roleSchool": "自動車学校",

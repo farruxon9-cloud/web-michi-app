@@ -1,62 +1,94 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Bot, ArrowRight, ChevronRight, PenLine, FileText, Check, Sparkles, Navigation, Cpu, X, Zap, Building2 } from 'lucide-react';
+import { Bot, ChevronRight, FileText, Navigation, X, Zap, Building2, Wrench, Sparkles } from 'lucide-react';
 import './AssistHeroShowcase.css';
 
-// Localized sample commands for simulator
-const GET_SAMPLE_COMMANDS = (lang) => {
+// 4 Core Capability Pillars & Live Commands tailored for Michi Ecosystem
+const GET_CAPABILITIES = (lang) => {
   if (lang === 'ja') {
     return [
       {
         id: 1,
-        label: "🏪 ローソン・施設検索",
-        userMsg: "最寄りのローソンとエネオスを表示して",
-        aiReply: "🤖 Michi AI: 最寄りのローソン(450m)とエネオス(1.2km)をマップに設定しました。"
+        title: "大型トラック専用ナビ & POI",
+        desc: "3.8m高さ制限・重量制限を自動回避。大型車専用駐車場のあるローソンやENEOSを音声で即時検索。",
+        cmdExample: "「最寄りの大型車対応ローソンを探して」",
+        icon: Navigation,
+        colorClass: "blue",
+        userMsg: "最寄りの大型車対応ローソンを探して",
+        aiReply: "🤖 Michi AI: 大型車対応ローソン(450m)とエネオス(1.2km)をルートに設定しました。"
       },
       {
         id: 2,
-        label: "📝 音声履歴書作成",
-        userMsg: "大型免許保持・経験4年と履歴書に追加して",
-        aiReply: "🤖 Michi AI: 履歴書データに「大型自動車免許・実務経験4年」を追加保存しました！"
+        title: "日本語履歴書 AI自動作成",
+        desc: "音声で経歴を話すだけで、日本の運送業界基準に沿った「履歴書・職務経歴書」をAIが自動生成。",
+        cmdExample: "「中型免許の経歴で履歴書を作成して」",
+        icon: FileText,
+        colorClass: "green",
+        userMsg: "中型免許の経歴で履歴書を作成して",
+        aiReply: "🤖 Michi AI: 「中型自動車免許・実務経験3年」の履歴書を自動作成しました！"
       },
       {
         id: 3,
-        label: "🚚 トラックナビ",
-        userMsg: "東京から名古屋まで車高3.8m規制対応ルートを検索",
-        aiReply: "🤖 Michi AI: 国交省MLIT規制適合の3.8m安全ルートを作成しました！"
+        title: "JLPT対応 求人スマートマッチ",
+        desc: "日本語レベル（N3/N2/N1）や保有免許に合わせて、外国人・日本人ドライバーに最適な求人を即時提案。",
+        cmdExample: "「JLPT N3・月収35万円以上の求人を表示」",
+        icon: Building2,
+        colorClass: "purple",
+        userMsg: "JLPT N3・月収35万円以上の求人を表示",
+        aiReply: "🤖 Michi AI: JLPT N3対象・月収35万円以上の求人6件を抽出しました。"
       },
       {
         id: 4,
-        label: "💼 N3 ドライバー求人",
-        userMsg: "日本語N3レベル対応の運送・配送求人を検索",
-        aiReply: "🤖 Michi AI: JLPT N3対象の配送ドライバー求人8件を絞り込みました。"
+        title: "点検・車検 AIリマインダー",
+        desc: "車検や定期メンテナンスの時期を自動予測し、最寄りの提携整備工場へワンタップ予約。",
+        cmdExample: "「来月の点検予約と提携工場を表示」",
+        icon: Wrench,
+        colorClass: "orange",
+        userMsg: "来月の点検予約と提携工場を表示",
+        aiReply: "🤖 Michi AI: 来月の車検期日と最寄り提携整備工場（予約可能）を表示しました。"
       }
     ];
   } else if (lang === 'en') {
     return [
       {
         id: 1,
-        label: "🏪 Lawson & POI Search",
-        userMsg: "Find nearest Lawson and Eneos gas station",
-        aiReply: "🤖 Michi AI: Nearest Lawson (450m) and Eneos (1.2km) pinned on map."
+        title: "Truck Navigation & POI",
+        desc: "Bypass 3.8m height & weight limits automatically. Find Lawson and Eneos with heavy truck parking by voice.",
+        cmdExample: "“Find nearest Lawson with truck parking”",
+        icon: Navigation,
+        colorClass: "blue",
+        userMsg: "Find nearest Lawson with truck parking",
+        aiReply: "🤖 Michi AI: Pinned Lawson (450m) and Eneos (1.2km) with truck parking."
       },
       {
         id: 2,
-        label: "📝 Voice Resume",
-        userMsg: "Add 4 years of Large Truck experience to resume",
-        aiReply: "🤖 Michi AI: Updated resume with 'Large Truck Driver - 4 Years Exp'!"
+        title: "Japanese Resume AI Builder",
+        desc: "Simply speak your driving history to generate official Japanese JIS standard Resumes hands-free.",
+        cmdExample: "“Create resume with Medium Truck license”",
+        icon: FileText,
+        colorClass: "green",
+        userMsg: "Create resume with Medium Truck license",
+        aiReply: "🤖 Michi AI: Generated Japanese Resume with Medium Truck License & 3 yrs exp!"
       },
       {
         id: 3,
-        label: "🚚 Truck Navigation",
-        userMsg: "Route from Tokyo to Nagoya for 3.8m vehicle height",
-        aiReply: "🤖 Michi AI: Generated 3.8m MLIT compliant truck route!"
+        title: "JLPT Smart Job Match",
+        desc: "Filter driver job openings matching your JLPT level (N3/N2/N1) and license specifications instantly.",
+        cmdExample: "“Show N3 jobs paying ¥350,000/mo or more”",
+        icon: Building2,
+        colorClass: "purple",
+        userMsg: "Show N3 jobs paying ¥350,000/mo or more",
+        aiReply: "🤖 Michi AI: Filtered 6 driver job openings matching N3 & ¥350k+ salary."
       },
       {
         id: 4,
-        label: "💼 N3 Job Openings",
-        userMsg: "Filter delivery jobs matching JLPT N3 level",
-        aiReply: "🤖 Michi AI: Found 8 driver job openings suitable for N3 level."
+        title: "Shaken & Inspection Reminder",
+        desc: "Predict vehicle inspection schedules automatically and book nearest certified repair shops in 1 tap.",
+        cmdExample: "“Show next month inspection and partner shops”",
+        icon: Wrench,
+        colorClass: "orange",
+        userMsg: "Show next month inspection and partner shops",
+        aiReply: "🤖 Michi AI: Found upcoming Shaken date and nearest certified garage."
       }
     ];
   } else {
@@ -64,27 +96,43 @@ const GET_SAMPLE_COMMANDS = (lang) => {
     return [
       {
         id: 1,
-        label: "🏪 Lawson & POI topish",
-        userMsg: "Menga eng yaqin Lawson va Eneos shoxobchasini ko'rsat",
-        aiReply: "🤖 Michi AI: Eng yaqin Lawson (450m) va Eneos (1.2km) xaritada belgilandi."
+        title: "Yuk mashinalari uchun aqlli navigatsiya",
+        desc: "3.8m balandlik va vazn cheklovlarini avtomatik chetlab o'tish. Oogata yuk mashinalari to'xtash joyi bo'lgan Lawson va Eneos'larni ovozli qidirish.",
+        cmdExample: "“Eng yaqin yuk mashinalar uchun Lawson'ni top”",
+        icon: Navigation,
+        colorClass: "blue",
+        userMsg: "Eng yaqin yuk mashinalar uchun Lawson'ni top",
+        aiReply: "🤖 Michi AI: Yuk mashinalari to'xtash joyiga ega Lawson (450m) va Eneos (1.2km) xaritada belgilandi."
       },
       {
         id: 2,
-        label: "📝 Ovozli Rezyume",
-        userMsg: "4 yillik Oogata tajribam bor, rezyumega qo'sh",
-        aiReply: "🤖 Michi AI: Rezyumega (大型免許・経験4年) muvaffaqiyatli saqlandi!"
+        title: "Yaponcha rezyumeni avtomatik tuzish",
+        desc: "Ovoz orqali tajribangizni gapirishingiz kifoya, AI Yaponiya transport sohasi standartlariga mos Rirekisho va Shokumu-Keirekisho yaratadi.",
+        cmdExample: "“Chugata litsenziyasi tajribam bilan rezyume tuz”",
+        icon: FileText,
+        colorClass: "green",
+        userMsg: "Chugata litsenziyasi tajribam bilan rezyume tuz",
+        aiReply: "🤖 Michi AI: Chugata litsenziyasi va 3 yillik tajribangiz aks etgan yaponcha rezyume shakllantirildi!"
       },
       {
         id: 3,
-        label: "🚚 Truck Navigatsiya",
-        userMsg: "Tokiodan Nagoyaga 3.8m yuk mashinasi yo'nalishini tuz",
-        aiReply: "🤖 Michi AI: MLIT cheklovlariga mos 3.8m xavfsiz marshrut tayyorlandi!"
+        title: "JLPT va Til darajasiga mos ish saralash",
+        desc: "Yapon tili darajangiz (N3/N2/N1) va litsenziyangizga qarab chet ellik hamda mahalliy haydovchilar uchun eng mos vakansiyalarni bir zumda taklif qilish.",
+        cmdExample: "“JLPT N3 va oyligi 350,000 yen bo'lgan ishlarni ko'rsat”",
+        icon: Building2,
+        colorClass: "purple",
+        userMsg: "JLPT N3 va oyligi 350,000 yen bo'lgan ishlarni ko'rsat",
+        aiReply: "🤖 Michi AI: JLPT N3 va 350,000 yen maoshli 6 ta mos vakansiya ajratib olindi."
       },
       {
         id: 4,
-        label: "💼 N3 Vakansiyalar",
-        userMsg: "Yapon tili N3 darajasidagi ishlarni sarala",
-        aiReply: "🤖 Michi AI: JLPT N3 darajasiga mos 8 ta yetkazib berish vakansiyasi topildi."
+        title: "Shaken va Servis eslatmasi",
+        desc: "Shaken va texnik ko'rik muddatini avtomatik bashorat qilib, eng yaqin hamkor ustaxonaga bir bosishda band qilish.",
+        cmdExample: "“Kelasi oydagi texnik ko'rik va hamkor ustaxonani ko'rsat”",
+        icon: Wrench,
+        colorClass: "orange",
+        userMsg: "Kelasi oydagi texnik ko'rik va hamkor ustaxonani ko'rsat",
+        aiReply: "🤖 Michi AI: Shaken muddati va bron qilish mumkin bo'lgan hamkor ustaxonalar ro'yxati tayyorlandi."
       }
     ];
   }
@@ -93,37 +141,23 @@ const GET_SAMPLE_COMMANDS = (lang) => {
 export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }) {
   const { i18n } = useTranslation();
   const currentLang = i18n?.language || 'uz';
-  const sampleCommands = GET_SAMPLE_COMMANDS(currentLang);
-  const [selectedSimCmd, setSelectedSimCmd] = useState(sampleCommands[0]);
+  const capabilities = GET_CAPABILITIES(currentLang);
+  const [selectedSimCmd, setSelectedSimCmd] = useState(capabilities[0]);
 
-  // UI Localized strings
+  // Unified Localized strings
   const strings = {
     badge: currentLang === 'ja' ? '10,000人以上のドライバーが利用' : (currentLang === 'en' ? 'Chosen by 10,000+ Drivers' : '10,000+ haydovchilar tanlovi'),
-    titlePrefix: currentLang === 'ja' ? '音声AI' : (currentLang === 'en' ? 'Voice AI' : 'Ovozli AI'),
-    titleGradient: currentLang === 'ja' ? 'アシスタント' : (currentLang === 'en' ? 'Assistant' : 'Yordamchi'),
+    title: currentLang === 'ja' ? 'Michi AI 音声アシスタント' : (currentLang === 'en' ? 'Michi AI Voice Assistant' : 'Michi AI Ovozli Yordamchisi'),
     lead: currentLang === 'ja' 
-      ? '音声コマンドでナビゲーション、求人検索、日本語履歴書作成を自動処理。' 
+      ? '運転中も安全にハンズフリー操作。トラック専用ナビから履歴書作成までAIがサポート。' 
       : (currentLang === 'en' 
-        ? 'Control navigation, job matching, and resume creation seamlessly by voice.' 
-        : 'Ovozli buyruqlar orqali navigatsiya, vakansiyalar va yaponcha rezyumeni avtomatik boshqaring.'),
-    tryBtn: currentLang === 'ja' ? '試す' : (currentLang === 'en' ? 'Try' : 'Sinash'),
-    mainCta: currentLang === 'ja' ? 'AIアシストを試す' : (currentLang === 'en' ? 'Launch AI Assist' : 'Assist. ni sinash'),
+        ? 'Safe hands-free operation while driving. AI supports everything from dedicated truck navigation to resume generation.' 
+        : 'Haydash paytida ham xavfsiz hands-free boshqaruv. Maxsus yuk mashinalari navigatsiyasidan tortib rezyume yaratishgacha AI yordam beradi.'),
+    mainCta: currentLang === 'ja' ? 'AIアシストを試す' : (currentLang === 'en' ? 'Launch AI Assist' : 'AI Yordamchini Sinash'),
     simHeader: currentLang === 'ja' ? 'リアルタイム音声コマンド' : (currentLang === 'en' ? 'Live Voice Commands' : 'Jonli Ovozli Buyruqlar'),
     simReady: currentLang === 'ja' ? '準備完了' : (currentLang === 'en' ? 'Ready' : 'Tayyor'),
     simPromptLabel: currentLang === 'ja' ? '🗣️ 指示:' : (currentLang === 'en' ? '🗣️ Command:' : '🗣️ Buyruq:'),
-
-    pill1: currentLang === 'ja' ? 'Lawson & POI検索' : (currentLang === 'en' ? 'Lawson & POI' : 'Lawson & POI topish'),
-    pill2: currentLang === 'ja' ? '日本語履歴書' : (currentLang === 'en' ? 'Voice Resume' : 'Yaponcha Rezyume'),
-    pill3: currentLang === 'ja' ? '大型トラックナビ' : (currentLang === 'en' ? 'Truck Nav' : 'Truck Navigatsiya'),
-
-    ft1Title: currentLang === 'ja' ? 'トラックナビ & POI検索' : (currentLang === 'en' ? 'Truck Nav & POI' : 'Truck Navigatsiya & POI'),
-    ft1Desc: currentLang === 'ja' ? 'ローソン、エネオス、高さ・重量制限を音声で素早く検索。' : (currentLang === 'en' ? 'Find Lawson, Eneos and height limits using quick voice controls.' : 'Lawson, Eneos va yuk mashinasi cheklovlarini ovozda izlang.'),
-
-    ft2Title: currentLang === 'ja' ? '日本語履歴書自動作成' : (currentLang === 'en' ? 'Japanese Resume Creator' : 'Yaponcha Rezyume'),
-    ft2Desc: currentLang === 'ja' ? '話すだけでドライバー向け和文履歴書をシステムが自動作成。' : (currentLang === 'en' ? 'Build professional Japanese resumes hands-free with AI assistance.' : 'Ovozli muloqot orqali rezyumeni avtomatik yapon tilida shakllantiring.'),
-
-    ft3Title: currentLang === 'ja' ? 'JLPT求人スマートマッチ' : (currentLang === 'en' ? 'Smart Job Match' : 'Aqlli Vakansiyalar'),
-    ft3Desc: currentLang === 'ja' ? 'JLPT日本語レベルと運転経験に合わせた最適なドライバー求人を提示。' : (currentLang === 'en' ? 'Match jobs tailored to your JLPT language certificate & driving experience.' : 'JLPT darajasi va tajribangizga mos eng yaxshi ishlarni toping.')
+    cmdPillLabel: currentLang === 'ja' ? '発話例:' : (currentLang === 'en' ? 'Example:' : 'Buyruq misoli:')
   };
 
   return (
@@ -131,7 +165,7 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
       {/* Ambient Spotlight */}
       <div className="assist-ambient-spotlight-1"></div>
 
-      {/* Pinned Mobile Header */}
+      {/* Clean Pinned Header (Single Brand + Close Button) */}
       <div className="assist-nav-wrapper">
         <div className="assist-nav-glass">
           <div className="assist-brand" onClick={onBack}>
@@ -139,27 +173,21 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
             <span>Assist. AI</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button className="assist-nav-cta-sm" onClick={onActivateVoice}>
-              <span>{strings.tryBtn}</span>
-              <ArrowRight size={13} />
+          {onBack && (
+            <button 
+              onClick={onBack}
+              className="assist-close-btn"
+              title="Close"
+            >
+              <X size={18} />
             </button>
-            {onBack && (
-              <button 
-                onClick={onBack}
-                className="assist-close-btn"
-                title="Close"
-              >
-                <X size={16} />
-              </button>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
       {/* Main Content Layout */}
       <div className="assist-hero-mobile-content">
-        {/* Badge & Minimalist Title */}
+        {/* Social Proof Badge */}
         <div className="assist-social-badge">
           <Sparkles size={13} color="#0084FF" />
           <span className="assist-social-text">
@@ -167,15 +195,16 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
           </span>
         </div>
 
+        {/* Asosiy Sarlavha & Qisqa Izoh */}
         <h1 className="assist-display-heading">
-          {strings.titlePrefix} <span className="assist-text-gradient">{strings.titleGradient}</span>
+          <span className="assist-text-gradient">{strings.title}</span>
         </h1>
 
         <p className="assist-body-lead">
           {strings.lead}
         </p>
 
-        {/* Hero Video & Robot Showcase with High Contrast Backdrop */}
+        {/* Hero Video & 3D Robot Showcase */}
         <div className="assist-hero-robot-card">
           <div className="assist-orbit-aura"></div>
 
@@ -188,31 +217,14 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
               muted
               playsInline
               onEnded={(e) => {
-                // Seamless reset if browser pauses on end
                 e.target.currentTime = 0;
                 e.target.play();
               }}
             />
           </div>
-
-          {/* Micro Floating Badges with Full Text */}
-          <div className="assist-floating-pills">
-            <div className="assist-pill-item" onClick={onActivateVoice}>
-              <PenLine size={13} color="#0084FF" />
-              <span>{strings.pill1}</span>
-            </div>
-            <div className="assist-pill-item" onClick={onActivateVoice}>
-              <FileText size={13} color="#34C759" />
-              <span>{strings.pill2}</span>
-            </div>
-            <div className="assist-pill-item" onClick={onActivateVoice}>
-              <Check size={13} color="#AF52DE" strokeWidth={3} />
-              <span>{strings.pill3}</span>
-            </div>
-          </div>
         </div>
 
-        {/* Primary Action Button */}
+        {/* Single Clear High-Converting Action Button */}
         <button className="assist-primary-cta-full" onClick={onActivateVoice}>
           <span>{strings.mainCta}</span>
           <div className="assist-cta-bead">
@@ -220,7 +232,33 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
           </div>
         </button>
 
-        {/* Live Simulator Section */}
+        {/* Asosiy 4 ta Imkoniyat (Bento Grid) */}
+        <div className="assist-bento-capabilities">
+          {capabilities.map((cap) => {
+            const Icon = cap.icon;
+            return (
+              <div 
+                key={cap.id} 
+                className={`assist-bento-card ${selectedSimCmd.id === cap.id ? 'active-bento' : ''}`}
+                onClick={() => setSelectedSimCmd(cap)}
+              >
+                <div className={`assist-bento-icon-wrap ${cap.colorClass}`}>
+                  <Icon size={20} />
+                </div>
+                <div className="assist-bento-body">
+                  <h3>{cap.title}</h3>
+                  <p>{cap.desc}</p>
+                  <div className="assist-cmd-example-box">
+                    <span className="cmd-example-tag">{strings.cmdPillLabel}</span>
+                    <span className="cmd-example-text">{cap.cmdExample}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Live Voice Simulator Section */}
         <div className="assist-simulator-card">
           <div className="assist-sim-header">
             <div className="assist-sim-title">
@@ -231,13 +269,13 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
           </div>
 
           <div className="assist-sim-cmds">
-            {sampleCommands.map(cmd => (
+            {capabilities.map(cap => (
               <button
-                key={cmd.id}
-                className={`assist-sim-cmd-pill ${selectedSimCmd.id === cmd.id ? 'active' : ''}`}
-                onClick={() => setSelectedSimCmd(cmd)}
+                key={cap.id}
+                className={`assist-sim-cmd-pill ${selectedSimCmd.id === cap.id ? 'active' : ''}`}
+                onClick={() => setSelectedSimCmd(cap)}
               >
-                {cmd.label}
+                {cap.title}
               </button>
             ))}
           </div>
@@ -252,32 +290,6 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
           </div>
         </div>
 
-        {/* Features Cards */}
-        <div className="assist-features-grid">
-          <div className="assist-feature-card">
-            <div className="assist-ft-icon blue"><Navigation size={18} /></div>
-            <div className="assist-ft-content">
-              <h3>{strings.ft1Title}</h3>
-              <p>{strings.ft1Desc}</p>
-            </div>
-          </div>
-
-          <div className="assist-feature-card">
-            <div className="assist-ft-icon green"><FileText size={18} /></div>
-            <div className="assist-ft-content">
-              <h3>{strings.ft2Title}</h3>
-              <p>{strings.ft2Desc}</p>
-            </div>
-          </div>
-
-          <div className="assist-feature-card">
-            <div className="assist-ft-icon purple"><Building2 size={18} /></div>
-            <div className="assist-ft-content">
-              <h3>{strings.ft3Title}</h3>
-              <p>{strings.ft3Desc}</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -76,6 +76,23 @@ export default function Profile({
 }) {
   const { t, i18n } = useTranslation();
 
+  if (!profileData) {
+    return (
+      <div className="profile-container fade-in">
+        <div className="profile-skeleton-card glass squircle">
+          <div className="skeleton-pulse skeleton-avatar" />
+          <div className="skeleton-pulse skeleton-text-lg" />
+          <div className="skeleton-pulse skeleton-text-sm" />
+        </div>
+        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="skeleton-pulse skeleton-row" />
+          <div className="skeleton-pulse skeleton-row" />
+          <div className="skeleton-pulse skeleton-row" />
+        </div>
+      </div>
+    );
+  }
+
   // Sub-sahifa o'zgarganda scroll holatini tepaga reset qilish (Scroll Restoration)
   React.useEffect(() => {
     const container = document.querySelector('.profile-container');
