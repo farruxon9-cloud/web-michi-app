@@ -448,9 +448,35 @@
 }
 
 .assist-sim-user-msg {
+  font-size: 11.5px;
+  color: var(--text-secondary, #636366);
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sim-user-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 132, 255, 0.1);
+  border: 1px solid rgba(0, 132, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 8px;
+  color: #0084FF;
+  font-weight: 700;
   font-size: 11px;
-  color: #8E8E93;
-  line-height: 1.35;
+}
+
+.sim-user-text {
+  color: var(--text-main, #1C1C1E);
+  font-weight: 600;
+}
+
+.dark-mode .sim-user-text {
+  color: #F2F2F7;
 }
 
 .assist-sim-ai-msg {
@@ -458,6 +484,34 @@
   font-weight: 600;
   color: #0084FF;
   line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.sim-ai-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  flex-shrink: 0;
+  color: #0084FF;
+}
+
+.sim-ai-icon-wrap {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #0084FF 0%, #AF52DE 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 132, 255, 0.35);
+}
+
+.sim-ai-text {
+  flex: 1;
 }
 
 /* Asosiy 4 ta Imkoniyat (Bento Grid) */

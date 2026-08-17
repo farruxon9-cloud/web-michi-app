@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Bot, ChevronRight, FileText, Navigation, X, Zap, Building2, Wrench, Sparkles } from 'lucide-react';
+import { Bot, ChevronRight, FileText, Navigation, X, Zap, Building2, Wrench, Sparkles, Mic } from 'lucide-react';
 import './AssistHeroShowcase.css';
 
 // 4 High-Converting Core Capability Pillars & Live Commands tailored for Michi Ecosystem
@@ -15,7 +15,7 @@ const GET_CAPABILITIES = (lang) => {
         icon: Navigation,
         colorClass: "blue",
         userMsg: "20分以内に停められる大型トラック用パーキングを探して",
-        aiReply: "🤖 Michi AI: 12km先のSAパーキング（大型空きあり・シャワー完備）をナビに設定しました！"
+        aiReply: "12km先のSAパーキング（大型空きあり・シャワー完備）をナビに設定しました！"
       },
       {
         id: 2,
@@ -25,7 +25,7 @@ const GET_CAPABILITIES = (lang) => {
         icon: FileText,
         colorClass: "green",
         userMsg: "中型免許・経験3年の経歴で和文履歴書を作成して",
-        aiReply: "🤖 Michi AI: JIS規格「中型自動車免許・実務経験3年」の和文履歴書・職務経歴書を自動作成しました！"
+        aiReply: "JIS規格「中型自動車免許・実務経験3年」の和文履歴書・職務経歴書を自動作成しました！"
       },
       {
         id: 3,
@@ -35,7 +35,7 @@ const GET_CAPABILITIES = (lang) => {
         icon: Building2,
         colorClass: "purple",
         userMsg: "JLPT N3対応・月収35万円以上・寮完備の大型求人を表示",
-        aiReply: "🤖 Michi AI: JLPT N3対象・月収35万円以上・寮完備の優良トラック求人6件を抽出しました！"
+        aiReply: "JLPT N3対象・月収35万円以上・寮完備の優良トラック求人6件を抽出しました！"
       },
       {
         id: 4,
@@ -45,7 +45,7 @@ const GET_CAPABILITIES = (lang) => {
         icon: Wrench,
         colorClass: "orange",
         userMsg: "来月の点検予約と最寄り提携工場を表示",
-        aiReply: "🤖 Michi AI: 来月の車検期日と最寄り提携整備工場（即時予約可能）を表示しました！"
+        aiReply: "来月の車検期日と最寄り提携整備工場（即時予約可能）を表示しました！"
       }
     ];
   } else if (lang === 'en') {
@@ -58,7 +58,7 @@ const GET_CAPABILITIES = (lang) => {
         icon: Navigation,
         colorClass: "blue",
         userMsg: "Find heavy truck parking with shower within 20 mins",
-        aiReply: "🤖 Michi AI: Set route to SA Parking (12km ahead, heavy truck spot & shower available)!"
+        aiReply: "Set route to SA Parking (12km ahead, heavy truck spot & shower available)!"
       },
       {
         id: 2,
@@ -68,7 +68,7 @@ const GET_CAPABILITIES = (lang) => {
         icon: FileText,
         colorClass: "green",
         userMsg: "Generate Japanese resume with Medium Truck license & 3 yrs exp",
-        aiReply: "🤖 Michi AI: Successfully generated official JIS standard Japanese resume with Medium Truck License & 3 yrs exp!"
+        aiReply: "Successfully generated official JIS standard Japanese resume with Medium Truck License & 3 yrs exp!"
       },
       {
         id: 3,
@@ -78,7 +78,7 @@ const GET_CAPABILITIES = (lang) => {
         icon: Building2,
         colorClass: "purple",
         userMsg: "Show N3 heavy truck jobs paying ¥350k+ with housing",
-        aiReply: "🤖 Michi AI: Filtered 6 premium truck driver openings matching N3, ¥350k+ salary & housing!"
+        aiReply: "Filtered 6 premium truck driver openings matching N3, ¥350k+ salary & housing!"
       },
       {
         id: 4,
@@ -88,7 +88,7 @@ const GET_CAPABILITIES = (lang) => {
         icon: Wrench,
         colorClass: "orange",
         userMsg: "Show next month inspection and nearest partner garage",
-        aiReply: "🤖 Michi AI: Displayed upcoming Shaken date & nearest certified partner garage ready for booking!"
+        aiReply: "Displayed upcoming Shaken date & nearest certified partner garage ready for booking!"
       }
     ];
   } else {
@@ -102,7 +102,7 @@ const GET_CAPABILITIES = (lang) => {
         icon: Navigation,
         colorClass: "blue",
         userMsg: "20 daqiqa ichida to'xtash mumkin bo'lgan Oogata parkovkasini top",
-        aiReply: "🤖 Michi AI: 12km masofadagi SA parkovkasiga (Oogata bo'sh joy bor, dush mavjud) marshrut tuzildi!"
+        aiReply: "12km masofadagi SA parkovkasiga (Oogata bo'sh joy bor, dush mavjud) marshrut tuzildi!"
       },
       {
         id: 2,
@@ -112,7 +112,7 @@ const GET_CAPABILITIES = (lang) => {
         icon: FileText,
         colorClass: "green",
         userMsg: "Chugata litsenziyasi va 3 yillik tajriba bilan yaponcha rezyume tuz",
-        aiReply: "🤖 Michi AI: JIS standarti bo'yicha Chugata litsenziyasi va 3 yillik tajribangiz aks etgan yaponcha rezyume shakllantirildi!"
+        aiReply: "JIS standarti bo'yicha Chugata litsenziyasi va 3 yillik tajribangiz aks etgan yaponcha rezyume shakllantirildi!"
       },
       {
         id: 3,
@@ -122,7 +122,7 @@ const GET_CAPABILITIES = (lang) => {
         icon: Building2,
         colorClass: "purple",
         userMsg: "JLPT N3, oyligi 350,000 yen+ va yotoqxonali Oogata ishlarini ko'rsat",
-        aiReply: "🤖 Michi AI: JLPT N3, 350,000 yen+ maoshli va bepul yotoqxonalik 6 ta sara vakansiya ajratib olindi!"
+        aiReply: "JLPT N3, 350,000 yen+ maoshli va bepul yotoqxonalik 6 ta sara vakansiya ajratib olindi!"
       },
       {
         id: 4,
@@ -132,7 +132,7 @@ const GET_CAPABILITIES = (lang) => {
         icon: Wrench,
         colorClass: "orange",
         userMsg: "Kelasi oydagi texnik ko'rik va eng yaqin hamkor ustaxonani ko'rsat",
-        aiReply: "🤖 Michi AI: Shaken muddati va bron qilish mumkin bo'lgan eng yaqin hamkor ustaxona ko'rsatildi!"
+        aiReply: "Shaken muddati va bron qilish mumkin bo'lgan eng yaqin hamkor ustaxona ko'rsatildi!"
       }
     ];
   }
@@ -168,7 +168,7 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
         : 'Hoziroq Ovozli AIni Sinab Ko\'rish (Bepul)'),
     simHeader: currentLang === 'ja' ? 'リアルタイム音声コマンド' : (currentLang === 'en' ? 'Live Voice Commands' : 'Jonli Ovozli Buyruqlar'),
     simReady: currentLang === 'ja' ? '準備完了' : (currentLang === 'en' ? 'Ready' : 'Tayyor'),
-    simPromptLabel: currentLang === 'ja' ? '🗣️ 指示:' : (currentLang === 'en' ? '🗣️ Command:' : '🗣️ Buyruq:'),
+    simPromptLabel: currentLang === 'ja' ? '指示:' : (currentLang === 'en' ? 'Command:' : 'Buyruq:'),
     cmdPillLabel: currentLang === 'ja' ? '発話例:' : (currentLang === 'en' ? 'Example:' : 'Buyruq misoli:')
   };
 
@@ -298,10 +298,20 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
 
           <div className="assist-sim-display">
             <div className="assist-sim-user-msg">
-              <strong>{strings.simPromptLabel}</strong> "{selectedSimCmd.userMsg}"
+              <div className="sim-user-label">
+                <Mic size={13} color="#0084FF" />
+                <span>{strings.simPromptLabel}</span>
+              </div>
+              <span className="sim-user-text">"{selectedSimCmd.userMsg}"</span>
             </div>
             <div className="assist-sim-ai-msg">
-              {selectedSimCmd.aiReply}
+              <div className="sim-ai-label">
+                <div className="sim-ai-icon-wrap">
+                  <Bot size={12} color="#FFF" />
+                </div>
+                <span>Michi AI:</span>
+              </div>
+              <span className="sim-ai-text">{selectedSimCmd.aiReply}</span>
             </div>
           </div>
         </div>
