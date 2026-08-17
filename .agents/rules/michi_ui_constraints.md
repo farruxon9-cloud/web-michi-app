@@ -8,3 +8,5 @@
    - Service -> `サービス`
    - Academy -> `教習所`
    - Profile -> `マイページ`
+4. **Mobile Flex Viewport Overflow Invariant**: Every text container inside a flex item on mobile layouts MUST include `min-width: 0;` and `overflow-wrap: anywhere; word-break: break-word;` to strictly prevent any horizontal overflow past the mobile device frame.
+5. **No Raw Text Emojis**: Replace raw text emojis (`🗣️`, `🤖`) with Lucide vector icons wrapped in stylized 3D glassmorphic containers.
