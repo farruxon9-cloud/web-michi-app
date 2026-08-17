@@ -380,11 +380,10 @@ graph TD
   - `../utils/imageCompressor`
 
 ### 📦 [ServiceComingSoon](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/ServiceComingSoon.jsx)
-* **Fayl yo'li:** `src/components/ServiceComingSoon.jsx` (70 qator, 2604 bayt)
+* **Fayl yo'li:** `src/components/ServiceComingSoon.jsx` (21 qator, 615 bayt)
 * **Komponent Stillari:** 🎨 [ServiceComingSoon.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/ServiceComingSoon.css)
 * **Qabul qiladigan parametrlari (Props):**
-  - `onOpenAssistShowcase`
-  - `onNavigate`
+  - *Parametrlar mavjud emas*
 * **Import qilgan bog'liqliklari:**
   - `react`
   - `react-i18next`
