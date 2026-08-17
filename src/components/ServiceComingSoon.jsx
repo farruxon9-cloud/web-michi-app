@@ -18,42 +18,6 @@ export default function ServiceComingSoon({ onOpenAssistShowcase, onNavigate }) 
         </div>
       </div>
 
-      {/* 🚀 AI FLAGSHIP SUB-PROJECT BANNER */}
-      <div 
-        className="service-ai-banner squircle"
-        onClick={onOpenAssistShowcase}
-      >
-        <div className="service-ai-top">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div className="service-ai-bot-icon">
-              <Bot size={20} color="#FFF" />
-            </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span className="service-ai-tag">⚡ ASSIST. AI VISION 2026</span>
-                <span className="service-ai-badge">ASOSIY LOYIHA</span>
-              </div>
-              <h3 style={{ fontSize: '15px', fontWeight: '900', margin: '2px 0 0 0', color: 'var(--text-main)' }}>
-                Michi Voice AI Yordamchisi
-              </h3>
-            </div>
-          </div>
-          <ChevronRight size={22} color="#0084FF" />
-        </div>
-
-        <p className="service-ai-desc">
-          Yuk mashinasi haydovchilari uchun ovozli navigatsiya, Lawson/POI qidiruv va yaponcha rezyume (履歴書) avtomatlashtirish roboti.
-        </p>
-
-        <div className="service-ai-cta">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Sparkles size={14} color="#FFF" />
-            <span>AI Roboti Video Animatsiyasi va Simulyatorni Ochish</span>
-          </div>
-          <Zap size={15} color="#FFF" />
-        </div>
-      </div>
-
       {/* SERVICES GRID */}
       <div className="service-grid">
         <div className="service-card squircle" onClick={() => onNavigate && onNavigate('profile')}>
