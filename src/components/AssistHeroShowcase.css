@@ -608,12 +608,12 @@
 
 .assist-sim-user-msg {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   font-size: 12px;
-  line-height: 1.42;
-  word-break: keep-all;
-  overflow-wrap: break-word;
+  line-height: 1.45;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .sim-user-label {
@@ -628,16 +628,17 @@
   font-weight: 700;
   font-size: 11px;
   white-space: nowrap;
-  word-break: keep-all;
   flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .sim-user-text {
   color: var(--text-main, #1C1C1E);
   font-weight: 600;
   flex: 1;
-  word-break: keep-all;
-  overflow-wrap: break-word;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .dark-mode .sim-user-text {
@@ -651,11 +652,11 @@
   font-size: 12px;
   font-weight: 600;
   color: #0084FF;
-  line-height: 1.48;
+  line-height: 1.45;
   padding-top: 10px;
   border-top: 1px dashed rgba(0, 132, 255, 0.18);
-  word-break: keep-all;
-  overflow-wrap: break-word;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .dark-mode .assist-sim-ai-msg {
@@ -670,7 +671,7 @@
   flex-shrink: 0;
   color: #0084FF;
   margin-top: 1px;
-  word-break: keep-all;
+  white-space: nowrap;
 }
 
 .sim-ai-icon-wrap {
@@ -686,9 +687,10 @@
 
 .sim-ai-text {
   flex: 1;
+  min-width: 0;
   color: #0084FF;
-  word-break: keep-all;
-  overflow-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .dark-mode .sim-ai-text {
