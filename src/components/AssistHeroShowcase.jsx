@@ -172,6 +172,12 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
     cmdPillLabel: currentLang === 'ja' ? '発話例:' : (currentLang === 'en' ? 'Example:' : 'Buyruq misoli:')
   };
 
+  // Clean any legacy emoji or duplicate text prefixes
+  const cleanReplyText = (text) => {
+    if (!text) return '';
+    return text.replace(/^(🤖\s*)?(Michi AI:\s*)?/gi, '').trim();
+  };
+
   return (
     <div className={`assist-showcase-container ${darkMode ? 'dark-mode' : ''}`}>
       {/* Ambient Spotlight */}
@@ -311,7 +317,7 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
                 </div>
                 <span>Michi AI:</span>
               </div>
-              <span className="sim-ai-text">{selectedSimCmd.aiReply}</span>
+              <span className="sim-ai-text">{cleanReplyText(selectedSimCmd.aiReply)}</span>
             </div>
           </div>
         </div>
