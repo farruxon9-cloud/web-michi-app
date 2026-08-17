@@ -323,6 +323,15 @@
   box-shadow: 0 4px 16px rgba(0, 132, 255, 0.25);
 }
 
+.assist-primary-cta-full.active-toggle-off {
+  background: linear-gradient(135deg, #FF3B30 0%, #C41C14 100%);
+  box-shadow: 0 8px 24px rgba(255, 59, 48, 0.35);
+}
+
+.assist-primary-cta-full.active-toggle-off:active {
+  box-shadow: 0 4px 16px rgba(255, 59, 48, 0.25);
+}
+
 .assist-cta-bead {
   width: 26px;
   height: 26px;

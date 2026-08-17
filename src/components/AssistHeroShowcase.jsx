@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Bot, ChevronRight, FileText, Navigation, X, Zap, Building2, Wrench, Sparkles, Mic } from 'lucide-react';
+import { Bot, ChevronRight, FileText, Navigation, X, Zap, Building2, Wrench, Sparkles, Mic, MicOff } from 'lucide-react';
 import './AssistHeroShowcase.css';
 
 // 4 High-Converting Core Capability Pillars & Live Commands tailored for Michi Ecosystem
@@ -138,11 +138,24 @@ const GET_CAPABILITIES = (lang) => {
   }
 };
 
-export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }) {
+export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoice, onActivateVoice, darkMode }) {
   const { i18n } = useTranslation();
   const currentLang = i18n?.language || 'uz';
   const capabilities = GET_CAPABILITIES(currentLang);
   const [selectedSimCmd, setSelectedSimCmd] = useState(capabilities[0]);
+  const [internalVoiceActive, setInternalVoiceActive] = useState(false);
+
+  const activeState = isVoiceActive !== undefined ? isVoiceActive : internalVoiceActive;
+
+  const handleToggle = () => {
+    const nextState = !activeState;
+    setInternalVoiceActive(nextState);
+    if (onToggleVoice) {
+      onToggleVoice(nextState);
+    } else if (onActivateVoice) {
+      onActivateVoice(nextState);
+    }
+  };
 
   // High-converting Localized strings
   const strings = {
@@ -166,6 +179,11 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
       : (currentLang === 'en' 
         ? 'Experience Voice AI Now (Free)' 
         : 'Hoziroq Ovozli AIni Sinab Ko\'rish (Bepul)'),
+    mainCtaOff: currentLang === 'ja'
+      ? '音声AIを停止する'
+      : (currentLang === 'en'
+        ? 'Stop Voice AI'
+        : 'Ovozli AIni O\'chirish'),
     simHeader: currentLang === 'ja' ? 'リアルタイム音声コマンド' : (currentLang === 'en' ? 'Live Voice Commands' : 'Jonli Ovozli Buyruqlar'),
     simReady: currentLang === 'ja' ? '準備完了' : (currentLang === 'en' ? 'Ready' : 'Tayyor'),
     simPromptLabel: currentLang === 'ja' ? '指示:' : (currentLang === 'en' ? 'Command:' : 'Buyruq:'),
@@ -246,11 +264,14 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
           </div>
         </div>
 
-        {/* Single Clear High-Converting Action Button */}
-        <button className="assist-primary-cta-full" onClick={onActivateVoice}>
-          <span>{strings.mainCta}</span>
+        {/* Dynamic Dual ON/OFF Voice Toggle Button */}
+        <button 
+          className={`assist-primary-cta-full ${activeState ? 'active-toggle-off' : ''}`} 
+          onClick={handleToggle}
+        >
+          <span>{activeState ? strings.mainCtaOff : strings.mainCta}</span>
           <div className="assist-cta-bead">
-            <ChevronRight size={16} />
+            {activeState ? <MicOff size={16} /> : <ChevronRight size={16} />}
           </div>
         </button>
 

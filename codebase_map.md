@@ -72,10 +72,12 @@ graph TD
   - `lucide-react`
 
 ### 📦 [AssistHeroShowcase](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/AssistHeroShowcase.jsx)
-* **Fayl yo'li:** `src/components/AssistHeroShowcase.jsx` (329 qator, 13513 bayt)
+* **Fayl yo'li:** `src/components/AssistHeroShowcase.jsx` (350 qator, 14250 bayt)
 * **Komponent Stillari:** 🎨 [AssistHeroShowcase.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/AssistHeroShowcase.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
+  - `isVoiceActive`
+  - `onToggleVoice`
   - `onActivateVoice`
   - `darkMode`
 * **Import qilgan bog'liqliklari:**
@@ -276,7 +278,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (4882 qator, 258590 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (4883 qator, 258663 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`

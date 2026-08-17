@@ -1969,9 +1969,10 @@ const getLicenseLabel = (type) => {
     return (
       <AssistHeroShowcase 
         onBack={() => setActivePage('about')} 
-        onActivateVoice={() => {
-          if (setIsVoiceActive) setIsVoiceActive(true);
-          if (setIsVoiceStandby) setIsVoiceStandby(true);
+        isVoiceActive={isVoiceActive || isVoiceStandby}
+        onToggleVoice={(nextState) => {
+          if (setIsVoiceActive) setIsVoiceActive(nextState);
+          if (setIsVoiceStandby) setIsVoiceStandby(nextState);
         }}
         darkMode={darkMode}
       />
