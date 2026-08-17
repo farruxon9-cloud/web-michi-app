@@ -1,4 +1,4 @@
-/* AssistHeroShowcase.css - Mobile-Native Pixel-Perfect Fluid Layout */
+/* AssistHeroShowcase.css - Mobile-Native Pixel-Perfect Fluid Layout with Professional Typography */
 
 .assist-showcase-container {
   position: relative;
@@ -68,7 +68,7 @@
 
 .dark-mode .assist-nav-glass {
   background: rgba(24, 28, 38, 0.88);
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.15);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -106,7 +106,7 @@
 
 .assist-close-btn {
   background: rgba(120, 120, 128, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -117,6 +117,11 @@
   color: inherit;
   backdrop-filter: blur(10px);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+}
+
+.dark-mode .assist-close-btn {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .assist-close-btn:active {
@@ -145,7 +150,7 @@
   padding: 5px 14px 5px 6px;
   border-radius: 20px;
   background: rgba(0, 132, 255, 0.08);
-  border: 1px solid rgba(0, 132, 255, 0.18);
+  border: 1px solid rgba(0, 132, 255, 0.2);
   font-size: 11.5px;
   color: #0084FF;
   margin-bottom: 14px;
@@ -165,17 +170,24 @@
 
 .assist-social-bold {
   font-weight: 700;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .assist-display-heading {
   font-size: 23px;
   font-weight: 900;
-  line-height: 1.25;
-  letter-spacing: -0.6px;
+  line-height: 1.28;
+  letter-spacing: -0.5px;
   margin: 0 0 10px 0;
   padding: 0 4px;
   box-sizing: border-box;
   width: 100%;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-break: strict;
+  hyphens: auto;
+  -webkit-hyphens: auto;
 }
 
 .assist-text-gradient {
@@ -192,16 +204,21 @@
 
 .assist-body-lead {
   font-size: 13.5px;
-  line-height: 1.48;
-  color: var(--text-secondary, #636366);
+  line-height: 1.52;
+  letter-spacing: -0.1px;
+  color: var(--text-secondary, #48484A);
   margin: 0 0 18px 0;
-  padding: 0 6px;
+  padding: 0 4px;
   box-sizing: border-box;
   width: 100%;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
 }
 
 .dark-mode .assist-body-lead {
-  color: #A1A1A6;
+  color: #C7C7CC;
 }
 
 /* 3D Robot Card Showcase */
@@ -210,8 +227,8 @@
   width: 100%;
   padding: 12px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(0, 132, 255, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid rgba(0, 132, 255, 0.18);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -223,7 +240,7 @@
 
 .dark-mode .assist-hero-robot-card {
   background: #111723;
-  border-color: rgba(0, 132, 255, 0.25);
+  border-color: rgba(0, 132, 255, 0.3);
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
 }
 
@@ -288,6 +305,7 @@
   color: #FFFFFF;
   font-size: 15.5px;
   font-weight: 700;
+  letter-spacing: -0.2px;
   border: none;
   display: flex;
   align-items: center;
@@ -333,29 +351,29 @@
   gap: 14px;
   padding: 16px;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid rgba(0, 132, 255, 0.12);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
   cursor: pointer;
   box-sizing: border-box;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .dark-mode .assist-bento-card {
-  background: rgba(24, 28, 38, 0.88);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  background: rgba(24, 28, 38, 0.95);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 .assist-bento-card.active-bento {
   border-color: #0084FF;
-  background: rgba(0, 132, 255, 0.05);
-  box-shadow: 0 8px 24px rgba(0, 132, 255, 0.12);
+  background: rgba(0, 132, 255, 0.06);
+  box-shadow: 0 8px 24px rgba(0, 132, 255, 0.16);
 }
 
 .dark-mode .assist-bento-card.active-bento {
   border-color: #0084FF;
-  background: rgba(0, 132, 255, 0.12);
+  background: rgba(0, 132, 255, 0.16);
 }
 
 .assist-bento-icon-wrap {
@@ -411,23 +429,31 @@
 .assist-bento-body h3 {
   font-size: 14px;
   font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
   margin: 0 0 6px 0;
   color: var(--text-main, #1C1C1E);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-break: strict;
 }
 
 .dark-mode .assist-bento-body h3 {
-  color: #F2F2F7;
+  color: #FFFFFF;
 }
 
 .assist-bento-body p {
   font-size: 12px;
   color: var(--text-secondary, #636366);
   margin: 0 0 10px 0;
-  line-height: 1.44;
+  line-height: 1.48;
+  letter-spacing: 0.05px;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .dark-mode .assist-bento-body p {
-  color: #A1A1A6;
+  color: #C7C7CC;
 }
 
 .assist-cmd-example-box {
@@ -435,7 +461,7 @@
   align-items: center;
   gap: 8px;
   background: rgba(0, 132, 255, 0.08);
-  border: 1px solid rgba(0, 132, 255, 0.18);
+  border: 1px solid rgba(0, 132, 255, 0.2);
   padding: 6px 10px;
   border-radius: 10px;
   font-size: 11px;
@@ -446,15 +472,16 @@
 }
 
 .dark-mode .assist-cmd-example-box {
-  background: rgba(0, 132, 255, 0.15);
-  border-color: rgba(0, 132, 255, 0.3);
+  background: rgba(0, 132, 255, 0.16);
+  border-color: rgba(0, 132, 255, 0.35);
   color: #38ACFF;
 }
 
 .cmd-example-tag {
   font-weight: 800;
-  opacity: 0.9;
+  opacity: 0.95;
   white-space: nowrap;
+  word-break: keep-all;
 }
 
 .cmd-example-text {
@@ -462,25 +489,26 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  word-break: keep-all;
 }
 
 /* Live Voice Simulator Section */
 .assist-simulator-card {
   width: 100%;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid rgba(0, 132, 255, 0.14);
   border-radius: 24px;
   padding: 18px;
   box-sizing: border-box;
   text-align: left;
   margin-bottom: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
 .dark-mode .assist-simulator-card {
-  background: rgba(24, 28, 38, 0.88);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  background: rgba(24, 28, 38, 0.95);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 .assist-sim-header {
@@ -496,13 +524,16 @@
   gap: 8px;
   font-size: 13.5px;
   font-weight: 800;
+  letter-spacing: -0.2px;
+  word-break: keep-all;
 }
 
 .assist-sim-status {
   font-size: 10.5px;
   font-weight: 700;
   color: #34C759;
-  background: rgba(52, 199, 89, 0.12);
+  background: rgba(52, 199, 89, 0.14);
+  border: 1px solid rgba(52, 199, 89, 0.25);
   padding: 4px 10px;
   border-radius: 10px;
 }
@@ -522,45 +553,47 @@
   padding: 10px 12px;
   border-radius: 14px;
   background: rgba(120, 120, 128, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   font-size: 11.5px;
   font-weight: 600;
   color: #1C1C1E;
   cursor: pointer;
   box-sizing: border-box;
   text-align: center;
+  word-break: keep-all;
+  overflow-wrap: break-word;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .dark-mode .assist-sim-cmd-pill {
   background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.12);
   color: #F2F2F7;
 }
 
 .assist-sim-cmd-pill:hover {
   background: rgba(0, 132, 255, 0.08);
-  border-color: rgba(0, 132, 255, 0.2);
+  border-color: rgba(0, 132, 255, 0.25);
 }
 
 .assist-sim-cmd-pill.active {
-  background: linear-gradient(135deg, rgba(0, 132, 255, 0.15) 0%, rgba(0, 86, 198, 0.22) 100%);
-  border-color: rgba(0, 132, 255, 0.4);
+  background: linear-gradient(135deg, rgba(0, 132, 255, 0.18) 0%, rgba(0, 86, 198, 0.25) 100%);
+  border-color: rgba(0, 132, 255, 0.45);
   color: #0084FF;
   font-weight: 700;
-  box-shadow: 0 3px 10px rgba(0, 132, 255, 0.15);
+  box-shadow: 0 3px 12px rgba(0, 132, 255, 0.18);
 }
 
 .dark-mode .assist-sim-cmd-pill.active {
-  background: linear-gradient(135deg, rgba(0, 132, 255, 0.25) 0%, rgba(0, 86, 198, 0.35) 100%);
-  border-color: rgba(0, 132, 255, 0.5);
+  background: linear-gradient(135deg, rgba(0, 132, 255, 0.28) 0%, rgba(0, 86, 198, 0.38) 100%);
+  border-color: rgba(0, 132, 255, 0.55);
   color: #38ACFF;
 }
 
 .assist-sim-display {
   background: rgba(0, 132, 255, 0.04);
-  border: 1px solid rgba(0, 132, 255, 0.14);
+  border: 1.2px solid rgba(0, 132, 255, 0.16);
   border-radius: 18px;
   padding: 12px 14px;
   display: flex;
@@ -569,8 +602,8 @@
 }
 
 .dark-mode .assist-sim-display {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(0, 132, 255, 0.25);
+  background: rgba(0, 0, 0, 0.32);
+  border-color: rgba(0, 132, 255, 0.28);
 }
 
 .assist-sim-user-msg {
@@ -578,7 +611,9 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.42;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .sim-user-label {
@@ -586,13 +621,14 @@
   align-items: center;
   gap: 4px;
   background: rgba(0, 132, 255, 0.12);
-  border: 1px solid rgba(0, 132, 255, 0.22);
+  border: 1px solid rgba(0, 132, 255, 0.24);
   padding: 3px 8px;
   border-radius: 8px;
   color: #0084FF;
   font-weight: 700;
   font-size: 11px;
   white-space: nowrap;
+  word-break: keep-all;
   flex-shrink: 0;
 }
 
@@ -600,6 +636,8 @@
   color: var(--text-main, #1C1C1E);
   font-weight: 600;
   flex: 1;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .dark-mode .sim-user-text {
@@ -613,13 +651,15 @@
   font-size: 12px;
   font-weight: 600;
   color: #0084FF;
-  line-height: 1.45;
+  line-height: 1.48;
   padding-top: 10px;
-  border-top: 1px dashed rgba(0, 132, 255, 0.15);
+  border-top: 1px dashed rgba(0, 132, 255, 0.18);
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .dark-mode .assist-sim-ai-msg {
-  border-top-color: rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.15);
 }
 
 .sim-ai-label {
@@ -630,6 +670,7 @@
   flex-shrink: 0;
   color: #0084FF;
   margin-top: 1px;
+  word-break: keep-all;
 }
 
 .sim-ai-icon-wrap {
@@ -646,6 +687,8 @@
 .sim-ai-text {
   flex: 1;
   color: #0084FF;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .dark-mode .sim-ai-text {
