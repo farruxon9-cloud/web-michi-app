@@ -181,7 +181,9 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
       <div className="assist-nav-wrapper">
         <div className="assist-nav-glass">
           <div className="assist-brand" onClick={onBack}>
-            <Bot className="assist-brand-icon" />
+            <div className="assist-brand-icon-wrap">
+              <Bot size={16} color="#FFF" />
+            </div>
             <span>Assist. AI</span>
           </div>
 
@@ -191,7 +193,7 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
               className="assist-close-btn"
               title="Close"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           )}
         </div>
@@ -201,7 +203,9 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
       <div className="assist-hero-mobile-content">
         {/* Social Proof Badge */}
         <div className="assist-social-badge">
-          <Sparkles size={13} color="#0084FF" />
+          <div className="assist-social-badge-icon">
+            <Sparkles size={12} color="#0084FF" />
+          </div>
           <span className="assist-social-text">
             <span className="assist-social-bold">{strings.badge}</span>
           </span>
