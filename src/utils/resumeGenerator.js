@@ -534,6 +534,9 @@ export async function generateRirekisho(profileData, options = {}) {
 
   // Trigger PDF Download or open preview
   try {
+    if (!pdfMake.fonts || !pdfMake.fonts.SawarabiGothic || !pdfMake.vfs || !pdfMake.vfs['SawarabiGothic-Regular.ttf']) {
+      await initFonts(onProgress);
+    }
     const pdf = pdfMake.createPdf(docDefinition);
     if (download) {
       const filename = `Rirekisho_${profileData.fullName.replace(/\s+/g, '_')}.pdf`;

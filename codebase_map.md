@@ -585,7 +585,7 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### ⚙️ [resumeGenerator.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/resumeGenerator.js)
-* **Yo'li:** `src/utils/resumeGenerator.js` (554 qator, 19065 bayt)
+* **Yo'li:** `src/utils/resumeGenerator.js` (557 qator, 19227 bayt)
 * **Eksport qilingan funksiyalari:**
   - *Eksportlar aniqlanmadi yoki yo'q*
 * **Importlari:** `pdfmake/build/pdfmake`, `./japaneseEra`
