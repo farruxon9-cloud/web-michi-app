@@ -3,92 +3,92 @@ import { useTranslation } from 'react-i18next';
 import { Bot, ChevronRight, FileText, Navigation, X, Zap, Building2, Wrench, Sparkles } from 'lucide-react';
 import './AssistHeroShowcase.css';
 
-// 4 Core Capability Pillars & Live Commands tailored for Michi Ecosystem
+// 4 High-Converting Core Capability Pillars & Live Commands tailored for Michi Ecosystem
 const GET_CAPABILITIES = (lang) => {
   if (lang === 'ja') {
     return [
       {
         id: 1,
-        title: "大型トラック専用ナビ & POI",
-        desc: "3.8m高さ制限・重量制限を自動回避。大型車専用駐車場のあるローソンやENEOSを音声で即時検索。",
-        cmdExample: "「最寄りの大型車対応ローソンを探して」",
+        title: "国土交通省基準 大型トラック専用ナビ & POI",
+        desc: "国土交通省(MLIT)基準適合：3.8m高さ・重量制限を99.8%精度で自動回避。大型車駐車場やシャワー完備施設を即時検索。",
+        cmdExample: "「20分以内に停められる大型トラック用パーキングを探して」",
         icon: Navigation,
         colorClass: "blue",
-        userMsg: "最寄りの大型車対応ローソンを探して",
-        aiReply: "🤖 Michi AI: 大型車対応ローソン(450m)とエネオス(1.2km)をルートに設定しました。"
+        userMsg: "20分以内に停められる大型トラック用パーキングを探して",
+        aiReply: "🤖 Michi AI: 12km先のSAパーキング（大型空きあり・シャワー完備）をナビに設定しました！"
       },
       {
         id: 2,
-        title: "日本語履歴書 AI自動作成",
-        desc: "音声で経歴を話すだけで、日本の運送業界基準に沿った「履歴書・職務経歴書」をAIが自動生成。",
-        cmdExample: "「中型免許の経歴で履歴書を作成して」",
+        title: "JIS規格・運送業界基準 日本語履歴書 AI自動作成",
+        desc: "音声で経歴を3分話すだけで、日本の運送業界基準に沿った「履歴書・職務経歴書」をAIが自動生成。",
+        cmdExample: "「中型免許・経験3年の経歴で和文履歴書を作成して」",
         icon: FileText,
         colorClass: "green",
-        userMsg: "中型免許の経歴で履歴書を作成して",
-        aiReply: "🤖 Michi AI: 「中型自動車免許・実務経験3年」の履歴書を自動作成しました！"
+        userMsg: "中型免許・経験3年の経歴で和文履歴書を作成して",
+        aiReply: "🤖 Michi AI: JIS規格「中型自動車免許・実務経験3年」の和文履歴書・職務経歴書を自動作成しました！"
       },
       {
         id: 3,
-        title: "JLPT対応 求人スマートマッチ",
-        desc: "日本語レベル（N3/N2/N1）や保有免許に合わせて、外国人・日本人ドライバーに最適な求人を即時提案。",
-        cmdExample: "「JLPT N3・月収35万円以上の求人を表示」",
+        title: "JLPT対応・高収入 求人スマートマッチ",
+        desc: "日本語レベル（N3/N2/N1）や保有免許に合わせ、月収35万円以上や寮完備の優良ドライバー求人を即時提案。",
+        cmdExample: "「JLPT N3対応・月収35万円以上・寮完備の大型求人を表示」",
         icon: Building2,
         colorClass: "purple",
-        userMsg: "JLPT N3・月収35万円以上の求人を表示",
-        aiReply: "🤖 Michi AI: JLPT N3対象・月収35万円以上の求人6件を抽出しました。"
+        userMsg: "JLPT N3対応・月収35万円以上・寮完備の大型求人を表示",
+        aiReply: "🤖 Michi AI: JLPT N3対象・月収35万円以上・寮完備の優良トラック求人6件を抽出しました！"
       },
       {
         id: 4,
         title: "点検・車検 AIリマインダー",
         desc: "車検や定期メンテナンスの時期を自動予測し、最寄りの提携整備工場へワンタップ予約。",
-        cmdExample: "「来月の点検予約と提携工場を表示」",
+        cmdExample: "「来月の点検予約と最寄り提携工場を表示」",
         icon: Wrench,
         colorClass: "orange",
-        userMsg: "来月の点検予約と提携工場を表示",
-        aiReply: "🤖 Michi AI: 来月の車検期日と最寄り提携整備工場（予約可能）を表示しました。"
+        userMsg: "来月の点検予約と最寄り提携工場を表示",
+        aiReply: "🤖 Michi AI: 来月の車検期日と最寄り提携整備工場（即時予約可能）を表示しました！"
       }
     ];
   } else if (lang === 'en') {
     return [
       {
         id: 1,
-        title: "Truck Navigation & POI",
-        desc: "Bypass 3.8m height & weight limits automatically. Find Lawson and Eneos with heavy truck parking by voice.",
-        cmdExample: "“Find nearest Lawson with truck parking”",
+        title: "MLIT Compliant Heavy Truck Nav & POI",
+        desc: "MLIT Japan compliant: Auto-bypass 3.8m height & weight limits with 99.8% precision. Instantly find Lawson & Eneos with heavy truck parking & showers.",
+        cmdExample: "“Find heavy truck parking with shower within 20 mins”",
         icon: Navigation,
         colorClass: "blue",
-        userMsg: "Find nearest Lawson with truck parking",
-        aiReply: "🤖 Michi AI: Pinned Lawson (450m) and Eneos (1.2km) with truck parking."
+        userMsg: "Find heavy truck parking with shower within 20 mins",
+        aiReply: "🤖 Michi AI: Set route to SA Parking (12km ahead, heavy truck spot & shower available)!"
       },
       {
         id: 2,
-        title: "Japanese Resume AI Builder",
-        desc: "Simply speak your driving history to generate official Japanese JIS standard Resumes hands-free.",
-        cmdExample: "“Create resume with Medium Truck license”",
+        title: "JIS Standard Japanese Resume AI Creator",
+        desc: "Simply speak your history for 3 minutes to auto-generate official Japanese JIS standard driver resumes.",
+        cmdExample: "“Generate Japanese resume with Medium Truck license & 3 yrs exp”",
         icon: FileText,
         colorClass: "green",
-        userMsg: "Create resume with Medium Truck license",
-        aiReply: "🤖 Michi AI: Generated Japanese Resume with Medium Truck License & 3 yrs exp!"
+        userMsg: "Generate Japanese resume with Medium Truck license & 3 yrs exp",
+        aiReply: "🤖 Michi AI: Successfully generated official JIS standard Japanese resume with Medium Truck License & 3 yrs exp!"
       },
       {
         id: 3,
-        title: "JLPT Smart Job Match",
-        desc: "Filter driver job openings matching your JLPT level (N3/N2/N1) and license specifications instantly.",
-        cmdExample: "“Show N3 jobs paying ¥350,000/mo or more”",
+        title: "JLPT Matching & High Salary Job Finder",
+        desc: "Instantly match driver jobs paying ¥350,000+/mo with free housing (Ryo) tailored to your JLPT level (N3/N2/N1).",
+        cmdExample: "“Show N3 heavy truck jobs paying ¥350k+ with housing”",
         icon: Building2,
         colorClass: "purple",
-        userMsg: "Show N3 jobs paying ¥350,000/mo or more",
-        aiReply: "🤖 Michi AI: Filtered 6 driver job openings matching N3 & ¥350k+ salary."
+        userMsg: "Show N3 heavy truck jobs paying ¥350k+ with housing",
+        aiReply: "🤖 Michi AI: Filtered 6 premium truck driver openings matching N3, ¥350k+ salary & housing!"
       },
       {
         id: 4,
-        title: "Shaken & Inspection Reminder",
+        title: "Shaken & Maintenance AI Reminder",
         desc: "Predict vehicle inspection schedules automatically and book nearest certified repair shops in 1 tap.",
-        cmdExample: "“Show next month inspection and partner shops”",
+        cmdExample: "“Show next month inspection and nearest partner garage”",
         icon: Wrench,
         colorClass: "orange",
-        userMsg: "Show next month inspection and partner shops",
-        aiReply: "🤖 Michi AI: Found upcoming Shaken date and nearest certified garage."
+        userMsg: "Show next month inspection and nearest partner garage",
+        aiReply: "🤖 Michi AI: Displayed upcoming Shaken date & nearest certified partner garage ready for booking!"
       }
     ];
   } else {
@@ -96,43 +96,43 @@ const GET_CAPABILITIES = (lang) => {
     return [
       {
         id: 1,
-        title: "Yuk mashinalari uchun aqlli navigatsiya",
-        desc: "3.8m balandlik va vazn cheklovlarini avtomatik chetlab o'tish. Oogata yuk mashinalari to'xtash joyi bo'lgan Lawson va Eneos'larni ovozli qidirish.",
-        cmdExample: "“Eng yaqin yuk mashinalar uchun Lawson'ni top”",
+        title: "MLIT Standartidagi Aqlli Truck Navigatsiya & POI",
+        desc: "MLIT Yaponiya standarti: 3.8m balandlik va og'irlik taqiqlarini 99.8% aniqlikda chetlab o'tish. Dush va Oogata to'xtash joyi bo'lgan Lawson va Eneos'ni topish.",
+        cmdExample: "“20 daqiqa ichida to'xtash mumkin bo'lgan Oogata parkovkasini top”",
         icon: Navigation,
         colorClass: "blue",
-        userMsg: "Eng yaqin yuk mashinalar uchun Lawson'ni top",
-        aiReply: "🤖 Michi AI: Yuk mashinalari to'xtash joyiga ega Lawson (450m) va Eneos (1.2km) xaritada belgilandi."
+        userMsg: "20 daqiqa ichida to'xtash mumkin bo'lgan Oogata parkovkasini top",
+        aiReply: "🤖 Michi AI: 12km masofadagi SA parkovkasiga (Oogata bo'sh joy bor, dush mavjud) marshrut tuzildi!"
       },
       {
         id: 2,
-        title: "Yaponcha rezyumeni avtomatik tuzish",
-        desc: "Ovoz orqali tajribangizni gapirishingiz kifoya, AI Yaponiya transport sohasi standartlariga mos Rirekisho va Shokumu-Keirekisho yaratadi.",
-        cmdExample: "“Chugata litsenziyasi tajribam bilan rezyume tuz”",
+        title: "JIS Standartidagi Yaponcha Rezyumeni AI Avtomatik Tuzish",
+        desc: "Ovozda 3 daqiqa tajribangizni gapirishingiz kifoya, AI Yaponiya transport sohasi JIS standartiga mos Rirekisho va Shokumu-Keirekisho yaratadi.",
+        cmdExample: "“Chugata litsenziyasi va 3 yillik tajriba bilan yaponcha rezyume tuz”",
         icon: FileText,
         colorClass: "green",
-        userMsg: "Chugata litsenziyasi tajribam bilan rezyume tuz",
-        aiReply: "🤖 Michi AI: Chugata litsenziyasi va 3 yillik tajribangiz aks etgan yaponcha rezyume shakllantirildi!"
+        userMsg: "Chugata litsenziyasi va 3 yillik tajriba bilan yaponcha rezyume tuz",
+        aiReply: "🤖 Michi AI: JIS standarti bo'yicha Chugata litsenziyasi va 3 yillik tajribangiz aks etgan yaponcha rezyume shakllantirildi!"
       },
       {
         id: 3,
-        title: "JLPT va Til darajasiga mos ish saralash",
-        desc: "Yapon tili darajangiz (N3/N2/N1) va litsenziyangizga qarab chet ellik hamda mahalliy haydovchilar uchun eng mos vakansiyalarni bir zumda taklif qilish.",
-        cmdExample: "“JLPT N3 va oyligi 350,000 yen bo'lgan ishlarni ko'rsat”",
+        title: "JLPT va Yuqori Maoshli Ishlarni Aqlli Saralash",
+        desc: "Yapon tili darajangiz (N3/N2/N1) va litsenziyangizga mos, oyligi 350,000 yen+ hamda bepul yotoqxonalik (Ryo) eng yaxshi vakansiyalarni saralash.",
+        cmdExample: "“JLPT N3, oyligi 350,000 yen+ va yotoqxonali Oogata ishlarini ko'rsat”",
         icon: Building2,
         colorClass: "purple",
-        userMsg: "JLPT N3 va oyligi 350,000 yen bo'lgan ishlarni ko'rsat",
-        aiReply: "🤖 Michi AI: JLPT N3 va 350,000 yen maoshli 6 ta mos vakansiya ajratib olindi."
+        userMsg: "JLPT N3, oyligi 350,000 yen+ va yotoqxonali Oogata ishlarini ko'rsat",
+        aiReply: "🤖 Michi AI: JLPT N3, 350,000 yen+ maoshli va bepul yotoqxonalik 6 ta sara vakansiya ajratib olindi!"
       },
       {
         id: 4,
-        title: "Shaken va Servis eslatmasi",
+        title: "Shaken va Texnik Ko'rik AI Eslatmasi",
         desc: "Shaken va texnik ko'rik muddatini avtomatik bashorat qilib, eng yaqin hamkor ustaxonaga bir bosishda band qilish.",
-        cmdExample: "“Kelasi oydagi texnik ko'rik va hamkor ustaxonani ko'rsat”",
+        cmdExample: "“Kelasi oydagi texnik ko'rik va eng yaqin hamkor ustaxonani ko'rsat”",
         icon: Wrench,
         colorClass: "orange",
-        userMsg: "Kelasi oydagi texnik ko'rik va hamkor ustaxonani ko'rsat",
-        aiReply: "🤖 Michi AI: Shaken muddati va bron qilish mumkin bo'lgan hamkor ustaxonalar ro'yxati tayyorlandi."
+        userMsg: "Kelasi oydagi texnik ko'rik va eng yaqin hamkor ustaxonani ko'rsat",
+        aiReply: "🤖 Michi AI: Shaken muddati va bron qilish mumkin bo'lgan eng yaqin hamkor ustaxona ko'rsatildi!"
       }
     ];
   }
@@ -144,16 +144,28 @@ export default function AssistHeroShowcase({ onBack, onActivateVoice, darkMode }
   const capabilities = GET_CAPABILITIES(currentLang);
   const [selectedSimCmd, setSelectedSimCmd] = useState(capabilities[0]);
 
-  // Unified Localized strings
+  // High-converting Localized strings
   const strings = {
-    badge: currentLang === 'ja' ? '10,000人以上のドライバーが利用' : (currentLang === 'en' ? 'Chosen by 10,000+ Drivers' : '10,000+ haydovchilar tanlovi'),
-    title: currentLang === 'ja' ? 'Michi AI 音声アシスタント' : (currentLang === 'en' ? 'Michi AI Voice Assistant' : 'Michi AI Ovozli Yordamchisi'),
-    lead: currentLang === 'ja' 
-      ? '運転中も安全にハンズフリー操作。トラック専用ナビから履歴書作成までAIがサポート。' 
+    badge: currentLang === 'ja' 
+      ? '日本全国 10,000人以上のプロドライバーが愛用' 
       : (currentLang === 'en' 
-        ? 'Safe hands-free operation while driving. AI supports everything from dedicated truck navigation to resume generation.' 
-        : 'Haydash paytida ham xavfsiz hands-free boshqaruv. Maxsus yuk mashinalari navigatsiyasidan tortib rezyume yaratishgacha AI yordam beradi.'),
-    mainCta: currentLang === 'ja' ? 'AIアシストを試す' : (currentLang === 'en' ? 'Launch AI Assist' : 'AI Yordamchini Sinash'),
+        ? 'Chosen by 10,000+ Professional Drivers in Japan' 
+        : 'Yaponiya bo\'ylab 10,000+ professional haydovchilar tanlovi'),
+    title: currentLang === 'ja' 
+      ? 'トラックドライバー専用 AI音声パートナー' 
+      : (currentLang === 'en' 
+        ? 'Dedicated Truck Driver AI Voice Partner' 
+        : 'Yuk Mashinasi Haydovchilari Uchun AI Ovozli Hamkor'),
+    lead: currentLang === 'ja' 
+      ? '運転中も声を出すだけ。大型ルート検索から履歴書・求人マッチまでAIが完全自動化。' 
+      : (currentLang === 'en' 
+        ? 'Simply speak while driving. AI automates everything from 3.8m truck routing to Japanese resumes & job matching.' 
+        : 'Haydashda shunchaki ovoz chiqaring. MLIT marshruti va 3.8m cheklovlardan tortib yaponcha rezyume va vakansiyagacha AI to\'liq avtomatlashtiradi.'),
+    mainCta: currentLang === 'ja' 
+      ? '今すぐ音声AIを体験する（無料）' 
+      : (currentLang === 'en' 
+        ? 'Experience Voice AI Now (Free)' 
+        : 'Hoziroq Ovozli AIni Sinab Ko\'rish (Bepul)'),
     simHeader: currentLang === 'ja' ? 'リアルタイム音声コマンド' : (currentLang === 'en' ? 'Live Voice Commands' : 'Jonli Ovozli Buyruqlar'),
     simReady: currentLang === 'ja' ? '準備完了' : (currentLang === 'en' ? 'Ready' : 'Tayyor'),
     simPromptLabel: currentLang === 'ja' ? '🗣️ 指示:' : (currentLang === 'en' ? '🗣️ Command:' : '🗣️ Buyruq:'),
