@@ -278,7 +278,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (4883 qator, 258663 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (4882 qator, 258859 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -665,7 +665,7 @@ graph TD
 * **Importlari:** `react`, `lucide-react`, `react-i18next`, `./components/Splash`, `./components/LanguageSelect`, `./components/RoleSelect`, `./components/BottomNav`, `./components/Dashboard`, `./components/DriverFeed`, `./components/JobDetail`, `./components/DrivingAcademy`, `./components/ServiceComingSoon`, `./components/Profile`, `./components/AdminDashboard`, `./components/CompanyHome`, `./components/VoiceAssistant`, `./components/RobotAvatar`, `./components/JDMNavigation`, `./components/AssistHeroShowcase`, `./components/ErrorBoundary`
 
 ### 📄 [en.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/en.js)
-* **Yo'li:** `src/locales/en.js` (624 qator)
+* **Yo'li:** `src/locales/en.js` (630 qator)
 * **Importlari:** *Yo'q*
 
 ### 📄 [i18n.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/i18n.js)
@@ -681,7 +681,7 @@ graph TD
 * **Importlari:** `./uz.js`, `./ja.js`, `./en.js`, `./vi.js`, `./zh.js`, `./ne.js`, `./ru.js`
 
 ### 📄 [ja.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/ja.js)
-* **Yo'li:** `src/locales/ja.js` (714 qator)
+* **Yo'li:** `src/locales/ja.js` (720 qator)
 * **Importlari:** *Yo'q*
 
 ### 📄 [main.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/main.jsx)
@@ -697,7 +697,7 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### 📄 [uz.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/uz.js)
-* **Yo'li:** `src/locales/uz.js` (628 qator)
+* **Yo'li:** `src/locales/uz.js` (634 qator)
 * **Importlari:** *Yo'q*
 
 ### 📄 [vi.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/vi.js)

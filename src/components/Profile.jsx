@@ -2044,53 +2044,52 @@ const getLicenseLabel = (type) => {
               </div>
             </div>
 
-            {/* 🤖 Assist. AI Hero Showcase & Automation Roadmap Bento Card (Moved from Home Page) */}
+            {/* AI Flagship Sub-Project Bento Card (Compact & Sleek) */}
             <div 
-              className="about-glass-card card-primary about-span-2 about-animate-item about-delay-3" 
+              className="about-glass-card about-span-2 about-animate-item about-delay-3"
               onClick={() => setActivePage('assist_showcase')}
               style={{ 
-                padding: '20px 24px', 
+                padding: '14px 16px', 
                 cursor: 'pointer',
-                background: 'linear-gradient(135deg, rgba(0, 132, 255, 0.12) 0%, rgba(96, 177, 255, 0.05) 100%)',
-                border: '1px solid rgba(0, 132, 255, 0.25)',
-                boxShadow: '0 8px 32px rgba(0, 132, 255, 0.06)'
+                background: 'linear-gradient(135deg, rgba(0, 132, 255, 0.12) 0%, rgba(96, 177, 255, 0.04) 100%)',
+                border: '1.2px solid rgba(0, 132, 255, 0.28)',
+                boxShadow: '0 6px 24px rgba(0, 132, 255, 0.06)'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
-                <div style={{ flex: 1, paddingRight: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1.5px', color: '#0084FF', textTransform: 'uppercase' }}>
-                      ⚡ ASSIST. AI VISION
-                    </span>
-                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#0084FF' }}></span>
-                    <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                      Roadmap 2026
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, gap: '12px' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1.2px', color: '#0084FF', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                      {t('aboutAiCardTag', '⚡ ASSIST. AI VISION 2026')}
                     </span>
                   </div>
                   
-                  <h3 style={{ fontSize: '20px', fontWeight: '900', margin: '0 0 6px 0', color: 'var(--text-main)', letterSpacing: '-0.03em', lineHeight: '1.2' }}>
-                    Robotimiz Rivoji & Avtomatlashtirish
+                  <h3 style={{ fontSize: '15px', fontWeight: '900', margin: '0 0 4px 0', color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: '1.28', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
+                    {t('aboutAiCardTitle', 'Michi AI Ovozli Yordamchisi')}
                   </h3>
-                  
-                  <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0 0 12px 0', opacity: 0.85, lineHeight: '1.4' }}>
-                    Michi Assist roboti imkoniyatlari, jonli simulyator va kelajakdagi rivojlanish xaritasini ko'ring.
+
+                  <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: '0 0 10px 0', opacity: 0.9, lineHeight: '1.4', wordBreak: 'break-word' }}>
+                    {t('aboutAiCardSub', 'Ovozli navigatsiya, yaponcha rezyume va jonli simulyator.')}
                   </p>
 
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
-                      🗣️ Ovozli muloqot
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.2)', color: '#0084FF', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <Mic size={10} color="#0084FF" />
+                      <span>{t('aboutAiCardPill1', 'Ovozli muloqot')}</span>
                     </span>
-                    <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
-                      🤖 AI Simulyator
+                    <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.2)', color: '#0084FF', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <Bot size={10} color="#0084FF" />
+                      <span>{t('aboutAiCardPill2', 'AI Simulyator')}</span>
                     </span>
-                    <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.15)', color: '#0084FF', fontWeight: '700' }}>
-                      🚀 Kelajak Xaritasi
+                    <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.2)', color: '#0084FF', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <Sparkles size={10} color="#0084FF" />
+                      <span>{t('aboutAiCardPill3', 'Rivojlanish Xaritasi')}</span>
                     </span>
                   </div>
                 </div>
                 
-                <div className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #0084FF 0%, #0066CC 100%)', boxShadow: '0 8px 24px rgba(0, 132, 255, 0.3)', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Sparkles size={24} color="#FFF" />
+                <div className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #0084FF 0%, #0066CC 100%)', boxShadow: '0 6px 20px rgba(0, 132, 255, 0.35)', width: '38px', height: '38px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Sparkles size={18} color="#FFF" />
                 </div>
               </div>
             </div>

@@ -1,4 +1,10 @@
 const translation = {
+  "aboutAiCardTag": "⚡ ASSIST. AI VISION 2026",
+  "aboutAiCardTitle": "Michi AI Voice Assistant",
+  "aboutAiCardSub": "Voice navigation, AI resume builder & live demo.",
+  "aboutAiCardPill1": "Voice AI",
+  "aboutAiCardPill2": "Live Demo",
+  "aboutAiCardPill3": "Roadmap 2026",
   "bentoJDMTitle": "Smart Truck JDM Navigation",
   "bentoJDMSub": "Bridge height, width, and weight limit routing in Japan",
   "bentoJDMBadge1": "🇯🇵 Japan Map",

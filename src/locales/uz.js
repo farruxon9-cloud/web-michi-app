@@ -1,4 +1,10 @@
 const translation = {
+  "aboutAiCardTag": "⚡ ASSIST. AI VISION 2026",
+  "aboutAiCardTitle": "Michi AI Ovozli Yordamchisi",
+  "aboutAiCardSub": "Ovozli navigatsiya, yaponcha rezyume va jonli simulyator.",
+  "aboutAiCardPill1": "Ovozli muloqot",
+  "aboutAiCardPill2": "AI Simulyator",
+  "aboutAiCardPill3": "Rivojlanish Xaritasi",
   "bentoJDMTitle": "Aqlli Yuk Mashinalari Navigatsiyasi",
   "bentoJDMSub": "Yaponiyadagi transport o'lchamlari va ko'prik cheklovlari xaritasi",
   "bentoJDMBadge1": "🇯🇵 Yaponiya Xaritasi",
