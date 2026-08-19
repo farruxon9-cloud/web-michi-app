@@ -2891,9 +2891,9 @@ const formatText = (template, vars = {}) => {
           </div>
           <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0, opacity: 0.9, lineHeight: '1.35', wordBreak: 'break-word' }}>
             {localizePair(
-              'トラック専用ナビゲーションシステムは現在開発中です。現在は現在地マップをご利用いただけます。',
-              'Yuk mashinalari uchun navigatsiya tizimi tayyorlanmoqda va tez orada ishga tushadi. Hozirda joriy joylashuv xaritasidan foydalanishingiz mumkin.',
-              'Truck Navigation System is currently under development. Current location map is active.'
+              '全車種対応ナビゲーションシステム（普通車・大型トラック）は現在開発中です。現在は現在地マップをご利用いただけます。',
+              'Barcha mashinalar (yengil va yuk) uchun aqlli navigatsiya tizimi tayyorlanmoqda. Hozirda joriy joylashuv xaritasidan foydalanishingiz mumkin.',
+              'All-Vehicle Navigation System (Cars & Trucks) is under development. Current location map is active.'
             )}
           </p>
         </div>
