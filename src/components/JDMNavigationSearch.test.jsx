@@ -155,65 +155,17 @@ describe('JDMNavigation Search Interaction Tests', () => {
     vi.clearAllMocks();
   });
 
-  it('triggers searchAddress and sets queries successfully without crashing', async () => {
-    // Mock global fetch to return a failed response to test the local geocoding fallback
-    globalThis.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
-
+  it('renders coming soon location map banner successfully without crashing', async () => {
     render(<JDMNavigation onBack={() => {}} />);
 
-    // Click the bottom search bar to open Search Sheet
-    const bottomSearchBar = screen.getByText('Xaritada qidirish...');
-    expect(bottomSearchBar).toBeDefined();
-    fireEvent.click(bottomSearchBar);
-
-    // Find the input field with placeholder "Search here..." (or "目的地を検索..." since language is 'uz' / English default)
-    const searchInput = screen.getByPlaceholderText('Qidiruv bering...');
-    expect(searchInput).toBeDefined();
-
-    // Type a single character "t" (returns early in searchAddress)
-    fireEvent.change(searchInput, { target: { value: 't' } });
-    expect(searchInput.value).toBe('t');
-
-    // Type a second character "to" (should call fetch, fail, and use local NODES fallback)
-    fireEvent.change(searchInput, { target: { value: 'to' } });
-    expect(searchInput.value).toBe('to');
+    const locationBanner = screen.getByText('• JDM Location Map');
+    expect(locationBanner).toBeDefined();
   });
 
-  it('renders search suggestions when Nominatim returns data successfully', async () => {
-    const mockSuggestions = [
-      {
-        place_id: 12345,
-        display_name: 'Tokyo Station, Chiyoda, Tokyo, Japan',
-        lat: '35.6812',
-        lon: '139.7671'
-      },
-      {
-        place_id: 67890,
-        display_name: 'Tokyo Tower, Minato, Tokyo, Japan',
-        lat: '35.6586',
-        lon: '139.7454'
-      }
-    ];
-
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      json: async () => mockSuggestions
-    });
-
+  it('displays coming soon status notice and map container', async () => {
     render(<JDMNavigation onBack={() => {}} />);
 
-    // Open Search Sheet
-    const bottomSearchBar = screen.getByText('Xaritada qidirish...');
-    fireEvent.click(bottomSearchBar);
-
-    const searchInput = screen.getByPlaceholderText('Qidiruv bering...');
-    
-    // Type "tokyo" (length > 2)
-    fireEvent.change(searchInput, { target: { value: 'tokyo' } });
-
-    // Wait for the async searchAddress to complete and update state
-    await vi.waitFor(() => {
-      const items = screen.getAllByText(/Tokyo/);
-      expect(items.length).toBeGreaterThan(0);
-    });
+    const comingSoonBadge = screen.getByText('Tez orada');
+    expect(comingSoonBadge).toBeDefined();
   });
 });

@@ -95,7 +95,7 @@ vi.mock('leaflet', () => {
 describe('JDMNavigation Component Tests', () => {
   it('renders successfully without crashing', () => {
     const html = renderToString(<JDMNavigation onBack={() => {}} />);
-    expect(html).toContain('Xaritada qidirish...');
+    expect(html).toContain('Tez orada');
   });
 
   it('supports fallback translations when no props are provided', () => {
