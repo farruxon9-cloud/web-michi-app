@@ -2414,80 +2414,9 @@ const formatText = (template, vars = {}) => {
     }
   };
 
-  // Handle map click to set destination
-  const handleMapClick = async (e) => {
-    if (isRoutingActive && sheetDetent !== 'collapsed') {
-      setSheetDetent('collapsed');
-    }
-    if (isNavigating) return;
-
-    const { lng, lat } = e.lngLat;
-    triggerSound();
-
-    // Query features first to see if they clicked on a named POI/building on the map
-    const map = mapInstanceRef.current;
-    let clickedFeatureName = '';
-    if (map) {
-      try {
-        const features = map.queryRenderedFeatures(e.point);
-        const namedFeature = features.find(f => f.properties && (f.properties.name || f.properties.name_ja || f.properties.name_en));
-        if (namedFeature) {
-          clickedFeatureName = namedFeature.properties.name || namedFeature.properties.name_ja || namedFeature.properties.name_en;
-        }
-      } catch (err) {
-        console.warn('Error querying rendered features:', err);
-      }
-    }
-
-    const defaultName = clickedFeatureName || localize({
-      ja: '場所を読み込み中...',
-      uz: 'Manzil yuklanmoqda...',
-      en: 'Loading location...'
-    });
-    setDestCoord({
-      lat: lat,
-      lng: lng,
-      name: defaultName,
-      jaName: clickedFeatureName || undefined
-    });
-    setDestQuery(clickedFeatureName || localize({
-      ja: '地図上のピン',
-      uz: 'Xaritadagi pin',
-      en: 'Pinned Location'
-    }));
-    setPlaceDetailsExpanded(true);
-
-    try {
-        const reverseLanguage = currentLang || 'en';
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=${reverseLanguage}`);
-        const data = await res.json();
-      
-      let placeName = '';
-      if (data && data.display_name) {
-        placeName = data.display_name;
-      } else {
-        placeName = clickedFeatureName || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-      }
-
-      const shortName = clickedFeatureName || data?.name || data?.address?.suburb || data?.address?.neighbourhood || placeName.split(',')[0];
-      setDestQuery(shortName);
-
-      setDestCoord({
-        lat: lat,
-        lng: lng,
-        name: placeName,
-        jaName: clickedFeatureName || data?.name || data?.address?.suburb || data?.address?.neighbourhood || undefined
-      });
-    } catch (err) {
-      console.error('Failed to reverse geocode coordinate:', err);
-      const fallbackName = clickedFeatureName || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-      setDestQuery(fallbackName);
-      setDestCoord({
-        lat: lat,
-        lng: lng,
-        name: fallbackName
-      });
-    }
+  // Handle map click — disabled until full navigation system launch
+  const handleMapClick = async () => {
+    return;
   };
 
   // Handle active vehicle marker during simulation step changes
