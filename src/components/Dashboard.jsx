@@ -552,40 +552,49 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
         className="bento-action-card bento-jdm-card squircle" 
         onClick={() => { triggerSound(); onNavigateToJDM(); }}
         style={{ 
-          padding: '14px 16px', 
+          padding: '16px 18px', 
           cursor: 'pointer', 
           marginTop: '16px',
+          position: 'relative',
+          overflow: 'hidden',
           background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.04) 100%)',
-          border: '1.2px solid rgba(16, 185, 129, 0.28)',
-          boxShadow: '0 6px 24px rgba(16, 185, 129, 0.05)'
+          border: '1.5px solid rgba(16, 185, 129, 0.35)',
+          boxShadow: '0 6px 24px rgba(16, 185, 129, 0.08)'
         }}
       >
+        {/* Prominent High-Visibility Floating "Tez orada / 近日公開" Badge */}
+        <div style={{
+          position: 'absolute',
+          top: '12px',
+          right: '12px',
+          zIndex: 5,
+          background: 'linear-gradient(135deg, #FF9500 0%, #FF2D55 100%)',
+          color: '#FFFFFF',
+          fontSize: '11px',
+          fontWeight: '900',
+          letterSpacing: '0.8px',
+          padding: '5px 12px',
+          borderRadius: '20px',
+          boxShadow: '0 4px 16px rgba(255, 149, 0, 0.5)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '5px',
+          textTransform: 'uppercase',
+          whiteSpace: 'nowrap'
+        }}>
+          <Sparkles size={13} color="#FFF" />
+          <span>{t('comingSoonTag', 'Tez orada')}</span>
+        </div>
+
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, gap: '12px' }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '9.5px', fontWeight: '800', letterSpacing: '1.2px', color: '#10b981', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-                  {t('bentoJDMBadge1', 'Yaponiya Xaritasi')}
-                </span>
-              </div>
-              <span style={{ 
-                fontSize: '11px', 
-                fontWeight: '900', 
-                letterSpacing: '0.6px', 
-                padding: '4px 10px', 
-                borderRadius: '8px', 
-                background: 'linear-gradient(135deg, rgba(255, 149, 0, 0.25) 0%, rgba(255, 110, 0, 0.15) 100%)', 
-                border: '1.5px solid rgba(255, 149, 0, 0.55)', 
-                color: '#FF9500', 
-                boxShadow: '0 4px 12px rgba(255, 149, 0, 0.22)',
-                textTransform: 'uppercase', 
-                whiteSpace: 'nowrap', 
-                display: 'inline-flex', 
-                alignItems: 'center', 
-                gap: '5px' 
-              }}>
-                <Sparkles size={12} color="#FF9500" />
-                <span>{t('comingSoonTag', 'Tez orada')}</span>
+          <div style={{ flex: 1, minWidth: 0, paddingRight: '75px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+              <span style={{ fontSize: '9.5px', fontWeight: '800', letterSpacing: '1.2px', color: '#10b981', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                {t('bentoJDMBadge1', 'Yaponiya Xaritasi')}
+              </span>
+              <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.5)' }}></span>
+              <span style={{ fontSize: '9.5px', fontWeight: '800', letterSpacing: '1px', color: 'var(--text-secondary)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                {t('bentoJDMBadge2', 'Aqlli Navigatsiya')}
               </span>
             </div>
             
@@ -613,7 +622,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
             </div>
           </div>
           
-          <div className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)', width: '38px', height: '38px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)', width: '38px', height: '38px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 'auto' }}>
             <Navigation size={18} color="#FFF" />
           </div>
         </div>
