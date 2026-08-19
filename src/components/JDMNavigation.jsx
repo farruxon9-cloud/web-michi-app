@@ -2920,51 +2920,51 @@ const formatText = (template, vars = {}) => {
         <ArrowLeft size={20} />
       </button>
 
-      {/* Floating Coming Soon Location Banner */}
+      {/* Floating Prominent Coming Soon Location Banner */}
       <div style={{
         position: 'absolute',
         top: '16px',
         left: '70px',
         right: '16px',
         zIndex: 1005,
-        background: darkMode ? 'rgba(28, 28, 30, 0.88)' : 'rgba(255, 255, 255, 0.88)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        border: '1.2px solid rgba(255, 149, 0, 0.35)',
-        borderRadius: '14px',
-        padding: '8px 12px',
-        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+        background: darkMode ? 'rgba(28, 28, 30, 0.92)' : 'rgba(255, 255, 255, 0.92)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1.5px solid rgba(255, 149, 0, 0.5)',
+        borderRadius: '16px',
+        padding: '10px 14px',
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)',
         display: 'flex',
         alignItems: 'center',
-        gap: '8px'
+        gap: '10px'
       }}>
         <div style={{
-          width: '24px',
-          height: '24px',
-          borderRadius: '7px',
-          background: 'rgba(255, 149, 0, 0.18)',
-          border: '1px solid rgba(255, 149, 0, 0.35)',
+          width: '30px',
+          height: '30px',
+          borderRadius: '9px',
+          background: 'linear-gradient(135deg, rgba(255, 149, 0, 0.25) 0%, rgba(255, 110, 0, 0.15) 100%)',
+          border: '1px solid rgba(255, 149, 0, 0.45)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0
         }}>
-          <Sparkles size={12} color="#FF9500" />
+          <Sparkles size={15} color="#FF9500" />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '10px', fontWeight: '800', color: '#FF9500', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+            <span style={{ fontSize: '11px', fontWeight: '900', color: '#FF9500', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
               {t('comingSoonTag', 'Tez orada')}
             </span>
-            <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-main)', opacity: 0.9 }}>
+            <span style={{ fontSize: '10.5px', fontWeight: '700', color: 'var(--text-main)', opacity: 0.9 }}>
               • JDM Location Map
             </span>
           </div>
-          <p style={{ fontSize: '10.5px', color: 'var(--text-secondary)', margin: 0, opacity: 0.88, lineHeight: '1.35', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0, opacity: 0.9, lineHeight: '1.35', wordBreak: 'break-word' }}>
             {localizePair(
-              'JDMスマートトラックナビ（3.8m制限回避）は近日公開予定です。現在は現在地マップをご利用いただけます。',
-              'JDM Aqlli Yuk Navigatsiyasi (3.8m cheklovi) tez orada ishga tushadi. Hozirda joriy joylashuv xaritasidan foydalanishingiz mumkin.',
-              'JDM Smart Truck Nav is coming soon. Simple location map is currently active.'
+              'トラック専用ナビゲーションシステムは現在開発中です。現在は現在地マップをご利用いただけます。',
+              'Yuk mashinalari uchun navigatsiya tizimi tayyorlanmoqda va tez orada ishga tushadi. Hozirda joriy joylashuv xaritasidan foydalanishingiz mumkin.',
+              'Truck Navigation System is currently under development. Current location map is active.'
             )}
           </p>
         </div>

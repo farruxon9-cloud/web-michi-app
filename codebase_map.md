@@ -129,7 +129,7 @@ graph TD
   - `../utils/imageCompressor`
 
 ### 📦 [Dashboard](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Dashboard.jsx)
-* **Fayl yo'li:** `src/components/Dashboard.jsx` (613 qator, 27077 bayt)
+* **Fayl yo'li:** `src/components/Dashboard.jsx` (626 qator, 27167 bayt)
 * **Komponent Stillari:** 🎨 [Dashboard.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Dashboard.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `setActiveTab`
@@ -202,7 +202,7 @@ graph TD
   - `lucide-react`
 
 ### 📦 [JDMNavigation](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (5002 qator, 222225 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (5002 qator, 222291 bayt)
 * **Komponent Stillari:** 🎨 [JDMNavigation.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.css)
 * **Unit Testlari:** 🧪 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
