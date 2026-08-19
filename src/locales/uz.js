@@ -1,4 +1,5 @@
 const translation = {
+  "comingSoonTag": "Tez orada",
   "aboutAiCardTag": "⚡ ASSIST. AI VISION 2026",
   "aboutAiCardTitle": "Michi AI Ovozli Yordamchisi",
   "aboutAiCardSub": "Ovozli navigatsiya, yaponcha rezyume va jonli simulyator.",

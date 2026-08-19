@@ -129,7 +129,7 @@ graph TD
   - `../utils/imageCompressor`
 
 ### 📦 [Dashboard](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Dashboard.jsx)
-* **Fayl yo'li:** `src/components/Dashboard.jsx` (609 qator, 26558 bayt)
+* **Fayl yo'li:** `src/components/Dashboard.jsx` (613 qator, 27077 bayt)
 * **Komponent Stillari:** 🎨 [Dashboard.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Dashboard.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `setActiveTab`
@@ -202,7 +202,7 @@ graph TD
   - `lucide-react`
 
 ### 📦 [JDMNavigation](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.jsx)
-* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (4952 qator, 220117 bayt)
+* **Fayl yo'li:** `src/components/JDMNavigation.jsx` (5002 qator, 222225 bayt)
 * **Komponent Stillari:** 🎨 [JDMNavigation.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.css)
 * **Unit Testlari:** 🧪 [JDMNavigation.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JDMNavigation.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -665,7 +665,7 @@ graph TD
 * **Importlari:** `react`, `lucide-react`, `react-i18next`, `./components/Splash`, `./components/LanguageSelect`, `./components/RoleSelect`, `./components/BottomNav`, `./components/Dashboard`, `./components/DriverFeed`, `./components/JobDetail`, `./components/DrivingAcademy`, `./components/ServiceComingSoon`, `./components/Profile`, `./components/AdminDashboard`, `./components/CompanyHome`, `./components/VoiceAssistant`, `./components/RobotAvatar`, `./components/JDMNavigation`, `./components/AssistHeroShowcase`, `./components/ErrorBoundary`
 
 ### 📄 [en.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/en.js)
-* **Yo'li:** `src/locales/en.js` (630 qator)
+* **Yo'li:** `src/locales/en.js` (631 qator)
 * **Importlari:** *Yo'q*
 
 ### 📄 [i18n.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/i18n.js)
@@ -681,7 +681,7 @@ graph TD
 * **Importlari:** `./uz.js`, `./ja.js`, `./en.js`, `./vi.js`, `./zh.js`, `./ne.js`, `./ru.js`
 
 ### 📄 [ja.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/ja.js)
-* **Yo'li:** `src/locales/ja.js` (720 qator)
+* **Yo'li:** `src/locales/ja.js` (721 qator)
 * **Importlari:** *Yo'q*
 
 ### 📄 [main.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/main.jsx)
@@ -697,7 +697,7 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### 📄 [uz.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/uz.js)
-* **Yo'li:** `src/locales/uz.js` (634 qator)
+* **Yo'li:** `src/locales/uz.js` (635 qator)
 * **Importlari:** *Yo'q*
 
 ### 📄 [vi.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/vi.js)

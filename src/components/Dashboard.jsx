@@ -562,13 +562,17 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, gap: '12px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1.2px', color: '#10b981', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                 {t('bentoJDMBadge1', 'Yaponiya Xaritasi')}
               </span>
               <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.5)' }}></span>
               <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1px', color: 'var(--text-secondary)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                 {t('bentoJDMBadge2', 'Aqlli Navigatsiya')}
+              </span>
+              <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '0.8px', padding: '2px 6px', borderRadius: '6px', background: 'rgba(255, 149, 0, 0.15)', border: '1px solid rgba(255, 149, 0, 0.3)', color: '#FF9500', textTransform: 'uppercase', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '3px', marginLeft: 'auto' }}>
+                <Sparkles size={9} color="#FF9500" />
+                <span>{t('comingSoonTag', 'Tez orada')}</span>
               </span>
             </div>
             

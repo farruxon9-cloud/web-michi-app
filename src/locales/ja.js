@@ -1,4 +1,5 @@
 const translation = {
+  "comingSoonTag": "近日公開",
   "aboutAiCardTag": "⚡ ASSIST. AI VISION 2026",
   "aboutAiCardTitle": "Michi AI 音声アシスタント",
   "aboutAiCardSub": "AI音声ナビ・履歴書自動生成・リアルタイムデモ",

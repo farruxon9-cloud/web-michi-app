@@ -2919,6 +2919,56 @@ const formatText = (template, vars = {}) => {
       >
         <ArrowLeft size={20} />
       </button>
+
+      {/* Floating Coming Soon Location Banner */}
+      <div style={{
+        position: 'absolute',
+        top: '16px',
+        left: '70px',
+        right: '16px',
+        zIndex: 1005,
+        background: darkMode ? 'rgba(28, 28, 30, 0.88)' : 'rgba(255, 255, 255, 0.88)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1.2px solid rgba(255, 149, 0, 0.35)',
+        borderRadius: '14px',
+        padding: '8px 12px',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+      }}>
+        <div style={{
+          width: '24px',
+          height: '24px',
+          borderRadius: '7px',
+          background: 'rgba(255, 149, 0, 0.18)',
+          border: '1px solid rgba(255, 149, 0, 0.35)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0
+        }}>
+          <Sparkles size={12} color="#FF9500" />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '10px', fontWeight: '800', color: '#FF9500', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {t('comingSoonTag', 'Tez orada')}
+            </span>
+            <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-main)', opacity: 0.9 }}>
+              • JDM Location Map
+            </span>
+          </div>
+          <p style={{ fontSize: '10.5px', color: 'var(--text-secondary)', margin: 0, opacity: 0.88, lineHeight: '1.35', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {localizePair(
+              'JDMスマートトラックナビ（3.8m制限回避）は近日公開予定です。現在は現在地マップをご利用いただけます。',
+              'JDM Aqlli Yuk Navigatsiyasi (3.8m cheklovi) tez orada ishga tushadi. Hozirda joriy joylashuv xaritasidan foydalanishingiz mumkin.',
+              'JDM Smart Truck Nav is coming soon. Simple location map is currently active.'
+            )}
+          </p>
+        </div>
+      </div>
       
       {/* Real Full Screen Map */}
       <div ref={mapContainerRef} className="map-canvas-container-fullscreen">
