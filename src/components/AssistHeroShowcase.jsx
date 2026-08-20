@@ -237,10 +237,10 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
         <ArrowLeft size={20} />
       </button>
 
-      {/* Main Scrollable Content Layout (Social badge is UNPINNED inside content) */}
-      <div className="assist-hero-mobile-content" style={{ paddingTop: '44px' }}>
-        {/* Unpinned Social Proof Badge (Scrolls naturally up with page content!) */}
-        <div className="assist-social-badge">
+      {/* Main Scrollable Content Layout (Social badge sits inline beside back button at top y=0, unpinned) */}
+      <div className="assist-hero-mobile-content">
+        {/* Unpinned Social Proof Badge (Positioned side-by-side with back button at y=0, scrolls naturally) */}
+        <div className="assist-social-badge" style={{ marginLeft: '52px', marginTop: '4px', alignSelf: 'flex-start' }}>
           <div className="assist-social-badge-icon">
             <Sparkles size={12} color="#0084FF" />
           </div>
