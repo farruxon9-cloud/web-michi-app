@@ -201,36 +201,38 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
       {/* Ambient Spotlight */}
       <div className="assist-ambient-spotlight-1"></div>
 
-      {/* Floating Back Button: Stays sticky at top-left matching About page EXACTLY */}
-      <button 
-        className="icon-btn glass" 
-        onClick={onBack} 
-        style={{ 
-          position: 'sticky', 
-          top: '0px', 
-          left: '0px', 
-          zIndex: 100, 
-          alignSelf: 'flex-start',
-          margin: 0, 
-          width: '40px', 
-          height: '40px', 
-          borderRadius: '50%', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          border: '1.2px solid var(--glass-border)',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.04), inset 0 1px 1.5px rgba(255,255,255,0.4)',
-          cursor: 'pointer',
-          marginBottom: '-40px'
-        }}
-      >
-        <ArrowLeft size={20} />
-      </button>
+      {/* Clean Header Row (Sticky Back Button + Inline Social Badge side-by-side) */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 100, display: 'flex', alignItems: 'center', gap: '12px', width: '100%', pointerEvents: 'auto' }}>
+        <button 
+          className="icon-btn glass" 
+          onClick={onBack} 
+          style={{ 
+            width: '40px', 
+            height: '40px', 
+            minWidth: '40px',
+            minHeight: '40px',
+            maxWidth: '40px',
+            maxHeight: '40px',
+            flexShrink: 0,
+            aspectRatio: '1 / 1',
+            borderRadius: '50%', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            border: '1.2px solid var(--glass-border)',
+            background: 'var(--card-bg, rgba(255, 255, 255, 0.75))',
+            color: 'var(--text-main)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.04), inset 0 1px 1.5px rgba(255,255,255,0.4)',
+            cursor: 'pointer',
+            padding: 0,
+            margin: 0
+          }}
+          title="Back"
+        >
+          <ArrowLeft size={20} />
+        </button>
 
-      {/* Main Content Layout */}
-      <div className="assist-hero-mobile-content">
-        {/* Unpinned Social Proof Badge (Padded left 48px to sit inline next to the back button!) */}
-        <div className="assist-social-badge" style={{ marginLeft: '48px', alignSelf: 'flex-start', marginTop: '6px' }}>
+        <div className="assist-social-badge" style={{ margin: 0, flex: 1, minWidth: 0 }}>
           <div className="assist-social-badge-icon">
             <Sparkles size={12} color="#0084FF" />
           </div>
@@ -238,6 +240,10 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
             <span className="assist-social-bold">{strings.badge}</span>
           </span>
         </div>
+      </div>
+
+      {/* Main Content Layout */}
+      <div className="assist-hero-mobile-content">
 
         {/* Asosiy Sarlavha & Qisqa Izoh */}
         <h1 className="assist-display-heading">
