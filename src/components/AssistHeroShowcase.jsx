@@ -201,21 +201,16 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
       {/* Ambient Spotlight */}
       <div className="assist-ambient-spotlight-1"></div>
 
-      {/* Single Pinned Floating Back Button */}
-      <div className="assist-nav-wrapper" style={{ justifyContent: 'flex-start' }}>
+      {/* Pinned Back Button & Inline Side-by-Side Social Proof Badge */}
+      <div className="assist-nav-wrapper">
         <button 
           onClick={onBack}
           className="assist-close-btn"
           title="Back"
-          style={{ width: '40px', height: '40px', borderRadius: '50%' }}
         >
           <ArrowLeft size={20} />
         </button>
-      </div>
 
-      {/* Main Content Layout */}
-      <div className="assist-hero-mobile-content">
-        {/* Social Proof Badge */}
         <div className="assist-social-badge">
           <div className="assist-social-badge-icon">
             <Sparkles size={12} color="#0084FF" />
@@ -224,7 +219,10 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
             <span className="assist-social-bold">{strings.badge}</span>
           </span>
         </div>
+      </div>
 
+      {/* Main Content Layout */}
+      <div className="assist-hero-mobile-content">
         {/* Asosiy Sarlavha & Qisqa Izoh */}
         <h1 className="assist-display-heading">
           <span className="assist-text-gradient">{strings.title}</span>
