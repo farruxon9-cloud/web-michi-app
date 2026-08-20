@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Bot, ChevronRight, FileText, Navigation, X, Zap, Building2, Wrench, Sparkles, Mic, MicOff } from 'lucide-react';
+import { Bot, ChevronRight, FileText, Navigation, X, Zap, Building2, Wrench, Sparkles, Mic, MicOff, ArrowLeft } from 'lucide-react';
 import './AssistHeroShowcase.css';
 
 // 4 High-Converting Core Capability Pillars & Live Commands tailored for Michi Ecosystem
@@ -201,26 +201,16 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
       {/* Ambient Spotlight */}
       <div className="assist-ambient-spotlight-1"></div>
 
-      {/* Clean Pinned Header (Single Brand + Close Button) */}
-      <div className="assist-nav-wrapper">
-        <div className="assist-nav-glass">
-          <div className="assist-brand" onClick={onBack}>
-            <div className="assist-brand-icon-wrap">
-              <Bot size={16} color="#FFF" />
-            </div>
-            <span>Assist. AI</span>
-          </div>
-
-          {onBack && (
-            <button 
-              onClick={onBack}
-              className="assist-close-btn"
-              title="Close"
-            >
-              <X size={16} />
-            </button>
-          )}
-        </div>
+      {/* Single Pinned Floating Back Button */}
+      <div className="assist-nav-wrapper" style={{ justifyContent: 'flex-start' }}>
+        <button 
+          onClick={onBack}
+          className="assist-close-btn"
+          title="Back"
+          style={{ width: '40px', height: '40px', borderRadius: '50%' }}
+        >
+          <ArrowLeft size={20} />
+        </button>
       </div>
 
       {/* Main Content Layout */}
