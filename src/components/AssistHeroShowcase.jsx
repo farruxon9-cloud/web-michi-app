@@ -201,16 +201,30 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
       {/* Ambient Spotlight */}
       <div className="assist-ambient-spotlight-1"></div>
 
-      {/* ONLY Pinned Back Button */}
-      <div className="assist-nav-wrapper">
-        <button 
-          onClick={onBack}
-          className="assist-close-btn"
-          title="Back"
-        >
-          <ArrowLeft size={20} />
-        </button>
-      </div>
+      {/* Floating Back Button: Stays sticky at top-left matching About page */}
+      <button 
+        className="assist-close-btn" 
+        onClick={onBack} 
+        style={{ 
+          position: 'sticky', 
+          top: '16px', 
+          left: '16px', 
+          zIndex: 100, 
+          alignSelf: 'flex-start',
+          margin: '16px 0 0 16px', 
+          width: '40px', 
+          height: '40px', 
+          borderRadius: '50%', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          cursor: 'pointer',
+          marginBottom: '-40px'
+        }}
+        title="Back"
+      >
+        <ArrowLeft size={20} />
+      </button>
 
       {/* Main Content Layout */}
       <div className="assist-hero-mobile-content">
