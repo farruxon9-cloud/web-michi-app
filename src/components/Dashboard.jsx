@@ -563,27 +563,27 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
           boxShadow: '0 4px 18px rgba(16, 185, 129, 0.06)'
         }}
       >
-        {/* Sleek Floating "Tez orada / 近日公開" Badge */}
+        {/* Prominent High-Visibility Floating "Tez orada / 近日公開" Badge */}
         <div style={{
           position: 'absolute',
           top: '10px',
           right: '10px',
           zIndex: 5,
-          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          background: 'linear-gradient(135deg, #FF9500 0%, #FF2D55 100%)',
           color: '#FFFFFF',
-          fontSize: '9.5px',
-          fontWeight: '800',
-          letterSpacing: '0.5px',
-          padding: '3px 8px',
-          borderRadius: '14px',
-          boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+          fontSize: '10.5px',
+          fontWeight: '900',
+          letterSpacing: '0.6px',
+          padding: '4px 10px',
+          borderRadius: '20px',
+          boxShadow: '0 4px 14px rgba(255, 149, 0, 0.45), 0 0 10px rgba(255, 45, 85, 0.3)',
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '4px',
+          gap: '5px',
           textTransform: 'uppercase',
           whiteSpace: 'nowrap'
         }}>
-          <Sparkles size={11} color="#FFF" />
+          <Sparkles size={12} color="#FFF" />
           <span>{t('comingSoonTag', 'Tez orada')}</span>
         </div>
 
