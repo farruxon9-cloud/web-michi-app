@@ -197,7 +197,7 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
   };
 
   return (
-    <div className={`assist-showcase-container ${darkMode ? 'dark-mode' : ''}`} style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px 16px 180px 16px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div className={`assist-showcase-container ${darkMode ? 'dark-mode' : ''}`} style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '16px 16px 180px 16px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Ambient Spotlight */}
       <div className="assist-ambient-spotlight-1"></div>
 
@@ -207,7 +207,7 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
         onClick={onBack} 
         style={{ 
           position: 'sticky', 
-          top: '12px', 
+          top: '16px', 
           left: '0px', 
           zIndex: 100, 
           alignSelf: 'flex-start',
