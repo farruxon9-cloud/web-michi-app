@@ -207,7 +207,7 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
         onClick={onBack} 
         style={{ 
           position: 'sticky', 
-          top: '0px', 
+          top: '16px', 
           left: '0px', 
           zIndex: 100, 
           alignSelf: 'flex-start',
