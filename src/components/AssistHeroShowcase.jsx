@@ -197,13 +197,13 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
   };
 
   return (
-    <div className={`assist-showcase-container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: '16px 16px 101px 16px' }}>
+    <div className={`assist-showcase-container ${darkMode ? 'dark-mode' : ''}`} style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '16px 16px 101px 16px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Ambient Spotlight */}
       <div className="assist-ambient-spotlight-1"></div>
 
-      {/* Floating Back Button: Stays sticky at top-left matching About page */}
+      {/* Floating Back Button: Stays sticky at top-left matching About page EXACTLY */}
       <button 
-        className="icon-btn glass assist-close-btn" 
+        className="icon-btn glass" 
         onClick={onBack} 
         style={{ 
           position: 'sticky', 
@@ -218,10 +218,11 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
+          border: '1.2px solid var(--glass-border)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.04), inset 0 1px 1.5px rgba(255,255,255,0.4)',
           cursor: 'pointer',
           marginBottom: '-40px'
         }}
-        title="Back"
       >
         <ArrowLeft size={20} />
       </button>
