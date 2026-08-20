@@ -547,83 +547,84 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
           </div>
         </div>
       )}
-      {/* 🗺️ Smart Truck JDM Navigation Bento Card (Compact & Sleek) */}
+      {/* 🗺️ Smart Truck JDM Navigation Bento Card (Minimal & Premium Compact) */}
       <div 
         className="bento-action-card bento-jdm-card squircle" 
         onClick={() => { triggerSound(); onNavigateToJDM(); }}
         style={{ 
-          padding: '16px 18px', 
+          padding: '12px 14px', 
           cursor: 'pointer', 
-          marginTop: '16px',
+          marginTop: '12px',
           position: 'relative',
           overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.04) 100%)',
-          border: '1.5px solid rgba(16, 185, 129, 0.35)',
-          boxShadow: '0 6px 24px rgba(16, 185, 129, 0.08)'
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.02) 100%)',
+          border: '1.2px solid rgba(16, 185, 129, 0.22)',
+          borderRadius: '18px',
+          boxShadow: '0 4px 18px rgba(16, 185, 129, 0.06)'
         }}
       >
-        {/* Prominent High-Visibility Floating "Tez orada / 近日公開" Badge */}
+        {/* Sleek Floating "Tez orada / 近日公開" Badge */}
         <div style={{
           position: 'absolute',
-          top: '12px',
-          right: '12px',
+          top: '10px',
+          right: '10px',
           zIndex: 5,
-          background: 'linear-gradient(135deg, #FF9500 0%, #FF2D55 100%)',
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
           color: '#FFFFFF',
-          fontSize: '11px',
-          fontWeight: '900',
-          letterSpacing: '0.8px',
-          padding: '5px 12px',
-          borderRadius: '20px',
-          boxShadow: '0 4px 16px rgba(255, 149, 0, 0.5)',
+          fontSize: '9.5px',
+          fontWeight: '800',
+          letterSpacing: '0.5px',
+          padding: '3px 8px',
+          borderRadius: '14px',
+          boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '5px',
+          gap: '4px',
           textTransform: 'uppercase',
           whiteSpace: 'nowrap'
         }}>
-          <Sparkles size={13} color="#FFF" />
+          <Sparkles size={11} color="#FFF" />
           <span>{t('comingSoonTag', 'Tez orada')}</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, gap: '12px' }}>
-          <div style={{ flex: 1, minWidth: 0, paddingRight: '75px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '9.5px', fontWeight: '800', letterSpacing: '1.2px', color: '#10b981', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, gap: '10px' }}>
+          <div style={{ flex: 1, minWidth: 0, paddingRight: '65px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '0.8px', color: '#10b981', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                 {t('bentoJDMBadge1', 'Yaponiya Xaritasi')}
               </span>
-              <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.5)' }}></span>
-              <span style={{ fontSize: '9.5px', fontWeight: '800', letterSpacing: '1px', color: 'var(--text-secondary)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+              <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.5)' }}></span>
+              <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '0.8px', color: 'var(--text-secondary)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                 {t('bentoJDMBadge2', 'Aqlli Navigatsiya')}
               </span>
             </div>
             
-            <h3 style={{ fontSize: '15px', fontWeight: '900', margin: '0 0 4px 0', color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: '1.28', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
+            <h3 style={{ fontSize: '13.5px', fontWeight: '800', margin: '0 0 3px 0', color: 'var(--text-main)', letterSpacing: '-0.01em', lineHeight: '1.25', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
               {t('bentoJDMTitle', 'Aqlli Yuk Mashinalari Navigatsiyasi')}
             </h3>
             
-            <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: '0 0 10px 0', opacity: 0.9, lineHeight: '1.4', wordBreak: 'break-word' }}>
+            <p style={{ fontSize: '10.5px', color: 'var(--text-secondary)', margin: '0 0 8px 0', opacity: 0.85, lineHeight: '1.35', wordBreak: 'break-word' }}>
               {t('bentoJDMSub', 'Yaponiyadagi transport o\'lchamlari va ko\'prik cheklovlari xaritasi')}
             </p>
 
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', color: '#10b981', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <Truck size={10} color="#10b981" />
+            <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.18)', color: '#10b981', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                <Truck size={9} color="#10b981" />
                 <span>{t('bentoJDMSubtag1', 'Mashina sozlamalari')}</span>
               </span>
-              <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', color: '#10b981', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <ShieldCheck size={10} color="#10b981" />
+              <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.18)', color: '#10b981', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                <ShieldCheck size={9} color="#10b981" />
                 <span>{t('bentoJDMSubtag2', 'Balandlik taqiqi')}</span>
               </span>
-              <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', color: '#10b981', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <Navigation size={10} color="#10b981" />
+              <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.18)', color: '#10b981', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                <Navigation size={9} color="#10b981" />
                 <span>{t('bentoJDMSubtag3', 'Vazn cheklovi')}</span>
               </span>
             </div>
           </div>
           
-          <div className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)', width: '38px', height: '38px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 'auto' }}>
-            <Navigation size={18} color="#FFF" />
+          <div className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 'auto' }}>
+            <Navigation size={15} color="#FFF" />
           </div>
         </div>
       </div>

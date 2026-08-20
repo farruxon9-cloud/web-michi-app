@@ -129,7 +129,7 @@ graph TD
   - `../utils/imageCompressor`
 
 ### 📦 [Dashboard](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Dashboard.jsx)
-* **Fayl yo'li:** `src/components/Dashboard.jsx` (635 qator, 27467 bayt)
+* **Fayl yo'li:** `src/components/Dashboard.jsx` (636 qator, 27486 bayt)
 * **Komponent Stillari:** 🎨 [Dashboard.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Dashboard.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `setActiveTab`
