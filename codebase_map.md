@@ -72,7 +72,7 @@ graph TD
   - `lucide-react`
 
 ### 📦 [AssistHeroShowcase](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/AssistHeroShowcase.jsx)
-* **Fayl yo'li:** `src/components/AssistHeroShowcase.jsx` (353 qator, 14355 bayt)
+* **Fayl yo'li:** `src/components/AssistHeroShowcase.jsx` (353 qator, 14497 bayt)
 * **Komponent Stillari:** 🎨 [AssistHeroShowcase.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/AssistHeroShowcase.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`

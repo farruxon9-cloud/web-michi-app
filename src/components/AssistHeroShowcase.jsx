@@ -197,21 +197,21 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
   };
 
   return (
-    <div className={`assist-showcase-container ${darkMode ? 'dark-mode' : ''}`}>
+    <div className={`assist-showcase-container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: '16px 16px 101px 16px' }}>
       {/* Ambient Spotlight */}
       <div className="assist-ambient-spotlight-1"></div>
 
       {/* Floating Back Button: Stays sticky at top-left matching About page */}
       <button 
-        className="assist-close-btn" 
+        className="icon-btn glass assist-close-btn" 
         onClick={onBack} 
         style={{ 
           position: 'sticky', 
-          top: '16px', 
-          left: '16px', 
+          top: '0px', 
+          left: '0px', 
           zIndex: 100, 
           alignSelf: 'flex-start',
-          margin: '16px 0 0 16px', 
+          margin: 0, 
           width: '40px', 
           height: '40px', 
           borderRadius: '50%', 
@@ -228,8 +228,8 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
 
       {/* Main Content Layout */}
       <div className="assist-hero-mobile-content">
-        {/* Unpinned Social Proof Badge (Scrolls naturally with content) */}
-        <div className="assist-social-badge">
+        {/* Unpinned Social Proof Badge (Padded left 48px to sit inline next to the back button!) */}
+        <div className="assist-social-badge" style={{ marginLeft: '48px', alignSelf: 'flex-start', marginTop: '6px' }}>
           <div className="assist-social-badge-icon">
             <Sparkles size={12} color="#0084FF" />
           </div>
