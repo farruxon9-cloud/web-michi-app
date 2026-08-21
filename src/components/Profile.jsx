@@ -10,6 +10,7 @@ import VerifiedBadge from './VerifiedBadge';
 import CompanyHome from './CompanyHome';
 import ResumeBuilder from './ResumeBuilder';
 import AssistHeroShowcase from './AssistHeroShowcase';
+import JapaneseVehiclePickerModal from './JapaneseVehiclePickerModal';
 import './Profile.css';
 
 const StatCounter = ({ target, suffix = '', duration = 1200 }) => {
@@ -135,6 +136,7 @@ export default function Profile({
   const [empInputPhone, setEmpInputPhone] = useState('');
   const [expandedAppId, setExpandedAppId] = useState(null);
   const [aboutTab, setAboutTab] = useState('platform');
+  const [isVehiclePickerOpen, setIsVehiclePickerOpen] = useState(false);
   const fileInputRef = useRef(null);
   const vehicleFileInputRef = useRef(null);
 
@@ -4007,8 +4009,30 @@ const getLicenseLabel = (type) => {
                       </div>
                     </div>
 
-                    {/* Real Photo Action Toolbar (Upload + HD Presets + Reset) */}
+                    {/* Real Photo Action Toolbar (Upload + All Japanese Fleet Modal + HD Presets + Reset) */}
                     <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px', paddingTop: '2px' }}>
+                      <button 
+                        type="button"
+                        onClick={() => setIsVehiclePickerOpen(true)}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: '8px',
+                          background: 'linear-gradient(135deg, rgba(255, 149, 0, 0.2) 0%, rgba(255, 45, 85, 0.2) 100%)',
+                          border: '1px solid rgba(255, 149, 0, 0.4)',
+                          color: '#FF9500',
+                          fontSize: '10.5px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <Globe size={12} />
+                        <span>{i18n.language === 'ja' ? '全日本車カタログ' : i18n.language === 'en' ? 'Japanese Fleet Catalog' : 'Barcha Yapon Moshinalari'}</span>
+                      </button>
+
                       <button 
                         type="button"
                         onClick={() => vehicleFileInputRef.current?.click()}
@@ -5152,6 +5176,25 @@ const getLicenseLabel = (type) => {
           <span>{t('logout')}</span>
         </button>
       </div>
+
+      {/* Universal Japanese Vehicle Fleet Picker Modal */}
+      <JapaneseVehiclePickerModal
+        isOpen={isVehiclePickerOpen}
+        onClose={() => setIsVehiclePickerOpen(false)}
+        selectedVehicleId={editVehicleData.id}
+        onSelectVehicle={(veh) => {
+          setEditVehicleData(prev => ({
+            ...prev,
+            make: veh.make,
+            model: veh.model,
+            type: veh.type,
+            bodyStyle: veh.bodyStyle,
+            year: veh.year,
+            photoUrl: veh.photoUrl,
+            ...(veh.specs || {})
+          }));
+        }}
+      />
     </div>
   );
 }

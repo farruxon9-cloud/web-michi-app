@@ -6,12 +6,12 @@
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 79 ta
-* **React Komponentlari:** 21 ta
+* **Jami skanerlangan fayllar:** 81 ta
+* **React Komponentlari:** 22 ta
 * **Komponent Stillari (CSS):** 17 ta
 * **Unit Testlar (Vitest):** 5 ta
 * **Yordamchi funksiyalar (utils):** 23 ta
-* **Boshqa asosiy fayllar (root):** 13 ta
+* **Boshqa asosiy fayllar (root):** 14 ta
 
 ---
 
@@ -44,6 +44,7 @@ graph TD
   Profile --> AssistHeroShowcase
   Profile --> CompanyHome
   Profile --> DrivingAcademy
+  Profile --> JapaneseVehiclePickerModal
   Profile --> ResumeBuilder
   Profile --> VerifiedBadge
   SkeletonCard --> VerifiedBadge
@@ -228,6 +229,18 @@ graph TD
   - `../utils/bookmarkManager`
   - `../utils/poiSearch`
 
+### 📦 [JapaneseVehiclePickerModal](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JapaneseVehiclePickerModal.jsx)
+* **Fayl yo'li:** `src/components/JapaneseVehiclePickerModal.jsx` (256 qator, 9746 bayt)
+* **Qabul qiladigan parametrlari (Props):**
+  - `isOpen`
+  - `onClose`
+  - `onSelectVehicle`
+  - `selectedVehicleId`
+* **Import qilgan bog'liqliklari:**
+  - `react`
+  - `lucide-react`
+  - `../data/japaneseVehiclesDb`
+
 ### 📦 [JobDetail](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JobDetail.jsx)
 * **Fayl yo'li:** `src/components/JobDetail.jsx` (406 qator, 20008 bayt)
 * **Komponent Stillari:** 🎨 [JobDetail.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JobDetail.css)
@@ -278,7 +291,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (5158 qator, 273475 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (5201 qator, 275336 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -340,6 +353,7 @@ graph TD
   - `./CompanyHome`
   - `./ResumeBuilder`
   - `./AssistHeroShowcase`
+  - `./JapaneseVehiclePickerModal`
 
 ### 📦 [ResumeBuilder](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/ResumeBuilder.jsx)
 * **Fayl yo'li:** `src/components/ResumeBuilder.jsx` (1271 qator, 51913 bayt)
@@ -682,6 +696,10 @@ graph TD
 
 ### 📄 [ja.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/ja.js)
 * **Yo'li:** `src/locales/ja.js` (721 qator)
+* **Importlari:** *Yo'q*
+
+### 📄 [japaneseVehiclesDb.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseVehiclesDb.js)
+* **Yo'li:** `src/data/japaneseVehiclesDb.js` (306 qator)
 * **Importlari:** *Yo'q*
 
 ### 📄 [main.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/main.jsx)
