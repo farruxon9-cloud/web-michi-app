@@ -6,12 +6,12 @@
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 81 ta
+* **Jami skanerlangan fayllar:** 82 ta
 * **React Komponentlari:** 22 ta
 * **Komponent Stillari (CSS):** 17 ta
 * **Unit Testlar (Vitest):** 5 ta
 * **Yordamchi funksiyalar (utils):** 23 ta
-* **Boshqa asosiy fayllar (root):** 14 ta
+* **Boshqa asosiy fayllar (root):** 15 ta
 
 ---
 
@@ -230,7 +230,7 @@ graph TD
   - `../utils/poiSearch`
 
 ### 📦 [JapaneseVehiclePickerModal](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JapaneseVehiclePickerModal.jsx)
-* **Fayl yo'li:** `src/components/JapaneseVehiclePickerModal.jsx` (256 qator, 9746 bayt)
+* **Fayl yo'li:** `src/components/JapaneseVehiclePickerModal.jsx` (304 qator, 12018 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `isOpen`
   - `onClose`
@@ -239,7 +239,7 @@ graph TD
 * **Import qilgan bog'liqliklari:**
   - `react`
   - `lucide-react`
-  - `../data/japaneseVehiclesDb`
+  - `../data/japaneseVehiclesMaster`
 
 ### 📦 [JobDetail](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JobDetail.jsx)
 * **Fayl yo'li:** `src/components/JobDetail.jsx` (406 qator, 20008 bayt)
@@ -700,6 +700,10 @@ graph TD
 
 ### 📄 [japaneseVehiclesDb.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseVehiclesDb.js)
 * **Yo'li:** `src/data/japaneseVehiclesDb.js` (306 qator)
+* **Importlari:** *Yo'q*
+
+### 📄 [japaneseVehiclesMaster.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseVehiclesMaster.js)
+* **Yo'li:** `src/data/japaneseVehiclesMaster.js` (133 qator)
 * **Importlari:** *Yo'q*
 
 ### 📄 [main.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/main.jsx)
