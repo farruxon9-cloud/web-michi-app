@@ -154,6 +154,26 @@ export default function Profile({
     }
   };
 
+  const autoMatchVehiclePhoto = (make = '', model = '', type = '', bodyStyle = '') => {
+    const mk = (make || '').toLowerCase();
+    const md = (model || '').toLowerCase();
+    const tp = (type || '').toLowerCase();
+
+    if (mk.includes('hino') || md.includes('profia') || md.includes('ranger') || md.includes('dutro')) {
+      return '/images/presets/hino_profia.jpg';
+    }
+    if (mk.includes('fuso') || mk.includes('mitsubishi') || md.includes('super great') || md.includes('canter') || md.includes('fighter')) {
+      return '/images/presets/fuso_supergreat.jpg';
+    }
+    if (mk.includes('isuzu') || md.includes('giga') || md.includes('elf') || md.includes('forward')) {
+      return '/images/presets/isuzu_giga.jpg';
+    }
+    if (mk.includes('toyota') || md.includes('hiace') || md.includes('probox') || tp === 'car' || bodyStyle === 'van') {
+      return '/images/presets/toyota_hiace.jpg';
+    }
+    return null;
+  };
+
   const DEFAULT_VEHICLES = [
     {
       id: 'v_1',
@@ -4270,12 +4290,14 @@ const getLicenseLabel = (type) => {
                           }
 
                           const dims = getVehiclePresetDimensions(editVehicleData.type, defaultBody);
+                          const matchedPhoto = autoMatchVehiclePhoto(val, defaultModel, editVehicleData.type, defaultBody);
                           
                           setEditVehicleData(prev => ({ 
                             ...prev, 
                             make: val, 
                             model: defaultModel,
                             bodyStyle: defaultBody,
+                            photoUrl: matchedPhoto || prev.photoUrl,
                             ...dims
                           }));
                         }}
