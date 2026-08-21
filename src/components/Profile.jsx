@@ -4019,6 +4019,50 @@ const getLicenseLabel = (type) => {
 
                       <button 
                         type="button"
+                        onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/hino_profia.jpg' }))}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: '8px',
+                          background: editVehicleData.photoUrl === '/images/presets/hino_profia.jpg' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                          border: editVehicleData.photoUrl === '/images/presets/hino_profia.jpg' ? '1px solid #30D158' : '1px solid var(--glass-border)',
+                          color: editVehicleData.photoUrl === '/images/presets/hino_profia.jpg' ? '#30D158' : 'var(--text-secondary)',
+                          fontSize: '10.5px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <Truck size={12} />
+                        <span>HD Hino Profia (10t)</span>
+                      </button>
+
+                      <button 
+                        type="button"
+                        onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/fuso_supergreat.jpg' }))}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: '8px',
+                          background: editVehicleData.photoUrl === '/images/presets/fuso_supergreat.jpg' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                          border: editVehicleData.photoUrl === '/images/presets/fuso_supergreat.jpg' ? '1px solid #30D158' : '1px solid var(--glass-border)',
+                          color: editVehicleData.photoUrl === '/images/presets/fuso_supergreat.jpg' ? '#30D158' : 'var(--text-secondary)',
+                          fontSize: '10.5px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <Truck size={12} />
+                        <span>HD Fuso Super Great (10t)</span>
+                      </button>
+
+                      <button 
+                        type="button"
                         onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/toyota_hiace.jpg' }))}
                         style={{
                           padding: '5px 10px',
