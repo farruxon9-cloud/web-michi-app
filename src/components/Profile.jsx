@@ -136,13 +136,31 @@ export default function Profile({
   const [expandedAppId, setExpandedAppId] = useState(null);
   const [aboutTab, setAboutTab] = useState('platform');
   const fileInputRef = useRef(null);
+  const vehicleFileInputRef = useRef(null);
+
+  const handleVehiclePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert(i18n.language === 'ja' ? '画像サイズは5MB以下にしてください。' : 'Rasm hajmi 5MB dan oshmasligi kerak.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        const base64Url = uploadEvent.target.result;
+        setEditVehicleData(prev => ({ ...prev, photoUrl: base64Url }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const DEFAULT_VEHICLES = [
     {
       id: 'v_1',
       type: 'car',
       make: 'Toyota',
-      model: 'Harrier',
+      model: 'HiAce',
+      photoUrl: '/images/presets/toyota_hiace.jpg',
       bodyStyle: 'suv',
       trim: 'Z',
       year: '2024',
@@ -165,7 +183,8 @@ export default function Profile({
       id: 'v_2',
       type: 'truck_2t',
       make: 'Isuzu',
-      model: 'Elf',
+      model: 'Giga 10t',
+      photoUrl: '/images/presets/isuzu_giga.jpg',
       bodyStyle: 'box_truck',
       trim: 'Standard',
       year: '2023',
@@ -3647,17 +3666,18 @@ const getLicenseLabel = (type) => {
                     width: '100%',
                     alignItems: 'center'
                   }}>
-                    {/* Vehicle Graphic Display */}
+                    {/* Vehicle Graphic / Real Photo Display */}
                     <div className="vehicle-display-box squircle" style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
                       border: '1px solid var(--glass-border)',
-                      padding: '12px',
+                      padding: myVehicle.photoUrl ? '0' : '12px',
                       height: '110px',
                       position: 'relative',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      borderRadius: '16px'
                     }}>
                       <div style={{
                         position: 'absolute',
@@ -3666,11 +3686,20 @@ const getLicenseLabel = (type) => {
                         width: '100%',
                         height: '100%',
                         background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 60%)',
-                        pointerEvents: 'none'
+                        pointerEvents: 'none',
+                        zIndex: 2
                       }}></div>
-                      <div style={{ width: '130px', height: '65px', transform: 'scale(1.2)' }}>
-                        {renderVehicleSVG(myVehicle.type, myVehicle.bodyStyle, myVehicle.color)}
-                      </div>
+                      {myVehicle.photoUrl ? (
+                        <img 
+                          src={myVehicle.photoUrl} 
+                          alt={myVehicle.model || 'Vehicle Photo'} 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        />
+                      ) : (
+                        <div style={{ width: '130px', height: '65px', transform: 'scale(1.2)' }}>
+                          {renderVehicleSVG(myVehicle.type, myVehicle.bodyStyle, myVehicle.color)}
+                        </div>
+                      )}
                     </div>
 
                     {/* JDM License Plate Display */}
@@ -3814,8 +3843,12 @@ const getLicenseLabel = (type) => {
                             }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <div style={{ width: '40px', height: '22px' }}>
-                                {renderVehicleSVG(veh.type, veh.bodyStyle, veh.color)}
+                              <div style={{ width: '40px', height: '24px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {veh.photoUrl ? (
+                                  <img src={veh.photoUrl} alt={veh.model} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                  renderVehicleSVG(veh.type, veh.bodyStyle, veh.color)
+                                )}
                               </div>
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-main)' }}>
@@ -3869,48 +3902,165 @@ const getLicenseLabel = (type) => {
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%' }}>
-                  {/* Realtime Live Preview with dynamic paint color and JDM Plate Preview */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1.2fr 0.8fr',
-                    gap: '12px',
-                    width: '100%',
-                    alignItems: 'center'
-                  }}>
-                    {/* Live SVG Preview */}
-                    <div className="vehicle-display-box squircle" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
-                      border: '1px dashed var(--primary)',
-                      padding: '12px',
-                      height: '100px',
-                      position: 'relative'
+                  {/* Hidden Photo File Input */}
+                  <input 
+                    type="file" 
+                    ref={vehicleFileInputRef} 
+                    accept="image/*" 
+                    onChange={handleVehiclePhotoUpload} 
+                    style={{ display: 'none' }} 
+                  />
+
+                  {/* Realtime Live Preview with dynamic paint color, Real Photo and JDM Plate Preview */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1.2fr 0.8fr',
+                      gap: '12px',
+                      width: '100%',
+                      alignItems: 'center'
                     }}>
-                      <div style={{ width: '120px', height: '60px', transform: 'scale(1.2)' }}>
-                        {renderVehicleSVG(editVehicleData.type, editVehicleData.bodyStyle, editVehicleData.color)}
+                      {/* Live SVG / Real Photo Preview */}
+                      <div className="vehicle-display-box squircle" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
+                        border: '1.5px dashed var(--primary)',
+                        padding: editVehicleData.photoUrl ? '0' : '12px',
+                        height: '110px',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        borderRadius: '14px'
+                      }}>
+                        {editVehicleData.photoUrl ? (
+                          <img 
+                            src={editVehicleData.photoUrl} 
+                            alt="Vehicle Preview" 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
+                        ) : (
+                          <div style={{ width: '120px', height: '60px', transform: 'scale(1.2)' }}>
+                            {renderVehicleSVG(editVehicleData.type, editVehicleData.bodyStyle, editVehicleData.color)}
+                          </div>
+                        )}
+                        <span style={{
+                          position: 'absolute',
+                          top: '6px',
+                          right: '6px',
+                          fontSize: '8px',
+                          background: 'var(--primary)',
+                          color: 'white',
+                          padding: '2px 6px',
+                          borderRadius: '10px',
+                          fontWeight: 'bold',
+                          letterSpacing: '0.5px'
+                        }}>
+                          {editVehicleData.photoUrl ? 'REAL PHOTO' : '3D SVG'}
+                        </span>
                       </div>
-                      <span style={{
-                        position: 'absolute',
-                        top: '4px',
-                        right: '6px',
-                        fontSize: '7px',
-                        background: 'var(--primary)',
-                        color: 'white',
-                        padding: '1px 4px',
-                        borderRadius: '3px',
-                        fontWeight: 'bold'
-                      }}>PREVIEW</span>
+
+                      {/* Live Plate Preview */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                        {renderJDMPlateBox(editVehicleData, true)}
+                        {editVehicleData.driverMark && editVehicleData.driverMark !== 'none' && (
+                          <div style={{ transform: 'scale(0.9)', marginTop: '4px' }}>
+                            {renderDriverMarkBadge(editVehicleData.driverMark)}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Live Plate Preview */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
-                      {renderJDMPlateBox(editVehicleData, true)}
-                      {editVehicleData.driverMark && editVehicleData.driverMark !== 'none' && (
-                        <div style={{ transform: 'scale(0.9)', marginTop: '4px' }}>
-                          {renderDriverMarkBadge(editVehicleData.driverMark)}
-                        </div>
+                    {/* Real Photo Action Toolbar (Upload + HD Presets + Reset) */}
+                    <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px', paddingTop: '2px' }}>
+                      <button 
+                        type="button"
+                        onClick={() => vehicleFileInputRef.current?.click()}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: '8px',
+                          background: 'rgba(0, 132, 255, 0.12)',
+                          border: '1px solid rgba(0, 132, 255, 0.3)',
+                          color: '#0084FF',
+                          fontSize: '10.5px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <Camera size={12} />
+                        <span>{i18n.language === 'ja' ? '写真アップロード' : i18n.language === 'en' ? 'Upload Photo' : 'Rasm Yuklash'}</span>
+                      </button>
+
+                      <button 
+                        type="button"
+                        onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/isuzu_giga.jpg' }))}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: '8px',
+                          background: editVehicleData.photoUrl === '/images/presets/isuzu_giga.jpg' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                          border: editVehicleData.photoUrl === '/images/presets/isuzu_giga.jpg' ? '1px solid #30D158' : '1px solid var(--glass-border)',
+                          color: editVehicleData.photoUrl === '/images/presets/isuzu_giga.jpg' ? '#30D158' : 'var(--text-secondary)',
+                          fontSize: '10.5px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <Truck size={12} />
+                        <span>HD Isuzu Giga (10t)</span>
+                      </button>
+
+                      <button 
+                        type="button"
+                        onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/toyota_hiace.jpg' }))}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: '8px',
+                          background: editVehicleData.photoUrl === '/images/presets/toyota_hiace.jpg' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                          border: editVehicleData.photoUrl === '/images/presets/toyota_hiace.jpg' ? '1px solid #30D158' : '1px solid var(--glass-border)',
+                          color: editVehicleData.photoUrl === '/images/presets/toyota_hiace.jpg' ? '#30D158' : 'var(--text-secondary)',
+                          fontSize: '10.5px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <Truck size={12} />
+                        <span>HD Toyota HiAce (Van)</span>
+                      </button>
+
+                      {editVehicleData.photoUrl && (
+                        <button 
+                          type="button"
+                          onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: null }))}
+                          style={{
+                            padding: '5px 10px',
+                            borderRadius: '8px',
+                            background: 'rgba(255, 69, 58, 0.1)',
+                            border: '1px solid rgba(255, 69, 58, 0.3)',
+                            color: '#FF453A',
+                            fontSize: '10.5px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          <RotateCcw size={11} />
+                          <span>{i18n.language === 'ja' ? '3Dグラフィックに戻す' : i18n.language === 'en' ? 'Reset to 3D' : '3D SVG ga qaytish'}</span>
+                        </button>
                       )}
                     </div>
                   </div>
