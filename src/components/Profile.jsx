@@ -158,7 +158,9 @@ export default function Profile({
     const mk = (make || '').toLowerCase();
     const md = (model || '').toLowerCase();
     const tp = (type || '').toLowerCase();
+    const bs = (bodyStyle || '').toLowerCase();
 
+    // Heavy Trucks
     if (mk.includes('hino') || md.includes('profia') || md.includes('ranger') || md.includes('dutro')) {
       return '/images/presets/hino_profia.jpg';
     }
@@ -168,9 +170,23 @@ export default function Profile({
     if (mk.includes('isuzu') || md.includes('giga') || md.includes('elf') || md.includes('forward')) {
       return '/images/presets/isuzu_giga.jpg';
     }
-    if (mk.includes('toyota') || md.includes('hiace') || md.includes('probox') || tp === 'car' || bodyStyle === 'van') {
+
+    // Passenger Cars & Light Vehicles
+    if (md.includes('harrier') || bs === 'suv' || (mk.includes('toyota') && md.includes('harrier'))) {
+      return '/images/presets/toyota_harrier.jpg';
+    }
+    if (mk.includes('nissan') || md.includes('skyline') || bs === 'sedan') {
+      return '/images/presets/nissan_skyline.jpg';
+    }
+    if (mk.includes('toyota') || md.includes('hiace') || md.includes('probox') || bs === 'van' || bs === 'minivan') {
       return '/images/presets/toyota_hiace.jpg';
     }
+
+    // Default fallback to Harrier for passenger cars
+    if (tp === 'car') {
+      return '/images/presets/toyota_harrier.jpg';
+    }
+
     return null;
   };
 
@@ -4101,6 +4117,50 @@ const getLicenseLabel = (type) => {
                       >
                         <Truck size={12} />
                         <span>HD Toyota HiAce (Van)</span>
+                      </button>
+
+                      <button 
+                        type="button"
+                        onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/toyota_harrier.jpg' }))}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: '8px',
+                          background: editVehicleData.photoUrl === '/images/presets/toyota_harrier.jpg' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                          border: editVehicleData.photoUrl === '/images/presets/toyota_harrier.jpg' ? '1px solid #30D158' : '1px solid var(--glass-border)',
+                          color: editVehicleData.photoUrl === '/images/presets/toyota_harrier.jpg' ? '#30D158' : 'var(--text-secondary)',
+                          fontSize: '10.5px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <Zap size={12} />
+                        <span>HD Toyota Harrier (SUV)</span>
+                      </button>
+
+                      <button 
+                        type="button"
+                        onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/nissan_skyline.jpg' }))}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: '8px',
+                          background: editVehicleData.photoUrl === '/images/presets/nissan_skyline.jpg' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                          border: editVehicleData.photoUrl === '/images/presets/nissan_skyline.jpg' ? '1px solid #30D158' : '1px solid var(--glass-border)',
+                          color: editVehicleData.photoUrl === '/images/presets/nissan_skyline.jpg' ? '#30D158' : 'var(--text-secondary)',
+                          fontSize: '10.5px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <Zap size={12} />
+                        <span>HD Nissan Skyline (Sedan)</span>
                       </button>
 
                       {editVehicleData.photoUrl && (
