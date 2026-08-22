@@ -47,4 +47,24 @@ These rules govern the behavior, quality controls, and coding style of all AI ag
 - **i18n Integratsiyasi:** Har qanday yangi matnli kalit `src/i18n.js` faylining barcha tillar boʻlimiga (`uz`, `ja`, `en`) mos tarjimalari bilan birga qoʻshilishi shart.
 - **Dinamik Muloqot:** Komponentlarda matnlarni chiqarish uchun `useTranslation` hookidan foydalanish va `t('key')` orqali dinamik render qilish lozim.
 
+## 🔒 11. Raqamli Da'vo Tekshiruvi (Numeric Claims Verification)
+- **Raqamli da'vo taqiqi:** Agar rejada "X ta element yaratish" deyilgan bo'lsa, yaratilgan elementlar sonini ALBATTA skript orqali hisoblash va rejadagi son bilan taqqoslash **SHART**. Da'vo qilish (masalan "500+ model tayyor") faqat skript natijasida haqiqatan shu raqam tasdiqlangandan keyin ruxsat etiladi.
+- **Kamchilik aniqlansa to'xtash:** Agar haqiqiy son rejadagidan 20% dan ko'p kam bo'lsa (masalan reja 200 — haqiqat 150 dan kam), commit qilmasdan avval kamchilikni to'ldirish kerak. Keyingi bosqichga o'tish TAQIQLANADI.
+- **Audit buyruqlari:** Har qanday ma'lumotlar bazasi (JSON/JS array) yaratgandan yoki kengaytirgandan so'ng `node -e "..."` yoki `node scripts/validate_*.mjs` orqali elementlar sonini hisoblash va natijani konsolga chiqarish **SHART**. Natija log sifatida ko'rsatilishi kerak.
+
+## 🔒 12. "Placeholder" va "Fake Data" Taqiqi (No Fake Fallbacks)
+- **Noto'g'ri rasm taqiqi:** Agar 5+ turli model uchun bitta rasm (photoUrl) ishlatilsa, bu "placeholder" hisoblanadi va **TAQIQLANADI**. Har bir model o'z turiga mos rasmga ega bo'lishi yoki aniq SVG/gradient card fallback ishlatishi kerak.
+- **Tur mosligi tekshiruvi:** Yuk mashina (truck) modeli uchun sedan rasmi, sedan modeli uchun SUV rasmi ishlatilmasligi kerak. `photoUrl` maydonidagi rasm shu modelning `type` va `bodyStyle` ga mos bo'lishi SHART.
+- **Agar real rasm yo'q bo'lsa:** SVG procedural rendering yoki modelga mos `type + bodyStyle + make` kombinatsiyasidan gradient card generatsiya qilish kerak — ammo boshqa modelning haqiqiy rasmini "qarz" olish TAQIQLANADI.
+
+## 🔒 13. Yangi Modul = Yangi Test (Zero Test Gap Rule)
+- **Qoida:** Har qanday yangi `.js` yoki `.jsx` fayl yaratilganda (`src/` ichida), shu fayl uchun `.test.js` yoki `.test.jsx` fayl ham yaratilishi **SHART**. Testlarsiz yangi modul commit qilinishi TAQIQLANADI.
+- **Minimum test soni:** Har bir yangi modulda kamida **3 ta test case** bo'lishi kerak (masalan: import ishlashi, asosiy funksiya to'g'ri natija berishi, edge case).
+- **Tekshiruv:** `npm test` o'tkazishdan oldin yangi test fayllari mavjudligini tekshirish. Agar yangi `.jsx` fayl bor lekin `.test.jsx` yo'q bo'lsa — xatolik.
+
+## 🔒 14. Bosqichma-Bosqich Bajarish (Atomic Step Execution)
+- **Qoida:** Reja N ta bosqichdan iborat bo'lsa, har bir bosqich ALOHIDA bajarilishi, ALOHIDA tekshirilishi va tekshiruv muvaffaqiyatli o'tgandan keyingina ALOHIDA commit qilinishi kerak.
+- **Bosqich yakunlanish mezonlari:** Har bir bosqichda aniq, raqamli "muvaffaqiyat mezoni" bo'lishi **SHART**. Masalan: "Bosqich 1 tayyor = DB da 200+ model AND 15 brendning barchasi kamida 2 ta model". Bu mezon rejada yozilgan bo'lishi va skript orqali tekshirilishi kerak.
+- **Keyingi bosqichga o'tish sharti:** Oldingi bosqichning **BARCHA** mezonlari tekshiruv skripti orqali tasdiqlanmagunicha keyingi bosqichni BOSHLAMASLIK. Mezon buzilgan holda keyingi bosqichga o'tish TAQIQLANADI.
+- **25 ta qoida:** Bitta operatsiyada 25 dan ortiq element (model, yozuv, komponent) yaratmaslik. Har 25 tadan keyin audit skriptini ishga tushirish va natijani ko'rsatish kerak.
 
