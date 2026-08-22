@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, Check, Globe, Loader2, Sparkles } from 'lucide-react';
+import { Search, X, Check, Globe, Loader2, Sparkles, Filter, ShieldCheck, Car, Flame } from 'lucide-react';
 import { POPULAR_GLOBAL_BRANDS, getModelsForMake, getRealVehiclePhoto } from '../services/vehicleApiService';
-import { MASTER_VEHICLE_DATABASE } from '../data/japaneseVehiclesMaster';
+import { MASTER_VEHICLE_DATABASE, JAPANESE_HISTORICAL_ERAS } from '../data/japaneseVehiclesMaster';
 
 export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVehicle, selectedVehicleId }) {
   const [selectedMake, setSelectedMake] = useState('Toyota');
+  const [selectedEra, setSelectedEra] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -73,13 +74,16 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
   if (!isOpen) return null;
 
   const filteredModels = models.filter(m => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      m.model.toLowerCase().includes(q) ||
-      (m.modelJa && m.modelJa.toLowerCase().includes(q)) ||
-      m.make.toLowerCase().includes(q)
-    );
+    // Era filter
+    if (selectedEra !== 'all' && m.era !== selectedEra) return false;
+    // Search query filter
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchModel = m.model.toLowerCase().includes(q) || (m.modelJa && m.modelJa.toLowerCase().includes(q));
+      const matchMake = m.make.toLowerCase().includes(q);
+      if (!matchModel && !matchMake) return false;
+    }
+    return true;
   });
 
   return (
@@ -90,86 +94,110 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
       right: 0,
       bottom: 0,
       zIndex: 9999,
-      background: 'rgba(0, 0, 0, 0.78)',
-      backdropFilter: 'blur(12px)',
+      background: 'rgba(0, 0, 0, 0.82)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '10px'
     }}>
       <div style={{
-        background: 'var(--card-bg, #1c1c1e)',
-        border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.12))',
-        borderRadius: '20px',
+        background: 'linear-gradient(180deg, #1c1c1e 0%, #121214 100%)',
+        border: '1px solid rgba(255, 255, 255, 0.14)',
+        borderRadius: '24px',
         width: '100%',
-        maxWidth: '420px',
-        maxHeight: '82vh',
+        maxWidth: '430px',
+        maxHeight: '84vh',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.6)'
+        boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 132, 255, 0.15)'
       }}>
-        {/* Modal Header */}
+        {/* Pro Header with Live Status Badge */}
         <div style={{
-          padding: '12px 14px',
-          borderBottom: '1px solid var(--glass-border, rgba(255, 255, 255, 0.08))',
+          padding: '14px 16px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%)'
+          background: 'linear-gradient(135deg, rgba(255,149,0,0.08) 0%, rgba(0,132,255,0.08) 100%)'
         }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-main, #fff)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} color="#30D158" />
-              <span>Avtomobillar Katalogi</span>
-            </h3>
-            <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: 'var(--text-secondary, #8e8e93)' }}>
-              12,340+ brend va 100,000+ modellar (Wikimedia Real HD Photos)
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{
+                background: 'linear-gradient(135deg, #0084FF 0%, #30D158 100%)',
+                padding: '4px',
+                borderRadius: '8px',
+                display: 'inline-flex'
+              }}>
+                <Globe size={14} color="#fff" />
+              </span>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#fff', letterSpacing: '-0.2px' }}>
+                Avtomobil Katalogi
+              </h3>
+              <span style={{
+                fontSize: '9px',
+                fontWeight: 'bold',
+                background: 'rgba(48, 209, 88, 0.2)',
+                color: '#30D158',
+                border: '1px solid rgba(48, 209, 88, 0.4)',
+                padding: '1px 6px',
+                borderRadius: '10px'
+              }}>
+                PRO FLEET
+              </span>
+            </div>
+            <p style={{ margin: '3px 0 0 0', fontSize: '10.5px', color: 'rgba(255, 255, 255, 0.65)' }}>
+              12,340+ Global Brendlar & Real HD Foto Integratsiya
             </p>
           </div>
           <button 
             onClick={onClose}
             style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: 'none',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
               borderRadius: '50%',
               width: '30px',
               height: '30px',
-              color: 'var(--text-main, #fff)',
+              color: '#fff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
             }}
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
 
-        {/* Search & Global Brand Pills */}
-        <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0, 0, 0, 0.15)' }}>
-          {/* Instant Search Bar */}
+        {/* Search Bar & Era / Brand Pills */}
+        <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0, 0, 0, 0.25)' }}>
+          {/* Pro Search Field */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            background: 'rgba(255, 255, 255, 0.06)',
-            border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.12))',
-            borderRadius: '10px',
-            padding: '7px 10px'
+            gap: '8px',
+            background: 'rgba(255, 255, 255, 0.07)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: '12px',
+            padding: '8px 12px',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
           }}>
-            <Search size={14} color="var(--text-secondary, #8e8e93)" />
+            <Search size={14} color="#0084FF" />
             <input 
               type="text"
-              placeholder={`${selectedMake} modellari qidiruvi...`}
+              placeholder={`${selectedMake} modellari boʻyicha qidiruv (Corolla, Supra, X5)...`}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{
                 background: 'transparent',
                 border: 'none',
                 outline: 'none',
-                color: 'var(--text-main, #fff)',
+                color: '#fff',
                 fontSize: '11.5px',
+                fontWeight: '500',
                 width: '100%'
               }}
             />
@@ -183,25 +211,19 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             )}
           </div>
 
-          {/* Automakers Cascading Brand Pills */}
-          <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', paddingBottom: '2px' }}>
-            {POPULAR_GLOBAL_BRANDS.map(brand => (
+          {/* Era Filter Pills */}
+          <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '2px' }}>
+            {JAPANESE_HISTORICAL_ERAS.map(era => (
               <button
-                key={brand.id}
-                onClick={() => setSelectedMake(brand.name)}
+                key={era.id}
+                onClick={() => setSelectedEra(era.id)}
                 style={{
-                  padding: '4px 9px',
-                  borderRadius: '8px',
-                  border: selectedMake.toLowerCase() === brand.name.toLowerCase() 
-                    ? '1.2px solid #0084FF' 
-                    : '1px solid rgba(255, 255, 255, 0.06)',
-                  background: selectedMake.toLowerCase() === brand.name.toLowerCase() 
-                    ? 'rgba(0, 132, 255, 0.2)' 
-                    : 'rgba(255, 255, 255, 0.02)',
-                  color: selectedMake.toLowerCase() === brand.name.toLowerCase() 
-                    ? '#0084FF' 
-                    : 'var(--text-secondary, #8e8e93)',
-                  fontSize: '10px',
+                  padding: '3px 8px',
+                  borderRadius: '7px',
+                  border: selectedEra === era.id ? '1px solid #FF9500' : '1px solid rgba(255, 255, 255, 0.08)',
+                  background: selectedEra === era.id ? 'rgba(255, 149, 0, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+                  color: selectedEra === era.id ? '#FF9500' : 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '9.5px',
                   fontWeight: 'bold',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
@@ -210,26 +232,61 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                   gap: '3px'
                 }}
               >
-                <span>{brand.icon}</span>
-                <span>{brand.name}</span>
+                <span>{era.icon}</span>
+                <span>{era.label.split(' ')[0]}</span>
               </button>
             ))}
           </div>
+
+          {/* Automakers Cascading Brand Pills */}
+          <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', paddingBottom: '2px' }}>
+            {POPULAR_GLOBAL_BRANDS.map(brand => {
+              const isActive = selectedMake.toLowerCase() === brand.name.toLowerCase();
+              return (
+                <button
+                  key={brand.id}
+                  onClick={() => setSelectedMake(brand.name)}
+                  style={{
+                    padding: '5px 10px',
+                    borderRadius: '9px',
+                    border: isActive 
+                      ? '1.2px solid #0084FF' 
+                      : '1px solid rgba(255, 255, 255, 0.08)',
+                    background: isActive 
+                      ? 'linear-gradient(135deg, rgba(0, 132, 255, 0.28) 0%, rgba(48, 209, 88, 0.2) 100%)' 
+                      : 'rgba(255, 255, 255, 0.03)',
+                    color: isActive ? '#fff' : 'rgba(255, 255, 255, 0.75)',
+                    fontSize: '10.5px',
+                    fontWeight: isActive ? '800' : '600',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    boxShadow: isActive ? '0 0 10px rgba(0, 132, 255, 0.35)' : 'none'
+                  }}
+                >
+                  <span style={{ fontSize: '11px' }}>{brand.icon}</span>
+                  <span>{brand.name}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Vehicles Grid Catalog */}
+        {/* Vehicles Pro Grid Catalog */}
         <div style={{
           padding: '10px 14px',
           overflowY: 'auto',
           display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '8px',
+          gap: '9px',
           flex: 1
         }}>
           {loading ? (
-            <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '30px', color: '#8e8e93', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-              <Loader2 size={16} className="animate-spin" color="#0084FF" />
-              <span style={{ fontSize: '11px' }}>{selectedMake} yuklanmoqda...</span>
+            <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '35px', color: '#8e8e93', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <Loader2 size={20} className="animate-spin" color="#0084FF" />
+              <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: '#fff' }}>{selectedMake} floti yuklanmoqda...</span>
             </div>
           ) : filteredModels.length > 0 ? (
             filteredModels.map(veh => {
@@ -247,31 +304,39 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                     onClose();
                   }}
                   style={{
-                    background: isSelected ? 'rgba(48, 209, 88, 0.12)' : 'rgba(255, 255, 255, 0.03)',
-                    border: isSelected ? '1.5px solid #30D158' : '1px solid var(--glass-border, rgba(255, 255, 255, 0.08))',
-                    borderRadius: '12px',
-                    padding: '6px',
+                    background: isSelected 
+                      ? 'linear-gradient(135deg, rgba(48, 209, 88, 0.18) 0%, rgba(0, 132, 255, 0.12) 100%)' 
+                      : 'linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
+                    border: isSelected 
+                      ? '1.5px solid #30D158' 
+                      : '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '14px',
+                    padding: '7px',
                     cursor: 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '6px',
-                    position: 'relative'
+                    position: 'relative',
+                    boxShadow: isSelected 
+                      ? '0 0 12px rgba(48, 209, 88, 0.3)' 
+                      : '0 4px 10px rgba(0,0,0,0.2)',
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  {/* Photo Thumbnail or Gradient Card */}
+                  {/* Photo Thumbnail Container */}
                   <div style={{
-                    height: '70px',
+                    height: '75px',
                     width: '100%',
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     overflow: 'hidden',
                     background: displayPhoto 
-                      ? 'rgba(0,0,0,0.3)' 
-                      : 'linear-gradient(135deg, rgba(0,132,255,0.2) 0%, rgba(48,209,88,0.2) 100%)',
+                      ? 'rgba(0,0,0,0.4)' 
+                      : 'linear-gradient(135deg, rgba(0,132,255,0.25) 0%, rgba(255,149,0,0.2) 100%)',
                     position: 'relative',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    border: '1px solid rgba(255,255,255,0.06)'
+                    border: '1px solid rgba(255,255,255,0.08)'
                   }}>
                     {displayPhoto ? (
                       <img 
@@ -281,42 +346,63 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                       />
                     ) : (
                       <div style={{ textAlign: 'center', padding: '4px' }}>
-                        <Sparkles size={16} color="#0084FF" style={{ marginBottom: '2px' }} />
-                        <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#fff' }}>{veh.make}</div>
+                        <Sparkles size={18} color="#0084FF" style={{ marginBottom: '2px' }} />
+                        <div style={{ fontSize: '10px', fontWeight: '800', color: '#fff' }}>{veh.make}</div>
                         <div style={{ fontSize: '8.5px', color: 'rgba(255,255,255,0.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px' }}>{veh.model}</div>
                       </div>
                     )}
 
+                    {/* Photo Badge */}
                     <span style={{
                       position: 'absolute',
-                      bottom: '3px',
-                      left: '3px',
+                      top: '4px',
+                      right: '4px',
+                      fontSize: '7px',
+                      fontWeight: 'bold',
+                      background: displayPhoto ? 'rgba(48, 209, 88, 0.85)' : 'rgba(0, 132, 255, 0.85)',
+                      color: '#fff',
+                      padding: '1.5px 5px',
+                      borderRadius: '4px',
+                      letterSpacing: '0.3px'
+                    }}>
+                      {displayPhoto ? 'HD PHOTO' : 'PRO SPEC'}
+                    </span>
+
+                    {/* Year Tag */}
+                    <span style={{
+                      position: 'absolute',
+                      bottom: '4px',
+                      left: '4px',
                       fontSize: '7.5px',
                       fontWeight: 'bold',
-                      background: 'rgba(0,0,0,0.75)',
+                      background: 'rgba(0,0,0,0.8)',
                       color: '#fff',
-                      padding: '1px 4px',
-                      borderRadius: '3px'
+                      padding: '1.5px 5px',
+                      borderRadius: '4px'
                     }}>
                       {veh.year || '2024'}
                     </span>
                   </div>
 
                   {/* Model Labels */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: 'var(--text-main, #fff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '130px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '125px' }}>
                         {veh.make} {veh.model}
                       </span>
-                      {isSelected && <Check size={12} color="#30D158" />}
+                      {isSelected && (
+                        <span style={{ background: '#30D158', borderRadius: '50%', padding: '2px', display: 'inline-flex' }}>
+                          <Check size={10} color="#000" />
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
               );
             })
           ) : (
-            <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '25px', color: '#8e8e93', fontSize: '11.5px' }}>
-              Natija topilmadi.
+            <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '30px', color: '#8e8e93', fontSize: '11.5px' }}>
+              Ushbu filtr boʻyicha avtomobil topilmadi.
             </div>
           )}
         </div>
@@ -324,24 +410,27 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
         {/* Modal Footer */}
         <div style={{
           padding: '10px 14px',
-          borderTop: '1px solid var(--glass-border, rgba(255, 255, 255, 0.08))',
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'rgba(0, 0, 0, 0.2)'
+          background: 'rgba(0, 0, 0, 0.3)'
         }}>
-          <span style={{ fontSize: '10px', color: 'var(--text-secondary, #8e8e93)' }}>
-            <b>{selectedMake}</b>: {filteredModels.length} model
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#30D158', display: 'inline-block' }}></span>
+            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>
+              <b>{selectedMake}</b>: {filteredModels.length} model yuklandi
+            </span>
+          </div>
           <button
             onClick={onClose}
             style={{
-              padding: '5px 12px',
-              borderRadius: '7px',
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: 'none',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%)',
+              border: '1px solid rgba(255,255,255,0.15)',
               color: '#fff',
-              fontSize: '10.5px',
+              fontSize: '11px',
               fontWeight: 'bold',
               cursor: 'pointer'
             }}
