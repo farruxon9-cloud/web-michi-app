@@ -230,7 +230,7 @@ graph TD
   - `../utils/poiSearch`
 
 ### 📦 [JapaneseVehiclePickerModal](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JapaneseVehiclePickerModal.jsx)
-* **Fayl yo'li:** `src/components/JapaneseVehiclePickerModal.jsx` (339 qator, 12892 bayt)
+* **Fayl yo'li:** `src/components/JapaneseVehiclePickerModal.jsx` (339 qator, 12865 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `isOpen`
   - `onClose`
