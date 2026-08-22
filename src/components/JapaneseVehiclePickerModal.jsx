@@ -1,18 +1,73 @@
-import React, { useState } from 'react';
-import { Search, X, Check, Truck, Zap, Calendar, Sparkles, Filter } from 'lucide-react';
-import { JAPANESE_AUTOMAKERS_MASTER, JAPANESE_HISTORICAL_ERAS, queryMasterJapaneseVehicles } from '../data/japaneseVehiclesMaster';
+import React, { useState, useEffect } from 'react';
+import { Search, X, Check, Globe, Loader2, Sparkles } from 'lucide-react';
+import { POPULAR_GLOBAL_BRANDS, getModelsForMake } from '../services/vehicleApiService';
+import { MASTER_VEHICLE_DATABASE } from '../data/japaneseVehiclesMaster';
 
 export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVehicle, selectedVehicleId }) {
-  const [selectedMake, setSelectedMake] = useState('all');
-  const [selectedEra, setSelectedEra] = useState('all');
+  const [selectedMake, setSelectedMake] = useState('Toyota');
   const [searchQuery, setSearchQuery] = useState('');
+  const [models, setModels] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let isMounted = true;
+    async function loadModels() {
+      setLoading(true);
+      try {
+        // Fetch from NHTSA API (cached automatically)
+        const apiModels = await getModelsForMake(selectedMake);
+        
+        // Also query local preset items for this make if any
+        const localItems = MASTER_VEHICLE_DATABASE.filter(
+          v => v.make.toLowerCase() === selectedMake.toLowerCase()
+        );
+
+        // Merge API & local items safely
+        const combined = [...localItems];
+        apiModels.forEach(apiM => {
+          const exists = combined.some(c => c.model.toLowerCase() === apiM.model.toLowerCase());
+          if (!exists) {
+            combined.push({
+              id: apiM.id,
+              make: apiM.make,
+              makeJa: apiM.make,
+              model: apiM.model,
+              modelJa: apiM.model,
+              era: 'modern',
+              year: '2024',
+              type: apiM.model.toLowerCase().includes('truck') ? 'truck_4t' : 'car',
+              bodyStyle: apiM.model.toLowerCase().includes('suv') ? 'suv' : 'sedan',
+              photoUrl: null
+            });
+          }
+        });
+
+        if (isMounted) {
+          setModels(combined);
+        }
+      } catch (err) {
+        console.warn('Failed to load vehicle models:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    loadModels();
+    return () => { isMounted = false; };
+  }, [isOpen, selectedMake]);
 
   if (!isOpen) return null;
 
-  const filteredVehicles = queryMasterJapaneseVehicles({
-    make: selectedMake,
-    era: selectedEra,
-    search: searchQuery
+  const filteredModels = models.filter(m => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      m.model.toLowerCase().includes(q) ||
+      (m.modelJa && m.modelJa.toLowerCase().includes(q)) ||
+      m.make.toLowerCase().includes(q)
+    );
   });
 
   return (
@@ -53,10 +108,11 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
         }}>
           <div>
             <h3 style={{ margin: 0, fontSize: '16.5px', fontWeight: 'bold', color: 'var(--text-main, #fff)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>🇯🇵</span> Universal Yapon Avtomobillari Katalogi
+              <Globe size={18} color="#30D158" />
+              <span>Universal Avtomobillar Katalogi</span>
             </h3>
             <p style={{ margin: '3px 0 0 0', fontSize: '11px', color: 'var(--text-secondary, #8e8e93)' }}>
-              1950-yil Klassik merosidan JDM va 2026-yil zamonaviy flotgacha (15 brend, 500+ model)
+              Butun dunyo boʻyicha 12,340+ brend va 100,000+ modellar (NHTSA API Instant Fetch)
             </p>
           </div>
           <button 
@@ -78,7 +134,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
           </button>
         </div>
 
-        {/* Search & Cascading Filters */}
+        {/* Search & Global Brand Pills */}
         <div style={{ padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(0, 0, 0, 0.15)' }}>
           {/* Instant Search Bar */}
           <div style={{
@@ -93,7 +149,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             <Search size={15} color="var(--text-secondary, #8e8e93)" />
             <input 
               type="text"
-              placeholder="Model yoki brend nomini qidirish (Giga, Skyline, Supra, Harrier, HiAce, Elf)..."
+              placeholder={`${selectedMake} modellari boʻyicha qidirish (Corolla, Supra, X5, Civic)...`}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{
@@ -115,18 +171,24 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             )}
           </div>
 
-          {/* Eras Filter Pills */}
+          {/* Automakers Cascading Brand Pills */}
           <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
-            {JAPANESE_HISTORICAL_ERAS.map(era => (
+            {POPULAR_GLOBAL_BRANDS.map(brand => (
               <button
-                key={era.id}
-                onClick={() => setSelectedEra(era.id)}
+                key={brand.id}
+                onClick={() => setSelectedMake(brand.name)}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '10px',
-                  border: selectedEra === era.id ? '1.2px solid var(--primary, #30D158)' : '1px solid rgba(255, 255, 255, 0.08)',
-                  background: selectedEra === era.id ? 'rgba(48, 209, 88, 0.18)' : 'rgba(255, 255, 255, 0.03)',
-                  color: selectedEra === era.id ? 'var(--primary, #30D158)' : 'var(--text-secondary, #8e8e93)',
+                  border: selectedMake.toLowerCase() === brand.name.toLowerCase() 
+                    ? '1.2px solid #0084FF' 
+                    : '1px solid rgba(255, 255, 255, 0.06)',
+                  background: selectedMake.toLowerCase() === brand.name.toLowerCase() 
+                    ? 'rgba(0, 132, 255, 0.2)' 
+                    : 'rgba(255, 255, 255, 0.02)',
+                  color: selectedMake.toLowerCase() === brand.name.toLowerCase() 
+                    ? '#0084FF' 
+                    : 'var(--text-secondary, #8e8e93)',
                   fontSize: '11px',
                   fontWeight: 'bold',
                   cursor: 'pointer',
@@ -136,34 +198,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                   gap: '4px'
                 }}
               >
-                <span>{era.icon}</span>
-                <span>{era.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Automakers Cascading Brand Pills */}
-          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
-            {JAPANESE_AUTOMAKERS_MASTER.map(brand => (
-              <button
-                key={brand.id}
-                onClick={() => setSelectedMake(brand.id === 'all' ? 'all' : brand.name)}
-                style={{
-                  padding: '5px 11px',
-                  borderRadius: '8px',
-                  border: (selectedMake === brand.name || (selectedMake === 'all' && brand.id === 'all')) ? '1.2px solid #0084FF' : '1px solid rgba(255, 255, 255, 0.06)',
-                  background: (selectedMake === brand.name || (selectedMake === 'all' && brand.id === 'all')) ? 'rgba(0, 132, 255, 0.2)' : 'rgba(255, 255, 255, 0.02)',
-                  color: (selectedMake === brand.name || (selectedMake === 'all' && brand.id === 'all')) ? '#0084FF' : 'var(--text-secondary, #8e8e93)',
-                  fontSize: '11px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                {brand.icon && <span>{brand.icon}</span>}
+                <span>{brand.icon}</span>
                 <span>{brand.name}</span>
               </button>
             ))}
@@ -179,8 +214,13 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
           gap: '12px',
           flex: 1
         }}>
-          {filteredVehicles.length > 0 ? (
-            filteredVehicles.map(veh => {
+          {loading ? (
+            <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '40px', color: '#8e8e93', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <Loader2 size={18} className="animate-spin" color="#0084FF" />
+              <span style={{ fontSize: '12px' }}>{selectedMake} modellari yuklanmoqda...</span>
+            </div>
+          ) : filteredModels.length > 0 ? (
+            filteredModels.map(veh => {
               const isSelected = selectedVehicleId === veh.id;
               return (
                 <div
@@ -198,24 +238,38 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '8px',
-                    position: 'relative',
-                    transition: 'transform 0.15s ease, border-color 0.15s ease'
+                    position: 'relative'
                   }}
                 >
-                  {/* Photo Thumbnail */}
+                  {/* Photo Thumbnail or Gradient Card */}
                   <div style={{
-                    height: '100px',
+                    height: '95px',
                     width: '100%',
                     borderRadius: '12px',
                     overflow: 'hidden',
-                    background: 'rgba(0,0,0,0.3)',
-                    position: 'relative'
+                    background: veh.photoUrl 
+                      ? 'rgba(0,0,0,0.3)' 
+                      : 'linear-gradient(135deg, rgba(0,132,255,0.2) 0%, rgba(48,209,88,0.2) 100%)',
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '1px solid rgba(255,255,255,0.06)'
                   }}>
-                    <img 
-                      src={veh.photoUrl} 
-                      alt={veh.model} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                    />
+                    {veh.photoUrl ? (
+                      <img 
+                        src={veh.photoUrl} 
+                        alt={veh.model} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      />
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '8px' }}>
+                        <Sparkles size={20} color="#0084FF" style={{ marginBottom: '4px' }} />
+                        <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#fff' }}>{veh.make}</div>
+                        <div style={{ fontSize: '9.5px', color: 'rgba(255,255,255,0.7)' }}>{veh.model}</div>
+                      </div>
+                    )}
+
                     <span style={{
                       position: 'absolute',
                       bottom: '5px',
@@ -225,46 +279,27 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                       background: 'rgba(0,0,0,0.75)',
                       color: '#fff',
                       padding: '2px 6px',
-                      borderRadius: '4px',
-                      backdropFilter: 'blur(4px)'
+                      borderRadius: '4px'
                     }}>
-                      {veh.year}
-                    </span>
-
-                    <span style={{
-                      position: 'absolute',
-                      top: '5px',
-                      right: '5px',
-                      fontSize: '7.5px',
-                      fontWeight: 'bold',
-                      background: veh.era === 'classic' ? 'rgba(255, 149, 0, 0.85)' : veh.era === 'jdm_golden' ? 'rgba(255, 45, 85, 0.85)' : 'rgba(48, 209, 88, 0.85)',
-                      color: '#fff',
-                      padding: '1px 5px',
-                      borderRadius: '4px',
-                      letterSpacing: '0.4px'
-                    }}>
-                      {veh.era === 'classic' ? 'CLASSIC' : veh.era === 'jdm_golden' ? 'JDM LEGEND' : 'MODERN'}
+                      {veh.year || '2024'}
                     </span>
                   </div>
 
-                  {/* Model Labels & Specs */}
+                  {/* Model Labels */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '12.5px', fontWeight: 'bold', color: 'var(--text-main, #fff)' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-main, #fff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {veh.make} {veh.model}
                       </span>
                       {isSelected && <Check size={14} color="#30D158" />}
                     </div>
-                    <span style={{ fontSize: '10px', color: 'var(--text-secondary, #8e8e93)' }}>
-                      {veh.modelJa}
-                    </span>
                   </div>
                 </div>
               );
             })
           ) : (
             <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '35px', color: '#8e8e93', fontSize: '13px' }}>
-              Qidiruv boʻyicha hech qanday yapon avtomobili topilmadi.
+              Natija topilmadi. Qidiruv soʻzini tekshiring.
             </div>
           )}
         </div>
@@ -279,7 +314,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
           background: 'rgba(0, 0, 0, 0.2)'
         }}>
           <span style={{ fontSize: '11px', color: 'var(--text-secondary, #8e8e93)' }}>
-            Jami: <b>{filteredVehicles.length}</b> yapon avtomobillari modellari
+            <b>{selectedMake}</b>: {filteredModels.length} ta model topildi
           </span>
           <button
             onClick={onClose}

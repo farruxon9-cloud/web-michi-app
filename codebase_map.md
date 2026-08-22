@@ -6,12 +6,12 @@
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 82 ta
+* **Jami skanerlangan fayllar:** 84 ta
 * **React Komponentlari:** 22 ta
 * **Komponent Stillari (CSS):** 17 ta
 * **Unit Testlar (Vitest):** 5 ta
 * **Yordamchi funksiyalar (utils):** 23 ta
-* **Boshqa asosiy fayllar (root):** 15 ta
+* **Boshqa asosiy fayllar (root):** 17 ta
 
 ---
 
@@ -230,7 +230,7 @@ graph TD
   - `../utils/poiSearch`
 
 ### 📦 [JapaneseVehiclePickerModal](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JapaneseVehiclePickerModal.jsx)
-* **Fayl yo'li:** `src/components/JapaneseVehiclePickerModal.jsx` (304 qator, 12018 bayt)
+* **Fayl yo'li:** `src/components/JapaneseVehiclePickerModal.jsx` (339 qator, 12892 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `isOpen`
   - `onClose`
@@ -239,6 +239,7 @@ graph TD
 * **Import qilgan bog'liqliklari:**
   - `react`
   - `lucide-react`
+  - `../services/vehicleApiService`
   - `../data/japaneseVehiclesMaster`
 
 ### 📦 [JobDetail](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JobDetail.jsx)
@@ -703,7 +704,7 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### 📄 [japaneseVehiclesMaster.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseVehiclesMaster.js)
-* **Yo'li:** `src/data/japaneseVehiclesMaster.js` (133 qator)
+* **Yo'li:** `src/data/japaneseVehiclesMaster.js` (144 qator)
 * **Importlari:** *Yo'q*
 
 ### 📄 [main.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/main.jsx)
@@ -721,6 +722,14 @@ graph TD
 ### 📄 [uz.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/uz.js)
 * **Yo'li:** `src/locales/uz.js` (635 qator)
 * **Importlari:** *Yo'q*
+
+### 📄 [vehicleApiService.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/vehicleApiService.js)
+* **Yo'li:** `src/services/vehicleApiService.js` (154 qator)
+* **Importlari:** *Yo'q*
+
+### 📄 [vehicleApiService.test.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/vehicleApiService.test.js)
+* **Yo'li:** `src/services/vehicleApiService.test.js` (75 qator)
+* **Importlari:** `vitest`, `./vehicleApiService`
 
 ### 📄 [vi.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/vi.js)
 * **Yo'li:** `src/locales/vi.js` (522 qator)
