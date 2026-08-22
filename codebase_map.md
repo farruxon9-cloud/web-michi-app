@@ -704,7 +704,7 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### 📄 [japaneseVehiclesMaster.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseVehiclesMaster.js)
-* **Yo'li:** `src/data/japaneseVehiclesMaster.js` (144 qator)
+* **Yo'li:** `src/data/japaneseVehiclesMaster.js` (145 qator)
 * **Importlari:** *Yo'q*
 
 ### 📄 [main.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/main.jsx)
