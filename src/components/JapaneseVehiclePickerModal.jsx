@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, X, Check, Globe, Loader2, Sparkles } from 'lucide-react';
-import { POPULAR_GLOBAL_BRANDS, getModelsForMake } from '../services/vehicleApiService';
+import { POPULAR_GLOBAL_BRANDS, getModelsForMake, getRealVehiclePhoto } from '../services/vehicleApiService';
 import { MASTER_VEHICLE_DATABASE } from '../data/japaneseVehiclesMaster';
 
 export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVehicle, selectedVehicleId }) {
@@ -8,6 +8,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
   const [searchQuery, setSearchQuery] = useState('');
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [dynamicPhotos, setDynamicPhotos] = useState({});
 
   useEffect(() => {
     if (!isOpen) return;
@@ -47,6 +48,17 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
         if (isMounted) {
           setModels(combined);
         }
+
+        // Background fetch REAL Wikipedia/Wikimedia HD photos for top items without photos
+        combined.slice(0, 12).forEach(async (item) => {
+          if (!item.photoUrl && isMounted) {
+            const realPhoto = await getRealVehiclePhoto(item.make, item.model);
+            if (realPhoto && isMounted) {
+              setDynamicPhotos(prev => ({ ...prev, [item.id]: realPhoto }));
+            }
+          }
+        });
+
       } catch (err) {
         console.warn('Failed to load vehicle models:', err);
       } finally {
@@ -112,7 +124,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
               <span>Avtomobillar Katalogi</span>
             </h3>
             <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: 'var(--text-secondary, #8e8e93)' }}>
-              12,340+ brend va 100,000+ modellar (NHTSA API)
+              12,340+ brend va 100,000+ modellar (Wikimedia Real HD Photos)
             </p>
           </div>
           <button 
@@ -222,11 +234,16 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
           ) : filteredModels.length > 0 ? (
             filteredModels.map(veh => {
               const isSelected = selectedVehicleId === veh.id;
+              const displayPhoto = veh.photoUrl || dynamicPhotos[veh.id];
+
               return (
                 <div
                   key={veh.id}
                   onClick={() => {
-                    onSelectVehicle(veh);
+                    onSelectVehicle({
+                      ...veh,
+                      photoUrl: displayPhoto || veh.photoUrl
+                    });
                     onClose();
                   }}
                   style={{
@@ -247,7 +264,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                     width: '100%',
                     borderRadius: '8px',
                     overflow: 'hidden',
-                    background: veh.photoUrl 
+                    background: displayPhoto 
                       ? 'rgba(0,0,0,0.3)' 
                       : 'linear-gradient(135deg, rgba(0,132,255,0.2) 0%, rgba(48,209,88,0.2) 100%)',
                     position: 'relative',
@@ -256,9 +273,9 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                     justifyContent: 'center',
                     border: '1px solid rgba(255,255,255,0.06)'
                   }}>
-                    {veh.photoUrl ? (
+                    {displayPhoto ? (
                       <img 
-                        src={veh.photoUrl} 
+                        src={displayPhoto} 
                         alt={veh.model} 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                       />

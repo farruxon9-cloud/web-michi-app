@@ -230,7 +230,7 @@ graph TD
   - `../utils/poiSearch`
 
 ### 📦 [JapaneseVehiclePickerModal](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JapaneseVehiclePickerModal.jsx)
-* **Fayl yo'li:** `src/components/JapaneseVehiclePickerModal.jsx` (339 qator, 12865 bayt)
+* **Fayl yo'li:** `src/components/JapaneseVehiclePickerModal.jsx` (356 qator, 13577 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `isOpen`
   - `onClose`
@@ -724,7 +724,7 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### 📄 [vehicleApiService.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/vehicleApiService.js)
-* **Yo'li:** `src/services/vehicleApiService.js` (154 qator)
+* **Yo'li:** `src/services/vehicleApiService.js` (184 qator)
 * **Importlari:** *Yo'q*
 
 ### 📄 [vehicleApiService.test.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/vehicleApiService.test.js)

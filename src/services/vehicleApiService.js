@@ -1,6 +1,7 @@
 /**
- * Global Vehicle API Service (NHTSA vPIC Integration)
- * Provides access to 12,340+ vehicle makes and 100,000+ models worldwide.
+ * Global Vehicle API Service (NHTSA vPIC & Wikimedia Commons Integration)
+ * Provides access to 12,340+ vehicle makes and 100,000+ models worldwide
+ * with REAL HD photo resolving via Wikimedia Commons API.
  * Includes local storage caching layer for offline resilience and fast instant search.
  * Zero bundle overhead (0 KB static index).
  */
@@ -92,6 +93,35 @@ export function clearVehicleCache() {
     }
   } catch (e) {
     // Ignore
+  }
+}
+
+/**
+ * Dynamically fetch REAL HD photo URL for any make and model from Wikimedia Commons API
+ */
+export async function getRealVehiclePhoto(make, model) {
+  if (!make || !model) return null;
+  const cacheKey = `photo_${make.toLowerCase()}_${model.toLowerCase()}`;
+  const cached = getCachedData(cacheKey);
+  if (cached) return cached;
+
+  const searchQuery = `${make} ${model}`;
+  try {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(searchQuery)}&prop=pageimages&pithumbsize=600&format=json&origin=*`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const pages = data?.query?.pages;
+    if (!pages) return null;
+    const firstKey = Object.keys(pages)[0];
+    const photoUrl = pages[firstKey]?.thumbnail?.source || null;
+
+    if (photoUrl) {
+      setCachedData(cacheKey, photoUrl);
+    }
+    return photoUrl;
+  } catch (e) {
+    return null;
   }
 }
 
