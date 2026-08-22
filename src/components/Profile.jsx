@@ -4381,7 +4381,7 @@ const getLicenseLabel = (type) => {
                             make: val, 
                             model: defaultModel,
                             bodyStyle: defaultBody,
-                            photoUrl: prev.photoUrl || matchedPhoto,
+                            photoUrl: matchedPhoto || prev.photoUrl,
                             ...dims
                           }));
                         }}
