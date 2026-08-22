@@ -4381,7 +4381,7 @@ const getLicenseLabel = (type) => {
                             make: val, 
                             model: defaultModel,
                             bodyStyle: defaultBody,
-                            photoUrl: matchedPhoto || prev.photoUrl,
+                            photoUrl: prev.photoUrl || matchedPhoto,
                             ...dims
                           }));
                         }}
@@ -5181,18 +5181,35 @@ const getLicenseLabel = (type) => {
       <JapaneseVehiclePickerModal
         isOpen={isVehiclePickerOpen}
         onClose={() => setIsVehiclePickerOpen(false)}
-        selectedVehicleId={editVehicleData.id}
+        selectedVehicleId={editVehicleData.id || myVehicle.id}
         onSelectVehicle={(veh) => {
-          setEditVehicleData(prev => ({
-            ...prev,
+          const updated = {
+            ...myVehicle,
+            ...editVehicleData,
+            id: veh.id || editVehicleData.id || `veh_${Date.now()}`,
             make: veh.make,
             model: veh.model,
-            type: veh.type,
-            bodyStyle: veh.bodyStyle,
-            year: veh.year,
-            photoUrl: veh.photoUrl,
+            type: veh.type || editVehicleData.type || 'car',
+            bodyStyle: veh.bodyStyle || editVehicleData.bodyStyle || 'sedan',
+            year: veh.year || editVehicleData.year || '2024',
+            photoUrl: veh.photoUrl !== undefined ? veh.photoUrl : editVehicleData.photoUrl,
             ...(veh.specs || {})
-          }));
+          };
+          // Permanently save to active vehicle state & localStorage
+          setMyVehicle(updated);
+          setEditVehicleData(updated);
+          try {
+            localStorage.setItem('michi_user_vehicle', JSON.stringify(updated));
+            const updatedList = (myVehicles || []).map(v => v.id === updated.id ? updated : v);
+            if (!updatedList.some(v => v.id === updated.id)) {
+              updatedList.push(updated);
+            }
+            setMyVehicles(updatedList);
+            localStorage.setItem('michi_user_vehicles', JSON.stringify(updatedList));
+          } catch (e) {
+            console.warn('[Profile] LocalStorage save warning:', e);
+          }
+          window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: updated }));
         }}
       />
     </div>
