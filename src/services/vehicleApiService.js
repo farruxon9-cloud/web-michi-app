@@ -104,19 +104,38 @@ export function clearVehicleCache() {
  */
 async function queryWikipediaPhoto(searchTerm, thumbSize) {
   try {
-    const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(searchTerm)}&prop=pageimages&pithumbsize=${thumbSize}&format=json&origin=*`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const pages = data?.query?.pages;
-    if (!pages) return null;
-    const firstKey = Object.keys(pages)[0];
-    if (firstKey === '-1') return null;
-    return pages[firstKey]?.thumbnail?.source || null;
+    // 1. Try generator=search first (finds articles even if query includes extra words like "Lexus LFA V10 Supercar")
+    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(searchTerm)}&gsrlimit=1&prop=pageimages&pithumbsize=${thumbSize}&format=json&origin=*`;
+    const res = await fetch(searchUrl);
+    if (res.ok) {
+      const data = await res.json();
+      const pages = data?.query?.pages;
+      if (pages) {
+        const firstKey = Object.keys(pages)[0];
+        const photo = pages[firstKey]?.thumbnail?.source;
+        if (photo) return photo;
+      }
+    }
+
+    // 2. Direct titles= fallback
+    const titleUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(searchTerm)}&prop=pageimages&pithumbsize=${thumbSize}&format=json&origin=*`;
+    const res2 = await fetch(titleUrl);
+    if (res2.ok) {
+      const data2 = await res2.json();
+      const pages2 = data2?.query?.pages;
+      if (pages2) {
+        const firstKey = Object.keys(pages2)[0];
+        if (firstKey !== '-1') {
+          return pages2[firstKey]?.thumbnail?.source || null;
+        }
+      }
+    }
+    return null;
   } catch (e) {
     return null;
   }
 }
+
 
 /**
  * Fetch REAL HD photo URL for any vehicle using cascading search strategy.
