@@ -63,17 +63,19 @@ const InlineCustomSelect = ({ label, value, options, onChange, placeholder = 'Ta
 
   return (
     <div ref={containerRef} style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}>
-      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>
-        {label}
-      </label>
+      {label && (
+        <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>
+          {label}
+        </label>
+      )}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         style={{
           width: '100%',
-          background: 'var(--card-bg, #2c2c2e)',
-          color: 'var(--text-main)',
-          border: '1px solid var(--glass-border)',
+          background: 'var(--card-bg, #ffffff)',
+          color: 'var(--text-main, #1c1c1e)',
+          border: '1px solid var(--glass-border, rgba(0,0,0,0.15))',
           borderRadius: '8px',
           padding: '7px 10px',
           fontSize: '13px',
@@ -84,13 +86,14 @@ const InlineCustomSelect = ({ label, value, options, onChange, placeholder = 'Ta
           cursor: 'pointer',
           outline: 'none',
           boxSizing: 'border-box',
-          textAlign: 'left'
+          textAlign: 'left',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
         }}
       >
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {value || placeholder}
         </span>
-        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginLeft: '6px' }}>
+        <span style={{ fontSize: '10px', color: 'var(--text-secondary, #8e8e93)', marginLeft: '6px' }}>
           {isOpen ? '▲' : '▼'}
         </span>
       </button>
@@ -103,13 +106,14 @@ const InlineCustomSelect = ({ label, value, options, onChange, placeholder = 'Ta
           right: 0,
           zIndex: 999,
           marginTop: '4px',
-          maxHeight: '180px',
+          maxHeight: '185px',
           overflowY: 'auto',
-          background: 'rgba(28, 28, 32, 0.98)',
+          background: 'var(--card-bg, #ffffff)',
+          color: 'var(--text-main, #1c1c1e)',
           backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
+          border: '1px solid var(--glass-border, rgba(0, 0, 0, 0.12))',
           borderRadius: '10px',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.7)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.18)',
           padding: '4px',
           display: 'flex',
           flexDirection: 'column',
@@ -129,10 +133,14 @@ const InlineCustomSelect = ({ label, value, options, onChange, placeholder = 'Ta
                   borderRadius: '6px',
                   fontSize: '12.5px',
                   cursor: 'pointer',
-                  background: isSelected ? 'rgba(0, 132, 255, 0.25)' : 'transparent',
-                  color: isSelected ? '#0084FF' : '#fff',
-                  fontWeight: isSelected ? 'bold' : 'normal',
-                  transition: 'background 0.15s ease'
+                  background: isSelected 
+                    ? 'rgba(0, 132, 255, 0.15)' 
+                    : 'transparent',
+                  color: isSelected 
+                    ? '#0084FF' 
+                    : 'var(--text-main, #1c1c1e)',
+                  fontWeight: isSelected ? 'bold' : '500',
+                  transition: 'all 0.15s ease'
                 }}
               >
                 {opt}
