@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, X, Check, Globe, Loader2, Sparkles } from 'lucide-react';
+import { Search, X, Check, Globe, Loader2 } from 'lucide-react';
 import { POPULAR_GLOBAL_BRANDS, getModelsForMake } from '../services/vehicleApiService';
+
 import { MASTER_VEHICLE_DATABASE, JAPANESE_HISTORICAL_ERAS } from '../data/japaneseVehiclesMaster';
 import LazyVehicleImage from './LazyVehicleImage';
 
