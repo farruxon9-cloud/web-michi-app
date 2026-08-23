@@ -46,7 +46,107 @@ const StatCounter = ({ target, suffix = '', duration = 1200 }) => {
   return <span>{count.toLocaleString()}{suffix}</span>;
 };
 
+// Inline DOM Custom Select to replace raw OS native select popups
+const InlineCustomSelect = ({ label, value, options, onChange, placeholder = 'Tanlang...' }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const containerRef = React.useRef(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(e) {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}>
+      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>
+        {label}
+      </label>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: '100%',
+          background: 'var(--card-bg, #2c2c2e)',
+          color: 'var(--text-main)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '8px',
+          padding: '7px 10px',
+          fontSize: '13px',
+          fontWeight: 'bold',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: 'pointer',
+          outline: 'none',
+          boxSizing: 'border-box',
+          textAlign: 'left'
+        }}
+      >
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {value || placeholder}
+        </span>
+        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginLeft: '6px' }}>
+          {isOpen ? '▲' : '▼'}
+        </span>
+      </button>
+
+      {isOpen && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          right: 0,
+          zIndex: 999,
+          marginTop: '4px',
+          maxHeight: '180px',
+          overflowY: 'auto',
+          background: 'rgba(28, 28, 32, 0.98)',
+          backdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          borderRadius: '10px',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.7)',
+          padding: '4px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2px'
+        }}>
+          {options.map((opt) => {
+            const isSelected = value === opt;
+            return (
+              <div
+                key={opt}
+                onClick={() => {
+                  onChange(opt);
+                  setIsOpen(false);
+                }}
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  fontSize: '12.5px',
+                  cursor: 'pointer',
+                  background: isSelected ? 'rgba(0, 132, 255, 0.25)' : 'transparent',
+                  color: isSelected ? '#0084FF' : '#fff',
+                  fontWeight: isSelected ? 'bold' : 'normal',
+                  transition: 'background 0.15s ease'
+                }}
+              >
+                {opt}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const STATUS_PIPELINE = ['submitted', 'reviewing', 'reviewed', 'interview', 'rejected', 'accepted'];
+
 const STATUS_COLORS = {
   submitted: '#0A84FF', // Changed from grey to blue so it looks active
   reviewing: '#FF9F0A',
@@ -4362,62 +4462,45 @@ const getLicenseLabel = (type) => {
                       </select>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '100%', boxSizing: 'border-box' }}>
-                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleMake', 'Ishlab chiqaruvchi (Brand)')}</label>
-                      <select 
-                        value={editVehicleData.make}
-                        onChange={async (e) => {
-                          const val = e.target.value;
-                          let defaultModel = val === 'Boshqa' ? '' : 'Other';
-                          let defaultBody = editVehicleData.bodyStyle || 'sedan';
-                          
-                          const preset = MASTER_VEHICLE_DATABASE.find(v => v.make.toLowerCase() === val.toLowerCase());
-                          if (preset) {
-                            defaultModel = preset.model;
-                            defaultBody = preset.bodyStyle;
-                          }
+                    <InlineCustomSelect
+                      label={t('vehicleMake', 'Ishlab chiqaruvchi (Brand)')}
+                      value={editVehicleData.make}
+                      options={ALL_GLOBAL_BRANDS}
+                      onChange={async (val) => {
+                        let defaultModel = val === 'Boshqa' ? '' : 'Other';
+                        let defaultBody = editVehicleData.bodyStyle || 'sedan';
+                        
+                        const preset = MASTER_VEHICLE_DATABASE.find(v => v.make.toLowerCase() === val.toLowerCase());
+                        if (preset) {
+                          defaultModel = preset.model;
+                          defaultBody = preset.bodyStyle;
+                        }
 
-                          const dims = getVehiclePresetDimensions(editVehicleData.type, defaultBody);
-                          let realPhoto = preset?.photoUrl || null;
-                          if (!realPhoto && val !== 'Boshqa') {
-                            realPhoto = await getHDVehiclePhoto(val, defaultModel);
-                          }
+                        const dims = getVehiclePresetDimensions(editVehicleData.type, defaultBody);
+                        let realPhoto = preset?.photoUrl || null;
+                        if (!realPhoto && val !== 'Boshqa') {
+                          realPhoto = await getHDVehiclePhoto(val, defaultModel);
+                        }
 
-                          setEditVehicleData(prev => ({ 
-                            ...prev, 
-                            make: val, 
-                            model: defaultModel,
-                            bodyStyle: defaultBody,
-                            photoUrl: realPhoto || null,
-                            ...dims
-                          }));
-                        }}
-                        style={{
-                          background: 'var(--card-bg, #2c2c2e)',
-                          color: 'var(--text-main)',
-                          border: '1px solid var(--glass-border)',
-                          borderRadius: '8px',
-                          padding: '7px',
-                          fontSize: '13px',
-                          outline: 'none',
-                          maxWidth: '100%',
-                          boxSizing: 'border-box'
-                        }}
-                      >
-                        {ALL_GLOBAL_BRANDS.map(b => (
-                          <option key={b} value={b}>{b}</option>
-                        ))}
-                      </select>
-                    </div>
+                        setEditVehicleData(prev => ({ 
+                          ...prev, 
+                          make: val, 
+                          model: defaultModel,
+                          bodyStyle: defaultBody,
+                          photoUrl: realPhoto || null,
+                          ...dims
+                        }));
+                      }}
+                    />
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '100%', boxSizing: 'border-box' }}>
-                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel', 'Modeli')}</label>
                       {editVehicleData.make !== 'Boshqa' ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '100%', boxSizing: 'border-box' }}>
-                          <select 
+                          <InlineCustomSelect
+                            label={t('vehicleModel', 'Modeli')}
                             value={editVehicleData.model}
-                            onChange={async (e) => {
-                              const val = e.target.value;
+                            options={dynamicModels.length > 0 ? dynamicModels : ['Other']}
+                            onChange={async (val) => {
                               const preset = MASTER_VEHICLE_DATABASE.find(
                                 v => v.make.toLowerCase() === editVehicleData.make.toLowerCase() && v.model.toLowerCase() === val.toLowerCase()
                               );
@@ -4436,26 +4519,7 @@ const getLicenseLabel = (type) => {
                                 ...dims
                               }));
                             }}
-                            style={{
-                              background: 'var(--card-bg, #2c2c2e)',
-                              color: 'var(--text-main)',
-                              border: '1px solid var(--glass-border)',
-                              borderRadius: '8px',
-                              padding: '7px',
-                              fontSize: '13px',
-                              outline: 'none',
-                              maxWidth: '100%',
-                              boxSizing: 'border-box'
-                            }}
-                          >
-                            {!dynamicModels.includes(editVehicleData.model) && editVehicleData.model && (
-                              <option value={editVehicleData.model}>{editVehicleData.model}</option>
-                            )}
-                            {dynamicModels.map(m => (
-                              <option key={m} value={m}>{m}</option>
-                            ))}
-                            <option value="Other">Boshqa (Custom Input)</option>
-                          </select>
+                          />
 
                           {editVehicleData.model === 'Other' && (
                             <input 
@@ -4489,31 +4553,34 @@ const getLicenseLabel = (type) => {
                           )}
                         </div>
                       ) : (
-                        <input 
-                          type="text"
-                          placeholder="Model nomini kiriting..."
-                          value={editVehicleData.model}
-                          onChange={async (e) => {
-                            const val = e.target.value;
-                            let photo = null;
-                            if (val.trim().length >= 2) {
-                              photo = await getHDVehiclePhoto(editVehicleData.make || 'car', val);
-                            }
-                            setEditVehicleData(prev => ({ ...prev, model: val, photoUrl: photo || null }));
-                          }}
-                          style={{
-                            background: 'var(--card-bg, #2c2c2e)',
-                            color: 'var(--text-main)',
-                            border: '1px solid var(--glass-border)',
-                            borderRadius: '8px',
-                            padding: '7px',
-                            fontSize: '13px',
-                            outline: 'none',
-                            maxWidth: '100%',
-                            boxSizing: 'border-box'
-                          }}
-                          required
-                        />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel', 'Modeli')}</label>
+                          <input 
+                            type="text"
+                            placeholder="Model nomini kiriting..."
+                            value={editVehicleData.model}
+                            onChange={async (e) => {
+                              const val = e.target.value;
+                              let photo = null;
+                              if (val.trim().length >= 2) {
+                                photo = await getHDVehiclePhoto(editVehicleData.make || 'car', val);
+                              }
+                              setEditVehicleData(prev => ({ ...prev, model: val, photoUrl: photo || null }));
+                            }}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '8px',
+                              padding: '7px',
+                              fontSize: '13px',
+                              outline: 'none',
+                              maxWidth: '100%',
+                              boxSizing: 'border-box'
+                            }}
+                            required
+                          />
+                        </div>
                       )}
                     </div>
 
