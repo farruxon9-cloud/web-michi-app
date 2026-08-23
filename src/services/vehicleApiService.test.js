@@ -71,4 +71,29 @@ describe('vehicleApiService Tests', () => {
     const emptyResults = await searchVehicleMakes('z');
     expect(emptyResults).toHaveLength(0);
   });
+
+  it('should return cached photo URL without API call', async () => {
+    setCachedData('photo_1280_toyota_supra', 'https://example.com/supra.jpg');
+    
+    const { getRealVehiclePhoto } = await import('./vehicleApiService');
+    const result = await getRealVehiclePhoto('Toyota', 'Supra', 1280);
+    expect(result).toBe('https://example.com/supra.jpg');
+  });
+
+  it('should return null when make or model is empty', async () => {
+    const { getRealVehiclePhoto } = await import('./vehicleApiService');
+    const result1 = await getRealVehiclePhoto('', 'Supra');
+    const result2 = await getRealVehiclePhoto('Toyota', '');
+    const result3 = await getRealVehiclePhoto(null, null);
+    expect(result1).toBeNull();
+    expect(result2).toBeNull();
+    expect(result3).toBeNull();
+  });
+
+  it('should export getThumbnailPhoto and getHDVehiclePhoto functions', async () => {
+    const mod = await import('./vehicleApiService');
+    expect(typeof mod.getThumbnailPhoto).toBe('function');
+    expect(typeof mod.getHDVehiclePhoto).toBe('function');
+  });
 });
+
