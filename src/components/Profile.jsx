@@ -11,7 +11,9 @@ import CompanyHome from './CompanyHome';
 import ResumeBuilder from './ResumeBuilder';
 import AssistHeroShowcase from './AssistHeroShowcase';
 import JapaneseVehiclePickerModal from './JapaneseVehiclePickerModal';
+import CustomMobilePickerModal from './CustomMobilePickerModal';
 import { POPULAR_GLOBAL_BRANDS, getModelsForMake, getHDVehiclePhoto } from '../services/vehicleApiService';
+
 import { MASTER_VEHICLE_DATABASE, JAPANESE_AUTOMAKERS_MASTER } from '../data/japaneseVehiclesMaster';
 import './Profile.css';
 
@@ -148,6 +150,9 @@ export default function Profile({
   const [expandedAppId, setExpandedAppId] = useState(null);
   const [aboutTab, setAboutTab] = useState('platform');
   const [isVehiclePickerOpen, setIsVehiclePickerOpen] = useState(false);
+  const [isBrandPickerOpen, setIsBrandPickerOpen] = useState(false);
+  const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
+
   const fileInputRef = useRef(null);
   const vehicleFileInputRef = useRef(null);
 
@@ -4360,149 +4365,52 @@ const getLicenseLabel = (type) => {
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleMake', 'Ishlab chiqaruvchi (Brand)')}</label>
-                      <select 
-                        value={editVehicleData.make}
-                        onChange={async (e) => {
-                          const val = e.target.value;
-                          let defaultModel = val === 'Boshqa' ? '' : 'Other';
-                          let defaultBody = editVehicleData.bodyStyle || 'sedan';
-                          
-                          const preset = MASTER_VEHICLE_DATABASE.find(v => v.make.toLowerCase() === val.toLowerCase());
-                          if (preset) {
-                            defaultModel = preset.model;
-                            defaultBody = preset.bodyStyle;
-                          }
-
-                          const dims = getVehiclePresetDimensions(editVehicleData.type, defaultBody);
-                          let realPhoto = preset?.photoUrl || null;
-                          if (!realPhoto && val !== 'Boshqa') {
-                            realPhoto = await getHDVehiclePhoto(val, defaultModel);
-                          }
-
-                          setEditVehicleData(prev => ({ 
-                            ...prev, 
-                            make: val, 
-                            model: defaultModel,
-                            bodyStyle: defaultBody,
-                            photoUrl: realPhoto || prev.photoUrl,
-                            ...dims
-                          }));
-                        }}
+                      <button
+                        type="button"
+                        onClick={() => setIsBrandPickerOpen(true)}
                         style={{
                           background: 'var(--card-bg, #2c2c2e)',
                           color: 'var(--text-main)',
                           border: '1px solid var(--glass-border)',
                           borderRadius: '8px',
-                          padding: '7px',
+                          padding: '8px 12px',
                           fontSize: '13px',
-                          outline: 'none'
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          cursor: 'pointer',
+                          textAlign: 'left'
                         }}
                       >
-                        {ALL_GLOBAL_BRANDS.map(b => (
-                          <option key={b} value={b}>{b}</option>
-                        ))}
-                      </select>
+                        <span>{editVehicleData.make || 'Brendni tanlang'}</span>
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>▼</span>
+                      </button>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel', 'Modeli')}</label>
-                      {editVehicleData.make !== 'Boshqa' ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <select 
-                            value={editVehicleData.model}
-                            onChange={async (e) => {
-                              const val = e.target.value;
-                              const preset = MASTER_VEHICLE_DATABASE.find(
-                                v => v.make.toLowerCase() === editVehicleData.make.toLowerCase() && v.model.toLowerCase() === val.toLowerCase()
-                              );
-                              let matchedBody = preset?.bodyStyle || editVehicleData.bodyStyle;
-                              const dims = getVehiclePresetDimensions(editVehicleData.type, matchedBody);
-                              let photo = preset?.photoUrl || null;
-                              if (!photo && editVehicleData.make && val) {
-                                photo = await getHDVehiclePhoto(editVehicleData.make, val);
-                              }
-
-                              setEditVehicleData(prev => ({ 
-                                ...prev, 
-                                model: val, 
-                                bodyStyle: matchedBody,
-                                photoUrl: photo || prev.photoUrl,
-                                ...dims
-                              }));
-                            }}
-                            style={{
-                              background: 'var(--card-bg, #2c2c2e)',
-                              color: 'var(--text-main)',
-                              border: '1px solid var(--glass-border)',
-                              borderRadius: '8px',
-                              padding: '7px',
-                              fontSize: '13px',
-                              outline: 'none'
-                            }}
-                          >
-                            {!dynamicModels.includes(editVehicleData.model) && editVehicleData.model && (
-                              <option value={editVehicleData.model}>{editVehicleData.model}</option>
-                            )}
-                            {dynamicModels.map(m => (
-                              <option key={m} value={m}>{m}</option>
-                            ))}
-                            <option value="Other">Boshqa (Custom Input)</option>
-                          </select>
-
-                          {editVehicleData.model === 'Other' && (
-                            <input 
-                              type="text"
-                              placeholder="Model nomini kiriting (masalan: Skyline, Supra...)"
-                              onChange={async (e) => {
-                                const customModel = e.target.value;
-                                let photo = null;
-                                if (customModel.trim().length >= 2) {
-                                  photo = await getHDVehiclePhoto(editVehicleData.make, customModel);
-                                }
-                                setEditVehicleData(prev => ({
-                                  ...prev,
-                                  model: customModel,
-                                  photoUrl: photo || prev.photoUrl
-                                }));
-                              }}
-                              style={{
-                                background: 'var(--card-bg, #2c2c2e)',
-                                color: 'var(--text-main)',
-                                border: '1px solid var(--glass-border)',
-                                borderRadius: '8px',
-                                padding: '7px',
-                                fontSize: '12px',
-                                outline: 'none',
-                                marginTop: '4px'
-                              }}
-                            />
-                          )}
-                        </div>
-                      ) : (
-                        <input 
-                          type="text"
-                          placeholder="Model nomini kiriting..."
-                          value={editVehicleData.model}
-                          onChange={async (e) => {
-                            const val = e.target.value;
-                            let photo = null;
-                            if (val.trim().length >= 2) {
-                              photo = await getHDVehiclePhoto(editVehicleData.make || 'car', val);
-                            }
-                            setEditVehicleData(prev => ({ ...prev, model: val, photoUrl: photo || prev.photoUrl }));
-                          }}
-                          style={{
-                            background: 'var(--card-bg, #2c2c2e)',
-                            color: 'var(--text-main)',
-                            border: '1px solid var(--glass-border)',
-                            borderRadius: '8px',
-                            padding: '7px',
-                            fontSize: '13px',
-                            outline: 'none'
-                          }}
-                          required
-                        />
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setIsModelPickerOpen(true)}
+                        style={{
+                          background: 'var(--card-bg, #2c2c2e)',
+                          color: 'var(--text-main)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          fontSize: '13px',
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          cursor: 'pointer',
+                          textAlign: 'left'
+                        }}
+                      >
+                        <span>{editVehicleData.model || 'Modelni tanlang'}</span>
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>▼</span>
+                      </button>
                     </div>
 
                     <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--glass-border)', paddingTop: '10px', marginTop: '4px' }}>
@@ -5201,6 +5109,69 @@ const getLicenseLabel = (type) => {
           window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: updated }));
         }}
       />
+
+      {/* Custom Mobile-Responsive Brand Picker Modal */}
+      <CustomMobilePickerModal
+        isOpen={isBrandPickerOpen}
+        onClose={() => setIsBrandPickerOpen(false)}
+        title="Brendni Tanlang"
+        items={ALL_GLOBAL_BRANDS}
+        selectedValue={editVehicleData.make}
+        onSelect={async (val) => {
+          let defaultModel = val === 'Boshqa' ? '' : 'Other';
+          let defaultBody = editVehicleData.bodyStyle || 'sedan';
+          
+          const preset = MASTER_VEHICLE_DATABASE.find(v => v.make.toLowerCase() === val.toLowerCase());
+          if (preset) {
+            defaultModel = preset.model;
+            defaultBody = preset.bodyStyle;
+          }
+
+          const dims = getVehiclePresetDimensions(editVehicleData.type, defaultBody);
+          let realPhoto = preset?.photoUrl || null;
+          if (!realPhoto && val !== 'Boshqa') {
+            realPhoto = await getHDVehiclePhoto(val, defaultModel);
+          }
+
+          setEditVehicleData(prev => ({ 
+            ...prev, 
+            make: val, 
+            model: defaultModel,
+            bodyStyle: defaultBody,
+            photoUrl: realPhoto || prev.photoUrl,
+            ...dims
+          }));
+        }}
+      />
+
+      {/* Custom Mobile-Responsive Model Picker Modal */}
+      <CustomMobilePickerModal
+        isOpen={isModelPickerOpen}
+        onClose={() => setIsModelPickerOpen(false)}
+        title={`${editVehicleData.make || 'Avto'} Modellari`}
+        items={dynamicModels}
+        selectedValue={editVehicleData.model}
+        onSelect={async (val) => {
+          const preset = MASTER_VEHICLE_DATABASE.find(
+            v => v.make.toLowerCase() === editVehicleData.make.toLowerCase() && v.model.toLowerCase() === val.toLowerCase()
+          );
+          let matchedBody = preset?.bodyStyle || editVehicleData.bodyStyle;
+          const dims = getVehiclePresetDimensions(editVehicleData.type, matchedBody);
+          let photo = preset?.photoUrl || null;
+          if (!photo && editVehicleData.make && val) {
+            photo = await getHDVehiclePhoto(editVehicleData.make, val);
+          }
+
+          setEditVehicleData(prev => ({ 
+            ...prev, 
+            model: val, 
+            bodyStyle: matchedBody,
+            photoUrl: photo || prev.photoUrl,
+            ...dims
+          }));
+        }}
+      />
     </div>
   );
 }
+
