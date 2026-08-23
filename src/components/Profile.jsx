@@ -4470,126 +4470,66 @@ const getLicenseLabel = (type) => {
                       </select>
                     </div>
 
-                    <InlineCustomSelect
-                      label={t('vehicleMake', 'Ishlab chiqaruvchi (Brand)')}
-                      value={editVehicleData.make}
-                      options={ALL_GLOBAL_BRANDS}
-                      onChange={async (val) => {
-                        let defaultModel = val === 'Boshqa' ? '' : 'Other';
-                        let defaultBody = editVehicleData.bodyStyle || 'sedan';
-                        
-                        const preset = MASTER_VEHICLE_DATABASE.find(v => v.make.toLowerCase() === val.toLowerCase());
-                        if (preset) {
-                          defaultModel = preset.model;
-                          defaultBody = preset.bodyStyle;
-                        }
-
-                        const dims = getVehiclePresetDimensions(editVehicleData.type, defaultBody);
-                        let realPhoto = preset?.photoUrl || null;
-                        if (!realPhoto && val !== 'Boshqa') {
-                          realPhoto = await getHDVehiclePhoto(val, defaultModel);
-                        }
-
-                        setEditVehicleData(prev => ({ 
-                          ...prev, 
-                          make: val, 
-                          model: defaultModel,
-                          bodyStyle: defaultBody,
-                          photoUrl: realPhoto || null,
-                          ...dims
-                        }));
-                      }}
-                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '100%', boxSizing: 'border-box' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleMake', 'Ishlab chiqaruvchi (Brand)')}</label>
+                      <button
+                        type="button"
+                        onClick={() => setIsVehiclePickerOpen(true)}
+                        style={{
+                          width: '100%',
+                          background: 'var(--card-bg, #ffffff)',
+                          color: 'var(--text-main, #1c1c1e)',
+                          border: '1px solid var(--glass-border, rgba(0,0,0,0.15))',
+                          borderRadius: '8px',
+                          padding: '7px 10px',
+                          fontSize: '13px',
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          cursor: 'pointer',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          textAlign: 'left',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                        }}
+                      >
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {editVehicleData.make || 'Brendni tanlang'}
+                        </span>
+                        <span style={{ fontSize: '10px', color: 'var(--text-secondary, #8e8e93)', marginLeft: '6px' }}>▼</span>
+                      </button>
+                    </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '100%', boxSizing: 'border-box' }}>
-                      {editVehicleData.make !== 'Boshqa' ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '100%', boxSizing: 'border-box' }}>
-                          <InlineCustomSelect
-                            label={t('vehicleModel', 'Modeli')}
-                            value={editVehicleData.model}
-                            options={dynamicModels.length > 0 ? dynamicModels : ['Other']}
-                            onChange={async (val) => {
-                              const preset = MASTER_VEHICLE_DATABASE.find(
-                                v => v.make.toLowerCase() === editVehicleData.make.toLowerCase() && v.model.toLowerCase() === val.toLowerCase()
-                              );
-                              let matchedBody = preset?.bodyStyle || editVehicleData.bodyStyle;
-                              const dims = getVehiclePresetDimensions(editVehicleData.type, matchedBody);
-                              let photo = preset?.photoUrl || null;
-                              if (!photo && editVehicleData.make && val) {
-                                photo = await getHDVehiclePhoto(editVehicleData.make, val);
-                              }
-
-                              setEditVehicleData(prev => ({ 
-                                ...prev, 
-                                model: val, 
-                                bodyStyle: matchedBody,
-                                photoUrl: photo || null,
-                                ...dims
-                              }));
-                            }}
-                          />
-
-                          {editVehicleData.model === 'Other' && (
-                            <input 
-                              type="text"
-                              placeholder="Model nomini kiriting (masalan: Skyline, Supra...)"
-                              onChange={async (e) => {
-                                const customModel = e.target.value;
-                                let photo = null;
-                                if (customModel.trim().length >= 2) {
-                                  photo = await getHDVehiclePhoto(editVehicleData.make, customModel);
-                                }
-                                setEditVehicleData(prev => ({
-                                  ...prev,
-                                  model: customModel,
-                                  photoUrl: photo || null
-                                }));
-                              }}
-                              style={{
-                                background: 'var(--card-bg, #2c2c2e)',
-                                color: 'var(--text-main)',
-                                border: '1px solid var(--glass-border)',
-                                borderRadius: '8px',
-                                padding: '7px',
-                                fontSize: '12px',
-                                outline: 'none',
-                                marginTop: '4px',
-                                maxWidth: '100%',
-                                boxSizing: 'border-box'
-                              }}
-                            />
-                          )}
-                        </div>
-                      ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel', 'Modeli')}</label>
-                          <input 
-                            type="text"
-                            placeholder="Model nomini kiriting..."
-                            value={editVehicleData.model}
-                            onChange={async (e) => {
-                              const val = e.target.value;
-                              let photo = null;
-                              if (val.trim().length >= 2) {
-                                photo = await getHDVehiclePhoto(editVehicleData.make || 'car', val);
-                              }
-                              setEditVehicleData(prev => ({ ...prev, model: val, photoUrl: photo || null }));
-                            }}
-                            style={{
-                              background: 'var(--card-bg, #2c2c2e)',
-                              color: 'var(--text-main)',
-                              border: '1px solid var(--glass-border)',
-                              borderRadius: '8px',
-                              padding: '7px',
-                              fontSize: '13px',
-                              outline: 'none',
-                              maxWidth: '100%',
-                              boxSizing: 'border-box'
-                            }}
-                            required
-                          />
-                        </div>
-                      )}
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel', 'Modeli')}</label>
+                      <button
+                        type="button"
+                        onClick={() => setIsVehiclePickerOpen(true)}
+                        style={{
+                          width: '100%',
+                          background: 'var(--card-bg, #ffffff)',
+                          color: 'var(--text-main, #1c1c1e)',
+                          border: '1px solid var(--glass-border, rgba(0,0,0,0.15))',
+                          borderRadius: '8px',
+                          padding: '7px 10px',
+                          fontSize: '13px',
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          cursor: 'pointer',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          textAlign: 'left',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                        }}
+                      >
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {editVehicleData.model || 'Modelni tanlang'}
+                        </span>
+                        <span style={{ fontSize: '10px', color: 'var(--text-secondary, #8e8e93)', marginLeft: '6px' }}>▼</span>
+                      </button>
                     </div>
 
                     <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--glass-border)', paddingTop: '10px', marginTop: '4px' }}>

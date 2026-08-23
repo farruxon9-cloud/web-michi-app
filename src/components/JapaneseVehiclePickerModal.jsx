@@ -100,7 +100,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
         border: '1px solid rgba(255, 255, 255, 0.14)',
         borderRadius: '24px',
         width: '100%',
-        maxWidth: '430px',
+        maxWidth: 'min(380px, 92vw)',
         maxHeight: '84vh',
         display: 'flex',
         flexDirection: 'column',
