@@ -46,7 +46,7 @@ const StatCounter = ({ target, suffix = '', duration = 1200 }) => {
   return <span>{count.toLocaleString()}{suffix}</span>;
 };
 
-// Inline DOM Custom Select with solid background (no transparency) trapped inside phone shell
+// Inline DOM Custom Select with 100% solid white background (zero transparency) trapped inside phone shell
 const InlineCustomSelect = ({ label, value, options, onChange, placeholder = 'Tanlang...' }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const containerRef = React.useRef(null);
@@ -64,7 +64,7 @@ const InlineCustomSelect = ({ label, value, options, onChange, placeholder = 'Ta
   return (
     <div ref={containerRef} style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}>
       {label && (
-        <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>
+        <label style={{ fontSize: '11px', color: 'var(--text-secondary, #8e8e93)', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>
           {label}
         </label>
       )}
@@ -73,11 +73,11 @@ const InlineCustomSelect = ({ label, value, options, onChange, placeholder = 'Ta
         onClick={() => setIsOpen(!isOpen)}
         style={{
           width: '100%',
-          background: 'var(--card-bg, #ffffff)',
-          color: 'var(--text-main, #000000)',
-          border: '1px solid var(--glass-border, #d1d1d6)',
+          background: '#ffffff', // 100% Solid white background!
+          color: '#000000', // Crisp black text!
+          border: '1px solid #d1d1d6',
           borderRadius: '10px',
-          padding: '8px 12px',
+          padding: '9px 12px',
           fontSize: '13px',
           fontWeight: 'bold',
           display: 'flex',
@@ -87,7 +87,7 @@ const InlineCustomSelect = ({ label, value, options, onChange, placeholder = 'Ta
           outline: 'none',
           boxSizing: 'border-box',
           textAlign: 'left',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.06)'
+          boxShadow: '0 2px 5px rgba(0,0,0,0.06)'
         }}
       >
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -101,24 +101,23 @@ const InlineCustomSelect = ({ label, value, options, onChange, placeholder = 'Ta
       {isOpen && (
         <div style={{
           position: 'absolute',
-          top: '100%',
+          top: 'calc(100% + 4px)',
           left: 0,
           right: 0,
-          zIndex: 9999,
-          marginTop: '4px',
-          maxHeight: '220px',
+          zIndex: 99999,
+          maxHeight: '280px', // Taller/longer list as requested!
           overflowY: 'auto',
-          background: 'var(--card-bg, #ffffff)', // 100% SOLID — NO TRANSPARENCY!
-          color: 'var(--text-main, #000000)',
-          border: '1px solid var(--glass-border, #d1d1d6)',
-          borderRadius: '12px',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
-          padding: '4px',
+          background: '#ffffff', // 100% SOLID PURE WHITE — ZERO TRANSPARENCY!
+          color: '#000000', // Crisp black text!
+          border: '1px solid #c7c7cc',
+          borderRadius: '14px',
+          boxShadow: '0 15px 45px rgba(0, 0, 0, 0.35)',
+          padding: '6px',
           display: 'flex',
           flexDirection: 'column',
           boxSizing: 'border-box'
         }}>
-          {options.map((opt) => {
+          {options.map((opt, idx) => {
             const isSelected = value === opt;
             return (
               <div
@@ -128,25 +127,26 @@ const InlineCustomSelect = ({ label, value, options, onChange, placeholder = 'Ta
                   setIsOpen(false);
                 }}
                 style={{
-                  padding: '9px 12px',
+                  padding: '10px 12px',
                   borderRadius: '8px',
-                  fontSize: '13px',
+                  fontSize: '13.5px',
                   cursor: 'pointer',
                   background: isSelected 
                     ? '#007AFF' 
                     : 'transparent',
                   color: isSelected 
                     ? '#ffffff' 
-                    : 'var(--text-main, #000000)',
-                  fontWeight: isSelected ? 'bold' : 'normal',
+                    : '#000000',
+                  fontWeight: isSelected ? 'bold' : '500',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  transition: 'background 0.15s ease'
+                  borderBottom: idx < options.length - 1 && !isSelected ? '1px solid #f2f2f7' : 'none',
+                  transition: 'background 0.12s ease'
                 }}
               >
                 <span>{opt}</span>
-                {isSelected && <span style={{ fontSize: '12px', fontWeight: 'bold' }}>✓</span>}
+                {isSelected && <span style={{ fontSize: '13px', fontWeight: 'bold' }}>✓</span>}
               </div>
             );
           })}
