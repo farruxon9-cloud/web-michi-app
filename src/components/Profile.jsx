@@ -11,7 +11,18 @@ import CompanyHome from './CompanyHome';
 import ResumeBuilder from './ResumeBuilder';
 import AssistHeroShowcase from './AssistHeroShowcase';
 import JapaneseVehiclePickerModal from './JapaneseVehiclePickerModal';
+import { POPULAR_GLOBAL_BRANDS, getModelsForMake, getHDVehiclePhoto } from '../services/vehicleApiService';
+import { MASTER_VEHICLE_DATABASE, JAPANESE_AUTOMAKERS_MASTER } from '../data/japaneseVehiclesMaster';
 import './Profile.css';
+
+// All global brands for inline dropdown selector
+const ALL_GLOBAL_BRANDS = [
+  'Toyota', 'Nissan', 'Honda', 'Mazda', 'Subaru', 'Mitsubishi', 'Suzuki', 'Lexus',
+  'Isuzu', 'Hino', 'Mitsubishi Fuso', 'UD Trucks', 'Daihatsu', 'Infiniti', 'Acura',
+  'BMW', 'Mercedes-Benz', 'Audi', 'Volkswagen', 'Porsche', 'Ferrari', 'Lamborghini',
+  'Hyundai', 'Kia', 'Chevrolet', 'Ford', 'Tesla', 'Dodge', 'Jeep', 'Volvo', 'Peugeot', 'Renault', 'Boshqa'
+];
+
 
 const StatCounter = ({ target, suffix = '', duration = 1200 }) => {
   const [count, setCount] = React.useState(0);
@@ -157,39 +168,31 @@ export default function Profile({
   };
 
   const autoMatchVehiclePhoto = (make = '', model = '', type = '', bodyStyle = '') => {
-    const mk = (make || '').toLowerCase();
-    const md = (model || '').toLowerCase();
-    const tp = (type || '').toLowerCase();
-    const bs = (bodyStyle || '').toLowerCase();
+    const mk = (make || '').toLowerCase().trim();
+    const md = (model || '').toLowerCase().trim();
 
-    // Heavy Trucks
-    if (mk.includes('hino') || md.includes('profia') || md.includes('ranger') || md.includes('dutro')) {
-      return '/images/presets/hino_profia.jpg';
-    }
-    if (mk.includes('fuso') || mk.includes('mitsubishi') || md.includes('super great') || md.includes('canter') || md.includes('fighter')) {
-      return '/images/presets/fuso_supergreat.jpg';
-    }
-    if (mk.includes('isuzu') || md.includes('giga') || md.includes('elf') || md.includes('forward')) {
-      return '/images/presets/isuzu_giga.jpg';
+    // Check exact match in master database first
+    const masterMatch = MASTER_VEHICLE_DATABASE.find(
+      v => v.make.toLowerCase() === mk && v.model.toLowerCase() === md && v.photoUrl
+    );
+    if (masterMatch && masterMatch.photoUrl) {
+      return masterMatch.photoUrl;
     }
 
-    // Passenger Cars & Light Vehicles
-    if (md.includes('harrier') || bs === 'suv' || (mk.includes('toyota') && md.includes('harrier'))) {
-      return '/images/presets/toyota_harrier.jpg';
-    }
-    if (mk.includes('nissan') || md.includes('skyline') || bs === 'sedan') {
-      return '/images/presets/nissan_skyline.jpg';
-    }
-    if (mk.includes('toyota') || md.includes('hiace') || md.includes('probox') || bs === 'van' || bs === 'minivan') {
-      return '/images/presets/toyota_hiace.jpg';
-    }
+    // Heavy Trucks presets
+    if (md.includes('profia')) return '/images/presets/hino_profia.jpg';
+    if (md.includes('super great')) return '/images/presets/fuso_supergreat.jpg';
+    if (md.includes('giga')) return '/images/presets/isuzu_giga.jpg';
 
-    // Default fallback to Harrier for passenger cars
-    if (tp === 'car') {
-      return '/images/presets/toyota_harrier.jpg';
-    }
+    // Specific preset matches
+    if (md.includes('harrier')) return '/images/presets/toyota_harrier.jpg';
+    if (md.includes('skyline')) return '/images/presets/nissan_skyline.jpg';
+    if (md.includes('hiace')) return '/images/presets/toyota_hiace.jpg';
+    if (md.includes('probox')) return '/images/presets/toyota_probox.jpg';
+    if (md.includes('land cruiser 300')) return '/images/presets/toyota_landcruiser300.jpg';
+    if (md.includes('fr-s') || md.includes('scion')) return '/images/presets/toyota_scion_frs.jpg';
 
-    return null;
+    return null; // Return null so getHDVehiclePhoto fetches real HD photo dynamically!
   };
 
   const DEFAULT_VEHICLES = [
@@ -389,6 +392,33 @@ export default function Profile({
 
   const [isEditingVehicle, setIsEditingVehicle] = useState(false);
   const [editVehicleData, setEditVehicleData] = useState({ ...myVehicle });
+  const [dynamicModels, setDynamicModels] = useState([]);
+
+  // Automatically load available models dynamically when make changes
+  React.useEffect(() => {
+    if (!editVehicleData.make) return;
+    let isMounted = true;
+    async function loadModelsForMake() {
+      const currentMake = editVehicleData.make;
+      const localModels = MASTER_VEHICLE_DATABASE.filter(
+        v => v.make.toLowerCase() === currentMake.toLowerCase()
+      ).map(v => v.model);
+
+      try {
+        const apiModels = await getModelsForMake(currentMake);
+        const apiNames = apiModels.map(m => m.model);
+        const merged = Array.from(new Set([...localModels, ...apiNames]));
+        if (isMounted) {
+          setDynamicModels(merged.length > 0 ? merged : localModels);
+        }
+      } catch {
+        if (isMounted) setDynamicModels(localModels);
+      }
+    }
+    loadModelsForMake();
+    return () => { isMounted = false; };
+  }, [editVehicleData.make]);
+
 
 
   // JDM Prefectures & Hiragana Lists
@@ -4332,56 +4362,29 @@ const getLicenseLabel = (type) => {
                       <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleMake', 'Ishlab chiqaruvchi (Brand)')}</label>
                       <select 
                         value={editVehicleData.make}
-                        onChange={e => {
+                        onChange={async (e) => {
                           const val = e.target.value;
-                          let defaultModel = 'Other';
-                          let defaultBody = 'sedan';
+                          let defaultModel = val === 'Boshqa' ? '' : 'Other';
+                          let defaultBody = editVehicleData.bodyStyle || 'sedan';
                           
-                          if (editVehicleData.type === 'car') {
-                            if (val === 'Toyota') { defaultModel = 'Harrier'; defaultBody = 'suv'; }
-                            else if (val === 'Honda') { defaultModel = 'Freed'; defaultBody = 'minivan'; }
-                            else if (val === 'Nissan') { defaultModel = 'Serena'; defaultBody = 'minivan'; }
-                          } else if (editVehicleData.type === 'moto') {
-                            if (val === 'Honda') { defaultModel = 'Super Cub'; defaultBody = 'scooter'; }
-                          } else if (editVehicleData.type === 'kei_truck') {
-                            if (val === 'Suzuki') { defaultModel = 'Carry'; defaultBody = 'flatbed'; }
-                          } else if (editVehicleData.type === 'truck_2t' || editVehicleData.type === 'truck_3t') {
-                            if (val === 'Isuzu') { defaultModel = 'Elf'; defaultBody = 'box_truck'; }
-                            else if (val === 'Mitsubishi Fuso') { defaultModel = 'Canter'; defaultBody = 'box_truck'; }
-                          } else if (editVehicleData.type === 'truck_4t') {
-                            if (val === 'Hino') { defaultModel = 'Ranger'; defaultBody = 'wing_body'; }
-                            else if (val === 'Isuzu') { defaultModel = 'Forward'; defaultBody = 'wing_body'; }
-                            else if (val === 'Mitsubishi Fuso') { defaultModel = 'Fighter'; defaultBody = 'wing_body'; }
-                          } else if (editVehicleData.type === 'truck_10t') {
-                            if (val === 'Isuzu') { defaultModel = 'Giga'; defaultBody = 'wing_body'; }
-                            else if (val === 'Hino') { defaultModel = 'Profia'; defaultBody = 'wing_body'; }
-                            else if (val === 'Mitsubishi Fuso') { defaultModel = 'Super Great'; defaultBody = 'wing_body'; }
-                            else if (val === 'UD Trucks') { defaultModel = 'Quon'; defaultBody = 'wing_body'; }
-                          } else if (editVehicleData.type === 'trailer') {
-                            if (val === 'Hino') { defaultModel = 'Profia'; defaultBody = 'trailer_container'; }
-                            else if (val === 'Isuzu') { defaultModel = 'Giga'; defaultBody = 'trailer_container'; }
-                            else if (val === 'Mitsubishi Fuso') { defaultModel = 'Super Great'; defaultBody = 'trailer_container'; }
-                            else if (val === 'UD Trucks') { defaultModel = 'Quon'; defaultBody = 'trailer_container'; }
-                          } else if (editVehicleData.type === 'tanker') {
-                            if (val === 'UD Trucks') { defaultModel = 'Quon'; defaultBody = 'box_truck'; }
-                            else if (val === 'Isuzu') { defaultModel = 'Giga'; defaultBody = 'box_truck'; }
-                          } else if (editVehicleData.type === 'bus') {
-                            defaultModel = 'Gala';
-                            defaultBody = 'standard';
-                          } else if (editVehicleData.type === 'velo') {
-                            defaultModel = 'City Cycle';
-                            defaultBody = 'standard';
+                          const preset = MASTER_VEHICLE_DATABASE.find(v => v.make.toLowerCase() === val.toLowerCase());
+                          if (preset) {
+                            defaultModel = preset.model;
+                            defaultBody = preset.bodyStyle;
                           }
 
                           const dims = getVehiclePresetDimensions(editVehicleData.type, defaultBody);
-                          const matchedPhoto = autoMatchVehiclePhoto(val, defaultModel, editVehicleData.type, defaultBody);
-                          
+                          let realPhoto = preset?.photoUrl || null;
+                          if (!realPhoto && val !== 'Boshqa') {
+                            realPhoto = await getHDVehiclePhoto(val, defaultModel);
+                          }
+
                           setEditVehicleData(prev => ({ 
                             ...prev, 
                             make: val, 
                             model: defaultModel,
                             bodyStyle: defaultBody,
-                            photoUrl: matchedPhoto || prev.photoUrl,
+                            photoUrl: realPhoto || prev.photoUrl,
                             ...dims
                           }));
                         }}
@@ -4395,118 +4398,99 @@ const getLicenseLabel = (type) => {
                           outline: 'none'
                         }}
                       >
-                        <option value="Toyota">Toyota</option>
-                        <option value="Honda">Honda</option>
-                        <option value="Nissan">Nissan</option>
-                        <option value="Suzuki">Suzuki</option>
-                        <option value="Hino">Hino</option>
-                        <option value="Isuzu">Isuzu</option>
-                        <option value="Mitsubishi Fuso">Mitsubishi Fuso</option>
-                        <option value="UD Trucks">UD Trucks</option>
-                        <option value="Boshqa">Boshqa (Other)</option>
+                        {ALL_GLOBAL_BRANDS.map(b => (
+                          <option key={b} value={b}>{b}</option>
+                        ))}
                       </select>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel', 'Modeli')}</label>
                       {editVehicleData.make !== 'Boshqa' ? (
-                        <select 
-                          value={editVehicleData.model}
-                          onChange={e => {
-                            const val = e.target.value;
-                            // Update bodyStyle if matched in preset models
-                            let matchedBody = editVehicleData.bodyStyle;
-                            if (val === 'Harrier') matchedBody = 'suv';
-                            else if (val === 'Prius') matchedBody = 'sedan';
-                            else if (val === 'Alphard' || val === 'Freed' || val === 'Stepwgn' || val === 'Serena') matchedBody = 'minivan';
-                            else if (val === 'Yaris' || val === 'Fit' || val === 'Note') matchedBody = 'hatchback';
-                            else if (val === 'Super Cub') matchedBody = 'scooter';
-                            else if (val === 'Elf' || val === 'Canter') matchedBody = 'box_truck';
-                            else if (val === 'Ranger' || val === 'Forward' || val === 'Fighter') matchedBody = 'wing_body';
-                            else if (val === 'Profia' || val === 'Giga' || val === 'Super Great') matchedBody = 'trailer_container';
-                            else if (val === 'Gala') matchedBody = 'standard';
-                            else if (val === 'City Cycle') matchedBody = 'standard';
-                            
-                            const dims = getVehiclePresetDimensions(editVehicleData.type, matchedBody);
-                            
-                            setEditVehicleData(prev => ({ 
-                              ...prev, 
-                              model: val, 
-                              bodyStyle: matchedBody,
-                              ...dims
-                            }));
-                          }}
-                          style={{
-                            background: 'var(--card-bg, #2c2c2e)',
-                            color: 'var(--text-main)',
-                            border: '1px solid var(--glass-border)',
-                            borderRadius: '8px',
-                            padding: '7px',
-                            fontSize: '13px',
-                            outline: 'none'
-                          }}
-                        >
-                          {editVehicleData.make === 'Toyota' && (
-                            <>
-                              <option value="Harrier">Harrier</option>
-                              <option value="Prius">Prius</option>
-                              <option value="Alphard">Alphard</option>
-                              <option value="Yaris">Yaris</option>
-                            </>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <select 
+                            value={editVehicleData.model}
+                            onChange={async (e) => {
+                              const val = e.target.value;
+                              const preset = MASTER_VEHICLE_DATABASE.find(
+                                v => v.make.toLowerCase() === editVehicleData.make.toLowerCase() && v.model.toLowerCase() === val.toLowerCase()
+                              );
+                              let matchedBody = preset?.bodyStyle || editVehicleData.bodyStyle;
+                              const dims = getVehiclePresetDimensions(editVehicleData.type, matchedBody);
+                              let photo = preset?.photoUrl || null;
+                              if (!photo && editVehicleData.make && val) {
+                                photo = await getHDVehiclePhoto(editVehicleData.make, val);
+                              }
+
+                              setEditVehicleData(prev => ({ 
+                                ...prev, 
+                                model: val, 
+                                bodyStyle: matchedBody,
+                                photoUrl: photo || prev.photoUrl,
+                                ...dims
+                              }));
+                            }}
+                            style={{
+                              background: 'var(--card-bg, #2c2c2e)',
+                              color: 'var(--text-main)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '8px',
+                              padding: '7px',
+                              fontSize: '13px',
+                              outline: 'none'
+                            }}
+                          >
+                            {!dynamicModels.includes(editVehicleData.model) && editVehicleData.model && (
+                              <option value={editVehicleData.model}>{editVehicleData.model}</option>
+                            )}
+                            {dynamicModels.map(m => (
+                              <option key={m} value={m}>{m}</option>
+                            ))}
+                            <option value="Other">Boshqa (Custom Input)</option>
+                          </select>
+
+                          {editVehicleData.model === 'Other' && (
+                            <input 
+                              type="text"
+                              placeholder="Model nomini kiriting (masalan: Skyline, Supra...)"
+                              onChange={async (e) => {
+                                const customModel = e.target.value;
+                                let photo = null;
+                                if (customModel.trim().length >= 2) {
+                                  photo = await getHDVehiclePhoto(editVehicleData.make, customModel);
+                                }
+                                setEditVehicleData(prev => ({
+                                  ...prev,
+                                  model: customModel,
+                                  photoUrl: photo || prev.photoUrl
+                                }));
+                              }}
+                              style={{
+                                background: 'var(--card-bg, #2c2c2e)',
+                                color: 'var(--text-main)',
+                                border: '1px solid var(--glass-border)',
+                                borderRadius: '8px',
+                                padding: '7px',
+                                fontSize: '12px',
+                                outline: 'none',
+                                marginTop: '4px'
+                              }}
+                            />
                           )}
-                          {editVehicleData.make === 'Honda' && (
-                            <>
-                              <option value="Freed">Freed</option>
-                              <option value="Stepwgn">Stepwgn</option>
-                              <option value="Fit">Fit</option>
-                              <option value="Super Cub">Super Cub</option>
-                            </>
-                          )}
-                          {editVehicleData.make === 'Nissan' && (
-                            <>
-                              <option value="Serena">Serena Van</option>
-                              <option value="Note">Note Hatchback</option>
-                            </>
-                          )}
-                          {editVehicleData.make === 'Suzuki' && (
-                            <>
-                              <option value="Carry">Carry</option>
-                              <option value="Every">Every</option>
-                            </>
-                          )}
-                          {editVehicleData.make === 'Hino' && (
-                            <>
-                              <option value="Ranger">Ranger 4t</option>
-                              <option value="Profia">Profia 10t</option>
-                            </>
-                          )}
-                          {editVehicleData.make === 'Isuzu' && (
-                            <>
-                              <option value="Elf">Elf 2t/3t</option>
-                              <option value="Forward">Forward 4t</option>
-                              <option value="Giga">Giga 10t</option>
-                            </>
-                          )}
-                          {editVehicleData.make === 'Mitsubishi Fuso' && (
-                            <>
-                              <option value="Canter">Canter 3t</option>
-                              <option value="Fighter">Fighter 4t</option>
-                              <option value="Super Great">Super Great 10t</option>
-                            </>
-                          )}
-                          {editVehicleData.make === 'UD Trucks' && (
-                            <>
-                              <option value="Quon">Quon</option>
-                              <option value="Condor">Condor</option>
-                            </>
-                          )}
-                        </select>
+                        </div>
                       ) : (
                         <input 
                           type="text"
-                          placeholder="Harrier, Freed..."
+                          placeholder="Model nomini kiriting..."
                           value={editVehicleData.model}
-                          onChange={e => setEditVehicleData(prev => ({ ...prev, model: e.target.value }))}
+                          onChange={async (e) => {
+                            const val = e.target.value;
+                            let photo = null;
+                            if (val.trim().length >= 2) {
+                              photo = await getHDVehiclePhoto(editVehicleData.make || 'car', val);
+                            }
+                            setEditVehicleData(prev => ({ ...prev, model: val, photoUrl: photo || prev.photoUrl }));
+                          }}
                           style={{
                             background: 'var(--card-bg, #2c2c2e)',
                             color: 'var(--text-main)',
@@ -5182,7 +5166,12 @@ const getLicenseLabel = (type) => {
         isOpen={isVehiclePickerOpen}
         onClose={() => setIsVehiclePickerOpen(false)}
         selectedVehicleId={editVehicleData.id || myVehicle.id}
-        onSelectVehicle={(veh) => {
+        onSelectVehicle={async (veh) => {
+          let resolvedPhoto = veh.photoUrl || veh._resolvedPhoto || null;
+          if (!resolvedPhoto && veh.make && veh.model) {
+            resolvedPhoto = await getHDVehiclePhoto(veh.make, veh.model);
+          }
+
           const updated = {
             ...myVehicle,
             ...editVehicleData,
@@ -5192,7 +5181,7 @@ const getLicenseLabel = (type) => {
             type: veh.type || editVehicleData.type || 'car',
             bodyStyle: veh.bodyStyle || editVehicleData.bodyStyle || 'sedan',
             year: veh.year || editVehicleData.year || '2024',
-            photoUrl: veh.photoUrl !== undefined ? veh.photoUrl : editVehicleData.photoUrl,
+            photoUrl: resolvedPhoto || editVehicleData.photoUrl,
             ...(veh.specs || {})
           };
           // Permanently save to active vehicle state & localStorage
