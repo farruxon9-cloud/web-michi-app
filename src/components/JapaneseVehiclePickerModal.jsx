@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Search, X, Check, Globe, Loader2, Sparkles, Filter, ShieldCheck, Car, Flame } from 'lucide-react';
-import { POPULAR_GLOBAL_BRANDS, getModelsForMake, getRealVehiclePhoto } from '../services/vehicleApiService';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Search, X, Check, Globe, Loader2, Sparkles } from 'lucide-react';
+import { POPULAR_GLOBAL_BRANDS, getModelsForMake } from '../services/vehicleApiService';
 import { MASTER_VEHICLE_DATABASE, JAPANESE_HISTORICAL_ERAS } from '../data/japaneseVehiclesMaster';
+import LazyVehicleImage from './LazyVehicleImage';
 
 export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVehicle, selectedVehicleId }) {
   const [selectedMake, setSelectedMake] = useState('Toyota');
@@ -9,7 +10,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
   const [searchQuery, setSearchQuery] = useState('');
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [dynamicPhotos, setDynamicPhotos] = useState({});
+
 
   useEffect(() => {
     if (!isOpen) return;
@@ -50,15 +51,6 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
           setModels(combined);
         }
 
-        // Background fetch REAL Wikipedia/Wikimedia HD photos for top items without photos
-        combined.slice(0, 12).forEach(async (item) => {
-          if (!item.photoUrl && isMounted) {
-            const realPhoto = await getRealVehiclePhoto(item.make, item.model);
-            if (realPhoto && isMounted) {
-              setDynamicPhotos(prev => ({ ...prev, [item.id]: realPhoto }));
-            }
-          }
-        });
 
       } catch (err) {
         console.warn('Failed to load vehicle models:', err);
@@ -291,7 +283,6 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
           ) : filteredModels.length > 0 ? (
             filteredModels.map(veh => {
               const isSelected = selectedVehicleId === veh.id;
-              const displayPhoto = veh.photoUrl || dynamicPhotos[veh.id];
 
               return (
                 <div
@@ -299,7 +290,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                   onClick={() => {
                     onSelectVehicle({
                       ...veh,
-                      photoUrl: displayPhoto || veh.photoUrl
+                      photoUrl: veh.photoUrl || veh._resolvedPhoto || null
                     });
                     onClose();
                   }}
@@ -323,66 +314,18 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  {/* Photo Thumbnail Container */}
-                  <div style={{
-                    height: '75px',
-                    width: '100%',
-                    borderRadius: '10px',
-                    overflow: 'hidden',
-                    background: displayPhoto 
-                      ? 'rgba(0,0,0,0.4)' 
-                      : 'linear-gradient(135deg, rgba(0,132,255,0.25) 0%, rgba(255,149,0,0.2) 100%)',
-                    position: 'relative',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '1px solid rgba(255,255,255,0.08)'
-                  }}>
-                    {displayPhoto ? (
-                      <img 
-                        src={displayPhoto} 
-                        alt={veh.model} 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                      />
-                    ) : (
-                      <div style={{ textAlign: 'center', padding: '4px' }}>
-                        <Sparkles size={18} color="#0084FF" style={{ marginBottom: '2px' }} />
-                        <div style={{ fontSize: '10px', fontWeight: '800', color: '#fff' }}>{veh.make}</div>
-                        <div style={{ fontSize: '8.5px', color: 'rgba(255,255,255,0.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px' }}>{veh.model}</div>
-                      </div>
-                    )}
-
-                    {/* Photo Badge */}
-                    <span style={{
-                      position: 'absolute',
-                      top: '4px',
-                      right: '4px',
-                      fontSize: '7px',
-                      fontWeight: 'bold',
-                      background: displayPhoto ? 'rgba(48, 209, 88, 0.85)' : 'rgba(0, 132, 255, 0.85)',
-                      color: '#fff',
-                      padding: '1.5px 5px',
-                      borderRadius: '4px',
-                      letterSpacing: '0.3px'
-                    }}>
-                      {displayPhoto ? 'HD PHOTO' : 'PRO SPEC'}
-                    </span>
-
-                    {/* Year Tag */}
-                    <span style={{
-                      position: 'absolute',
-                      bottom: '4px',
-                      left: '4px',
-                      fontSize: '7.5px',
-                      fontWeight: 'bold',
-                      background: 'rgba(0,0,0,0.8)',
-                      color: '#fff',
-                      padding: '1.5px 5px',
-                      borderRadius: '4px'
-                    }}>
-                      {veh.year || '2024'}
-                    </span>
-                  </div>
+                  {/* Lazy Vehicle Image */}
+                  <LazyVehicleImage
+                    make={veh.make}
+                    model={veh.model}
+                    photoUrl={veh.photoUrl}
+                    bodyStyle={veh.bodyStyle || 'sedan'}
+                    type={veh.type || 'car'}
+                    height={75}
+                    onPhotoLoaded={(url) => {
+                      veh._resolvedPhoto = url;
+                    }}
+                  />
 
                   {/* Model Labels */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
