@@ -314,4 +314,11 @@ html.dark-mode .global-header {
   border-radius: 1px;
 }
 
+/* Lazy loading pulse animation for vehicle cards */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+
 
