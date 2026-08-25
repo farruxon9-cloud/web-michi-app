@@ -508,6 +508,7 @@ export default function Profile({
   const [isEditingVehicle, setIsEditingVehicle] = useState(false);
   const [editVehicleData, setEditVehicleData] = useState({ ...myVehicle });
   const [dynamicModels, setDynamicModels] = useState([]);
+  const [garageViewMode, setGarageViewMode] = useState('carousel'); // 'carousel' | 'grid'
 
   // Automatically load available models dynamically when make changes
   React.useEffect(() => {
@@ -4212,144 +4213,322 @@ const getLicenseLabel = (type) => {
                     </div>
                   </div>
 
-                  {/* Multi-Vehicle Garage Fleet Carousel */}
+                  {/* Multi-Vehicle Garage Fleet Header & Segmented Controls */}
                   <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '16px', marginTop: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>
                           🏎️ {i18n.language === 'ja' ? '登録車両リスト' : i18n.language === 'en' ? 'My Fleet / Vehicles' : 'Garaj Floti'}
                         </span>
-                        <span style={{ fontSize: '10px', background: 'rgba(0, 132, 255, 0.15)', color: '#0084FF', padding: '1px 7px', borderRadius: '10px', fontWeight: 'bold' }}>
+                        <span style={{ fontSize: '10px', background: 'rgba(0, 132, 255, 0.15)', color: '#0084FF', padding: '1px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
                           {myVehicles.length}
                         </span>
                       </div>
-                      <button 
-                        onClick={handleAddNewVehicle}
-                        className="profile-btn-interactive"
-                        style={{
-                          background: 'linear-gradient(135deg, #0084FF 0%, #30D158 100%)',
-                          border: 'none',
-                          borderRadius: '8px',
-                          color: '#fff',
-                          fontSize: '11px',
-                          fontWeight: 'bold',
-                          padding: '6px 10px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          boxShadow: '0 4px 12px rgba(0, 132, 255, 0.3)'
-                        }}
-                      >
-                        <Plus size={13} /> {i18n.language === 'ja' ? '新規追加' : i18n.language === 'en' ? 'Add New' : 'Yangi Avto Qoʻshish'}
-                      </button>
-                    </div>
-                    
-                    {/* Horizontal Garage Fleet Carousel */}
-                    <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '6px', paddingTop: '2px' }}>
-                      {myVehicles.map(veh => {
-                        const isActive = myVehicle && myVehicle.id === veh.id;
-                        return (
-                          <div 
-                            key={veh.id}
-                            onClick={() => handleSelectActiveVehicle(veh)}
-                            className="fleet-card-item profile-btn-interactive"
+
+                      {/* Segmented View Mode Toggle & Add Button */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ display: 'flex', background: 'rgba(0,0,0,0.06)', padding: '2px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                          <button
+                            type="button"
+                            onClick={() => setGarageViewMode('carousel')}
                             style={{
-                              minWidth: '145px',
-                              maxWidth: '155px',
-                              flexShrink: 0,
-                              background: isActive 
-                                ? 'linear-gradient(135deg, rgba(48, 209, 88, 0.12) 0%, rgba(0, 132, 255, 0.08) 100%)' 
-                                : 'var(--card-bg, rgba(255, 255, 255, 0.03))',
-                              border: isActive ? '2px solid #30D158' : '1px solid var(--glass-border)',
-                              borderRadius: '12px',
-                              padding: '10px',
+                              padding: '4px 8px',
+                              borderRadius: '6px',
+                              border: 'none',
+                              background: garageViewMode === 'carousel' ? 'var(--card-bg, #ffffff)' : 'transparent',
+                              color: garageViewMode === 'carousel' ? '#0084FF' : 'var(--text-secondary)',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
                               cursor: 'pointer',
+                              boxShadow: garageViewMode === 'carousel' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
                               display: 'flex',
-                              flexDirection: 'column',
-                              gap: '6px',
-                              position: 'relative',
-                              boxShadow: isActive ? '0 6px 18px rgba(48, 209, 88, 0.2)' : '0 2px 8px rgba(0,0,0,0.05)'
+                              alignItems: 'center',
+                              gap: '3px'
                             }}
                           >
-                            {/* Active Glowing Badge */}
-                            {isActive && (
-                              <span style={{
-                                position: 'absolute',
-                                top: '6px',
-                                right: '6px',
-                                fontSize: '8.5px',
-                                background: '#30D158',
-                                color: '#000',
-                                padding: '1px 5px',
-                                borderRadius: '6px',
-                                fontWeight: 'bold',
-                                zIndex: 2
-                              }}>
-                                ⚡ {i18n.language === 'ja' ? '選択中' : i18n.language === 'en' ? 'ACTIVE' : 'FAOL'}
-                              </span>
-                            )}
+                            📱 Dock
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setGarageViewMode('grid')}
+                            style={{
+                              padding: '4px 8px',
+                              borderRadius: '6px',
+                              border: 'none',
+                              background: garageViewMode === 'grid' ? 'var(--card-bg, #ffffff)' : 'transparent',
+                              color: garageViewMode === 'grid' ? '#0084FF' : 'var(--text-secondary)',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              boxShadow: garageViewMode === 'grid' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '3px'
+                            }}
+                          >
+                            🔲 Grid
+                          </button>
+                        </div>
 
-                            {/* Vehicle Photo / SVG */}
-                            <div style={{ width: '100%', height: '65px', borderRadius: '8px', overflow: 'hidden', background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              {veh.photoUrl ? (
-                                <img 
-                                  src={veh.photoUrl} 
-                                  alt={veh.model} 
-                                  onError={async (e) => {
-                                    e.currentTarget.onerror = null;
-                                    const hdUrl = await getHDVehiclePhoto(veh.make, veh.model);
-                                    if (hdUrl) {
-                                      setMyVehicles(prev => (prev || []).map(v => v.id === veh.id ? { ...v, photoUrl: hdUrl } : v));
-                                    }
-                                  }}
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                />
-                              ) : (
-                                <div style={{ width: '80px', height: '40px', transform: 'scale(1)' }}>
-                                  {renderVehicleSVG(veh.type, veh.bodyStyle, veh.color)}
+                        <button 
+                          onClick={handleAddNewVehicle}
+                          className="profile-btn-interactive"
+                          style={{
+                            background: 'linear-gradient(135deg, #0084FF 0%, #30D158 100%)',
+                            border: 'none',
+                            borderRadius: '8px',
+                            color: '#fff',
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            padding: '6px 10px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            boxShadow: '0 4px 12px rgba(0, 132, 255, 0.3)'
+                          }}
+                        >
+                          <Plus size={13} /> {i18n.language === 'ja' ? '新規追加' : i18n.language === 'en' ? 'Add New' : 'Yangi Qoʻshish'}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Mode 1: iOS Dock Slider / Carousel View */}
+                    {garageViewMode === 'carousel' ? (
+                      <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', paddingTop: '4px' }}>
+                        {myVehicles.map(veh => {
+                          const isActive = myVehicle && myVehicle.id === veh.id;
+                          return (
+                            <div 
+                              key={veh.id}
+                              onClick={() => handleSelectActiveVehicle(veh)}
+                              className="fleet-card-item profile-btn-interactive"
+                              style={{
+                                minWidth: '175px',
+                                maxWidth: '185px',
+                                flexShrink: 0,
+                                background: isActive 
+                                  ? 'linear-gradient(135deg, rgba(48, 209, 88, 0.12) 0%, rgba(0, 132, 255, 0.08) 100%)' 
+                                  : 'var(--card-bg, rgba(255, 255, 255, 0.03))',
+                                border: isActive ? '2px solid #30D158' : '1px solid var(--glass-border)',
+                                borderRadius: '14px',
+                                padding: '10px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '8px',
+                                position: 'relative',
+                                boxShadow: isActive ? '0 8px 24px rgba(48, 209, 88, 0.25)' : '0 2px 10px rgba(0,0,0,0.05)',
+                                transform: isActive ? 'translateY(-2px)' : 'none',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              {/* Active Glowing Badge */}
+                              {isActive && (
+                                <span style={{
+                                  position: 'absolute',
+                                  top: '8px',
+                                  right: '8px',
+                                  fontSize: '8.5px',
+                                  background: '#30D158',
+                                  color: '#000',
+                                  padding: '2px 6px',
+                                  borderRadius: '6px',
+                                  fontWeight: '800',
+                                  zIndex: 2,
+                                  boxShadow: '0 2px 6px rgba(48, 209, 88, 0.4)'
+                                }}>
+                                  ⚡ {i18n.language === 'ja' ? '選択中' : i18n.language === 'en' ? 'ACTIVE' : 'FAOL'}
+                                </span>
+                              )}
+
+                              {/* Real HD Vehicle Photo Display */}
+                              <div style={{ width: '100%', height: '80px', borderRadius: '10px', overflow: 'hidden', background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {veh.photoUrl ? (
+                                  <img 
+                                    src={veh.photoUrl} 
+                                    alt={veh.model} 
+                                    onError={async (e) => {
+                                      e.currentTarget.onerror = null;
+                                      const hdUrl = await getHDVehiclePhoto(veh.make, veh.model);
+                                      if (hdUrl) {
+                                        setMyVehicles(prev => (prev || []).map(v => v.id === veh.id ? { ...v, photoUrl: hdUrl } : v));
+                                      }
+                                    }}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                  />
+                                ) : (
+                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+                                    <Camera size={20} color="#0084FF" />
+                                    <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>{veh.make} {veh.model}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Make, Model & Plate Snippet */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {veh.make} {veh.model}
+                                </span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>
+                                    {veh.year || '2024'} • {veh.height}m / {veh.weight}t
+                                  </span>
+                                  <span style={{ fontSize: '9px', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--glass-border)', padding: '1px 5px', borderRadius: '4px', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                                    {veh.platePrefecture || '練馬'} {veh.plateNumber || '12-34'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Actions / Delete */}
+                              {!isActive && (
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2px' }}>
+                                  <button
+                                    onClick={(e) => handleDeleteVehicle(veh.id, e)}
+                                    style={{
+                                      background: 'rgba(255, 69, 58, 0.1)',
+                                      border: 'none',
+                                      color: '#FF453A',
+                                      padding: '3px 7px',
+                                      cursor: 'pointer',
+                                      borderRadius: '6px',
+                                      fontSize: '9.5px',
+                                      fontWeight: 'bold',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '3px'
+                                    }}
+                                  >
+                                    <Trash2 size={11} /> {i18n.language === 'ja' ? '削除' : i18n.language === 'en' ? 'Delete' : 'Oʻchirish'}
+                                  </button>
                                 </div>
                               )}
                             </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      /* Mode 2: Interactive 2-Column Grid View */
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', paddingTop: '4px' }}>
+                        {myVehicles.map(veh => {
+                          const isActive = myVehicle && myVehicle.id === veh.id;
+                          return (
+                            <div
+                              key={veh.id}
+                              style={{
+                                background: isActive 
+                                  ? 'linear-gradient(135deg, rgba(48, 209, 88, 0.12) 0%, rgba(0, 132, 255, 0.08) 100%)' 
+                                  : 'var(--card-bg, rgba(255, 255, 255, 0.03))',
+                                border: isActive ? '2px solid #30D158' : '1px solid var(--glass-border)',
+                                borderRadius: '14px',
+                                padding: '12px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '8px',
+                                position: 'relative',
+                                boxShadow: isActive ? '0 8px 24px rgba(48, 209, 88, 0.2)' : '0 2px 8px rgba(0,0,0,0.04)'
+                              }}
+                            >
+                              {/* Glowing Active Status Badge */}
+                              {isActive && (
+                                <span style={{
+                                  position: 'absolute',
+                                  top: '8px',
+                                  right: '8px',
+                                  fontSize: '8.5px',
+                                  background: '#30D158',
+                                  color: '#000',
+                                  padding: '2px 6px',
+                                  borderRadius: '6px',
+                                  fontWeight: '800',
+                                  zIndex: 2
+                                }}>
+                                  ⚡ {i18n.language === 'ja' ? '選択中' : i18n.language === 'en' ? 'ACTIVE' : 'FAOL'}
+                                </span>
+                              )}
 
-                            {/* Make & Model */}
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                              <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {veh.make} {veh.model}
-                              </span>
-                              <span style={{ fontSize: '9px', color: 'var(--text-secondary)', marginTop: '1px' }}>
-                                {veh.year || '2024'} • {veh.height}m / {veh.weight}t
-                              </span>
-                            </div>
-
-                            {/* Actions / Delete */}
-                            {!isActive && (
-                              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2px' }}>
-                                <button
-                                  onClick={(e) => handleDeleteVehicle(veh.id, e)}
-                                  style={{
-                                    background: 'rgba(255, 69, 58, 0.1)',
-                                    border: 'none',
-                                    color: '#FF453A',
-                                    padding: '3px 6px',
-                                    cursor: 'pointer',
-                                    borderRadius: '4px',
-                                    fontSize: '9.5px',
-                                    fontWeight: 'bold',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '2px'
-                                  }}
-                                  title="Delete"
-                                >
-                                  <Trash2 size={11} /> {i18n.language === 'ja' ? '削除' : i18n.language === 'en' ? 'Delete' : 'Oʻchirish'}
-                                </button>
+                              {/* Real HD Photo */}
+                              <div style={{ width: '100%', height: '90px', borderRadius: '10px', overflow: 'hidden', background: 'rgba(0,0,0,0.04)' }}>
+                                {veh.photoUrl ? (
+                                  <img 
+                                    src={veh.photoUrl} 
+                                    alt={veh.model} 
+                                    onError={async (e) => {
+                                      e.currentTarget.onerror = null;
+                                      const hdUrl = await getHDVehiclePhoto(veh.make, veh.model);
+                                      if (hdUrl) setMyVehicles(prev => (prev || []).map(v => v.id === veh.id ? { ...v, photoUrl: hdUrl } : v));
+                                    }}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                  />
+                                ) : (
+                                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Camera size={20} color="#0084FF" />
+                                    <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>{veh.make} {veh.model}</span>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+
+                              {/* Details */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>
+                                  {veh.make} {veh.model}
+                                </span>
+                                <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>
+                                  {veh.year || '2024'} • {veh.height}m / {veh.weight}t
+                                </span>
+                                <span style={{ fontSize: '9px', color: '#0084FF', fontWeight: 'bold', marginTop: '2px' }}>
+                                  🚘 {veh.platePrefecture || '練馬'} {veh.plateClass || '300'} {veh.plateHira || 'あ'} {veh.plateNumber || '12-34'}
+                                </span>
+                              </div>
+
+                              {/* Actions */}
+                              <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+                                {!isActive ? (
+                                  <button
+                                    onClick={() => handleSelectActiveVehicle(veh)}
+                                    style={{
+                                      flex: 1,
+                                      background: '#0084FF',
+                                      border: 'none',
+                                      color: '#fff',
+                                      padding: '6px',
+                                      borderRadius: '8px',
+                                      fontSize: '10px',
+                                      fontWeight: 'bold',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    ⚡ {i18n.language === 'ja' ? '選択する' : i18n.language === 'en' ? 'Select' : 'Tanlash'}
+                                  </button>
+                                ) : (
+                                  <span style={{ fontSize: '10px', color: '#30D158', fontWeight: 'bold', padding: '4px 0' }}>
+                                    ✓ {i18n.language === 'ja' ? '現在選択中' : i18n.language === 'en' ? 'Current Active' : 'Faol Transport'}
+                                  </span>
+                                )}
+
+                                {!isActive && (
+                                  <button
+                                    onClick={(e) => handleDeleteVehicle(veh.id, e)}
+                                    style={{
+                                      background: 'rgba(255, 69, 58, 0.1)',
+                                      border: '1px solid rgba(255, 69, 58, 0.3)',
+                                      color: '#FF453A',
+                                      padding: '6px 8px',
+                                      borderRadius: '8px',
+                                      fontSize: '10px',
+                                      fontWeight: 'bold',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    <Trash2 size={11} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               )) : (
