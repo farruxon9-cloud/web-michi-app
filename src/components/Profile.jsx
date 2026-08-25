@@ -518,6 +518,15 @@ export default function Profile({
   const handleSelectActiveVehicleSmooth = (veh) => {
     if (!veh) return;
     if (myVehicle && String(myVehicle.id) === String(veh.id)) return;
+    
+    // Immediately scroll target tab into view on click/selection
+    if (fleetTabsRef.current) {
+      const targetEl = fleetTabsRef.current.querySelector(`[data-veh-id="${String(veh.id)}"]`);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+
     setIsCardFading(true);
     setTimeout(() => {
       handleSelectActiveVehicle(veh);
@@ -566,6 +575,8 @@ export default function Profile({
     const activeId = String(myVehicle.id);
     const targetEl = container.querySelector(`[data-veh-id="${activeId}"]`);
     if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      
       const containerRect = container.getBoundingClientRect();
       const targetRect = targetEl.getBoundingClientRect();
       const relativeLeft = targetRect.left - containerRect.left;
