@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot, Navigation, Zap, Mic, Truck, RotateCcw } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot, Navigation, Zap, Mic, Truck, RotateCcw, UserCheck, UserX, Car } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
@@ -3868,7 +3868,29 @@ const getLicenseLabel = (type) => {
                 <button 
                   className="resume-edit-btn"
                   onClick={() => {
-                    setEditVehicleData({ ...myVehicle });
+                    setEditVehicleData(myVehicle ? { ...myVehicle } : {
+                      id: 'v_' + Date.now(),
+                      type: 'car',
+                      make: 'Toyota',
+                      model: 'Harrier',
+                      bodyStyle: 'suv',
+                      trim: 'Z',
+                      year: '2024',
+                      color: '#5E5CE6',
+                      platePrefecture: '練馬',
+                      plateClass: '300',
+                      plateHira: 'あ',
+                      plateNumber: '12-34',
+                      isCommercial: false,
+                      plateType: 'private',
+                      driverMark: 'none',
+                      height: '1.69',
+                      width: '1.85',
+                      length: '4.74',
+                      weight: '1.70',
+                      axleLoad: '0.85',
+                      minTurnRadius: '5.3'
+                    });
                     setIsEditingVehicle(true);
                   }}
                 >
@@ -4133,7 +4155,7 @@ const getLicenseLabel = (type) => {
                     {/* Horizontal Garage Fleet Carousel */}
                     <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '6px', paddingTop: '2px' }}>
                       {myVehicles.map(veh => {
-                        const isActive = myVehicle.id === veh.id;
+                        const isActive = myVehicle && myVehicle.id === veh.id;
                         return (
                           <div 
                             key={veh.id}
@@ -5424,7 +5446,7 @@ const getLicenseLabel = (type) => {
       <JapaneseVehiclePickerModal
         isOpen={isVehiclePickerOpen}
         onClose={() => setIsVehiclePickerOpen(false)}
-        selectedVehicleId={editVehicleData.id || myVehicle.id}
+        selectedVehicleId={editVehicleData?.id || myVehicle?.id}
         onSelectVehicle={async (veh) => {
           let resolvedPhoto = veh.photoUrl || veh._resolvedPhoto || null;
           if (!resolvedPhoto && veh.make && veh.model) {
@@ -5432,9 +5454,9 @@ const getLicenseLabel = (type) => {
           }
 
           const updated = {
-            ...myVehicle,
-            ...editVehicleData,
-            id: veh.id || editVehicleData.id || `veh_${Date.now()}`,
+            ...(myVehicle || {}),
+            ...(editVehicleData || {}),
+            id: veh.id || editVehicleData?.id || `veh_${Date.now()}`,
             make: veh.make,
             model: veh.model,
             type: veh.type || editVehicleData.type || 'car',
