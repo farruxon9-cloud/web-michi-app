@@ -3915,10 +3915,30 @@ const getLicenseLabel = (type) => {
                 <h3>{t('myResume')}</h3>
               </div>
               <button 
-                className="resume-edit-btn"
+                type="button"
+                className="profile-btn-interactive"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(48, 209, 88, 0.15) 0%, rgba(0, 132, 255, 0.15) 100%)',
+                  border: '1px solid rgba(48, 209, 88, 0.35)',
+                  color: 'var(--text-main)',
+                  padding: '6px 14px',
+                  borderRadius: '10px',
+                  fontSize: '12px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 2px 8px rgba(48, 209, 88, 0.12)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  transition: 'all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                }}
                 onClick={() => setActivePage('resume_builder')}
+                title={i18n.language === 'ja' ? '日本標準履歴書PDFを作成・編集' : i18n.language === 'en' ? 'Create / Edit Resume PDF' : 'Yapon Rezyumesi (PDF) Yaratish / Tahrirlash'}
               >
-                📝 {t('createResume', 'Tahrirlash / Yuklash')}
+                <FileText size={13} strokeWidth={2.5} color="#30D158" />
+                <span style={{ letterSpacing: '-0.2px' }}>{t('createResume', '履歴書作成 (PDF)')}</span>
               </button>
             </div>
             <div className="resume-body">
