@@ -26,7 +26,7 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;           /* Vertikal scroll imkoniyati */
-  padding-bottom: 90px;       /* Pastki navigatsiya paneli uchun joy */
+  padding-bottom: var(--nav-dock-clearance, 96px);       /* Pastki navigatsiya paneli uchun joy */
 }
 
 

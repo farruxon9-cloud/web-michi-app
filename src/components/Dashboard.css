@@ -31,8 +31,8 @@ html.light-mode {
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 20px;
-  padding-bottom: 106px;
+  padding: 14px;
+  padding-bottom: 96px;
   background-color: transparent;
   overflow-y: auto;
   overflow-x: hidden;
