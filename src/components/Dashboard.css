@@ -37,6 +37,17 @@ html.light-mode {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.dashboard-container::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  display: none !important;
+  background: transparent !important;
 }
 
 .dashboard-container > * + * {
@@ -325,10 +336,14 @@ html.light-mode {
   display: flex;
   gap: 10px; /* Reduced from 12px */
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .bento-icon-card {
-  flex: 1;
+  flex: 1 1 0px;
+  min-width: 0;
+  width: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -339,6 +354,7 @@ html.light-mode {
   cursor: pointer;
   box-shadow: var(--dash-card-shadow);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
 }
 
 .bento-icon-card:hover {
