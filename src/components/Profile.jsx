@@ -508,7 +508,6 @@ export default function Profile({
   const [isEditingVehicle, setIsEditingVehicle] = useState(false);
   const [editVehicleData, setEditVehicleData] = useState({ ...myVehicle });
   const [dynamicModels, setDynamicModels] = useState([]);
-  const [garageViewMode, setGarageViewMode] = useState('list'); // 'list' (minimal text) | 'pills' | 'grid'
 
   // Automatically load available models dynamically when make changes
   React.useEffect(() => {
@@ -4213,73 +4212,36 @@ const getLicenseLabel = (type) => {
                     </div>
                   </div>
 
-                  {/* Multi-Vehicle Garage Fleet Header & Minimalist Controls */}
+                  {/* Multi-Vehicle Swipeable Tab Bar */}
                   <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '16px', marginTop: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>
-                          📋 {i18n.language === 'ja' ? '登録車両リスト' : i18n.language === 'en' ? 'My Fleet / Vehicles' : 'Garaj Floti (Minimal Roʻyxat)'}
+                          📱 {i18n.language === 'ja' ? '登録車両タブ' : i18n.language === 'en' ? 'Vehicle Tabs' : 'Garaj Tablari'}
                         </span>
                         <span style={{ fontSize: '10px', background: 'rgba(0, 132, 255, 0.15)', color: '#0084FF', padding: '1px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
                           {myVehicles.length}
                         </span>
                       </div>
 
-                      {/* Segmented Minimalist View Toggle */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <div style={{ display: 'flex', background: 'rgba(0,0,0,0.06)', padding: '2px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-                          <button
-                            type="button"
-                            onClick={() => setGarageViewMode('list')}
-                            style={{
-                              padding: '4px 8px',
-                              borderRadius: '6px',
-                              border: 'none',
-                              background: garageViewMode === 'list' ? 'var(--card-bg, #ffffff)' : 'transparent',
-                              color: garageViewMode === 'list' ? '#0084FF' : 'var(--text-secondary)',
-                              fontSize: '10px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              boxShadow: garageViewMode === 'list' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
-                            }}
-                          >
-                            📋 {i18n.language === 'ja' ? 'リスト' : i18n.language === 'en' ? 'List' : 'Roʻyxat'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setGarageViewMode('pills')}
-                            style={{
-                              padding: '4px 8px',
-                              borderRadius: '6px',
-                              border: 'none',
-                              background: garageViewMode === 'pills' ? 'var(--card-bg, #ffffff)' : 'transparent',
-                              color: garageViewMode === 'pills' ? '#0084FF' : 'var(--text-secondary)',
-                              fontSize: '10px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              boxShadow: garageViewMode === 'pills' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
-                            }}
-                          >
-                            📱 {i18n.language === 'ja' ? 'タブ' : i18n.language === 'en' ? 'Tabs' : 'Tablar'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setGarageViewMode('grid')}
-                            style={{
-                              padding: '4px 8px',
-                              borderRadius: '6px',
-                              border: 'none',
-                              background: garageViewMode === 'grid' ? 'var(--card-bg, #ffffff)' : 'transparent',
-                              color: garageViewMode === 'grid' ? '#0084FF' : 'var(--text-secondary)',
-                              fontSize: '10px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              boxShadow: garageViewMode === 'grid' ? '0 2px 6px rgba(0,0,0,0.1)' : 'none'
-                            }}
-                          >
-                            🔲 {i18n.language === 'ja' ? 'グリッド' : i18n.language === 'en' ? 'Grid' : 'Grid'}
-                          </button>
-                        </div>
+                      {/* Visual Swipe Hint Badge & Add Button */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {myVehicles.length > 1 && (
+                          <span style={{
+                            fontSize: '9.5px',
+                            color: '#0084FF',
+                            background: 'rgba(0, 132, 255, 0.1)',
+                            border: '1px solid rgba(0, 132, 255, 0.25)',
+                            padding: '3px 8px',
+                            borderRadius: '10px',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}>
+                            👈 {i18n.language === 'ja' ? '横スワイプ' : i18n.language === 'en' ? 'Swipe ↔️' : 'Surish ↔️'}
+                          </span>
+                        )}
 
                         <button 
                           onClick={handleAddNewVehicle}
@@ -4304,210 +4266,115 @@ const getLicenseLabel = (type) => {
                       </div>
                     </div>
                     
-                    {/* Mode 1: Clean Minimal Text List (No Photos, High Contrast Text Only) */}
-                    {garageViewMode === 'list' ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '4px' }}>
-                        {myVehicles.map(veh => {
-                          const isActive = myVehicle && myVehicle.id === veh.id;
-                          return (
-                            <div 
-                              key={veh.id}
-                              onClick={() => handleSelectActiveVehicle(veh)}
-                              className="profile-btn-interactive"
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                padding: '12px 14px',
-                                borderRadius: '12px',
-                                background: isActive 
-                                  ? 'linear-gradient(135deg, rgba(48, 209, 88, 0.12) 0%, rgba(0, 132, 255, 0.06) 100%)' 
-                                  : 'var(--card-bg, rgba(255, 255, 255, 0.03))',
-                                border: isActive ? '2px solid #30D158' : '1px solid var(--glass-border)',
-                                cursor: 'pointer',
-                                boxShadow: isActive ? '0 4px 14px rgba(48, 209, 88, 0.18)' : '0 2px 6px rgba(0,0,0,0.03)',
-                                transition: 'all 0.2s ease'
-                              }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <div style={{
-                                  width: '36px',
-                                  height: '36px',
-                                  borderRadius: '10px',
-                                  background: isActive ? '#30D158' : 'rgba(0, 132, 255, 0.1)',
-                                  color: isActive ? '#000' : '#0084FF',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontWeight: 'bold',
-                                  fontSize: '15px'
-                                }}>
-                                  {veh.type === 'truck_10t' || veh.type === 'truck_4t' || veh.type === 'truck_2t' ? '🚚' : veh.type === 'moto' ? '🏍️' : '🚘'}
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{ fontSize: '13.5px', fontWeight: '800', color: 'var(--text-main)' }}>
-                                      {veh.make} {veh.model} {veh.trim ? `(${veh.trim})` : ''}
-                                    </span>
-                                    <span style={{ fontSize: '9.5px', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--glass-border)', padding: '1px 6px', borderRadius: '4px', fontWeight: 'bold', color: 'var(--text-main)' }}>
-                                      {veh.platePrefecture || '練馬'} {veh.plateClass || '300'} {veh.plateHira || 'あ'} {veh.plateNumber || '12-34'}
-                                    </span>
-                                  </div>
-                                  <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                                    {veh.year || '2024'} • {veh.height}m / {veh.weight}t • {veh.bodyStyle}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                {isActive ? (
-                                  <span style={{
-                                    fontSize: '10px',
-                                    fontWeight: '800',
-                                    background: '#30D158',
-                                    color: '#000',
-                                    padding: '4px 10px',
-                                    borderRadius: '8px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    boxShadow: '0 2px 8px rgba(48, 209, 88, 0.3)'
-                                  }}>
-                                    ⚡ {i18n.language === 'ja' ? '選択中' : i18n.language === 'en' ? 'ACTIVE' : 'FAOL'}
-                                  </span>
-                                ) : (
-                                  <>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleSelectActiveVehicle(veh);
-                                      }}
-                                      style={{
-                                        background: 'rgba(0, 132, 255, 0.12)',
-                                        border: '1px solid rgba(0, 132, 255, 0.3)',
-                                        color: '#0084FF',
-                                        padding: '4px 9px',
-                                        borderRadius: '6px',
-                                        fontSize: '10px',
-                                        fontWeight: 'bold',
-                                        cursor: 'pointer'
-                                      }}
-                                    >
-                                      {i18n.language === 'ja' ? '選択' : i18n.language === 'en' ? 'Select' : 'Tanlash'}
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => handleDeleteVehicle(veh.id, e)}
-                                      style={{
-                                        background: 'rgba(255, 69, 58, 0.1)',
-                                        border: 'none',
-                                        color: '#FF453A',
-                                        padding: '5px 7px',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer'
-                                      }}
-                                      title="Delete"
-                                    >
-                                      <Trash2 size={13} />
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : garageViewMode === 'pills' ? (
-                      /* Mode 2: Minimal Text Pill Selector Tabs */
-                      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px', paddingTop: '4px' }}>
-                        {myVehicles.map(veh => {
-                          const isActive = myVehicle && myVehicle.id === veh.id;
-                          return (
-                            <button
-                              key={veh.id}
-                              type="button"
-                              onClick={() => handleSelectActiveVehicle(veh)}
-                              className="profile-btn-interactive"
-                              style={{
-                                padding: '8px 14px',
-                                borderRadius: '12px',
-                                background: isActive 
-                                  ? 'linear-gradient(135deg, #30D158 0%, #0084FF 100%)' 
-                                  : 'var(--card-bg, rgba(255, 255, 255, 0.04))',
-                                border: isActive ? 'none' : '1px solid var(--glass-border)',
-                                color: isActive ? '#000' : 'var(--text-main)',
-                                fontWeight: 'bold',
-                                fontSize: '11.5px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                whiteSpace: 'nowrap',
-                                boxShadow: isActive ? '0 4px 14px rgba(48, 209, 88, 0.3)' : 'none'
-                              }}
-                            >
-                              <span>{veh.type === 'truck_10t' || veh.type === 'truck_4t' || veh.type === 'truck_2t' ? '🚚' : '🚘'}</span>
-                              <span>{veh.make} {veh.model}</span>
-                              <span style={{ fontSize: '9px', opacity: 0.8, background: 'rgba(0,0,0,0.15)', padding: '1px 5px', borderRadius: '4px' }}>
-                                {veh.platePrefecture || '練馬'} {veh.plateNumber || '12-34'}
-                              </span>
-                              {isActive && <span style={{ fontSize: '10px', fontWeight: '800' }}>⚡</span>}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      /* Mode 3: Minimal Grid Cards (Text Only, No Photos) */
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', paddingTop: '4px' }}>
+                    {/* Horizontal Swipeable Text Pill Tabs */}
+                    <div style={{ position: 'relative', width: '100%' }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        gap: '8px', 
+                        overflowX: 'auto', 
+                        paddingBottom: '8px', 
+                        paddingTop: '4px',
+                        scrollSnapType: 'x mandatory',
+                        WebkitOverflowScrolling: 'touch'
+                      }}>
                         {myVehicles.map(veh => {
                           const isActive = myVehicle && myVehicle.id === veh.id;
                           return (
                             <div
                               key={veh.id}
-                              onClick={() => handleSelectActiveVehicle(veh)}
                               style={{
-                                background: isActive 
-                                  ? 'linear-gradient(135deg, rgba(48, 209, 88, 0.12) 0%, rgba(0, 132, 255, 0.08) 100%)' 
-                                  : 'var(--card-bg, rgba(255, 255, 255, 0.03))',
-                                border: isActive ? '2px solid #30D158' : '1px solid var(--glass-border)',
-                                borderRadius: '12px',
-                                padding: '10px 12px',
                                 display: 'flex',
-                                flexDirection: 'column',
+                                alignItems: 'center',
                                 gap: '6px',
-                                cursor: 'pointer',
-                                boxShadow: isActive ? '0 6px 18px rgba(48, 209, 88, 0.2)' : '0 2px 6px rgba(0,0,0,0.03)'
+                                scrollSnapAlign: 'start',
+                                flexShrink: 0
                               }}
                             >
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: '15px' }}>
-                                  {veh.type === 'truck_10t' || veh.type === 'truck_4t' || veh.type === 'truck_2t' ? '🚚' : '🚘'}
+                              <button
+                                type="button"
+                                onClick={() => handleSelectActiveVehicle(veh)}
+                                className="profile-btn-interactive"
+                                style={{
+                                  padding: '8px 14px',
+                                  borderRadius: '12px',
+                                  background: isActive 
+                                    ? 'linear-gradient(135deg, #30D158 0%, #0084FF 100%)' 
+                                    : 'var(--card-bg, rgba(255, 255, 255, 0.04))',
+                                  border: isActive ? 'none' : '1px solid var(--glass-border)',
+                                  color: isActive ? '#000' : 'var(--text-main)',
+                                  fontWeight: 'bold',
+                                  fontSize: '12px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  whiteSpace: 'nowrap',
+                                  boxShadow: isActive ? '0 4px 14px rgba(48, 209, 88, 0.35)' : 'none',
+                                  transition: 'all 0.2s ease'
+                                }}
+                              >
+                                <span style={{ fontSize: '14px' }}>
+                                  {veh.type === 'truck_10t' || veh.type === 'truck_4t' || veh.type === 'truck_2t' ? '🚚' : veh.type === 'moto' ? '🏍️' : '🚘'}
+                                </span>
+                                <span>{veh.make} {veh.model}</span>
+                                <span style={{ fontSize: '9.5px', opacity: 0.85, background: 'rgba(0,0,0,0.15)', padding: '1.5px 6px', borderRadius: '4px', fontWeight: '800' }}>
+                                  {veh.platePrefecture || '練馬'} {veh.plateNumber || '12-34'}
                                 </span>
                                 {isActive && (
-                                  <span style={{ fontSize: '8.5px', background: '#30D158', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: '800' }}>
+                                  <span style={{ fontSize: '10px', fontWeight: '800', background: '#000', color: '#30D158', padding: '1px 5px', borderRadius: '4px' }}>
                                     ⚡ {i18n.language === 'ja' ? '選択中' : i18n.language === 'en' ? 'ACTIVE' : 'FAOL'}
                                   </span>
                                 )}
-                              </div>
+                              </button>
 
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                <span style={{ fontSize: '12.5px', fontWeight: '800', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {veh.make} {veh.model}
-                                </span>
-                                <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>
-                                  {veh.year || '2024'} • {veh.height}m / {veh.weight}t
-                                </span>
-                                <span style={{ fontSize: '9px', color: '#0084FF', fontWeight: 'bold', marginTop: '2px' }}>
-                                  🚘 {veh.platePrefecture || '練馬'} {veh.plateClass || '300'} {veh.plateHira || 'あ'} {veh.plateNumber || '12-34'}
-                                </span>
-                              </div>
+                              {!isActive && myVehicles.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleDeleteVehicle(veh.id, e)}
+                                  style={{
+                                    background: 'rgba(255, 69, 58, 0.1)',
+                                    border: '1px solid rgba(255, 69, 58, 0.25)',
+                                    color: '#FF453A',
+                                    padding: '7px 8px',
+                                    borderRadius: '10px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                                  title="Delete Vehicle"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              )}
                             </div>
                           );
                         })}
                       </div>
-                    )}
+
+                      {/* Pagination Indicator Dots */}
+                      {myVehicles.length > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '5px', marginTop: '4px' }}>
+                          {myVehicles.map((v) => {
+                            const isSelected = myVehicle && myVehicle.id === v.id;
+                            return (
+                              <div
+                                key={'dot_' + v.id}
+                                onClick={() => handleSelectActiveVehicle(v)}
+                                style={{
+                                  width: isSelected ? '18px' : '6px',
+                                  height: '6px',
+                                  borderRadius: '3px',
+                                  background: isSelected ? '#30D158' : 'rgba(255,255,255,0.2)',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease'
+                                }}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )) : (
