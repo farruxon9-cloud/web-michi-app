@@ -64,6 +64,15 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**: Yangi imkoniyat yoki UI tugmasini tez yozish jarayonida ilovaning boshqa mavjud sahifalaridagi (masalan, JDM Navigation, Driver Feed, Resume Builder) kodlarni yoki importlarni tasodifan buzib qo'yish.
 * **Yechim**: Har safar kodga tezkor o'zgartirish kiritilgandan so'ng, commit qilishdan oldin `npm test && node scripts/validate_vehicle_db.mjs` va `node scripts/health_check.mjs` buyruqlarini avtomatik ishga tushirish. 15 ta test faylining barchasi 100% o'tgandagina commit qilishga ruxsat etiladi.
 
+## 🚫 16. E'lon Harakat Tugmalarini Pin Qilmaslik va Eng O'ng Tarafda Qo'ng'iroq Tugmasi (Un-Pinned Action Block & Far-Right Call Button)
+* **Xatolik**: 
+  1. E'lon batafsil sahifalarida (`JobDetail`, `DrivingAcademy`) harakat tugmalarini ekranning pastki qismiga pin qilib (`position: sticky; bottom: 0`) Bottom Nav bilan biriktirib qo'yish.
+  2. Qo'ng'iroq qilish tugmasi (`[ 📞 電話する ]`) birinchi yoki o'rtada kelishi.
+* **Yechim**: 
+  1. Harakat tugmalari blokiga `position: relative; margin-top: 24px; margin-bottom: 24px;` berib, e'lon matnining eng oxirida (oddiy hujjat oqimida) joylashtirish.
+  2. Qo'ng'iroq qilish tugmasini (`[ 📞 電話する ]`) har doim eng o'ng tarafda (oxirida) joylashtirish: `[ 応募する ]` -> `[ 紹介 (報酬あり) ]` -> `[ 📞 電話する ]`.
+
+
 
 
 

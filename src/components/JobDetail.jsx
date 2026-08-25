@@ -370,11 +370,19 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
             >
               {alreadyApplied ? t('applied') : t('applyJob')}
             </button>
+            <button 
+              className="apply-btn shoukai-btn" 
+              onClick={() => onShoukai(job)}
+              style={{ flex: '1.1' }}
+            >
+              <Share2 size={15} />
+              {((job.shoukaiAmount && job.shoukaiAmount !== "0") || job.hasShoukai) ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` : t('shoukai', 'Shoukai')}
+            </button>
             {canCall ? (
               <a 
                 href={`tel:${job.phone || '090-1234-5678'}`} 
                 className="apply-btn"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', background: 'var(--success)', color: '#fff', fontWeight: 'bold' }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', background: 'var(--success)', color: '#fff', fontWeight: 'bold', flex: '1' }}
               >
                 <Phone size={14} />
                 {t('callBtn', 'Qo\'ng\'iroq')}
@@ -383,20 +391,13 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
               <button 
                 type="button"
                 className="apply-btn"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.65, background: 'rgba(118, 118, 128, 0.12)', color: 'var(--text-secondary)', cursor: 'not-allowed' }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.65, background: 'rgba(118, 118, 128, 0.12)', color: 'var(--text-secondary)', cursor: 'not-allowed', flex: '1' }}
                 onClick={() => alert(t('phoneHiddenNotice'))}
               >
                 <Phone size={14} />
                 {t('callBtn', 'Qo\'ng\'iroq')} 🔒
               </button>
             )}
-            <button 
-              className="apply-btn shoukai-btn" 
-              onClick={() => onShoukai(job)}
-            >
-              <Share2 size={16} />
-              {((job.shoukaiAmount && job.shoukaiAmount !== "0") || job.hasShoukai) ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` : t('shoukai', 'Shoukai')}
-            </button>
           </>
         )}
       </div>

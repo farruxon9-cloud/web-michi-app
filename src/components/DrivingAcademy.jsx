@@ -494,12 +494,6 @@ export default function DrivingAcademy({
                 )
               ) : (
                 <>
-                  <a 
-                    href={`tel:${school.phone || '+819012345678'}`} 
-                    className="academy-call-btn"
-                  >
-                    <Phone size={15} /> {t('callSchool', 'Qo\'ng\'iroq')}
-                  </a>
                   {!hasApplied ? (
                     <button 
                       className="academy-apply-btn"
@@ -518,6 +512,12 @@ export default function DrivingAcademy({
                   >
                     <Share2 size={14} /> {t('shoukai', 'Shoukai')}
                   </button>
+                  <a 
+                    href={`tel:${school.phone || '+819012345678'}`} 
+                    className="academy-call-btn"
+                  >
+                    <Phone size={15} /> {t('callSchool', 'Qo\'ng\'iroq')}
+                  </a>
                 </>
               )}
             </div>
