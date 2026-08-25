@@ -597,6 +597,29 @@ export default function Profile({
     return () => { isMounted = false; };
   }, [myVehicles?.length]);
 
+  // Auto-fetch real HD photo for constructor preview whenever make or model changes
+  React.useEffect(() => {
+    if (!isEditingVehicle || !editVehicleData || !editVehicleData.make || !editVehicleData.model) return;
+    let isMounted = true;
+
+    async function autoFetchConstructorPhoto() {
+      const needsPhoto = !editVehicleData.photoUrl || editVehicleData.photoUrl.startsWith('/images/presets/');
+      if (needsPhoto) {
+        try {
+          const hdUrl = await getHDVehiclePhoto(editVehicleData.make, editVehicleData.model);
+          if (hdUrl && isMounted) {
+            setEditVehicleData(prev => prev ? ({ ...prev, photoUrl: hdUrl }) : null);
+          }
+        } catch (e) {
+          console.warn('Failed to resolve constructor photo:', e);
+        }
+      }
+    }
+
+    autoFetchConstructorPhoto();
+    return () => { isMounted = false; };
+  }, [isEditingVehicle, editVehicleData?.make, editVehicleData?.model]);
+
 
 
   // JDM Prefectures & Hiragana Lists
@@ -4349,7 +4372,7 @@ const getLicenseLabel = (type) => {
                       width: '100%',
                       alignItems: 'center'
                     }}>
-                      {/* Live SVG / Real Photo Preview */}
+                      {/* Real Photo Preview */}
                       <div className="vehicle-display-box squircle" style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -4366,11 +4389,24 @@ const getLicenseLabel = (type) => {
                           <img 
                             src={editVehicleData.photoUrl} 
                             alt="Vehicle Preview" 
+                            onError={async (e) => {
+                              e.currentTarget.onerror = null;
+                              const hdUrl = await getHDVehiclePhoto(editVehicleData.make, editVehicleData.model);
+                              if (hdUrl) {
+                                setEditVehicleData(prev => prev ? ({ ...prev, photoUrl: hdUrl }) : null);
+                              }
+                            }}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                           />
                         ) : (
-                          <div style={{ width: '120px', height: '60px', transform: 'scale(1.2)' }}>
-                            {renderVehicleSVG(editVehicleData.type, editVehicleData.bodyStyle, editVehicleData.color)}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', textAlign: 'center' }}>
+                            <Camera size={22} color="#0084FF" />
+                            <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                              {editVehicleData.make} {editVehicleData.model}
+                            </span>
+                            <span style={{ fontSize: '9px', color: '#0084FF', background: 'rgba(0, 132, 255, 0.12)', padding: '1px 6px', borderRadius: '6px' }}>
+                              📸 HD Rasm Yuklanmoqda...
+                            </span>
                           </div>
                         )}
                         <span style={{
@@ -4378,14 +4414,14 @@ const getLicenseLabel = (type) => {
                           top: '6px',
                           right: '6px',
                           fontSize: '8px',
-                          background: 'var(--primary)',
+                          background: editVehicleData.photoUrl ? '#30D158' : '#0084FF',
                           color: 'white',
                           padding: '2px 6px',
                           borderRadius: '10px',
                           fontWeight: 'bold',
                           letterSpacing: '0.5px'
                         }}>
-                          {editVehicleData.photoUrl ? 'REAL PHOTO' : '3D SVG'}
+                          {editVehicleData.photoUrl ? '📸 REAL HD PHOTO' : '⚡ HD RESOLVING'}
                         </span>
                       </div>
 
@@ -4448,13 +4484,16 @@ const getLicenseLabel = (type) => {
 
                       <button 
                         type="button"
-                        onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/isuzu_giga.jpg' }))}
+                        onClick={async () => {
+                          const photo = await getHDVehiclePhoto('Isuzu', 'Giga');
+                          setEditVehicleData(prev => ({ ...prev, make: 'Isuzu', model: 'Giga', type: 'truck_10t', bodyStyle: 'wing_body', photoUrl: photo }));
+                        }}
                         style={{
                           padding: '5px 10px',
                           borderRadius: '8px',
-                          background: editVehicleData.photoUrl === '/images/presets/isuzu_giga.jpg' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                          border: editVehicleData.photoUrl === '/images/presets/isuzu_giga.jpg' ? '1px solid #30D158' : '1px solid var(--glass-border)',
-                          color: editVehicleData.photoUrl === '/images/presets/isuzu_giga.jpg' ? '#30D158' : 'var(--text-secondary)',
+                          background: editVehicleData?.model === 'Giga' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                          border: editVehicleData?.model === 'Giga' ? '1px solid #30D158' : '1px solid var(--glass-border)',
+                          color: editVehicleData?.model === 'Giga' ? '#30D158' : 'var(--text-secondary)',
                           fontSize: '10.5px',
                           fontWeight: 'bold',
                           cursor: 'pointer',
@@ -4470,13 +4509,16 @@ const getLicenseLabel = (type) => {
 
                       <button 
                         type="button"
-                        onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/hino_profia.jpg' }))}
+                        onClick={async () => {
+                          const photo = await getHDVehiclePhoto('Hino', 'Profia');
+                          setEditVehicleData(prev => ({ ...prev, make: 'Hino', model: 'Profia', type: 'truck_10t', bodyStyle: 'wing_body', photoUrl: photo }));
+                        }}
                         style={{
                           padding: '5px 10px',
                           borderRadius: '8px',
-                          background: editVehicleData.photoUrl === '/images/presets/hino_profia.jpg' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                          border: editVehicleData.photoUrl === '/images/presets/hino_profia.jpg' ? '1px solid #30D158' : '1px solid var(--glass-border)',
-                          color: editVehicleData.photoUrl === '/images/presets/hino_profia.jpg' ? '#30D158' : 'var(--text-secondary)',
+                          background: editVehicleData?.model === 'Profia' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                          border: editVehicleData?.model === 'Profia' ? '1px solid #30D158' : '1px solid var(--glass-border)',
+                          color: editVehicleData?.model === 'Profia' ? '#30D158' : 'var(--text-secondary)',
                           fontSize: '10.5px',
                           fontWeight: 'bold',
                           cursor: 'pointer',
@@ -4492,57 +4534,16 @@ const getLicenseLabel = (type) => {
 
                       <button 
                         type="button"
-                        onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/fuso_supergreat.jpg' }))}
-                        style={{
-                          padding: '5px 10px',
-                          borderRadius: '8px',
-                          background: editVehicleData.photoUrl === '/images/presets/fuso_supergreat.jpg' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                          border: editVehicleData.photoUrl === '/images/presets/fuso_supergreat.jpg' ? '1px solid #30D158' : '1px solid var(--glass-border)',
-                          color: editVehicleData.photoUrl === '/images/presets/fuso_supergreat.jpg' ? '#30D158' : 'var(--text-secondary)',
-                          fontSize: '10.5px',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          whiteSpace: 'nowrap'
+                        onClick={async () => {
+                          const photo = await getHDVehiclePhoto('Toyota', 'Harrier');
+                          setEditVehicleData(prev => ({ ...prev, make: 'Toyota', model: 'Harrier', type: 'car', bodyStyle: 'suv', photoUrl: photo }));
                         }}
-                      >
-                        <Truck size={12} />
-                        <span>HD Fuso Super Great (10t)</span>
-                      </button>
-
-                      <button 
-                        type="button"
-                        onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/toyota_hiace.jpg' }))}
                         style={{
                           padding: '5px 10px',
                           borderRadius: '8px',
-                          background: editVehicleData.photoUrl === '/images/presets/toyota_hiace.jpg' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                          border: editVehicleData.photoUrl === '/images/presets/toyota_hiace.jpg' ? '1px solid #30D158' : '1px solid var(--glass-border)',
-                          color: editVehicleData.photoUrl === '/images/presets/toyota_hiace.jpg' ? '#30D158' : 'var(--text-secondary)',
-                          fontSize: '10.5px',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          whiteSpace: 'nowrap'
-                        }}
-                      >
-                        <Truck size={12} />
-                        <span>HD Toyota HiAce (Van)</span>
-                      </button>
-
-                      <button 
-                        type="button"
-                        onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/toyota_harrier.jpg' }))}
-                        style={{
-                          padding: '5px 10px',
-                          borderRadius: '8px',
-                          background: editVehicleData.photoUrl === '/images/presets/toyota_harrier.jpg' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                          border: editVehicleData.photoUrl === '/images/presets/toyota_harrier.jpg' ? '1px solid #30D158' : '1px solid var(--glass-border)',
-                          color: editVehicleData.photoUrl === '/images/presets/toyota_harrier.jpg' ? '#30D158' : 'var(--text-secondary)',
+                          background: editVehicleData?.model === 'Harrier' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                          border: editVehicleData?.model === 'Harrier' ? '1px solid #30D158' : '1px solid var(--glass-border)',
+                          color: editVehicleData?.model === 'Harrier' ? '#30D158' : 'var(--text-secondary)',
                           fontSize: '10.5px',
                           fontWeight: 'bold',
                           cursor: 'pointer',
@@ -4558,13 +4559,16 @@ const getLicenseLabel = (type) => {
 
                       <button 
                         type="button"
-                        onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: '/images/presets/nissan_skyline.jpg' }))}
+                        onClick={async () => {
+                          const photo = await getHDVehiclePhoto('Nissan', 'Skyline');
+                          setEditVehicleData(prev => ({ ...prev, make: 'Nissan', model: 'Skyline', type: 'car', bodyStyle: 'sedan', photoUrl: photo }));
+                        }}
                         style={{
                           padding: '5px 10px',
                           borderRadius: '8px',
-                          background: editVehicleData.photoUrl === '/images/presets/nissan_skyline.jpg' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                          border: editVehicleData.photoUrl === '/images/presets/nissan_skyline.jpg' ? '1px solid #30D158' : '1px solid var(--glass-border)',
-                          color: editVehicleData.photoUrl === '/images/presets/nissan_skyline.jpg' ? '#30D158' : 'var(--text-secondary)',
+                          background: editVehicleData?.model === 'Skyline' ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                          border: editVehicleData?.model === 'Skyline' ? '1px solid #30D158' : '1px solid var(--glass-border)',
+                          color: editVehicleData?.model === 'Skyline' ? '#30D158' : 'var(--text-secondary)',
                           fontSize: '10.5px',
                           fontWeight: 'bold',
                           cursor: 'pointer',
@@ -4577,30 +4581,6 @@ const getLicenseLabel = (type) => {
                         <Zap size={12} />
                         <span>HD Nissan Skyline (Sedan)</span>
                       </button>
-
-                      {editVehicleData.photoUrl && (
-                        <button 
-                          type="button"
-                          onClick={() => setEditVehicleData(prev => ({ ...prev, photoUrl: null }))}
-                          style={{
-                            padding: '5px 10px',
-                            borderRadius: '8px',
-                            background: 'rgba(255, 69, 58, 0.1)',
-                            border: '1px solid rgba(255, 69, 58, 0.3)',
-                            color: '#FF453A',
-                            fontSize: '10.5px',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          <RotateCcw size={11} />
-                          <span>{i18n.language === 'ja' ? '3Dグラフィックに戻す' : i18n.language === 'en' ? 'Reset to 3D' : '3D SVG ga qaytish'}</span>
-                        </button>
-                      )}
                     </div>
                   </div>
 
