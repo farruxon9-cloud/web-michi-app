@@ -4136,7 +4136,7 @@ const getLicenseLabel = (type) => {
                     {/* Visual Layout: 3D Vehicle Render Left, Japanese License Plate Right */}
                     <div style={{
                       display: 'grid',
-                      gridTemplateColumns: '1.2fr 0.8fr',
+                      gridTemplateColumns: '1fr 1fr',
                       gap: '12px',
                       width: '100%',
                       alignItems: 'center'
