@@ -40,4 +40,16 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**: 60 ta modeldan 31 tasiga (`/images/presets/nissan_skyline.jpg`) bitta sedan rasmi ishlatildi — shu jumladan Honda NSX, Toyota Supra, Mazda RX-7, Subaru WRX kabi butunlay boshqa modellar uchun ham. Foydalanuvchi RX-7 tanlasa Skyline rasmi ko'radi.
 * **Yechim**: Har bir model uchun mos rasm bo'lishi yoki SVG procedural rendering ishlatilishi kerak. Boshqa modelning haqiqiy rasmini "qarz" olish TAQIQLANADI. Agar real rasm yo'q bo'lsa — `type + bodyStyle + make` asosida gradient card yoki SVG silhouette generatsiya qilinadi.
 
+## 🚫 10. String-Safe DOM Querying va Scroll-Snap Qulflanishi (`scrollIntoView`)
+* **Xatolik**: DOM elementlarida raqamli yoki matnli ID lar taqqoslanganda string konversiyasi bo'lmasa `querySelector` `null` qaytaradi va avto-skroll ishlamaydi. Shuningdek, Safari/WebKit brauzerlarida CSS `scroll-snap-type` tufayli `scrollTo` buyrug'i element qutblanishiga urilib skrollni to'xtatadi.
+* **Yechim**: `data-veh-id` va selektorlarda har doim `String(id)` ni qo'llash hamda skrollni majburiy va silliq markazlashtirish uchun `targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })` dan foydalanish.
+
+## 🚫 11. Simmetrik Bo'lmagan Elementli Header-larda Matematik Markazlashtirish (`Absolute 50%`)
+* **Xatolik**: Sarlavha panelida chap va o'ng tarafdagi elementlar eni turlicha bo'lganda, o'rtadagi elementga `flex: 1` berilsa, u ekran va notch/Dynamic Island o'rtasidan og'ib qoladi.
+* **Yechim**: Ekran o'rtasida 100% matematik aniqlikda joylashtirish uchun o'rta elementga absolute positioning ishlatish: `position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);`.
+
+## 🚫 12. Dinamik Ko'p Tilli Brauzer Kalka Yozuvlari (`title` Atributlari)
+* **Xatolik**: HTML `title="..."` atributiga matnni bir tilda qattiq yozish tufayli yapon tilidagi profilda sichqoncha olib borilganda boshqa dagi yozuv chiqishi.
+* **Yechim**: Barcha `title="..."` atributlari `i18n.language` yordamida har doim tanlangan tilga mos dinamik matn ko'rsatishi shart.
+
 
