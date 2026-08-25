@@ -514,7 +514,7 @@ export default function Profile({
   const [swipeStartX, setSwipeStartX] = useState(null);
   const [isCardFading, setIsCardFading] = useState(false);
 
-  // Silky smooth vehicle selection handler with 120ms fade-out and 350ms gentle float-in
+  // Silky smooth vehicle selection handler with 220ms graceful blur-fade out and 550ms cinematic float in
   const handleSelectActiveVehicleSmooth = (veh) => {
     if (!veh) return;
     if (myVehicle && String(myVehicle.id) === String(veh.id)) return;
@@ -530,8 +530,10 @@ export default function Profile({
     setIsCardFading(true);
     setTimeout(() => {
       handleSelectActiveVehicle(veh);
-      setIsCardFading(false);
-    }, 120);
+      setTimeout(() => {
+        setIsCardFading(false);
+      }, 40);
+    }, 220);
   };
 
   // Touch & Mouse Swipe Handlers for Main Vehicle Display Card
@@ -4138,11 +4140,13 @@ const getLicenseLabel = (type) => {
                       flexDirection: 'column', 
                       gap: '20px', 
                       width: '100%',
-                      opacity: isCardFading ? 0.82 : 1,
-                      transform: isCardFading ? 'translateY(2px) scale(0.995)' : 'translateY(0) scale(1)',
-                      transition: 'opacity 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                      opacity: isCardFading ? 0.45 : 1,
+                      filter: isCardFading ? 'blur(3px)' : 'blur(0px)',
+                      transform: isCardFading ? 'translateY(6px) scale(0.985)' : 'translateY(0) scale(1)',
+                      transition: 'opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), filter 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)',
                       cursor: myVehicles.length > 1 ? 'grab' : 'default',
-                      userSelect: 'none'
+                      userSelect: 'none',
+                      willChange: 'opacity, filter, transform'
                     }}
                   >
                     {/* Visual Layout: 3D Vehicle Render Left, Japanese License Plate Right */}
