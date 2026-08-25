@@ -223,3 +223,9 @@ style={{
   `<div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', whiteSpace: 'nowrap' }}>`
 - **Subtag Pill Style:** `fontSize: '8.5px'`, `padding: '2px 5px'`, `borderRadius: '5px'`, `flexShrink: 0`.
 
+### Full-Coverage Detail Containers & Bottom Dock Protection
+- **Full Bottom Coverage:** Detail containers MUST have `bottom: 0`, `top: 64px`, `background: var(--bg-color)`, `z-index: 200`, and `padding-bottom: 96px`.
+- **Background Bleed Prevention:** Never use `bottom: 84px` or leave open space under the detail view. Extending the container to `bottom: 0` ensures background list cards (`DriverFeed`) do NOT bleed through the glass of the floating Bottom Navigation Dock (`BottomNav`).
+- **Un-Pinned Action Buttons:** Keep action buttons (`応募する`, `紹介`, `電話する`) in normal document flow at the end of the page scroll (`position: relative; margin: 24px 0; border-radius: 20px;`) with the Call button (`[ 📞 電話する ]`) positioned as the **last button on the far right**.
+
+
