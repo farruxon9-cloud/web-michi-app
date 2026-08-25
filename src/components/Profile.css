@@ -1102,6 +1102,24 @@ html.light-mode .contract-btn:active {
   height: 40px;
 }
 
+/* Authentic iOS iPhone Haptic Spring Button Press Physics */
+.profile-btn-interactive,
+.fleet-tab-pill,
+.fleet-dot-pill {
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), 
+              opacity 0.22s ease, 
+              box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), 
+              background 0.25s ease !important;
+  will-change: transform;
+}
+
+.profile-btn-interactive:active,
+.fleet-tab-pill:active,
+.fleet-dot-pill:active {
+  transform: scale(0.95) !important;
+  opacity: 0.88 !important;
+}
+
 .fleet-add-invitation-tab:hover {
   background: rgba(0, 132, 255, 0.15) !important;
   border-color: #0084FF !important;
@@ -1109,7 +1127,8 @@ html.light-mode .contract-btn:active {
 }
 
 .fleet-add-invitation-tab:active {
-  transform: scale(0.97);
+  transform: scale(0.95) !important;
+  opacity: 0.88 !important;
 }
 
 /* About Page Premium Cards & Shapes */

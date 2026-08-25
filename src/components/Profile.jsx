@@ -4138,9 +4138,9 @@ const getLicenseLabel = (type) => {
                       flexDirection: 'column', 
                       gap: '20px', 
                       width: '100%',
-                      opacity: isCardFading ? 0.35 : 1,
-                      transform: isCardFading ? 'translateY(4px) scale(0.98)' : 'translateY(0) scale(1)',
-                      transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+                      opacity: isCardFading ? 0.82 : 1,
+                      transform: isCardFading ? 'translateY(2px) scale(0.995)' : 'translateY(0) scale(1)',
+                      transition: 'opacity 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1)',
                       cursor: myVehicles.length > 1 ? 'grab' : 'default',
                       userSelect: 'none'
                     }}
