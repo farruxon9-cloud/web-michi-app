@@ -4388,7 +4388,7 @@ const getLicenseLabel = (type) => {
                                 style={{
                                   width: myVehicles.length === 1 ? '100%' : 'auto',
                                   justifyContent: 'center',
-                                  padding: '8px 12px',
+                                  padding: '8px 8px',
                                   borderRadius: '12px',
                                   background: isActive 
                                     ? 'linear-gradient(135deg, #30D158 0%, #0084FF 100%)' 
@@ -4396,28 +4396,29 @@ const getLicenseLabel = (type) => {
                                   border: isActive ? 'none' : '1.5px solid var(--glass-border)',
                                   color: isActive ? '#000' : 'var(--text-main)',
                                   fontWeight: 'bold',
-                                  fontSize: '12px',
+                                  fontSize: '11.5px',
                                   cursor: 'pointer',
                                   display: 'flex',
                                   alignItems: 'center',
-                                  gap: '6px',
+                                  gap: '4px',
                                   whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
                                   boxShadow: isActive ? '0 4px 14px rgba(48, 209, 88, 0.35)' : '0 2px 6px rgba(0,0,0,0.02)',
                                   transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
                                 }}
                               >
-                                <span style={{ fontSize: '13px' }}>
+                                <span style={{ fontSize: '13px', flexShrink: 0 }}>
                                   {veh.type === 'truck_10t' || veh.type === 'truck_4t' || veh.type === 'truck_2t' ? '🚚' : veh.type === 'moto' ? '🏍️' : '🚘'}
                                 </span>
-                                <span style={{ fontSize: '12px', fontWeight: '800', letterSpacing: '-0.2px' }}>
+                                <span style={{ fontSize: '11.5px', fontWeight: '800', letterSpacing: '-0.3px', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1 }}>
                                   {veh.make} {veh.model}
                                 </span>
                                 {isActive ? (
-                                  <span style={{ fontSize: '9.5px', fontWeight: '800', background: '#000', color: '#30D158', padding: '1.5px 6px', borderRadius: '5px', marginLeft: '2px' }}>
+                                  <span style={{ fontSize: '8.5px', fontWeight: '800', background: 'rgba(0, 0, 0, 0.85)', color: '#30D158', padding: '1px 4px', borderRadius: '4px', flexShrink: 0 }}>
                                     ⚡ {i18n.language === 'ja' ? '選択中' : i18n.language === 'en' ? 'ACTIVE' : 'FAOL'}
                                   </span>
                                 ) : (
-                                  <span style={{ fontSize: '9.5px', opacity: 0.7, background: 'rgba(0,0,0,0.15)', padding: '1.5px 5px', borderRadius: '4px', fontWeight: '800' }}>
+                                  <span style={{ fontSize: '8.5px', opacity: 0.7, background: 'rgba(0,0,0,0.15)', padding: '1px 4px', borderRadius: '4px', fontWeight: '800', flexShrink: 0 }}>
                                     #{idx + 1}
                                   </span>
                                 )}
@@ -4457,26 +4458,27 @@ const getLicenseLabel = (type) => {
                             flex: myVehicles.length === 1 ? '1 1 0px' : 'none',
                             minWidth: 0,
                             justifyContent: 'center',
-                            padding: '8px 12px',
+                            padding: '8px 8px',
                             borderRadius: '12px',
                             background: 'rgba(0, 132, 255, 0.08)',
                             border: '1.5px dashed rgba(0, 132, 255, 0.4)',
                             color: '#0084FF',
                             fontWeight: 'bold',
-                            fontSize: '12px',
+                            fontSize: '11.5px',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '5px',
+                            gap: '4px',
                             whiteSpace: 'nowrap',
+                            overflow: 'hidden',
                             flexShrink: myVehicles.length === 1 ? 1 : 0,
                             scrollSnapAlign: 'start',
                             transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                           }}
                           title="Add Vehicle"
                         >
-                          <Plus size={13} strokeWidth={2.5} />
-                          <span style={{ fontSize: '12px', fontWeight: '800' }}>
+                          <Plus size={12} strokeWidth={2.5} style={{ flexShrink: 0 }} />
+                          <span style={{ fontSize: '11.5px', fontWeight: '800', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1 }}>
                             {i18n.language === 'ja' 
                               ? `${myVehicles.length + 1}台目を追加` 
                               : i18n.language === 'en' 
