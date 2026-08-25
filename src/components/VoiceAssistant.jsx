@@ -122,6 +122,12 @@ export default function VoiceAssistant({
   const hasGreetedRef = useRef(false);
   const originalVolumeRef = useRef(null);
 
+  const statusRef = useRef(status);
+  statusRef.current = status;
+
+  const apiKeyRef = useRef(apiKey);
+  apiKeyRef.current = apiKey;
+
   // Monitor network status
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -667,12 +673,6 @@ export default function VoiceAssistant({
     };
     return contexts[tab] || contexts['home'];
   };
-
-  const statusRef = useRef(status);
-  statusRef.current = status;
-
-  const apiKeyRef = useRef(apiKey);
-  apiKeyRef.current = apiKey;
 
   const interceptLocalCommand = (text) => {
     return matchLexiconCommand(text, speechLangRef.current || 'uz');
