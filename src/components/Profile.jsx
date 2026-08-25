@@ -537,7 +537,7 @@ export default function Profile({
     const diffX = swipeStartX - clientX;
 
     if (Math.abs(diffX) > 35) { // 35px threshold
-      const currentIdx = myVehicles.findIndex(v => v.id === myVehicle?.id);
+      const currentIdx = myVehicles.findIndex(v => String(v.id) === String(myVehicle?.id));
       if (currentIdx !== -1) {
         if (diffX > 0) {
           // Swiped Left -> Next Vehicle
@@ -4366,7 +4366,7 @@ const getLicenseLabel = (type) => {
                         }}
                       >
                         {myVehicles.map(veh => {
-                          const isActive = myVehicle && myVehicle.id === veh.id;
+                          const isActive = myVehicle && String(myVehicle.id) === String(veh.id);
                           return (
                             <div
                               key={veh.id}
@@ -4458,7 +4458,7 @@ const getLicenseLabel = (type) => {
                           boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
                         }}>
                           {myVehicles.map((v, idx) => {
-                            const isSelected = myVehicle && myVehicle.id === v.id;
+                            const isSelected = myVehicle && String(myVehicle.id) === String(v.id);
                             return (
                               <button
                                 key={'dot_' + v.id}
@@ -4484,7 +4484,7 @@ const getLicenseLabel = (type) => {
                             );
                           })}
                           <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-secondary)', marginLeft: '4px', letterSpacing: '0.3px' }}>
-                            {Math.max(1, myVehicles.findIndex(v => v.id === myVehicle?.id) + 1)} / {myVehicles.length}
+                            {Math.max(1, myVehicles.findIndex(v => String(v.id) === String(myVehicle?.id)) + 1)} / {myVehicles.length}
                           </span>
                         </div>
                       )}
