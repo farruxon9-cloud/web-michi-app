@@ -70,7 +70,7 @@
   z-index: 250;
   display: flex;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 16px;
   pointer-events: none;
   margin-bottom: -56px; 
 }
