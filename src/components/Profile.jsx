@@ -509,6 +509,59 @@ export default function Profile({
   const [editVehicleData, setEditVehicleData] = useState({ ...myVehicle });
   const [dynamicModels, setDynamicModels] = useState([]);
 
+  // Smooth gesture, swipe, and transition states
+  const fleetTabsRef = useRef(null);
+  const [swipeStartX, setSwipeStartX] = useState(null);
+  const [isCardFading, setIsCardFading] = useState(false);
+
+  // Silky smooth vehicle selection handler with 120ms fade-out and 350ms gentle float-in
+  const handleSelectActiveVehicleSmooth = (veh) => {
+    if (!veh) return;
+    if (myVehicle && myVehicle.id === veh.id) return;
+    setIsCardFading(true);
+    setTimeout(() => {
+      handleSelectActiveVehicle(veh);
+      setIsCardFading(false);
+    }, 120);
+  };
+
+  // Touch & Mouse Swipe Handlers for Main Vehicle Display Card
+  const handleCardTouchStart = (e) => {
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    setSwipeStartX(clientX);
+  };
+
+  const handleCardTouchEnd = (e) => {
+    if (swipeStartX === null || !myVehicles || myVehicles.length <= 1) return;
+    const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const diffX = swipeStartX - clientX;
+
+    if (Math.abs(diffX) > 35) { // 35px threshold
+      const currentIdx = myVehicles.findIndex(v => v.id === myVehicle?.id);
+      if (currentIdx !== -1) {
+        if (diffX > 0) {
+          // Swiped Left -> Next Vehicle
+          const nextIdx = (currentIdx + 1) % myVehicles.length;
+          handleSelectActiveVehicleSmooth(myVehicles[nextIdx]);
+        } else {
+          // Swiped Right -> Previous Vehicle
+          const prevIdx = (currentIdx - 1 + myVehicles.length) % myVehicles.length;
+          handleSelectActiveVehicleSmooth(myVehicles[prevIdx]);
+        }
+      }
+    }
+    setSwipeStartX(null);
+  };
+
+  // Auto-scroll active vehicle tab into view smoothly when myVehicle changes
+  React.useEffect(() => {
+    if (!myVehicle || !fleetTabsRef.current) return;
+    const targetEl = fleetTabsRef.current.querySelector(`[data-veh-id="${myVehicle.id}"]`);
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [myVehicle?.id]);
+
   // Automatically load available models dynamically when make changes
   React.useEffect(() => {
     if (!editVehicleData.make) return;
@@ -4048,7 +4101,23 @@ const getLicenseLabel = (type) => {
                     </button>
                   </div>
                 ) : (
-                  <div key={myVehicle?.id} className="michi-silky-transition" style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+                  <div 
+                    onTouchStart={handleCardTouchStart}
+                    onTouchEnd={handleCardTouchEnd}
+                    onMouseDown={handleCardTouchStart}
+                    onMouseUp={handleCardTouchEnd}
+                    style={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: '20px', 
+                      width: '100%',
+                      opacity: isCardFading ? 0.35 : 1,
+                      transform: isCardFading ? 'translateY(4px) scale(0.98)' : 'translateY(0) scale(1)',
+                      transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+                      cursor: myVehicles.length > 1 ? 'grab' : 'default',
+                      userSelect: 'none'
+                    }}
+                  >
                     {/* Visual Layout: 3D Vehicle Render Left, Japanese License Plate Right */}
                     <div style={{
                       display: 'grid',
@@ -4266,22 +4335,27 @@ const getLicenseLabel = (type) => {
                       </div>
                     </div>
                     
-                    {/* Horizontal Swipeable Text Pill Tabs */}
+                    {/* Horizontal Swipeable Text Pill Tabs with ref and smooth scroll */}
                     <div style={{ position: 'relative', width: '100%' }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        gap: '8px', 
-                        overflowX: 'auto', 
-                        paddingBottom: '8px', 
-                        paddingTop: '4px',
-                        scrollSnapType: 'x mandatory',
-                        WebkitOverflowScrolling: 'touch'
-                      }}>
+                      <div 
+                        ref={fleetTabsRef}
+                        style={{ 
+                          display: 'flex', 
+                          gap: '8px', 
+                          overflowX: 'auto', 
+                          paddingBottom: '8px', 
+                          paddingTop: '4px',
+                          scrollSnapType: 'x mandatory',
+                          WebkitOverflowScrolling: 'touch',
+                          scrollbarWidth: 'none'
+                        }}
+                      >
                         {myVehicles.map(veh => {
                           const isActive = myVehicle && myVehicle.id === veh.id;
                           return (
                             <div
                               key={veh.id}
+                              data-veh-id={veh.id}
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -4292,15 +4366,15 @@ const getLicenseLabel = (type) => {
                             >
                               <button
                                 type="button"
-                                onClick={() => handleSelectActiveVehicle(veh)}
-                                className="profile-btn-interactive"
+                                onClick={() => handleSelectActiveVehicleSmooth(veh)}
+                                className="fleet-tab-pill profile-btn-interactive"
                                 style={{
                                   padding: '8px 14px',
                                   borderRadius: '12px',
                                   background: isActive 
                                     ? 'linear-gradient(135deg, #30D158 0%, #0084FF 100%)' 
-                                    : 'var(--card-bg, rgba(255, 255, 255, 0.04))',
-                                  border: isActive ? 'none' : '1px solid var(--glass-border)',
+                                    : 'var(--card-bg, rgba(255, 255, 255, 0.05))',
+                                  border: isActive ? 'none' : '1.5px solid var(--glass-border)',
                                   color: isActive ? '#000' : 'var(--text-main)',
                                   fontWeight: 'bold',
                                   fontSize: '12px',
@@ -4309,8 +4383,8 @@ const getLicenseLabel = (type) => {
                                   alignItems: 'center',
                                   gap: '6px',
                                   whiteSpace: 'nowrap',
-                                  boxShadow: isActive ? '0 4px 14px rgba(48, 209, 88, 0.35)' : 'none',
-                                  transition: 'all 0.2s ease'
+                                  boxShadow: isActive ? '0 4px 14px rgba(48, 209, 88, 0.35)' : '0 2px 6px rgba(0,0,0,0.02)',
+                                  transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
                                 }}
                               >
                                 <span style={{ fontSize: '14px' }}>
@@ -4340,7 +4414,8 @@ const getLicenseLabel = (type) => {
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center'
+                                    justifyContent: 'center',
+                                    transition: 'all 0.2s ease'
                                   }}
                                   title="Delete Vehicle"
                                 >
@@ -4359,12 +4434,12 @@ const getLicenseLabel = (type) => {
                           alignItems: 'center', 
                           justifyContent: 'center', 
                           gap: '7px', 
-                          padding: '5px 12px',
+                          padding: '6px 14px',
                           background: 'var(--card-bg, rgba(0, 0, 0, 0.04))',
                           borderRadius: '20px',
                           width: 'fit-content',
                           margin: '8px auto 0 auto',
-                          border: '1px solid var(--glass-border)',
+                          border: '1.5px solid var(--glass-border)',
                           boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
                         }}>
                           {myVehicles.map((v, idx) => {
@@ -4373,19 +4448,19 @@ const getLicenseLabel = (type) => {
                               <button
                                 key={'dot_' + v.id}
                                 type="button"
-                                onClick={() => handleSelectActiveVehicle(v)}
+                                onClick={() => handleSelectActiveVehicleSmooth(v)}
                                 className="fleet-dot-pill profile-btn-interactive"
                                 style={{
                                   padding: 0,
-                                  border: isSelected ? 'none' : '1.5px solid rgba(0, 132, 255, 0.45)',
-                                  width: isSelected ? '24px' : '9px',
-                                  height: '9px',
+                                  border: isSelected ? 'none' : '1.5px solid rgba(0, 132, 255, 0.5)',
+                                  width: isSelected ? '26px' : '10px',
+                                  height: '10px',
                                   borderRadius: '6px',
                                   background: isSelected 
                                     ? 'linear-gradient(135deg, #30D158 0%, #0084FF 100%)' 
-                                    : 'rgba(0, 132, 255, 0.22)',
+                                    : 'rgba(0, 132, 255, 0.25)',
                                   cursor: 'pointer',
-                                  boxShadow: isSelected ? '0 0 10px rgba(48, 209, 88, 0.5), 0 2px 6px rgba(0, 132, 255, 0.3)' : 'none',
+                                  boxShadow: isSelected ? '0 0 10px rgba(48, 209, 88, 0.6), 0 2px 6px rgba(0, 132, 255, 0.35)' : 'none',
                                   transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                                   outline: 'none'
                                 }}
@@ -4393,8 +4468,8 @@ const getLicenseLabel = (type) => {
                               />
                             );
                           })}
-                          <span style={{ fontSize: '9.5px', fontWeight: '800', color: 'var(--text-secondary)', marginLeft: '3px', letterSpacing: '0.3px' }}>
-                            {(myVehicles.findIndex(v => v.id === myVehicle?.id) + 1 || 1)} / {myVehicles.length}
+                          <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-secondary)', marginLeft: '4px', letterSpacing: '0.3px' }}>
+                            {Math.max(1, myVehicles.findIndex(v => v.id === myVehicle?.id) + 1)} / {myVehicles.length}
                           </span>
                         </div>
                       )}
