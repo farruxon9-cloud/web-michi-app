@@ -4,8 +4,18 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  overflow-x: hidden; /* Prevent horizontal scroll / jiggle */
+  overflow-x: hidden;
   padding-bottom: 90px;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.profile-container::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  display: none !important;
 }
 
 @keyframes skeletonPulse {
