@@ -822,19 +822,29 @@ export default function Profile({
 
   const handleDeleteVehicle = (id, event) => {
     if (event) event.stopPropagation();
-    const updated = (myVehicles || []).filter(v => v.id !== id);
-    setMyVehicles(updated);
-    localStorage.setItem('michi_user_vehicles', JSON.stringify(updated));
-    
-    if (myVehicle && myVehicle.id === id) {
-      const nextActive = updated.length > 0 ? updated[0] : null;
-      setMyVehicle(nextActive);
-      if (nextActive) {
-        localStorage.setItem('michi_user_vehicle', JSON.stringify(nextActive));
-      } else {
-        localStorage.removeItem('michi_user_vehicle');
+    const targetVeh = (myVehicles || []).find(v => String(v.id) === String(id));
+    const vehicleName = targetVeh ? `${targetVeh.make} ${targetVeh.model}` : 'Vehicle';
+    const confirmMsg = i18n.language === 'ja' 
+      ? `${vehicleName}を削除しますか？` 
+      : i18n.language === 'en' 
+        ? `Are you sure you want to delete ${vehicleName}?` 
+        : `${vehicleName}ni o'chirishni tasdiqlaysizmi?`;
+
+    if (window.confirm(confirmMsg)) {
+      const updated = (myVehicles || []).filter(v => String(v.id) !== String(id));
+      setMyVehicles(updated);
+      localStorage.setItem('michi_user_vehicles', JSON.stringify(updated));
+      
+      if (myVehicle && String(myVehicle.id) === String(id)) {
+        const nextActive = updated.length > 0 ? updated[0] : null;
+        setMyVehicle(nextActive);
+        if (nextActive) {
+          localStorage.setItem('michi_user_vehicle', JSON.stringify(nextActive));
+        } else {
+          localStorage.removeItem('michi_user_vehicle');
+        }
+        window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: nextActive }));
       }
-      window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: nextActive }));
     }
   };
 
@@ -4033,37 +4043,64 @@ const getLicenseLabel = (type) => {
                 <h3 style={{ margin: 0 }}>{getProfileLangText('myVehicleTitle')}</h3>
               </div>
               {!isEditingVehicle && (
-                <button 
-                  className="resume-edit-btn"
-                  onClick={() => {
-                    setEditVehicleData(myVehicle ? { ...myVehicle } : {
-                      id: 'v_' + Date.now(),
-                      type: 'car',
-                      make: 'Toyota',
-                      model: 'Harrier',
-                      bodyStyle: 'suv',
-                      trim: 'Z',
-                      year: '2024',
-                      color: '#5E5CE6',
-                      platePrefecture: '練馬',
-                      plateClass: '300',
-                      plateHira: 'あ',
-                      plateNumber: '12-34',
-                      isCommercial: false,
-                      plateType: 'private',
-                      driverMark: 'none',
-                      height: '1.69',
-                      width: '1.85',
-                      length: '4.74',
-                      weight: '1.70',
-                      axleLoad: '0.85',
-                      minTurnRadius: '5.3'
-                    });
-                    setIsEditingVehicle(true);
-                  }}
-                >
-                  📝 {getProfileLangText('editVehicle')}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button 
+                    className="resume-edit-btn profile-btn-interactive"
+                    onClick={() => {
+                      setEditVehicleData(myVehicle ? { ...myVehicle } : {
+                        id: 'v_' + Date.now(),
+                        type: 'car',
+                        make: 'Toyota',
+                        model: 'Harrier',
+                        bodyStyle: 'suv',
+                        trim: 'Z',
+                        year: '2024',
+                        color: '#5E5CE6',
+                        platePrefecture: '練馬',
+                        plateClass: '300',
+                        plateHira: 'あ',
+                        plateNumber: '12-34',
+                        isCommercial: false,
+                        plateType: 'private',
+                        driverMark: 'none',
+                        height: '1.69',
+                        width: '1.85',
+                        length: '4.74',
+                        weight: '1.70',
+                        axleLoad: '0.85',
+                        minTurnRadius: '5.3'
+                      });
+                      setIsEditingVehicle(true);
+                    }}
+                  >
+                    📝 {getProfileLangText('editVehicle')}
+                  </button>
+
+                  {myVehicle && (
+                    <button 
+                      type="button"
+                      className="resume-edit-btn profile-btn-interactive"
+                      style={{
+                        background: 'rgba(255, 69, 58, 0.1)',
+                        border: '1px solid rgba(255, 69, 58, 0.25)',
+                        color: '#FF453A',
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        fontSize: '11.5px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      onClick={(e) => handleDeleteVehicle(myVehicle.id, e)}
+                      title="Delete Active Vehicle"
+                    >
+                      <Trash2 size={13} />
+                      <span>{i18n.language === 'ja' ? '削除' : i18n.language === 'en' ? 'Delete' : 'Oʻchirish'}</span>
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 
