@@ -190,3 +190,36 @@ Micro-animations make the glassmorphism elements feel responsive.
 - **Animation:** `wave 2.5s infinite`
 - **Transform-Origin:** `70% 70%`
 - Rotation keys: `0% (0.0deg) -> 10% (14deg) -> 20% (-8deg) -> 30% (14deg) -> 40% (-4deg) -> 50% (10deg) -> 60%-100% (0.0deg)`.
+
+---
+
+## 💎 8. Glassmorphic Luxury Button & Compact Bento Tokens
+
+### Standard Glassmorphic Action Button Style
+All secondary and primary action buttons (Edit Vehicle, Create Resume PDF, Filter Badges) must use this exact token hierarchy:
+```jsx
+style={{
+  background: 'linear-gradient(135deg, rgba(48, 209, 88, 0.15) 0%, rgba(0, 132, 255, 0.15) 100%)',
+  border: '1px solid rgba(48, 209, 88, 0.35)',
+  color: 'var(--text-main)',
+  padding: '6px 14px',
+  borderRadius: '10px',
+  fontSize: '12px',
+  fontWeight: '800',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '6px',
+  boxShadow: '0 2px 8px rgba(48, 209, 88, 0.12)',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+  transition: 'all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)'
+}}
+```
+
+### Compact Bento Action Cards & Single-Row Subtag Rule
+- **Padding:** `10px 12px` (tight, minimal vertical whitespace).
+- **Subtag Row:** Subtag pills must be arranged in **1 single horizontal row**:
+  `<div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', whiteSpace: 'nowrap' }}>`
+- **Subtag Pill Style:** `fontSize: '8.5px'`, `padding: '2px 5px'`, `borderRadius: '5px'`, `flexShrink: 0`.
+

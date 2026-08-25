@@ -60,5 +60,10 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**: Bento aksiyalar va navigatsiya kartalarida subtag pill belgilari `flexWrap: 'wrap'` bilan 2-qatorga tushib qolishi hamda me'yordan ortiqcha ichki bo'shliq (`padding: 12px 14px` va o'ng tarafdagi `paddingRight: 65px`) tufayli vizual kattalashib ketishi.
 * **Yechim**: Aksiyalar hamda navigatsiya kartalarida subtaglarni har doim 1 ta yolg'iz gorizontal qatorda joylashtirish (`flexWrap: 'nowrap'`, `whiteSpace: 'nowrap'`, `overflowX: 'auto'`), badge shriftlarini ixchamlashtirish (`8.5px`–`9px`) va kartaning ichki bo'shliqlarini ixcham o'lchamga keltirish (`padding: 10px 12px`).
 
+## 🚫 15. Tezkor Kodlashda Nolinchi Buzilish Kafolati (Zero-Breakage Rapid Regression Safety)
+* **Xatolik**: Yangi imkoniyat yoki UI tugmasini tez yozish jarayonida ilovaning boshqa mavjud sahifalaridagi (masalan, JDM Navigation, Driver Feed, Resume Builder) kodlarni yoki importlarni tasodifan buzib qo'yish.
+* **Yechim**: Har safar kodga tezkor o'zgartirish kiritilgandan so'ng, commit qilishdan oldin `npm test && node scripts/validate_vehicle_db.mjs` va `node scripts/health_check.mjs` buyruqlarini avtomatik ishga tushirish. 15 ta test faylining barchasi 100% o'tgandagina commit qilishga ruxsat etiladi.
+
+
 
 
