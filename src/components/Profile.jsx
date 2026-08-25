@@ -553,12 +553,21 @@ export default function Profile({
     setSwipeStartX(null);
   };
 
-  // Auto-scroll active vehicle tab into view smoothly when myVehicle changes
+  // Auto-scroll ONLY the inner tab container (never the outer page!)
   React.useEffect(() => {
     if (!myVehicle || !fleetTabsRef.current) return;
-    const targetEl = fleetTabsRef.current.querySelector(`[data-veh-id="${myVehicle.id}"]`);
+    const container = fleetTabsRef.current;
+    const targetEl = container.querySelector(`[data-veh-id="${myVehicle.id}"]`);
     if (targetEl) {
-      targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      const containerRect = container.getBoundingClientRect();
+      const targetRect = targetEl.getBoundingClientRect();
+      const relativeLeft = targetRect.left - containerRect.left;
+      const targetOffset = container.scrollLeft + relativeLeft - (container.clientWidth / 2) + (targetEl.clientWidth / 2);
+      
+      container.scrollTo({
+        left: Math.max(0, targetOffset),
+        behavior: 'smooth'
+      });
     }
   }, [myVehicle?.id]);
 
@@ -4336,7 +4345,7 @@ const getLicenseLabel = (type) => {
                     </div>
                     
                     {/* Horizontal Swipeable Text Pill Tabs with ref and smooth scroll */}
-                    <div style={{ position: 'relative', width: '100%' }}>
+                    <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
                       <div 
                         ref={fleetTabsRef}
                         style={{ 
