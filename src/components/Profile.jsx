@@ -4376,7 +4376,9 @@ const getLicenseLabel = (type) => {
                                 alignItems: 'center',
                                 gap: '6px',
                                 scrollSnapAlign: 'start',
-                                flexShrink: 0
+                                flexShrink: myVehicles.length === 1 ? 1 : 0,
+                                flex: myVehicles.length === 1 ? '1 1 0px' : 'none',
+                                minWidth: 0
                               }}
                             >
                               <button
@@ -4384,7 +4386,9 @@ const getLicenseLabel = (type) => {
                                 onClick={() => handleSelectActiveVehicleSmooth(veh)}
                                 className="fleet-tab-pill profile-btn-interactive"
                                 style={{
-                                  padding: '8px 14px',
+                                  width: myVehicles.length === 1 ? '100%' : 'auto',
+                                  justifyContent: 'center',
+                                  padding: '8px 10px',
                                   borderRadius: '12px',
                                   background: isActive 
                                     ? 'linear-gradient(135deg, #30D158 0%, #0084FF 100%)' 
@@ -4402,18 +4406,18 @@ const getLicenseLabel = (type) => {
                                   transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
                                 }}
                               >
-                                <span style={{ fontSize: '10px', opacity: 0.7, background: 'rgba(0,0,0,0.12)', padding: '1px 5px', borderRadius: '4px', fontWeight: '800' }}>
+                                <span style={{ fontSize: '10px', opacity: 0.7, background: 'rgba(0,0,0,0.12)', padding: '1px 4px', borderRadius: '4px', fontWeight: '800' }}>
                                   #{idx + 1}
                                 </span>
-                                <span style={{ fontSize: '14px' }}>
+                                <span style={{ fontSize: '13px' }}>
                                   {veh.type === 'truck_10t' || veh.type === 'truck_4t' || veh.type === 'truck_2t' ? '🚚' : veh.type === 'moto' ? '🏍️' : '🚘'}
                                 </span>
-                                <span>{veh.make} {veh.model}</span>
-                                <span style={{ fontSize: '9.5px', opacity: 0.85, background: 'rgba(0,0,0,0.15)', padding: '1.5px 6px', borderRadius: '4px', fontWeight: '800' }}>
+                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{veh.make} {veh.model}</span>
+                                <span style={{ fontSize: '9px', opacity: 0.85, background: 'rgba(0,0,0,0.15)', padding: '1.5px 5px', borderRadius: '4px', fontWeight: '800' }}>
                                   {veh.platePrefecture || '練馬'} {veh.plateNumber || '12-34'}
                                 </span>
                                 {isActive && (
-                                  <span style={{ fontSize: '10px', fontWeight: '800', background: '#000', color: '#30D158', padding: '1px 5px', borderRadius: '4px' }}>
+                                  <span style={{ fontSize: '9.5px', fontWeight: '800', background: '#000', color: '#30D158', padding: '1px 4px', borderRadius: '4px' }}>
                                     ⚡ {i18n.language === 'ja' ? '選択中' : i18n.language === 'en' ? 'ACTIVE' : 'FAOL'}
                                   </span>
                                 )}
@@ -4450,7 +4454,10 @@ const getLicenseLabel = (type) => {
                           onClick={handleAddNewVehicle}
                           className="fleet-tab-pill fleet-add-invitation-tab profile-btn-interactive"
                           style={{
-                            padding: '8px 14px',
+                            flex: myVehicles.length === 1 ? '1 1 0px' : 'none',
+                            minWidth: 0,
+                            justifyContent: 'center',
+                            padding: '8px 10px',
                             borderRadius: '12px',
                             background: 'rgba(0, 132, 255, 0.08)',
                             border: '1.5px dashed rgba(0, 132, 255, 0.4)',
@@ -4460,21 +4467,21 @@ const getLicenseLabel = (type) => {
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '6px',
+                            gap: '5px',
                             whiteSpace: 'nowrap',
-                            flexShrink: 0,
+                            flexShrink: myVehicles.length === 1 ? 1 : 0,
                             scrollSnapAlign: 'start',
                             transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                           }}
                           title="Add Vehicle"
                         >
-                          <Plus size={14} strokeWidth={2.5} />
-                          <span>
+                          <Plus size={13} strokeWidth={2.5} />
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {i18n.language === 'ja' 
                               ? `+ 車両追加 (${myVehicles.length + 1}台目)` 
                               : i18n.language === 'en' 
                                 ? `+ Add Car (${myVehicles.length + 1}${myVehicles.length + 1 === 2 ? 'nd' : 'rd'})` 
-                                : `+ ${myVehicles.length + 1}-mashinani qo'shish`}
+                                : `+ ${myVehicles.length + 1}-mashina qo'shish`}
                           </span>
                         </button>
                       </div>
