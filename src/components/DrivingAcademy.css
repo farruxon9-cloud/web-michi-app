@@ -26,7 +26,7 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;           /* Vertikal scroll imkoniyati */
-  padding-bottom: var(--nav-dock-clearance, 96px);       /* Pastki navigatsiya paneli uchun joy */
+  padding-bottom: 94px;       /* Pastki navigatsiya paneli uchun joy: 94px - 84px = 10px visual gap */
 }
 
 
@@ -516,7 +516,7 @@
 /* Konteyner — 3 ta tugma gorizontal bir qatorda (IN-FLOW AT PAGE END) */
 .school-sticky-actions {
   position: relative;
-  margin: 10px 14px;
+  margin: 10px 14px 0 14px;
   width: calc(100% - 28px);
   padding: 10px 12px;
   display: flex;

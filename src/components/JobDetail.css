@@ -17,7 +17,7 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding-bottom: 96px; /* Ensure content and action bar cleanly clear BottomNav */
+  padding-bottom: 94px; /* Exact formula: 94px - 84px (BottomNav top) = 10px visual gap */
 }
 
 .detail-header-image {
@@ -333,7 +333,7 @@
 /* ====== PASTKI E'LON TUGMALARI (IN-FLOW AT PAGE END) ====== */
 .sticky-action {
   position: relative;
-  margin: 10px 14px;
+  margin: 10px 14px 0 14px;
   width: calc(100% - 28px);
   display: flex;
   flex-direction: row;
