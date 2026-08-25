@@ -54,9 +54,9 @@
   /* 📐 Single Vertical Line Grid & Spacing Variables (Devorlari Bir Chiziqda Standarti) */
   --screen-margin-x: 14px;
   --card-width-full: calc(100% - 28px);
-  --card-gap-v: 10px;
-  --nav-dock-clearance: 94px;
-  --bottom-dock-clearance: 94px;
+  --card-gap-v: 6px;
+  --nav-dock-clearance: 90px;
+  --bottom-dock-clearance: 90px;
   --card-pad-compact: 10px 12px;
   --card-pad-standard: 14px 16px;
 }
