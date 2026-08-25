@@ -6,17 +6,18 @@
 .job-detail-container {
   position: absolute;
   top: 64px;
-  bottom: 84px;
+  bottom: 0;
   left: 0;
   width: 100%;
   max-width: 100%;
   background: var(--bg-color);
-  z-index: 50;
+  z-index: 200;
   overflow-y: auto;
   overflow-x: hidden; /* Prevent horizontal scroll completely */
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  padding-bottom: 96px; /* Ensure content and action bar cleanly clear BottomNav */
 }
 
 .detail-header-image {
