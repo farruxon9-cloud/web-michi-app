@@ -1535,4 +1535,30 @@ button.profile-btn-interactive {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
 }
 
+/* Silky Smooth Vehicle Shift Animations & Micro-Interactions */
+@keyframes michiSilkyFadeIn {
+  from {
+    opacity: 0.2;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.michi-silky-transition {
+  animation: michiSilkyFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fleet-dot-pill {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.fleet-dot-pill:hover {
+  transform: scale(1.25);
+  background: rgba(0, 132, 255, 0.4) !important;
+}
+
 

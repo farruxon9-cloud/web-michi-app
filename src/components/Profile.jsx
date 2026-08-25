@@ -4048,7 +4048,7 @@ const getLicenseLabel = (type) => {
                     </button>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+                  <div key={myVehicle?.id} className="michi-silky-transition" style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
                     {/* Visual Layout: 3D Vehicle Render Left, Japanese License Plate Right */}
                     <div style={{
                       display: 'grid',
@@ -4352,26 +4352,50 @@ const getLicenseLabel = (type) => {
                         })}
                       </div>
 
-                      {/* Pagination Indicator Dots */}
+                      {/* Ultra-Premium High-Contrast Pagination Indicator Bar */}
                       {myVehicles.length > 1 && (
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '5px', marginTop: '4px' }}>
-                          {myVehicles.map((v) => {
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          gap: '7px', 
+                          padding: '5px 12px',
+                          background: 'var(--card-bg, rgba(0, 0, 0, 0.04))',
+                          borderRadius: '20px',
+                          width: 'fit-content',
+                          margin: '8px auto 0 auto',
+                          border: '1px solid var(--glass-border)',
+                          boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
+                        }}>
+                          {myVehicles.map((v, idx) => {
                             const isSelected = myVehicle && myVehicle.id === v.id;
                             return (
-                              <div
+                              <button
                                 key={'dot_' + v.id}
+                                type="button"
                                 onClick={() => handleSelectActiveVehicle(v)}
+                                className="fleet-dot-pill profile-btn-interactive"
                                 style={{
-                                  width: isSelected ? '18px' : '6px',
-                                  height: '6px',
-                                  borderRadius: '3px',
-                                  background: isSelected ? '#30D158' : 'rgba(255,255,255,0.2)',
+                                  padding: 0,
+                                  border: isSelected ? 'none' : '1.5px solid rgba(0, 132, 255, 0.45)',
+                                  width: isSelected ? '24px' : '9px',
+                                  height: '9px',
+                                  borderRadius: '6px',
+                                  background: isSelected 
+                                    ? 'linear-gradient(135deg, #30D158 0%, #0084FF 100%)' 
+                                    : 'rgba(0, 132, 255, 0.22)',
                                   cursor: 'pointer',
-                                  transition: 'all 0.2s ease'
+                                  boxShadow: isSelected ? '0 0 10px rgba(48, 209, 88, 0.5), 0 2px 6px rgba(0, 132, 255, 0.3)' : 'none',
+                                  transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                                  outline: 'none'
                                 }}
+                                title={`${v.make} ${v.model} (${idx + 1}/${myVehicles.length})`}
                               />
                             );
                           })}
+                          <span style={{ fontSize: '9.5px', fontWeight: '800', color: 'var(--text-secondary)', marginLeft: '3px', letterSpacing: '0.3px' }}>
+                            {(myVehicles.findIndex(v => v.id === myVehicle?.id) + 1 || 1)} / {myVehicles.length}
+                          </span>
                         </div>
                       )}
                     </div>
