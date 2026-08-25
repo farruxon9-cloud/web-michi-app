@@ -653,17 +653,30 @@ export default function Profile({
   };
 
   const handleDeleteVehicle = (id, event) => {
-    event.stopPropagation();
-    if (myVehicles.length <= 1) {
-      alert('Kamida bitta transport boʻlishi kerak!');
-      return;
-    }
-    const updated = myVehicles.filter(v => v.id !== id);
+    if (event) event.stopPropagation();
+    const updated = (myVehicles || []).filter(v => v.id !== id);
     setMyVehicles(updated);
     localStorage.setItem('michi_user_vehicles', JSON.stringify(updated));
-    if (myVehicle.id === id) {
-      handleSelectActiveVehicle(updated[0]);
+    
+    if (myVehicle && myVehicle.id === id) {
+      const nextActive = updated.length > 0 ? updated[0] : null;
+      setMyVehicle(nextActive);
+      if (nextActive) {
+        localStorage.setItem('michi_user_vehicle', JSON.stringify(nextActive));
+      } else {
+        localStorage.removeItem('michi_user_vehicle');
+      }
+      window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: nextActive }));
     }
+  };
+
+  const handleClearAllVehicles = () => {
+    setMyVehicles([]);
+    setMyVehicle(null);
+    setIsEditingVehicle(false);
+    localStorage.setItem('michi_user_vehicles', JSON.stringify([]));
+    localStorage.removeItem('michi_user_vehicle');
+    window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: null }));
   };
 
   const renderVehicleSVG = (type, bodyStyle, color) => {
@@ -3866,61 +3879,122 @@ const getLicenseLabel = (type) => {
 
             <div className="resume-body">
               {!isEditingVehicle ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
-                  {/* Visual Layout: 3D Vehicle Render Left, Japanese License Plate Right */}
+                !myVehicle ? (
                   <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1.2fr 0.8fr',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '12px',
+                    padding: '24px 16px',
+                    background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
+                    border: '1.5px dashed var(--glass-border)',
+                    borderRadius: '16px',
+                    textAlign: 'center',
                     width: '100%',
-                    alignItems: 'center'
+                    boxSizing: 'border-box'
                   }}>
-                    {/* Vehicle Graphic / Real Photo Display */}
-                    <div className="vehicle-display-box squircle" style={{
+                    <div style={{
+                      width: '56px',
+                      height: '56px',
+                      borderRadius: '50%',
+                      background: 'rgba(0, 132, 255, 0.12)',
+                      border: '1px solid rgba(0, 132, 255, 0.25)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
-                      border: '1px solid var(--glass-border)',
-                      padding: myVehicle.photoUrl ? '0' : '12px',
-                      height: '110px',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      borderRadius: '16px'
+                      color: '#0084FF'
                     }}>
-                      <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 60%)',
-                        pointerEvents: 'none',
-                        zIndex: 2
-                      }}></div>
-                      {myVehicle.photoUrl ? (
-                        <img 
-                          src={myVehicle.photoUrl} 
-                          alt={myVehicle.model || 'Vehicle Photo'} 
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                        />
-                      ) : (
-                        <div style={{ width: '130px', height: '65px', transform: 'scale(1.2)' }}>
-                          {renderVehicleSVG(myVehicle.type, myVehicle.bodyStyle, myVehicle.color)}
-                        </div>
-                      )}
+                      <UserCheck size={28} />
                     </div>
 
-                    {/* JDM License Plate Display */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
-                      {renderJDMPlateBox(myVehicle, false)}
-                      {myVehicle.driverMark && myVehicle.driverMark !== 'none' && (
-                        <div style={{ marginTop: '14px' }}>
-                          {renderDriverMarkBadge(myVehicle.driverMark)}
-                        </div>
-                      )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                        {i18n.language === 'ja' ? '自家用車なし (徒歩 / 会社車両利用)' : i18n.language === 'en' ? 'No Personal Vehicle (Pedestrian / Company Transport)' : 'Shaxsiy Avtomobil Yoʻq (Piyoda / Kompaniya Transporti)'}
+                      </span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)', maxWidth: '300px', lineHeight: '1.4' }}>
+                        {i18n.language === 'ja' ? '登録された車両はありません。仕事では会社車両や公共交通機関を利用します。' : i18n.language === 'en' ? 'No personal vehicle registered. You use company transport or public transit.' : 'Sizda shaxsiy transport roʻyxatdan oʻtkazilmagan. Ishga kompaniya transportida yoki jamoat transportida qatnaysiz.'}
+                      </span>
                     </div>
+
+                    <button
+                      onClick={handleAddNewVehicle}
+                      className="profile-btn-interactive"
+                      style={{
+                        background: 'linear-gradient(135deg, #0084FF 0%, #30D158 100%)',
+                        border: 'none',
+                        borderRadius: '10px',
+                        color: '#fff',
+                        fontSize: '12.5px',
+                        fontWeight: 'bold',
+                        padding: '8px 16px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 4px 14px rgba(0, 132, 255, 0.3)',
+                        marginTop: '4px'
+                      }}
+                    >
+                      <Plus size={14} /> {i18n.language === 'ja' ? '車両を登録・追加する' : i18n.language === 'en' ? 'Add Vehicle' : 'Avtomobil Qoʻshish'}
+                    </button>
                   </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+                    {/* Visual Layout: 3D Vehicle Render Left, Japanese License Plate Right */}
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1.2fr 0.8fr',
+                      gap: '12px',
+                      width: '100%',
+                      alignItems: 'center'
+                    }}>
+                      {/* Vehicle Graphic / Real Photo Display */}
+                      <div className="vehicle-display-box squircle" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'var(--card-bg, rgba(255, 255, 255, 0.03))',
+                        border: '1px solid var(--glass-border)',
+                        padding: myVehicle.photoUrl ? '0' : '12px',
+                        height: '110px',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        borderRadius: '16px'
+                      }}>
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 60%)',
+                          pointerEvents: 'none',
+                          zIndex: 2
+                        }}></div>
+                        {myVehicle.photoUrl ? (
+                          <img 
+                            src={myVehicle.photoUrl} 
+                            alt={myVehicle.model || 'Vehicle Photo'} 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
+                        ) : (
+                          <div style={{ width: '130px', height: '65px', transform: 'scale(1.2)' }}>
+                            {renderVehicleSVG(myVehicle.type, myVehicle.bodyStyle, myVehicle.color)}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* JDM License Plate Display */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                        {renderJDMPlateBox(myVehicle, false)}
+                        {myVehicle.driverMark && myVehicle.driverMark !== 'none' && (
+                          <div style={{ marginTop: '14px' }}>
+                            {renderDriverMarkBadge(myVehicle.driverMark)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                     <div className="resume-field">
@@ -4152,7 +4226,7 @@ const getLicenseLabel = (type) => {
                     </div>
                   </div>
                 </div>
-              ) : (
+              )) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%' }}>
                   {/* Hidden Photo File Input */}
                   <input 
@@ -5033,8 +5107,7 @@ const getLicenseLabel = (type) => {
                           />
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('minTurnRadiusLabel')} (m)</label>
+                        <label style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('minTurnRadiusLabel')} (m)</label>
                           <input 
                             type="number"
                             step="0.1"
@@ -5053,6 +5126,34 @@ const getLicenseLabel = (type) => {
                           />
                         </div>
                       </div>
+                      
+                      <button
+                        type="button"
+                        className="profile-btn-interactive"
+                        style={{
+                          background: 'rgba(255, 69, 58, 0.12)',
+                          border: '1px solid rgba(255, 69, 58, 0.3)',
+                          color: '#FF453A',
+                          borderRadius: '8px',
+                          padding: '10px',
+                          fontSize: '12.5px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          gridColumn: 'span 2',
+                          marginTop: '6px'
+                        }}
+                        onClick={() => {
+                          if (confirm(i18n.language === 'ja' ? '自家用車情報をすべて削除し、「自家用車なし」に設定しますか？' : i18n.language === 'en' ? 'Remove all personal vehicle info and set No Personal Vehicle?' : 'Shaxsiy transport maʻlumotlarini oʻchirib, "Shaxsiy transportim yoʻq" holatiga oʻtkazasizmi?')) {
+                            handleClearAllVehicles();
+                          }
+                        }}
+                      >
+                        🗑️ {i18n.language === 'ja' ? '自家用車なしに設定 (全削除)' : i18n.language === 'en' ? 'Set No Personal Vehicle (Remove All)' : 'Shaxsiy transportim yoʻq (Umuman oʻchirish)'}
+                      </button>
                     </div>
 
                     {/* Action Buttons Row at the bottom of the form (Prevents Header Horizontal Clutter) */}
@@ -5103,8 +5204,7 @@ const getLicenseLabel = (type) => {
                     </div>
 
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
         )}
