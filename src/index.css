@@ -124,7 +124,10 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    margin: 0;
     padding: 24px 0;
+    width: 100vw;
+    box-sizing: border-box;
   }
   
   html.light-mode body {
@@ -132,14 +135,18 @@ body {
   }
 
   #root {
+    width: 430px;
+    max-width: calc(100vw - 32px);
     height: 880px;
     max-height: calc(100vh - 48px);
+    margin: auto !important;
     border-radius: 48px;
     overflow: hidden;
     border: 10px solid #1c1c24;
     box-shadow: 
       0 25px 65px rgba(0, 0, 0, 0.45),
       0 0 0 1px rgba(255, 255, 255, 0.12);
+    flex-shrink: 0;
   }
 }
 
