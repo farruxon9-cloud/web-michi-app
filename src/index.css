@@ -103,11 +103,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 #root {
   width: 100%;
-  max-width: 430px; /* iPhone 16 Pro width for mobile layout */
+  max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
   min-height: 100dvh;
@@ -115,25 +117,24 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 @media (min-width: 481px) {
-  html, body {
+  html {
     width: 100%;
     height: 100%;
-    margin: 0;
-    padding: 0;
     overflow-x: hidden;
   }
 
   body {
-    background-color: #0c0e14; /* Deep dark mobile showcase canvas */
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-color: #0c0e14;
+    width: 100%;
     min-height: 100vh;
-    padding: 24px 0;
-    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    position: relative;
   }
   
   html.light-mode body {
@@ -142,18 +143,21 @@ body {
 
   #root {
     width: 430px;
-    max-width: calc(100% - 32px);
     height: 880px;
     max-height: calc(100vh - 48px);
-    margin: 0 auto !important;
+    /* Bulletproof centering: position + transform */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
     border-radius: 48px;
     overflow: hidden;
     border: 10px solid #1c1c24;
     box-shadow: 
       0 25px 65px rgba(0, 0, 0, 0.45),
       0 0 0 1px rgba(255, 255, 255, 0.12);
-    flex-shrink: 0;
-    box-sizing: border-box !important;
+    box-sizing: border-box;
   }
 }
 
