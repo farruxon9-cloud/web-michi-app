@@ -232,17 +232,19 @@ style={{
 
 ## 📐 10. Single Vertical Line Grid & Spacing Standard ("Devorlari Bir Chiziqda")
 
-### Horizontal Side Margin Invariant
-All cards, modals, action bars, and the floating Bottom Navigation Dock MUST share the exact `14px` side margin:
-- **Side Margin:** `14px` (`left: 14px; right: 14px; margin: 0 14px;`)
-- **Width Formula:** `width: calc(100% - 28px);`
-- **Bottom Dock Bounds:** `left: 14px; width: calc(100% - 28px); height: 72px; bottom: 12px;`
-- **Visual Result:** Every single left wall and right wall aligns 100% on one continuous, unbroken straight vertical line.
+### Horizontal Side Margin Invariant (`--screen-margin-x: 14px`)
+- **Outer Margin:** `14px` on left and right (`margin: 10px 14px;` or `left: 14px; right: 14px;`).
+- **Width Formula:** `width: calc(100% - 28px); box-sizing: border-box;`.
+- **Bottom Dock Bounds:** `position: absolute; bottom: 12px; left: 14px; width: calc(100% - 28px); height: 72px; border-radius: 24px;`.
+- **Action Bento Card Bounds:** `position: relative; margin: 10px 14px; width: calc(100% - 28px); padding: 10px 12px; border-radius: 20px; border: 1px solid var(--glass-border); background: var(--glass-bg);`.
+- **Inner Buttons:** `height: 44px; font-size: 13px; border-radius: 14px;`.
+- **Visual Result:** Every single left wall and right wall aligns 100% on one continuous, unbroken straight vertical grid line.
 
 ### Vertical Spacing & Clearance Invariants
 - **Card Vertical Gap:** `10px` (`--card-gap-v`).
 - **Bottom Dock Clearance:** `96px` (`--bottom-dock-clearance`) -> leaves exact `14px` visual clearance above BottomNav.
 - **Detail Body Side Padding:** `20px 14px` (`padding: 20px 14px;`).
+
 
 
 

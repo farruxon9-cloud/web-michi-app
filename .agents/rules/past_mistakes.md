@@ -80,11 +80,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 
 ## 🚫 18. Bir Chiziqli Vertikal Tarmoq va Yagona Masofa Standarti (Single Vertical Line Grid & Uniform Spacing)
 * **Xatolik**: 
-  1. Turli kartalar, modallar hamda BottomNav docki yon boshtan har xil masofada (14px vs 20px) turishi tufayli devorlari bir vertikal chiziqda kelmasligi.
-  2. Kartalar orasidagi vertikal masofalar (8px, 12px, 16px) va pastki clearance (84px, 90px, 106px) turlicha bo'lib ketishi.
+  1. Action tugmalari kartasi yoki modallar `width: 100%` berilishi tufayli telefon chetiga tegib ketishi (`0px` margin) va BottomNav docki bilan bir chiziqda kelmasligi.
+  2. Kartalar orasidagi masofalar (24px vs 10px) yoki bottom clearance (84px vs 96px) turlicha bo'lib ketishi.
 * **Yechim**: 
-  1. Barcha kartalar, bento bloklar, batafsil modallar hamda BottomNav docki uchun qat'iy yon masofani `14px` (`left: 14px; width: calc(100% - 28px)`) qilish. Oqibatda barcha elementlarning chap va o'ng devorlari 100% TEKIS BIR VERTIKAL CHIZIQDA joylashadi.
-  2. Kartalar orasidagi vertikal masofani qat'iy `10px` (`--card-gap-v`), pastki clearance ni esa qat'iy `96px` (`--bottom-dock-clearance`) qilish.
+  1. Barcha kartalar, action bento bloklari va BottomNav docki uchun qat'iy `14px` yon chet masofasini qo'llash (`margin: 10px 14px; width: calc(100% - 28px)` yoki `left: 14px; width: calc(100% - 28px)`).
+  2. Action bento kartasi ichidagi tugmalarni ixchamlashtirish (`height: 44px`, `font-size: 13px`, `border-radius: 14px`).
+  3. Kartalararo vertikal masofani qat'iy `10px` (`--card-gap-v`), scroll clearance ni esa qat'iy `96px` (`--bottom-dock-clearance`) qilib birxillashtirish.
+
 
 
 
