@@ -52,4 +52,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**: HTML `title="..."` atributiga matnni bir tilda qattiq yozish tufayli yapon tilidagi profilda sichqoncha olib borilganda boshqa dagi yozuv chiqishi.
 * **Yechim**: Barcha `title="..."` atributlari `i18n.language` yordamida har doim tanlangan tilga mos dinamik matn ko'rsatishi shart.
 
+## 🚫 13. AI Voice Assistant & React Hook Temporal Dead Zone (Initialization Order)
+* **Xatolik**: AI Ovozli Yordamchi (`VoiceAssistant.jsx`) va boshqa murakkab komponentlarda `useRef` yoki `useState` (masalan, `statusRef`, `apiKeyRef`) hooklarini ularga murojaat etuvchi event handlerlar yoki `useEffect` lardan pastroq qatorda e'lon qilish. Bu brauzerda `ReferenceError: Cannot access 'apiKeyRef' before initialization` xatoligini berib, ErrorBoundary orqali ilovani qulatadi.
+* **Yechim**: Komponent tanasidagi BARCHA `useRef` va `useState` e'lonlarini har doim har qanday yordamchi funksiya, event handler yoki `useEffect` hooklaridan YUQORIDA (komponent tanasining eng boshida) e'lon qilish.
+
+## 🚫 14. Ixcham Bento Action Cardlar va 1-Qatordagi Subtag Joylashuvi (Single-Row Compact Subtag Layout)
+* **Xatolik**: Bento aksiyalar va navigatsiya kartalarida subtag pill belgilari `flexWrap: 'wrap'` bilan 2-qatorga tushib qolishi hamda me'yordan ortiqcha ichki bo'shliq (`padding: 12px 14px` va o'ng tarafdagi `paddingRight: 65px`) tufayli vizual kattalashib ketishi.
+* **Yechim**: Aksiyalar hamda navigatsiya kartalarida subtaglarni har doim 1 ta yolg'iz gorizontal qatorda joylashtirish (`flexWrap: 'nowrap'`, `whiteSpace: 'nowrap'`, `overflowX: 'auto'`), badge shriftlarini ixchamlashtirish (`8.5px`–`9px`) va kartaning ichki bo'shliqlarini ixcham o'lchamga keltirish (`padding: 10px 12px`).
+
+
 
