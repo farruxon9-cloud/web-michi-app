@@ -4043,64 +4043,57 @@ const getLicenseLabel = (type) => {
                 <h3 style={{ margin: 0 }}>{getProfileLangText('myVehicleTitle')}</h3>
               </div>
               {!isEditingVehicle && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <button 
-                    className="resume-edit-btn profile-btn-interactive"
-                    onClick={() => {
-                      setEditVehicleData(myVehicle ? { ...myVehicle } : {
-                        id: 'v_' + Date.now(),
-                        type: 'car',
-                        make: 'Toyota',
-                        model: 'Harrier',
-                        bodyStyle: 'suv',
-                        trim: 'Z',
-                        year: '2024',
-                        color: '#5E5CE6',
-                        platePrefecture: '練馬',
-                        plateClass: '300',
-                        plateHira: 'あ',
-                        plateNumber: '12-34',
-                        isCommercial: false,
-                        plateType: 'private',
-                        driverMark: 'none',
-                        height: '1.69',
-                        width: '1.85',
-                        length: '4.74',
-                        weight: '1.70',
-                        axleLoad: '0.85',
-                        minTurnRadius: '5.3'
-                      });
-                      setIsEditingVehicle(true);
-                    }}
-                  >
-                    📝 {getProfileLangText('editVehicle')}
-                  </button>
-
-                  {myVehicle && (
-                    <button 
-                      type="button"
-                      className="resume-edit-btn profile-btn-interactive"
-                      style={{
-                        background: 'rgba(255, 69, 58, 0.1)',
-                        border: '1px solid rgba(255, 69, 58, 0.25)',
-                        color: '#FF453A',
-                        padding: '6px 10px',
-                        borderRadius: '8px',
-                        fontSize: '11.5px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                      onClick={(e) => handleDeleteVehicle(myVehicle.id, e)}
-                      title={i18n.language === 'ja' ? '使用中の車両を削除' : i18n.language === 'en' ? 'Delete Active Vehicle' : "Asosiy avtomobilni o'chirish"}
-                    >
-                      <Trash2 size={13} />
-                      <span>{i18n.language === 'ja' ? '削除' : i18n.language === 'en' ? 'Delete' : 'Oʻchirish'}</span>
-                    </button>
-                  )}
-                </div>
+                <button 
+                  type="button"
+                  className="profile-btn-interactive"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(48, 209, 88, 0.15) 0%, rgba(0, 132, 255, 0.15) 100%)',
+                    border: '1px solid rgba(48, 209, 88, 0.35)',
+                    color: 'var(--text-main)',
+                    padding: '6px 14px',
+                    borderRadius: '10px',
+                    fontSize: '12px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 8px rgba(48, 209, 88, 0.12)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    transition: 'all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                  }}
+                  onClick={() => {
+                    setEditVehicleData(myVehicle ? { ...myVehicle } : {
+                      id: 'v_' + Date.now(),
+                      type: 'car',
+                      make: 'Toyota',
+                      model: 'Harrier',
+                      bodyStyle: 'suv',
+                      trim: 'Z',
+                      year: '2024',
+                      color: '#5E5CE6',
+                      platePrefecture: '練馬',
+                      plateClass: '300',
+                      plateHira: 'あ',
+                      plateNumber: '12-34',
+                      isCommercial: false,
+                      plateType: 'private',
+                      driverMark: 'none',
+                      height: '1.69',
+                      width: '1.85',
+                      length: '4.74',
+                      weight: '1.70',
+                      axleLoad: '0.85',
+                      minTurnRadius: '5.3'
+                    });
+                    setIsEditingVehicle(true);
+                  }}
+                  title={i18n.language === 'ja' ? '車両情報を編集' : i18n.language === 'en' ? 'Edit Vehicle Info' : 'Avtomobil maʼlumotlarini tahrirlash'}
+                >
+                  <Edit3 size={13} strokeWidth={2.5} color="#30D158" />
+                  <span style={{ letterSpacing: '-0.2px' }}>{getProfileLangText('editVehicle')}</span>
+                </button>
               )}
             </div>
 
