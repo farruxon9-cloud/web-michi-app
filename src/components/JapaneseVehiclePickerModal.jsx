@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, X, Check, Globe, Loader2 } from 'lucide-react';
 import { POPULAR_GLOBAL_BRANDS, getModelsForMake } from '../services/vehicleApiService';
 
@@ -6,6 +7,7 @@ import { MASTER_VEHICLE_DATABASE, JAPANESE_HISTORICAL_ERAS } from '../data/japan
 import LazyVehicleImage from './LazyVehicleImage';
 
 export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVehicle, selectedVehicleId }) {
+  const { t, i18n } = useTranslation();
   const [selectedMake, setSelectedMake] = useState('Toyota');
   const [selectedEra, setSelectedEra] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -127,7 +129,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                 <Globe size={14} color="#fff" />
               </span>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#fff', letterSpacing: '-0.2px' }}>
-                Avtomobil Katalogi
+                {t('vehicleCatalogTitle', i18n.language === 'ja' ? '自動車カタログ' : i18n.language === 'en' ? 'Vehicle Catalog' : 'Avtomobil Katalogi')}
               </h3>
               <span style={{
                 fontSize: '9px',
@@ -142,7 +144,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
               </span>
             </div>
             <p style={{ margin: '3px 0 0 0', fontSize: '10.5px', color: 'rgba(255, 255, 255, 0.65)' }}>
-              12,340+ Global Brendlar & Real HD Foto Integratsiya
+              {t('vehicleCatalogSub', i18n.language === 'ja' ? '12,340+ グローバルブランド & リアルHD写真統合' : i18n.language === 'en' ? '12,340+ Global Brands & Real HD Photo Integration' : '12,340+ Global Brendlar & Real HD Foto Integratsiya')}
             </p>
           </div>
           <button 
@@ -181,7 +183,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             <Search size={14} color="#0084FF" />
             <input 
               type="text"
-              placeholder={`${selectedMake} modellari boʻyicha qidiruv (Corolla, Supra, X5)...`}
+              placeholder={i18n.language === 'ja' ? `${selectedMake}のモデルを検索 (Corolla, Supra, X5)...` : i18n.language === 'en' ? `Search ${selectedMake} models (Corolla, Supra, X5)...` : `${selectedMake} modellari boʻyicha qidiruv (Corolla, Supra, X5)...`}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{
@@ -279,7 +281,9 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
           {loading ? (
             <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '35px', color: '#8e8e93', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
               <Loader2 size={20} className="animate-spin" color="#0084FF" />
-              <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: '#fff' }}>{selectedMake} floti yuklanmoqda...</span>
+              <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: '#fff' }}>
+                {i18n.language === 'ja' ? `${selectedMake}フリートを読み込み中...` : i18n.language === 'en' ? `Loading ${selectedMake} fleet...` : `${selectedMake} floti yuklanmoqda...`}
+              </span>
             </div>
           ) : filteredModels.length > 0 ? (
             filteredModels.map(veh => {
@@ -346,7 +350,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             })
           ) : (
             <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '30px', color: '#8e8e93', fontSize: '11.5px' }}>
-              Ushbu filtr boʻyicha avtomobil topilmadi.
+              {t('noVehiclesFound', i18n.language === 'ja' ? '該当する車両が見つかりません。' : i18n.language === 'en' ? 'No vehicles found for this filter.' : 'Ushbu filtr boʻyicha avtomobil topilmadi.')}
             </div>
           )}
         </div>
@@ -363,7 +367,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#30D158', display: 'inline-block' }}></span>
             <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>
-              <b>{selectedMake}</b>: {filteredModels.length} model yuklandi
+              <b>{selectedMake}</b>: {filteredModels.length} {i18n.language === 'ja' ? 'モデル読み込み完了' : i18n.language === 'en' ? 'models loaded' : 'model yuklandi'}
             </span>
           </div>
           <button
@@ -379,7 +383,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
               cursor: 'pointer'
             }}
           >
-            Yopish
+            {t('closeBtn', i18n.language === 'ja' ? '閉じる' : i18n.language === 'en' ? 'Close' : 'Yopish')}
           </button>
         </div>
       </div>

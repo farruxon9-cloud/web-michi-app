@@ -34,23 +34,24 @@ export default class ErrorBoundary extends React.Component {
               <div className="error-icon-box animate-pulse">
                 <AlertTriangle size={32} color="#FF3B30" />
               </div>
-              <h2>Kutilmagan xatolik yuz berdi</h2>
-              <p className="error-subtitle">おっと! エラーが発生しました (Unexpected Error)</p>
+              <h2>予期せぬエラーが発生しました / Unexpected Error</h2>
+              <p className="error-subtitle">おっと! エラーが発生しました (Kutilmagan xatolik yuz berdi)</p>
             </div>
 
             <div className="error-body">
               <p className="error-message">
-                Xavotir olmang, biz xatolikni ro'yxatga oldik. Ilovani qayta yuklash orqali davom ettirishingiz mumkin.
+                ご迷惑をおかけして申し訳ありません。アプリを再読み込みして続行してください。
+                (We apologize for the inconvenience. Please reload the app to continue.)
               </p>
               
               <button className="error-reload-btn" onClick={this.handleReload}>
                 <RefreshCw size={16} />
-                <span>Qayta yuklash (Reload)</span>
+                <span>再読み込み (Reload App)</span>
               </button>
 
               <div className="error-dev-section">
                 <button className="error-dev-toggle" onClick={this.toggleDetails}>
-                  <span>Texnik tafsilotlar (Developer Details)</span>
+                  <span>技術的詳細 (Developer Details)</span>
                   {this.state.showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
                 

@@ -7,6 +7,7 @@ import './LanguageSelect.css';
 const LANGUAGES = [
   { code: 'ja', label: '日本語', native: 'にほんご', emoji: '🗾' },
   { code: 'en', label: 'English', native: 'English', emoji: '🌍' },
+  { code: 'ru', label: 'Русский', native: 'Русский', emoji: '🇷🇺' },
   { code: 'vi', label: 'Tiếng Việt', native: 'Việt', emoji: '🌏' },
   { code: 'zh', label: '中文', native: '简体', emoji: '🌏' },
   { code: 'ne', label: 'नेपाली', native: 'Nepali', emoji: '🏔' },

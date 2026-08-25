@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, X, Check, Sparkles } from 'lucide-react';
 
 /**
@@ -17,12 +18,13 @@ import { Search, X, Check, Sparkles } from 'lucide-react';
 export default function CustomMobilePickerModal({
   isOpen,
   onClose,
-  title = 'Tanlang',
+  title,
   items = [],
   selectedValue = '',
   onSelect,
   allowCustom = true
 }) {
+  const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [customValue, setCustomValue] = useState('');
 
@@ -129,7 +131,7 @@ export default function CustomMobilePickerModal({
             <Search size={16} color="rgba(255, 255, 255, 0.5)" />
             <input
               type="text"
-              placeholder="Qidirish..."
+              placeholder={t('searchPlaceholder', i18n.language === 'ja' ? '検索...' : i18n.language === 'en' ? 'Search...' : 'Qidirish...')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{
@@ -206,7 +208,7 @@ export default function CustomMobilePickerModal({
             })
           ) : (
             <div style={{ textAlign: 'center', padding: '24px', color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>
-              Ro'yxatda topilmadi.
+              {t('noResultsFound', i18n.language === 'ja' ? '該当する項目が見つかりません' : i18n.language === 'en' ? 'No items found' : "Ro'yxatda topilmadi.")}
             </div>
           )}
 
@@ -221,12 +223,12 @@ export default function CustomMobilePickerModal({
               gap: '6px'
             }}>
               <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 'bold' }}>
-                Boshqa (Custom nom yozish):
+                {t('otherCustomInput', i18n.language === 'ja' ? 'その他 (直接入力):' : i18n.language === 'en' ? 'Other (Custom input):' : 'Boshqa (Custom nom yozish):')}
               </span>
               <div style={{ display: 'flex', gap: '6px' }}>
                 <input
                   type="text"
-                  placeholder="Kiritishingiz mumkin..."
+                  placeholder={t('customInputPlaceholder', i18n.language === 'ja' ? '入力してください...' : i18n.language === 'en' ? 'Enter value...' : 'Kiritishingiz mumkin...')}
                   value={customValue}
                   onChange={e => setCustomValue(e.target.value)}
                   style={{
@@ -259,7 +261,7 @@ export default function CustomMobilePickerModal({
                     cursor: 'pointer'
                   }}
                 >
-                  Tanlash
+                  {t('selectBtn', i18n.language === 'ja' ? '選択' : i18n.language === 'en' ? 'Select' : 'Tanlash')}
                 </button>
               </div>
             </div>
