@@ -4402,6 +4402,9 @@ const getLicenseLabel = (type) => {
                                   transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
                                 }}
                               >
+                                <span style={{ fontSize: '10px', opacity: 0.7, background: 'rgba(0,0,0,0.12)', padding: '1px 5px', borderRadius: '4px', fontWeight: '800' }}>
+                                  #{idx + 1}
+                                </span>
                                 <span style={{ fontSize: '14px' }}>
                                   {veh.type === 'truck_10t' || veh.type === 'truck_4t' || veh.type === 'truck_2t' ? '🚚' : veh.type === 'moto' ? '🏍️' : '🚘'}
                                 </span>
@@ -4440,6 +4443,40 @@ const getLicenseLabel = (type) => {
                             </div>
                           );
                         })}
+
+                        {/* Add Next Vehicle Invitation Pill Tab */}
+                        <button
+                          type="button"
+                          onClick={handleAddNewVehicle}
+                          className="fleet-tab-pill fleet-add-invitation-tab profile-btn-interactive"
+                          style={{
+                            padding: '8px 14px',
+                            borderRadius: '12px',
+                            background: 'rgba(0, 132, 255, 0.08)',
+                            border: '1.5px dashed rgba(0, 132, 255, 0.4)',
+                            color: '#0084FF',
+                            fontWeight: 'bold',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0,
+                            scrollSnapAlign: 'start',
+                            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                          }}
+                          title="Add Vehicle"
+                        >
+                          <Plus size={14} strokeWidth={2.5} />
+                          <span>
+                            {i18n.language === 'ja' 
+                              ? `+ 車両追加 (${myVehicles.length + 1}台目)` 
+                              : i18n.language === 'en' 
+                                ? `+ Add Car (${myVehicles.length + 1}${myVehicles.length + 1 === 2 ? 'nd' : 'rd'})` 
+                                : `+ ${myVehicles.length + 1}-mashinani qo'shish`}
+                          </span>
+                        </button>
                       </div>
 
                       {/* Ultra-Premium High-Contrast Pagination Indicator Bar */}
