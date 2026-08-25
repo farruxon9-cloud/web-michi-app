@@ -1,19 +1,27 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './RobotAvatar.css';
 
 export default function RobotAvatar({ isVoiceActive, voiceStatus = 'idle', onClick }) {
+  const { i18n } = useTranslation();
+  const currentLang = i18n?.language || 'ja';
+
   // Determine eye status class
   const getStatusClass = () => {
     if (!isVoiceActive) return 'inactive';
     return voiceStatus; // 'idle' | 'listening' | 'thinking' | 'speaking' | 'error'
   };
 
+  const titleText = isVoiceActive 
+    ? (currentLang === 'ja' ? '音声アシスタントをオフ' : currentLang === 'en' ? 'Disable Voice Assistant' : "Ovozli yordamchini o'chirish")
+    : (currentLang === 'ja' ? '音声アシスタントを起動' : currentLang === 'en' ? 'Enable Voice Assistant' : 'Ovozli yordamchini yoqish');
+
   return (
     <button 
       className={`robot-avatar-container ${getStatusClass()}`} 
       onClick={onClick}
       aria-label="Toggle Voice Assistant"
-      title={isVoiceActive ? "Ovozli yordamchini o'chirish" : "Ovozli yordamchini yoqish"}
+      title={titleText}
     >
       <div className="robot-head-screen">
         {/* Glossy light reflection sheen overlay */}

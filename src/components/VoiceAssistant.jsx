@@ -3171,7 +3171,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
             <button 
               className="voice-lang-toggle-bubble" 
               onClick={cycleSpeechLanguage}
-              title="Ovozli tilni o'zgartirish"
+              title={currentLang === 'ja' ? '音声言語を変更' : currentLang === 'en' ? 'Change Voice Language' : "Ovozli tilni o'zgartirish"}
             >
               {speechLang === 'uz' ? '🇺🇿 UZ' : speechLang === 'ja' ? '🇯🇵 JA' : '🇬🇧 EN'}
             </button>

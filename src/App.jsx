@@ -1037,7 +1037,7 @@ function App() {
         <div 
           className="header-logo-left"
           onClick={() => setActiveTab('home')}
-          title="Bosh sahifa"
+          title={i18n.language === 'ja' ? 'ホーム' : i18n.language === 'en' ? 'Home' : 'Bosh sahifa'}
         >
           <div className="logo-kanji">道</div>
           <span className="logo-text">MICHI</span>
@@ -1049,7 +1049,7 @@ function App() {
             className="theme-toggle-btn"
             onClick={() => setDarkMode(prev => !prev)}
             aria-label="Toggle theme"
-            title={darkMode ? "Kunduzgi rejim" : "Tungi rejim"}
+            title={darkMode ? (i18n.language === 'ja' ? 'ライトモード' : i18n.language === 'en' ? 'Light Mode' : 'Kunduzgi rejim') : (i18n.language === 'ja' ? 'ダークモード' : i18n.language === 'en' ? 'Dark Mode' : 'Tungi rejim')}
           >
             <div className={`theme-toggle-track ${darkMode ? 'dark' : 'light'}`}>
               <div className="theme-toggle-thumb">

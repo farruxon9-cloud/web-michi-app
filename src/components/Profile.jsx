@@ -4094,7 +4094,7 @@ const getLicenseLabel = (type) => {
                         gap: '4px'
                       }}
                       onClick={(e) => handleDeleteVehicle(myVehicle.id, e)}
-                      title="Delete Active Vehicle"
+                      title={i18n.language === 'ja' ? '使用中の車両を削除' : i18n.language === 'en' ? 'Delete Active Vehicle' : "Asosiy avtomobilni o'chirish"}
                     >
                       <Trash2 size={13} />
                       <span>{i18n.language === 'ja' ? '削除' : i18n.language === 'en' ? 'Delete' : 'Oʻchirish'}</span>
@@ -4500,7 +4500,7 @@ const getLicenseLabel = (type) => {
                                     transition: 'all 0.2s ease',
                                     boxShadow: isActive ? '0 1px 4px rgba(0,0,0,0.2)' : 'none'
                                   }}
-                                  title="Delete Vehicle"
+                                  title={i18n.language === 'ja' ? '車両を削除' : i18n.language === 'en' ? 'Delete Vehicle' : "Avtomobilni o'chirish"}
                                 >
                                   ✕
                                 </span>
@@ -4535,7 +4535,7 @@ const getLicenseLabel = (type) => {
                             scrollSnapAlign: 'start',
                             transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                           }}
-                          title="Add Vehicle"
+                          title={i18n.language === 'ja' ? '車両を追加' : i18n.language === 'en' ? 'Add Vehicle' : "Avtomobil qo'shish"}
                         >
                           <Plus size={12} strokeWidth={2.5} style={{ flexShrink: 0 }} />
                           <span style={{ fontSize: '11.5px', fontWeight: '800', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1 }}>
