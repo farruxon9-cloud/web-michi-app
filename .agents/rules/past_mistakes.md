@@ -72,6 +72,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. Harakat tugmalari blokiga `position: relative; margin-top: 24px; margin-bottom: 24px;` berib, e'lon matnining eng oxirida (oddiy hujjat oqimida) joylashtirish.
   2. Qo'ng'iroq qilish tugmasini (`[ 📞 電話する ]`) har doim eng o'ng tarafda (oxirida) joylashtirish: `[ 応募する ]` -> `[ 紹介 (報酬あり) ]` -> `[ 📞 電話する ]`.
 
+## 🚫 17. Yagona Global Glassmorphism Tokenlar va Shaffoflik Integratsiyasi (Unified Global Glassmorphic Tokens)
+* **Xatolik**: Turli komponentlar yoki modallarda glassmorphic fonlar uchun hardcoded `background` yoki `backdrop-filter` qiymatlarini har xil qilib yozish tufayli sahifalar o'rtasida shaffoflik va xiralashuv farq qilishi.
+* **Yechim**: Barcha glassmorphic elementlar (Header, BottomNav, Bento Cards, Detail Modals) uchun har doim global `.glass` klassi yoki `:root` dagi `--glass-bg`, `--glass-border` va `backdrop-filter: blur(24px) saturate(180%)` tokenlaridan foydalanish:
+  - **Light Mode**: `rgba(255, 255, 255, 0.45)` bg, `rgba(255, 255, 255, 0.8)` border.
+  - **Dark Mode**: `rgba(20, 20, 26, 0.40)` bg, `rgba(255, 255, 255, 0.06)` border.
+
+
 
 
 
