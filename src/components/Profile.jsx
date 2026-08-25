@@ -4475,35 +4475,35 @@ const getLicenseLabel = (type) => {
                                     #{idx + 1}
                                   </span>
                                 )}
-                                {!isActive && myVehicles.length > 1 && (
-                                  <span
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteVehicle(veh.id, e);
-                                    }}
-                                    style={{
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      width: '15px',
-                                      height: '15px',
-                                      borderRadius: '50%',
-                                      background: 'rgba(255, 69, 58, 0.18)',
-                                      color: '#FF453A',
-                                      fontSize: '9.5px',
-                                      fontWeight: 'bold',
-                                      marginLeft: '3px',
-                                      cursor: 'pointer',
-                                      flexShrink: 0,
-                                      transition: 'all 0.2s ease'
-                                    }}
-                                    title="Delete Vehicle"
-                                  >
-                                    ✕
-                                  </span>
-                                )}
+                                {/* Visible Delete Button on EVERY vehicle tab */}
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteVehicle(veh.id, e);
+                                  }}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: '16px',
+                                    height: '16px',
+                                    borderRadius: '50%',
+                                    background: isActive ? 'rgba(0, 0, 0, 0.45)' : 'rgba(255, 69, 58, 0.18)',
+                                    color: isActive ? '#fff' : '#FF453A',
+                                    fontSize: '9.5px',
+                                    fontWeight: 'bold',
+                                    marginLeft: '3px',
+                                    cursor: 'pointer',
+                                    flexShrink: 0,
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: isActive ? '0 1px 4px rgba(0,0,0,0.2)' : 'none'
+                                  }}
+                                  title="Delete Vehicle"
+                                >
+                                  ✕
+                                </span>
                               </button>
                             </div>
                           );
