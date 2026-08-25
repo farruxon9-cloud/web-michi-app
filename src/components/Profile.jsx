@@ -517,7 +517,7 @@ export default function Profile({
   // Silky smooth vehicle selection handler with 120ms fade-out and 350ms gentle float-in
   const handleSelectActiveVehicleSmooth = (veh) => {
     if (!veh) return;
-    if (myVehicle && myVehicle.id === veh.id) return;
+    if (myVehicle && String(myVehicle.id) === String(veh.id)) return;
     setIsCardFading(true);
     setTimeout(() => {
       handleSelectActiveVehicle(veh);
@@ -563,7 +563,8 @@ export default function Profile({
 
     if (!myVehicle || !fleetTabsRef.current) return;
     const container = fleetTabsRef.current;
-    const targetEl = container.querySelector(`[data-veh-id="${myVehicle.id}"]`);
+    const activeId = String(myVehicle.id);
+    const targetEl = container.querySelector(`[data-veh-id="${activeId}"]`);
     if (targetEl) {
       const containerRect = container.getBoundingClientRect();
       const targetRect = targetEl.getBoundingClientRect();
@@ -4370,7 +4371,7 @@ const getLicenseLabel = (type) => {
                           return (
                             <div
                               key={veh.id}
-                              data-veh-id={veh.id}
+                              data-veh-id={String(veh.id)}
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -4388,7 +4389,7 @@ const getLicenseLabel = (type) => {
                                 style={{
                                   width: myVehicles.length === 1 ? '100%' : 'auto',
                                   justifyContent: 'center',
-                                  padding: '8px 8px',
+                                  padding: '8px 10px',
                                   borderRadius: '12px',
                                   background: isActive 
                                     ? 'linear-gradient(135deg, #30D158 0%, #0084FF 100%)' 
@@ -4422,29 +4423,36 @@ const getLicenseLabel = (type) => {
                                     #{idx + 1}
                                   </span>
                                 )}
+                                {!isActive && myVehicles.length > 1 && (
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteVehicle(veh.id, e);
+                                    }}
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      width: '15px',
+                                      height: '15px',
+                                      borderRadius: '50%',
+                                      background: 'rgba(255, 69, 58, 0.18)',
+                                      color: '#FF453A',
+                                      fontSize: '9.5px',
+                                      fontWeight: 'bold',
+                                      marginLeft: '3px',
+                                      cursor: 'pointer',
+                                      flexShrink: 0,
+                                      transition: 'all 0.2s ease'
+                                    }}
+                                    title="Delete Vehicle"
+                                  >
+                                    ✕
+                                  </span>
+                                )}
                               </button>
-
-                              {!isActive && myVehicles.length > 1 && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => handleDeleteVehicle(veh.id, e)}
-                                  style={{
-                                    background: 'rgba(255, 69, 58, 0.1)',
-                                    border: '1px solid rgba(255, 69, 58, 0.25)',
-                                    color: '#FF453A',
-                                    padding: '7px 8px',
-                                    borderRadius: '10px',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    transition: 'all 0.2s ease'
-                                  }}
-                                  title="Delete Vehicle"
-                                >
-                                  <Trash2 size={12} />
-                                </button>
-                              )}
                             </div>
                           );
                         })}
