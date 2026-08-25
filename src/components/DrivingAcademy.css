@@ -311,7 +311,7 @@
 
 /* Har bir bo'lim orasidagi masofa */
 .detail-section {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 /* Bo'lim sarlavhasi — KATTA HARF, primary rang */
@@ -516,7 +516,7 @@
 /* Konteyner — 3 ta tugma gorizontal bir qatorda (IN-FLOW AT PAGE END) */
 .school-sticky-actions {
   position: relative;
-  margin: 10px 14px 0 14px;
+  margin: 0 14px;
   width: calc(100% - 28px);
   padding: 10px 12px;
   display: flex;

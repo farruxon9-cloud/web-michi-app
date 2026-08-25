@@ -293,14 +293,14 @@
 }
 
 .map-block {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 /* ====== SHOUKAI BLOKI ====== */
 .shoukai-detail-block {
-  margin-top: 16px;
+  margin-top: 10px;
   padding: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .shoukai-detail-header {
@@ -333,7 +333,7 @@
 /* ====== PASTKI E'LON TUGMALARI (IN-FLOW AT PAGE END) ====== */
 .sticky-action {
   position: relative;
-  margin: 10px 14px 0 14px;
+  margin: 0 14px;
   width: calc(100% - 28px);
   display: flex;
   flex-direction: row;
