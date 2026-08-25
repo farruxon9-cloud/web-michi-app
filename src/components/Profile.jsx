@@ -4097,7 +4097,7 @@ const getLicenseLabel = (type) => {
                                 fontWeight: 'bold',
                                 zIndex: 2
                               }}>
-                                ⚡ FAOL
+                                ⚡ {i18n.language === 'ja' ? '選択中' : i18n.language === 'en' ? 'ACTIVE' : 'FAOL'}
                               </span>
                             )}
 
@@ -4142,7 +4142,7 @@ const getLicenseLabel = (type) => {
                                   }}
                                   title="Delete"
                                 >
-                                  <Trash2 size={11} /> Ochirish
+                                  <Trash2 size={11} /> {i18n.language === 'ja' ? '削除' : i18n.language === 'en' ? 'Delete' : 'Oʻchirish'}
                                 </button>
                               </div>
                             )}
