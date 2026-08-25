@@ -12,7 +12,7 @@
   justify-content: space-between;
   align-items: center;
   height: 56px;
-  padding: 0 16px;
+  padding: 0 20px;
   box-sizing: border-box;
   background: var(--bg-color);
   border-bottom: 1px solid rgba(0, 0, 0, 0.04);
@@ -237,7 +237,7 @@ html.dark-mode .global-header {
   justify-content: space-between;
   align-items: center;
   height: 24px;
-  padding: 4px 16px 0;
+  padding: 4px 20px 0;
   background: var(--bg-color);
   color: var(--text-main);
   font-size: 11px;

@@ -65,13 +65,13 @@
 }
 
 .profile-header {
-  padding: 24px 16px 20px;
+  padding: 24px 20px 20px;
   text-align: center;
 }
 
 /* Sub-page header */
 .sub-page-header {
-  padding: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -155,7 +155,7 @@
 }
 
 .profile-menu {
-  padding: 0 16px 20px;
+  padding: 0 20px 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -737,7 +737,7 @@ html.light-mode .contract-btn:active {
 
 /* Notifications */
 .notif-list {
-  padding: 0 16px;
+  padding: 0 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -834,7 +834,7 @@ html.light-mode .contract-btn:active {
 
 /* Applications */
 .applications-list {
-  padding: 0 16px;
+  padding: 0 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1083,7 +1083,7 @@ html.light-mode .contract-btn:active {
   z-index: 250;
   pointer-events: none;
   background: transparent;
-  padding: 0 16px;
+  padding: 0 20px;
   box-sizing: border-box;
   display: flex;
   margin-bottom: -40px;
