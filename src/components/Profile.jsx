@@ -4388,7 +4388,7 @@ const getLicenseLabel = (type) => {
                                 style={{
                                   width: myVehicles.length === 1 ? '100%' : 'auto',
                                   justifyContent: 'center',
-                                  padding: '8px 10px',
+                                  padding: '8px 12px',
                                   borderRadius: '12px',
                                   background: isActive 
                                     ? 'linear-gradient(135deg, #30D158 0%, #0084FF 100%)' 
@@ -4406,19 +4406,19 @@ const getLicenseLabel = (type) => {
                                   transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
                                 }}
                               >
-                                <span style={{ fontSize: '10px', opacity: 0.7, background: 'rgba(0,0,0,0.12)', padding: '1px 4px', borderRadius: '4px', fontWeight: '800' }}>
-                                  #{idx + 1}
-                                </span>
                                 <span style={{ fontSize: '13px' }}>
                                   {veh.type === 'truck_10t' || veh.type === 'truck_4t' || veh.type === 'truck_2t' ? '🚚' : veh.type === 'moto' ? '🏍️' : '🚘'}
                                 </span>
-                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{veh.make} {veh.model}</span>
-                                <span style={{ fontSize: '9px', opacity: 0.85, background: 'rgba(0,0,0,0.15)', padding: '1.5px 5px', borderRadius: '4px', fontWeight: '800' }}>
-                                  {veh.platePrefecture || '練馬'} {veh.plateNumber || '12-34'}
+                                <span style={{ fontSize: '12px', fontWeight: '800', letterSpacing: '-0.2px' }}>
+                                  {veh.make} {veh.model}
                                 </span>
-                                {isActive && (
-                                  <span style={{ fontSize: '9.5px', fontWeight: '800', background: '#000', color: '#30D158', padding: '1px 4px', borderRadius: '4px' }}>
+                                {isActive ? (
+                                  <span style={{ fontSize: '9.5px', fontWeight: '800', background: '#000', color: '#30D158', padding: '1.5px 6px', borderRadius: '5px', marginLeft: '2px' }}>
                                     ⚡ {i18n.language === 'ja' ? '選択中' : i18n.language === 'en' ? 'ACTIVE' : 'FAOL'}
+                                  </span>
+                                ) : (
+                                  <span style={{ fontSize: '9.5px', opacity: 0.7, background: 'rgba(0,0,0,0.15)', padding: '1.5px 5px', borderRadius: '4px', fontWeight: '800' }}>
+                                    #{idx + 1}
                                   </span>
                                 )}
                               </button>
@@ -4457,7 +4457,7 @@ const getLicenseLabel = (type) => {
                             flex: myVehicles.length === 1 ? '1 1 0px' : 'none',
                             minWidth: 0,
                             justifyContent: 'center',
-                            padding: '8px 10px',
+                            padding: '8px 12px',
                             borderRadius: '12px',
                             background: 'rgba(0, 132, 255, 0.08)',
                             border: '1.5px dashed rgba(0, 132, 255, 0.4)',
@@ -4476,12 +4476,12 @@ const getLicenseLabel = (type) => {
                           title="Add Vehicle"
                         >
                           <Plus size={13} strokeWidth={2.5} />
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <span style={{ fontSize: '12px', fontWeight: '800' }}>
                             {i18n.language === 'ja' 
-                              ? `+ 車両追加 (${myVehicles.length + 1}台目)` 
+                              ? `${myVehicles.length + 1}台目を追加` 
                               : i18n.language === 'en' 
-                                ? `+ Add Car (${myVehicles.length + 1}${myVehicles.length + 1 === 2 ? 'nd' : 'rd'})` 
-                                : `+ ${myVehicles.length + 1}-mashina qo'shish`}
+                                ? `Add ${myVehicles.length + 1}${myVehicles.length + 1 === 2 ? 'nd' : 'rd'} Car` 
+                                : `${myVehicles.length + 1}-mashina qo'shish`}
                           </span>
                         </button>
                       </div>
