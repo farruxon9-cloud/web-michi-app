@@ -534,6 +534,69 @@ export default function Profile({
     return () => { isMounted = false; };
   }, [editVehicleData.make]);
 
+  // Automatically fetch & resolve real HD photos from Wikimedia API if photoUrl is missing or fails
+  React.useEffect(() => {
+    if (!myVehicle || !myVehicle.make || !myVehicle.model) return;
+    let isMounted = true;
+
+    async function autoResolveHDPhoto() {
+      const needsPhoto = !myVehicle.photoUrl || myVehicle.photoUrl.startsWith('/images/presets/');
+      if (needsPhoto) {
+        try {
+          const hdUrl = await getHDVehiclePhoto(myVehicle.make, myVehicle.model);
+          if (hdUrl && isMounted) {
+            setMyVehicle(prev => {
+              if (!prev) return null;
+              const updated = { ...prev, photoUrl: hdUrl };
+              localStorage.setItem('michi_user_vehicle', JSON.stringify(updated));
+              return updated;
+            });
+            setMyVehicles(prevList => {
+              const updatedList = (prevList || []).map(v => v.id === myVehicle.id ? { ...v, photoUrl: hdUrl } : v);
+              localStorage.setItem('michi_user_vehicles', JSON.stringify(updatedList));
+              return updatedList;
+            });
+          }
+        } catch (e) {
+          console.warn('Failed to resolve HD vehicle photo:', e);
+        }
+      }
+    }
+
+    autoResolveHDPhoto();
+    return () => { isMounted = false; };
+  }, [myVehicle?.make, myVehicle?.model, myVehicle?.id, myVehicle?.photoUrl]);
+
+  // Auto-resolve photos for all vehicles in fleet list
+  React.useEffect(() => {
+    if (!myVehicles || myVehicles.length === 0) return;
+    let isMounted = true;
+
+    async function resolveFleetPhotos() {
+      let changed = false;
+      const newList = await Promise.all(myVehicles.map(async (v) => {
+        if ((!v.photoUrl || v.photoUrl.startsWith('/images/presets/')) && v.make && v.model) {
+          try {
+            const hdUrl = await getHDVehiclePhoto(v.make, v.model);
+            if (hdUrl) {
+              changed = true;
+              return { ...v, photoUrl: hdUrl };
+            }
+          } catch {}
+        }
+        return v;
+      }));
+
+      if (changed && isMounted) {
+        setMyVehicles(newList);
+        localStorage.setItem('michi_user_vehicles', JSON.stringify(newList));
+      }
+    }
+
+    resolveFleetPhotos();
+    return () => { isMounted = false; };
+  }, [myVehicles?.length]);
+
 
 
   // JDM Prefectures & Hiragana Lists
@@ -3998,6 +4061,13 @@ const getLicenseLabel = (type) => {
                           <img 
                             src={myVehicle.photoUrl} 
                             alt={myVehicle.model || 'Vehicle Photo'} 
+                            onError={async (e) => {
+                              e.currentTarget.onerror = null;
+                              const hdUrl = await getHDVehiclePhoto(myVehicle.make, myVehicle.model);
+                              if (hdUrl) {
+                                setMyVehicle(prev => prev ? ({ ...prev, photoUrl: hdUrl }) : null);
+                              }
+                            }}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                           />
                         ) : (
@@ -4200,7 +4270,18 @@ const getLicenseLabel = (type) => {
                             {/* Vehicle Photo / SVG */}
                             <div style={{ width: '100%', height: '65px', borderRadius: '8px', overflow: 'hidden', background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               {veh.photoUrl ? (
-                                <img src={veh.photoUrl} alt={veh.model} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <img 
+                                  src={veh.photoUrl} 
+                                  alt={veh.model} 
+                                  onError={async (e) => {
+                                    e.currentTarget.onerror = null;
+                                    const hdUrl = await getHDVehiclePhoto(veh.make, veh.model);
+                                    if (hdUrl) {
+                                      setMyVehicles(prev => (prev || []).map(v => v.id === veh.id ? { ...v, photoUrl: hdUrl } : v));
+                                    }
+                                  }}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                />
                               ) : (
                                 <div style={{ width: '80px', height: '40px', transform: 'scale(1)' }}>
                                   {renderVehicleSVG(veh.type, veh.bodyStyle, veh.color)}
