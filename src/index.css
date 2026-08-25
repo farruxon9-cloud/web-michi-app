@@ -305,3 +305,14 @@ button:active {
 }
 .premium-btn:hover { transform: scale(1.02); box-shadow: 0 6px 24px rgba(0, 102, 204, 0.3); }
 .premium-btn:active { transform: scale(0.95); filter: brightness(0.88); box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2), inset 0 2px 4px rgba(0,0,0,0.15); }
+
+/* Strict Viewport Layout Locks to Prevent Horizontal Page Shift */
+html, body, #root, #app, .app-layout {
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}

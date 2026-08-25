@@ -555,6 +555,12 @@ export default function Profile({
 
   // Auto-scroll ONLY the inner tab container (never the outer page!)
   React.useEffect(() => {
+    // Ensure window/page horizontal scroll stays locked at 0
+    if (typeof window !== 'undefined') {
+      if (window.scrollX !== 0) window.scrollTo(0, window.scrollY);
+      if (document.documentElement.scrollLeft !== 0) document.documentElement.scrollLeft = 0;
+    }
+
     if (!myVehicle || !fleetTabsRef.current) return;
     const container = fleetTabsRef.current;
     const targetEl = container.querySelector(`[data-veh-id="${myVehicle.id}"]`);
