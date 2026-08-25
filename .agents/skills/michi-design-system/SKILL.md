@@ -228,4 +228,21 @@ style={{
 - **Background Bleed Prevention:** Never use `bottom: 84px` or leave open space under the detail view. Extending the container to `bottom: 0` ensures background list cards (`DriverFeed`) do NOT bleed through the glass of the floating Bottom Navigation Dock (`BottomNav`).
 - **Un-Pinned Action Buttons:** Keep action buttons (`応募する`, `紹介`, `電話する`) in normal document flow at the end of the page scroll (`position: relative; margin: 24px 0; border-radius: 20px;`) with the Call button (`[ 📞 電話する ]`) positioned as the **last button on the far right**.
 
+---
+
+## 📐 10. Single Vertical Line Grid & Spacing Standard ("Devorlari Bir Chiziqda")
+
+### Horizontal Side Margin Invariant
+All cards, modals, action bars, and the floating Bottom Navigation Dock MUST share the exact `14px` side margin:
+- **Side Margin:** `14px` (`left: 14px; right: 14px; margin: 0 14px;`)
+- **Width Formula:** `width: calc(100% - 28px);`
+- **Bottom Dock Bounds:** `left: 14px; width: calc(100% - 28px); height: 72px; bottom: 12px;`
+- **Visual Result:** Every single left wall and right wall aligns 100% on one continuous, unbroken straight vertical line.
+
+### Vertical Spacing & Clearance Invariants
+- **Card Vertical Gap:** `10px` (`--card-gap-v`).
+- **Bottom Dock Clearance:** `96px` (`--bottom-dock-clearance`) -> leaves exact `14px` visual clearance above BottomNav.
+- **Detail Body Side Padding:** `20px 14px` (`padding: 20px 14px;`).
+
+
 

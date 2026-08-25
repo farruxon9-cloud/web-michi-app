@@ -301,7 +301,7 @@
 
 /* Ma'lumotlar tanasi — rasmning ustiga 32px chiqib turadi (overlap effekti) */
 .school-detail-body {
-  padding: 24px 20px;
+  padding: 20px 14px;
   background: var(--bg-color);
   border-radius: 32px 32px 0 0;  /* Yuqori burchaklar yumaloq — karta effekti */
   margin-top: -32px;             /* Rasm ustiga biroz chiqadi */

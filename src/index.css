@@ -50,6 +50,15 @@
   --radius-full: 9999px;
   
   --font-family: 'SF Pro Rounded', 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* 📐 Single Vertical Line Grid & Spacing Variables (Devorlari Bir Chiziqda Standarti) */
+  --screen-margin-x: 14px;
+  --card-width-full: calc(100% - 28px);
+  --card-gap-v: 10px;
+  --nav-dock-clearance: 96px;
+  --bottom-dock-clearance: 96px;
+  --card-pad-compact: 10px 12px;
+  --card-pad-standard: 14px 16px;
 }
 
 @media (prefers-color-scheme: dark) {
