@@ -4365,7 +4365,7 @@ const getLicenseLabel = (type) => {
                           scrollbarWidth: 'none'
                         }}
                       >
-                        {myVehicles.map(veh => {
+                        {myVehicles.map((veh, idx) => {
                           const isActive = myVehicle && String(myVehicle.id) === String(veh.id);
                           return (
                             <div
