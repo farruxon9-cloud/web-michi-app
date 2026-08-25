@@ -4058,9 +4058,23 @@ const getLicenseLabel = (type) => {
         {(userRole === 'driver' || userRole === 'guest') && (
           <div className="menu-group glass squircle resume-card" style={{ marginTop: '16px' }}>
             <div className="resume-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                <Wrench size={20} color="#30D158" />
-                <h3 style={{ margin: 0 }}>{getProfileLangText('myVehicleTitle')}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '10px',
+                  background: 'rgba(48, 209, 88, 0.12)',
+                  border: '1px solid rgba(48, 209, 88, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <Car size={18} strokeWidth={2.2} color="#30D158" />
+                </div>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '850', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
+                  {getProfileLangText('myVehicleTitle')}
+                </h3>
               </div>
               {!isEditingVehicle && (
                 <button 
@@ -4312,8 +4326,22 @@ const getLicenseLabel = (type) => {
                     <div className="resume-field" style={{ gridColumn: 'span 2', borderTop: '1px solid var(--glass-border)', paddingTop: '10px', marginTop: '4px' }}>
                       <span className="field-label" style={{ marginBottom: '8px', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         📐 <span>{getProfileLangText('vehicleDimensionsLabel')}</span>
-                        <span style={{ fontSize: '9px', background: 'linear-gradient(135deg, #30D158 0%, #0084FF 100%)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', marginLeft: 'auto', letterSpacing: '0.5px' }}>
-                          ⚡ {i18n.language === 'ja' ? '自動設定済み' : i18n.language === 'en' ? 'CONFIGURED' : 'SOZLANGAN'}
+                        <span style={{ 
+                          fontSize: '9.5px', 
+                          background: 'linear-gradient(135deg, #30D158 0%, #0084FF 100%)', 
+                          color: 'white', 
+                          padding: '3px 8px', 
+                          borderRadius: '6px', 
+                          fontWeight: '800', 
+                          marginLeft: 'auto', 
+                          letterSpacing: '0.4px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          boxShadow: '0 2px 6px rgba(48, 209, 88, 0.25)'
+                        }}>
+                          <CheckCircle2 size={11} strokeWidth={2.5} />
+                          <span>{i18n.language === 'ja' ? '自動設定済み' : i18n.language === 'en' ? 'AUTO-CONFIGURED' : 'AVTO-SOZLANGAN'}</span>
                         </span>
                       </span>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', width: '100%' }}>
@@ -4365,11 +4393,24 @@ const getLicenseLabel = (type) => {
                   {/* Multi-Vehicle Swipeable Tab Bar */}
                   <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '16px', marginTop: '6px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>
-                          📱 {i18n.language === 'ja' ? '登録車両タブ' : i18n.language === 'en' ? 'Vehicle Tabs' : 'Garaj Tablari'}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '6px',
+                          background: 'rgba(0, 132, 255, 0.12)',
+                          border: '1px solid rgba(0, 132, 255, 0.25)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}>
+                          <Car size={13} strokeWidth={2.2} color="#0084FF" />
+                        </div>
+                        <span style={{ fontSize: '13px', fontWeight: '850', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
+                          {i18n.language === 'ja' ? '登録車両タブ' : i18n.language === 'en' ? 'Vehicle Tabs' : 'Garaj Tablari'}
                         </span>
-                        <span style={{ fontSize: '10px', background: 'rgba(0, 132, 255, 0.15)', color: '#0084FF', padding: '1px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
+                        <span style={{ fontSize: '10px', background: 'rgba(0, 132, 255, 0.15)', color: '#0084FF', padding: '1px 8px', borderRadius: '10px', fontWeight: '800' }}>
                           {myVehicles.length}
                         </span>
                       </div>
