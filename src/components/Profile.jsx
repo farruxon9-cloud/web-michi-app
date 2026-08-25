@@ -1400,10 +1400,10 @@ export default function Profile({
 
     return (
       <div className={`jdm-plate-box ${plateType}`} style={{
-        width: '120px',
-        height: '72px',
+        width: '124px',
+        height: '74px',
         border: border,
-        borderRadius: '5px',
+        borderRadius: '6px',
         background: bg,
         color: textColor,
         padding: '4px 6px',
@@ -1412,23 +1412,49 @@ export default function Profile({
         flexDirection: 'column',
         justifyContent: 'space-between',
         position: 'relative',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+        boxShadow: '0 6px 18px rgba(0,0,0,0.22), inset 0 0 0 1.5px rgba(255,255,255,0.65)',
         fontFamily: '"Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif',
         transform: scale,
         overflow: 'hidden'
       }}>
         {hasBgGraphic && bgGraphicSvg}
         
-        {/* Left Screw Slotted Bolt */}
-        <svg viewBox="0 0 10 10" style={{ position: 'absolute', top: '6px', left: '14px', width: '6px', height: '6px', zIndex: 2 }}>
-          <circle cx="5" cy="5" r="4.5" fill="#d1d1d6" stroke="#48484a" strokeWidth="0.75" />
-          <line x1="2.5" y1="5" x2="7.5" y2="5" stroke="#3a3a3c" strokeWidth="1" />
+        {/* Realistic Metallic Sheen Overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.06) 100%)',
+          pointerEvents: 'none',
+          zIndex: 1
+        }} />
+
+        {/* 3D Left Screw Slotted Bolt */}
+        <svg className="jdm-screw-bolt" viewBox="0 0 10 10" style={{ position: 'absolute', top: '6px', left: '14px', width: '7px', height: '7px', zIndex: 3 }}>
+          <defs>
+            <radialGradient id="bolt-metallic-left" cx="30%" cy="30%" r="70%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="50%" stopColor="#b0b0b8" />
+              <stop offset="100%" stopColor="#48484a" />
+            </radialGradient>
+          </defs>
+          <circle cx="5" cy="5" r="4.5" fill="url(#bolt-metallic-left)" stroke="#3a3a3c" strokeWidth="0.75" />
+          <line x1="2.5" y1="5" x2="7.5" y2="5" stroke="#1c1c1e" strokeWidth="1" strokeLinecap="round" />
         </svg>
 
-        {/* Right Screw Slotted Bolt */}
-        <svg viewBox="0 0 10 10" style={{ position: 'absolute', top: '6px', right: '14px', width: '6px', height: '6px', zIndex: 2 }}>
-          <circle cx="5" cy="5" r="4.5" fill="#d1d1d6" stroke="#48484a" strokeWidth="0.75" />
-          <line x1="5" y1="2.5" x2="5" y2="7.5" stroke="#3a3a3c" strokeWidth="1" />
+        {/* 3D Right Screw Slotted Bolt */}
+        <svg className="jdm-screw-bolt" viewBox="0 0 10 10" style={{ position: 'absolute', top: '6px', right: '14px', width: '7px', height: '7px', zIndex: 3 }}>
+          <defs>
+            <radialGradient id="bolt-metallic-right" cx="30%" cy="30%" r="70%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="50%" stopColor="#b0b0b8" />
+              <stop offset="100%" stopColor="#48484a" />
+            </radialGradient>
+          </defs>
+          <circle cx="5" cy="5" r="4.5" fill="url(#bolt-metallic-right)" stroke="#3a3a3c" strokeWidth="0.75" />
+          <line x1="5" y1="2.5" x2="5" y2="7.5" stroke="#1c1c1e" strokeWidth="1" strokeLinecap="round" />
         </svg>
 
         {/* JDM Top Row (Prefecture and Class Code spaced between bolts) */}
@@ -1442,7 +1468,7 @@ export default function Profile({
           zIndex: 2, 
           position: 'relative',
           fontWeight: '900',
-          textShadow: shadow
+          textShadow: '0.5px 0.5px 0px rgba(0,0,0,0.25), -0.5px -0.5px 0.5px rgba(255,255,255,0.9)'
         }}>
           <span>{prefecture}</span>
           <span>{classCode}</span>
@@ -1457,7 +1483,7 @@ export default function Profile({
           marginBottom: '2px', 
           zIndex: 2, 
           position: 'relative',
-          textShadow: shadow
+          textShadow: '0.5px 0.5px 0px rgba(0,0,0,0.25), -0.5px -0.5px 0.5px rgba(255,255,255,0.9)'
         }}>
           <span style={{ 
             fontSize: '14px', 
@@ -3944,139 +3970,182 @@ const getLicenseLabel = (type) => {
                       <span className="field-value">{myVehicle.year || '-'}</span>
                     </div>
 
-                    <div className="resume-field" style={{ gridColumn: 'span 2', borderTop: '1px solid var(--glass-border)', paddingTop: '8px', marginTop: '4px' }}>
-                      <span className="field-label" style={{ marginBottom: '6px', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div className="resume-field" style={{ gridColumn: 'span 2', borderTop: '1px solid var(--glass-border)', paddingTop: '10px', marginTop: '4px' }}>
+                      <span className="field-label" style={{ marginBottom: '8px', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         📐 <span>{getProfileLangText('vehicleDimensionsLabel')}</span>
-                        <span style={{ fontSize: '9px', background: '#34C759', color: 'white', padding: '1px 5px', borderRadius: '3px', fontWeight: 'normal', marginLeft: 'auto' }}>
-                          {i18n.language === 'ja' ? '自動設定済み' : i18n.language === 'en' ? 'CONFIGURED' : 'SOZLANGAN'}
+                        <span style={{ fontSize: '9px', background: 'linear-gradient(135deg, #30D158 0%, #0084FF 100%)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', marginLeft: 'auto', letterSpacing: '0.5px' }}>
+                          ⚡ {i18n.language === 'ja' ? '自動設定済み' : i18n.language === 'en' ? 'CONFIGURED' : 'SOZLANGAN'}
                         </span>
                       </span>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px 8px', width: '100%' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('heightLabel')}</span>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.height} m</span>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', width: '100%' }}>
+                        <div style={{ background: 'var(--card-bg, rgba(255, 255, 255, 0.04))', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '3px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                          <span style={{ fontSize: '9.5px', color: '#0A84FF', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            📏 {getProfileLangText('heightLabel')}
+                          </span>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.height} m</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('widthLabel')}</span>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.width} m</span>
+
+                        <div style={{ background: 'var(--card-bg, rgba(255, 255, 255, 0.04))', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '3px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                          <span style={{ fontSize: '9.5px', color: '#30D158', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            ↔️ {getProfileLangText('widthLabel')}
+                          </span>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.width} m</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('lengthLabel')}</span>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.length} m</span>
+
+                        <div style={{ background: 'var(--card-bg, rgba(255, 255, 255, 0.04))', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '3px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                          <span style={{ fontSize: '9.5px', color: '#FF9500', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            🏎️ {getProfileLangText('lengthLabel')}
+                          </span>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.length} m</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('weightLabel')}</span>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.weight} t</span>
+
+                        <div style={{ background: 'var(--card-bg, rgba(255, 255, 255, 0.04))', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '3px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                          <span style={{ fontSize: '9.5px', color: '#BF5AF2', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            ⚖️ {getProfileLangText('weightLabel')}
+                          </span>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.weight} t</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('axleLoadLabel')}</span>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.axleLoad || '-'} t</span>
+
+                        <div style={{ background: 'var(--card-bg, rgba(255, 255, 255, 0.04))', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '3px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                          <span style={{ fontSize: '9.5px', color: '#5E5CE6', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            🏋️ {getProfileLangText('axleLoadLabel')}
+                          </span>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.axleLoad || '-'} t</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{getProfileLangText('minTurnRadiusLabel')}</span>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)' }}>{myVehicle.minTurnRadius || '-'} m</span>
+
+                        <div style={{ background: 'var(--card-bg, rgba(255, 255, 255, 0.04))', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '3px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                          <span style={{ fontSize: '9.5px', color: '#30B0C7', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            🔄 {getProfileLangText('minTurnRadiusLabel')}
+                          </span>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.minTurnRadius || '-'} m</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* List of all vehicles */}
-                  <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '16px', marginTop: '4px' }}>
+                  {/* Multi-Vehicle Garage Fleet Carousel */}
+                  <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '16px', marginTop: '6px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                        {i18n.language === 'ja' ? '登録車両リスト' : i18n.language === 'en' ? 'My Fleet / Vehicles List' : 'Mening transportlarim roʻyxati'}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>
+                          🏎️ {i18n.language === 'ja' ? '登録車両リスト' : i18n.language === 'en' ? 'My Fleet / Vehicles' : 'Garaj Floti'}
+                        </span>
+                        <span style={{ fontSize: '10px', background: 'rgba(0, 132, 255, 0.15)', color: '#0084FF', padding: '1px 7px', borderRadius: '10px', fontWeight: 'bold' }}>
+                          {myVehicles.length}
+                        </span>
+                      </div>
                       <button 
                         onClick={handleAddNewVehicle}
+                        className="profile-btn-interactive"
                         style={{
-                          background: 'var(--primary)',
+                          background: 'linear-gradient(135deg, #0084FF 0%, #30D158 100%)',
                           border: 'none',
-                          borderRadius: '6px',
+                          borderRadius: '8px',
                           color: '#fff',
                           fontSize: '11px',
                           fontWeight: 'bold',
-                          padding: '4px 8px',
+                          padding: '6px 10px',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '4px'
+                          gap: '4px',
+                          boxShadow: '0 4px 12px rgba(0, 132, 255, 0.3)'
                         }}
                       >
-                        <Plus size={12} /> {i18n.language === 'ja' ? '新規追加' : i18n.language === 'en' ? 'Add New' : 'Qoʻshish'}
+                        <Plus size={13} /> {i18n.language === 'ja' ? '新規追加' : i18n.language === 'en' ? 'Add New' : 'Yangi Avto Qoʻshish'}
                       </button>
                     </div>
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {/* Horizontal Garage Fleet Carousel */}
+                    <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '6px', paddingTop: '2px' }}>
                       {myVehicles.map(veh => {
                         const isActive = myVehicle.id === veh.id;
                         return (
                           <div 
                             key={veh.id}
                             onClick={() => handleSelectActiveVehicle(veh)}
+                            className="fleet-card-item profile-btn-interactive"
                             style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              background: isActive ? 'rgba(48, 209, 88, 0.08)' : 'rgba(255, 255, 255, 0.02)',
-                              border: isActive ? '1px solid #30D158' : '1px solid var(--glass-border)',
-                              borderRadius: '8px',
-                              padding: '8px 12px',
+                              minWidth: '145px',
+                              maxWidth: '155px',
+                              flexShrink: 0,
+                              background: isActive 
+                                ? 'linear-gradient(135deg, rgba(48, 209, 88, 0.12) 0%, rgba(0, 132, 255, 0.08) 100%)' 
+                                : 'var(--card-bg, rgba(255, 255, 255, 0.03))',
+                              border: isActive ? '2px solid #30D158' : '1px solid var(--glass-border)',
+                              borderRadius: '12px',
+                              padding: '10px',
                               cursor: 'pointer',
-                              transition: 'all 0.2s ease'
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '6px',
+                              position: 'relative',
+                              boxShadow: isActive ? '0 6px 18px rgba(48, 209, 88, 0.2)' : '0 2px 8px rgba(0,0,0,0.05)'
                             }}
                           >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <div style={{ width: '40px', height: '24px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                {veh.photoUrl ? (
-                                  <img src={veh.photoUrl} alt={veh.model} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                ) : (
-                                  renderVehicleSVG(veh.type, veh.bodyStyle, veh.color)
-                                )}
-                              </div>
-                              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-main)' }}>
-                                  {veh.make} {veh.model}
-                                </span>
-                                <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>
-                                  {veh.type === 'car' ? getProfileLangText('type_car') :
-                                   veh.type === 'kei_truck' ? getProfileLangText('type_kei_truck') :
-                                   veh.type === 'truck_2t' ? getProfileLangText('type_truck_2t') :
-                                   veh.type === 'truck_3t' ? getProfileLangText('type_truck_3t') :
-                                   veh.type === 'truck_4t' ? getProfileLangText('type_truck_4t') :
-                                   veh.type === 'truck_10t' ? getProfileLangText('type_truck_10t') :
-                                   veh.type === 'trailer' ? getProfileLangText('type_trailer') :
-                                   veh.type === 'tanker' ? getProfileLangText('type_tanker') :
-                                   veh.type === 'bus' ? getProfileLangText('type_bus') : veh.type} 
-                                  {' • '} H: {veh.height}m W: {veh.width}m Wt: {veh.weight}t
-                                </span>
-                              </div>
-                            </div>
-                            
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              {isActive ? (
-                                <span style={{ fontSize: '9px', background: '#30D158', color: '#000', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
-                                  {i18n.language === 'ja' ? '選択中' : i18n.language === 'en' ? 'ACTIVE' : 'FAOL'}
-                                </span>
+                            {/* Active Glowing Badge */}
+                            {isActive && (
+                              <span style={{
+                                position: 'absolute',
+                                top: '6px',
+                                right: '6px',
+                                fontSize: '8.5px',
+                                background: '#30D158',
+                                color: '#000',
+                                padding: '1px 5px',
+                                borderRadius: '6px',
+                                fontWeight: 'bold',
+                                zIndex: 2
+                              }}>
+                                ⚡ FAOL
+                              </span>
+                            )}
+
+                            {/* Vehicle Photo / SVG */}
+                            <div style={{ width: '100%', height: '65px', borderRadius: '8px', overflow: 'hidden', background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              {veh.photoUrl ? (
+                                <img src={veh.photoUrl} alt={veh.model} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                               ) : (
+                                <div style={{ width: '80px', height: '40px', transform: 'scale(1)' }}>
+                                  {renderVehicleSVG(veh.type, veh.bodyStyle, veh.color)}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Make & Model */}
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {veh.make} {veh.model}
+                              </span>
+                              <span style={{ fontSize: '9px', color: 'var(--text-secondary)', marginTop: '1px' }}>
+                                {veh.year || '2024'} • {veh.height}m / {veh.weight}t
+                              </span>
+                            </div>
+
+                            {/* Actions / Delete */}
+                            {!isActive && (
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2px' }}>
                                 <button
                                   onClick={(e) => handleDeleteVehicle(veh.id, e)}
                                   style={{
-                                    background: 'none',
+                                    background: 'rgba(255, 69, 58, 0.1)',
                                     border: 'none',
                                     color: '#FF453A',
-                                    padding: '4px',
+                                    padding: '3px 6px',
                                     cursor: 'pointer',
+                                    borderRadius: '4px',
+                                    fontSize: '9.5px',
+                                    fontWeight: 'bold',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    borderRadius: '4px'
+                                    gap: '2px'
                                   }}
                                   title="Delete"
                                 >
-                                  <Trash2 size={14} />
+                                  <Trash2 size={11} /> Ochirish
                                 </button>
-                              )}
-                            </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}

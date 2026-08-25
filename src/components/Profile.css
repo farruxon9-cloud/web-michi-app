@@ -1498,3 +1498,41 @@ html.light-mode .contract-btn:active {
   text-align: left;
 }
 
+/* Glassmorphism Focus Ring & Micro-Animations */
+.profile-btn-interactive,
+button.profile-btn-interactive {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.profile-btn-interactive:active {
+  transform: scale(0.97) !important;
+}
+
+.profile-input-focus:focus,
+.profile-input-focus:focus-within {
+  outline: none !important;
+  border-color: #0084FF !important;
+  box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.25), 0 4px 12px rgba(0, 132, 255, 0.15) !important;
+}
+
+@keyframes jdmScrewGlow {
+  0% { filter: drop-shadow(0 0 1px rgba(255,255,255,0.8)); }
+  50% { filter: drop-shadow(0 0 3px rgba(48,209,88,0.8)); }
+  100% { filter: drop-shadow(0 0 1px rgba(255,255,255,0.8)); }
+}
+
+.jdm-screw-bolt {
+  animation: jdmScrewGlow 3s infinite ease-in-out;
+}
+
+/* Garage Fleet Carousel Card Hover */
+.fleet-card-item {
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fleet-card-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+
