@@ -213,12 +213,9 @@ html.dark-mode .global-header {
   font-family: 'Outfit', -apple-system, sans-serif;
 }
 
-/* Centered Theme Toggle Switch Container */
+/* Centered Theme Toggle Switch Container (Equal flex gaps on left and right) */
 .header-theme-toggle-centered {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
