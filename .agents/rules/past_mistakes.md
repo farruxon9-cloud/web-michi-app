@@ -77,15 +77,17 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim**: Barcha glassmorphic elementlar (Header, BottomNav, Bento Cards, Detail Modals) uchun har doim global `.glass` klassi yoki `:root` dagi `--glass-bg`, `--glass-border` va `backdrop-filter: blur(24px) saturate(180%)` tokenlaridan foydalanish:
   - **Light Mode**: `rgba(255, 255, 255, 0.45)` bg, `rgba(255, 255, 255, 0.8)` border.
 
-## 🚫 18. Bir Chiziqli Vertikal Tarmoq va 6px Ixcham Masofa Standarti (Single Vertical Line Grid & 6px Tight Spacing)
+## 🚫 18. Bir Chiziqli Vertikal Tarmoq va Matematik 6px Ixcham Masofa Standarti (Single Vertical Line Grid & 6px Tight Spacing Formula)
 * **Xatolik**: 
-  1. Action bento kartasini (`.sticky-action`) `.detail-content` konteyneridan tashqarida joylashtirish tufayli konteynerning 20px paddingi kartalar orasida 26px ortiqcha masofa hosil qilishini e'tiborsiz qoldirish.
+  1. Action bento kartasini (`.sticky-action`) `.detail-content` ichiga o'tkazgach, `.detail-content` ning 20px padding-bottom'i va idishning 90px padding'i qo'shilib, BottomNav dockigacha 22px ortiqcha masofa hosil qilishi.
   2. Action bento kartasi yoki modallar `width: 100%` berilishi tufayli telefon chetiga tegib ketishi (`0px` margin).
 * **Yechim**: 
   1. Action bento kartasini har doim `.detail-content` konteyneri ICHIGA joylashtirish (`margin: 6px 0 0 0; width: 100%`).
-  2. Barcha kartalar, action bento bloklari va BottomNav docki uchun qat'iy `14px` yon chet masofasini qo'llash (`left: 14px; width: calc(100% - 28px)`).
-  3. Action bento kartasi ichidagi tugmalarni ixchamlashtirish (`height: 44px`, `font-size: 13px`, `border-radius: 14px`).
-  4. Barcha kartalararo vertikal masofani qat'iy `6px` (`--card-gap-v`), scroll clearance ni esa qat'iy `90px` (`--bottom-dock-clearance`) qilib birxillashtirish (natijada BottomNav ustida va kartalar orasida qat'iy `6px` masofa saqlanadi).
+  2. `.detail-content` va `.school-detail-body` uchun `padding-bottom: 6px` (`padding: 16px 14px 6px 14px`).
+  3. Batafsil scroll idishlari uchun `padding-bottom: 84px`.
+  4. Qat'iy Matematik Tenglama: `(6px detail padding + 84px container clearance) - 84px (BottomNav top edge) = 6px visual gap`. Natijada Action Bento Karta osti ham, usti ham, barcha kartalar ham qat'iy `6px` masofada bo'ladi.
+  5. Barcha kartalar, action bento bloklari va BottomNav docki uchun qat'iy `14px` yon chet masofasini qo'llash (`left: 14px; width: calc(100% - 28px)`).
+
 
 
 

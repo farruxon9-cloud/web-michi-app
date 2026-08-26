@@ -232,18 +232,13 @@ style={{
 
 ## 📐 10. Single Vertical Line Grid & Spacing Standard ("Devorlari Bir Chiziqda")
 
-### Horizontal Side Margin Invariant (`--screen-margin-x: 14px`)
-- **Outer Margin:** `14px` on left and right (`left: 14px; right: 14px;`).
-- **Width Formula:** `width: calc(100% - 28px); box-sizing: border-box;`.
-- **Bottom Dock Bounds:** `position: absolute; bottom: 12px; left: 14px; width: calc(100% - 28px); height: 72px; border-radius: 24px;`.
-- **Action Bento Card DOM Placement:** MUST be placed INSIDE `.detail-content` to prevent container padding offsets. Inside `.detail-content`, use `margin: 6px 0 0 0; width: 100%;`.
-- **Inner Buttons:** `height: 44px; font-size: 13px; border-radius: 14px;`.
-- **Visual Result:** Every single left wall and right wall aligns 100% on one continuous, unbroken straight vertical grid line.
+### Bottom Dock Clearance Mathematical Equation
+To maintain an exact `6px` visual gap between the Action Bento Card and the top edge of `BottomNav` (`84px` top edge):
+- **Detail Body Padding:** `padding: 16px 14px 6px 14px;` (`padding-bottom: 6px`).
+- **Detail Scroll Container:** `padding-bottom: 84px;`.
+- **Mathematical Formula:** `(6px detail padding + 84px container) - 84px BottomNav top = 6px visual clearance`.
+- **Result:** 100% mathematical equality (`6px`) across all inter-card gaps and bottom dock clearance.
 
-### Vertical Spacing & Clearance Invariants
-- **Card Vertical Gap:** `6px` (`--card-gap-v`).
-- **Bottom Dock Clearance:** `90px` (`--bottom-dock-clearance`) -> leaves exact `6px` visual clearance above BottomNav (`90px - 84px = 6px`).
-- **Detail Body Side Padding:** `16px 14px` (`padding: 16px 14px;`).
 
 
 
