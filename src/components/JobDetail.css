@@ -333,8 +333,9 @@
 /* ====== PASTKI E'LON TUGMALARI (IN-FLOW AT PAGE END) ====== */
 .sticky-action {
   position: relative;
-  margin: 0;
-  width: 100%;
+  margin: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
   display: flex;
   flex-direction: row;
   align-items: center;

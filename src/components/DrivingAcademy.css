@@ -532,8 +532,9 @@
 /* Konteyner — 3 ta tugma gorizontal bir qatorda (IN-FLOW AT PAGE END) */
 .school-sticky-actions {
   position: relative;
-  margin: 0;
-  width: 100%;
+  margin: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
   padding: 10px 12px;
   display: flex;
   align-items: center;
