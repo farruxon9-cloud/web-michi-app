@@ -77,16 +77,16 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim**: Barcha glassmorphic elementlar (Header, BottomNav, Bento Cards, Detail Modals) uchun har doim global `.glass` klassi yoki `:root` dagi `--glass-bg`, `--glass-border` va `backdrop-filter: blur(24px) saturate(180%)` tokenlaridan foydalanish:
   - **Light Mode**: `rgba(255, 255, 255, 0.45)` bg, `rgba(255, 255, 255, 0.8)` border.
 
-## 🚫 18. Bir Chiziqli Vertikal Tarmoq va Profil 12px / Batafsil 6px Masofa Standarti (Single Vertical Line Grid & Spacing Invariants)
+## 🚫 18. Bir Chiziqli Vertikal Tarmoq va Unifikatsiyalangan 12px Masofa Standarti (Single Vertical Line Grid & 12px Spacing Invariants)
 * **Xatolik**: 
-  1. `.profile-menu` ichki idishida 12px pastki padding bo'lishi tufayli `.logout-btn` ostida va BottomNav o'rtasida 24px ortiqcha masofa hosil bo'lishi.
-  2. Profile sahifasidagi kartalarga (`マイカー`) inline `style={{ marginTop: '16px' }}` berilishi tufayli rezyume kartasi va garaj kartasi orasida 28px ortiqcha masofa hosil bo'lishi.
+  1. Avtomaktablar va Ish e'lonlari batafsil sahifasida harakat kartasi (`.school-sticky-actions` / `.sticky-action`) va kartalar orasida 6px yoki 10px turlicha masofalar ishlatilishi.
+  2. Harakat bento kartasi telefon devorlariga tegib ketishi yoki yon padding offsetlari mos kelmasligi.
 * **Yechim**: 
-  1. `.profile-menu` pastki paddingini `0px` qilish (`padding: 0 14px 0 14px`).
-  2. Qat'iy Matematik Tenglama: `(0px profile-menu padding + 96px container clearance) - 84px (BottomNav top edge) = 12px visual gap`. Natijada Chiqish tugmasi osti ham, usti ham, profil kartalari ham qat'iy `12px` masofada bo'ladi.
-  3. Flex layout idishlari (`.profile-body`) ichidagi kartalardan inline `marginTop` / `marginBottom` qiymatlarini butunlay olib tashlash.
-  4. Batafsil sahifalarda action bento kartasini `.detail-content` ICHIGA joylashtirish (`margin: 6px 0 0 0; width: 100%`) hamda `padding-bottom: 6px` + `84px` clearance qo'llash (qat'iy `6px` visual gap).
-  5. Barcha kartalar, action bento bloklari va BottomNav docki uchun qat'iy `14px` yon chet masofasini qo'llash (`left: 14px; width: calc(100% - 28px)`).
+  1. Barcha batafsil kartalari (`.detail-section`, `.shoukai-detail-block`) ostidan qat'iy `12px` masofa (`margin-bottom: 12px`) berish.
+  2. Harakat bento kartasini (`.school-sticky-actions` va `.sticky-action`) har doim `padding: 16px 14px 0 14px` bo'lgan detail-body ICHIGA joylashtirish (`margin: 0; width: 100%`) — bu orqali karta chegara chizig'i yuqoridagi barcha kartalar bilan **qat'iy 14px vertikal grid chizig'ida** bir xil turadi va devorlarga teb ketmaydi.
+  3. Qat'iy Matematik Clearance Tenglamasi: `(0px detail padding + 96px container clearance) - 84px (BottomNav top edge) = 12px visual gap`. Natijada barcha vizual masofalar 100% teng (qat'iy `12px`) bo'ladi.
+  4. Avtomaktablar va Ish e'lonlari batafsil sahifalarining orqa foni bir xil `var(--bg-color)` va glassmorphic tokenlar asosida shakllanishi shart.
+
 
 
 

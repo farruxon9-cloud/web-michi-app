@@ -232,6 +232,13 @@ style={{
 
 ## 📐 10. Single Vertical Line Grid & Spacing Standard ("Devorlari Bir Chiziqda")
 
+### Detail Views (Job Detail & Driving Academy) 12px Spacing & 14px Grid Invariants
+- **Inter-Card Gap:** `12px` (`.detail-section`, `.shoukai-detail-block` -> `margin-bottom: 12px;`).
+- **Action Bento Card Placement:** Inside detail body (`padding: 16px 14px 0 14px`) with `margin: 0; width: 100%;` -> places card side borders flush on the `14px` grid line, matching all upper cards and avoiding touching screen borders.
+- **Bottom Dock Clearance:** `96px` (`.job-detail-container`, `.academy-container` -> `padding-bottom: 96px;`).
+- **Mathematical Clearance Formula:** `(0px detail padding + 96px container) - 84px BottomNav top = 12px visual clearance`.
+- **Unified Background:** `background: var(--bg-color);` on both detail scroll containers.
+
 ### Profile Page 12px Spacing & Logout Clearance Equation
 - **Inter-Card Gap:** `12px` (`.profile-body { gap: 12px; }`).
 - **Profile Menu Padding:** `padding: 0 14px 0 14px;` (`padding-bottom: 0px`).
@@ -239,12 +246,6 @@ style={{
 - **Mathematical Formula:** `(0px menu padding + 96px container) - 84px BottomNav top = 12px visual clearance`.
 - **No Inline Offsets:** Do NOT add inline `style={{ marginTop: '16px' }}` on child bento cards (`.resume-card`, `.vehicle-bento-card`). Rely strictly on parent `gap: 12px`.
 
-### Bottom Dock Clearance Mathematical Equation (Detail Views)
-To maintain an exact `6px` visual gap between the Action Bento Card and the top edge of `BottomNav` (`84px` top edge):
-- **Detail Body Padding:** `padding: 16px 14px 6px 14px;` (`padding-bottom: 6px`).
-- **Detail Scroll Container:** `padding-bottom: 84px;`.
-- **Mathematical Formula:** `(6px detail padding + 84px container) - 84px BottomNav top = 6px visual clearance`.
-- **Result:** 100% mathematical equality (`6px`) across all inter-card gaps and bottom dock clearance.
 
 
 

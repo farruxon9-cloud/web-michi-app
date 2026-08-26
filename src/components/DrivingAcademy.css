@@ -26,7 +26,7 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;           /* Vertikal scroll imkoniyati */
-  padding-bottom: 94px;       /* Pastki navigatsiya paneli uchun joy: 0px detail padding + 94px = 94px - 84px = 10px visual gap */
+  padding-bottom: 96px;       /* Pastki navigatsiya paneli uchun joy: 0px detail padding + 96px = 96px - 84px = 12px visual gap */
 }
 
 
@@ -311,7 +311,7 @@
 
 /* Har bir bo'lim orasidagi masofa */
 .detail-section {
-  margin-bottom: 6px;
+  margin-bottom: 12px;
 }
 
 /* Bo'lim sarlavhasi — KATTA HARF, primary rang */
