@@ -26,7 +26,7 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;           /* Vertikal scroll imkoniyati */
-  padding-bottom: 94px;       /* Pastki navigatsiya paneli uchun joy: 94px - 84px = 10px visual gap */
+  padding-bottom: 84px;       /* Pastki navigatsiya paneli uchun joy: 6px detail padding + 84px = 90px - 84px = 6px visual gap */
 }
 
 
@@ -301,7 +301,7 @@
 
 /* Ma'lumotlar tanasi — rasmning ustiga 32px chiqib turadi (overlap effekti) */
 .school-detail-body {
-  padding: 20px 14px;
+  padding: 16px 14px 6px 14px;
   background: var(--bg-color);
   border-radius: 32px 32px 0 0;  /* Yuqori burchaklar yumaloq — karta effekti */
   margin-top: -32px;             /* Rasm ustiga biroz chiqadi */

@@ -17,7 +17,7 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding-bottom: 90px; /* Exact formula: 90px - 84px (BottomNav top) = 6px visual gap */
+  padding-bottom: 84px; /* Exact formula: (6px detail padding + 84px container) - 84px (BottomNav top) = 6px visual gap */
 }
 
 .detail-header-image {
@@ -92,7 +92,7 @@
 
 .detail-content {
   flex: 1;
-  padding: 20px 14px;
+  padding: 16px 14px 6px 14px;
   background: var(--bg-color);
   border-radius: 32px 32px 0 0;
   margin-top: -32px;
