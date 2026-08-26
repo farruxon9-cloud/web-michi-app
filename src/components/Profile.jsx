@@ -4056,7 +4056,7 @@ const getLicenseLabel = (type) => {
 
         {/* Mening Mashinam (My Vehicle) Card */}
         {(userRole === 'driver' || userRole === 'guest') && (
-          <div className="menu-group glass squircle resume-card" style={{ marginTop: '16px' }}>
+          <div className="menu-group glass squircle resume-card">
             <div className="resume-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                 <div style={{
