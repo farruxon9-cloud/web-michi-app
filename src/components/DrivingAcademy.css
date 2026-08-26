@@ -311,9 +311,8 @@
 
 /* Batafsil sahifa scroll konteyneri */
 .school-detail-scroll {
-  flex: 1;
-  overflow-y: auto;
   position: relative;
+  width: 100%;
 }
 
 /* Ma'lumotlar tanasi — rasmning ustiga 32px chiqib turadi (overlap effekti) */
