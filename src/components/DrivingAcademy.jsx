@@ -256,7 +256,7 @@ export default function DrivingAcademy({
     const isSaved = profileData?.savedItems?.schools?.some(s => s.id === school.id);
 
     return (
-      <div className="academy-container fade-in">
+      <div className="academy-container detail-view fade-in">
         <div className="school-detail-scroll hide-scrollbar">
           
           {/* ============================================================

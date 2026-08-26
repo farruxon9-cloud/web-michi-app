@@ -29,6 +29,23 @@
   padding-bottom: 96px;       /* Pastki navigatsiya paneli uchun joy: 0px detail padding + 96px = 96px - 84px = 12px visual gap */
 }
 
+.academy-container.detail-view {
+  position: absolute;
+  top: 64px;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-width: 100%;
+  background: var(--bg-color);
+  z-index: 200;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding-bottom: 96px;       /* Exact formula: (0px detail padding + 96px container) - 84px (BottomNav top) = 12px visual gap */
+}
+
 
 /* ==========================================================================
    2. SARLAVHA (HEADER)
