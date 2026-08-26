@@ -77,14 +77,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim**: Barcha glassmorphic elementlar (Header, BottomNav, Bento Cards, Detail Modals) uchun har doim global `.glass` klassi yoki `:root` dagi `--glass-bg`, `--glass-border` va `backdrop-filter: blur(24px) saturate(180%)` tokenlaridan foydalanish:
   - **Light Mode**: `rgba(255, 255, 255, 0.45)` bg, `rgba(255, 255, 255, 0.8)` border.
 
-## 🚫 18. Bir Chiziqli Vertikal Tarmoq va Unifikatsiyalangan 12px Masofa Standarti (Single Vertical Line Grid & 12px Spacing Invariants)
+## 🚫 18. Bir Chiziqli Vertikal Tarmoq va Batafsil Sahifalar Standarti (Single Vertical Line Grid & Detail View Invariants)
 * **Xatolik**: 
-  1. Avtomaktablar va Ish e'lonlari batafsil sahifasida harakat kartasi (`.school-sticky-actions` / `.sticky-action`) va kartalar orasida 6px yoki 10px turlicha masofalar ishlatilishi.
-  2. Harakat bento kartasi telefon devorlariga tegib ketishi yoki yon padding offsetlari mos kelmasligi.
+  1. Avtomaktablar va Ish e'lonlari batafsil sahifasida harakat kartasi (`.school-sticky-actions` / `.sticky-action`) devorlarga tegib ketishi, ichma-ich skroll tufayli matnlar `BottomNav` ostida pin bo'lib qolishi yoki top offset 64px noto'g'ri qo'llanishi.
 * **Yechim**: 
-  1. Barcha batafsil kartalari (`.detail-section`, `.shoukai-detail-block`) ostidan qat'iy `12px` masofa (`margin-bottom: 12px`) berish.
-  2. Harakat bento kartasini (`.school-sticky-actions` va `.sticky-action`) har doim `padding: 16px 14px 0 14px` bo'lgan detail-body ICHIGA joylashtirish (`margin: 0; width: 100%`) — bu orqali karta chegara chizig'i yuqoridagi barcha kartalar bilan **qat'iy 14px vertikal grid chizig'ida** bir xil turadi va devorlarga teb ketmaydi.
-  3. Qat'iy Matematik Clearance Tenglamasi: `(0px detail padding + 96px container clearance) - 84px (BottomNav top edge) = 12px visual gap`. Natijada barcha vizual masofalar 100% teng (qat'iy `12px`) bo'ladi.
+  1. DOM Nesting qoidasi: `#root` darajasidagi detail (`JobDetail`) uchun `top: 64px; z-index: 200`, `<main>` ichidagi detail (`DrivingAcademy`) uchun `top: 0; z-index: 200`. Tepadagi `MICHI` header (`z-index: 300`) va pastdagi `BottomNav` (`z-index: 1000`) doim 100% ochiq va ko'rinib turishi shart.
+  2. Bir Chiziqli Grid: Barcha kartalar va Harakat bento idishlari chap va o'ng devordan **qat'iy 14px masofada** (`width: calc(100% - 28px)`), `border-radius: 24px` bilan shakllanadi.
+  3. Qat'iy Matematik Clearance Tenglamasi: `(0px detail padding + 96px container clearance) - 84px (BottomNav top edge) = 12px visual gap`.
+  4. Yagona Skroll Idishi: Ichki `.school-detail-scroll` dan `overflow-y: auto` olib tashlanib, faqat tashqi detail idishi skroll bo'ladi.
 
 ## 🚫 19. Qat'iy Komponent Izolyatsiyasi va So'ralmagan O'zgarishlar Taqiqlanishi (Strict Component Scope Isolation & Zero Unrequested Side-Effects)
 * **Xatolik**: 

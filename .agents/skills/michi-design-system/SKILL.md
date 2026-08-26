@@ -230,14 +230,31 @@ style={{
 
 ---
 
-## 📐 10. Single Vertical Line Grid & Spacing Standard ("Devorlari Bir Chiziqda")
+## 📐 10. Single Vertical Line Grid & Full Detail View Standard ("Devorlari Bir Chiziqda")
 
-### Detail Views (Job Detail & Driving Academy) 12px Spacing & 14px Grid Invariants
-- **Inter-Card Gap:** `12px` (`.detail-section`, `.shoukai-detail-block` -> `margin-bottom: 12px;`).
-- **Action Bento Card Placement:** Inside detail body (`padding: 16px 14px 0 14px`) with `margin: 0; width: 100%;` -> places card side borders flush on the `14px` grid line, matching all upper cards and avoiding touching screen borders.
-- **Bottom Dock Clearance:** `96px` (`.job-detail-container`, `.academy-container` -> `padding-bottom: 96px;`).
-- **Mathematical Clearance Formula:** `(0px detail padding + 96px container) - 84px BottomNav top = 12px visual clearance`.
-### Strict Component Scope Isolation Rule
+### A. DOM Nesting-Aware Positioning Rule
+- **Root-Level Detail Views (`JobDetail`):** Rendered directly under `#root` $\implies$ `position: absolute; top: 64px; z-index: 200;`. Starts flush under the top header (`header.global-header`).
+- **Inner Main-Content Detail Views (`DrivingAcademy`):** Rendered inside `<main className="main-content">` $\implies$ `position: absolute; top: 0; z-index: 200;`. Starts flush under the top header without double 64px offset.
+- **Top Header & Bottom Nav Protection:** Top `global-header` (`MICHI` logo, Theme switch, Assist AI) stays floating at `z-index: 300`. Bottom `BottomNav` dock stays floating at `z-index: 1000`. Both remain 100% visible across all detail views.
+
+### B. Single Vertical Line Grid ("Devorlari Bir Chiziqda")
+- **Side Wall Margins:** `14px` (`margin-left: 14px; margin-right: 14px; width: calc(100% - 28px); box-sizing: border-box;`).
+- **Action Bento Cards (`.school-sticky-actions` & `.sticky-action`):**
+  - **Width:** `calc(100% - 28px)` (`362px` on standard 390px mobile).
+  - **Corner Radius:** `border-radius: 24px;` (matches `BottomNav` `24px` radius 100%).
+  - **Inner Padding:** `padding: 10px 12px;` with `gap: 8px;`.
+- **Grid Alignment Invariant:** All upper cards (`.shoukai-section`, `.detail-section`), action bento cards (`学校に応募` / `電話する`), and `BottomNav` dock align 100% flush on the exact same **`14px` vertical grid line**.
+
+### C. Mathematical Bottom Clearance Formula
+- **Scroll Clearance Padding:** `padding-bottom: 96px;` on detail scroll containers (`.academy-container.detail-view` and `.job-detail-container`).
+- **Mathematical Formula:** `(0px detail inner padding + 96px scroll clearance) - 84px (BottomNav top edge) = 12px visual gap`.
+- **Result:** Action bento cards sit cleanly `12px` above `BottomNav` without text pinning or background bleeding when scrolled to the bottom.
+
+### D. Single Scroll Container Invariant
+- **Single Scroll Owner:** Remove nested `overflow-y: auto` on inner divs (`.school-detail-scroll`).
+- Only the outer container (`.academy-container.detail-view` / `.job-detail-container`) owns scrolling to prevent inner pinned background artifacts.
+
+### E. Strict Component Scope Isolation Rule
 - **Targeted Edits Only:** Layout and style edits must be isolated strictly to the user-specified component (`DrivingAcademy`).
 - **No Unrequested Side-Effects:** Existing stable components (`JobDetail`) must remain untouched unless explicitly requested by the user.
 - **Visual Alignment Invariants:** All detail cards and bento action boxes must maintain exact `14px` side margins (`calc(100% - 28px)` width) and `12px` inter-card gaps without cross-component mutation side-effects.
