@@ -232,12 +232,18 @@ style={{
 
 ## 📐 10. Single Vertical Line Grid & Spacing Standard ("Devorlari Bir Chiziqda")
 
-### Bottom Dock Clearance Mathematical Equation
+### Profile Page 12px Spacing Invariants
+- **Inter-Card Gap:** `12px` (`.profile-body { gap: 12px; }`).
+- **Bottom Dock Clearance:** `96px` (`.profile-container { padding-bottom: 96px; }`) -> leaves exact `12px` visual clearance above BottomNav (`96px - 84px = 12px`).
+- **No Inline Offsets:** Do NOT add inline `style={{ marginTop: '16px' }}` on child bento cards (`.resume-card`, `.vehicle-bento-card`). Rely strictly on parent `gap: 12px`.
+
+### Bottom Dock Clearance Mathematical Equation (Detail Views)
 To maintain an exact `6px` visual gap between the Action Bento Card and the top edge of `BottomNav` (`84px` top edge):
 - **Detail Body Padding:** `padding: 16px 14px 6px 14px;` (`padding-bottom: 6px`).
 - **Detail Scroll Container:** `padding-bottom: 84px;`.
 - **Mathematical Formula:** `(6px detail padding + 84px container) - 84px BottomNav top = 6px visual clearance`.
 - **Result:** 100% mathematical equality (`6px`) across all inter-card gaps and bottom dock clearance.
+
 
 
 
