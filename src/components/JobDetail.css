@@ -92,17 +92,16 @@
 
 .detail-content {
   flex: 1;
-  padding: 16px 0 0 0;
+  padding: 16px 14px 0 14px;
   background: var(--bg-color);
   border-radius: 32px 32px 0 0;
   margin-top: -32px;
   position: relative;
   z-index: 10;
-  box-sizing: border-box;
 }
 
 .company-header {
-  margin: 0 14px 20px 14px;
+  margin-bottom: 20px;
 }
 
 .company-title-wrap {
@@ -211,9 +210,7 @@
   display: grid;
   grid-template-columns: 1fr; /* Always use 1 column to avoid squeezed layouts and text clipping */
   gap: 10px;
-  margin: 0 14px 24px 14px !important;
-  width: calc(100% - 28px) !important;
-  box-sizing: border-box !important;
+  margin-bottom: 24px;
 }
 
 .detail-info-card {
@@ -296,17 +293,14 @@
 }
 
 .map-block {
-  margin: 0 14px 12px 14px !important;
-  width: calc(100% - 28px) !important;
-  box-sizing: border-box !important;
+  margin-bottom: 12px;
 }
 
 /* ====== SHOUKAI BLOKI ====== */
 .shoukai-detail-block {
-  margin: 12px 14px 12px 14px !important;
-  width: calc(100% - 28px) !important;
-  box-sizing: border-box !important;
+  margin-top: 12px;
   padding: 12px 14px;
+  margin-bottom: 12px;
 }
 
 .shoukai-detail-header {
@@ -339,9 +333,8 @@
 /* ====== PASTKI E'LON TUGMALARI (IN-FLOW AT PAGE END) ====== */
 .sticky-action {
   position: relative;
-  margin: 0 14px !important;
-  width: calc(100% - 28px) !important;
-  box-sizing: border-box !important;
+  margin: 0;
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
