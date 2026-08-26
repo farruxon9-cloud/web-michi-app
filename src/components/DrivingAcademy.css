@@ -317,17 +317,26 @@
 
 /* Ma'lumotlar tanasi — rasmning ustiga 32px chiqib turadi (overlap effekti) */
 .school-detail-body {
-  padding: 16px 14px 0 14px;
+  padding: 16px 0 0 0;
   background: var(--bg-color);
   border-radius: 32px 32px 0 0;  /* Yuqori burchaklar yumaloq — karta effekti */
   margin-top: -32px;             /* Rasm ustiga biroz chiqadi */
   position: relative;
   z-index: 10;
+  box-sizing: border-box;
+}
+
+.school-header-row,
+.school-location {
+  margin-left: 14px;
+  margin-right: 14px;
 }
 
 /* Har bir bo'lim orasidagi masofa */
 .detail-section {
-  margin-bottom: 12px;
+  margin: 0 14px 12px 14px !important;
+  width: calc(100% - 28px) !important;
+  box-sizing: border-box !important;
 }
 
 /* Bo'lim sarlavhasi — KATTA HARF, primary rang */
@@ -532,8 +541,8 @@
 /* Konteyner — 3 ta tugma gorizontal bir qatorda (IN-FLOW AT PAGE END) */
 .school-sticky-actions {
   position: relative;
-  margin: 0 !important;
-  width: 100% !important;
+  margin: 0 14px !important;
+  width: calc(100% - 28px) !important;
   box-sizing: border-box !important;
   padding: 10px 12px;
   display: flex;
