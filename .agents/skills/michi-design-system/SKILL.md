@@ -266,6 +266,23 @@ style={{
 - **Mathematical Formula:** `(0px menu padding + 96px container) - 84px BottomNav top = 12px visual clearance`.
 - **No Inline Offsets:** Do NOT add inline `style={{ marginTop: '16px' }}` on child bento cards (`.resume-card`, `.vehicle-bento-card`). Rely strictly on parent `gap: 12px`.
 
+---
+
+## 💎 11. Global Visual & Color Token Integrity Standard
+
+### Color Token Invariants
+- **Primary Violet/Blue:** `var(--primary, #6C5CE7)`
+- **Success Vibrant Green:** `var(--success, #34C759)`
+- **Warning Gold:** `var(--warning, #FF9F0A)`
+- **Glass Backdrop:** `var(--glass-bg, rgba(255, 255, 255, 0.45))` (Light) / `rgba(28, 28, 30, 0.72)` (Dark)
+- **Glass Border:** `var(--glass-border, rgba(255, 255, 255, 0.8))` (Light) / `rgba(255, 255, 255, 0.12)` (Dark)
+
+### Border Radius Rules
+- **Dock & Action Bento Cards:** `24px` (`border-radius: 24px`)
+- **Content Bento Cards:** `20px` (`border-radius: 20px` or `.squircle`)
+- **Interactive Buttons:** `12px - 20px`
+- **Badges & Tags:** `var(--radius-full)` (Pill shape)
+
 
 
 

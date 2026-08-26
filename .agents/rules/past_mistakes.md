@@ -86,13 +86,18 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   3. Qat'iy Matematik Clearance Tenglamasi: `(0px detail padding + 96px container clearance) - 84px (BottomNav top edge) = 12px visual gap`.
   4. Yagona Skroll Idishi: Ichki `.school-detail-scroll` dan `overflow-y: auto` olib tashlanib, faqat tashqi detail idishi skroll bo'ladi.
 
-## 🚫 19. Qat'iy Komponent Izolyatsiyasi va So'ralmagan O'zgarishlar Taqiqlanishi (Strict Component Scope Isolation & Zero Unrequested Side-Effects)
+## 🚫 20. Ranglar Va Glassmorphic Chegaralar Daxlsizligi Standarti (Global Visual & Color Token Integrity Standard)
 * **Xatolik**: 
-  1. Foydalanuvchi faqat ma'lum bir sahifada (`DrivingAcademy`) joylashuv yoki marja tuzatishini so'raganida, foydalanuvchi so'ramagan holda boshqa sahifalarga (`JobDetail`) ham asassiz va o'zboshimchalik bilan o'zgartirishlar kiritish.
+  1. Komponentlarni tahrirlashda global `:root` rang o'zgaruvchilarini (`var(--primary)`, `var(--success)`, `var(--glass-bg)`, `var(--glass-border)`) chetlab o'tib, ad-hoc hardcoded hex ranglar (`#34C759`, `#000`) ishlatilishi.
+  2. Glassmorphic burchaklar (`border-radius: 24px`), shisha devor xiralashtiruvlari (`backdrop-filter: blur(24px)`) yoki nozik soyalarni (`var(--shadow-sm)`) tasodifan o'chirib yuborish tufayli ilovaning premium ko'rinishiga ziyon yetkazilishi.
 * **Yechim**: 
-  1. Foydalanuvchi tomonidan so'ralgan tuzatish yoki layout o'zgartirishi FAQAT va FAQAT ko'rsatilgan maqsadli komponent (`DrivingAcademy`) ichida amalga oshirilishi shart.
-  2. Foydalanuvchi ko'rsatmagan, barqaror ishlayotgan boshqa komponentlarga (`JobDetail`, `Profile` va b.) ruxsatsiz yoki so'ralmagan stil va koddagi o'zgartirishlar kiritish QAT'IYAN TAQIQLANADI.
-  3. Har qanday parallel o'zgartirish taklifi avval foydalanuvchiga taqdim etilishi va faqat uning tasdig'idan so'ng amalga oshirilishi kerak.
+  1. **Ranglar Integratsiyasi**: Barcha ranglar har doim `:root` da e'lon qilingan CSS tokenlar orqali chaqirilishi shart (`var(--primary)`, `var(--success)`, `var(--text-main)`, `var(--bg-color)`). Hardcoded ranglar ishlatish TAQIQLANADI.
+  2. **Chegaralar va Burchaklar Uniformasi**:
+     - `BottomNav` paneli va barcha Harakat bento kartalari: `border-radius: 24px; border: 1px solid var(--glass-border);`.
+     - Kontent bento kartalari (`.detail-section`, `.shoukai-section`): `border-radius: 20px; border: 1px solid var(--glass-border);`.
+     - Kichik badge va pill belgilari: `border-radius: var(--radius-full)` yoki `8px-10px`.
+  3. **Visual Degeneratsiyani Oldini Olish**: Light va Dark mode rang kontrastlari, shisha shaffofligi hamda mikro-animatsiyalar har qanday tahrir ostida 100% buzilmasdan saqlanib qolishi shart.
+
 
 
 
