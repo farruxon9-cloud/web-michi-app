@@ -17,7 +17,7 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding-bottom: 84px; /* Exact formula: (6px detail padding + 84px container) - 84px (BottomNav top) = 6px visual gap */
+  padding-bottom: 94px; /* Exact formula: (0px detail padding + 94px container) - 84px (BottomNav top) = 10px visual gap */
 }
 
 .detail-header-image {
@@ -92,7 +92,7 @@
 
 .detail-content {
   flex: 1;
-  padding: 16px 14px 10px 14px;
+  padding: 16px 14px 0 14px;
   background: var(--bg-color);
   border-radius: 32px 32px 0 0;
   margin-top: -32px;
@@ -333,7 +333,7 @@
 /* ====== PASTKI E'LON TUGMALARI (IN-FLOW AT PAGE END) ====== */
 .sticky-action {
   position: relative;
-  margin: 10px 0 0 0;
+  margin: 0;
   width: 100%;
   display: flex;
   flex-direction: row;
