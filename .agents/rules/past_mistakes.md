@@ -77,16 +77,17 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim**: Barcha glassmorphic elementlar (Header, BottomNav, Bento Cards, Detail Modals) uchun har doim global `.glass` klassi yoki `:root` dagi `--glass-bg`, `--glass-border` va `backdrop-filter: blur(24px) saturate(180%)` tokenlaridan foydalanish:
   - **Light Mode**: `rgba(255, 255, 255, 0.45)` bg, `rgba(255, 255, 255, 0.8)` border.
 
-## 🚫 18. Bir Chiziqli Vertikal Tarmoq va Profil 12px / Batafsil 6px Masofa Standarti (Single Vertical Line Grid & Profile 12px Spacing Invariants)
+## 🚫 18. Bir Chiziqli Vertikal Tarmoq va Profil 12px / Batafsil 6px Masofa Standarti (Single Vertical Line Grid & Spacing Invariants)
 * **Xatolik**: 
-  1. Profile sahifasidagi kartalarga (`マイカー`) inline `style={{ marginTop: '16px' }}` berilishi tufayli rezyume kartasi va garaj kartasi orasida 28px ortiqcha masofa hosil bo'lishi.
-  2. Action bento kartasini (`.sticky-action`) `.detail-content` ichiga o'tkazgach, `.detail-content` ning 20px padding-bottom'i va idishning 90px padding'i qo'shilib, BottomNav dockigacha 22px ortiqcha masofa hosil qilishi.
+  1. `.profile-menu` ichki idishida 12px pastki padding bo'lishi tufayli `.logout-btn` ostida va BottomNav o'rtasida 24px ortiqcha masofa hosil bo'lishi.
+  2. Profile sahifasidagi kartalarga (`マイカー`) inline `style={{ marginTop: '16px' }}` berilishi tufayli rezyume kartasi va garaj kartasi orasida 28px ortiqcha masofa hosil bo'lishi.
 * **Yechim**: 
-  1. Flex layout idishlari (`.profile-body`) ichidagi kartalardan inline `marginTop` / `marginBottom` qiymatlarini butunlay olib tashlash.
-  2. Profil sahifasidagi barcha kartalar uchun qat'iy `12px` kartalararo masofani (`gap: 12px` on `.profile-body`) qo'llash.
-  3. Profil sahifasi scroll idishi uchun `padding-bottom: 96px` qo'llash (natijada BottomNav paneligacha vizual masofa $96\text{px} - 84\text{px} = \mathbf{12px}$ bo'ladi).
+  1. `.profile-menu` pastki paddingini `0px` qilish (`padding: 0 14px 0 14px`).
+  2. Qat'iy Matematik Tenglama: `(0px profile-menu padding + 96px container clearance) - 84px (BottomNav top edge) = 12px visual gap`. Natijada Chiqish tugmasi osti ham, usti ham, profil kartalari ham qat'iy `12px` masofada bo'ladi.
+  3. Flex layout idishlari (`.profile-body`) ichidagi kartalardan inline `marginTop` / `marginBottom` qiymatlarini butunlay olib tashlash.
   4. Batafsil sahifalarda action bento kartasini `.detail-content` ICHIGA joylashtirish (`margin: 6px 0 0 0; width: 100%`) hamda `padding-bottom: 6px` + `84px` clearance qo'llash (qat'iy `6px` visual gap).
   5. Barcha kartalar, action bento bloklari va BottomNav docki uchun qat'iy `14px` yon chet masofasini qo'llash (`left: 14px; width: calc(100% - 28px)`).
+
 
 
 
