@@ -85,7 +85,15 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. Barcha batafsil kartalari (`.detail-section`, `.shoukai-detail-block`) ostidan qat'iy `12px` masofa (`margin-bottom: 12px`) berish.
   2. Harakat bento kartasini (`.school-sticky-actions` va `.sticky-action`) har doim `padding: 16px 14px 0 14px` bo'lgan detail-body ICHIGA joylashtirish (`margin: 0; width: 100%`) — bu orqali karta chegara chizig'i yuqoridagi barcha kartalar bilan **qat'iy 14px vertikal grid chizig'ida** bir xil turadi va devorlarga teb ketmaydi.
   3. Qat'iy Matematik Clearance Tenglamasi: `(0px detail padding + 96px container clearance) - 84px (BottomNav top edge) = 12px visual gap`. Natijada barcha vizual masofalar 100% teng (qat'iy `12px`) bo'ladi.
-  4. Avtomaktablar va Ish e'lonlari batafsil sahifalarining orqa foni bir xil `var(--bg-color)` va glassmorphic tokenlar asosida shakllanishi shart.
+
+## 🚫 19. Qat'iy Komponent Izolyatsiyasi va So'ralmagan O'zgarishlar Taqiqlanishi (Strict Component Scope Isolation & Zero Unrequested Side-Effects)
+* **Xatolik**: 
+  1. Foydalanuvchi faqat ma'lum bir sahifada (`DrivingAcademy`) joylashuv yoki marja tuzatishini so'raganida, foydalanuvchi so'ramagan holda boshqa sahifalarga (`JobDetail`) ham asassiz va o'zboshimchalik bilan o'zgartirishlar kiritish.
+* **Yechim**: 
+  1. Foydalanuvchi tomonidan so'ralgan tuzatish yoki layout o'zgartirishi FAQAT va FAQAT ko'rsatilgan maqsadli komponent (`DrivingAcademy`) ichida amalga oshirilishi shart.
+  2. Foydalanuvchi ko'rsatmagan, barqaror ishlayotgan boshqa komponentlarga (`JobDetail`, `Profile` va b.) ruxsatsiz yoki so'ralmagan stil va koddagi o'zgartirishlar kiritish QAT'IYAN TAQIQLANADI.
+  3. Har qanday parallel o'zgartirish taklifi avval foydalanuvchiga taqdim etilishi va faqat uning tasdig'idan so'ng amalga oshirilishi kerak.
+
 
 
 

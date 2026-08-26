@@ -237,7 +237,10 @@ style={{
 - **Action Bento Card Placement:** Inside detail body (`padding: 16px 14px 0 14px`) with `margin: 0; width: 100%;` -> places card side borders flush on the `14px` grid line, matching all upper cards and avoiding touching screen borders.
 - **Bottom Dock Clearance:** `96px` (`.job-detail-container`, `.academy-container` -> `padding-bottom: 96px;`).
 - **Mathematical Clearance Formula:** `(0px detail padding + 96px container) - 84px BottomNav top = 12px visual clearance`.
-- **Unified Background:** `background: var(--bg-color);` on both detail scroll containers.
+### Strict Component Scope Isolation Rule
+- **Targeted Edits Only:** Layout and style edits must be isolated strictly to the user-specified component (`DrivingAcademy`).
+- **No Unrequested Side-Effects:** Existing stable components (`JobDetail`) must remain untouched unless explicitly requested by the user.
+- **Visual Alignment Invariants:** All detail cards and bento action boxes must maintain exact `14px` side margins (`calc(100% - 28px)` width) and `12px` inter-card gaps without cross-component mutation side-effects.
 
 ### Profile Page 12px Spacing & Logout Clearance Equation
 - **Inter-Card Gap:** `12px` (`.profile-body { gap: 12px; }`).
