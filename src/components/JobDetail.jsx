@@ -317,89 +317,88 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           </div>
         )}
         
-      </div>
-
-      {/* ====== PASTKI TUGMALAR (STICKY) ====== */}
-      <div className="sticky-action glass">
-        {userRole === 'company' ? (
-          profileData?.fullName === job.company ? (
-            <button 
-              className="apply-btn"
-              style={{ width: '100%', background: '#1c1c1e', color: '#fff', fontSize: '16px', fontWeight: 'bold' }}
-              onClick={() => onEditJob && onEditJob(job)}
-            >
-              {t('editJob', 'Tahrirlash')}
-            </button>
+        {/* ====== PASTKI TUGMALAR (STICKY) ====== */}
+        <div className="sticky-action glass">
+          {userRole === 'company' ? (
+            profileData?.fullName === job.company ? (
+              <button 
+                className="apply-btn"
+                style={{ width: '100%', background: '#1c1c1e', color: '#fff', fontSize: '16px', fontWeight: 'bold' }}
+                onClick={() => onEditJob && onEditJob(job)}
+              >
+                {t('editJob', 'Tahrirlash')}
+              </button>
+            ) : (
+              <>
+                {canCall ? (
+                  <a 
+                    href={`tel:${job.phone || '03-1234-5678'}`} 
+                    className="apply-btn"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontWeight: '700' }}
+                  >
+                    <Phone size={16} />
+                    {t('callBtn', 'Qo\'ng\'iroq qilish')}
+                  </a>
+                ) : (
+                  <button 
+                    type="button"
+                    className="apply-btn"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: 0.6, cursor: 'not-allowed', background: 'rgba(118, 118, 128, 0.12)', color: 'var(--text-secondary)' }}
+                    onClick={() => alert(t('phoneHiddenNotice'))}
+                  >
+                    <Phone size={16} />
+                    {t('callBtn', 'Qo\'ng\'iroq qilish')} 🔒
+                  </button>
+                )}
+                <button 
+                  className="apply-btn shoukai-btn" 
+                  onClick={() => onShoukai(job)}
+                >
+                  <Share2 size={16} />
+                  {((job.shoukaiAmount && job.shoukaiAmount !== "0") || job.hasShoukai) ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` : t('shoukai', 'Shoukai')}
+                </button>
+              </>
+            )
           ) : (
             <>
+              <button 
+                className={`apply-btn ${alreadyApplied ? 'applied' : ''}`}
+                onClick={() => !alreadyApplied && onApply(job)}
+                style={{ flex: '1.2' }}
+              >
+                {alreadyApplied ? t('applied') : t('applyJob')}
+              </button>
+              <button 
+                className="apply-btn shoukai-btn" 
+                onClick={() => onShoukai(job)}
+                style={{ flex: '1.1' }}
+              >
+                <Share2 size={15} />
+                {((job.shoukaiAmount && job.shoukaiAmount !== "0") || job.hasShoukai) ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` : t('shoukai', 'Shoukai')}
+              </button>
               {canCall ? (
                 <a 
-                  href={`tel:${job.phone || '03-1234-5678'}`} 
+                  href={`tel:${job.phone || '090-1234-5678'}`} 
                   className="apply-btn"
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontWeight: '700' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', background: 'var(--success)', color: '#fff', fontWeight: 'bold', flex: '1' }}
                 >
-                  <Phone size={16} />
-                  {t('callBtn', 'Qo\'ng\'iroq qilish')}
+                  <Phone size={14} />
+                  {t('callBtn', 'Qo\'ng\'iroq')}
                 </a>
               ) : (
                 <button 
                   type="button"
                   className="apply-btn"
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: 0.6, cursor: 'not-allowed', background: 'rgba(118, 118, 128, 0.12)', color: 'var(--text-secondary)' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.65, background: 'rgba(118, 118, 128, 0.12)', color: 'var(--text-secondary)', cursor: 'not-allowed', flex: '1' }}
                   onClick={() => alert(t('phoneHiddenNotice'))}
                 >
-                  <Phone size={16} />
-                  {t('callBtn', 'Qo\'ng\'iroq qilish')} 🔒
+                  <Phone size={14} />
+                  {t('callBtn', 'Qo\'ng\'iroq')} 🔒
                 </button>
               )}
-              <button 
-                className="apply-btn shoukai-btn" 
-                onClick={() => onShoukai(job)}
-              >
-                <Share2 size={16} />
-                {((job.shoukaiAmount && job.shoukaiAmount !== "0") || job.hasShoukai) ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` : t('shoukai', 'Shoukai')}
-              </button>
             </>
-          )
-        ) : (
-          <>
-            <button 
-              className={`apply-btn ${alreadyApplied ? 'applied' : ''}`}
-              onClick={() => !alreadyApplied && onApply(job)}
-              style={{ flex: '1.2' }}
-            >
-              {alreadyApplied ? t('applied') : t('applyJob')}
-            </button>
-            <button 
-              className="apply-btn shoukai-btn" 
-              onClick={() => onShoukai(job)}
-              style={{ flex: '1.1' }}
-            >
-              <Share2 size={15} />
-              {((job.shoukaiAmount && job.shoukaiAmount !== "0") || job.hasShoukai) ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` : t('shoukai', 'Shoukai')}
-            </button>
-            {canCall ? (
-              <a 
-                href={`tel:${job.phone || '090-1234-5678'}`} 
-                className="apply-btn"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', background: 'var(--success)', color: '#fff', fontWeight: 'bold', flex: '1' }}
-              >
-                <Phone size={14} />
-                {t('callBtn', 'Qo\'ng\'iroq')}
-              </a>
-            ) : (
-              <button 
-                type="button"
-                className="apply-btn"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.65, background: 'rgba(118, 118, 128, 0.12)', color: 'var(--text-secondary)', cursor: 'not-allowed', flex: '1' }}
-                onClick={() => alert(t('phoneHiddenNotice'))}
-              >
-                <Phone size={14} />
-                {t('callBtn', 'Qo\'ng\'iroq')} 🔒
-              </button>
-            )}
-          </>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
