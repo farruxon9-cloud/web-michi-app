@@ -109,6 +109,17 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. Ichki gorizontal satrlarni skroll qilish uchun faqat nisbiy konteyner skrollidan foydalaniladi: `container.scrollTo({ left: targetOffset, behavior: 'smooth' })`.
   3. Har bir asosiy sahifa (Profil, Avtomaktab, E'lonlar) tab o'zgarganda va ochilganda doim `scrollTop = 0` holatida — ya'ni eng yuqori sarlavhadan ochilishi shart.
 
+## 🚫 23. Enshteyn Tenglamasi: Konteynerlar Orasidagi Masofa va Suzuvchi BottomNav Simmetriyasi (Einstein Inter-Container Gap & Floating Dock Clearance Invariant)
+* **Xatolik**: 
+  1. Suzuvchi `BottomNav` paneli ortida sub-sahifalarning (Sozlamalar va b.q.) eng pastki kartalari to'silib qolishi yoki CSS `padding-bottom` takrorlanishi tufayli 100px+ ulkan ortiqcha bo'shliq paydo bo'lishi.
+  2. Kartalar va kartalar orasidagi masofa (`14px`) bilan eng pastki karta va `BottomNav` orasidagi masofa visual ravishda bir xil (simmetrik) bo'lmay qolishi.
+* **Yechim (Enshteyn Formulasi)**: 
+  - `BottomNav` top edge balandligi = **`84px`** (`72px height + 12px bottom`).
+  - Kartalar orasidagi standart gap = **`14px`** (`gap: 14px`).
+  - Kartalardan so'ng `BottomNav` ustida ham aynan **`14px`** visual masofa hosil qilish uchun, DOM idishi oxiriga qo'yiladigan HTML spatser balandligi ($H$) tenglamasi:
+    $$\text{Flex Gap (14px)} + H = 84\text{px (BottomNav Top Edge)} + 14\text{px (Desired Gap)} \implies H = \mathbf{84\text{px}}$$
+  - Barcha sub-sahifalar oxiriga majburiy `<div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0 }} />` elementini qo'yish orqali barcha masofalar **pikselma-piksel 14px simmetriyaga keltiriladi.**
+
 
 
 

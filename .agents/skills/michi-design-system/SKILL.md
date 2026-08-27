@@ -259,12 +259,12 @@ style={{
 - **No Unrequested Side-Effects:** Existing stable components (`JobDetail`) must remain untouched unless explicitly requested by the user.
 - **Visual Alignment Invariants:** All detail cards and bento action boxes must maintain exact `14px` side margins (`calc(100% - 28px)` width) and `12px` inter-card gaps without cross-component mutation side-effects.
 
-### Profile Page 12px Spacing & Logout Clearance Equation
-- **Inter-Card Gap:** `12px` (`.profile-body { gap: 12px; }`).
-- **Profile Menu Padding:** `padding: 0 14px 0 14px;` (`padding-bottom: 0px`).
-- **Bottom Dock Clearance:** `96px` (`.profile-container { padding-bottom: 96px; }`).
-- **Mathematical Formula:** `(0px menu padding + 96px container) - 84px BottomNav top = 12px visual clearance`.
-- **No Inline Offsets:** Do NOT add inline `style={{ marginTop: '16px' }}` on child bento cards (`.resume-card`, `.vehicle-bento-card`). Rely strictly on parent `gap: 12px`.
+### Profile Page 14px Spacing & Einstein Clearance Equation
+- **Inter-Card Gap:** `14px` (`.profile-menu { gap: 14px; }`).
+- **Profile Menu Padding:** `padding: 0 14px;` (`padding-bottom: 0px`).
+- **Mandatory 84px Dock Spacer:** Always place `<div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0 }} />` at the bottom of all sub-page menu lists (`.profile-menu`, `.notif-list`).
+- **Einstein Mathematical Formula:** `14px flex gap + 84px spacer = 98px total clearance`. Subtracting `84px` `BottomNav` top edge yields an **exact 14px visual clearance gap**, achieving 100% mathematical symmetry with inter-card gaps.
+- **No Inline Offsets:** Do NOT add inline `style={{ marginTop: '16px' }}` on child bento cards (`.resume-card`, `.vehicle-bento-card`). Rely strictly on parent `gap: 14px`.
 
 ### Scroll Restoration & Outer Page Top Lock Invariant
 - **No Component-Mount `scrollIntoView`:** Never call `targetEl.scrollIntoView()` on inner child elements inside cards upon component mount.

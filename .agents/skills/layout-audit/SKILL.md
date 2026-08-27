@@ -25,8 +25,7 @@ This skill documents the automated layout and design system verification protoco
    - Inner overflow containers use `container.scrollTo({ left: offset })` for horizontal tab scrolling.
 
 4. **Rule 23 (Floating Dock Clearance & Exact Scroll Restoration):**
-   - Sub-Page Spacer: All sub-page content lists (`.profile-menu`, `.notif-list`) include `<div style={{ height: '96px', flexShrink: 0 }} />` so bottom cards (e.g. Sound Settings) scroll 100% clear above `BottomNav`.
-   - Sub-Page Container Clearance: `.profile-container.sub-page-view` has `padding-bottom: 120px !important`.
+   - Sub-Page Spacer: All sub-page content lists (`.profile-menu`, `.notif-list`) include `<div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0 }} />` so bottom cards (e.g. Sound Settings) sit with an exact 14px mathematical symmetry gap above `BottomNav`.
    - Exact Scroll Restoration: Main Profile scroll position is saved into `savedMainScroll` and restored upon returning (`handleBackToMain`).
 
 ## 🛠️ Automated Execution Command
