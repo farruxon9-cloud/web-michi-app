@@ -38,6 +38,12 @@ Before concluding any turn or session where new JSX components or UI texts were 
 
 ---
 
+## 🚫 Zero Hardcoded Language Fallback Invariant
+- **No Single-Language Fallbacks in JSX:** Component JSX files MUST NEVER pass hardcoded single-language strings as second fallback arguments in `t('key', 'HardcodedString')`.
+- **Mandatory 5-Locale Keys:** All dictionary keys MUST be defined across all 5 locale files (`ja.js`, `en.js`, `uz.js`, `ru.js`, `zh.js`) to guarantee exact language rendering regardless of user locale.
+
+---
+
 ## 🛠️ Key i18n Commands & Tools
 
 - **Run i18n Dictionary Parity & Scraper:**

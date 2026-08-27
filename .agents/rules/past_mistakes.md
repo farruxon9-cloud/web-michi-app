@@ -95,11 +95,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. **Chegaralar va Burchaklar Uniformasi**:
      - `BottomNav` paneli va barcha Harakat bento kartalari: `border-radius: 24px; border: 1px solid var(--glass-border);`.
      - Kontent bento kartalari (`.detail-section`, `.shoukai-section`): `border-radius: 20px; border: 1px solid var(--glass-border);`.
-## 🚫 21. Seanslar Boshlanishi va Yakunida Avtomatik i18n Ko'p Tilli Validatsiya (Session Opening & Closing i18n Audit Protocol)
-* **Xatolik**: Kod yozish tugagach yoki seans boshlanganda i18n tarjimalarini qo'lda yakka-yakka tekshirish tufayli vaqt va tokenlar behuda sarflanishi hamda ba'zi tillarda yetishmovchiliklar qolib ketishi.
+## 🚫 21. Seanslar Boshlanishi va Yakunida Avtomatik i18n Ko'p Tilli Validatsiya va Nol Qattiq Fallback Invarianti (Session Opening/Closing i18n Audit & Zero Hardcoded Fallback Invariants)
+* **Xatolik**: 
+  1. JSX komponentlarda `t('key', "O'zbekcha matn")` ko'rinishida ikkinchi argument sifatida qattiq tildagi matn berilishi hamda shu kalit `ja.js` lug'atida bo'lmagani sababli, Yaponcha profil tanlanganda ham sahifada o'zbekcha yozuvlar chiqib qolishi.
+  2. Kod yozish tugagach i18n tarjimalarini qo'lda tekshirish tufayli vaqt va tokenlar behuda sarflanishi.
 * **Yechim**: 
-  1. **Seans Boshida (Opening Protocol)**: Har safar ishni boshlashda `node scripts/health_check.mjs` buyrug'i orqali Git, Vitest testlar, DB va 5-til i18n simmetriyasi avtomatik tekshiriladi.
-  2. **Seans Oxirida (Closing Protocol)**: Yangi kod va tugmalar qo'shilgandan so'ng `node scripts/validate_i18n.mjs` yordamida barcha 5 ta til (`ja`, `en`, `uz`, `ru`, `zh`) kalitlari to'liqligi va xatosizligi tasdiqlangach commit qilinadi.
+  1. **Nol Qattiq Fallback (Zero Hardcoded Fallbacks)**: Component JSX fayllarida `t('key')` chaqiruvlarida ikkinchi argument sifatida qattiq tildagi fallback matnlar berilishi TAQIQLANADI. Barcha kalitlar majburiy ravishda 5 ta lug'at faylida (`ja.js`, `en.js`, `uz.js`, `ru.js`, `zh.js`) to'liq e'lon qilinishi shart.
+  2. **Seans Boshida (Opening Protocol)**: Har safar ishni boshlashda `node scripts/health_check.mjs` buyrug'i orqali Git, Vitest testlar, DB va 5-til i18n simmetriyasi avtomatik tekshiriladi.
+  3. **Seans Oxirida (Closing Protocol)**: Yangi kod va tugmalar qo'shilgandan so'ng `node scripts/validate_i18n.mjs` yordamida barcha 5 ta til kalitlari to'liqligi va xatosizligi tasdiqlangach commit qilinadi.
 
 ## 🚫 22. Ichki Elementlar Tufayli Tashqi Sahifa Skrollining Avto-O'zgarishi Taqiqlanishi (No Unintended Outer Page Scroll Invariant)
 * **Xatolik**: 
