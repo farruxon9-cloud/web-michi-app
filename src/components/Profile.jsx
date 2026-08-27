@@ -2209,9 +2209,9 @@ const getLicenseLabel = (type) => {
   // ===== NOTIFICATIONS PAGE =====
   if (activePage === 'notifications') {
     return (
-      <div className="profile-container fade-in">
+      <div className="profile-container sub-page-view fade-in">
         <div className="profile-sticky-back">
-          <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+          <button className="icon-btn glass" onClick={handleBackToMain}><ArrowLeft size={20} /></button>
         </div>
         <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <div className="sub-header-row">
@@ -2234,10 +2234,8 @@ const getLicenseLabel = (type) => {
             </div>
           ) : (
             [...notifications].sort((a, b) => {
-              // 1. O'qilmagan bildirishnomalar har doim tepada turadi
               if (!a.read && b.read) return -1;
               if (a.read && !b.read) return 1;
-              // 2. Yangi bildirishnomalar (ID bo'yicha eng oxirgilari) tepada turadi, eskilari esa pastga tushadi
               return b.id - a.id;
             }).map(notif => (
               <div 
@@ -2272,13 +2270,10 @@ const getLicenseLabel = (type) => {
                       style={{ marginTop: '8px' }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        // Mark as accepted locally
                         setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, accepted: true, read: true } : n));
-                        // Trigger logic
                         if (onAcceptEmployeeRequest) {
                           onAcceptEmployeeRequest(notif.michiId, notif.company);
                         }
-                        // Alert user
                         alert(t('employeeConfirmed', 'Xodimlik tasdiqlandi!'));
                       }}
                     >
@@ -2294,6 +2289,7 @@ const getLicenseLabel = (type) => {
             ))
           )}
         </div>
+        <div style={{ height: '96px', flexShrink: 0 }} />
       </div>
     );
   }
@@ -2395,6 +2391,9 @@ const getLicenseLabel = (type) => {
               </button>
             </div>
           </div>
+
+          {/* Bottom Dock Clearance Spacer so Sound Settings scrolls 100% clear of BottomNav */}
+          <div style={{ height: '96px', flexShrink: 0 }} />
         </div>
       </div>
     );
