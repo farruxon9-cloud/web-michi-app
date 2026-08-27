@@ -266,6 +266,11 @@ style={{
 - **Mathematical Formula:** `(0px menu padding + 96px container) - 84px BottomNav top = 12px visual clearance`.
 - **No Inline Offsets:** Do NOT add inline `style={{ marginTop: '16px' }}` on child bento cards (`.resume-card`, `.vehicle-bento-card`). Rely strictly on parent `gap: 12px`.
 
+### Scroll Restoration & Outer Page Top Lock Invariant
+- **No Component-Mount `scrollIntoView`:** Never call `targetEl.scrollIntoView()` on inner child elements inside cards upon component mount.
+- **Container-Relative Horizontal Scroll Only:** Use `container.scrollTo({ left: offset })` on inner overflow containers to prevent browser window/page auto-scrolling.
+- **Top Lock on Tab Switch:** Ensure `.profile-container` and all main page containers execute `scrollTop = 0` on mount to open flush at the very top.
+
 ---
 
 ## 💎 11. Global Visual & Color Token Integrity Standard

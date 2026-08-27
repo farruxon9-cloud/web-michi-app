@@ -95,12 +95,21 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. **Chegaralar va Burchaklar Uniformasi**:
      - `BottomNav` paneli va barcha Harakat bento kartalari: `border-radius: 24px; border: 1px solid var(--glass-border);`.
      - Kontent bento kartalari (`.detail-section`, `.shoukai-section`): `border-radius: 20px; border: 1px solid var(--glass-border);`.
-     - Kichik badge va pill belgilari: `border-radius: var(--radius-full)` yoki `8px-10px`.
 ## 🚫 21. Seanslar Boshlanishi va Yakunida Avtomatik i18n Ko'p Tilli Validatsiya (Session Opening & Closing i18n Audit Protocol)
 * **Xatolik**: Kod yozish tugagach yoki seans boshlanganda i18n tarjimalarini qo'lda yakka-yakka tekshirish tufayli vaqt va tokenlar behuda sarflanishi hamda ba'zi tillarda yetishmovchiliklar qolib ketishi.
 * **Yechim**: 
   1. **Seans Boshida (Opening Protocol)**: Har safar ishni boshlashda `node scripts/health_check.mjs` buyrug'i orqali Git, Vitest testlar, DB va 5-til i18n simmetriyasi avtomatik tekshiriladi.
   2. **Seans Oxirida (Closing Protocol)**: Yangi kod va tugmalar qo'shilgandan so'ng `node scripts/validate_i18n.mjs` yordamida barcha 5 ta til (`ja`, `en`, `uz`, `ru`, `zh`) kalitlari to'liqligi va xatosizligi tasdiqlangach commit qilinadi.
+
+## 🚫 22. Ichki Elementlar Tufayli Tashqi Sahifa Skrollining Avto-O'zgarishi Taqiqlanishi (No Unintended Outer Page Scroll Invariant)
+* **Xatolik**: 
+  1. Karta ichidagi ichki sub-tablar yoki elementlar (masalan, `My Car` avtomobil tanlov tablari) yuklanganda `targetEl.scrollIntoView()` buyrug'ini chaqirish. Bu brauzerni butun sahifani (`.profile-container`) pastga skroll qilib, sahifa boshini yashirib qo'yishiga olib keladi.
+* **Yechim**: 
+  1. Komponentlar yuklanganda (`mount`) ichki elementlarda har qanday `.scrollIntoView()` chaqiruvlari QAT'IYAN TAQIQLANADI.
+  2. Ichki gorizontal satrlarni skroll qilish uchun faqat nisbiy konteyner skrollidan foydalaniladi: `container.scrollTo({ left: targetOffset, behavior: 'smooth' })`.
+  3. Har bir asosiy sahifa (Profil, Avtomaktab, E'lonlar) tab o'zgarganda va ochilganda doim `scrollTop = 0` holatida — ya'ni eng yuqori sarlavhadan ochilishi shart.
+
+
 
 
 
