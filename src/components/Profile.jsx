@@ -218,7 +218,7 @@ export default function Profile({
     );
   }
 
-  // Sub-sahifa o'zgarganda scroll holatini tepaga reset qilish (Scroll Restoration)
+  // Sub-sahifa o'zgarganda yoki sahifa ochilganda scroll holatini eng tepaga reset qilish (Scroll Restoration)
   React.useEffect(() => {
     const container = document.querySelector('.profile-container');
     if (container) {
@@ -564,7 +564,7 @@ export default function Profile({
     setSwipeStartX(null);
   };
 
-  // Auto-scroll ONLY the inner tab container (never the outer page!)
+  // Auto-scroll ONLY the inner tab container horizontally (never scroll the outer page!)
   React.useEffect(() => {
     // Ensure window/page horizontal scroll stays locked at 0
     if (typeof window !== 'undefined') {
@@ -577,8 +577,6 @@ export default function Profile({
     const activeId = String(myVehicle.id);
     const targetEl = container.querySelector(`[data-veh-id="${activeId}"]`);
     if (targetEl) {
-      targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      
       const containerRect = container.getBoundingClientRect();
       const targetRect = targetEl.getBoundingClientRect();
       const relativeLeft = targetRect.left - containerRect.left;
