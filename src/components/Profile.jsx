@@ -2294,7 +2294,6 @@ const getLicenseLabel = (type) => {
             ))
           )}
         </div>
-        <div style={{ height: '96px', flexShrink: 0 }} />
       </div>
     );
   }
@@ -2396,9 +2395,6 @@ const getLicenseLabel = (type) => {
               </button>
             </div>
           </div>
-
-          {/* Bottom Dock Clearance Spacer so Sound Settings scrolls 100% clear of BottomNav */}
-          <div style={{ height: '96px', flexShrink: 0 }} />
         </div>
       </div>
     );

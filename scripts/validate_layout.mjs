@@ -46,11 +46,6 @@ checkFile('src/components/Profile.jsx', [
     isError: true
   },
   {
-    name: "Rule 23: Sub-sahifada 96px Bottom Clearance Spacer mavjudligi",
-    test: (c) => c.includes("height: '96px'") || c.includes('height: "96px"'),
-    isError: true
-  },
-  {
     name: "Rule 23: Aniq joyga qaytish (savedMainScroll state) mavjudligi",
     test: (c) => c.includes('savedMainScroll'),
     isError: true
