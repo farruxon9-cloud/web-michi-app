@@ -35,6 +35,10 @@
   animation: subPageFlipUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.profile-container.sub-page-view > .profile-menu {
+  padding-bottom: 96px !important;
+}
+
 @keyframes skeletonPulse {
   0% { opacity: 0.4; }
   50% { opacity: 0.85; }
