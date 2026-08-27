@@ -96,7 +96,12 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
      - `BottomNav` paneli va barcha Harakat bento kartalari: `border-radius: 24px; border: 1px solid var(--glass-border);`.
      - Kontent bento kartalari (`.detail-section`, `.shoukai-section`): `border-radius: 20px; border: 1px solid var(--glass-border);`.
      - Kichik badge va pill belgilari: `border-radius: var(--radius-full)` yoki `8px-10px`.
-  3. **Visual Degeneratsiyani Oldini Olish**: Light va Dark mode rang kontrastlari, shisha shaffofligi hamda mikro-animatsiyalar har qanday tahrir ostida 100% buzilmasdan saqlanib qolishi shart.
+## 🚫 21. Seanslar Boshlanishi va Yakunida Avtomatik i18n Ko'p Tilli Validatsiya (Session Opening & Closing i18n Audit Protocol)
+* **Xatolik**: Kod yozish tugagach yoki seans boshlanganda i18n tarjimalarini qo'lda yakka-yakka tekshirish tufayli vaqt va tokenlar behuda sarflanishi hamda ba'zi tillarda yetishmovchiliklar qolib ketishi.
+* **Yechim**: 
+  1. **Seans Boshida (Opening Protocol)**: Har safar ishni boshlashda `node scripts/health_check.mjs` buyrug'i orqali Git, Vitest testlar, DB va 5-til i18n simmetriyasi avtomatik tekshiriladi.
+  2. **Seans Oxirida (Closing Protocol)**: Yangi kod va tugmalar qo'shilgandan so'ng `node scripts/validate_i18n.mjs` yordamida barcha 5 ta til (`ja`, `en`, `uz`, `ru`, `zh`) kalitlari to'liqligi va xatosizligi tasdiqlangach commit qilinadi.
+
 
 
 
