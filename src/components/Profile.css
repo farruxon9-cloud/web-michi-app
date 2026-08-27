@@ -30,13 +30,17 @@
   }
 }
 
+.profile-container.sub-page-view {
+  padding-bottom: 98px !important;
+}
+
 .profile-container.sub-page-view > .sub-page-header,
 .profile-container.sub-page-view > .profile-menu {
   animation: subPageFlipUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .profile-container.sub-page-view > .profile-menu {
-  padding-bottom: 96px !important;
+  padding-bottom: 0px !important;
 }
 
 @keyframes skeletonPulse {
