@@ -18,6 +18,24 @@
   display: none !important;
 }
 
+/* Sub-page 3D Flip & Slide-Up Animation (Settings, Notifications, About, etc.) */
+@keyframes subPageFlipUp {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.96) rotateX(8deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+.profile-container.sub-page-view {
+  animation: subPageFlipUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  perspective: 1000px;
+  transform-origin: center bottom;
+}
+
 @keyframes skeletonPulse {
   0% { opacity: 0.4; }
   50% { opacity: 0.85; }

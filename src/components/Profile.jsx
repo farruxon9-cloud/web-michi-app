@@ -218,13 +218,32 @@ export default function Profile({
     );
   }
 
-  // Sub-sahifa o'zgarganda yoki sahifa ochilganda scroll holatini eng tepaga reset qilish (Scroll Restoration)
+  // Saved main Profile scroll position when navigating to sub-pages
+  const [savedMainScroll, setSavedMainScroll] = useState(0);
+
+  const handleOpenSubPage = (page) => {
+    const container = document.querySelector('.profile-container');
+    if (container) {
+      setSavedMainScroll(container.scrollTop);
+    }
+    setActivePage(page);
+  };
+
+  const handleBackToMain = () => {
+    setActivePage('main');
+  };
+
+  // Sub-sahifadan qaytilganda asosiy profil skrollini aynan bosilgan joyga qaytarish, sub-sahifa ochilganda esa topga reset qilish
   React.useEffect(() => {
     const container = document.querySelector('.profile-container');
     if (container) {
-      container.scrollTop = 0;
+      if (activePage === 'main') {
+        container.scrollTop = savedMainScroll;
+      } else {
+        container.scrollTop = 0;
+      }
     }
-  }, [activePage]);
+  }, [activePage, savedMainScroll]);
 
   // --- STATISTIKA VA SANARLARNI HISOBLASH (DYNAMIC MENUS & USER BADGES) ---
   // Hamma bo'limlar uchun bosilgan o'zgarishlar sanoqlari (badges) dynamic ravishda hisoblanadi.
@@ -2282,9 +2301,9 @@ const getLicenseLabel = (type) => {
   // ===== SETTINGS PAGE =====
   if (activePage === 'settings') {
     return (
-      <div className="profile-container fade-in">
+      <div className="profile-container sub-page-view fade-in">
         <div className="profile-sticky-back">
-          <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+          <button className="icon-btn glass" onClick={handleBackToMain}><ArrowLeft size={20} /></button>
         </div>
         <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <h2>{t('settings')}</h2>
@@ -5694,7 +5713,7 @@ const getLicenseLabel = (type) => {
 
         {/* Menu Items */}
         <div className="menu-group glass squircle">
-          <div className="menu-item" onClick={() => setActivePage('personalInfo')}>
+          <div className="menu-item" onClick={() => handleOpenSubPage('personalInfo')}>
             <div className="menu-icon"><User size={20} /></div>
             <span>{userRole === 'company' ? t('companyInfoTitle', "Kompaniya ma'lumotlari") : t('personalData')}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
@@ -5702,7 +5721,7 @@ const getLicenseLabel = (type) => {
           <div className="menu-divider"></div>
           <div className="menu-item" onClick={() => {
             if (setProfileActivePageSource) setProfileActivePageSource('profile');
-            setActivePage('applications');
+            handleOpenSubPage('applications');
           }}>
             <div className="menu-icon"><Briefcase size={20} /></div>
             <span>{userRole === 'company' ? t('incomingApps', 'Kelib tushgan arizalar') : t('myApplications')}</span>
@@ -5716,7 +5735,7 @@ const getLicenseLabel = (type) => {
           {(userRole === 'driver' || userRole === 'guest') && (
             <>
               <div className="menu-divider"></div>
-              <div className="menu-item" onClick={() => setActivePage('saved_items')}>
+              <div className="menu-item" onClick={() => handleOpenSubPage('saved_items')}>
                 <div className="menu-icon"><Bookmark size={20} /></div>
                 <span>{t('savedItemsTitle', 'Saqlanganlar')}</span>
                 {showProfileBadges && totalSavedCount > 0 && (
@@ -5727,7 +5746,7 @@ const getLicenseLabel = (type) => {
                 <ChevronRight size={20} color="#8E8E93" className="chevron" />
               </div>
               <div className="menu-divider"></div>
-              <div className="menu-item" onClick={() => setActivePage('resume_builder')}>
+              <div className="menu-item" onClick={() => handleOpenSubPage('resume_builder')}>
                 <div className="menu-icon"><FileText size={20} color="#30D158" /></div>
                 <span>{t('createResume', 'Yapon Rezyumesi (履歴書)')}</span>
                 <ChevronRight size={20} color="#8E8E93" className="chevron" />
@@ -5735,7 +5754,7 @@ const getLicenseLabel = (type) => {
             </>
           )}
           <div className="menu-divider"></div>
-          <div className="menu-item" onClick={() => setActivePage('my_shoukai')}>
+          <div className="menu-item" onClick={() => handleOpenSubPage('my_shoukai')}>
             <div className="menu-icon"><Share2 size={20} /></div>
             <span>{userRole === 'company' ? t('shoukaiViaApps', 'Shoukai orqali kelganlar') : t('myShoukai', "Mening Shoukai'larim")}</span>
             {showProfileBadges && referralsCount > 0 && (
@@ -5750,14 +5769,14 @@ const getLicenseLabel = (type) => {
               <div className="menu-divider"></div>
               <div className="menu-item" onClick={() => {
                 if (setProfileActivePageSource) setProfileActivePageSource('profile');
-                setActivePage('my_ads');
+                handleOpenSubPage('my_ads');
               }}>
                 <div className="menu-icon"><Megaphone size={20} /></div>
                 <span>{t('myAdsMenu', 'Mening e\'lonlarim')}</span>
                 <ChevronRight size={20} color="#8E8E93" className="chevron" />
               </div>
               <div className="menu-divider"></div>
-              <div className="menu-item" onClick={() => setActivePage('employees')}>
+              <div className="menu-item" onClick={() => handleOpenSubPage('employees')}>
                 <div className="menu-icon"><Users size={20} /></div>
                 <span>{t('employeesHR', 'Xodimlar (HR)')}</span>
                 {showProfileBadges && employeesCount > 0 && (
@@ -5772,7 +5791,7 @@ const getLicenseLabel = (type) => {
         </div>
 
         <div className="menu-group glass squircle">
-          <div className="menu-item" onClick={() => setActivePage('notifications')}>
+          <div className="menu-item" onClick={() => handleOpenSubPage('notifications')}>
             <div className="menu-icon"><Bell size={20} /></div>
             <span>{t('notifications')}</span>
             {showProfileBadges && unreadCount > 0 && (
@@ -5781,13 +5800,13 @@ const getLicenseLabel = (type) => {
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
           <div className="menu-divider"></div>
-          <div className="menu-item" onClick={() => setActivePage('settings')}>
+          <div className="menu-item" onClick={() => handleOpenSubPage('settings')}>
             <div className="menu-icon"><Settings size={20} /></div>
             <span>{t('settings')}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
           <div className="menu-divider"></div>
-          <div className="menu-item" onClick={() => setActivePage('about')}>
+          <div className="menu-item" onClick={() => handleOpenSubPage('about')}>
             <div className="menu-icon"><Info size={20} /></div>
             <span>{t('aboutApp', 'Platforma haqida')}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
