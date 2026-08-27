@@ -669,9 +669,13 @@ const translation = {
   "sendCodeBtn": "Kodni yuborish",
   "verifyCodeBtn": "Kodni tasdiqlash",
   "updateAndLoginBtn": "Parolni yangilash va Kirish",
-  "forgotPasswordBtn": "Parolni unutdingizmi?",
   "employeeRequestMsg": "Xodim so'rov xabari",
-  "downloadPDF": "PDF yuklab olish"
+  "downloadPDF": "PDF yuklab olish",
+  "myShoukai": "Mening Shoukai'larim",
+  "totalReferred": "Jami taklif qilinganlar:",
+  "shoukaiNote": "Shoukai to'lovlari tashkilotlar tomonidan tasdiqlangach sizga beriladi. Ilovada faqat ularning holatini kuzatib borasiz.",
+  "referralList": "Takliflar ro'yxati",
+  "noReferralsYet": "Hali hech kimni taklif qilmadingiz"
 }
 
 export default { translation };

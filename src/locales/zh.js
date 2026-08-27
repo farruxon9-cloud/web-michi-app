@@ -575,7 +575,12 @@ const translation = {
   "schoolDescPlaceholder": "详细介绍...",
   "shoukaiFeePlaceholder": "奖励金额（日元）",
   "uploadAdImage": "上传图片",
-  "noJobsYet": "暂无发布的职位"
+  "noJobsYet": "暂无发布的职位",
+  "myShoukai": "我的推荐",
+  "totalReferred": "推荐总数:",
+  "shoukaiNote": "推荐奖励将在相关机构确认后发放。您可以在应用内跟踪状态。",
+  "referralList": "推荐列表",
+  "noReferralsYet": "暂无推荐记录"
 }
 
 export default { translation };

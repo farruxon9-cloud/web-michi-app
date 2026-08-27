@@ -755,9 +755,13 @@ const translation = {
   "sendCodeBtn": "コードを送信",
   "verifyCodeBtn": "コードを認証",
   "updateAndLoginBtn": "更新してログイン",
-  "forgotPasswordBtn": "パスワードをお忘れですか？",
   "employeeRequestMsg": "従業員リクエストメッセージ",
-  "downloadPDF": "PDFダウンロード"
+  "downloadPDF": "PDFダウンロード",
+  "myShoukai": "マイ紹介一覧",
+  "totalReferred": "合計紹介数:",
+  "shoukaiNote": "紹介報酬は対象企業・教習所での承認後に支給されます。アプリ内ではステータスのみ確認可能です。",
+  "referralList": "紹介リスト",
+  "noReferralsYet": "まだ紹介実績はありません"
 }
 
 export default { translation };

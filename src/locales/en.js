@@ -665,9 +665,13 @@ const translation = {
   "sendCodeBtn": "Send Code",
   "verifyCodeBtn": "Verify Code",
   "updateAndLoginBtn": "Update & Log In",
-  "forgotPasswordBtn": "Forgot password?",
   "employeeRequestMsg": "Employee Request Message",
-  "downloadPDF": "Download PDF"
+  "downloadPDF": "Download PDF",
+  "myShoukai": "My Referrals",
+  "totalReferred": "Total Referrals:",
+  "shoukaiNote": "Referral rewards are disbursed upon verification by the respective organization. Track status in the app.",
+  "referralList": "Referral List",
+  "noReferralsYet": "No referrals yet"
 }
 
 export default { translation };

@@ -3698,20 +3698,20 @@ const getLicenseLabel = (type) => {
         </div>
         <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <h2>
-            {t('myShoukai', 'Mening Shoukai\'larim')}
+            {t('myShoukai')}
             <span className="section-header-count">({totalRefs})</span>
           </h2>
         </div>
         <div className="applications-list" style={{ padding: '16px' }}>
           <div className="glass squircle" style={{ padding: '16px', marginBottom: '20px' }}>
-            <h3 style={{ marginBottom: '8px', fontSize: '16px' }}>{t('shoukaiStats', 'Shoukai Statistikasi')}</h3>
-            <p style={{ margin: '4px 0', color: '#8E8E93', fontSize: '14px' }}>{t('totalReferred', 'Jami taklif qilinganlar:')} <strong>{totalRefs}</strong></p>
-            <p style={{ margin: '4px 0', color: '#8E8E93', fontSize: '12px' }}>* {t('shoukaiNote', "Shoukai to'lovlari tashkilotlar tomonidan tasdiqlangach sizga beriladi. Ilovada faqat ularning holatini kuzatib borasiz.")}</p>
+            <h3 style={{ marginBottom: '8px', fontSize: '16px' }}>{t('shoukaiStats')}</h3>
+            <p style={{ margin: '4px 0', color: '#8E8E93', fontSize: '14px' }}>{t('totalReferred')} <strong>{totalRefs}</strong></p>
+            <p style={{ margin: '4px 0', color: '#8E8E93', fontSize: '12px' }}>* {t('shoukaiNote')}</p>
           </div>
 
-          <h3 style={{ marginBottom: '16px', fontSize: '18px' }}>{t('referralList', 'Takliflar ro\'yxati')}</h3>
+          <h3 style={{ marginBottom: '16px', fontSize: '18px' }}>{t('referralList')}</h3>
           {totalRefs === 0 ? (
-            <p style={{ color: '#8E8E93', textAlign: 'center', marginTop: '20px' }}>{t('noReferralsYet', 'Hali hech kimni taklif qilmadingiz')}</p>
+            <p style={{ color: '#8E8E93', textAlign: 'center', marginTop: '20px' }}>{t('noReferralsYet')}</p>
           ) : (
             <>
               {myJobRefs.map(app => (

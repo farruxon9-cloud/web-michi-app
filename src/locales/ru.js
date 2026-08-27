@@ -174,7 +174,12 @@ const translation = {
   "schoolDescPlaceholder": "Подробное описание...",
   "shoukaiFeePlaceholder": "Размер бонуса (иены)",
   "uploadAdImage": "Загрузить фото",
-  "noJobsYet": "Пока нет опубликованных вакансий"
+  "noJobsYet": "Пока нет опубликованных вакансий",
+  "myShoukai": "Мои рекомендации",
+  "totalReferred": "Всего рекомендаций:",
+  "shoukaiNote": "Вознаграждения за рекомендации выплачиваются после подтверждения организацией. В приложении отслеживается статус.",
+  "referralList": "Список рекомендаций",
+  "noReferralsYet": "Пока нет рекомендаций"
 };
 
 export default { translation };
