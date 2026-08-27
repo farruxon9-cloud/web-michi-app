@@ -190,6 +190,19 @@ try {
   pass("i18n validatsiyasi tekshirildi");
 }
 
+// 7. LAYOUT VA DESIGN INVARIANTLAR VALIDATSIYASI
+header("7. Layout va Design Invariantlar Validatsiyasi");
+try {
+  const layoutOutput = execSync("node scripts/validate_layout.mjs 2>&1", { encoding: "utf-8" });
+  if (layoutOutput.includes("BARCHA LAYOUT VA DESIGN INVARIANTLARI O'TDI")) {
+    pass("Layout & CSS Invariants: Barcha qoidalar passed (Rules 18-23)");
+  } else {
+    fail("Layout & CSS Invariants: Ba'zi dizayn qoidalarida xatolik bor!");
+  }
+} catch (e) {
+  fail("Layout validatsiyasi xatolik bilan tugadi!");
+}
+
 // YAKUNIY NATIJA
 console.log(`\n${BOLD}${CYAN}`);
 console.log("══════════════════════════════════════════════");

@@ -538,11 +538,16 @@ export default function Profile({
     if (!veh) return;
     if (myVehicle && String(myVehicle.id) === String(veh.id)) return;
     
-    // Immediately scroll target tab into view on click/selection
+    // Immediately scroll target tab horizontally into view on click/selection (container-relative)
     if (fleetTabsRef.current) {
-      const targetEl = fleetTabsRef.current.querySelector(`[data-veh-id="${String(veh.id)}"]`);
+      const container = fleetTabsRef.current;
+      const targetEl = container.querySelector(`[data-veh-id="${String(veh.id)}"]`);
       if (targetEl) {
-        targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        const containerRect = container.getBoundingClientRect();
+        const targetRect = targetEl.getBoundingClientRect();
+        const relativeLeft = targetRect.left - containerRect.left;
+        const targetOffset = container.scrollLeft + relativeLeft - (container.clientWidth / 2) + (targetEl.clientWidth / 2);
+        container.scrollTo({ left: Math.max(0, targetOffset), behavior: 'smooth' });
       }
     }
 
