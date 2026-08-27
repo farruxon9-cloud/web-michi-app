@@ -2395,6 +2395,9 @@ const getLicenseLabel = (type) => {
               </button>
             </div>
           </div>
+
+          {/* Guaranteed 100px Bottom Clearance Spacer (84px BottomNav dock + 16px visual gap = 100px) */}
+          <div style={{ height: '100px', minHeight: '100px', width: '100%', flexShrink: 0 }} />
         </div>
       </div>
     );
