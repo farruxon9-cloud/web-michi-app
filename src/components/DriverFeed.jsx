@@ -22,6 +22,8 @@ export const MOCK_JOBS = [
     image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800",
     verified: true,
     location: "Tokyo, Koto-ku",
+    lat: 35.6329,
+    lng: 139.7904,
     fullAddress: "〒135-0063 Tokyo, Koto-ku, Ariake 3-1-1",
     nearestStation: "Kokusai-tenjijo Station",
     walkTime: 8,
@@ -49,6 +51,8 @@ export const MOCK_JOBS = [
     image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
     verified: true,
     location: "Kanagawa, Yokohama",
+    lat: 35.4437,
+    lng: 139.6380,
     fullAddress: "〒231-0023 Kanagawa, Yokohama, Naka-ku, Yamashitacho 12",
     nearestStation: "Motomachi-Chukagai Station",
     walkTime: 12,
@@ -77,6 +81,8 @@ export const MOCK_JOBS = [
     image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
     verified: true,
     location: "Saitama, Omiya",
+    lat: 35.9064,
+    lng: 139.6235,
     fullAddress: "〒330-0854 Saitama, Omiya-ku, Sakuragicho 2-1",
     nearestStation: "Omiya Station",
     walkTime: 5,
@@ -104,6 +110,8 @@ export const MOCK_JOBS = [
     image: "https://images.unsplash.com/photo-1541888062837-7b247f082e05?auto=format&fit=crop&q=80&w=800",
     verified: false,
     location: "Chiba, Matsudo",
+    lat: 35.7915,
+    lng: 139.9015,
     fullAddress: "〒270-2253 Chiba, Matsudo, Tokiwadaira 3-2-1",
     nearestStation: "Tokiwadaira Station",
     walkTime: 15,
@@ -131,6 +139,8 @@ export const MOCK_JOBS = [
     image: "https://images.unsplash.com/photo-1587293852726-70cdb56c28ea?auto=format&fit=crop&q=80&w=800",
     verified: true,
     location: "Aichi, Nagoya",
+    lat: 35.1815,
+    lng: 136.9066,
     fullAddress: "〒450-0002 Aichi, Nagoya, Nakamura-ku, Meieki 1-1-4",
     nearestStation: "Nagoya Station",
     walkTime: 10,
@@ -202,12 +212,9 @@ export default function DriverFeed({
 }) {
   const { t } = useTranslation();
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(10);
   const [localLoading, setLocalLoading] = useState(false);
-  const [viewMode, setViewMode] = useState('list'); // 'list' | 'map'
-  const [selectedMapJob, setSelectedMapJob] = useState(null);
-  const mapRef = React.useRef(null);
-  const mapInstance = React.useRef(null);
   const markersRef = React.useRef([]);
 
   // Reset pagination when any filter changes
@@ -340,22 +347,26 @@ export default function DriverFeed({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="view-mode-switcher glass">
-            <button 
-              className={`view-mode-btn ${viewMode === 'list' ? 'active' : ''}`}
-              onClick={() => setViewMode('list')}
-              title={t('listView', 'List View')}
-            >
-              📋 {t('listView', 'List')}
-            </button>
-            <button 
-              className={`view-mode-btn ${viewMode === 'map' ? 'active' : ''}`}
-              onClick={() => setViewMode('map')}
-              title={t('mapView', 'Map View')}
-            >
-              🗺️ {t('mapView', 'Map')}
-            </button>
-          </div>
+          <button 
+            type="button"
+            className="map-view-toggle-btn glass"
+            onClick={() => setIsMapModalOpen(true)}
+            title={t('jobMapTitle', '求人マップ検索')}
+            style={{
+              padding: '10px 14px',
+              borderRadius: '14px',
+              border: '1px solid var(--glass-border)',
+              background: 'rgba(10, 132, 255, 0.12)',
+              color: 'var(--primary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s'
+            }}
+          >
+            <MapPin size={20} color="var(--primary)" />
+          </button>
           <button 
             className={`filter-toggle-btn ${hasActiveFilters ? 'active' : ''}`}
             onClick={() => setIsFilterDrawerOpen(true)}
@@ -394,85 +405,8 @@ export default function DriverFeed({
         </div>
       </div>
 
-      {/* ====== INTERACTIVE JOB MAP VIEW (MAP MODE) ====== */}
-      {viewMode === 'map' ? (
-        <div className="job-map-wrapper fade-in" style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div className="job-map-header-bar glass squircle" style={{ padding: '10px 14px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
-              🗺️ {t('jobMapTitle', '求人マップ検索')} ({filteredJobs.length})
-            </span>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>📍 Japan Nationwide</span>
-          </div>
-
-          <div className="job-map-container glass squircle" style={{ position: 'relative', flex: 1, minHeight: '380px', borderRadius: '20px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
-            <div className="job-map-pins-layer" style={{ padding: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '10px' }}>
-              {filteredJobs.map(job => {
-                const isSelected = selectedMapJob && selectedMapJob.id === job.id;
-                return (
-                  <div 
-                    key={job.id} 
-                    className={`job-map-pin glass squircle ${isSelected ? 'selected' : ''}`}
-                    onClick={() => setSelectedMapJob(job)}
-                    style={{ 
-                      padding: '12px', 
-                      cursor: 'pointer', 
-                      border: isSelected ? '2px solid var(--primary)' : '1px solid var(--glass-border)',
-                      background: isSelected ? 'rgba(10, 132, 255, 0.12)' : 'rgba(255,255,255,0.03)',
-                      transition: 'all 0.2s',
-                      borderRadius: '16px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '6px'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '16px' }}>🚛</span>
-                      <strong style={{ fontSize: '13px', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{job.company}</strong>
-                    </div>
-                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>📍 {job.location}</span>
-                    <span style={{ fontSize: '12px', fontWeight: '700', color: '#34C759' }}>{job.salary}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Selected Job Map Preview Overlay Card */}
-          {selectedMapJob && (
-            <div className="job-map-preview-card glass squircle animate-slide-up" style={{ marginTop: '12px', padding: '16px', border: '1px solid var(--primary)', borderRadius: '20px', background: 'var(--card-bg)' }}>
-              <div className="preview-card-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-                <img src={selectedMapJob.logo} alt={selectedMapJob.company} style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover' }} />
-                <div className="preview-title-block" style={{ flex: 1 }}>
-                  <h4 style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    {selectedMapJob.company} {selectedMapJob.verified && <VerifiedBadge />}
-                  </h4>
-                  <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: '2px 0 0 0' }}>{selectedMapJob.title}</h3>
-                </div>
-                <button className="icon-btn glass" onClick={() => setSelectedMapJob(null)} style={{ padding: '6px' }}>
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="preview-card-meta" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
-                <span style={{ background: 'rgba(52, 199, 89, 0.12)', color: '#34C759', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '700' }}>💰 {selectedMapJob.salary}</span>
-                <span style={{ background: 'rgba(10, 132, 255, 0.12)', color: '#0A84FF', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' }}>📍 {selectedMapJob.location}</span>
-                {selectedMapJob.shoukai !== '0' && (
-                  <span style={{ background: 'rgba(255, 159, 10, 0.12)', color: '#FF9F0A', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '700' }}>🎁 {t('shoukaiAvailable', 'Shoukai')} {selectedMapJob.shoukai}</span>
-                )}
-              </div>
-              <button 
-                className="btn-primary"
-                onClick={() => {
-                  if (onJobClick) onJobClick(selectedMapJob);
-                }}
-                style={{ width: '100%', padding: '12px', borderRadius: '14px', fontSize: '14px', fontWeight: '700' }}
-              >
-                {t('viewDetails', '詳細を見る')}
-              </button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="jobs-list hide-scrollbar">
+      {/* ====== E'LONLAR RO'YXATI (GOO-NET USLUBIDA) ====== */}
+      <div className="jobs-list hide-scrollbar">
         {showLoading ? (
           <>
             <SkeletonCard />
@@ -697,7 +631,6 @@ export default function DriverFeed({
           </div>
         )}
       </div>
-      )}
 
       {/* ====== PREMIUM FILTER DRAWER ====== */}
       {isFilterDrawerOpen && createPortal(
@@ -712,7 +645,38 @@ export default function DriverFeed({
             
             <div className="filter-drawer-content hide-scrollbar">
 
-                        {/* Category 1: Location (Prefecture & City & Station) */}
+              {/* Shortcut: View Jobs on Real Map */}
+              <div className="filter-section" style={{ marginBottom: '20px' }}>
+                <button
+                  type="button"
+                  className="btn-map-shortcut glass squircle animate-scale-up"
+                  onClick={() => {
+                    setIsFilterDrawerOpen(false);
+                    setIsMapModalOpen(true);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.15) 0%, rgba(52, 199, 89, 0.15) 100%)',
+                    border: '1px solid var(--primary)',
+                    borderRadius: '16px',
+                    color: 'var(--primary)',
+                    fontSize: '14.5px',
+                    fontWeight: '700',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(10, 132, 255, 0.2)'
+                  }}
+                >
+                  <MapPin size={20} color="var(--primary)" />
+                  <span>🗺️ {t('jobMapTitle', '求人マップ検索')}</span>
+                </button>
+              </div>
+
+              {/* Category 1: Location (Prefecture & City & Station) */}
               <div className="filter-section">
                 <h4>{t('filterLocation', 'Hudud bo\'yicha qidiruv')}</h4>
                 <div className="filter-tags" style={{ marginBottom: '14px' }}>
@@ -934,6 +898,189 @@ export default function DriverFeed({
         </div>,
         document.getElementById('root') || document.body
       )}
+
+      {/* ====== REAL LEAFLET MAP MODAL ====== */}
+      <JobMapModal 
+        isOpen={isMapModalOpen} 
+        onClose={() => setIsMapModalOpen(false)} 
+        jobs={filteredJobs} 
+        onSelectJob={onJobClick} 
+        t={t} 
+      />
     </div>
+  );
+}
+
+// ============================================================
+// JobMapModal — Real Leaflet Map modal with interactive pins across Japan
+// ============================================================
+function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
+  const mapContainerRef = React.useRef(null);
+  const mapInstanceRef = React.useRef(null);
+  const markersGroupRef = React.useRef(null);
+  const [selectedMapJob, setSelectedMapJob] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const timer = setTimeout(() => {
+      if (!mapContainerRef.current) return;
+      let map = mapInstanceRef.current;
+      if (!map) {
+        if (!window.L) {
+          const script = document.createElement('script');
+          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          script.onload = initLeaflet;
+          document.head.appendChild(script);
+
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+          document.head.appendChild(link);
+        } else {
+          initLeaflet();
+        }
+      } else {
+        map.invalidateSize();
+        updateMarkers();
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
+
+    function initLeaflet() {
+      const L = window.L;
+      if (!L || mapInstanceRef.current || !mapContainerRef.current) return;
+
+      map = L.map(mapContainerRef.current, {
+        center: [35.6812, 139.7671],
+        zoom: 9,
+        zoomControl: false
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+
+      mapInstanceRef.current = map;
+      updateMarkers();
+    }
+
+    function updateMarkers() {
+      const L = window.L;
+      const map = mapInstanceRef.current;
+      if (!L || !map) return;
+
+      if (markersGroupRef.current) {
+        markersGroupRef.current.clearLayers();
+      } else {
+        markersGroupRef.current = L.layerGroup().addTo(map);
+      }
+
+      const bounds = [];
+
+      (jobs || []).forEach(job => {
+        if (!job || !job.lat || !job.lng) return;
+
+        const customIcon = L.divIcon({
+          className: 'real-job-map-pin-marker',
+          html: `<div style="
+            background: rgba(10, 132, 255, 0.95);
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+            cursor: pointer;
+            white-space: nowrap;
+          ">
+            <span>🚛</span>
+            <span>${job.company}</span>
+          </div>`,
+          iconSize: [120, 36],
+          iconAnchor: [60, 18]
+        });
+
+        const marker = L.marker([job.lat, job.lng], { icon: customIcon });
+        marker.on('click', () => {
+          setSelectedMapJob(job);
+        });
+
+        markersGroupRef.current.addLayer(marker);
+        bounds.push([job.lat, job.lng]);
+      });
+
+      if (bounds.length > 0) {
+        try {
+          map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+        } catch (e) {
+          console.warn('fitBounds error:', e);
+        }
+      }
+    }
+  }, [isOpen, jobs]);
+
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="job-map-modal-overlay animate-fade-in" style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column' }}>
+      <div className="job-map-modal-header glass" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--card-bg)', borderBottom: '1px solid var(--glass-border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MapPin size={20} color="var(--primary)" />
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>
+            🗺️ {t('jobMapTitle', '求人マップ検索')} ({jobs.length})
+          </h3>
+        </div>
+        <button className="icon-btn glass" onClick={onClose} style={{ padding: '8px', borderRadius: '12px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}>
+          <X size={20} />
+        </button>
+      </div>
+
+      <div className="job-map-modal-body" style={{ flex: 1, position: 'relative', width: '100%', height: '100%' }}>
+        <div ref={mapContainerRef} style={{ width: '100%', height: '100%', background: '#e5e3df' }} />
+
+        {/* Selected Job Card Preview Overlay */}
+        {selectedMapJob && (
+          <div className="job-map-preview-card glass squircle animate-slide-up" style={{ position: 'absolute', bottom: '24px', left: '16px', right: '16px', zIndex: 1000, padding: '16px', border: '1px solid var(--primary)', borderRadius: '20px', background: 'var(--card-bg)', boxShadow: '0 12px 32px rgba(0,0,0,0.4)' }}>
+            <div className="preview-card-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+              <img src={selectedMapJob.logo} alt={selectedMapJob.company} style={{ width: '44px', height: '44px', borderRadius: '12px', objectFit: 'cover' }} />
+              <div className="preview-title-block" style={{ flex: 1 }}>
+                <h4 style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  {selectedMapJob.company} {selectedMapJob.verified && <VerifiedBadge />}
+                </h4>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: '2px 0 0 0' }}>{selectedMapJob.title}</h3>
+              </div>
+              <button className="icon-btn glass" onClick={() => setSelectedMapJob(null)} style={{ padding: '6px' }}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="preview-card-meta" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+              <span style={{ background: 'rgba(52, 199, 89, 0.12)', color: '#34C759', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '700' }}>💰 {selectedMapJob.salary}</span>
+              <span style={{ background: 'rgba(10, 132, 255, 0.12)', color: '#0A84FF', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' }}>📍 {selectedMapJob.location}</span>
+              {selectedMapJob.shoukai !== '0' && (
+                <span style={{ background: 'rgba(255, 159, 10, 0.12)', color: '#FF9F0A', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '700' }}>🎁 {t('shoukaiAvailable', 'Shoukai')} {selectedMapJob.shoukai}</span>
+              )}
+            </div>
+            <button 
+              className="btn-primary"
+              onClick={() => {
+                onClose();
+                onSelectJob(selectedMapJob);
+              }}
+              style={{ width: '100%', padding: '12px', borderRadius: '14px', fontSize: '14px', fontWeight: '700' }}
+            >
+              {t('viewDetails', '詳細を見る')}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body
   );
 }
