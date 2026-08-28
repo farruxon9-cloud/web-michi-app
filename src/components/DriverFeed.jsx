@@ -964,26 +964,11 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
 
         const customIcon = L.divIcon({
           className: 'real-job-map-pin-marker',
-          html: `<div style="
-            background: rgba(10, 132, 255, 0.95);
-            border: 2px solid #ffffff;
-            color: #ffffff;
-            padding: 6px 12px;
-            border-radius: 16px;
-            font-size: 12px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
-            cursor: pointer;
-            white-space: nowrap;
-          ">
-            <span>🚛</span>
-            <span>${job.company}</span>
+          html: `<div class="job-pin-badge">
+            <span class="pin-icon">🚛</span>
           </div>`,
-          iconSize: [120, 36],
-          iconAnchor: [60, 18]
+          iconSize: [36, 36],
+          iconAnchor: [18, 36]
         });
 
         const marker = L.marker([job.lat, job.lng], { icon: customIcon });
@@ -997,7 +982,7 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
 
       if (bounds.length > 0) {
         try {
-          map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+          map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
         } catch (e) {
           console.warn('fitBounds error:', e);
         }
@@ -1010,56 +995,60 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="job-map-modal-overlay animate-fade-in" style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column' }}>
-      <div className="job-map-modal-header glass" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--card-bg)', borderBottom: '1px solid var(--glass-border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <MapPin size={20} color="var(--primary)" />
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>
-            🗺️ {t('jobMapTitle', '求人マップ検索')} ({jobs.length})
-          </h3>
+    <div className="job-map-modal-overlay animate-fade-in">
+      <div className="job-map-modal-card glass animate-slide-up">
+        {/* Header */}
+        <div className="job-map-modal-header glass" style={{ padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--card-bg)', borderBottom: '1px solid var(--glass-border)', zIndex: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <MapPin size={20} color="var(--primary)" />
+            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: 'var(--text-main)' }}>
+              🗺️ {t('jobMapTitle', '求人マップ検索')} ({jobs.length})
+            </h3>
+          </div>
+          <button className="icon-btn glass" onClick={onClose} style={{ padding: '6px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}>
+            <X size={18} />
+          </button>
         </div>
-        <button className="icon-btn glass" onClick={onClose} style={{ padding: '8px', borderRadius: '12px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}>
-          <X size={20} />
-        </button>
-      </div>
 
-      <div className="job-map-modal-body" style={{ flex: 1, position: 'relative', width: '100%', height: '100%' }}>
-        <div ref={mapContainerRef} style={{ width: '100%', height: '100%', background: '#e5e3df' }} />
+        {/* Map Body */}
+        <div className="job-map-modal-body" style={{ flex: 1, position: 'relative', width: '100%', height: '100%' }}>
+          <div ref={mapContainerRef} style={{ width: '100%', height: '100%', background: '#e5e3df' }} />
 
-        {/* Selected Job Card Preview Overlay */}
-        {selectedMapJob && (
-          <div className="job-map-preview-card glass squircle animate-slide-up" style={{ position: 'absolute', bottom: '24px', left: '16px', right: '16px', zIndex: 1000, padding: '16px', border: '1px solid var(--primary)', borderRadius: '20px', background: 'var(--card-bg)', boxShadow: '0 12px 32px rgba(0,0,0,0.4)' }}>
-            <div className="preview-card-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-              <img src={selectedMapJob.logo} alt={selectedMapJob.company} style={{ width: '44px', height: '44px', borderRadius: '12px', objectFit: 'cover' }} />
-              <div className="preview-title-block" style={{ flex: 1 }}>
-                <h4 style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  {selectedMapJob.company} {selectedMapJob.verified && <VerifiedBadge />}
-                </h4>
-                <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: '2px 0 0 0' }}>{selectedMapJob.title}</h3>
+          {/* Selected Job Card Preview Overlay */}
+          {selectedMapJob && (
+            <div className="job-map-preview-card glass squircle animate-slide-up" style={{ position: 'absolute', bottom: '16px', left: '12px', right: '12px', zIndex: 1000, padding: '14px', border: '1px solid var(--primary)', borderRadius: '20px', background: 'var(--card-bg)', boxShadow: '0 12px 32px rgba(0,0,0,0.45)' }}>
+              <div className="preview-card-header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                <img src={selectedMapJob.logo} alt={selectedMapJob.company} style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover' }} />
+                <div className="preview-title-block" style={{ flex: 1 }}>
+                  <h4 style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {selectedMapJob.company} {selectedMapJob.verified && <VerifiedBadge />}
+                  </h4>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', margin: '2px 0 0 0' }}>{selectedMapJob.title}</h3>
+                </div>
+                <button className="icon-btn glass" onClick={() => setSelectedMapJob(null)} style={{ padding: '6px' }}>
+                  <X size={16} />
+                </button>
               </div>
-              <button className="icon-btn glass" onClick={() => setSelectedMapJob(null)} style={{ padding: '6px' }}>
-                <X size={16} />
+              <div className="preview-card-meta" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
+                <span style={{ background: 'rgba(52, 199, 89, 0.12)', color: '#34C759', padding: '4px 8px', borderRadius: '10px', fontSize: '11.5px', fontWeight: '700' }}>💰 {selectedMapJob.salary}</span>
+                <span style={{ background: 'rgba(10, 132, 255, 0.12)', color: '#0A84FF', padding: '4px 8px', borderRadius: '10px', fontSize: '11.5px', fontWeight: '600' }}>📍 {selectedMapJob.location}</span>
+                {selectedMapJob.shoukai !== '0' && (
+                  <span style={{ background: 'rgba(255, 159, 10, 0.12)', color: '#FF9F0A', padding: '4px 8px', borderRadius: '10px', fontSize: '11.5px', fontWeight: '700' }}>🎁 {t('shoukaiAvailable', 'Shoukai')} {selectedMapJob.shoukai}</span>
+                )}
+              </div>
+              <button 
+                className="btn-primary"
+                onClick={() => {
+                  onClose();
+                  onSelectJob(selectedMapJob);
+                }}
+                style={{ width: '100%', padding: '11px', borderRadius: '12px', fontSize: '13.5px', fontWeight: '700' }}
+              >
+                {t('viewDetails', '詳細を見る')}
               </button>
             </div>
-            <div className="preview-card-meta" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
-              <span style={{ background: 'rgba(52, 199, 89, 0.12)', color: '#34C759', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '700' }}>💰 {selectedMapJob.salary}</span>
-              <span style={{ background: 'rgba(10, 132, 255, 0.12)', color: '#0A84FF', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' }}>📍 {selectedMapJob.location}</span>
-              {selectedMapJob.shoukai !== '0' && (
-                <span style={{ background: 'rgba(255, 159, 10, 0.12)', color: '#FF9F0A', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '700' }}>🎁 {t('shoukaiAvailable', 'Shoukai')} {selectedMapJob.shoukai}</span>
-              )}
-            </div>
-            <button 
-              className="btn-primary"
-              onClick={() => {
-                onClose();
-                onSelectJob(selectedMapJob);
-              }}
-              style={{ width: '100%', padding: '12px', borderRadius: '14px', fontSize: '14px', fontWeight: '700' }}
-            >
-              {t('viewDetails', '詳細を見る')}
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>,
     document.body
