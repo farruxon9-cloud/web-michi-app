@@ -2122,8 +2122,8 @@ const getLicenseLabel = (type) => {
     const filteredAddress = (editData.addressHistory || []).filter(a => a.address);
     const filteredEdu = (editData.educationHistory || []).filter(e => e.school || e.major);
 
-    const fallbackAddress = filteredAddress.map(a => a.address + (a.isCurrent ? ` (${t('currentAddressLabel', 'Hozirgi')})` : '')).join(', ');
-    const fallbackEducation = filteredEdu.map(e => `${e.school}${e.major ? ` (${e.major})` : ''} • ${e.startDate || ''} ~ ${e.isCurrent ? t('currentlyStudyingLabel', 'O\'qiyotgan') : e.endDate || ''}`).join(', ');
+    const fallbackAddress = filteredAddress.map(a => a.address + (a.isCurrent ? ` (${t('currentAddressLabel')})` : '')).join(', ');
+    const fallbackEducation = filteredEdu.map(e => `${e.school}${e.major ? ` (${e.major})` : ''} • ${e.startDate || ''} ~ ${e.isCurrent ? t('currentlyStudyingLabel') : e.endDate || ''}`).join(', ');
 
     const finalData = {
       ...editData,
@@ -2254,8 +2254,8 @@ const getLicenseLabel = (type) => {
                     <span className={`notif-title ${notif.type === 'shoukai_paid' ? 'shoukai-green' : ''}`}>
                       {notif.type === 'accepted' && t('acceptedNotifTitle')}
                       {notif.type === 'interview' && t('interviewNotifTitle')}
-                      {notif.type === 'reviewed' && t('reviewedNotifTitle', 'Ariza ko\'rib chiqildi')}
-                      {notif.type === 'rejected' && t('rejectedNotifTitle', 'Ariza rad etildi')}
+                      {notif.type === 'reviewed' && t('reviewedNotifTitle')}
+                      {notif.type === 'rejected' && t('rejectedNotifTitle')}
                       {notif.type === 'shoukai_paid' && t('shoukaiPaidNotif')}
                       {notif.type === 'employee_request' && notif.title}
                     </span>
@@ -2264,10 +2264,10 @@ const getLicenseLabel = (type) => {
                   <p className="notif-message">
                     {notif.type === 'accepted' && `${t('acceptedNotifMsg')} ${notif.company}`}
                     {notif.type === 'interview' && `${t('interviewNotifMsg')} ${notif.company}`}
-                    {notif.type === 'reviewed' && `${t('reviewedNotifMsg', 'Arizangiz ko\'rib chiqildi:')} ${notif.company}`}
-                    {notif.type === 'rejected' && `${t('rejectedNotifMsg', 'Arizangiz rad etildi:')} ${notif.company}`}
+                    {notif.type === 'reviewed' && `${t('reviewedNotifMsg')} ${notif.company}`}
+                    {notif.type === 'rejected' && `${t('rejectedNotifMsg')} ${notif.company}`}
                     {notif.type === 'shoukai_paid' && `${notif.company} ${t('shoukaiPaidMsg')} ${notif.title}`}
-                    {notif.type === 'employee_request' && `${notif.company} ${t('employeeRequestMsg', "kompaniyasi sizni xodimlar ro'yxatiga qo'shmoqchi.")}`}
+                    {notif.type === 'employee_request' && `${notif.company} ${t('employeeRequestMsg')}`}
                   </p>
                   {notif.type === 'employee_request' && !notif.accepted && (
                     <button 
@@ -2279,14 +2279,14 @@ const getLicenseLabel = (type) => {
                         if (onAcceptEmployeeRequest) {
                           onAcceptEmployeeRequest(notif.michiId, notif.company);
                         }
-                        alert(t('employeeConfirmed', 'Xodimlik tasdiqlandi!'));
+                        alert(t('employeeConfirmed'));
                       }}
                     >
-                      {t('confirmBtn', 'Tasdiqlash (Qabul qilish)')}
+                      {t('confirmBtn')}
                     </button>
                   )}
                   {notif.type === 'employee_request' && notif.accepted && (
-                    <span style={{ color: '#34C759', fontSize: '12px', marginTop: '8px', display: 'inline-block' }}>{t('confirmedStatus', 'Tasdiqlangan ✓')}</span>
+                    <span style={{ color: '#34C759', fontSize: '12px', marginTop: '8px', display: 'inline-block' }}>{t('confirmedStatus')}</span>
                   )}
                   <span className="notif-date" style={{ display: 'block', marginTop: '4px' }}>{notif.date}</span>
                 </div>
@@ -2334,13 +2334,13 @@ const getLicenseLabel = (type) => {
 
           {/* Preferences Settings Group (Notification Sounds & Count Badges) */}
           <div className="menu-group glass squircle">
-            <h4 className="settings-section-title">{t('preferencesTitle', 'Afzalliklar')}</h4>
+            <h4 className="settings-section-title">{t('preferencesTitle')}</h4>
             
             {/* Notification Sound Toggle */}
             <div className="settings-toggle-row" style={{ borderBottom: '1px solid var(--glass-border)' }}>
               <div className="toggle-label">
                 <Volume2 size={20} color="#34C759" />
-                <span>{t('notifSoundLabel', 'Bildirishnoma ovozlari')}</span>
+                <span>{t('notifSoundLabel')}</span>
               </div>
               <label className="toggle-switch">
                 <input type="checkbox" checked={notificationSound} onChange={(e) => setNotificationSound(e.target.checked)} />
@@ -2352,7 +2352,7 @@ const getLicenseLabel = (type) => {
             <div className="settings-toggle-row">
               <div className="toggle-label">
                 <Bell size={20} color="#0A84FF" />
-                <span>{t('showBadgesLabel', "Profil sanoqlari ko'rinishi")}</span>
+                <span>{t('showBadgesLabel')}</span>
               </div>
               <label className="toggle-switch">
                 <input type="checkbox" checked={showProfileBadges} onChange={(e) => setShowProfileBadges(e.target.checked)} />
@@ -2459,7 +2459,7 @@ const getLicenseLabel = (type) => {
           {/* Title Row: Scrolls normally with content */}
           <div className="about-animate-item about-delay-1" style={{ textAlign: 'center', zIndex: 2, position: 'relative', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
             <h2 style={{ fontSize: '19px', fontWeight: '950', margin: 0, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-              {t('aboutAppTitle', 'Michi (道) haqida')}
+              {t('aboutAppTitle')}
             </h2>
           </div>
 
@@ -2469,7 +2469,7 @@ const getLicenseLabel = (type) => {
             {/* Manifesto Quote Card (Span 2) */}
             <div className="about-manifesto-card about-span-2 about-animate-item about-delay-2">
               <span className="role-tag" style={{ border: 'none', background: 'var(--primary-light)', color: 'var(--primary)', padding: '3px 8px', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px', display: 'inline-block' }}>
-                {t('michiManifesto', 'Michi manifesti')}
+                {t('michiManifesto')}
               </span>
               <p className="about-manifesto-quote" style={{ fontSize: '13px', lineHeight: '1.45', margin: '0 0 12px 0' }}>
                 "{t('aboutVision')}"
@@ -2477,7 +2477,7 @@ const getLicenseLabel = (type) => {
               <div className="about-manifesto-author" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, var(--primary) 0%, #AF52DE 100%)', color: 'white', fontSize: '14px', fontWeight: '900' }}>道</div>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)' }}>{t('michiTeam', 'Michi Ekotizimi Jamoasi')}</div>
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)' }}>{t('michiTeam')}</div>
                   <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>International Halal Capital Group</div>
                 </div>
               </div>
@@ -2499,30 +2499,30 @@ const getLicenseLabel = (type) => {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
                     <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1.2px', color: '#0084FF', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-                      {t('aboutAiCardTag', '⚡ ASSIST. AI VISION 2026')}
+                      {t('aboutAiCardTag')}
                     </span>
                   </div>
                   
                   <h3 style={{ fontSize: '15px', fontWeight: '900', margin: '0 0 4px 0', color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: '1.28', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
-                    {t('aboutAiCardTitle', 'Michi AI Ovozli Yordamchisi')}
+                    {t('aboutAiCardTitle')}
                   </h3>
 
                   <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: '0 0 10px 0', opacity: 0.9, lineHeight: '1.4', wordBreak: 'break-word' }}>
-                    {t('aboutAiCardSub', 'Ovozli navigatsiya, yaponcha rezyume va jonli simulyator.')}
+                    {t('aboutAiCardSub')}
                   </p>
 
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.2)', color: '#0084FF', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <Mic size={10} color="#0084FF" />
-                      <span>{t('aboutAiCardPill1', 'Ovozli muloqot')}</span>
+                      <span>{t('aboutAiCardPill1')}</span>
                     </span>
                     <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.2)', color: '#0084FF', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <Bot size={10} color="#0084FF" />
-                      <span>{t('aboutAiCardPill2', 'AI Simulyator')}</span>
+                      <span>{t('aboutAiCardPill2')}</span>
                     </span>
                     <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(0, 132, 255, 0.1)', border: '1px solid rgba(0, 132, 255, 0.2)', color: '#0084FF', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <Sparkles size={10} color="#0084FF" />
-                      <span>{t('aboutAiCardPill3', 'Rivojlanish Xaritasi')}</span>
+                      <span>{t('aboutAiCardPill3')}</span>
                     </span>
                   </div>
                 </div>
@@ -2541,7 +2541,7 @@ const getLicenseLabel = (type) => {
                   Vision
                 </h4>
                 <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4', margin: 0 }}>
-                  {t('aboutSubtitle', 'Yaponiya bo\'yicha yagona raqamli ekotizim.')}
+                  {t('aboutSubtitle')}
                 </p>
               </div>
             </div>
@@ -2552,7 +2552,7 @@ const getLicenseLabel = (type) => {
               <strong className="about-shimmer-text" style={{ display: 'block', fontSize: '18px', fontWeight: '900', marginBottom: '1px' }}>
                 <StatCounter target={10} suffix="k+" />
               </strong>
-              <span style={{ fontSize: '9px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase' }}>{t('aboutStatsPositions', 'Ish o\'rinlari')}</span>
+              <span style={{ fontSize: '9px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase' }}>{t('aboutStatsPositions')}</span>
             </div>
 
             {/* Corporate Backup & Guarantees Card (Span 2) */}
@@ -2560,10 +2560,10 @@ const getLicenseLabel = (type) => {
               <div>
                 <h4 style={{ color: '#34C759', fontSize: '12.5px' }}>
                   <ShieldCheck size={16} />
-                  {t('aboutGuaranteesTitle', 'Kafolat')}
+                  {t('aboutGuaranteesTitle')}
                 </h4>
                 <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', lineHeight: '1.4', margin: 0 }}>
-                  {t('aboutGuaranteesDesc', 'Loyihamiz barqarorligi International Halal Capital Group aktivlari bilan to\'liq kafolatlangan.')}
+                  {t('aboutGuaranteesDesc')}
                 </p>
               </div>
             </div>
@@ -2573,31 +2573,31 @@ const getLicenseLabel = (type) => {
               <div>
                 <h4 style={{ fontSize: '12.5px' }}>
                   <Sparkles size={16} style={{ color: 'var(--primary)' }} />
-                  {t('aboutFuturePerksTitle', 'Imkoniyatlar')}
+                  {t('aboutFuturePerksTitle')}
                 </h4>
                 <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4', marginBottom: '8px' }}>
-                  {t('aboutFuturePerksDesc', 'Yaqinda haydovchilar uchun chegirmali xizmatlar ishga tushadi:')}
+                  {t('aboutFuturePerksDesc')}
                 </p>
                 <div className="about-perks-list">
                   <div className="about-perk-row">
                     <ShieldCheck size={14} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '1px' }} />
                     <span style={{ fontSize: '11.5px', color: 'var(--text-main)', fontWeight: '600', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                      {t('perkInsuranceTitle', 'Sug\'urta chegirmalari')} 
-                      <span style={{ fontSize: '8.5px', background: 'var(--primary-light)', padding: '1px 5px', borderRadius: '4px', color: 'var(--primary)', fontWeight: '700' }}>{t('statusSoon', 'Tez kunda')}</span>
+                      {t('perkInsuranceTitle')} 
+                      <span style={{ fontSize: '8.5px', background: 'var(--primary-light)', padding: '1px 5px', borderRadius: '4px', color: 'var(--primary)', fontWeight: '700' }}>{t('statusSoon')}</span>
                     </span>
                   </div>
                   <div className="about-perk-row">
                     <Wrench size={14} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '1px' }} />
                     <span style={{ fontSize: '11.5px', color: 'var(--text-main)', fontWeight: '600', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                      {t('perkShakaiTitle', 'Chegirmali Shakai')} 
-                      <span style={{ fontSize: '8.5px', background: 'var(--primary-light)', padding: '1px 5px', borderRadius: '4px', color: 'var(--primary)', fontWeight: '700' }}>{t('statusPlan', 'Reja')}</span>
+                      {t('perkShakaiTitle')} 
+                      <span style={{ fontSize: '8.5px', background: 'var(--primary-light)', padding: '1px 5px', borderRadius: '4px', color: 'var(--primary)', fontWeight: '700' }}>{t('statusPlan')}</span>
                     </span>
                   </div>
                   <div className="about-perk-row">
                     <Briefcase size={14} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '1px' }} />
                     <span style={{ fontSize: '11.5px', color: 'var(--text-main)', fontWeight: '600', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                      {t('perkPartsTitle', 'Ehtiyot qismlar')} 
-                      <span style={{ fontSize: '8.5px', background: 'var(--primary-light)', padding: '1px 5px', borderRadius: '4px', color: 'var(--primary)', fontWeight: '700' }}>{t('statusPlan', 'Reja')}</span>
+                      {t('perkPartsTitle')} 
+                      <span style={{ fontSize: '8.5px', background: 'var(--primary-light)', padding: '1px 5px', borderRadius: '4px', color: 'var(--primary)', fontWeight: '700' }}>{t('statusPlan')}</span>
                     </span>
                   </div>
                 </div>
@@ -2610,7 +2610,7 @@ const getLicenseLabel = (type) => {
               <strong className="about-shimmer-text" style={{ display: 'block', fontSize: '17px', fontWeight: '900', marginBottom: '1px' }}>
                 <StatCounter target={500} suffix="+" />
               </strong>
-              <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsCompanies', 'Kompaniyalar')}</span>
+              <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsCompanies')}</span>
             </div>
 
             {/* Support Card (Span 1) */}
@@ -2619,32 +2619,32 @@ const getLicenseLabel = (type) => {
               <strong className="about-shimmer-text" style={{ display: 'block', fontSize: '17px', fontWeight: '900', marginBottom: '1px' }}>
                 <StatCounter target={24} suffix="/7" />
               </strong>
-              <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsSupport', 'Ko\'mak')}</span>
+              <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('aboutStatsSupport')}</span>
             </div>
 
             {/* Contacts Section Title (Span 2) */}
             <div style={{ padding: '8px 0 0 0', borderTop: '1px solid var(--glass-border)', marginTop: '4px', width: '100%', display: 'flex', alignItems: 'center', gap: '6px' }} className="about-span-2">
               <Mail size={14} style={{ color: '#0A84FF' }} />
               <span style={{ fontSize: '12.5px', fontWeight: '800', color: 'var(--text-main)' }}>
-                {t('aboutContactUsTitle', 'Aloqa Departamenti')}
+                {t('aboutContactUsTitle')}
               </span>
             </div>
 
             {/* Contact buttons (Four individual span 1 grid items for visual symmetry) */}
             <a href="mailto:support@michi.jp.net" className="about-contact-card-btn about-span-1">
-              <span>{t('contactDriverSupport', 'Qo\'llab-quvvatlash')}</span>
+              <span>{t('contactDriverSupport')}</span>
               <strong style={{ fontSize: '11px' }}>support@michi.jp.net</strong>
             </a>
             <a href="mailto:info@michi.jp.net" className="about-contact-card-btn about-span-1">
-              <span>{t('contactGeneral', 'Umumiy savollar')}</span>
+              <span>{t('contactGeneral')}</span>
               <strong style={{ fontSize: '11px' }}>info@michi.jp.net</strong>
             </a>
             <a href="mailto:partners@michi.jp.net" className="about-contact-card-btn about-span-1">
-              <span>{t('contactPartnership', 'Hamkorlik')}</span>
+              <span>{t('contactPartnership')}</span>
               <strong style={{ fontSize: '11px' }}>partners@michi.jp.net</strong>
             </a>
             <a href="mailto:invest@michi.jp.net" className="about-contact-card-btn about-span-1">
-              <span>{t('contactInvestors', 'Investorlar')}</span>
+              <span>{t('contactInvestors')}</span>
               <strong style={{ fontSize: '11px' }}>invest@michi.jp.net</strong>
             </a>
 
@@ -2667,7 +2667,7 @@ const getLicenseLabel = (type) => {
               }}
             >
               <Globe size={16} color="#FFF" />
-              <strong style={{ color: '#FFF', fontSize: '13px', fontWeight: '800' }}>{t('officialWebsite', 'www.michi.jp.net rasmiy sayti')}</strong>
+              <strong style={{ color: '#FFF', fontSize: '13px', fontWeight: '800' }}>{t('officialWebsite')}</strong>
             </a>
             {/* Copyright (Span 2) */}
             <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--text-secondary)', marginTop: '6px' }} className="about-span-2">
@@ -2701,7 +2701,7 @@ const getLicenseLabel = (type) => {
         {!isFormOpen && (
           <div className="sub-page-header" style={{ paddingTop: '56px' }}>
             <h2 style={{ fontSize: '24px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>
-              {t('myAdsMenu', 'Mening e\'lonlarim')}
+              {t('myAdsMenu')}
             </h2>
           </div>
         )}
@@ -2738,7 +2738,7 @@ const getLicenseLabel = (type) => {
         </div>
         <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <div className="sub-header-row">
-            <h2>{userRole === 'company' ? t('companyInfoTitle', "Kompaniya ma'lumotlari") : t('personalData')}</h2>
+            <h2>{userRole === 'company' ? t('companyInfoTitle') : t('personalData')}</h2>
             <span style={{ color: '#0A84FF', fontSize: '14px', fontWeight: 'bold', marginLeft: '10px' }}>ID: {profileData.userId}</span>
             {userRole === 'company' ? (
               isEditing ? (
@@ -2795,7 +2795,7 @@ const getLicenseLabel = (type) => {
                     )}
                   </div>
                   <div className="resume-field">
-                    <span className="field-label">{t('birthPlaceLabel', "Tug'ilgan joyi")}</span>
+                    <span className="field-label">{t('birthPlaceLabel')}</span>
                     {isEditing ? (
                       <input type="text" className="edit-input" value={editData.birthPlace || ''} onChange={(e) => setEditData({...editData, birthPlace: e.target.value})} />
                     ) : (
@@ -2803,7 +2803,7 @@ const getLicenseLabel = (type) => {
                     )}
                   </div>
                   <div className="resume-field">
-                    <span className="field-label">{t('nationalityLabel', "Millati")}</span>
+                    <span className="field-label">{t('nationalityLabel')}</span>
                     {isEditing ? (
                       <input type="text" className="edit-input" value={editData.nationality || ''} onChange={(e) => setEditData({...editData, nationality: e.target.value})} />
                     ) : (
@@ -2812,7 +2812,7 @@ const getLicenseLabel = (type) => {
                   </div>
                   {/* Living Address History */}
                   <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-                    <span className="field-label">{t('livingAddressTitle', 'Yashash manzillari')}</span>
+                    <span className="field-label">{t('livingAddressTitle')}</span>
                     {isEditing ? (
                       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         {(editData.addressHistory || []).map((entry, index) => (
@@ -2831,7 +2831,7 @@ const getLicenseLabel = (type) => {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                               <input
                                 type="text"
-                                placeholder={t('livingAddressPlaceholder', 'Yashash manzili')}
+                                placeholder={t('livingAddressPlaceholder')}
                                 className="edit-input"
                                 style={{ width: '100%' }}
                                 value={entry.address}
@@ -2846,14 +2846,14 @@ const getLicenseLabel = (type) => {
                                   onChange={(e) => updateEditAddressEntry(index, 'isCurrent', e.target.checked)}
                                   style={{ cursor: 'pointer' }}
                                 />
-                                <label htmlFor={`edit-addr-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentAddressLabel', 'Hozirgi yashash joyim')}</label>
+                                <label htmlFor={`edit-addr-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentAddressLabel')}</label>
                               </div>
                             </div>
                           </div>
                         ))}
                         {(editData.addressHistory || []).length < 3 && (
                           <button type="button" className="add-work-btn" style={{ width: '100%', padding: '10px', borderRadius: '12px', background: 'rgba(10, 132, 255, 0.08)', border: '1px dashed rgba(10, 132, 255, 0.3)', color: '#0A84FF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} onClick={addEditAddressEntry}>
-                            <Plus size={15} /> {t('addAddressBtn', "Yashash manzili qo'shish")}
+                            <Plus size={15} /> {t('addAddressBtn')}
                           </button>
                         )}
                       </div>
@@ -2865,7 +2865,7 @@ const getLicenseLabel = (type) => {
                               <span style={{ fontSize: '14px', color: 'var(--text-main)' }}>{a.address}</span>
                               {a.isCurrent && (
                                 <span style={{ fontSize: '11px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '3px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
-                                  {t('currentAddressLabel', 'Hozirgi yashash joyi')}
+                                  {t('currentAddressLabel')}
                                 </span>
                               )}
                             </div>
@@ -2879,7 +2879,7 @@ const getLicenseLabel = (type) => {
 
                   {/* Education History */}
                   <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px', marginTop: '12px' }}>
-                    <span className="field-label">{t('educationTitle', 'Ta\'lim ma\'lumotlari')}</span>
+                    <span className="field-label">{t('educationTitle')}</span>
                     {isEditing ? (
                       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         {(editData.educationHistory || []).map((entry, index) => (
@@ -2898,7 +2898,7 @@ const getLicenseLabel = (type) => {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                               <input
                                 type="text"
-                                placeholder={t('educationSchoolPlaceholder', 'O\'quv muassasasi nomi')}
+                                placeholder={t('educationSchoolPlaceholder')}
                                 className="edit-input"
                                 style={{ width: '100%' }}
                                 value={entry.school}
@@ -2907,7 +2907,7 @@ const getLicenseLabel = (type) => {
                               />
                               <input
                                 type="text"
-                                placeholder={t('educationMajorPlaceholder', 'Yo\'nalishi / Mutaxassisligi')}
+                                placeholder={t('educationMajorPlaceholder')}
                                 className="edit-input"
                                 style={{ width: '100%' }}
                                 value={entry.major}
@@ -2916,7 +2916,7 @@ const getLicenseLabel = (type) => {
                               />
                               <div className="work-dates-row" style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
                                 <div style={{ flex: 1 }}>
-                                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('startDateLabel', 'Kirgan vaqti')}</label>
+                                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('startDateLabel')}</label>
                                   <input
                                     type="month"
                                     className="edit-input"
@@ -2926,7 +2926,7 @@ const getLicenseLabel = (type) => {
                                   />
                                 </div>
                                 <div style={{ flex: 1, opacity: entry.isCurrent ? 0.5 : 1 }}>
-                                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('endDateLabel', 'Ketgan vaqti')}</label>
+                                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('endDateLabel')}</label>
                                   <input
                                     type="month"
                                     className="edit-input"
@@ -2945,14 +2945,14 @@ const getLicenseLabel = (type) => {
                                   onChange={(e) => updateEditEducationEntry(index, 'isCurrent', e.target.checked)}
                                   style={{ cursor: 'pointer' }}
                                 />
-                                <label htmlFor={`edit-edu-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentlyStudyingLabel', 'Hozir ham o\'qiyman')}</label>
+                                <label htmlFor={`edit-edu-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentlyStudyingLabel')}</label>
                               </div>
                             </div>
                           </div>
                         ))}
                         {(editData.educationHistory || []).length < 3 && (
                           <button type="button" className="add-work-btn" style={{ width: '100%', padding: '10px', borderRadius: '12px', background: 'rgba(10, 132, 255, 0.08)', border: '1px dashed rgba(10, 132, 255, 0.3)', color: '#0A84FF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} onClick={addEditEducationEntry}>
-                            <Plus size={15} /> {t('addEducationBtn', "O'qish joyi qo'shish")}
+                            <Plus size={15} /> {t('addEducationBtn')}
                           </button>
                         )}
                       </div>
@@ -2965,13 +2965,13 @@ const getLicenseLabel = (type) => {
                                 <strong style={{ fontSize: '15px', color: 'var(--text-main)' }}>{edu.school}</strong>
                                 {edu.isCurrent && (
                                   <span style={{ fontSize: '11px', background: 'rgba(52, 199, 89, 0.1)', color: '#34C759', padding: '3px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
-                                    {t('currentlyStudyingLabel', 'O\'qiyotgan')}
+                                    {t('currentlyStudyingLabel')}
                                   </span>
                                 )}
                               </div>
                               {edu.major && <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{edu.major}</span>}
                               <span style={{ fontSize: '12px', color: '#8E8E93', marginTop: '2px' }}>
-                                📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel', 'Hozirgi vaqtda') : edu.endDate || '?'}
+                                📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel') : edu.endDate || '?'}
                               </span>
                             </div>
                           ))
@@ -2982,29 +2982,29 @@ const getLicenseLabel = (type) => {
                     )}
                   </div>
                                   <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
-                  <span className="field-label" style={{marginBottom: '4px'}}>{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}</span>
+                  <span className="field-label" style={{marginBottom: '4px'}}>{t('driverLicensesLabel')}</span>
                   <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
                     {profileData.driverLicenses && profileData.driverLicenses.length > 0 ? 
                       profileData.driverLicenses.map(l => (
                         <span key={l} className="badge-blue" style={{background: '#e3f2fd', color: '#1976d2', padding: '4px 10px', borderRadius: '20px', fontSize: '13px'}}>{t(`lic_${l}`)}</span>
                       )) : 
-                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided', 'Kiritilmagan')}</span>
+                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided')}</span>
                     }
                   </div>
                 </div>
                 <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
-                  <span className="field-label" style={{marginBottom: '4px'}}>{t('techCertsLabel', 'Maxsus texnika va malaka sertifikatlari')}</span>
+                  <span className="field-label" style={{marginBottom: '4px'}}>{t('techCertsLabel')}</span>
                   <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
                     {profileData.techCertificates && profileData.techCertificates.length > 0 ? 
                       profileData.techCertificates.map(tc => (
                         <span key={tc} className="badge-blue" style={{background: '#fdf3e3', color: '#d27d19', padding: '4px 10px', borderRadius: '20px', fontSize: '13px'}}>{t(`tech_${tc}`)}</span>
                       )) : 
-                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided', 'Kiritilmagan')}</span>
+                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided')}</span>
                     }
                   </div>
                 </div>
                 <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
-                  <span className="field-label" style={{marginBottom: '4px'}}>{t('jlptLanguageLabel', 'JLPT Yapon tili darajasi')}</span>
+                  <span className="field-label" style={{marginBottom: '4px'}}>{t('jlptLanguageLabel')}</span>
                   <div>
                     {profileData.jlptStatus && profileData.jlptStatus.verified ? (
                       <div className="glass squircle animate-scale-up" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', background: 'rgba(48, 209, 88, 0.08)', border: '1px solid rgba(48, 209, 88, 0.3)', borderRadius: '12px' }}>
@@ -3015,7 +3015,7 @@ const getLicenseLabel = (type) => {
                         </div>
                       </div>
                     ) : (
-                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided', 'Tasdiqlanmagan')}</span>
+                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided')}</span>
                     )}
                   </div>
                 </div>
@@ -3026,7 +3026,7 @@ const getLicenseLabel = (type) => {
                       {profileData.workHistory.map((w, i) => (
                         <div key={i} className="work-history-item">
                           <strong>{w.company}</strong>
-                          <span>{w.position} • {w.startDate} - {w.isCurrent ? t('currentPosition', 'Hozir') : w.endDate}</span>
+                          <span>{w.position} • {w.startDate} - {w.isCurrent ? t('currentPosition') : w.endDate}</span>
                         </div>
                       ))}
                     </div>
@@ -3037,34 +3037,34 @@ const getLicenseLabel = (type) => {
               {userRole === 'company' && (
                 <>
                   <div className="resume-field">
-                    <span className="field-label">{t('companyTypeLabel', 'Faoliyat turi')}</span>
+                    <span className="field-label">{t('companyTypeLabel')}</span>
                     {isEditing ? (
                       <select 
                         className="edit-input" 
                         value={editData.companyType || 'logistics'}
                         onChange={(e) => setEditData({...editData, companyType: e.target.value})}
                       >
-                        <option value="logistics">{t('typeLogistics', 'Logistika / Yuk tashish')}</option>
-                        <option value="driving_school">{t('typeDrivingSchool', 'Avtomaktab')}</option>
-                        <option value="taxi_company">{t('typeTaxiCompany', 'Taksi xizmati / Kompaniyasi')}</option>
-                        <option value="bus_company">{t('typeBusCompany', 'Avtobus xizmati / Yo\'nalishlari')}</option>
-                        <option value="special_machinery">{t('typeSpecialMachinery', 'Maxsus texnika / Qurilish texnikasi')}</option>
-                        <option value="other">{t('typeOther', 'Boshqa')}</option>
+                        <option value="logistics">{t('typeLogistics')}</option>
+                        <option value="driving_school">{t('typeDrivingSchool')}</option>
+                        <option value="taxi_company">{t('typeTaxiCompany')}</option>
+                        <option value="bus_company">{t('typeBusCompany')}</option>
+                        <option value="special_machinery">{t('typeSpecialMachinery')}</option>
+                        <option value="other">{t('typeOther')}</option>
                       </select>
                     ) : (
                       <span className="field-value badge-blue">
-                        {profileData.companyType === 'logistics' ? t('typeLogistics', 'Logistika') :
-                         profileData.companyType === 'driving_school' ? t('typeDrivingSchool', 'Avtomaktab') :
-                         profileData.companyType === 'taxi_company' ? t('typeTaxiCompany', 'Taksi') :
-                         profileData.companyType === 'bus_company' ? t('typeBusCompany', 'Avtobus') :
-                         profileData.companyType === 'special_machinery' ? t('typeSpecialMachinery', 'Maxsus texnika') :
-                         profileData.companyType === 'other' ? t('typeOther', 'Boshqa') :
+                        {profileData.companyType === 'logistics' ? t('typeLogistics') :
+                         profileData.companyType === 'driving_school' ? t('typeDrivingSchool') :
+                         profileData.companyType === 'taxi_company' ? t('typeTaxiCompany') :
+                         profileData.companyType === 'bus_company' ? t('typeBusCompany') :
+                         profileData.companyType === 'special_machinery' ? t('typeSpecialMachinery') :
+                         profileData.companyType === 'other' ? t('typeOther') :
                          (profileData.companyType || t('notProvided'))}
                       </span>
                     )}
                   </div>
                   <div className="resume-field">
-                    <span className="field-label">{t('companyAddressPlaceholder', 'Kompaniya manzili')}</span>
+                    <span className="field-label">{t('companyAddressPlaceholder')}</span>
                     {isEditing ? (
                       <input 
                         type="text" 
@@ -3078,7 +3078,7 @@ const getLicenseLabel = (type) => {
                     )}
                   </div>
                   <div className="resume-field">
-                    <span className="field-label">{t('contactPersonPlaceholder', 'Mas\'ul shaxs ismi')}</span>
+                    <span className="field-label">{t('contactPersonPlaceholder')}</span>
                     {isEditing ? (
                       <input 
                         type="text" 
@@ -3092,7 +3092,7 @@ const getLicenseLabel = (type) => {
                     )}
                   </div>
                   <div className="resume-field">
-                    <span className="field-label">{t('companyPhonePlaceholder', 'Telefon raqam')}</span>
+                    <span className="field-label">{t('companyPhonePlaceholder')}</span>
                     {isEditing ? (
                       <input 
                         type="tel" 
@@ -3106,7 +3106,7 @@ const getLicenseLabel = (type) => {
                     )}
                   </div>
                   <div className="resume-field">
-                    <span className="field-label">{t('corporateNumberLabel', 'Yuridik shaxs raqami')}</span>
+                    <span className="field-label">{t('corporateNumberLabel')}</span>
                     {isEditing ? (
                       <input 
                         type="text" 
@@ -3120,7 +3120,7 @@ const getLicenseLabel = (type) => {
                     )}
                   </div>
                   <div className="resume-field">
-                    <span className="field-label">{t('websitePlaceholder', 'Kompaniya veb-sayti')}</span>
+                    <span className="field-label">{t('websitePlaceholder')}</span>
                     {isEditing ? (
                       <input 
                         type="url" 
@@ -3138,7 +3138,7 @@ const getLicenseLabel = (type) => {
                     )}
                   </div>
                   <div className="resume-field">
-                    <span className="field-label">{t('establishedYearLabel', 'Tashkil etilgan yili')}</span>
+                    <span className="field-label">{t('establishedYearLabel')}</span>
                     {isEditing ? (
                       <input 
                         type="number" 
@@ -3152,7 +3152,7 @@ const getLicenseLabel = (type) => {
                     )}
                   </div>
                   <div className="resume-field">
-                    <span className="field-label">{t('employeeCountPlaceholder', 'Ishchilar soni')}</span>
+                    <span className="field-label">{t('employeeCountPlaceholder')}</span>
                     {isEditing ? (
                       <input 
                         type="number" 
@@ -3165,7 +3165,7 @@ const getLicenseLabel = (type) => {
                     )}
                   </div>
                   <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
-                    <span className="field-label">{t('companyDescPlaceholder', 'Kompaniya haqida qisqacha')}</span>
+                    <span className="field-label">{t('companyDescPlaceholder')}</span>
                     {isEditing ? (
                       <textarea 
                         className="edit-input" 
@@ -3202,7 +3202,7 @@ const getLicenseLabel = (type) => {
           isSchool: true,
           logo: s.image || 'https://via.placeholder.com/64?text=Maktab',
           company: s.schoolName,
-          title: t('drivingSchoolApp', 'Avtomaktabga ariza'),
+          title: t('drivingSchoolApp'),
           status: 'submitted', // Always submitted as there's no complex pipeline for schools yet
         });
       });
@@ -3224,7 +3224,7 @@ const getLicenseLabel = (type) => {
         </div>
         <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <h2>
-            {userRole === 'company' ? t('incomingApps', 'Kelib tushgan arizalar') : t('myApplications', 'Mening arizalarim')}
+            {userRole === 'company' ? t('incomingApps') : t('myApplications')}
             <span className="section-header-count">({userRole === 'company' ? applications.length : totalOwnApplications})</span>
           </h2>
         </div>
@@ -3238,8 +3238,8 @@ const getLicenseLabel = (type) => {
                 <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>{t('noApplications')}</h3>
                 <p style={{ color: '#8E8E93', fontSize: '14px', lineHeight: 1.4, margin: 0 }}>
                   {userRole === 'company' 
-                    ? t('noCompanyApps', 'Hozircha kompaniyangizga arizalar kelib tushmadi. E\'lonlaringizni kuzatib boring.') 
-                    : t('noDriverApps', 'Siz hali hech qayerga ishga yoki o\'qishga ariza topshirmadingiz. O\'zingizga mos ish toping!')}
+                    ? t('noCompanyApps') 
+                    : t('noDriverApps')}
                 </p>
               </div>
               {userRole !== 'company' && onNavigate && (
@@ -3248,7 +3248,7 @@ const getLicenseLabel = (type) => {
                   style={{ padding: '12px 24px', fontSize: '15px', marginTop: '10px' }}
                   onClick={() => onNavigate('home')}
                 >
-                  {t('viewJobs', 'Bo\'sh ish o\'rinlarini ko\'rish')}
+                  {t('viewJobs')}
                 </button>
               )}
             </div>
@@ -3270,10 +3270,10 @@ const getLicenseLabel = (type) => {
                     <div style={{ background: '#FFF5E5', border: '1px solid #FF9F0A', padding: '10px', borderRadius: '8px', margin: '12px 0', fontSize: '13px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#D97706', fontWeight: 'bold', marginBottom: '4px' }}>
                         <Share2 size={16} />
-                        {t('referredBy', 'Bu xodimni sizga')} {app.shoukaiId} {t('referredById', 'tavsiya qildi')}!
+                        {t('referredBy')} #{app.shoukaiId} {t('referredBySuffix')}!
                       </div>
                       {app.shoukaiAmount && (
-                        <div style={{ color: '#8E8E93' }}>{t('shoukaiFee', 'Shoukai puli')}: <strong style={{ color: '#34C759' }}>{app.shoukaiAmount}</strong></div>
+                        <div style={{ color: '#8E8E93' }}>{t('shoukaiFee')}: <strong style={{ color: '#34C759' }}>{app.shoukaiAmount}</strong></div>
                       )}
                       {app.status === 'accepted' && (
                         <div style={{ marginTop: '8px' }}>
@@ -3284,15 +3284,15 @@ const getLicenseLabel = (type) => {
                                 style={{ width: '100%', marginBottom: '4px' }}
                                 onClick={() => onShoukaiPaid && onShoukaiPaid(app.id)}
                               >
-                                {t('payShoukai', 'Shoukai pulini to\'lash')}
+                                {t('payShoukai')}
                               </button>
                               <p style={{ fontSize: '11px', color: '#8E8E93', margin: 0, lineHeight: 1.2 }}>
-                                {t('shoukaiPayNote', "To'lov tizimi ilova ichida mavjud emas. To'lovni tashqaridan amalga oshirgach, bu tugmani bosing.")}
+                                {t('shoukaiPayNote')}
                               </p>
                             </>
                           ) : (
                             <div className="shoukai-paid-badge" style={{ display: 'inline-flex' }}>
-                              <CheckCircle2 size={16} /> {t('shoukaiPaidLabel', 'Shoukai to\'langan')}
+                              <CheckCircle2 size={16} /> {t('shoukaiPaidLabel')}
                             </div>
                           )}
                         </div>
@@ -3320,7 +3320,7 @@ const getLicenseLabel = (type) => {
                       }}></div>
                       <div style={{ flex: 1 }}>
                         <span style={{ fontSize: '12px', color: '#8E8E93', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
-                          {t('applicationStatus', 'Ariza holati')}
+                          {t('applicationStatus')}
                         </span>
                         <strong style={{ fontSize: '15px', color: STATUS_COLORS[app.status] || '#0A84FF', fontWeight: '600' }}>
                           {t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`)}
@@ -3356,16 +3356,16 @@ const getLicenseLabel = (type) => {
                         onClick={() => setExpandedAppId(expandedAppId === app.id ? null : app.id)}
                       >
                         <FileText size={15} />
-                        {expandedAppId === app.id ? t('hideResumeBtn', 'Resumeni yopish') : t('viewResumeBtn', 'Nomzod resumesini ko\'rish')}
+                        {expandedAppId === app.id ? t('hideResumeBtn') : t('viewResumeBtn')}
                       </button>
                       
                       {expandedAppId === app.id && (
                         <div className="applicant-resume-collapsible slide-down glass" style={{ padding: '16px', borderRadius: '12px', marginTop: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
-                          <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--primary)', fontWeight: 'bold' }}>📄 {t('myResume', 'Rezume (履歴書)')}</h4>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--primary)', fontWeight: 'bold' }}>📄 {t('myResume')}</h4>
                           
                           <div className="resume-grid" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('namePlaceholder', 'Nomzod ismi').replace(' ✱', '')}:</span>
+                              <span style={{ color: '#8E8E93' }}>{t('namePlaceholder').replace(' ✱', '')}:</span>
                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.fullName}</strong>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
@@ -3373,25 +3373,25 @@ const getLicenseLabel = (type) => {
                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.email}</strong>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                               <span style={{ color: '#8E8E93' }}>{t('birthDateLabel', 'Tug\'ilgan sana')}:</span>
+                               <span style={{ color: '#8E8E93' }}>{t('birthDateLabel')}:</span>
                                <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.birthDate || t('notProvided')}</strong>
                              </div>
                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                               <span style={{ color: '#8E8E93' }}>{t('birthPlaceLabel', 'Tug\'ilgan joyi')}:</span>
+                               <span style={{ color: '#8E8E93' }}>{t('birthPlaceLabel')}:</span>
                                <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.birthPlace || t('notProvided')}</strong>
                              </div>
                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                               <span style={{ color: '#8E8E93' }}>{t('nationalityLabel', 'Millati')}:</span>
+                               <span style={{ color: '#8E8E93' }}>{t('nationalityLabel')}:</span>
                                <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.nationality || t('notProvided')}</strong>
                              </div>
                             <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('livingAddressTitle', 'Yashash manzillari')}:</span>
+                              <span style={{ color: '#8E8E93' }}>{t('livingAddressTitle')}:</span>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', marginTop: '2px' }}>
                                 {resumeInfo.addressHistory && resumeInfo.addressHistory.length > 0 ? (
                                   resumeInfo.addressHistory.map((a, i) => (
                                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)', width: '100%' }}>
                                       <span style={{ color: 'var(--text-main)' }}>{a.address}</span>
-                                      {a.isCurrent && <span style={{ fontSize: '9px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{t('currentAddressLabel', 'Hozirgi')}</span>}
+                                      {a.isCurrent && <span style={{ fontSize: '9px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{t('currentAddressLabel')}</span>}
                                     </div>
                                   ))
                                 ) : (
@@ -3400,17 +3400,17 @@ const getLicenseLabel = (type) => {
                               </div>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('educationTitle', 'Ta\'lim ma\'lumotlari')}:</span>
+                              <span style={{ color: '#8E8E93' }}>{t('educationTitle')}:</span>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', marginTop: '2px' }}>
                                 {resumeInfo.educationHistory && resumeInfo.educationHistory.length > 0 ? (
                                   resumeInfo.educationHistory.map((edu, i) => (
                                     <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '2px', background: 'rgba(255,255,255,0.01)', padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)', width: '100%' }}>
                                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <strong style={{ color: 'var(--text-main)' }}>{edu.school}</strong>
-                                        {edu.isCurrent && <span style={{ fontSize: '9px', background: 'rgba(52, 199, 89, 0.1)', color: '#34C759', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{t('currentlyStudyingLabel', 'O\'qiyotgan')}</span>}
+                                        {edu.isCurrent && <span style={{ fontSize: '9px', background: 'rgba(52, 199, 89, 0.1)', color: '#34C759', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{t('currentlyStudyingLabel')}</span>}
                                       </div>
                                       {edu.major && <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{edu.major}</span>}
-                                      <span style={{ fontSize: '10px', color: '#8E8E93' }}>📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel', 'Hozirgi vaqtda') : edu.endDate || '?'}</span>
+                                      <span style={{ fontSize: '10px', color: '#8E8E93' }}>📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel') : edu.endDate || '?'}</span>
                                     </div>
                                   ))
                                 ) : (
@@ -3420,7 +3420,7 @@ const getLicenseLabel = (type) => {
                             </div>
                             
                             <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '6px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}:</span>
+                              <span style={{ color: '#8E8E93' }}>{t('driverLicensesLabel')}:</span>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
                                 {resumeInfo.driverLicenses && resumeInfo.driverLicenses.length > 0 ? (
                                   resumeInfo.driverLicenses.map(l => (
@@ -3433,7 +3433,7 @@ const getLicenseLabel = (type) => {
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '6px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('techCertsLabel', 'Maxsus texnika va malaka sertifikatlari')}:</span>
+                              <span style={{ color: '#8E8E93' }}>{t('techCertsLabel')}:</span>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
                                 {resumeInfo.techCertificates && resumeInfo.techCertificates.length > 0 ? (
                                   resumeInfo.techCertificates.map(tc => (
@@ -3458,11 +3458,11 @@ const getLicenseLabel = (type) => {
 
                             {resumeInfo.workHistory && resumeInfo.workHistory.length > 0 && (
                               <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', gap: '6px' }}>
-                                <span style={{ color: '#8E8E93' }}>{t('workExperience', 'Ish tajribasi')}:</span>
+                                <span style={{ color: '#8E8E93' }}>{t('workExperience')}:</span>
                                 {resumeInfo.workHistory.map((w, i) => (
                                   <div key={i} style={{ fontSize: '12px', background: 'rgba(255,255,255,0.01)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
                                     <strong style={{ color: 'var(--text-main)' }}>{w.company}</strong>
-                                    <span style={{ display: 'block', color: '#8E8E93', fontSize: '11px', marginTop: '2px' }}>{w.position} • {w.startDate} - {w.isCurrent ? t('currentPosition', 'Hozir') : w.endDate}</span>
+                                    <span style={{ display: 'block', color: '#8E8E93', fontSize: '11px', marginTop: '2px' }}>{w.position} • {w.startDate} - {w.isCurrent ? t('currentPosition') : w.endDate}</span>
                                   </div>
                                 ))}
                               </div>
@@ -3561,7 +3561,7 @@ const getLicenseLabel = (type) => {
         </div>
         <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <h2>
-            {t('savedItemsTitle', 'Saqlanganlar')}
+            {t('savedItemsTitle')}
             <span className="section-header-count">({savedJobs.length + savedSchools.length})</span>
           </h2>
         </div>
@@ -3569,14 +3569,14 @@ const getLicenseLabel = (type) => {
           {savedJobs.length === 0 && savedSchools.length === 0 ? (
             <div className="empty-state">
               <Bookmark size={40} color="#c7c7cc" />
-              <p>{t('noSavedItems', 'Hozircha hech narsa saqlanmagan')}</p>
+              <p>{t('noSavedItems')}</p>
             </div>
           ) : (
             <>
               {/* --- ISH E'LONLARI BO'LIMI --- */}
               {savedJobs.length > 0 && (
                 <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('jobAds', 'Ish e\'lonlari')}</h3>
+                  <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('jobAds')}</h3>
                   {savedJobs.map(job => {
                     const fullJob = MOCK_JOBS.find(mj => mj.id === job.id) || job;
                     return (
@@ -3605,7 +3605,7 @@ const getLicenseLabel = (type) => {
               {/* --- AVTOMAKTABLAR BO'LIMI --- */}
               {savedSchools.length > 0 && (
                 <div>
-                  <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('drivingSchools', 'Avtomaktablar')}</h3>
+                  <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('drivingSchools')}</h3>
                   {savedSchools.map(school => {
                     const fullSchool = MOCK_SCHOOLS.find(ms => ms.id === school.id) || school;
                     return (
@@ -3646,36 +3646,36 @@ const getLicenseLabel = (type) => {
           </div>
           <div className="sub-page-header" style={{ paddingTop: '56px' }}>
             <h2>
-              {t('shoukaiViaApps', 'Shoukai orqali kelganlar')}
+              {t('shoukaiViaApps')}
               <span className="section-header-count">({shoukaiApps.length})</span>
             </h2>
           </div>
           <div className="applications-list" style={{ padding: '16px' }}>
             {shoukaiApps.length === 0 ? (
-              <p style={{ color: '#8E8E93', textAlign: 'center', marginTop: '20px' }}>{t('noShoukaiApps', 'Hozircha shoukai orqali arizalar tushmadi')}</p>
+              <p style={{ color: '#8E8E93', textAlign: 'center', marginTop: '20px' }}>{t('noShoukaiApps')}</p>
             ) : (
               shoukaiApps.map(app => (
                 <div key={app.id} className="glass squircle" style={{ padding: '16px', marginBottom: '12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{app.title}</h4>
-                      <p style={{ margin: 0, fontSize: '13px', color: '#8E8E93' }}>{t('referredById', 'Tavsiya qilgan ID:')} <span style={{color: '#0A84FF'}}>{app.shoukaiId}</span></p>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#8E8E93' }}>{t('referredById')} <span style={{color: '#0A84FF'}}>{app.shoukaiId}</span></p>
                     </div>
                     <span className="shoukai-fee" style={{ fontWeight: 'bold', color: '#34C759' }}>{app.shoukaiAmount}</span>
                   </div>
                   <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', color: '#0A84FF' }}>{t('application', 'Ariza')}: {t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`)}</span>
+                    <span style={{ fontSize: '12px', color: '#0A84FF' }}>{t('application')}: {t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`)}</span>
                     {!app.shoukaiPaid ? (
                       <button 
                         className="btn-primary squircle" 
                         style={{ padding: '6px 12px', fontSize: '12px', background: '#34C759' }}
                         onClick={() => onShoukaiPaid && onShoukaiPaid(app.id)}
                       >
-                        {t('makePayment', 'To\'lov qilish')}
+                        {t('makePayment')}
                       </button>
                     ) : (
                       <span className="shoukai-paid-badge" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#34C759', fontWeight: 'bold', fontSize: '13px', background: 'rgba(52, 199, 89, 0.1)', padding: '4px 8px', borderRadius: '12px' }}>
-                        <CheckCircle2 size={16} /> {t('paidStatus', 'To\'landi')}
+                        <CheckCircle2 size={16} /> {t('paidStatus')}
                       </span>
                     )}
                   </div>
@@ -3718,17 +3718,17 @@ const getLicenseLabel = (type) => {
                 <div key={app.id} className="glass squircle" style={{ padding: '16px', marginBottom: '12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
-                      <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{app.title} ({t('job', 'Ish')})</h4>
-                      <p style={{ margin: 0, fontSize: '13px', color: '#8E8E93' }}>{t('company', 'Kompaniya')}: {app.company}</p>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{app.title} ({t('job')})</h4>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#8E8E93' }}>{t('company')}: {app.company}</p>
                     </div>
-                    <span className="shoukai-fee" style={{ fontWeight: 'bold', color: '#FF9F0A', fontSize: '13px' }}>🎉 {t('shoukaiAvailableLabel', 'Puli Bor')}</span>
+                    <span className="shoukai-fee" style={{ fontWeight: 'bold', color: '#FF9F0A', fontSize: '13px' }}>🎉 {t('shoukaiAvailableLabel')}</span>
                   </div>
                   <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', color: '#0A84FF' }}>{t('appStatus', 'Ariza holati')}: {t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`)}</span>
+                    <span style={{ fontSize: '12px', color: '#0A84FF' }}>{t('appStatus')}: {t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`)}</span>
                     {app.shoukaiPaid ? (
-                      <span className="shoukai-paid-badge"><CheckCircle2 size={16} /> {t('paidStatus', 'To\'landi')}</span>
+                      <span className="shoukai-paid-badge"><CheckCircle2 size={16} /> {t('paidStatus')}</span>
                     ) : (
-                      <span style={{ fontSize: '12px', color: '#FF9F0A' }}>⏳ {t('paymentPending', 'To\'lov kutilmoqda')}</span>
+                      <span style={{ fontSize: '12px', color: '#FF9F0A' }}>⏳ {t('paymentPending')}</span>
                     )}
                   </div>
                 </div>
@@ -3737,16 +3737,16 @@ const getLicenseLabel = (type) => {
                 <div key={app.id} className="glass squircle" style={{ padding: '16px', marginBottom: '12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
-                      <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{app.schoolName} ({t('school', 'Maktab')})</h4>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{app.schoolName} ({t('school')})</h4>
                     </div>
-                    <span className="shoukai-fee" style={{ fontWeight: 'bold', color: '#FF9F0A', fontSize: '13px' }}>🎉 {t('shoukaiAvailableLabel', 'Puli Bor')}</span>
+                    <span className="shoukai-fee" style={{ fontWeight: 'bold', color: '#FF9F0A', fontSize: '13px' }}>🎉 {t('shoukaiAvailableLabel')}</span>
                   </div>
                   <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', color: '#0A84FF' }}>{t('appStatus', 'Ariza holati')}: {t('statusSubmitted', 'Yuborildi')}</span>
+                    <span style={{ fontSize: '12px', color: '#0A84FF' }}>{t('appStatus')}: {t('statusSubmitted')}</span>
                     {app.paid ? (
-                      <span className="shoukai-paid-badge"><CheckCircle2 size={16} /> {t('paidStatus', 'To\'landi')}</span>
+                      <span className="shoukai-paid-badge"><CheckCircle2 size={16} /> {t('paidStatus')}</span>
                     ) : (
-                      <span style={{ fontSize: '12px', color: '#FF9F0A' }}>⏳ {t('paymentPending', 'To\'lov kutilmoqda')}</span>
+                      <span style={{ fontSize: '12px', color: '#FF9F0A' }}>⏳ {t('paymentPending')}</span>
                     )}
                   </div>
                 </div>
@@ -3767,18 +3767,18 @@ const getLicenseLabel = (type) => {
         </div>
         <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <h2>
-            {t('employeesHR', 'Xodimlar (HR)')}
+            {t('employeesHR')}
             <span className="section-header-count">({companyEmployees.length})</span>
           </h2>
         </div>
         <div className="applications-list" style={{ padding: '16px' }}>
           
           <div className="glass squircle" style={{ padding: '16px', marginBottom: '20px' }}>
-            <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('addNewEmployee', 'Yangi xodim qo\'shish')}</h3>
+            <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('addNewEmployee')}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <input 
                 className="edit-input" 
-                placeholder={t('michiIdPlaceholder', 'Michi ID (Ixtiyoriy, masalan: #Michi-A1B2)')} 
+                placeholder={t('michiIdPlaceholder')} 
                 value={empInputId} 
                 onChange={e => setEmpInputId(e.target.value)} 
                 maxLength={12}
@@ -3787,14 +3787,14 @@ const getLicenseLabel = (type) => {
                 <>
                   <input 
                     className="edit-input" 
-                    placeholder={t('empNamePlaceholder', 'Xodim ismi')} 
+                    placeholder={t('empNamePlaceholder')} 
                     value={empInputName} 
                     onChange={e => setEmpInputName(e.target.value)} 
                     maxLength={50}
                   />
                   <input 
                     className="edit-input" 
-                    placeholder={t('phone', 'Telefon raqam')} 
+                    placeholder={t('phone')} 
                     value={empInputPhone} 
                     onChange={e => setEmpInputPhone(e.target.value)} 
                     maxLength={20}
@@ -3811,29 +3811,29 @@ const getLicenseLabel = (type) => {
                       id: Date.now(),
                       type: 'employee_request',
                       company: profileData.companyName || 'Sizning Kompaniyangiz',
-                      title: t('empRequestTitle', 'Sizni xodim sifatida qo\'shmoqchi'),
+                      title: t('empRequestTitle'),
                       date: new Date().toLocaleString(),
                       read: false,
                       michiId: empInputId
                     }, ...prev]);
-                    onAddEmployee({ name: t('pending', 'Kutilmoqda...'), phone: '', role: t('roleDriver', 'Haydovchi'), verified: false, michiId: empInputId });
-                    alert(t('requestSent', "Xodimga so'rov yuborildi!"));
+                    onAddEmployee({ name: t('pending'), phone: '', role: t('roleDriver'), verified: false, michiId: empInputId });
+                    alert(t('requestSent'));
                   } else if (empInputName) {
-                    onAddEmployee({ name: empInputName, phone: empInputPhone, role: t('roleDriver', 'Haydovchi'), verified: false, michiId: null });
+                    onAddEmployee({ name: empInputName, phone: empInputPhone, role: t('roleDriver'), verified: false, michiId: null });
                   }
                   setEmpInputId('');
                   setEmpInputName('');
                   setEmpInputPhone('');
                 }}
               >
-                {t('addBtn', 'Qo\'shish')}
+                {t('addBtn')}
               </button>
             </div>
           </div>
 
-          <h3 style={{ marginBottom: '16px', fontSize: '18px' }}>{t('allEmployees', 'Barcha xodimlar')}</h3>
+          <h3 style={{ marginBottom: '16px', fontSize: '18px' }}>{t('allEmployees')}</h3>
           {companyEmployees.length === 0 ? (
-            <p style={{ color: '#8E8E93', textAlign: 'center', marginTop: '20px' }}>{t('noEmployeesYet', 'Hali xodimlar qo\'shilmagan')}</p>
+            <p style={{ color: '#8E8E93', textAlign: 'center', marginTop: '20px' }}>{t('noEmployeesYet')}</p>
           ) : (
             companyEmployees.map(emp => (
               <div key={emp.id} className="glass squircle" style={{ padding: '16px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -3843,7 +3843,7 @@ const getLicenseLabel = (type) => {
                     {emp.verified ? (
                       <CheckCircle2 size={16} color="#34C759" />
                     ) : (
-                      <span title={t('unverifiedTooltip', "Xodim ilovani yuklab olib, tasdiqlashi kerak")} style={{ display: 'flex', alignItems: 'center', color: '#FF9F0A' }}>
+                      <span title={t('unverifiedTooltip')} style={{ display: 'flex', alignItems: 'center', color: '#FF9F0A' }}>
                         ⚠️
                       </span>
                     )}
@@ -3900,10 +3900,10 @@ const getLicenseLabel = (type) => {
             gap: '12px'
           }}>
             <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-main)' }}>
-              {t('guestRegisterBannerTitle', "Barcha imkoniyatlardan foydalanish uchun ro'yxatdan o'ting")}
+              {t('guestRegisterBannerTitle')}
             </h4>
             <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-              {t('guestRegisterBannerDesc', "Ro'yxatdan o'tib, rezyume yaratishingiz va ish e'lonlariga ariza topshirishingiz mumkin.")}
+              {t('guestRegisterBannerDesc')}
             </p>
             <button 
               className="btn-primary squircle guest-register-trigger-btn"
@@ -3921,7 +3921,7 @@ const getLicenseLabel = (type) => {
               }}
               onClick={onTriggerRegister}
             >
-              {t('registerTitle', "Ro'yxatdan o'tish")}
+              {t('registerTitle')}
             </button>
           </div>
         )}
@@ -3958,7 +3958,7 @@ const getLicenseLabel = (type) => {
                 title={i18n.language === 'ja' ? '日本標準履歴書PDFを作成・編集' : i18n.language === 'en' ? 'Create / Edit Resume PDF' : 'Yapon Rezyumesi (PDF) Yaratish / Tahrirlash'}
               >
                 <FileText size={13} strokeWidth={2.5} color="#30D158" />
-                <span style={{ letterSpacing: '-0.2px' }}>{t('createResume', '履歴書作成 (PDF)')}</span>
+                <span style={{ letterSpacing: '-0.2px' }}>{t('createResume')}</span>
               </button>
             </div>
             <div className="resume-body">
@@ -3967,17 +3967,17 @@ const getLicenseLabel = (type) => {
                 <span className="field-value">{profileData.birthDate || t('notProvided')}</span>
               </div>
               <div className="resume-field">
-                <span className="field-label">{t('birthPlaceLabel', "Tug'ilgan joyi")}</span>
+                <span className="field-label">{t('birthPlaceLabel')}</span>
                 <span className="field-value">{profileData.birthPlace || t('notProvided')}</span>
               </div>
               <div className="resume-field">
-                <span className="field-label">{t('nationalityLabel', "Millati")}</span>
+                <span className="field-label">{t('nationalityLabel')}</span>
                 <span className="field-value">{profileData.nationality || t('notProvided')}</span>
               </div>
 
               {/* Living Address History */}
               <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-                <span className="resume-section-title">{t('livingAddressTitle', 'Yashash manzillari')}</span>
+                <span className="resume-section-title">{t('livingAddressTitle')}</span>
                 <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {profileData.addressHistory && profileData.addressHistory.length > 0 ? (
                     profileData.addressHistory.map((a, i) => (
@@ -3985,7 +3985,7 @@ const getLicenseLabel = (type) => {
                         <span className="address-text">{a.address}</span>
                         {a.isCurrent && (
                           <span className="resume-current-tag living">
-                            {t('currentAddressLabel', 'Hozirgi')}
+                            {t('currentAddressLabel')}
                           </span>
                         )}
                       </div>
@@ -3998,7 +3998,7 @@ const getLicenseLabel = (type) => {
 
               {/* Education History */}
               <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-                <span className="resume-section-title">{t('educationTitle', 'Ta\'lim ma\'lumotlari')}</span>
+                <span className="resume-section-title">{t('educationTitle')}</span>
                 <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {profileData.educationHistory && profileData.educationHistory.length > 0 ? (
                     profileData.educationHistory.map((edu, i) => (
@@ -4007,13 +4007,13 @@ const getLicenseLabel = (type) => {
                           <span className="edu-school">{edu.school}</span>
                           {edu.isCurrent && (
                             <span className="resume-current-tag studying">
-                              {t('currentlyStudyingLabel', 'O\'qiyotgan')}
+                              {t('currentlyStudyingLabel')}
                             </span>
                           )}
                         </div>
                         {edu.major && <span className="edu-major">{edu.major}</span>}
                         <span className="edu-dates">
-                          📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel', 'Hozirgi vaqtda') : edu.endDate || '?'}
+                          📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel') : edu.endDate || '?'}
                         </span>
                       </div>
                     ))
@@ -4025,26 +4025,26 @@ const getLicenseLabel = (type) => {
 
               {/* Driver Licenses */}
               <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
-                <span className="resume-section-title">{t('driverLicensesLabel', 'Haydovchilik guvohnomalari')}</span>
+                <span className="resume-section-title">{t('driverLicensesLabel')}</span>
                 <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
                   {profileData.driverLicenses && profileData.driverLicenses.length > 0 ? 
                     profileData.driverLicenses.map(l => (
                       <span key={l} className="resume-badge-chip license">{t(`lic_${l}`)}</span>
                     )) : 
-                    <span className="resume-empty-state">{t('notProvided', 'Kiritilmagan')}</span>
+                    <span className="resume-empty-state">{t('notProvided')}</span>
                   }
                 </div>
               </div>
 
               {/* Tech Certificates */}
               <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
-                <span className="resume-section-title">{t('techCertsLabel', 'Maxsus texnika va malaka sertifikatlari')}</span>
+                <span className="resume-section-title">{t('techCertsLabel')}</span>
                 <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
                   {profileData.techCertificates && profileData.techCertificates.length > 0 ? 
                     profileData.techCertificates.map(tc => (
                       <span key={tc} className="resume-badge-chip cert">{t(`tech_${tc}`)}</span>
                     )) : 
-                    <span className="resume-empty-state">{t('notProvided', 'Kiritilmagan')}</span>
+                    <span className="resume-empty-state">{t('notProvided')}</span>
                   }
                 </div>
               </div>
@@ -4059,10 +4059,10 @@ const getLicenseLabel = (type) => {
                         <span className="work-company">{w.company}</span>
                         {w.position && <span className="work-position">{w.position}</span>}
                         <span className="work-dates">
-                          📅 {w.startDate || '?'} ~ {w.isCurrent ? t('currentPosition', 'Hozir') : w.endDate || '?'}
+                          📅 {w.startDate || '?'} ~ {w.isCurrent ? t('currentPosition') : w.endDate || '?'}
                         </span>
                         {w.isCurrent && (
-                          <span className="work-current-badge">{t('currentPosition', 'Hozir ishlayapman')}</span>
+                          <span className="work-current-badge">{t('currentPosition')}</span>
                         )}
                       </div>
                     ))}
@@ -5019,7 +5019,7 @@ const getLicenseLabel = (type) => {
                     </div>
 
                     <InlineCustomSelect
-                      label={t('vehicleMake', 'Ishlab chiqaruvchi (Brand)')}
+                      label={t('vehicleMake')}
                       value={editVehicleData.make}
                       options={ALL_GLOBAL_BRANDS}
                       onChange={async (val) => {
@@ -5053,7 +5053,7 @@ const getLicenseLabel = (type) => {
                       {editVehicleData.make !== 'Boshqa' ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '100%', boxSizing: 'border-box' }}>
                           <InlineCustomSelect
-                            label={t('vehicleModel', 'Modeli')}
+                            label={t('vehicleModel')}
                             value={editVehicleData.model}
                             options={dynamicModels.length > 0 ? dynamicModels : ['Other']}
                             onChange={async (val) => {
@@ -5110,7 +5110,7 @@ const getLicenseLabel = (type) => {
                         </div>
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel', 'Modeli')}</label>
+                          <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel')}</label>
                           <input 
                             type="text"
                             placeholder="Model nomini kiriting..."
@@ -5341,7 +5341,7 @@ const getLicenseLabel = (type) => {
 
                     {/* Color picker */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', gridColumn: 'span 2' }}>
-                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleColor', 'Moshina rangi')}</label>
+                      <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleColor')}</label>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <input 
                           type="color" 
@@ -5579,7 +5579,7 @@ const getLicenseLabel = (type) => {
                         }}
                         onClick={() => setIsEditingVehicle(false)}
                       >
-                        ❌ {t('cancel', 'Bekor qilish')}
+                        ❌ {t('cancel')}
                       </button>
                       <button 
                         type="button"
@@ -5601,7 +5601,7 @@ const getLicenseLabel = (type) => {
                         }}
                         onClick={handleSaveVehicle}
                       >
-                        💾 {t('save', 'Saqlash')}
+                        💾 {t('save')}
                       </button>
                     </div>
 
@@ -5624,12 +5624,12 @@ const getLicenseLabel = (type) => {
               <div className="resume-field">
                 <span className="field-label">{t('companyTypeLabel')}</span>
                 <span className="field-value badge-blue">
-                  {profileData.companyType === 'logistics' ? t('typeLogistics', 'Logistika') :
-                   profileData.companyType === 'driving_school' ? t('typeDrivingSchool', 'Avtomaktab') :
-                   profileData.companyType === 'taxi_company' ? t('typeTaxiCompany', 'Taksi') :
-                   profileData.companyType === 'bus_company' ? t('typeBusCompany', 'Avtobus') :
-                   profileData.companyType === 'special_machinery' ? t('typeSpecialMachinery', 'Maxsus texnika') :
-                   profileData.companyType === 'other' ? t('typeOther', 'Boshqa') :
+                  {profileData.companyType === 'logistics' ? t('typeLogistics') :
+                   profileData.companyType === 'driving_school' ? t('typeDrivingSchool') :
+                   profileData.companyType === 'taxi_company' ? t('typeTaxiCompany') :
+                   profileData.companyType === 'bus_company' ? t('typeBusCompany') :
+                   profileData.companyType === 'special_machinery' ? t('typeSpecialMachinery') :
+                   profileData.companyType === 'other' ? t('typeOther') :
                    (profileData.companyType || t('notProvided'))}
                 </span>
               </div>
@@ -5654,7 +5654,7 @@ const getLicenseLabel = (type) => {
               {profileData.corporateNumber && (
                 <div className="resume-field icon-row">
                   <span style={{ fontSize: '14px', marginRight: '4px' }}>🔢</span>
-                  <span className="field-value">{t('corporateNumberLabel', 'Yuridik raqam')}: {profileData.corporateNumber}</span>
+                  <span className="field-value">{t('corporateNumberLabel')}: {profileData.corporateNumber}</span>
                 </div>
               )}
               {profileData.website && (
@@ -5666,7 +5666,7 @@ const getLicenseLabel = (type) => {
               {profileData.establishedYear && (
                 <div className="resume-field icon-row">
                   <span style={{ fontSize: '14px', marginRight: '4px' }}>📅</span>
-                  <span className="field-value">{t('establishedYearLabel', 'Tashkil topgan yil')}: {profileData.establishedYear}</span>
+                  <span className="field-value">{t('establishedYearLabel')}: {profileData.establishedYear}</span>
                 </div>
               )}
             </div>
@@ -5677,20 +5677,20 @@ const getLicenseLabel = (type) => {
         {userRole === 'company' && (
           <div className="menu-group glass squircle partner-card">
             <div className="partner-header">
-              <h3>{t('partnerContract', 'Michi Hamkorlik Shartnomasi')}</h3>
+              <h3>{t('partnerContract')}</h3>
               <p className="partner-desc">
-                {t('contractMainDesc', "Michi ilovasi bilan hamkorlik qilish orqali...")} <VerifiedBadge size={16} />
+                {t('contractMainDesc')} <VerifiedBadge size={16} />
               </p>
             </div>
             <div className="contract-status-row">
-              <span>{t('contractStatus', 'Shartnoma holati')}</span>
+              <span>{t('contractStatus')}</span>
               <span className={`status-badge ${contractStatus === 'active' ? 'active' : contractStatus === 'pending' ? 'pending' : 'inactive'}`} style={{ color: contractStatus === 'pending' ? '#FF9500' : '' }}>
                 {contractStatus === 'active' ? (
-                  <><CheckCircle2 size={14} /> {t('contractSigned', 'Tasdiqlangan')}</>
+                  <><CheckCircle2 size={14} /> {t('contractSigned')}</>
                 ) : contractStatus === 'pending' ? (
-                  <>⏳ {t('contractPending', 'Imzolangan (Kutilmoqda)')}</>
+                  <>⏳ {t('contractPending')}</>
                 ) : (
-                  t('contractInactive', 'Imzolanmagan')
+                  t('contractInactive')
                 )}
               </span>
             </div>
@@ -5699,7 +5699,7 @@ const getLicenseLabel = (type) => {
                 className="contract-btn squircle"
                 onClick={() => setContractStatus('pending')}
               >
-                {t('signContract', 'Imzolash')}
+                {t('signContract')}
               </button>
             )}
             {contractStatus === 'pending' && (
@@ -5708,7 +5708,7 @@ const getLicenseLabel = (type) => {
                 disabled
                 style={{ opacity: 0.7, cursor: 'not-allowed', background: 'rgba(255, 149, 0, 0.2)', color: '#FF9500', border: '1px solid rgba(255, 149, 0, 0.4)' }}
               >
-                {t('contractAwaitingApproval', 'Tasdiqlanish kutilmoqda')}
+                {t('contractAwaitingApproval')}
               </button>
             )}
           </div>
@@ -5718,7 +5718,7 @@ const getLicenseLabel = (type) => {
         <div className="menu-group glass squircle">
           <div className="menu-item" onClick={() => handleOpenSubPage('personalInfo')}>
             <div className="menu-icon"><User size={20} /></div>
-            <span>{userRole === 'company' ? t('companyInfoTitle', "Kompaniya ma'lumotlari") : t('personalData')}</span>
+            <span>{userRole === 'company' ? t('companyInfoTitle') : t('personalData')}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
           <div className="menu-divider"></div>
@@ -5727,7 +5727,7 @@ const getLicenseLabel = (type) => {
             handleOpenSubPage('applications');
           }}>
             <div className="menu-icon"><Briefcase size={20} /></div>
-            <span>{userRole === 'company' ? t('incomingApps', 'Kelib tushgan arizalar') : t('myApplications')}</span>
+            <span>{userRole === 'company' ? t('incomingApps') : t('myApplications')}</span>
             {showProfileBadges && totalOwnApplications > 0 && (
               <span className="menu-badge">
                 {totalOwnApplications}
@@ -5740,7 +5740,7 @@ const getLicenseLabel = (type) => {
               <div className="menu-divider"></div>
               <div className="menu-item" onClick={() => handleOpenSubPage('saved_items')}>
                 <div className="menu-icon"><Bookmark size={20} /></div>
-                <span>{t('savedItemsTitle', 'Saqlanganlar')}</span>
+                <span>{t('savedItemsTitle')}</span>
                 {showProfileBadges && totalSavedCount > 0 && (
                   <span className="menu-badge">
                     {totalSavedCount}
@@ -5751,7 +5751,7 @@ const getLicenseLabel = (type) => {
               <div className="menu-divider"></div>
               <div className="menu-item" onClick={() => handleOpenSubPage('resume_builder')}>
                 <div className="menu-icon"><FileText size={20} color="#30D158" /></div>
-                <span>{t('createResume', 'Yapon Rezyumesi (履歴書)')}</span>
+                <span>{t('createResume')}</span>
                 <ChevronRight size={20} color="#8E8E93" className="chevron" />
               </div>
             </>
@@ -5759,7 +5759,7 @@ const getLicenseLabel = (type) => {
           <div className="menu-divider"></div>
           <div className="menu-item" onClick={() => handleOpenSubPage('my_shoukai')}>
             <div className="menu-icon"><Share2 size={20} /></div>
-            <span>{userRole === 'company' ? t('shoukaiViaApps', 'Shoukai orqali kelganlar') : t('myShoukai', "Mening Shoukai'larim")}</span>
+            <span>{userRole === 'company' ? t('shoukaiViaApps') : t('myShoukai')}</span>
             {showProfileBadges && referralsCount > 0 && (
               <span className="menu-badge">
                 {referralsCount}
@@ -5775,13 +5775,13 @@ const getLicenseLabel = (type) => {
                 handleOpenSubPage('my_ads');
               }}>
                 <div className="menu-icon"><Megaphone size={20} /></div>
-                <span>{t('myAdsMenu', 'Mening e\'lonlarim')}</span>
+                <span>{t('myAdsMenu')}</span>
                 <ChevronRight size={20} color="#8E8E93" className="chevron" />
               </div>
               <div className="menu-divider"></div>
               <div className="menu-item" onClick={() => handleOpenSubPage('employees')}>
                 <div className="menu-icon"><Users size={20} /></div>
-                <span>{t('employeesHR', 'Xodimlar (HR)')}</span>
+                <span>{t('employeesHR')}</span>
                 {showProfileBadges && employeesCount > 0 && (
                   <span className="menu-badge">
                     {employeesCount}
@@ -5811,7 +5811,7 @@ const getLicenseLabel = (type) => {
           <div className="menu-divider"></div>
           <div className="menu-item" onClick={() => handleOpenSubPage('about')}>
             <div className="menu-icon"><Info size={20} /></div>
-            <span>{t('aboutApp', 'Platforma haqida')}</span>
+            <span>{t('aboutApp')}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
         </div>
