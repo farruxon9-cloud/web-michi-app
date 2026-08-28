@@ -2294,6 +2294,8 @@ const getLicenseLabel = (type) => {
             ))
           )}
         </div>
+        {/* Enshteyn Spacer for BottomNav Clearance */}
+        <div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0 }} />
       </div>
     );
   }
