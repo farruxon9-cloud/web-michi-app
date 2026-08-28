@@ -124,6 +124,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
     $$\text{Flex Gap (14px)} + H = 84\text{px (BottomNav Top Edge)} + 14\text{px (Desired Gap)} \implies H = \mathbf{84\text{px}}$$
   - Barcha sub-sahifalar oxiriga majburiy `<div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0 }} />` elementini qo'yish orqali barcha masofalar **pikselma-piksel 14px simmetriyaga keltiriladi.**
 
+## 🚫 24. Lug'at Kalitlari Sofligi va O'rnatilgan Nuqtalar Taqiqlanishi (Dictionary Label Cleanliness & No Embedded Colon Invariant)
+* **Xatolik**: 
+  1. Lug'at fayllarida (`ja.js`, `en.js`, `uz.js`, `ru.js`, `zh.js`) maydon sarlavhalari (`*Label`, `*Title`) matniga ikkinchi nuqta (`:` yoki `：`) biriktirib qo'yilishi (masalan `"birthDateLabel": "生年月日："`).
+  2. JSX shablonida `{t('birthDateLabel')}:` chaqirilganda ekranda mantiqsiz va xunuk ikki nuqta `生年月日：:` (double colon bug) hosil bo'lishi.
+* **Yechim**: 
+  1. Barcha lug'at fayllarida matnlar toza holda saqlanadi: `"birthDateLabel": "生年月日"`, `"birthPlaceLabel": "出生地"`.
+  2. Nuqtalar yoki punktuatsiyalar faqat JSX shablonining o'zida bir marta izchil shaklda beriladi: `{t('birthDateLabel')}:`.
+
 
 
 
