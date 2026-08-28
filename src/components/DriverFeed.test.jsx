@@ -3,6 +3,31 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import DriverFeed from './DriverFeed';
 
+vi.mock('leaflet', () => ({
+  default: {
+    map: () => ({
+      setView: vi.fn(),
+      fitBounds: vi.fn(),
+      panTo: vi.fn(),
+      remove: vi.fn(),
+      invalidateSize: vi.fn()
+    }),
+    tileLayer: () => ({
+      addTo: vi.fn()
+    }),
+    layerGroup: () => ({
+      addTo: vi.fn(),
+      clearLayers: vi.fn(),
+      addLayer: vi.fn()
+    }),
+    divIcon: vi.fn(),
+    marker: () => ({
+      on: vi.fn(),
+      addTo: vi.fn()
+    })
+  }
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key, fallback) => fallback || key,

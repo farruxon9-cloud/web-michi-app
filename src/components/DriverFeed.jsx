@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone, Edit3, CheckCircle2, SlidersHorizontal, X } from 'lucide-react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import VerifiedBadge from './VerifiedBadge';
 import './DriverFeed.css';
 
@@ -925,52 +927,29 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
 
     const timer = setTimeout(() => {
       if (!mapContainerRef.current) return;
+
       let map = mapInstanceRef.current;
       if (!map) {
-        if (!window.L) {
-          const script = document.createElement('script');
-          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-          script.onload = initLeaflet;
-          document.head.appendChild(script);
+        try {
+          map = L.map(mapContainerRef.current, {
+            center: [35.6812, 139.7671],
+            zoom: 9,
+            zoomControl: false
+          });
 
-          const link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-          document.head.appendChild(link);
-        } else {
-          initLeaflet();
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+          }).addTo(map);
+
+          mapInstanceRef.current = map;
+        } catch (e) {
+          console.warn('[JobMapModal] Leaflet map init error:', e);
+          return;
         }
-      } else {
-        map.invalidateSize();
-        updateMarkers();
       }
-    }, 150);
 
-    return () => clearTimeout(timer);
-
-    function initLeaflet() {
-      const L = window.L;
-      if (!L || mapInstanceRef.current || !mapContainerRef.current) return;
-
-      map = L.map(mapContainerRef.current, {
-        center: [35.6812, 139.7671],
-        zoom: 9,
-        zoomControl: false
-      });
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-      }).addTo(map);
-
-      mapInstanceRef.current = map;
-      updateMarkers();
-    }
-
-    function updateMarkers() {
-      const L = window.L;
-      const map = mapInstanceRef.current;
-      if (!L || !map) return;
+      map.invalidateSize();
 
       if (markersGroupRef.current) {
         markersGroupRef.current.clearLayers();
@@ -1023,7 +1002,9 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
           console.warn('fitBounds error:', e);
         }
       }
-    }
+    }, 150);
+
+    return () => clearTimeout(timer);
   }, [isOpen, jobs]);
 
   if (!isOpen) return null;
