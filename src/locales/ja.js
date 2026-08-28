@@ -761,7 +761,15 @@ const translation = {
   "totalReferred": "合計紹介数:",
   "shoukaiNote": "紹介報酬は対象企業・教習所での承認後に支給されます。アプリ内ではステータスのみ確認可能です。",
   "referralList": "紹介リスト",
-  "noReferralsYet": "まだ紹介実績はありません"
+  "noReferralsYet": "まだ紹介実績はありません",
+  "allRegions": "全ての地域",
+  "mapView": "マップ",
+  "listView": "リスト",
+  "filterNearestStation": "最寄り駅",
+  "filterLicenseReq": "運転免許条件",
+  "filterSalary": "希望給与 (月給)",
+  "jobMapTitle": "求人マップ検索",
+  "viewDetails": "詳細を見る"
 }
 
 export default { translation };

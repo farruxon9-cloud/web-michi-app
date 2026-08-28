@@ -179,7 +179,15 @@ const translation = {
   "totalReferred": "Всего рекомендаций:",
   "shoukaiNote": "Вознаграждения за рекомендации выплачиваются после подтверждения организацией. В приложении отслеживается статус.",
   "referralList": "Список рекомендаций",
-  "noReferralsYet": "Пока нет рекомендаций"
+  "noReferralsYet": "Пока нет рекомендаций",
+  "allRegions": "Все регионы",
+  "mapView": "Карта",
+  "listView": "Список",
+  "filterNearestStation": "Ближайшая станция",
+  "filterLicenseReq": "Требования к правам",
+  "filterSalary": "Мин. зарплата в месяц",
+  "jobMapTitle": "Поиск вакансий на карте",
+  "viewDetails": "Подробнее"
 };
 
 export default { translation };

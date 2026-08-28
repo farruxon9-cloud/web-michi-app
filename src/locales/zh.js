@@ -580,7 +580,15 @@ const translation = {
   "totalReferred": "推荐总数:",
   "shoukaiNote": "推荐奖励将在相关机构确认后发放。您可以在应用内跟踪状态。",
   "referralList": "推荐列表",
-  "noReferralsYet": "暂无推荐记录"
+  "noReferralsYet": "暂无推荐记录",
+  "allRegions": "所有地区",
+  "mapView": "地图",
+  "listView": "列表",
+  "filterNearestStation": "最近车站",
+  "filterLicenseReq": "驾照要求",
+  "filterSalary": "最低月薪",
+  "jobMapTitle": "地图求人搜索",
+  "viewDetails": "查看详情"
 }
 
 export default { translation };

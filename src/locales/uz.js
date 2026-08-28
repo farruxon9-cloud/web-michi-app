@@ -675,7 +675,15 @@ const translation = {
   "totalReferred": "Jami taklif qilinganlar:",
   "shoukaiNote": "Shoukai to'lovlari tashkilotlar tomonidan tasdiqlangach sizga beriladi. Ilovada faqat ularning holatini kuzatib borasiz.",
   "referralList": "Takliflar ro'yxati",
-  "noReferralsYet": "Hali hech kimni taklif qilmadingiz"
+  "noReferralsYet": "Hali hech kimni taklif qilmadingiz",
+  "allRegions": "Barcha hududlar",
+  "mapView": "Xarita",
+  "listView": "Ro'yxat",
+  "filterNearestStation": "Eng yaqin stantsiya",
+  "filterLicenseReq": "Haydovchilik guvohnomasi talablari",
+  "filterSalary": "Eng kam oylik maosh",
+  "jobMapTitle": "Interaktiv e'lonlar xaritasi",
+  "viewDetails": "Batafsil ko'rish"
 }
 
 export default { translation };

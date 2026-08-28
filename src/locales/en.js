@@ -671,7 +671,15 @@ const translation = {
   "totalReferred": "Total Referrals:",
   "shoukaiNote": "Referral rewards are disbursed upon verification by the respective organization. Track status in the app.",
   "referralList": "Referral List",
-  "noReferralsYet": "No referrals yet"
+  "noReferralsYet": "No referrals yet",
+  "allRegions": "All Regions",
+  "mapView": "Map View",
+  "listView": "List View",
+  "filterNearestStation": "Nearest Station",
+  "filterLicenseReq": "Driver License Requirements",
+  "filterSalary": "Min. Monthly Salary",
+  "jobMapTitle": "Interactive Job Map Search",
+  "viewDetails": "View Details"
 }
 
 export default { translation };
