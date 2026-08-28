@@ -34,7 +34,15 @@ export async function initFonts(onProgress) {
     pdfMake.fonts = {
       SawarabiGothic: {
         normal: 'SawarabiGothic-Regular.ttf',
-        bold: 'SawarabiGothic-Regular.ttf'
+        bold: 'SawarabiGothic-Regular.ttf',
+        italics: 'SawarabiGothic-Regular.ttf',
+        bolditalics: 'SawarabiGothic-Regular.ttf'
+      },
+      Roboto: {
+        normal: 'SawarabiGothic-Regular.ttf',
+        bold: 'SawarabiGothic-Regular.ttf',
+        italics: 'SawarabiGothic-Regular.ttf',
+        bolditalics: 'SawarabiGothic-Regular.ttf'
       }
     };
     return true;
