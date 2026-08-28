@@ -95,14 +95,15 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. **Chegaralar va Burchaklar Uniformasi**:
      - `BottomNav` paneli va barcha Harakat bento kartalari: `border-radius: 24px; border: 1px solid var(--glass-border);`.
      - Kontent bento kartalari (`.detail-section`, `.shoukai-section`): `border-radius: 20px; border: 1px solid var(--glass-border);`.
-## 🚫 21. Seanslar Boshlanishi va Yakunida Avtomatik i18n Ko'p Tilli Validatsiya va Nol Qattiq Fallback Invarianti (Session Opening/Closing i18n Audit & Zero Hardcoded Fallback Invariants)
+## 🚫 21. Tizim UI Lokalizatsiyasi va Xom Foydalanuvchi Ma'lumotlari Daxlsizligi (Zero Hardcoded Fallbacks & Raw User Content Preservation Invariant)
 * **Xatolik**: 
   1. JSX komponentlarda `t('key', "O'zbekcha matn")` ko'rinishida ikkinchi argument sifatida qattiq tildagi matn berilishi hamda shu kalit `ja.js` lug'atida bo'lmagani sababli, Yaponcha profil tanlanganda ham sahifada o'zbekcha yozuvlar chiqib qolishi.
-  2. Kod yozish tugagach i18n tarjimalarini qo'lda tekshirish tufayli vaqt va tokenlar behuda sarflanishi.
+  2. Foydalanuvchi yoki kompaniya kiritgan original matnli ma'lumotlarni ilova tomonidan o'zgartirib yoki majburiy tarjima qilib ko'rsatish.
 * **Yechim**: 
   1. **Nol Qattiq Fallback (Zero Hardcoded Fallbacks)**: Component JSX fayllarida `t('key')` chaqiruvlarida ikkinchi argument sifatida qattiq tildagi fallback matnlar berilishi TAQIQLANADI. Barcha kalitlar majburiy ravishda 5 ta lug'at faylida (`ja.js`, `en.js`, `uz.js`, `ru.js`, `zh.js`) to'liq e'lon qilinishi shart.
-  2. **Seans Boshida (Opening Protocol)**: Har safar ishni boshlashda `node scripts/health_check.mjs` buyrug'i orqali Git, Vitest testlar, DB va 5-til i18n simmetriyasi avtomatik tekshiriladi.
-  3. **Seans Oxirida (Closing Protocol)**: Yangi kod va tugmalar qo'shilgandan so'ng `node scripts/validate_i18n.mjs` yordamida barcha 5 ta til kalitlari to'liqligi va xatosizligi tasdiqlangach commit qilinadi.
+  2. **Xom Ma'lumotlar Daxlsizligi (Raw User Content Preservation)**: Foydalanuvchi yoki kompaniya kiritgan original kontent (vakansiya sarlavhasi, ism-sharif, izohlar va b.q.) ilova tomonidan aslo o'zgartirilmaydi yoki avto-tarjima qilinmaydi — foydalanuvchi kiritganicha 100% asl holicha ko'rsatiladi.
+  3. **Seans Boshida (Opening Protocol)**: Har safar ishni boshlashda `node scripts/health_check.mjs` buyrug'i orqali Git, Vitest testlar, DB va 5-til i18n simmetriyasi avtomatik tekshiriladi.
+  4. **Seans Oxirida (Closing Protocol)**: Yangi kod va tugmalar qo'shilgandan so'ng `node scripts/validate_i18n.mjs` yordamida barcha 5 ta til kalitlari to'liqligi va xatosizligi tasdiqlangach commit qilinadi.
 
 ## 🚫 22. Ichki Elementlar Tufayli Tashqi Sahifa Skrollining Avto-O'zgarishi Taqiqlanishi (No Unintended Outer Page Scroll Invariant)
 * **Xatolik**: 

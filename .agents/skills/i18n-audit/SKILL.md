@@ -38,9 +38,10 @@ Before concluding any turn or session where new JSX components or UI texts were 
 
 ---
 
-## 🚫 Zero Hardcoded Language Fallback Invariant
+## 🚫 Zero Hardcoded Language Fallback & Raw Content Preservation Invariants
 - **No Single-Language Fallbacks in JSX:** Component JSX files MUST NEVER pass hardcoded single-language strings as second fallback arguments in `t('key', 'HardcodedString')`.
 - **Mandatory 5-Locale Keys:** All dictionary keys MUST be defined across all 5 locale files (`ja.js`, `en.js`, `uz.js`, `ru.js`, `zh.js`) to guarantee exact language rendering regardless of user locale.
+- **Raw User Content Preservation:** User or company-submitted raw text (job titles, applicant names, company names, custom comments) MUST NEVER be modified, mutated, or forcibly machine-translated by the application. They MUST be rendered 100% untouched as typed by the user.
 
 ---
 
