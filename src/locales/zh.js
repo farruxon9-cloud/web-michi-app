@@ -86,13 +86,13 @@ const translation = {
   "aiThinkingLabel": "AI正在思考...",
   "aiSpeakingLabel": "AI正在回答...",
   "myResume": "我的简历 (履历书)",
-  "birthDateLabel": "出生日期：",
-  "licenseTypeLabel": "驾照类型：",
-  "experienceLabel": "工作经验：",
+  "birthDateLabel": "出生日期",
+  "licenseTypeLabel": "驾照类型",
+  "experienceLabel": "工作经验",
   "legalVerified": "已确认日本劳动和签证要求",
   "partnerContract": "Michi合作合同",
   "partnerDesc": "当企业签订合同后，将通过此系统获得验证徽章。",
-  "contractStatus": "合同状态：",
+  "contractStatus": "合同状态",
   "contractSigned": "已签署 (有效)",
   "contractInactive": "未激活",
   "cancelContract": "取消合同",
@@ -666,7 +666,8 @@ const translation = {
   "opt_badge_none": "无",
   "vehicleColor": "车身颜色",
   "cancel": "取消",
-  "save": "保存"
+  "save": "保存",
+  "jlptLevelLabel": "JLPT 日语等级"
 };
 
 export default { translation };

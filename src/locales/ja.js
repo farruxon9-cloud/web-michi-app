@@ -234,13 +234,13 @@ const translation = {
   "aiThinkingLabel": "AI考え中...",
   "aiSpeakingLabel": "音声応答中...",
   "myResume": "私の履歴書",
-  "birthDateLabel": "生年月日：",
-  "licenseTypeLabel": "免許の種類：",
-  "experienceLabel": "職歴：",
+  "birthDateLabel": "生年月日",
+  "licenseTypeLabel": "免許の種類",
+  "experienceLabel": "職歴",
   "legalVerified": "日本の労働・ビザ要件が確認済み",
   "partnerContract": "Michiパートナー契約",
   "partnerDesc": "企業や自動車学校が契約を結ぶと、認証バッジが付与されます。",
-  "contractStatus": "契約状況：",
+  "contractStatus": "契約状況",
   "contractSigned": "締結済み (有効)",
   "contractInactive": "無効",
   "cancelContract": "契約を解除する",
@@ -823,7 +823,8 @@ const translation = {
   "opt_badge_none": "なし",
   "vehicleColor": "ボディカラー",
   "cancel": "キャンセル",
-  "save": "保存する"
+  "save": "保存する",
+  "jlptLevelLabel": "JLPT 日本語能力判定"
 };
 
 export default { translation };

@@ -331,7 +331,8 @@ const translation = {
   "opt_badge_none": "Нет",
   "vehicleColor": "Цвет кузова",
   "cancel": "Отмена",
-  "save": "Сохранить"
+  "save": "Сохранить",
+  "jlptLevelLabel": "Уровень владения JLPT"
 };
 
 export default { translation };

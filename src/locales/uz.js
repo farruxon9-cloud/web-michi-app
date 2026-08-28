@@ -135,13 +135,13 @@ const translation = {
   "aiThinkingLabel": "Fikrlamoqda...",
   "aiSpeakingLabel": "Javob bermoqda...",
   "myResume": "Mening Rezume (履歴書 - Rirekisho)",
-  "birthDateLabel": "Tug'ilgan sana:",
-  "licenseTypeLabel": "Guvohnoma turi:",
-  "experienceLabel": "Ish tajribasi:",
+  "birthDateLabel": "Tug'ilgan sana",
+  "licenseTypeLabel": "Guvohnoma turi",
+  "experienceLabel": "Ish tajribasi",
   "legalVerified": "Yaponiya mehnat va viza tekshiruvi shartlari tasdiqlangan",
   "partnerContract": "Michi Hamkorlik Shartnomasi",
   "partnerDesc": "Kompaniyalar va AvtoMaktablar siz bilan shartnoma qilganda, ushbu tizim orqali ularga yulduzchali verifikatsiya belgisini bera olasiz.",
-  "contractStatus": "Shartnoma Holati:",
+  "contractStatus": "Shartnoma Holati",
   "contractSigned": "Imzolangan (Faol)",
   "contractInactive": "Faol emas",
   "cancelContract": "Shartnomani Bekor Qilish",
@@ -766,7 +766,8 @@ const translation = {
   "opt_badge_none": "Yo'q",
   "vehicleColor": "Kuzov rangi",
   "cancel": "Bekor qilish",
-  "save": "Saqlash"
+  "save": "Saqlash",
+  "jlptLevelLabel": "JLPT Yapon tili darajasi"
 };
 
 export default { translation };

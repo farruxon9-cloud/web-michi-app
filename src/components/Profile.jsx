@@ -3447,7 +3447,7 @@ const getLicenseLabel = (type) => {
 
                             {resumeInfo.jlptStatus && resumeInfo.jlptStatus.verified && (
                               <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
-                                <span style={{ color: '#8E8E93' }}>JLPT Yapon tili darajasi:</span>
+                                <span style={{ color: '#8E8E93' }}>{t('jlptLevelLabel')}:</span>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', background: 'rgba(48, 209, 88, 0.08)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(48, 209, 88, 0.2)' }}>
                                   <ShieldCheck size={14} color="#30D158" />
                                   <strong style={{ color: '#30D158', fontSize: '12px' }}>JLPT {resumeInfo.jlptStatus.level} Verified ✓</strong>

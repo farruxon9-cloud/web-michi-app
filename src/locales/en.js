@@ -130,13 +130,13 @@ const translation = {
   "aiThinkingLabel": "AI Thinking...",
   "aiSpeakingLabel": "AI Speaking...",
   "myResume": "My Resume (Rirekisho)",
-  "birthDateLabel": "Date of Birth:",
-  "licenseTypeLabel": "License Type:",
-  "experienceLabel": "Work Experience:",
+  "birthDateLabel": "Date of Birth",
+  "licenseTypeLabel": "License Type",
+  "experienceLabel": "Work Experience",
   "legalVerified": "Japan labor and visa requirements verified",
   "partnerContract": "Michi Partner Contract",
   "partnerDesc": "When companies and schools sign a contract with you, the verified badge will be granted through this system.",
-  "contractStatus": "Contract Status:",
+  "contractStatus": "Contract Status",
   "contractSigned": "Signed (Active)",
   "contractInactive": "Inactive",
   "cancelContract": "Cancel Contract",
@@ -768,7 +768,8 @@ const translation = {
   "opt_badge_none": "None",
   "vehicleColor": "Body Color",
   "cancel": "Cancel",
-  "save": "Save"
+  "save": "Save",
+  "jlptLevelLabel": "JLPT Japanese Proficiency"
 };
 
 export default { translation };
