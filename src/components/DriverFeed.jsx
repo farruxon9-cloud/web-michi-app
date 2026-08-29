@@ -474,8 +474,16 @@ export default function DriverFeed({
 
                     {/* Qisqa ma'lumot chiplari (minimalistik ikonkalar bilan) */}
                     <div className="job-card-chips">
-                      <span className="job-chip">
-                        <MapPin size={12} />
+                      <span 
+                        className="job-chip job-location-chip-clickable"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedMapJob(job);
+                          setIsMapModalOpen(true);
+                        }}
+                        title={t('showOnMap', 'Kartada ko\'rish')}
+                      >
+                        <MapPin size={12} color="var(--primary)" />
                         {t(`job_${job.id}_location`, job.location)}
                       </span>
                       <span className="job-chip">
