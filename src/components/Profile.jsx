@@ -203,7 +203,7 @@ export default function Profile({
 
   if (!profileData) {
     return (
-      <div className="profile-container fade-in">
+      <div className="profile-container sub-page-view fade-in">
         <div className="profile-skeleton-card glass squircle">
           <div className="skeleton-pulse skeleton-avatar" />
           <div className="skeleton-pulse skeleton-text-lg" />
@@ -2423,7 +2423,7 @@ const getLicenseLabel = (type) => {
   // ===== ABOUT PAGE =====
   if (activePage === 'about') {
     return (
-      <div className="profile-container fade-in">
+      <div className="profile-container sub-page-view fade-in">
         <div className="about-glow-container about-page-wrapper" style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '16px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
           {/* Clip Orbs container to prevent horizontal scrolling/shaking */}
@@ -2676,6 +2676,8 @@ const getLicenseLabel = (type) => {
               © 2026 Michi (道). All rights reserved.
             </div>
           </div>
+        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
+        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
         </div>
       </div>
     );
@@ -2684,7 +2686,7 @@ const getLicenseLabel = (type) => {
   // ===== MY POSTED ADS PAGE (COMPANY) =====
   if (activePage === 'my_ads') {
     return (
-      <div className="profile-container fade-in">
+      <div className="profile-container sub-page-view fade-in">
         {/* Sticky Back Button Container */}
         {!isFormOpen && (
           <div className="profile-sticky-back" style={{ zIndex: 250 }}>
@@ -2725,6 +2727,8 @@ const getLicenseLabel = (type) => {
           applications={applications}
           schoolApplications={schoolApplications}
         />
+        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
+        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
       </div>
     );
   }
@@ -2732,7 +2736,7 @@ const getLicenseLabel = (type) => {
   // ===== PERSONAL INFO PAGE =====
   if (activePage === 'personalInfo') {
     return (
-      <div className="profile-container fade-in">
+      <div className="profile-container sub-page-view fade-in">
         <div className="profile-sticky-back">
           <button className="icon-btn glass" onClick={() => { setActivePage('main'); setIsEditing(false); }}>
             <ArrowLeft size={20} />
@@ -3184,6 +3188,8 @@ const getLicenseLabel = (type) => {
               )}
             </div>
           </div>
+        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
+        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
         </div>
       </div>
     );
@@ -3213,7 +3219,7 @@ const getLicenseLabel = (type) => {
     }
 
     return (
-      <div className="profile-container fade-in">
+      <div className="profile-container sub-page-view fade-in">
         <div className="profile-sticky-back">
           <button className="icon-btn glass" onClick={() => {
             if (profileActivePageSource === 'home') {
@@ -3556,7 +3562,7 @@ const getLicenseLabel = (type) => {
     );
 
     return (
-      <div className="profile-container fade-in">
+      <div className="profile-container sub-page-view fade-in">
         <div className="profile-sticky-back">
           {/* Ortga qaytish: Profil bosh sahifasiga ('main') qaytaradi */}
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
@@ -3633,6 +3639,8 @@ const getLicenseLabel = (type) => {
             </>
           )}
         </div>
+        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
+        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
       </div>
     );
   }
@@ -3642,7 +3650,7 @@ const getLicenseLabel = (type) => {
     if (userRole === 'company') {
       const shoukaiApps = applications.filter(a => a.company === profileData.fullName && a.shoukaiId);
       return (
-        <div className="profile-container fade-in">
+        <div className="profile-container sub-page-view fade-in">
           <div className="profile-sticky-back">
             <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
           </div>
@@ -3685,6 +3693,8 @@ const getLicenseLabel = (type) => {
               ))
             )}
           </div>
+        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
+        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
         </div>
       );
     }
@@ -3694,7 +3704,7 @@ const getLicenseLabel = (type) => {
     const totalRefs = myJobRefs.length + mySchoolRefs.length;
 
     return (
-      <div className="profile-container fade-in">
+      <div className="profile-container sub-page-view fade-in">
         <div className="profile-sticky-back">
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
         </div>
@@ -3756,6 +3766,8 @@ const getLicenseLabel = (type) => {
             </>
           )}
         </div>
+        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
+        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
       </div>
     );
   }
@@ -3763,7 +3775,7 @@ const getLicenseLabel = (type) => {
   // ===== COMPANY HR (EMPLOYEES) PAGE =====
   if (activePage === 'employees') {
     return (
-      <div className="profile-container fade-in">
+      <div className="profile-container sub-page-view fade-in">
         <div className="profile-sticky-back">
           <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
         </div>
@@ -3864,7 +3876,7 @@ const getLicenseLabel = (type) => {
 
   // ===== MAIN PROFILE PAGE =====
   return (
-    <div className="profile-container fade-in">
+    <div className="profile-container sub-page-view fade-in">
       <div className="profile-header">
         <div className="profile-avatar-wrap" onClick={() => fileInputRef.current?.click()}>
           <img src={getAvatarSrc()} alt="User" className="profile-avatar" />
