@@ -2398,8 +2398,8 @@ const getLicenseLabel = (type) => {
             </div>
           </div>
 
-          {/* Einstein Clearance Equation: 14px flex gap + 84px spacer = 98px. 98px - 84px BottomNav top edge = EXACT 14px visual gap */}
-          <div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0 }} />
+          {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
+          <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
         </div>
       </div>
     );
