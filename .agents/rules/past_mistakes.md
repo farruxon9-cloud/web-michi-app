@@ -129,11 +129,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. Barcha lug'at fayllarida matnlar toza holda saqlanadi: `"birthDateLabel": "生年月日"`, `"birthPlaceLabel": "出生地"`.
   2. Nuqtalar yoki punktuatsiyalar faqat JSX shablonining o'zida bir marta izchil shaklda beriladi: `{t('birthDateLabel')}:`.
 
-## 🚫 25. About Sahifasi va AI Voice Showcase Bento Arxitekturasi Invarianti (About & AI Showcase Design System Invariant)
+
+## 🚫 26. Townwork Standardidagi Yapon Ish Qidiruv Filtr Interfeysi Invarianti (Japanese Recruitment Location Filter Drawer Invariant)
 * **Qoida**: 
-  1. `Michi (道) について` (`about`) hamda `AssistHeroShowcase` (`assist_showcase`) sahifalarining barcha bento grid kartalari, AI pills tugmalari, 5-tilli tarjimalari hamda sarlavha layoutlari 100% o'zgarmas holda saqlanadi.
-  2. Sub-sahifalar sarlavhasi doim yagona satrli flex-row (`display: flex; align-items: center; justify-content: space-between;`) holatida saqlanadi.
-  3. Skroll va pastki clearance masofasi doim **Rule 23** (`sub-page-view` sinfi + `72px` spatser = **14px visual gap symmetry**) standartiga 100% bo'ysunadi.
+  1. E'lonlar bo'limi (`DriverFeed.jsx`) filtr darchasi Yaponiya mehnat bozorining Townwork standartidagi 3 tabli sariq/brend sarlavhaga ega bo'ladi:
+     - **Tab 1 (`駅・路線`)**: Poyezd liniyalari va bekatlar akkordeon ko'rinishida kvadrat belgilash shakllari (`[ ]`) bilan tanlanadi. Liniya tanlansa barcha bekatlar avtomatik belgilanadi.
+     - **Tab 2 (`市区町村`)**: Prefektura shahar va tumanlari akkordeoni. Major shaharlar (masalan `仙台市`, `東京23区`, `横浜市`, `大阪市`) kengaytirilganda tumanlar (`青葉区`, `港区`, `淀川区`) tanlanadi.
+     - **Tab 3 (`現在地`)**: Foydalanuvchi joriy GPS o'rnidan 1km dan 20km gacha radius (piyoda 徒歩 va avto 車 vaqtlari bilan) radio tugmalar orqali tanlanadi.
+  2. Darcha pastki qismida muallaq fiksatsiyalangan paneda chapda `クリア (Tozalash)` tugmasi, o'ngda esa dinamik vakansiyalar sonini ko'rsatuvchi kapsula tugma (`{filteredJobs.length}件 検索`) joylashadi.
 
 
 
