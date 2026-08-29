@@ -31,7 +31,7 @@
 }
 
 .profile-container.sub-page-view {
-  padding-bottom: 120px !important;
+  padding-bottom: 14px !important;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }

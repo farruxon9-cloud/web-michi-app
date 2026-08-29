@@ -13,7 +13,7 @@ async function testSettingsScroll() {
     console.log(`\n--- Testing ${vp.name} ---`);
     const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height } });
     const page = await context.newPage();
-    await page.goto('http://127.0.0.1:5173/', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
     await page.waitForTimeout(2500);
 
     // 1. Select language
