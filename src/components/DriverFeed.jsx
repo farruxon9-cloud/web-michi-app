@@ -933,7 +933,9 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
   React.useEffect(() => {
     if (!isOpen) return;
 
-    const timer = setTimeout(() => {
+    const timers = [];
+
+    const setupMap = () => {
       if (!mapContainerRef.current) return;
 
       let map = mapInstanceRef.current;
@@ -945,9 +947,10 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
             zoomControl: false
           });
 
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             maxZoom: 19,
-            attribution: '© OpenStreetMap'
+            subdomains: 'abcd',
+            attribution: '© OpenStreetMap © CARTO'
           }).addTo(map);
 
           mapInstanceRef.current = map;
@@ -995,12 +998,24 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
           console.warn('fitBounds error:', e);
         }
       }
-    }, 150);
+    };
 
-    return () => clearTimeout(timer);
+    timers.push(setTimeout(setupMap, 50));
+    timers.push(setTimeout(() => {
+      if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+    }, 200));
+    timers.push(setTimeout(() => {
+      if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+    }, 500));
+
+    return () => {
+      timers.forEach(t => clearTimeout(t));
+    };
   }, [isOpen, jobs]);
 
   if (!isOpen) return null;
+
+  const targetContainer = document.getElementById('root') || document.body;
 
   return createPortal(
     <div className="job-map-modal-overlay animate-fade-in">
@@ -1059,6 +1074,6 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
         </div>
       </div>
     </div>,
-    document.body
+    targetContainer
   );
 }
