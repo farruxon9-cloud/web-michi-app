@@ -1,11 +1,105 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone, Edit3, CheckCircle2, SlidersHorizontal, X } from 'lucide-react';
+import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone, Edit3, CheckCircle2, SlidersHorizontal, X, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import VerifiedBadge from './VerifiedBadge';
 import './DriverFeed.css';
+
+// ============================================================
+// TOWNWORK-STYLE JAPANESE RECRUITMENT LOCATION DATASETS
+// ============================================================
+export const JAPAN_TRAIN_LINES = [
+  {
+    id: 'line_tohoku',
+    name: 'JR東北本線 (黒磯〜利府・盛岡)',
+    prefecture: 'Miyagi',
+    stations: ['黒磯駅', '高久駅', '黒田原駅', '豊原駅', '白坂駅', '新白河駅', '白河駅', '久田野駅', '泉崎駅', '矢吹駅', '鏡石駅', '須賀川駅']
+  },
+  {
+    id: 'line_senzan',
+    name: 'JR仙山線',
+    prefecture: 'Miyagi',
+    stations: ['仙台駅', '東照宮駅', '北仙台駅', '北山駅', '東北福祉大前駅', '国見駅', '葛岡駅', '陸前落合駅', '愛子駅']
+  },
+  {
+    id: 'line_senseki',
+    name: 'JR仙石線',
+    prefecture: 'Miyagi',
+    stations: ['あおば通駅', '仙台駅', '榴ケ岡駅', '宮城野原駅', '陸前原ノ町駅', '苦竹駅', '小鶴新田駅', '福田町駅', '陸前高砂駅']
+  },
+  {
+    id: 'line_yamanote',
+    name: 'JR山手線',
+    prefecture: 'Tokyo',
+    stations: ['東京駅', '品川駅', '渋谷駅', '新宿駅', '池袋駅', '上野駅', '秋葉原駅', '有楽町駅', '新橋駅', '恵比寿駅']
+  },
+  {
+    id: 'line_chuo',
+    name: 'JR中央本線',
+    prefecture: 'Tokyo',
+    stations: ['東京駅', '神田駅', '御茶ノ水駅', '四ツ谷駅', '新宿駅', '中野駅', '高円寺駅', '阿佐ケ谷駅', '荻窪駅', '吉祥寺駅', '三鷹駅']
+  },
+  {
+    id: 'line_tokaido',
+    name: 'JR東海道本線',
+    prefecture: 'Kanagawa',
+    stations: ['川崎駅', '横浜駅', '戸塚駅', '大船駅', '藤沢駅', '辻堂駅', '茅ケ崎駅', '平塚駅', '大磯駅', '二宮駅', '小田原駅']
+  },
+  {
+    id: 'line_loop',
+    name: 'JR大阪環状線',
+    prefecture: 'Osaka',
+    stations: ['大阪駅', '福島駅', '西九条駅', '弁天町駅', '大正駅', '新今宮駅', '天王寺駅', '鶴橋駅', '京橋駅']
+  }
+];
+
+export const JAPAN_CITIES = [
+  {
+    id: 'city_sendai',
+    name: '仙台市',
+    prefecture: 'Miyagi',
+    wards: ['青葉区', '宮城野区', '若林区', '太白区', '泉区']
+  },
+  { id: 'city_ishinomaki', name: '石巻市', prefecture: 'Miyagi', wards: [] },
+  { id: 'city_shiogama', name: '塩竈市', prefecture: 'Miyagi', wards: [] },
+  { id: 'city_kesennuma', name: '気仙沼市', prefecture: 'Miyagi', wards: [] },
+  { id: 'city_natori', name: '名取市', prefecture: 'Miyagi', wards: [] },
+  { id: 'city_tagajo', name: '多賀城市', prefecture: 'Miyagi', wards: [] },
+  {
+    id: 'city_tokyo23',
+    name: '東京23区',
+    prefecture: 'Tokyo',
+    wards: ['千代田区', '中央区', '港区', '新宿区', '文京区', '品川区', '目黒区', '大田区', '世田谷区', '渋谷区', '江東区', '江戸川区', '足立区']
+  },
+  { id: 'city_hachioji', name: '八王子市', prefecture: 'Tokyo', wards: [] },
+  { id: 'city_tachikawa', name: '立川市', prefecture: 'Tokyo', wards: [] },
+  {
+    id: 'city_yokohama',
+    name: '横浜市',
+    prefecture: 'Kanagawa',
+    wards: ['鶴見区', '神奈川区', '西区', '中区', '南区', '港北区', '戸塚区']
+  },
+  { id: 'city_kawasaki', name: '川崎市', prefecture: 'Kanagawa', wards: ['川崎区', '幸区', '中原区', '高津区'] },
+  {
+    id: 'city_osakashi',
+    name: '大阪市',
+    prefecture: 'Osaka',
+    wards: ['北区', '都島区', '福島区', '此花区', '中央区', '西区', '港区', '大正区', '浪速区', '淀川区', '住之江区']
+  }
+];
+
+export const RADIUS_OPTIONS = [
+  { value: 1, label: '1km以内', sublabel: '徒歩15分くらい (15 daq. piyoda)' },
+  { value: 2, label: '2km以内', sublabel: '徒歩30分くらい (30 daq. piyoda)' },
+  { value: 3, label: '3km以内', sublabel: '車10分くらい (Avto 10 daq.)' },
+  { value: 5, label: '5km以内', sublabel: '車15分くらい (Avto 15 daq.)' },
+  { value: 7, label: '7km以内', sublabel: '車20分くらい (Avto 20 daq.)' },
+  { value: 10, label: '10km以内', sublabel: '車30分くらい (Avto 30 daq.)' },
+  { value: 15, label: '15km以内', sublabel: '車45分くらい (Avto 45 daq.)' },
+  { value: 20, label: '20km以内', sublabel: '車1時間くらい (Avto 1 soat)' }
+];
 
 // ============================================================
 // MOCK_JOBS — Yaponiyada ish qidiruvchilar uchun to'liq e'lon ma'lumotlari
@@ -220,6 +314,14 @@ export default function DriverFeed({
   const [localLoading, setLocalLoading] = useState(false);
   const markersRef = React.useRef([]);
 
+  // Townwork-style Location Filter States
+  const [locationTab, setLocationTab] = useState('stations'); // 'stations' | 'cities' | 'radius'
+  const [selectedRadius, setSelectedRadius] = useState(0); // 0 = off, 1, 2, 3, 5, 7, 10, 15, 20
+  const [expandedLines, setExpandedLines] = useState({ line_tohoku: true, line_senzan: true });
+  const [expandedCities, setExpandedCities] = useState({ city_sendai: true });
+  const [selectedStations, setSelectedStations] = useState([]);
+  const [selectedCitiesList, setSelectedCitiesList] = useState([]);
+
   // Reset pagination when any filter changes
   useEffect(() => {
     setVisibleCount(10);
@@ -231,7 +333,8 @@ export default function DriverFeed({
   }, [
     searchQuery, activeSegment, selectedLicenses,
     selectedLangLevel, selectedBenefits, minSalary,
-    selectedPrefecture, selectedCity, stationQuery, onlyNearStation
+    selectedPrefecture, selectedCity, stationQuery, onlyNearStation,
+    locationTab, selectedRadius, selectedStations, selectedCitiesList
   ]);
 
   const showLoading = isLoading || localLoading;
@@ -249,7 +352,10 @@ export default function DriverFeed({
     || selectedPrefecture !== 'all'
     || selectedCity !== 'all'
     || stationQuery !== ''
-    || onlyNearStation === true;
+    || onlyNearStation === true
+    || selectedRadius > 0
+    || selectedStations.length > 0
+    || selectedCitiesList.length > 0;
 
   const handleResetFilters = () => {
     setSelectedLicenses([]);
@@ -260,6 +366,10 @@ export default function DriverFeed({
     setSelectedCity('all');
     setStationQuery('');
     setOnlyNearStation(false);
+    setLocationTab('stations');
+    setSelectedRadius(0);
+    setSelectedStations([]);
+    setSelectedCitiesList([]);
   };
 
   // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
@@ -332,8 +442,24 @@ export default function DriverFeed({
     const matchWalkTime = !onlyNearStation || 
       (job.walkTime !== undefined && job.walkTime !== '' && Number(job.walkTime) <= 10);
 
+    // 8. Multi-selected Station Checkboxes Filter
+    const matchSelectedStations = !selectedStations || selectedStations.length === 0 || selectedStations.some(st => {
+      const stClean = st.replace('駅', '').toLowerCase();
+      return (job.nearestStation && job.nearestStation.toLowerCase().includes(stClean)) ||
+             (job.location && job.location.toLowerCase().includes(stClean)) ||
+             (job.fullAddress && job.fullAddress.toLowerCase().includes(stClean));
+    });
+
+    // 9. Multi-selected Cities/Wards Checkboxes Filter
+    const matchSelectedCitiesList = !selectedCitiesList || selectedCitiesList.length === 0 || selectedCitiesList.some(c => {
+      const cClean = c.replace('区', '').replace('市', '').toLowerCase();
+      return (job.location && job.location.toLowerCase().includes(cClean)) ||
+             (job.fullAddress && job.fullAddress.toLowerCase().includes(cClean));
+    });
+
     return matchSegment && matchSearch && matchLicense && matchLang && 
-      matchBenefits && matchSalary && matchPrefecture && matchCity && matchStation && matchWalkTime;
+           matchBenefits && matchSalary && matchPrefecture && matchCity && 
+           matchStation && matchWalkTime && matchSelectedStations && matchSelectedCitiesList;
   });
 
   return (
@@ -645,268 +771,290 @@ export default function DriverFeed({
         )}
       </div>
 
-      {/* ====== PREMIUM FILTER DRAWER ====== */}
+      {/* ====== TOWNWORK-STYLE RECRUITMENT LOCATION FILTER DRAWER ====== */}
       {isFilterDrawerOpen && createPortal(
         <div className="filter-drawer-overlay animate-fade-in" onClick={() => setIsFilterDrawerOpen(false)}>
-          <div className="filter-drawer glass animate-slide-up" onClick={(e) => e.stopPropagation()}>
-            <div className="filter-drawer-header">
-              <h3>{t('advancedFilters', 'Kengaytirilgan filtrlar')}</h3>
-              <button className="filter-close-btn" onClick={() => setIsFilterDrawerOpen(false)} aria-label="Close">
-                <X size={18} />
-              </button>
-            </div>
+          <div className="townwork-filter-drawer glass animate-slide-up" onClick={(e) => e.stopPropagation()}>
             
-            <div className="filter-drawer-content hide-scrollbar">
+            {/* Yellow / Primary Branded Header Banner */}
+            <div className="townwork-filter-banner">
+              <div className="townwork-banner-title-row">
+                <h3>勤務地から探す (Hudud bo'yicha qidiruv)</h3>
+                <button className="filter-close-btn" onClick={() => setIsFilterDrawerOpen(false)} aria-label="Close">
+                  <X size={18} />
+                </button>
+              </div>
 
-              {/* Shortcut: View Jobs on Real Map (Behind ENABLE_MAP_SEARCH feature flag) */}
-              {ENABLE_MAP_SEARCH && (
-                <div className="filter-section" style={{ marginBottom: '20px' }}>
-                  <button
-                    type="button"
-                    className="btn-map-shortcut glass squircle animate-scale-up"
-                    onClick={() => {
-                      setIsFilterDrawerOpen(false);
-                      setIsMapModalOpen(true);
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '14px',
-                      background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.15) 0%, rgba(52, 199, 89, 0.15) 100%)',
-                      border: '1px solid var(--primary)',
-                      borderRadius: '16px',
-                      color: 'var(--primary)',
-                      fontSize: '14.5px',
-                      fontWeight: '700',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '10px',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 14px rgba(10, 132, 255, 0.2)'
-                    }}
+              {/* 3 Top Location Tabs */}
+              <div className="townwork-banner-tabs">
+                <button 
+                  type="button" 
+                  className={`townwork-tab-btn ${locationTab === 'stations' ? 'active' : ''}`}
+                  onClick={() => setLocationTab('stations')}
+                >
+                  駅・路線
+                </button>
+                <button 
+                  type="button" 
+                  className={`townwork-tab-btn ${locationTab === 'cities' ? 'active' : ''}`}
+                  onClick={() => setLocationTab('cities')}
+                >
+                  市区町村
+                </button>
+                <button 
+                  type="button" 
+                  className={`townwork-tab-btn ${locationTab === 'radius' ? 'active' : ''}`}
+                  onClick={() => setLocationTab('radius')}
+                >
+                  現在地
+                </button>
+              </div>
+            </div>
+
+            {/* Prefecture Pill Dropdown Header Bar */}
+            {locationTab !== 'radius' && (
+              <div className="prefecture-selector-bar">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600' }}>Prefecture:</span>
+                  <select 
+                    value={selectedPrefecture} 
+                    onChange={(e) => setSelectedPrefecture(e.target.value)}
+                    className="prefecture-pill-btn"
                   >
-                    <MapPin size={20} color="var(--primary)" />
-                    <span>🗺️ {t('jobMapTitle', '求人マップ検索')}</span>
-                  </button>
+                    <option value="Miyagi">📍 宮城県 (Miyagi)</option>
+                    <option value="Tokyo">📍 東京都 (Tokyo)</option>
+                    <option value="Kanagawa">📍 神奈川県 (Kanagawa)</option>
+                    <option value="Osaka">📍 大阪府 (Osaka)</option>
+                    <option value="all">📍 全ての地域 (All)</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* Scrollable Main Filter Content */}
+            <div className="filter-drawer-content hide-scrollbar" style={{ padding: 0 }}>
+              
+              {/* TAB 1: Train Lines & Stations (駅・路線) */}
+              {locationTab === 'stations' && (
+                <div className="tab-stations-wrapper">
+                  {JAPAN_TRAIN_LINES.filter(l => selectedPrefecture === 'all' || l.prefecture === selectedPrefecture).map(line => {
+                    const isExpanded = !!expandedLines[line.id];
+                    const isLineSelected = line.stations.every(st => selectedStations.includes(st));
+
+                    return (
+                      <div key={line.id} className="townwork-accordion-item">
+                        <div className="townwork-accordion-header">
+                          <label className="townwork-checkbox-label">
+                            <div 
+                              className={`townwork-square-checkbox ${isLineSelected ? 'checked' : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (isLineSelected) {
+                                  setSelectedStations(prev => prev.filter(st => !line.stations.includes(st)));
+                                } else {
+                                  setSelectedStations(prev => Array.from(new Set([...prev, ...line.stations])));
+                                }
+                              }}
+                            >
+                              {isLineSelected && <Check size={14} color="#FFF" />}
+                            </div>
+                            <span>{line.name}</span>
+                          </label>
+                          <div 
+                            onClick={() => setExpandedLines(prev => ({ ...prev, [line.id]: !prev[line.id] }))}
+                            style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                          >
+                            {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                          </div>
+                        </div>
+
+                        {/* Station Checkboxes Body */}
+                        {isExpanded && (
+                          <div className="townwork-accordion-body">
+                            {line.stations.map(st => {
+                              const isStChecked = selectedStations.includes(st);
+                              return (
+                                <div 
+                                  key={st} 
+                                  className="townwork-sub-checkbox-item"
+                                  onClick={() => {
+                                    setSelectedStations(prev => 
+                                      prev.includes(st) ? prev.filter(item => item !== st) : [...prev, st]
+                                    );
+                                  }}
+                                >
+                                  <div className={`townwork-square-checkbox ${isStChecked ? 'checked' : ''}`} style={{ width: '16px', height: '16px' }}>
+                                    {isStChecked && <Check size={11} color="#FFF" />}
+                                  </div>
+                                  <span>{st}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
-              {/* Category 1: Location (Prefecture & City & Station) */}
-              <div className="filter-section">
-                <h4>{t('filterLocation', 'Hudud bo\'yicha qidiruv')}</h4>
-                <div className="filter-tags" style={{ marginBottom: '14px' }}>
-                  {[
-                    { id: 'all', label: t('allRegions', '全ての地域') },
-                    { id: 'Tokyo', label: 'Tokyo (東京)' },
-                    { id: 'Kanagawa', label: 'Kanagawa (神奈川)' },
-                    { id: 'Saitama', label: 'Saitama (埼玉)' },
-                    { id: 'Chiba', label: 'Chiba (千葉)' },
-                    { id: 'Osaka', label: 'Osaka (大阪)' },
-                    { id: 'Kyoto', label: 'Kyoto (京都)' },
-                    { id: 'Aichi', label: 'Aichi (愛知)' },
-                    { id: 'Fukuoka', label: 'Fukuoka (福岡)' }
-                  ].map(item => {
-                    const isSelected = selectedPrefecture === item.id;
+              {/* TAB 2: Cities & Municipalities (市区町村) */}
+              {locationTab === 'cities' && (
+                <div className="tab-cities-wrapper">
+                  {JAPAN_CITIES.filter(c => selectedPrefecture === 'all' || c.prefecture === selectedPrefecture).map(city => {
+                    const isExpanded = !!expandedCities[city.id];
+                    const hasWards = city.wards && city.wards.length > 0;
+                    const isCityChecked = selectedCitiesList.includes(city.name);
+
                     return (
-                      <button 
-                        key={item.id} 
-                        className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
-                        onClick={() => {
-                          setSelectedPrefecture(item.id);
-                          setSelectedCity('all'); // Reset city on prefecture change
-                        }}
-                      >
-                        {item.label}
-                      </button>
+                      <div key={city.id} className="townwork-accordion-item">
+                        <div className="townwork-accordion-header">
+                          <label className="townwork-checkbox-label">
+                            <div 
+                              className={`townwork-square-checkbox ${isCityChecked ? 'checked' : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCitiesList(prev => 
+                                  prev.includes(city.name) ? prev.filter(c => c !== city.name) : [...prev, city.name]
+                                );
+                              }}
+                            >
+                              {isCityChecked && <Check size={14} color="#FFF" />}
+                            </div>
+                            <span>{city.name}</span>
+                          </label>
+                          {hasWards && (
+                            <div 
+                              onClick={() => setExpandedCities(prev => ({ ...prev, [city.id]: !prev[city.id] }))}
+                              style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                            >
+                              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Wards Checkboxes Body */}
+                        {hasWards && isExpanded && (
+                          <div className="townwork-accordion-body">
+                            {city.wards.map(ward => {
+                              const isWardChecked = selectedCitiesList.includes(ward);
+                              return (
+                                <div 
+                                  key={ward} 
+                                  className="townwork-sub-checkbox-item"
+                                  onClick={() => {
+                                    setSelectedCitiesList(prev => 
+                                      prev.includes(ward) ? prev.filter(w => w !== ward) : [...prev, ward]
+                                    );
+                                  }}
+                                >
+                                  <div className={`townwork-square-checkbox ${isWardChecked ? 'checked' : ''}`} style={{ width: '16px', height: '16px' }}>
+                                    {isWardChecked && <Check size={11} color="#FFF" />}
+                                  </div>
+                                  <span>{ward}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
+              )}
 
-                {/* Nested Cities Select */}
-                {selectedPrefecture !== 'all' && ['Tokyo', 'Kanagawa', 'Saitama', 'Chiba', 'Osaka', 'Kyoto', 'Aichi'].includes(selectedPrefecture) && (
-                  <div className="nested-cities-block fade-in" style={{ padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '14px', border: '1px dashed var(--glass-border)', marginBottom: '14px' }}>
-                    <h5 style={{ margin: '0 0 10px 0', fontSize: '12.5px', fontWeight: '700', color: 'var(--text-secondary)' }}>
-                      📍 {t('cityLabel', 'Shahar / Tuman')} ({selectedPrefecture}):
-                    </h5>
-                    <div className="filter-tags">
-                      {(
-                        {
-                          'Tokyo': ['all', 'Koto-ku', 'Shinjuku-ku', 'Minato-ku', 'Chiyoda-ku'],
-                          'Kanagawa': ['all', 'Yokohama', 'Kawasaki'],
-                          'Saitama': ['all', 'Omiya-ku', 'Omiya', 'Kawagoe'],
-                          'Chiba': ['all', 'Matsudo', 'Funabashi'],
-                          'Osaka': ['all', 'Osaka-shi', 'Sakai'],
-                          'Kyoto': ['all', 'Kyoto-shi'],
-                          'Aichi': ['all', 'Nagoya', 'Toyohashi']
-                        }[selectedPrefecture] || ['all']
-                      ).map(city => {
-                        const isCitySelected = selectedCity === city;
-                        return (
-                          <button
-                            key={city}
-                            type="button"
-                            className={`filter-tag-chip ${isCitySelected ? 'active' : ''}`}
-                            onClick={() => setSelectedCity(city)}
-                            style={{ padding: '4px 10px', fontSize: '12px' }}
-                          >
-                            {city === 'all' ? t('lang_all', 'Barchasi') : city}
-                          </button>
-                        );
-                      })}
-                    </div>
+              {/* TAB 3: Current Location Radius (現在地) */}
+              {locationTab === 'radius' && (
+                <div className="townwork-radius-list">
+                  {RADIUS_OPTIONS.map(opt => {
+                    const isSelected = selectedRadius === opt.value;
+                    return (
+                      <div 
+                        key={opt.value} 
+                        className={`townwork-radius-item ${isSelected ? 'selected' : ''}`}
+                        onClick={() => setSelectedRadius(opt.value)}
+                      >
+                        <div className="townwork-radio-circle">
+                          {isSelected && <div className="townwork-radio-inner" />}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-main)' }}>{opt.label}</span>
+                          <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>{opt.sublabel}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Additional Filters (Licenses, Japanese Level, Salary, Benefits) */}
+              <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '18px', borderTop: '1px solid var(--glass-border)' }}>
+                {/* Licenses */}
+                <div className="filter-section">
+                  <h4 style={{ margin: '0 0 8px 0', fontSize: '13.5px', fontWeight: '800', color: 'var(--text-main)' }}>{t('filterLicenses', 'Haydovchilik guvohnomasi')}</h4>
+                  <div className="filter-tags">
+                    {[
+                      { id: 'lic_futsu', label: t('lic_futsu', 'Futsu (Yengil)') },
+                      { id: 'lic_chugata', label: t('lic_chugata', 'Chugata (O\'rta)') },
+                      { id: 'lic_oogata', label: t('lic_oogata', 'Oogata (Katta)') },
+                      { id: 'lic_kenin', label: t('lic_kenin', 'Ken\'in (Trailer)') },
+                      { id: 'tech_forklift', label: t('tech_forklift', 'Forklift') }
+                    ].map(item => {
+                      const isSelected = selectedLicenses.includes(item.id);
+                      return (
+                        <button 
+                          key={item.id} 
+                          className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
+                          onClick={() => {
+                            setSelectedLicenses(prev => 
+                              prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]
+                            );
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
 
-                {/* Subway/Train Station filter */}
-                <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
-                    🚉 {t('nearestStationLabel', 'Eng yaqin metro/poyezd bekati')}
-                  </label>
-                  <input
-                    type="text"
-                    value={stationQuery}
-                    onChange={e => setStationQuery(e.target.value)}
-                    placeholder={t('searchStationPlaceholder', 'Bekat nomini yozing...')}
-                    className="auth-input"
-                    style={{ fontSize: '12.5px', padding: '10px 12px' }}
-                  />
-
-                  {/* Near Station Toggle Chip */}
-                  <div style={{ marginTop: '4px' }}>
-                    <button
-                      type="button"
-                      className={`filter-tag-chip ${onlyNearStation ? 'active' : ''}`}
-                      onClick={() => setOnlyNearStation(!onlyNearStation)}
-                      style={{
-                        padding: '6px 12px',
-                        fontSize: '12.5px',
-                        borderRadius: '20px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      {t('nearStationOnlyFilter', '🚶‍♂️ Metroga yaqin (10 daq. piyoda)')}
-                    </button>
+                {/* Salary */}
+                <div className="filter-section">
+                  <h4 style={{ margin: '0 0 8px 0', fontSize: '13.5px', fontWeight: '800', color: 'var(--text-main)' }}>{t('filterSalary', 'Minimal oylik maosh')}</h4>
+                  <div className="filter-tags">
+                    {[
+                      { id: 0, label: t('salary_all', 'Barchasi') },
+                      { id: 250000, label: '¥250,000+' },
+                      { id: 350000, label: '¥350,000+' },
+                      { id: 450000, label: '¥450,000+' }
+                    ].map(item => {
+                      const isSelected = minSalary === item.id;
+                      return (
+                        <button 
+                          key={item.id} 
+                          className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
+                          onClick={() => setMinSalary(item.id)}
+                        >
+                          {item.label}
+                        </button>
+                      );
+                    })}
                   </div>
-                </div>
-              </div>
-
-
-              {/* Category 2: Licenses */}
-              <div className="filter-section">
-                <h4>{t('filterLicenses', 'Haydovchilik guvohnomasi')}</h4>
-                <div className="filter-tags">
-                  {[
-                    { id: 'lic_futsu', label: t('lic_futsu', 'Futsu (Yengil)') },
-                    { id: 'lic_chugata', label: t('lic_chugata', 'Chugata (O\'rta)') },
-                    { id: 'lic_oogata', label: t('lic_oogata', 'Oogata (Katta)') },
-                    { id: 'lic_kenin', label: t('lic_kenin', 'Ken\'in (Trailer)') },
-                    { id: 'tech_forklift', label: t('tech_forklift', 'Forklift') }
-                  ].map(item => {
-                    const isSelected = selectedLicenses.includes(item.id);
-                    return (
-                      <button 
-                        key={item.id} 
-                        className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
-                        onClick={() => {
-                          setSelectedLicenses(prev => 
-                            prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]
-                          );
-                        }}
-                      >
-                        {item.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Category 3: Japanese Level */}
-              <div className="filter-section">
-                <h4>{t('filterJapanese', 'Yapon tili darajasi')}</h4>
-                <div className="filter-tags">
-                  {[
-                    { id: 'all', label: t('lang_all', 'Barchasi') },
-                    { id: 'none', label: t('lang_none', 'Talab etilmaydi') },
-                    { id: 'n5_n4', label: t('lang_n5_n4', 'N5 / N4 (Boshlang\'ich)') },
-                    { id: 'n3', label: t('lang_n3', 'N3 (Suhbat)') },
-                    { id: 'n2_n1', label: t('lang_n2_n1', 'N2 / N1 (Erkin)') }
-                  ].map(item => {
-                    const isSelected = selectedLangLevel === item.id;
-                    return (
-                      <button 
-                        key={item.id} 
-                        className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
-                        onClick={() => setSelectedLangLevel(item.id)}
-                      >
-                        {item.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Category 4: Benefits */}
-              <div className="filter-section">
-                <h4>{t('filterBenefits', 'Imtiyozlar va Sharoitlar')}</h4>
-                <div className="filter-tags">
-                  {[
-                    { id: 'housing', label: t('housing_dorm', 'Yotoqxona / Uy-joy') },
-                    { id: 'foreigner', label: t('foreigners_ok', 'Chet elliklarga mos') },
-                    { id: 'bonus', label: t('bonus_2', 'Bonuslar bor') },
-                    { id: 'insurance', label: t('insurance_full', 'Sug\'urta mavjud') }
-                  ].map(item => {
-                    const isSelected = selectedBenefits.includes(item.id);
-                    return (
-                      <button 
-                        key={item.id} 
-                        className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
-                        onClick={() => {
-                          setSelectedBenefits(prev => 
-                            prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]
-                          );
-                        }}
-                      >
-                        {item.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Category 5: Minimum Salary */}
-              <div className="filter-section">
-                <h4>{t('filterSalary', 'Minimal oylik maosh')}</h4>
-                <div className="filter-tags">
-                  {[
-                    { id: 0, label: t('salary_all', 'Barchasi') },
-                    { id: 250000, label: '¥250,000+' },
-                    { id: 350000, label: '¥350,000+' },
-                    { id: 450000, label: '¥450,000+' }
-                  ].map(item => {
-                    const isSelected = minSalary === item.id;
-                    return (
-                      <button 
-                        key={item.id} 
-                        className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
-                        onClick={() => setMinSalary(item.id)}
-                      >
-                        {item.label}
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
             </div>
 
-            {/* Action buttons */}
-            <div className="filter-drawer-actions">
-              <button className="filter-action-btn btn-reset" onClick={handleResetFilters}>
-                {t('clearFilters', 'Tozalash')}
+            {/* Floating Bottom Sticky Bar */}
+            <div className="townwork-filter-bottom-bar">
+              <button type="button" className="townwork-btn-clear" onClick={handleResetFilters}>
+                クリア (Tozalash)
               </button>
-              <button className="filter-action-btn btn-apply" onClick={() => setIsFilterDrawerOpen(false)}>
-                {t('applyFilters', 'Filtrni qo\'llash')}
+              <button 
+                type="button" 
+                className="townwork-btn-search-cta" 
+                onClick={() => setIsFilterDrawerOpen(false)}
+              >
+                {filteredJobs.length}件 検索
               </button>
             </div>
           </div>
