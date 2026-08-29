@@ -213,6 +213,7 @@ export default function DriverFeed({
   isLoading = false
 }) {
   const { t } = useTranslation();
+  const ENABLE_MAP_SEARCH = false; // Feature flag: Set to true in future to activate Map Search
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(10);
@@ -349,26 +350,28 @@ export default function DriverFeed({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <button 
-            type="button"
-            className="map-view-toggle-btn glass"
-            onClick={() => setIsMapModalOpen(true)}
-            title={t('jobMapTitle', '求人マップ検索')}
-            style={{
-              padding: '10px 14px',
-              borderRadius: '14px',
-              border: '1px solid var(--glass-border)',
-              background: 'rgba(10, 132, 255, 0.12)',
-              color: 'var(--primary)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s'
-            }}
-          >
-            <MapPin size={20} color="var(--primary)" />
-          </button>
+          {ENABLE_MAP_SEARCH && (
+            <button 
+              type="button"
+              className="map-view-toggle-btn glass"
+              onClick={() => setIsMapModalOpen(true)}
+              title={t('jobMapTitle', '求人マップ検索')}
+              style={{
+                padding: '10px 14px',
+                borderRadius: '14px',
+                border: '1px solid var(--glass-border)',
+                background: 'rgba(10, 132, 255, 0.12)',
+                color: 'var(--primary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+            >
+              <MapPin size={20} color="var(--primary)" />
+            </button>
+          )}
           <button 
             className={`filter-toggle-btn ${hasActiveFilters ? 'active' : ''}`}
             onClick={() => setIsFilterDrawerOpen(true)}
@@ -475,13 +478,13 @@ export default function DriverFeed({
                     {/* Qisqa ma'lumot chiplari (minimalistik ikonkalar bilan) */}
                     <div className="job-card-chips">
                       <span 
-                        className="job-chip job-location-chip-clickable"
+                        className={`job-chip ${ENABLE_MAP_SEARCH ? 'job-location-chip-clickable' : ''}`}
                         onClick={(e) => {
+                          if (!ENABLE_MAP_SEARCH) return;
                           e.stopPropagation();
                           setSelectedMapJob(job);
                           setIsMapModalOpen(true);
                         }}
-                        title={t('showOnMap', 'Kartada ko\'rish')}
                       >
                         <MapPin size={12} color="var(--primary)" />
                         {t(`job_${job.id}_location`, job.location)}
@@ -655,36 +658,38 @@ export default function DriverFeed({
             
             <div className="filter-drawer-content hide-scrollbar">
 
-              {/* Shortcut: View Jobs on Real Map */}
-              <div className="filter-section" style={{ marginBottom: '20px' }}>
-                <button
-                  type="button"
-                  className="btn-map-shortcut glass squircle animate-scale-up"
-                  onClick={() => {
-                    setIsFilterDrawerOpen(false);
-                    setIsMapModalOpen(true);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '14px',
-                    background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.15) 0%, rgba(52, 199, 89, 0.15) 100%)',
-                    border: '1px solid var(--primary)',
-                    borderRadius: '16px',
-                    color: 'var(--primary)',
-                    fontSize: '14.5px',
-                    fontWeight: '700',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 14px rgba(10, 132, 255, 0.2)'
-                  }}
-                >
-                  <MapPin size={20} color="var(--primary)" />
-                  <span>🗺️ {t('jobMapTitle', '求人マップ検索')}</span>
-                </button>
-              </div>
+              {/* Shortcut: View Jobs on Real Map (Behind ENABLE_MAP_SEARCH feature flag) */}
+              {ENABLE_MAP_SEARCH && (
+                <div className="filter-section" style={{ marginBottom: '20px' }}>
+                  <button
+                    type="button"
+                    className="btn-map-shortcut glass squircle animate-scale-up"
+                    onClick={() => {
+                      setIsFilterDrawerOpen(false);
+                      setIsMapModalOpen(true);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.15) 0%, rgba(52, 199, 89, 0.15) 100%)',
+                      border: '1px solid var(--primary)',
+                      borderRadius: '16px',
+                      color: 'var(--primary)',
+                      fontSize: '14.5px',
+                      fontWeight: '700',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '10px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 14px rgba(10, 132, 255, 0.2)'
+                    }}
+                  >
+                    <MapPin size={20} color="var(--primary)" />
+                    <span>🗺️ {t('jobMapTitle', '求人マップ検索')}</span>
+                  </button>
+                </div>
+              )}
 
               {/* Category 1: Location (Prefecture & City & Station) */}
               <div className="filter-section">
@@ -909,14 +914,16 @@ export default function DriverFeed({
         document.getElementById('root') || document.body
       )}
 
-      {/* ====== REAL LEAFLET MAP MODAL ====== */}
-      <JobMapModal 
-        isOpen={isMapModalOpen} 
-        onClose={() => setIsMapModalOpen(false)} 
-        jobs={filteredJobs} 
-        onSelectJob={onJobClick} 
-        t={t} 
-      />
+      {/* ====== REAL LEAFLET MAP MODAL (Behind ENABLE_MAP_SEARCH feature flag) ====== */}
+      {ENABLE_MAP_SEARCH && (
+        <JobMapModal 
+          isOpen={isMapModalOpen} 
+          onClose={() => setIsMapModalOpen(false)} 
+          jobs={filteredJobs} 
+          onSelectJob={onJobClick} 
+          t={t} 
+        />
+      )}
     </div>
   );
 }
