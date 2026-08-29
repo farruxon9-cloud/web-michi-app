@@ -113,16 +113,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. Ichki gorizontal satrlarni skroll qilish uchun faqat nisbiy konteyner skrollidan foydalaniladi: `container.scrollTo({ left: targetOffset, behavior: 'smooth' })`.
   3. Har bir asosiy sahifa (Profil, Avtomaktab, E'lonlar) tab o'zgarganda va ochilganda doim `scrollTop = 0` holatida — ya'ni eng yuqori sarlavhadan ochilishi shart.
 
-## 🚫 23. Enshteyn Tenglamasi: Konteynerlar Orasidagi Masofa va Suzuvchi BottomNav Simmetriyasi (Einstein Inter-Container Gap & Floating Dock Clearance Invariant)
+## 🚫 23. Sub-Sahifalar Dekoratsiyasi va Layout Invariantlari (Sub-Page Layout & Header Standardization Invariant)
 * **Xatolik**: 
-  1. Suzuvchi `BottomNav` paneli ortida sub-sahifalarning (Sozlamalar va b.q.) eng pastki kartalari to'silib qolishi yoki CSS `padding-bottom` takrorlanishi tufayli 100px+ ulkan ortiqcha bo'shliq paydo bo'lishi.
-  2. Kartalar va kartalar orasidagi masofa (`14px`) bilan eng pastki karta va `BottomNav` orasidagi masofa visual ravishda bir xil (simmetrik) bo'lmay qolishi.
-* **Yechim (Piksel-Simmetrik 14px Formulasi)**: 
-  - `BottomNav` top edge balandligi = **`84px`** (`72px height + 12px bottom`).
-  - Kartalar orasidagi standart gap = **`14px`** (`gap: 14px`).
-  - DOM spatser balandligi = **`72px`** (`<div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />`).
-  - CSS pastki paddingi = **`12px`** (`.profile-container.sub-page-view { padding-bottom: 12px !important; }`).
-  - Skroll eng pastga tushganda: Oxirgi karta pastki qirrasi va `BottomNav` tepa qirrasi o'rtasidagi visual masofa **AYNAN 14px (kartalar orasidagi gap bilan 100% teng)** bo'ladi.
+  1. Sub-sahifalarda (`about`, `settings`, `notifications` va b.q.) orqaga qaytish tugmasi va sarlavhaning alohida qatorda turishi tufayli 28px+ ortiqcha bo'shliq hosil bo'lishi.
+  2. Idishda `sub-page-view` sinfi yoki `72px` spatseri tushib qolishi tufayli eng pastki kartalar `BottomNav` ostida ko'rinmay qolishi.
+* **Yechim (Piksel-Simmetrik Standart)**: 
+  1. **Yagona Satrli Sarlavha (`Single-Row Header`)**: Orqaga qaytish tugmasi va sarlavha bitta gorizontal flex-row tarkibida joylashtiriladi (`display: flex; align-items: center; justify-content: space-between;`). Sarlavha matni `flex: 1`, `text-align: center`, hamda tugma kengligiga mos `margin-right` orqali 100% matematik markazlashtiriladi.
+  2. **Majburiy Sub-Page Idish va Spatser**: Barcha sub-sahifalar idishi `<div className="profile-container sub-page-view fade-in">` sinfi bilan e'lon qilinadi va oxiriga majburiy `<div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />` spatseri qo'yiladi. Skroll eng pastga tushganda visual masofa **aynan 14px (kartalar gap'i bilan 100% teng)** bo'ladi.
 
 ## 🚫 24. Lug'at Kalitlari Sofligi va O'rnatilgan Nuqtalar Taqiqlanishi (Dictionary Label Cleanliness & No Embedded Colon Invariant)
 * **Xatolik**: 
