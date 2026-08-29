@@ -5826,6 +5826,9 @@ const getLicenseLabel = (type) => {
           <LogOut size={20} />
           <span>{t('logout')}</span>
         </button>
+
+        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
+        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
       </div>
 
       {/* Universal Japanese Vehicle Fleet Picker Modal */}
