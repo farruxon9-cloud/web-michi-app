@@ -2424,7 +2424,7 @@ const getLicenseLabel = (type) => {
   if (activePage === 'about') {
     return (
       <div className="profile-container sub-page-view fade-in">
-        <div className="about-glow-container about-page-wrapper" style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '16px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className="about-glow-container about-page-wrapper" style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px 14px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           
           {/* Clip Orbs container to prevent horizontal scrolling/shaking */}
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', borderRadius: '24px', pointerEvents: 'none', zIndex: 1 }}>
@@ -2432,35 +2432,27 @@ const getLicenseLabel = (type) => {
             <div className="about-glow-orb orb2" />
           </div>
 
-          {/* Floating Back Button: Stays sticky at top-left, scrolls independently */}
-          <button 
-            className="icon-btn glass" 
-            onClick={() => setActivePage('main')} 
-            style={{ 
-              position: 'sticky', 
-              top: '0px', 
-              left: '0px', 
-              zIndex: 100, 
-              alignSelf: 'flex-start',
-              margin: 0, 
-              width: '40px', 
-              height: '40px', 
-              borderRadius: '50%', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              border: '1.2px solid var(--glass-border)',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.04), inset 0 1px 1.5px rgba(255,255,255,0.4)',
-              cursor: 'pointer',
-              marginBottom: '-40px' /* Pulls the title up to align horizontally */
-            }}
-          >
-            <ArrowLeft size={20} />
-          </button>
-
-          {/* Title Row: Scrolls normally with content */}
-          <div className="about-animate-item about-delay-1" style={{ textAlign: 'center', zIndex: 2, position: 'relative', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-            <h2 style={{ fontSize: '19px', fontWeight: '950', margin: 0, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+          {/* Sleek Integrated Header Row */}
+          <div className="about-animate-item about-delay-1" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, paddingTop: '4px' }}>
+            <button 
+              className="icon-btn glass" 
+              onClick={() => setActivePage('main')} 
+              style={{ 
+                width: '38px', 
+                height: '38px', 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                border: '1.2px solid var(--glass-border)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.04), inset 0 1px 1.5px rgba(255,255,255,0.4)',
+                cursor: 'pointer',
+                flexShrink: 0
+              }}
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, color: 'var(--text-main)', letterSpacing: '-0.02em', flex: 1, textAlign: 'center', marginRight: '38px' }}>
               {t('aboutAppTitle')}
             </h2>
           </div>
