@@ -13,7 +13,7 @@ This skill defines the complete visual structure, spacing invariants, interactiv
 - **Bento Menu Card Spacing:** `.profile-menu { display: flex; flex-direction: column; gap: 14px; padding: 0 14px; }`.
 - **Menu Group Cards:** `.menu-group { border-radius: 20px; border: 1px solid var(--glass-border); overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.03); }`.
 - **Single-Row Header Standard:** Back button (`←`) and Sub-Page Title aligned on the exact same horizontal flex row (`display: flex; align-items: center; justify-content: space-between;`). Title text has `flex: 1`, `text-align: center`, and `marginRight: '38px'` for 100% mathematical center alignment without vertical gaps.
-- **14px Visual Gap Symmetry Spacer:** All sub-pages MUST include `<div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />` as the final child inside `.profile-container.sub-page-view`. This produces an **exact 14px visual clearance gap** above `BottomNav`, perfectly matching inter-card `gap: 14px`.
+- **14px Visual Gap Symmetry Spacer:** All sub-pages and the main Profile tab (immediately after `<button className="logout-btn">`) MUST include `<div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />` as the final child inside `.profile-container.sub-page-view`. This produces an **exact 14px visual clearance gap** above `BottomNav`, perfectly matching inter-card `gap: 14px`.
 
 ## 🔄 2. Scroll Restoration & Navigation Mechanics
 - **Mount Scroll Lock:** Opening Profile tab resets `.profile-container.scrollTop = 0` (opened flush at top).
