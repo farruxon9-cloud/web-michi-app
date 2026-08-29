@@ -117,12 +117,12 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**: 
   1. Suzuvchi `BottomNav` paneli ortida sub-sahifalarning (Sozlamalar va b.q.) eng pastki kartalari to'silib qolishi yoki CSS `padding-bottom` takrorlanishi tufayli 100px+ ulkan ortiqcha bo'shliq paydo bo'lishi.
   2. Kartalar va kartalar orasidagi masofa (`14px`) bilan eng pastki karta va `BottomNav` orasidagi masofa visual ravishda bir xil (simmetrik) bo'lmay qolishi.
-* **Yechim (Enshteyn Formulasi - 96px Standarti)**: 
+* **Yechim (Piksel-Simmetrik 14px Formulasi)**: 
   - `BottomNav` top edge balandligi = **`84px`** (`72px height + 12px bottom`).
-  - Pastki visual masofa simmetriyasi = **`12px`** (BottomNav pastki masofasi `12px` bilan 100% tenglashtiriladi).
-  - Skroll eng pastga tushganda jami pastki bo'shliq tenglamasi:
-    $$\text{BottomNav Top Edge (84px)} + \text{Visual Gap (12px)} = \mathbf{96\text{px}}$$
-  - CSS tarkibida `.profile-container.sub-page-view { padding-bottom: 12px !important; }` hamda DOM spatseri `<div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0 }} />` birikmasi orqali barcha masofalar **to'liq 96px formulasi bilan pikselma-piksel simmetriyaga keltiriladi.**
+  - Kartalar orasidagi standart gap = **`14px`** (`gap: 14px`).
+  - DOM spatser balandligi = **`72px`** (`<div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />`).
+  - CSS pastki paddingi = **`12px`** (`.profile-container.sub-page-view { padding-bottom: 12px !important; }`).
+  - Skroll eng pastga tushganda: Oxirgi karta pastki qirrasi va `BottomNav` tepa qirrasi o'rtasidagi visual masofa **AYNAN 14px (kartalar orasidagi gap bilan 100% teng)** bo'ladi.
 
 ## 🚫 24. Lug'at Kalitlari Sofligi va O'rnatilgan Nuqtalar Taqiqlanishi (Dictionary Label Cleanliness & No Embedded Colon Invariant)
 * **Xatolik**: 
