@@ -357,6 +357,8 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
           </div>
         </div>
 
+        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
+        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
       </div>
     </div>
   );

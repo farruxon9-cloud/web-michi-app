@@ -129,6 +129,12 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. Barcha lug'at fayllarida matnlar toza holda saqlanadi: `"birthDateLabel": "生年月日"`, `"birthPlaceLabel": "出生地"`.
   2. Nuqtalar yoki punktuatsiyalar faqat JSX shablonining o'zida bir marta izchil shaklda beriladi: `{t('birthDateLabel')}:`.
 
+## 🚫 25. About Sahifasi va AI Voice Showcase Bento Arxitekturasi Invarianti (About & AI Showcase Design System Invariant)
+* **Qoida**: 
+  1. `Michi (道) について` (`about`) hamda `AssistHeroShowcase` (`assist_showcase`) sahifalarining barcha bento grid kartalari, AI pills tugmalari, 5-tilli tarjimalari hamda sarlavha layoutlari 100% o'zgarmas holda saqlanadi.
+  2. Sub-sahifalar sarlavhasi doim yagona satrli flex-row (`display: flex; align-items: center; justify-content: space-between;`) holatida saqlanadi.
+  3. Skroll va pastki clearance masofasi doim **Rule 23** (`sub-page-view` sinfi + `72px` spatser = **14px visual gap symmetry**) standartiga 100% bo'ysunadi.
+
 
 
 
