@@ -35,7 +35,12 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, Banknote, Edit3, SlidersHorizontal, X, ChevronDown, RotateCcw } from 'lucide-react';
+import { 
+  Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, 
+  Banknote, Edit3, SlidersHorizontal, X, ChevronDown, RotateCcw,
+  Car, GraduationCap, Sparkles, Globe, Truck, Bus, CreditCard, ShieldCheck, 
+  Clock, Gift, Users, Award, Shield, Check, Layers, Building2
+} from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import CustomMobilePickerModal from './CustomMobilePickerModal';
 import { PREFECTURES } from '../data/japanLocationDB';
@@ -642,33 +647,33 @@ export default function DrivingAcademy({
      ======================================================================== */
   if (isFilterOpen) {
     const courseOptions = [
-      { id: 'Futsu', icon: '🚗', name: t('lic_futsu', '普通自動車 (Futsu)') },
-      { id: 'Oogata', icon: '🚚', name: t('lic_oogata', '大型自動車 (Oogata)') },
-      { id: 'Chugata', icon: '🚛', name: t('lic_chugata', '中型自動車 (Chugata)') },
-      { id: 'JunChugata', icon: '📦', name: t('lic_junchugata', '準中型自動車 (Jun-Chugata)') },
-      { id: 'FutsuNishu', icon: '🚖', name: t('lic_futsunishu', '普通二種 (Taksi)') },
-      { id: 'OogataNishu', icon: '🚌', name: t('lic_oogatanishu', '大型二種 (Avtobus)') },
-      { id: 'Forklift', icon: '🏗️', name: t('lic_forklift', 'フォークリフト (Forklift)') },
-      { id: 'Tokushu', icon: '🚜', name: t('lic_tokushu', '大型特殊 (Tokushu)') },
-      { id: 'Nirin', icon: '🏍️', name: t('lic_nirin', '自動二輪車 (Nirin)') }
+      { id: 'Futsu', icon: <Car size={15} />, name: t('lic_futsu', '普通自動車 (Futsu)') },
+      { id: 'Oogata', icon: <Truck size={15} />, name: t('lic_oogata', '大型自動車 (Oogata)') },
+      { id: 'Chugata', icon: <Truck size={15} />, name: t('lic_chugata', '中型自動車 (Chugata)') },
+      { id: 'JunChugata', icon: <Truck size={15} />, name: t('lic_junchugata', '準中型自動車 (Jun-Chugata)') },
+      { id: 'FutsuNishu', icon: <Car size={15} />, name: t('lic_futsunishu', '普通二種 (Taksi)') },
+      { id: 'OogataNishu', icon: <Bus size={15} />, name: t('lic_oogatanishu', '大型二種 (Avtobus)') },
+      { id: 'Forklift', icon: <Layers size={15} />, name: t('lic_forklift', 'フォークリフト (Forklift)') },
+      { id: 'Tokushu', icon: <Award size={15} />, name: t('lic_tokushu', '大型特殊 (Tokushu)') },
+      { id: 'Nirin', icon: <Car size={15} />, name: t('lic_nirin', '自動二輪車 (Nirin)') }
     ];
 
     const styleOptions = [
-      { id: 'Tsugaku', icon: '🏫', name: t('style_tsugaku', '通学コース (Qatnab o\'qish)') },
-      { id: 'Gashuku', icon: '🏕️', name: t('style_gashuku', '合宿免許 (Yashab/Lagerda o\'qish)') },
-      { id: 'ShortTerm', icon: '⚡', name: t('style_shortterm', '短期集中コース (Tezlashtirilgan)') },
-      { id: 'OnlineTheory', icon: '💻', name: t('style_onlinetheory', 'オンライン学科対応 (Masofaviy nazariya)') }
+      { id: 'Tsugaku', icon: <Building2 size={15} />, name: t('style_tsugaku', '通学コース (Qatnab o\'qish)') },
+      { id: 'Gashuku', icon: <GraduationCap size={15} />, name: t('style_gashuku', '合宿免許 (Yashab/Lagerda o\'qish)') },
+      { id: 'ShortTerm', icon: <Clock size={15} />, name: t('style_shortterm', '短期集中コース (Tezlashtirilgan)') },
+      { id: 'OnlineTheory', icon: <Globe size={15} />, name: t('style_onlinetheory', 'オンライン学科対応 (Masofaviy nazariya)') }
     ];
 
     const featureOptions = [
-      { id: 'shuttle', icon: '🚌', name: t('feat_shuttle', '無料送迎バスあり (Free Shuttle)') },
-      { id: 'dormitory', icon: '🏠', name: t('feat_dormitory', '宿舎・食事付き (Dormitory/Meals)') },
-      { id: 'subsidy', icon: '🎓', name: t('feat_subsidy', '教育訓練給付金対象 (Govt Subsidy)') },
-      { id: 'installment', icon: '💳', name: t('feat_installment', 'ローン・分割払いOK (Installment)') },
-      { id: 'nightClass', icon: '🌙', name: t('feat_nightclass', 'ナイター教習対応 (Night Classes)') },
-      { id: 'femaleInstructor', icon: '👩‍🏫', name: t('feat_female', '女性指導員在籍 (Female Instructors)') },
-      { id: 'kidsRoom', icon: '👶', name: t('feat_kidsroom', '託児所・キッズルーム (Kids Room)') },
-      { id: 'shoukai', icon: '🎁', name: t('feat_shoukai', '紹介手当・キャッシュバック (Referral Bonus)') }
+      { id: 'shuttle', icon: <Bus size={15} />, name: t('feat_shuttle', '無料送迎バスあり (Free Shuttle)') },
+      { id: 'dormitory', icon: <GraduationCap size={15} />, name: t('feat_dormitory', '宿舎・食事付き (Dormitory/Meals)') },
+      { id: 'subsidy', icon: <ShieldCheck size={15} />, name: t('feat_subsidy', '教育訓練給付金対象 (Govt Subsidy)') },
+      { id: 'installment', icon: <CreditCard size={15} />, name: t('feat_installment', 'ローン・分割払いOK (Installment)') },
+      { id: 'nightClass', icon: <Clock size={15} />, name: t('feat_nightclass', 'ナイター教習対応 (Night Classes)') },
+      { id: 'femaleInstructor', icon: <Users size={15} />, name: t('feat_female', '女性指導員在籍 (Female Instructors)') },
+      { id: 'kidsRoom', icon: <Users size={15} />, name: t('feat_kidsroom', '託児所・キッズルーム (Kids Room)') },
+      { id: 'shoukai', icon: <Gift size={15} />, name: t('feat_shoukai', '紹介手当・キャッシュバック (Referral Bonus)') }
     ];
 
     const toggleMultiSelect = (setter, list, item) => {
@@ -754,9 +759,9 @@ export default function DrivingAcademy({
         {/* Townwork Signature 3-Tab Header Invariant */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
           {[
-            { id: 'course', icon: '🚘', label: t('coursesTab', '取得可能免許') },
-            { id: 'location', icon: '📍', label: t('prefectureTab', '都道府県・地域') },
-            { id: 'features', icon: '⭐', label: t('perksTab', 'こだわり条件') }
+            { id: 'course', icon: <Car size={15} color={activeFilterTab === 'course' ? '#000000' : 'var(--primary)'} />, label: t('coursesTab', '取得可能免許') },
+            { id: 'location', icon: <MapPin size={15} color={activeFilterTab === 'location' ? '#000000' : '#0A84FF'} />, label: t('prefectureTab', '都道府県・地域') },
+            { id: 'features', icon: <Sparkles size={15} color={activeFilterTab === 'features' ? '#000000' : '#FF2D55'} />, label: t('perksTab', 'こだわり条件') }
           ].map(tab => (
             <button
               key={tab.id}
@@ -772,12 +777,12 @@ export default function DrivingAcademy({
                 background: activeFilterTab === tab.id ? '#FFCC00' : 'var(--card-bg)',
                 color: activeFilterTab === tab.id ? '#000000' : 'var(--text-secondary)',
                 fontWeight: activeFilterTab === tab.id ? '800' : '600', fontSize: '13px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                 boxShadow: activeFilterTab === tab.id ? '0 4px 14px rgba(255, 204, 0, 0.35)' : 'none',
                 cursor: 'pointer', transition: 'all 0.15s ease'
               }}
             >
-              <span>{tab.icon}</span>
+              {tab.icon}
               <span>{tab.label}</span>
             </button>
           ))}
@@ -802,9 +807,9 @@ export default function DrivingAcademy({
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
                   width: '36px', height: '36px', borderRadius: '10px', background: '#0A84FF15',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  📍
+                  <MapPin size={18} color="#0A84FF" />
                 </div>
                 <div>
                   <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
@@ -836,7 +841,10 @@ export default function DrivingAcademy({
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer'
                   }}
                 >
-                  <span>{selectedPrefecture === 'all' ? `📍 ${t('selectPrefecture', '都道府県を選択')}` : `📍 ${selectedPrefecture}`}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <MapPin size={15} color="#0A84FF" />
+                    <span>{selectedPrefecture === 'all' ? t('selectPrefecture', '都道府県を選択') : selectedPrefecture}</span>
+                  </span>
                   <span style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: '800' }}>{t('change', '変更')} →</span>
                 </button>
               </div>
@@ -859,9 +867,9 @@ export default function DrivingAcademy({
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
                   width: '36px', height: '36px', borderRadius: '10px', background: '#34C75915',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  🚘
+                  <Car size={18} color="#34C759" />
                 </div>
                 <div>
                   <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
@@ -898,7 +906,7 @@ export default function DrivingAcademy({
                         display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.15s ease'
                       }}
                     >
-                      <span>{c.icon}</span>
+                      {c.icon}
                       <span>{c.name}</span>
                     </button>
                   );
@@ -923,9 +931,9 @@ export default function DrivingAcademy({
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
                   width: '36px', height: '36px', borderRadius: '10px', background: '#FF950015',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  🏫
+                  <GraduationCap size={18} color="#FF9500" />
                 </div>
                 <div>
                   <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
@@ -962,7 +970,7 @@ export default function DrivingAcademy({
                         display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.15s ease'
                       }}
                     >
-                      <span>{s.icon}</span>
+                      {s.icon}
                       <span>{s.name}</span>
                     </button>
                   );
@@ -987,9 +995,9 @@ export default function DrivingAcademy({
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
                   width: '36px', height: '36px', borderRadius: '10px', background: '#AF52DE15',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  🗣️
+                  <Globe size={18} color="#AF52DE" />
                 </div>
                 <div>
                   <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
@@ -1053,9 +1061,9 @@ export default function DrivingAcademy({
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
                   width: '36px', height: '36px', borderRadius: '10px', background: '#30D15815',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  💴
+                  <Banknote size={18} color="#30D158" />
                 </div>
                 <div>
                   <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
@@ -1119,9 +1127,9 @@ export default function DrivingAcademy({
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
                   width: '36px', height: '36px', borderRadius: '10px', background: '#FF2D5515',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  ⭐
+                  <Sparkles size={18} color="#FF2D55" />
                 </div>
                 <div>
                   <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
@@ -1158,7 +1166,7 @@ export default function DrivingAcademy({
                         display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.15s ease'
                       }}
                     >
-                      <span>{f.icon}</span>
+                      {f.icon}
                       <span>{f.name}</span>
                     </button>
                   );
