@@ -1178,8 +1178,8 @@ export default function DrivingAcademy({
 
         </div>
 
-        {/* Learned Rule Invariant: Explicit 160px Trailing Dock Clearance Spacer (Rule 7, Rule 8, Rule 13 Item 49) */}
-        <div style={{ height: '160px', minHeight: '160px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* Learned Rule Invariant: Compact 124px Trailing Dock Clearance Spacer (Rule 7, Rule 8, Rule 13 Item 49) */}
+        <div style={{ height: '124px', minHeight: '124px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
         {/* Pinned Search CTA Button Dock — floating 12px above BottomNav */}
         <div style={{
