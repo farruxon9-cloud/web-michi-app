@@ -45,4 +45,16 @@ describe('DrivingAcademy Component Render', () => {
     );
     expect(html).toContain('Koyama Academy');
   });
+
+  it('contains filter search trigger button', () => {
+    const html = renderToString(
+      <DrivingAcademy 
+        schools={[]} 
+        schoolApplications={[]} 
+        verifiedCompanies={[]} 
+        isContractActive={false} 
+      />
+    );
+    expect(html).toContain('feed-container');
+  });
 });

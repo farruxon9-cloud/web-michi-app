@@ -35,8 +35,10 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, Banknote, Edit3, SlidersHorizontal, X } from 'lucide-react';
+import { Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, Banknote, Edit3, SlidersHorizontal, X, ChevronDown, RotateCcw } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
+import CustomMobilePickerModal from './CustomMobilePickerModal';
+import { PREFECTURES } from '../data/japanLocationDB';
 import CustomInlineDropdown from './CustomInlineDropdown';
 import './DrivingAcademy.css';
 import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinadi
@@ -69,93 +71,135 @@ import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinad
 export const MOCK_SCHOOLS = [
   {
     id: 1,
-    name: "Koyama Driving School",
-    type: "Katta yuk va maxsus",
+    name: "Koyama Driving School (Futako-Tamagawa)",
+    type: "大型・普通・中型・二輪",
     discount: "¥20,000",
     shoukai: "¥10,000",
     image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
     verified: true,
     location: "Tokyo, Futako-Tamagawa",
+    prefecture: "Tokyo",
     fullAddress: "〒158-0094 Tokyo, Setagaya City, Tamagawa 3-1-1",
-    description: "Yaponiyadagi eng zamonaviy avtomaktablardan biri. Barcha turdagi litsenziyalar mavjud. Chet elliklar uchun ingliz tilida darslar mavjud.",
-    courses: ['Oogata', 'Chugata', 'Futsu', 'Tokushu'],
+    description: "Yaponiyadagi eng zamonaviy avtomaktablardan biri. Barcha turdagi litsenziyalar mavjud. Chet elliklar uchun ingliz va o'zbek tilida darslar mavjud.",
+    courses: ['Futsu', 'Oogata', 'Chugata', 'Tokushu', 'Forklift', 'Nirin'],
+    trainingStyle: ['Tsugaku', 'ShortTerm', 'OnlineTheory'],
+    priceValue: 280000,
     price: '¥280,000~',
     phone: '+81 3-1234-5678',
     email: 'info@koyama.jp',
     langs: ['UZ', 'JP', 'EN'],
+    features: ['shuttle', 'subsidy', 'installment', 'nightClass', 'femaleInstructor', 'shoukai'],
     shoukaiFee: 10000
   },
   {
     id: 2,
-    name: "Saitama Automobile School",
-    type: "Barcha toifalar",
+    name: "Saitama Automobile School (Omiya)",
+    type: "全車種対応・合宿免許完備",
     discount: "¥15,000",
     shoukai: "¥5,000",
     image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800",
     verified: true,
     location: "Saitama, Omiya",
+    prefecture: "Saitama",
     fullAddress: "〒330-0854 Saitama, Omiya-ku, Sakuragicho 2-1",
-    description: "Saitama markazidagi yirik o'quv maydoniga ega avtomaktab. Yotoqxonalar bor.",
-    courses: ['Oogata', 'Chugata', 'Futsu'],
-    price: '¥250,000~',
+    description: "Saitama markazidagi yirik o'quv maydoniga ega avtomaktab. Yotoqxona va bepul ovqatlanish paketlari bor.",
+    courses: ['Futsu', 'Oogata', 'Chugata', 'JunChugata', 'OogataNishu'],
+    trainingStyle: ['Gashuku', 'Tsugaku', 'ShortTerm'],
+    priceValue: 245000,
+    price: '¥245,000~',
     phone: '+81 48-555-1234',
     email: 'info@saitama-auto.jp',
     langs: ['UZ', 'JP'],
+    features: ['dormitory', 'shuttle', 'installment', 'shoukai'],
     shoukaiFee: 5000
   },
   {
     id: 3,
-    name: "Chiba Driving Center",
-    type: "Yuk va Forklift",
+    name: "Chiba Driving Center (Matsudo)",
+    type: "大型トラック・フォークリフト専門",
     discount: "¥10,000",
     shoukai: "0",
     image: "https://images.unsplash.com/photo-1541888062837-7b247f082e05?auto=format&fit=crop&q=80&w=800",
     verified: false,
     location: "Chiba, Matsudo",
+    prefecture: "Chiba",
     fullAddress: "〒270-2253 Chiba, Matsudo, Tokiwadaira 3-2-1",
-    description: "Faqat yuk mashinalari va maxsus texnikalar (Ekskavator, Forklift) litsenziyalari o'rgatiladi.",
-    courses: ['Oogata', 'Forklift', 'Tokushu'],
-    price: '¥200,000~',
+    description: "Faqat yuk mashinalari va maxsus texnikalar (Ekskavator, Forklift) litsenziyalari o'rgatiladi. Davlat subsidiyasi mavjud.",
+    courses: ['Oogata', 'Forklift', 'Tokushu', 'JunChugata'],
+    trainingStyle: ['Tsugaku', 'ShortTerm'],
+    priceValue: 198000,
+    price: '¥198,000~',
     phone: '+81 47-333-9876',
     email: 'contact@chiba-drive.jp',
     langs: ['JP'],
+    features: ['subsidy', 'nightClass', 'installment'],
     shoukaiFee: 0
   },
   {
     id: 4,
     name: "Yokohama Driving College",
-    type: "Yengil va Motosikl",
+    type: "普通車・自動二輪・女性専用コース",
     discount: "¥5,000",
     shoukai: "¥3,000",
     image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
     verified: true,
     location: "Kanagawa, Yokohama",
-    fullAddress: "〒231-0023 Kanagawa, Yokohama, Naka-ku",
-    description: "Chiroyli dengiz manzarasi. Tajribali ustozlar. Rus va O'zbek tillarida tarjimonlar mavjud.",
+    prefecture: "Kanagawa",
+    fullAddress: "〒231-0023 Kanagawa, Yokohama, Naka-ku 4-12",
+    description: "Chiroyli dengiz manzarasi. Tajribali ayol ustozlar va bolalar parvarish xonasi. Rus va O'zbek tillarida tarjimonlar mavjud.",
     courses: ['Futsu', 'Nirin'],
-    price: '¥300,000~',
+    trainingStyle: ['Tsugaku', 'OnlineTheory'],
+    priceValue: 310000,
+    price: '¥310,000~',
     phone: '+81 45-222-3456',
     email: 'info@yokohama-dc.jp',
-    langs: ['UZ', 'JP', 'RU'],
+    langs: ['UZ', 'JP', 'RU', 'EN'],
+    features: ['femaleInstructor', 'kidsRoom', 'shuttle', 'shoukai'],
     shoukaiFee: 3000
   },
   {
     id: 5,
-    name: "Osaka Central Auto",
-    type: "Barcha toifalar",
+    name: "Osaka Central Auto Driving Academy",
+    type: "全車種・合宿短期集中パック",
     discount: "¥30,000",
     shoukai: "¥15,000",
     image: "https://images.unsplash.com/photo-1587293852726-70cdb56c28ea?auto=format&fit=crop&q=80&w=800",
     verified: true,
     location: "Osaka, Namba",
+    prefecture: "Osaka",
     fullAddress: "〒542-0076 Osaka, Chuo Ward, Namba 1-1",
-    description: "Kansai hududidagi eng mashhur avtomaktab. Qisqa muddatda Gashuku (yashab o'qish) kurslari.",
-    courses: ['Oogata', 'Chugata', 'Futsu', 'Nirin'],
-    price: '¥320,000~',
+    description: "Kansai hududidagi eng mashhur avtomaktab. Qisqa muddatda Gashuku (yashab o'qish) va kredit bo'lib to'lash imkoniyati.",
+    courses: ['Futsu', 'Oogata', 'Chugata', 'FutsuNishu', 'Nirin'],
+    trainingStyle: ['Gashuku', 'ShortTerm', 'Tsugaku'],
+    priceValue: 330000,
+    price: '¥330,000~',
     phone: '+81 6-7777-8888',
     email: 'info@osaka-central.jp',
     langs: ['UZ', 'JP', 'EN'],
+    features: ['dormitory', 'installment', 'shuttle', 'shoukai'],
     shoukaiFee: 15000
+  },
+  {
+    id: 6,
+    name: "Nagoya West Driving School",
+    type: "準中型・大型二種・教育訓練給付",
+    discount: "¥18,000",
+    shoukai: "¥8,000",
+    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800",
+    verified: true,
+    location: "Aichi, Nagoya",
+    prefecture: "Aichi",
+    fullAddress: "〒453-0015 Aichi, Nagoya, Nakamura-ku 5-8",
+    description: "Chubu mintaqasidagi haydovchilik akademiyasi. Avtobus (Nishu) va yuk mashinalari litsenziyasiga davlat subsidiyasi 20% gacha qaytariladi.",
+    courses: ['JunChugata', 'OogataNishu', 'FutsuNishu', 'Oogata'],
+    trainingStyle: ['Tsugaku', 'OnlineTheory'],
+    priceValue: 290000,
+    price: '¥290,000~',
+    phone: '+81 52-444-5566',
+    email: 'info@nagoya-west.jp',
+    langs: ['JP', 'EN', 'ZH'],
+    features: ['subsidy', 'nightClass', 'shuttle', 'shoukai'],
+    shoukaiFee: 8000
   }
 ];
 
@@ -216,31 +260,52 @@ export default function DrivingAcademy({
 
   const [visibleCount, setVisibleCount] = useState(10);
 
-  const [selectedCourse, setSelectedCourse] = useState('all');
+  // Filter States
   const [selectedPrefecture, setSelectedPrefecture] = useState('all');
+  const [selectedCourses, setSelectedCourses] = useState([]);
+  const [selectedStyles, setSelectedStyles] = useState([]);
   const [selectedLang, setSelectedLang] = useState('all');
-  const [onlyShoukai, setOnlyShoukai] = useState(false);
+  const [selectedPriceRange, setSelectedPriceRange] = useState('all');
+  const [selectedFeatures, setSelectedFeatures] = useState([]);
+  const [activeFilterTab, setActiveFilterTab] = useState('course');
+  const [isPrefPickerOpen, setIsPrefPickerOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const hasActiveFilters = selectedCourse !== 'all' || selectedPrefecture !== 'all' || selectedLang !== 'all' || onlyShoukai;
+  // Accordion open/close states (default false per Rule 20)
+  const [isLocationSectionOpen, setIsLocationSectionOpen] = useState(false);
+  const [isCourseSectionOpen, setIsCourseSectionOpen] = useState(false);
+  const [isStyleSectionOpen, setIsStyleSectionOpen] = useState(false);
+  const [isLangSectionOpen, setIsLangSectionOpen] = useState(false);
+  const [isPriceSectionOpen, setIsPriceSectionOpen] = useState(false);
+  const [isFeatureSectionOpen, setIsFeatureSectionOpen] = useState(false);
+
+  const hasActiveFilters = selectedPrefecture !== 'all' || 
+    selectedCourses.length > 0 || 
+    selectedStyles.length > 0 || 
+    selectedLang !== 'all' || 
+    selectedPriceRange !== 'all' || 
+    selectedFeatures.length > 0 || 
+    (searchQuery && searchQuery.length > 0);
 
   const resetFilters = () => {
-    setSelectedCourse('all');
     setSelectedPrefecture('all');
+    setSelectedCourses([]);
+    setSelectedStyles([]);
     setSelectedLang('all');
-    setOnlyShoukai(false);
+    setSelectedPriceRange('all');
+    setSelectedFeatures([]);
     if (setSearchQuery) setSearchQuery('');
   };
 
   // Reset pagination when search query or filters change
   useEffect(() => {
     setVisibleCount(10);
-  }, [searchQuery, selectedCourse, selectedPrefecture, selectedLang, onlyShoukai]);
+  }, [searchQuery, selectedPrefecture, selectedCourses, selectedStyles, selectedLang, selectedPriceRange, selectedFeatures]);
 
 
-  // Filtrlash: qidiruv, toifa, prefektura, til va shoukai bo'yicha
+  // Filtrlash: qidiruv, kurs, uslub, prefektura, til, narx va imkoniyatlar bo'yicha
   const filteredSchools = schools.filter(school => {
-    const query = searchQuery.toLowerCase();
+    const query = (searchQuery || '').toLowerCase();
     const localizedName = t(`school_${school.id}_name`, school.name).toLowerCase();
     const localizedLocation = t(`school_${school.id}_location`, school.location).toLowerCase();
     const localizedType = t(`school_${school.id}_type`, school.type).toLowerCase();
@@ -253,20 +318,31 @@ export default function DrivingAcademy({
       localizedType.includes(query) ||
       school.type.toLowerCase().includes(query);
 
-    const matchesCourse = selectedCourse === 'all' || 
-      (school.courses && school.courses.includes(selectedCourse)) ||
-      (school.type && school.type.includes(selectedCourse));
+    const matchesCourse = selectedCourses.length === 0 || 
+      selectedCourses.some(c => (school.courses || []).includes(c) || (school.type || '').includes(c));
+
+    const matchesStyle = selectedStyles.length === 0 ||
+      selectedStyles.some(s => (school.trainingStyle || []).includes(s));
 
     const matchesPrefecture = selectedPrefecture === 'all' ||
+      (school.prefecture && school.prefecture.toLowerCase() === selectedPrefecture.toLowerCase()) ||
       (school.location && school.location.toLowerCase().includes(selectedPrefecture.toLowerCase())) ||
       (school.fullAddress && school.fullAddress.toLowerCase().includes(selectedPrefecture.toLowerCase()));
 
     const matchesLang = selectedLang === 'all' ||
       (school.langs && school.langs.includes(selectedLang));
 
-    const matchesShoukai = !onlyShoukai || (school.shoukaiFee > 0);
+    const price = school.priceValue || 250000;
+    let matchesPrice = true;
+    if (selectedPriceRange === 'under250k') matchesPrice = price <= 250000;
+    else if (selectedPriceRange === '250k_300k') matchesPrice = price > 250000 && price <= 300000;
+    else if (selectedPriceRange === '300k_350k') matchesPrice = price > 300000 && price <= 350000;
+    else if (selectedPriceRange === 'over350k') matchesPrice = price > 350000;
 
-    return matchesSearch && matchesCourse && matchesPrefecture && matchesLang && matchesShoukai;
+    const matchesFeatures = selectedFeatures.length === 0 ||
+      selectedFeatures.every(f => f === 'shoukai' ? school.shoukaiFee > 0 : (school.features || []).includes(f));
+
+    return matchesSearch && matchesCourse && matchesStyle && matchesPrefecture && matchesLang && matchesPrice && matchesFeatures;
   });
 
 
@@ -562,22 +638,72 @@ export default function DrivingAcademy({
 
   /* ========================================================================
      FILTR SAHIFASI (INLINE FILTER PAGE VIEW)
-     Modal popupsiz, oddiy sahifa ketma-ketligida ko'rinadi.
+     Townwork uslubidagi boyitilgan avtomaktablar filtri sahifasi.
      ======================================================================== */
   if (isFilterOpen) {
+    const courseOptions = [
+      { id: 'Futsu', icon: '🚗', name: t('lic_futsu', '普通自動車 (Futsu)') },
+      { id: 'Oogata', icon: '🚚', name: t('lic_oogata', '大型自動車 (Oogata)') },
+      { id: 'Chugata', icon: '🚛', name: t('lic_chugata', '中型自動車 (Chugata)') },
+      { id: 'JunChugata', icon: '📦', name: t('lic_junchugata', '準中型自動車 (Jun-Chugata)') },
+      { id: 'FutsuNishu', icon: '🚖', name: t('lic_futsunishu', '普通二種 (Taksi)') },
+      { id: 'OogataNishu', icon: '🚌', name: t('lic_oogatanishu', '大型二種 (Avtobus)') },
+      { id: 'Forklift', icon: '🏗️', name: t('lic_forklift', 'フォークリフト (Forklift)') },
+      { id: 'Tokushu', icon: '🚜', name: t('lic_tokushu', '大型特殊 (Tokushu)') },
+      { id: 'Nirin', icon: '🏍️', name: t('lic_nirin', '自動二輪車 (Nirin)') }
+    ];
+
+    const styleOptions = [
+      { id: 'Tsugaku', icon: '🏫', name: t('style_tsugaku', '通学コース (Qatnab o\'qish)') },
+      { id: 'Gashuku', icon: '🏕️', name: t('style_gashuku', '合宿免許 (Yashab/Lagerda o\'qish)') },
+      { id: 'ShortTerm', icon: '⚡', name: t('style_shortterm', '短期集中コース (Tezlashtirilgan)') },
+      { id: 'OnlineTheory', icon: '💻', name: t('style_onlinetheory', 'オンライン学科対応 (Masofaviy nazariya)') }
+    ];
+
+    const featureOptions = [
+      { id: 'shuttle', icon: '🚌', name: t('feat_shuttle', '無料送迎バスあり (Free Shuttle)') },
+      { id: 'dormitory', icon: '🏠', name: t('feat_dormitory', '宿舎・食事付き (Dormitory/Meals)') },
+      { id: 'subsidy', icon: '🎓', name: t('feat_subsidy', '教育訓練給付金対象 (Govt Subsidy)') },
+      { id: 'installment', icon: '💳', name: t('feat_installment', 'ローン・分割払いOK (Installment)') },
+      { id: 'nightClass', icon: '🌙', name: t('feat_nightclass', 'ナイター教習対応 (Night Classes)') },
+      { id: 'femaleInstructor', icon: '👩‍🏫', name: t('feat_female', '女性指導員在籍 (Female Instructors)') },
+      { id: 'kidsRoom', icon: '👶', name: t('feat_kidsroom', '託児所・キッズルーム (Kids Room)') },
+      { id: 'shoukai', icon: '🎁', name: t('feat_shoukai', '紹介手当・キャッシュバック (Referral Bonus)') }
+    ];
+
+    const toggleMultiSelect = (setter, list, item) => {
+      if (list.includes(item)) {
+        setter(list.filter(i => i !== item));
+      } else {
+        setter([...list, item]);
+      }
+    };
+
     return (
-      <div className="feed-container fade-in hide-scrollbar" style={{ flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '12px 16px 100px 16px' }}>
-        {/* Pinned Back Button Bar */}
-        <div style={{ position: 'sticky', top: 0, zIndex: 200, padding: '4px 0 8px 0', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+      <div className="feed-container fade-in hide-scrollbar" style={{ flex: 1, height: '100%', maxHeight: '100%', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px 14px 160px 14px', boxSizing: 'border-box', position: 'relative' }}>
+        
+        {/* ONLY Pinned Sticky Back Button (Stays sticky at top: 0, z-index: 300) */}
+        <div style={{
+          position: 'sticky',
+          top: 0,
+          left: 0,
+          zIndex: 300,
+          pointerEvents: 'none',
+          marginBottom: '-40px',
+          display: 'flex',
+          alignItems: 'center',
+          height: '40px',
+          width: '40px'
+        }}>
           <button 
             type="button" 
             onClick={() => setIsFilterOpen(false)}
             style={{
               pointerEvents: 'auto',
-              width: '38px', height: '38px', borderRadius: '50%', border: '1px solid var(--glass-border)',
-              background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+              width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--glass-border)',
+              background: 'var(--card-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
               color: 'var(--text-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(0,0,0,0.12)'
+              boxShadow: '0 4px 14px rgba(0,0,0,0.1)', transition: 'transform 0.15s ease', flexShrink: 0
             }}
             aria-label="Back"
           >
@@ -585,108 +711,513 @@ export default function DrivingAcademy({
           </button>
         </div>
 
-        {/* Unpinned Title & Reset Row (Scrolls naturally) */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 6px 14px 6px', marginBottom: '8px' }}>
-          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>
+        {/* Scrollable Header Title Row (Title & Reset scroll away naturally) */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          minHeight: '40px',
+          marginBottom: '16px',
+          boxSizing: 'border-box'
+        }}>
+          <h3 style={{
+            margin: 0,
+            fontSize: '17px',
+            fontWeight: '900',
+            color: 'var(--text-main)',
+            letterSpacing: '-0.3px',
+            whiteSpace: 'nowrap'
+          }}>
             {t('schoolFilters', '自動車学校の絞り込み')}
           </h3>
+
           <button 
             type="button" 
             onClick={resetFilters}
-            style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', fontSize: '13.5px', cursor: 'pointer' }}
+            style={{
+              pointerEvents: 'auto',
+              position: 'absolute',
+              right: 0,
+              display: 'flex', alignItems: 'center', gap: '4px',
+              background: 'rgba(10, 132, 255, 0.08)', border: 'none',
+              color: 'var(--primary)', fontWeight: '700', fontSize: '12.5px',
+              padding: '6px 12px', borderRadius: '14px', cursor: 'pointer',
+              transition: 'all 0.15s ease', flexShrink: 0
+            }}
           >
-            {t('clearAll', 'リセット')}
+            <RotateCcw size={12} color="var(--primary)" />
+            <span>{t('clearAll', 'リセット')}</span>
           </button>
         </div>
 
-        {/* Form section sequence matching CompanyHome.jsx */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          
-          {/* SECTION 1: Course / License Filter (コース・免許) */}
-          <div className="glass squircle-form-card" style={{ padding: '18px 16px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
-            <label style={{ fontSize: '13.5px', fontWeight: '700', color: 'var(--primary)', marginBottom: '10px', display: 'block' }}>
-              📚 {t('courseOffered', 'コース・免許')}
-            </label>
-            <CustomInlineDropdown
-              value={selectedCourse}
-              onChange={(val) => setSelectedCourse(val)}
-              options={[
-                { value: 'all', label: t('allCourses', 'すべてのコース') },
-                { value: 'Oogata', label: t('lic_oogata', '大型自動車 (Oogata)') },
-                { value: 'Chugata', label: t('lic_chugata', '中型自動車 (Chugata)') },
-                { value: 'Futsu', label: t('lic_futsu', '普通自動車 (Futsu)') },
-                { value: 'Forklift', label: t('lic_forklift', 'フォークリフト (Forklift)') },
-                { value: 'Nirin', label: t('lic_nirin', '二輪車 (Nirin)') }
-              ]}
-              placeholder={t('allCourses', 'すべてのコース')}
-            />
-          </div>
-
-          {/* SECTION 2: Prefecture Filter (都道府県) */}
-          <div className="glass squircle-form-card" style={{ padding: '18px 16px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
-            <label style={{ fontSize: '13.5px', fontWeight: '700', color: 'var(--primary)', marginBottom: '10px', display: 'block' }}>
-              📍 {t('prefectureLabel', '都道府県')}
-            </label>
-            <CustomInlineDropdown
-              value={selectedPrefecture}
-              onChange={(val) => setSelectedPrefecture(val)}
-              options={[
-                { value: 'all', label: t('allLocations', 'すべての地域') },
-                { value: 'Tokyo', label: 'Tokyo (東京)' },
-                { value: 'Saitama', label: 'Saitama (埼玉)' },
-                { value: 'Chiba', label: 'Chiba (千葉)' },
-                { value: 'Kanagawa', label: 'Kanagawa (神奈川)' },
-                { value: 'Osaka', label: 'Osaka (大阪)' }
-              ]}
-              placeholder={t('selectPrefecture', '都道府県を選択')}
-            />
-          </div>
-
-          {/* SECTION 3: Instruction Language Filter (授業言語) */}
-          <div className="glass squircle-form-card" style={{ padding: '18px 16px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
-            <label style={{ fontSize: '13.5px', fontWeight: '700', color: 'var(--primary)', marginBottom: '10px', display: 'block' }}>
-              🗣️ {t('languageLabel', '授業言語')}
-            </label>
-            <CustomInlineDropdown
-              value={selectedLang}
-              onChange={(val) => setSelectedLang(val)}
-              options={[
-                { value: 'all', label: t('allLanguages', 'すべての言語') },
-                { value: 'UZ', label: "O'zbekcha (UZ)" },
-                { value: 'JP', label: 'Yaponcha (JP)' },
-                { value: 'EN', label: 'Inglizcha (EN)' },
-                { value: 'RU', label: 'Ruscha (RU)' }
-              ]}
-              placeholder={t('selectLanguage', '言語を選択')}
-            />
-          </div>
-
-          {/* SECTION 4: Referral Reward Checkbox (紹介手当ありの学校のみ) */}
-          <div className="glass squircle-form-card" style={{ padding: '18px 16px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <input
-              type="checkbox"
-              id="onlyShoukaiCheckPage"
-              checked={onlyShoukai}
-              onChange={(e) => setOnlyShoukai(e.target.checked)}
-              style={{ accentColor: 'var(--primary)', width: '20px', height: '20px', cursor: 'pointer' }}
-            />
-            <label htmlFor="onlyShoukaiCheckPage" style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', cursor: 'pointer' }}>
-              🎁 {t('onlyShoukaiBonus', '紹介手当ありの学校のみ')}
-            </label>
-          </div>
-
-          {/* Bottom CTA Search Button */}
-          <div style={{ marginTop: '12px' }}>
-            <button 
-              type="button" 
-              className="townwork-btn-search-cta" 
-              onClick={() => setIsFilterOpen(false)}
-              style={{ width: '100%', height: '48px', fontSize: '15px', fontWeight: '800', borderRadius: '16px' }}
+        {/* Townwork Signature 3-Tab Header Invariant */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+          {[
+            { id: 'course', icon: '🚘', label: t('coursesTab', '取得可能免許') },
+            { id: 'location', icon: '📍', label: t('prefectureTab', '都道府県・地域') },
+            { id: 'features', icon: '⭐', label: t('perksTab', 'こだわり条件') }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => {
+                setActiveFilterTab(tab.id);
+                if (tab.id === 'course') setIsCourseSectionOpen(true);
+                if (tab.id === 'location') setIsLocationSectionOpen(true);
+                if (tab.id === 'features') setIsFeatureSectionOpen(true);
+              }}
+              style={{
+                flex: 1, padding: '10px 8px', borderRadius: '14px', border: 'none',
+                background: activeFilterTab === tab.id ? '#FFCC00' : 'var(--card-bg)',
+                color: activeFilterTab === tab.id ? '#000000' : 'var(--text-secondary)',
+                fontWeight: activeFilterTab === tab.id ? '800' : '600', fontSize: '13px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                boxShadow: activeFilterTab === tab.id ? '0 4px 14px rgba(255, 204, 0, 0.35)' : 'none',
+                cursor: 'pointer', transition: 'all 0.15s ease'
+              }}
             >
-              {t('searchCountBtn', '{{count}}件 検索', { count: filteredSchools.length })}
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
             </button>
-          </div>
+          ))}
         </div>
+
+        {/* Form Sections Sequence */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          
+          {/* SECTION 1: Prefektura va Joylashuv (都道府県・市区町村から探す) */}
+          <div className="job-category-section" style={{
+            background: 'var(--card-bg)', borderRadius: '20px', padding: '16px',
+            border: '1px solid var(--glass-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+          }}>
+            <button
+              type="button"
+              onClick={() => setIsLocationSectionOpen(!isLocationSectionOpen)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '36px', height: '36px', borderRadius: '10px', background: '#0A84FF15',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                }}>
+                  📍
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                    {t('prefectureHeader', '都道府県・市区町村から探す')}
+                  </h4>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                    {selectedPrefecture === 'all' ? t('allLocations', 'すべての地域') : selectedPrefecture}
+                  </p>
+                </div>
+              </div>
+              <div style={{
+                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transform: isLocationSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
+              }}>
+                <ChevronDown size={16} color="var(--text-secondary)" />
+              </div>
+            </button>
+
+            {isLocationSectionOpen && (
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsPrefPickerOpen(true)}
+                  style={{
+                    width: '100%', padding: '12px 14px', borderRadius: '14px',
+                    border: '1px solid var(--glass-border)', background: 'var(--glass-bg)',
+                    color: 'var(--text-main)', fontSize: '14px', fontWeight: '700',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer'
+                  }}
+                >
+                  <span>{selectedPrefecture === 'all' ? `📍 ${t('selectPrefecture', '都道府県を選択')}` : `📍 ${selectedPrefecture}`}</span>
+                  <span style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: '800' }}>{t('change', '変更')} →</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 2: Litsenziya toifalari / Kurslar (取得希望の免許・コース) */}
+          <div className="job-category-section" style={{
+            background: 'var(--card-bg)', borderRadius: '20px', padding: '16px',
+            border: '1px solid var(--glass-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+          }}>
+            <button
+              type="button"
+              onClick={() => setIsCourseSectionOpen(!isCourseSectionOpen)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '36px', height: '36px', borderRadius: '10px', background: '#34C75915',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                }}>
+                  🚘
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                    {t('coursesOfferedHeader', '取得希望の免許・コース')}
+                  </h4>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                    {selectedCourses.length === 0 ? t('allCourses', 'すべてのコース') : `${selectedCourses.length} ${t('selected', '件選択中')}`}
+                  </p>
+                </div>
+              </div>
+              <div style={{
+                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transform: isCourseSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
+              }}>
+                <ChevronDown size={16} color="var(--text-secondary)" />
+              </div>
+            </button>
+
+            {isCourseSectionOpen && (
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {courseOptions.map(c => {
+                  const isSelected = selectedCourses.includes(c.id);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => toggleMultiSelect(setSelectedCourses, selectedCourses, c.id)}
+                      style={{
+                        padding: '8px 12px', borderRadius: '12px', border: isSelected ? '1px solid #0A84FF' : '1px solid var(--glass-border)',
+                        background: isSelected ? 'rgba(10, 132, 255, 0.12)' : 'var(--glass-bg)',
+                        color: isSelected ? '#0A84FF' : 'var(--text-main)',
+                        fontWeight: isSelected ? '800' : '600', fontSize: '13px',
+                        display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <span>{c.icon}</span>
+                      <span>{c.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 3: O'quv uslubi (教習スタイル・受講形態) */}
+          <div className="job-category-section" style={{
+            background: 'var(--card-bg)', borderRadius: '20px', padding: '16px',
+            border: '1px solid var(--glass-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+          }}>
+            <button
+              type="button"
+              onClick={() => setIsStyleSectionOpen(!isStyleSectionOpen)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '36px', height: '36px', borderRadius: '10px', background: '#FF950015',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                }}>
+                  🏫
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                    {t('trainingStyleHeader', '教習スタイル・受講形態')}
+                  </h4>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                    {selectedStyles.length === 0 ? t('allStyles', 'すべての受講形態') : `${selectedStyles.length} ${t('selected', '件選択中')}`}
+                  </p>
+                </div>
+              </div>
+              <div style={{
+                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transform: isStyleSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
+              }}>
+                <ChevronDown size={16} color="var(--text-secondary)" />
+              </div>
+            </button>
+
+            {isStyleSectionOpen && (
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {styleOptions.map(s => {
+                  const isSelected = selectedStyles.includes(s.id);
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => toggleMultiSelect(setSelectedStyles, selectedStyles, s.id)}
+                      style={{
+                        padding: '8px 12px', borderRadius: '12px', border: isSelected ? '1px solid #FF9500' : '1px solid var(--glass-border)',
+                        background: isSelected ? 'rgba(255, 149, 0, 0.12)' : 'var(--glass-bg)',
+                        color: isSelected ? '#FF9500' : 'var(--text-main)',
+                        fontWeight: isSelected ? '800' : '600', fontSize: '13px',
+                        display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <span>{s.icon}</span>
+                      <span>{s.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 4: Dars tillari (授業言語・通訳サポート) */}
+          <div className="job-category-section" style={{
+            background: 'var(--card-bg)', borderRadius: '20px', padding: '16px',
+            border: '1px solid var(--glass-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+          }}>
+            <button
+              type="button"
+              onClick={() => setIsLangSectionOpen(!isLangSectionOpen)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '36px', height: '36px', borderRadius: '10px', background: '#AF52DE15',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                }}>
+                  🗣️
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                    {t('languageHeader', '授業言語・通訳サポート')}
+                  </h4>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                    {selectedLang === 'all' ? t('allLanguages', 'すべての言語') : selectedLang}
+                  </p>
+                </div>
+              </div>
+              <div style={{
+                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transform: isLangSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
+              }}>
+                <ChevronDown size={16} color="var(--text-secondary)" />
+              </div>
+            </button>
+
+            {isLangSectionOpen && (
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {[
+                  { id: 'all', label: t('allLanguages', 'すべての言語') },
+                  { id: 'UZ', label: "O'zbekcha (UZ)" },
+                  { id: 'JP', label: 'Yaponcha (JP)' },
+                  { id: 'EN', label: 'Inglizcha (EN)' },
+                  { id: 'RU', label: 'Ruscha (RU)' }
+                ].map(l => (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => setSelectedLang(l.id)}
+                    style={{
+                      padding: '8px 12px', borderRadius: '12px', border: selectedLang === l.id ? '1px solid #AF52DE' : '1px solid var(--glass-border)',
+                      background: selectedLang === l.id ? 'rgba(175, 82, 222, 0.12)' : 'var(--glass-bg)',
+                      color: selectedLang === l.id ? '#AF52DE' : 'var(--text-main)',
+                      fontWeight: selectedLang === l.id ? '800' : '600', fontSize: '13px',
+                      cursor: 'pointer', transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 5: Narxlar diapazoni (受講料・価格帯) */}
+          <div className="job-category-section" style={{
+            background: 'var(--card-bg)', borderRadius: '20px', padding: '16px',
+            border: '1px solid var(--glass-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+          }}>
+            <button
+              type="button"
+              onClick={() => setIsPriceSectionOpen(!isPriceSectionOpen)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '36px', height: '36px', borderRadius: '10px', background: '#30D15815',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                }}>
+                  💴
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                    {t('priceHeader', '受講料・価格帯')}
+                  </h4>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                    {selectedPriceRange === 'all' ? t('allPrices', 'すべての価格帯') : selectedPriceRange}
+                  </p>
+                </div>
+              </div>
+              <div style={{
+                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transform: isPriceSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
+              }}>
+                <ChevronDown size={16} color="var(--text-secondary)" />
+              </div>
+            </button>
+
+            {isPriceSectionOpen && (
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {[
+                  { id: 'all', label: t('allPrices', 'すべての価格帯') },
+                  { id: 'under250k', label: '~¥250,000' },
+                  { id: '250k_300k', label: '¥250,000 ~ ¥300,000' },
+                  { id: '300k_350k', label: '¥300,000 ~ ¥350,000' },
+                  { id: 'over350k', label: '¥350,000~' }
+                ].map(p => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setSelectedPriceRange(p.id)}
+                    style={{
+                      padding: '8px 12px', borderRadius: '12px', border: selectedPriceRange === p.id ? '1px solid #30D158' : '1px solid var(--glass-border)',
+                      background: selectedPriceRange === p.id ? 'rgba(48, 209, 88, 0.12)' : 'var(--glass-bg)',
+                      color: selectedPriceRange === p.id ? '#30D158' : 'var(--text-main)',
+                      fontWeight: selectedPriceRange === p.id ? '800' : '600', fontSize: '13px',
+                      cursor: 'pointer', transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 6: Imkoniyatlar va Imtiyozlar (こだわり条件・特典) */}
+          <div className="job-category-section" style={{
+            background: 'var(--card-bg)', borderRadius: '20px', padding: '16px',
+            border: '1px solid var(--glass-border)', boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+          }}>
+            <button
+              type="button"
+              onClick={() => setIsFeatureSectionOpen(!isFeatureSectionOpen)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '36px', height: '36px', borderRadius: '10px', background: '#FF2D5515',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                }}>
+                  ⭐
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                    {t('featuresHeader', 'こだわり条件・特典')}
+                  </h4>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                    {selectedFeatures.length === 0 ? t('allFeatures', 'すべてのこだわり条件') : `${selectedFeatures.length} ${t('selected', '件選択中')}`}
+                  </p>
+                </div>
+              </div>
+              <div style={{
+                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transform: isFeatureSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
+              }}>
+                <ChevronDown size={16} color="var(--text-secondary)" />
+              </div>
+            </button>
+
+            {isFeatureSectionOpen && (
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {featureOptions.map(f => {
+                  const isSelected = selectedFeatures.includes(f.id);
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => toggleMultiSelect(setSelectedFeatures, selectedFeatures, f.id)}
+                      style={{
+                        padding: '8px 12px', borderRadius: '12px', border: isSelected ? '1px solid #FF2D55' : '1px solid var(--glass-border)',
+                        background: isSelected ? 'rgba(255, 45, 85, 0.12)' : 'var(--glass-bg)',
+                        color: isSelected ? '#FF2D55' : 'var(--text-main)',
+                        fontWeight: isSelected ? '800' : '600', fontSize: '13px',
+                        display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <span>{f.icon}</span>
+                      <span>{f.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {/* Pinned Search CTA Button Dock — floating 12px above BottomNav */}
+        <div style={{
+          position: 'fixed',
+          bottom: '96px',
+          left: 'var(--screen-margin-x, 14px)',
+          width: 'var(--card-width-full, calc(100% - 28px))',
+          zIndex: 250,
+          pointerEvents: 'none',
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          <button 
+            type="button" 
+            className="townwork-btn-search-cta" 
+            onClick={() => setIsFilterOpen(false)}
+            style={{
+              pointerEvents: 'auto',
+              width: '100%', height: '52px', fontSize: '16px', fontWeight: '800',
+              borderRadius: '26px', background: 'linear-gradient(135deg, #0A84FF 0%, #5E5CE6 100%)',
+              color: '#FFFFFF', boxShadow: '0 10px 28px rgba(10, 132, 255, 0.45)',
+              border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '8px', cursor: 'pointer', transition: 'all 0.15s ease', flexShrink: 0
+            }}
+          >
+            <Search size={19} color="#FFF" />
+            <span>{t('searchSchoolCountBtn', '{{count}}件の教習所を検索', { count: filteredSchools.length })}</span>
+          </button>
+        </div>
+
+        {/* Custom Mobile Prefecture Picker Modal Sheet */}
+        {isPrefPickerOpen && (
+          <CustomMobilePickerModal
+            isOpen={isPrefPickerOpen}
+            onClose={() => setIsPrefPickerOpen(false)}
+            title={t('selectPrefecture', '都道府県を選択')}
+            options={[
+              { value: 'all', label: `📍 ${t('allPrefectures', '全ての地域')}` },
+              ...PREFECTURES.map(p => ({
+                value: p.nameEn,
+                label: `${p.name} (${p.nameEn})`
+              }))
+            ]}
+            selectedValue={selectedPrefecture}
+            onSelect={(val) => {
+              setSelectedPrefecture(val);
+              setIsPrefPickerOpen(false);
+            }}
+          />
+        )}
       </div>
     );
   }
