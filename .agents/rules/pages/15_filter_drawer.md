@@ -23,8 +23,10 @@ Ushbu qoida **Yapon Ish Qidiruv Filtr Darchasi (Townwork Filter Drawer)** uchun 
 
 ---
 
-## ⚓ 4. Sticky Bottom Action Bar
-- **Footer Container**: Floating footer pane with `クリア` (Reset) button on left and dynamic jobs count CTA button (`{filteredJobs.length}件 検索`) on right.
+## ⚓ 4. Sticky Bottom Action Bar & Floating Dock Clearance Invariant
+- **Footer Dock Position**: Floating Search CTA button (`{filteredJobs.length}件 検索`) at `position: fixed; bottom: 96px; height: 52px; z-index: 250;` (Top Edge = `148px`).
+- **Exact 12px Clearance Invariant**: Scroll container padding bottom MUST be set to `padding-bottom: 160px` (`148px + 12px = 160px`).
+- **No Redundant Spacer Anti-Pattern**: `padding-bottom: 160px` ustiga takroriy inline spacer divlar (`height: 64px`) qo'shish taqiqlanadi. Shunda akordeonlar yopiq yoki ochiq holatda bo'lishidan qat'i nazar scroll oxirida tugma ustida doim 100% exact 12px visual gap ta'minlanadi.
 
 ---
 

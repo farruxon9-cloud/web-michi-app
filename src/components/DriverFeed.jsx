@@ -732,7 +732,7 @@ export default function DriverFeed({
      ======================================================================== */
   if (isFilterDrawerOpen) {
     return (
-      <div className="feed-container fade-in hide-scrollbar" style={{ flex: 1, height: '100%', maxHeight: '100%', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px 14px 96px 14px', boxSizing: 'border-box', position: 'relative' }}>
+      <div className="feed-container fade-in hide-scrollbar" style={{ flex: 1, height: '100%', maxHeight: '100%', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px 14px 160px 14px', boxSizing: 'border-box', position: 'relative' }}>
         
         {/* ONLY Pinned Sticky Back Button (Stays sticky at top: 0, z-index: 300) */}
         <div style={{

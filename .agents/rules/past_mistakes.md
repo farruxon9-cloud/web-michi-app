@@ -248,11 +248,11 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   Sub-sahifalar va profil konteyneriga (`.profile-container`, `.profile-container.sub-page-view`) pastki menyudan bo'sh joy qoldirish uchun `bottom: 90px !important` kabi sun'iy pastki chegara o'rnatilishi. Bu konteyner balandligini sun'iy ravishda pastki menyu ustida qirqib qo'yadi hamda pastki menyuning shaffof shisha foni (`backdrop-filter: blur(24px)`) ortida kartochkalar scroll bo'lmay, harakatsiz/qotgan rasm kabi ko'rinib qolishiga olib keladi.
   2. **Ichki Skroll Masofasi (`padding-bottom: 96px`)**: Pastki menyugacha bo'lgan masofa konteyner ichida `padding-bottom: 96px` orqali beriladi. Bu kontent skroll bo'lganda `BottomNav` shaffof oynasi ortidan jonli va silliq o'tishini, hamda skroll eng oxiriga yetganda eng so'nggi kartochka `BottomNav` menyusidan exact **12px toza va qotgan masofada (`96px - 84px = 12px`)** to'xtashini kafolatlaydi.
 
-## 🚫 43. Filter Header Pinned Back Button & Baseline Alignment Anti-Pattern
-* **Xatolik**: Pinned elementlar uchun scroll konteynerini `overflow: hidden` ga o'rab, ichki `overflow-y: auto` yaratish tufayli flexbox balandligi va scroll mexanizmi buzilishi. Shuningdek, sticky back button konteyneriga ixtiyoriy `top: 16px` offset berilishi oqibatida markaziy sarlavha (`詳細検索`) va `リセット` tugmasi bilan vertikal alignmentning (`baseline`) buzilib pastga tushib qolishi.
-* **Yechim**: 
-  - `feed-container` har doim yagona native scroll container (`overflow-y: auto; padding: 16px 14px 96px 14px; position: relative;`) bo'lishi shart.
-  - Sticky Back Button konteyneri (`height: 40px; align-items: center; top: 0; margin-bottom: -40px;`) va Sarlavha qatori (`minHeight: 40px; align-items: center; justify-content: center; position: relative; margin-bottom: 16px;`) 1:1 bir xil 40px balandlik va top: 0 offsetiga ega bo'lib, 3 ta element yagona gorizontal baseline bo'yicha 100% parallel tekislanishi shart.
+## 🚫 44. Floating Dock Double-Spacer Anti-Pattern
+* **Xatolik**: Floating Search CTA tugmasi (`bottom: 96px`, `height: 52px` -> Top Edge = `148px`) uchun scroll container `padding-bottom: 160px` qilib to'g'ri o'rnatilgandan so'ng, qo'shimcha va takroriy ravishda `<div style={{ height: '64px' }} />` spacer div qo'shilishi. Bu clearance masofasini `224px` ga oshirib yuborib, scroll oxirida 76px li keraksiz ulkan bo'shliq hosil qilgan.
+* **Yechim**:
+  - Floating dock o'lchamlariga tayanib yagona va aniq `padding-bottom: 160px` (`148px + 12px = 160px`) parametri ishlatilishi shart.
+  - Aniq hisoblangan padding ustiga takroriy inline spacer divlar qo'shish qat'iyan taqiqlanadi. Shunda akordeonlar yopiq yoki ochiq bo'lishidan qat'i nazar scroll oxirida tugma ustida doim 100% exact 12px visual gap saqlanadi.
 
 
 
