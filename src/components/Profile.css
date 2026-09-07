@@ -736,7 +736,7 @@ html.light-mode .contract-btn:active {
   font-weight: 600;
   cursor: pointer;
   width: 100%;
-  margin-top: 12px !important;
+  margin-top: 8px !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
 }
 
