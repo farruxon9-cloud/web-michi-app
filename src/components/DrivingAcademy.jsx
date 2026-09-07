@@ -687,29 +687,25 @@ export default function DrivingAcademy({
     return (
       <div className="feed-container fade-in hide-scrollbar" style={{ flex: 1, height: '100%', maxHeight: '100%', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 14px 40px 14px', boxSizing: 'border-box', position: 'relative' }}>
         
-        {/* Single-Row Centered Filter Header Bar Invariant (Rule 6 Item 15) */}
+        {/* ONLY Pinned Sticky Back Button (Stays sticky at top: 0, z-index: 300) */}
         <div style={{
           position: 'sticky',
           top: 0,
           left: 0,
           zIndex: 300,
+          pointerEvents: 'none',
+          marginBottom: '-40px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          height: '44px',
-          minHeight: '44px',
-          marginBottom: '12px',
-          background: 'var(--bg-color)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          padding: '4px 0',
-          boxSizing: 'border-box'
+          height: '40px',
+          width: '40px'
         }}>
           <button 
             type="button" 
             onClick={() => setIsFilterOpen(false)}
             style={{
-              width: '38px', height: '38px', borderRadius: '50%', border: '1px solid var(--glass-border)',
+              pointerEvents: 'auto',
+              width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--glass-border)',
               background: 'var(--card-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
               color: 'var(--text-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
               boxShadow: '0 4px 14px rgba(0,0,0,0.1)', transition: 'transform 0.15s ease', flexShrink: 0
@@ -718,18 +714,26 @@ export default function DrivingAcademy({
           >
             <ArrowLeft size={18} />
           </button>
+        </div>
 
+        {/* Scrollable Header Title Row (Title & Reset scroll away naturally, matching 1:1 baseline on enter) */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          minHeight: '40px',
+          height: '40px',
+          marginBottom: '14px',
+          boxSizing: 'border-box'
+        }}>
           <h3 style={{
-            position: 'absolute',
-            left: '50%',
-            transform: 'translateX(-50%)',
             margin: 0,
             fontSize: '16.5px',
             fontWeight: '900',
             color: 'var(--text-main)',
             letterSpacing: '-0.3px',
-            whiteSpace: 'nowrap',
-            pointerEvents: 'none'
+            whiteSpace: 'nowrap'
           }}>
             {t('schoolFilters', '自動車学校の絞り込み')}
           </h3>
@@ -738,6 +742,9 @@ export default function DrivingAcademy({
             type="button" 
             onClick={resetFilters}
             style={{
+              pointerEvents: 'auto',
+              position: 'absolute',
+              right: 0,
               display: 'flex', alignItems: 'center', gap: '4px',
               background: 'rgba(10, 132, 255, 0.08)', border: 'none',
               color: 'var(--primary)', fontWeight: '700', fontSize: '12.5px',
