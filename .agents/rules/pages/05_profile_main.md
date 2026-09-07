@@ -24,7 +24,7 @@ Ushbu qoida **Profil Asosiy Menyusi (Profile Main)** uchun barcha layout va spet
 - **Menu Items Gap**: `1px` inner border divider separator.
 - **Icon Box**: `36x36px`, `border-radius: 10px`, glassmorphic 3D background.
 - **Logout Card Class**: `.logout-btn` (Mustaqil karta: `border-radius: 20px !important`, `background: var(--card-bg) !important`, `border: 1px solid var(--glass-border) !important`, `margin-top: 8px !important`, `width: 100%`).
-- **Inter-Card Vertical Gap**: Exact compact gap separating the `.menu-group` card and `.logout-btn` card.
+- **Inter-Card Vertical Gap**: `margin-top: 8px !important` on `.logout-btn` combined with preceding container margins yields an exact, uniform **12px visual clearance gap** matching all app Bento cards.
 
 ---
 
