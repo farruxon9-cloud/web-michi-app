@@ -209,7 +209,7 @@
 .detail-info-grid {
   display: grid;
   grid-template-columns: 1fr; /* Always use 1 column to avoid squeezed layouts and text clipping */
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 24px;
 }
 

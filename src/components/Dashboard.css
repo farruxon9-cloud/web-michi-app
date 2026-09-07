@@ -32,7 +32,7 @@ html.light-mode {
   right: 0;
   bottom: 0;
   padding: 14px;
-  padding-bottom: 94px;
+  padding-bottom: 96px;
   background-color: transparent;
   overflow-y: auto;
   overflow-x: hidden;
@@ -334,7 +334,7 @@ html.light-mode {
 /* Bento Icons Row */
 .bento-icons-row {
   display: flex;
-  gap: 10px; /* Reduced from 12px */
+  gap: 12px;
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;

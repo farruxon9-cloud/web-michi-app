@@ -53,9 +53,8 @@
    ko'rinadi. Pastda shisha chegarasi (glass-border) bilan ajratiladi.
    ========================================================================== */
 .academy-header {
-  padding: 24px 20px;
+  padding: 24px 14px;
   text-align: center;
-  border-bottom: 1px solid var(--glass-border);
   position: sticky;           /* Scroll qilinganda ham yuqorida qoladi */
   top: 0;
   z-index: 50;                /* Boshqa elementlardan ustida ko'rinadi */
@@ -114,7 +113,7 @@
    Kartochkalar ustunli joylashuvda, 16px oraliq bilan.
    ========================================================================== */
 .schools-list {
-  padding: 12px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -302,7 +301,6 @@
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--glass-border);
 }
 
 .detail-back-bar h3 {

@@ -138,8 +138,121 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
      - **Tab 3 (`現在地`)**: Foydalanuvchi joriy GPS o'rnidan 1km dan 20km gacha radius (piyoda 徒歩 va avto 車 vaqtlari bilan) radio tugmalar orqali tanlanadi.
   2. Darcha pastki qismida muallaq fiksatsiyalangan paneda chapda `クリア (Tozalash)` tugmasi, o'ngda esa dinamik vakansiyalar sonini ko'rsatuvchi kapsula tugma (`{filteredJobs.length}件 検索`) joylashadi.
 
+## 🚫 27. Qat'iy Yagona Til va Qavssiz Sof Ko'p Tillilik Standarti (Strict Single-Language Rendering & Zero Mixed Parentheses Invariant)
+* **Qoida**: 
+  1. **Qat'iy Sof Yagona Til**: Ilovaning istalgan joyida (sarlavhalar, tablar, akkordeonlar, chiplar, maosh shartlari, radio tugmalar) qaysi til (`ja`, `uz`, `en`, `ru`, `zh`, `vi`, `ne`) tanlangan bo'lsa, FAQAT va FAQAT O'SHA TILDAGI matn ko'rsatiladi. Boshqa tillardagi ma'lumotlar qavs ichida aralashtirib berilishi (`外国人歓迎 (Chet elliklar ochiq)`) QAT'IYAN TAQIQLANADI.
+  2. **Nol Qattiq Parametr Fallback va 8 Tilli Sinxronlashtirish**: `t('key')` chaqiruvlarida ikkinchi argument sifatida biron tildagi qattiq matn berish QAT'IYAN TAQIQLANADI. Har bir yangi sarlavha kaliti bir vaqtning o'zida barcha **8 ta til lug'atlariga** (`ja.js`, `uz.js`, `en.js`, `ru.js`, `zh.js`, `vi.js`, `ne.js`) sinxron kiritilishi shart.
+  3. **Kompaniya va Foydalanuvchi Kiritgan Xom Ma'lumotlar Daxlsizligi**: Kompaniyalar yoki nomzodlar tomonidan kiritilgan original ma'lumotlar (vakansiya sarlavhasi, ish tavsifi, ism-sharif va b.q.) foydalanuvchi kiritganicha 100% asl holida saqlanadi va ko'rsatiladi. Ularga ilova tomonidan sun'iy ravishda aralash qavslar qo'shilmaydi.
+
+## 🚫 28. Mobil Formatda Custom Picker Modallaridan Foydalanish Standarti (Custom Mobile Pickers over Native Select Invariant)
+* **Qoida**:
+  1. **Nol Raw Select Popups**: Mobil interfeyslar va telefon simulyatorlarida uzun ro'yxatli dropdownlar uchun brauzerning xom `<select>` elementlaridan foydalanish QAT'IYAN TAQIQLANADI, chunki uning native popuplari telefon bezelidan tashqariga chiqib ketadi.
+  2. **Custom Mobile Bottom Sheets**: Uzun tanlovlar uchun doim telefon ekrani ichida (`position: absolute; inset: 0; z-index: 13000;`) chegaralangan va scroll bo'ladigan custom Glassmorphism Bottom Sheet modallari (`isPrefPickerOpen`) ishlatilishi shart.
+
+## 🚫 29. Yaponiya Transport va Logistika Bozorining 21 ta Subkategoriyasi Qamrovi Standarti (Exclusive Japanese Logistics & Driver 21 Specializations Invariant)
+* **Qoida**:
+  1. **Logistika Ixtisoslashuvi**: Ilova qidiruv va vakansiyalar bo'limi 100% faqat **🚚 Yetkazib Berish va Haydovchilik (`delivery_driver`)** sohasiga yo'naltiriladi. Boshqa aloqasiz kategoriyalar (ofis, restoran, savdo) filtr bazasidan toza holatda chetlatiladi.
+  2. **21 ta Aniq Subkategoriya Qamrovi**: Yaponiyadagi har qanday kuryerlik, pochta, benzovoz, avtovoz, dengiz konteyneri, evakuator, daiko, qor tozalash va maxsus transport avtomobillari haydovchilik yo'nalishlarini qamrab oluvchi **21 ta subkategoriya** (`delivery_local`, `delivery_keivan`, `route_delivery`, `driver_truck`, `long_haul_truck`, `unic_crane_truck`, `refrigerated_truck`, `container_trailer`, `tanker_hazmat_driver`, `tow_carrier_driver`, `concrete_mixer_driver`, `heavy_equipment_driver`, `tech_forklift`, `japan_post_bike`, `newspaper_delivery`, `bike_delivery`, `driver_taxi`, `daiko_kaiso_driver`, `driver_bus`, `shuttle_care_driver`, `moving`) strictly barcha ko'p tilli lug'at atributlari bilan qo'llab-quvvatlanadi.
+
+## 🚫 30. E'lon Yaratish va Qidiruv Filtrlarining Simmetrik Biriktiruv Standarti (Symmetrical Employer Posting & Search Filter Alignment Invariant)
+* **Qoida**:
+  1. **1-ga-1 Simmetrik Sxema**: Kompaniya e'lon yaratish shaklidagi barcha maydonlar (`subcategory` [21 ta tur], `license`, `prefecture`, `detailAddress`, `nearestStation`, `walkTime`, `foreigners`, `housing`, `insurance`, `shoukaiFee`) nomzodlar qidiruv filtridagi mezonlar bilan 100% bir xil kalitlar va turlar orqali bog'lanishi shart.
+  2. **`normalizeJobPosting()` Utilitasi O'tkazuvchanligi**: Har qanday yangi yaratilgan yoki tahrirlangan e'lon obyekt holatiga saqlanishidan oldin `normalizeJobPosting()` funksiyasidan o'tkazilib, barcha filtr atributlari (shu jumladan GPS koordinatalari `lat`/`lng` hamda bekat minutlari) to'liq shakllantirilishi shart.
+
+## 🚫 31. useTranslation Hookida i18n va currentLang O'zgaruvchilarining Xavfsiz Ajratilish Standarti (i18n Destructuring & currentLang Scope Safety Invariant)
+* **Qoida**:
+  1. **Majburiy `i18n` Ajratish**: Komponent ichida tanlangan til (`i18n.language`) ishlatiladigan barcha joylarda `useTranslation()` hookidan `i18n` obyekti strictly ajratib olinishi shart: `const { t, i18n } = useTranslation();`.
+  2. **Komponent Darajasidagi `currentLang` Xavfsizlik O'zgaruvchisi**: Komponent tanasi tepasida, hookdan so'ng darhol `const currentLang = i18n?.language || 'uz';` xavfsizlik o'zgaruvchisi e'lon qilinishi va JSX interpolatsiyalarida to'g'ridan-to'g'ri `currentLang` dan foydalanilishi shart.
+
+## 🚫 32. 入社祝い金あり (Sign-on Hiring Bonus) Alohida Boshqaruv va Oltin Nishon Standarti (Dedicated Sign-on Hiring Bonus Integration Invariant)
+* **Qoida**:
+  1. **Alohida Filtr Xususiyati (`signon_bonus`)**: `JOB_FEATURES.special` bazasida `signon_bonus` id'li alohida `入社祝い金あり` filtri strictly barcha 8 ta tillarda sinxron kiritilishi va saqlanishi shart.
+  2. **Vakansiya Kartasidagi Oltin Nishon (`chip-gold`)**: Agar e'londa `job.hasShoukai === true` yoki `job.shoukaiFee > 0` bo'lsa, vakansiya kartasi chip paneda oltin rangli yaltiroq nishon ko'rinishida `🎁 入社祝い金 ¥XX,XXX` (`signonBonusBadgeLabel`) avtomatik render qilinishi majburiy hisoblanadi.
+  3. **Mantiqiy Filtrlash Utilitasi**: `DriverFeed.jsx` dagi filtr saralash mantiqida `benefit === 'signon_bonus'` tanlanganda `job.hasShoukai` va `job.shoukaiFee` ko'rsatkichlari strictly baholanishi shart.
+
+## 🚫 33. 入社祝い金 (Sign-on Hiring Bonus) Aniq Raqamli Summa Tanlovi va Valyuta Formatlash Standarti (Exact Numeric Sign-on Bonus Amount Selection & Currency Formatting Invariant)
+* **Qoida**:
+  1. **Preset Summa Tugmalari va Raqamli Input**: E'lon yaratish shaklida `hasShoukai === 'yes'` bo'lganda tezkor **`¥30,000`**, **`¥50,000`**, **`¥100,000`**, **`¥200,000`** preset chip tugmalari hamda aniq raqamli `shoukaiFee` inputi bir vaqtda taqdim etilishi shart.
+  2. **Kartochkalarda Aniq Valyuta Formatlanishi**: Barcha e'lon kartalari va modallarda kirish puli strictly `Number(job.shoukaiFee).toLocaleString()` orqali probel/vergul bilan formatlanib `🎁 {t('signonBonusBadgeLabel')} ¥50,000` shaklida aks ettirilishi majburiy hisoblanadi.
+
+## 🚫 34. Maxsus Xususiyatlar Filtrlarining Ikki Tomonlama Simmetrik Baholanish Standarti (Symmetric Feature Filter Evaluation Invariant)
+* **Qoida**:
+  1. **Nol Ishlov Berilmagan Shart Fallbacki**: `JOB_FEATURES.special.options` ro'yxatiga qo'shilgan har bir xususiyat (`signon_bonus`, `foreigner_welcome`, `no_experience`, `daily_pay` va h.k.) `DriverFeed.jsx` dagi `matchFeatures` VA `matchBenefits` funksiyalarida strictly alohida `if` tarmog'i orqali baholanishi shart.
+  2. **Bosh Tarmon Sukutiy Fallback Taqiqlanishi**: Filtr baholash funksiyalarining oxiridagi sukutiy `return true;` javobiga tayanib qolish QAT'IYAN TAQIQLANADI. Har bir `JOB_FEATURES` identifikatori uchun aniq atributiv shart bo'lishi va soxta e'lonlar filtrlarda 100% elanishi majburiydir.
+
+## 🚫 35. Mobil Bounded Custom Inline Dropdown va Solid Fon Standarti (Mobile Bounded Inline Dropdown & Opaque Background Invariant)
+* **Qoida**:
+  1. **Eni va Balandligi Chegaralangan (Bounded Width & Height)**: Har qanday custom dropdown menyusi kiritish inputining eni bilan 100% bir xil (`width: 100%`) bo'lishi va balandligi strictly **atigi 4 ta yoki 5 ta variantga (`max-height: 210px`)** tenglashtirilgan holda o'zi ichida vertikal scroll bo'lishi (`overflow-y: auto`, `WebkitOverflowScrolling: 'touch'`) shart.
+  2. **100% Solid Opacity (Shaffofmas Fon)**: Dropdown menyu orqasidagi matnlar va form elementlari ko'rinib qolmasligi uchun menyu foni strictly 100% ziddiyatli solid pigment (`background: var(--dropdown-solid-bg, #ffffff)`) va chuqur ko'tarilish soyasi (`box-shadow: 0 16px 40px rgba(0,0,0,0.25)`) bilan ta'minlanishi majburiy hisoblanadi.
+  3. **1-Bo'sh Variant va Initial Empty State (`value: ''`)**: Forma darchalari bo'sh (`''`) holatda ochilishi hamda menyu ichida 1-variant strictly bo'sh placeholder (`{ id: '', name: placeholder }`) bo'lishi va tanlanmaganida qizil inline xatolik ko'rsatilishi shart.
+  4. **Placeholder Neytralligi va Bog'liq Darcha Prompti**: Dropdown menyusidagi `id === ''` bo'lgan bo'sh placeholder elementiga birorta ham yashil fon va yashil checkmark (`✓`) berilishi TAQIQLANADI. Ota darcha tanlanmagan bo'lsa, bola darcha strictly `-- 都道府県を先に選択してください --` ni aks ettirishi shart.
+
+## 🚫 36. Erta Qaytarish Ko'rinishida Komponent Render Mantig'i Xavfsizligi (Early Return Component Mounting Safety Invariant)
+* **Qoida**:
+  1. **DOM Mount Tree Yaxlitligi**: React komponentlarida early return (`if (condition) return (...)`) mavjud bo'lsa, ushbu ko'rinish ichida ishlatiladigan barcha modal darchalar, dropdownlar va pickerlar strictly o'sha `return (...)` blokining o'zi ichida render qilinishi majburiy hisoblanadi.
+
+## 🚫 37. Yaponiyaning 47 Ta Prefekturasi va Dual-API Pochta Indeksi Standarti (Full 47 Japanese Prefectures & Dual-API Postal Lookup Invariant)
+* **Qoida**:
+  1. **47 Ta Prefektura Yaxlitligi (`ALL_47_PREFECTURES`)**: Ilovadagi har qanday joylashuv darchasi va filtrlash menyusi strictly Yaponiyaning barcha 47 ta prefekturasini (`ALL_47_PREFECTURES` / `JAPAN_REGIONS` master ma'lumotlari) o'z ichiga olishi shart.
+  2. **Dual-API va Offline Hududiy Indeks (`lookupJapaneseZipcode`)**: Yapon pochta indeksidan manzilni aniqlash strictly bir vaqtda 2 ta API (Zipcloud va Zipaddress) hamda offline hududiy indeksi bor `lookupJapaneseZipcode` moduli orqali bajarilishi shart.
+  3. **Moslashuvchan Dropdown Auto-Match Mantig'i**: Custom select va dropdown darchalari state dagi qiymatni (ID, Nom, Kanji, lowercase) moslashtiruvchi universal rejimda (`opt.id`, `opt.name`, `opt.kanji`, `vClean`) solishtirishi va darchada vizual ravishda zudlik bilan avto-tanlovni aks ettirishi shart.
+  4. **Sof Yaponcha Kanji Formatlash (Pure KANJI Only)**: Yaponcha manzil va prefektura darchalari va nishonlarida matn strictly faqat toza iyeroglifda (`千葉県`, `松戸市常盤平`) ko'rsatilishi shart. Har qanday `(Chiba)` kabi inglizcha qavsli yozuvlar chiqarilishi taqiqlanadi.
+  5. **Nol Qattiq Misol Matnlari (Zero Hardcoded Placeholders Invariant)**: Kiritish inputlarida qattiq qat'iy matnlar (hardcoded strings) berilishi TAQIQLANADI. Barcha misol matnlari strictly `placeholder={t('keyPlaceholder', 'Fallback')}` orqali 7 ta til lug'atlarida (`ja`, `uz`, `en`, `ru`, `zh`, `vi`, `ne`) dinamik aks ettirilishi majburiydir.
+  6. **Barcha Majburiy Maydonlar Qizil Yulduzchasi (*)**: Barcha majburiy darchalar (`雇用形態`, `賞与`, `職種`, `郵便番号`, `都道府県`, `詳細住所` va h.k.) sarlavhasida strictly qizil `<span style={{ color: '#FF3B30' }}>*</span>` yulduzcha o'rnatilishi va tanlanmaganda inline error ko'rsatilishi majburiydir.
+  7. **Prefekturaga Biriktirilgan Dinamik Shaharlar (`getCitiesByPrefecture`)**: `詳細住所 *` darchasi strictly `都道府県 *` da tanlangan prefekturaga biriktirilgan shahar va tumanlarni (`市`, `区`, `町`, `村`) toza Kanji shaklida ko'rsatuvchi va `allowCustom={true}` bilan moslashuvchan text kiritish imkonini beruvchi dynamic dropdown bo'lishi majburiydir. Barcha 47 prefektura va 500+ shaharlar `scripts/verify_all_47_cities.mjs` avtomatik skripti hamda `node scripts/health_check.mjs` (8-bo'lim) orqali doimiy audit qilinishi shart.
+  8. **4 Bosqichli Professional Yapon Manzil Tizimi (4-Tier Address Hierarchy)**: Yaponiyada manzil formasi strictly 4 alohida iyerarxik bosqichda kiritilishi majburiydir: 1) `都道府県 *`, 2) `市区町村 *`, 3) `町名・丁目 *`, 4) `建物名・部屋番号`.
+
+## 🚫 36. CustomInlineDropdown Variant Tanlash Oynasi Yagona Dizayn Invarianti
+* **Xatolik**: 
+  1. `CustomInlineDropdown` menyusida `overflowY: auto` va `borderRadius: 16px` bitta div da bo'lsa brauzer pastki burchaklarni tekis qirqadi.
+  2. Menyu ota-konteyner ichida `position: absolute` bo'lsa, pastdagi qo'shni kartochkalar (Stacking Context bo'yicha) menyuni yopib qo'yadi yoki `overflow: hidden` qirqib tashlaydi.
+* **Qoida (MAJBURIY)**:
+  1. Darcha menyusi strictly **React Portal (`createPortal(..., document.body)`)** orqali `document.body` darajasida (`zIndex: 999999`) render qilinishi SHART.
+  2. Menyu ota-kartochkalar va barcha qo'shni bloklardan 100% mutloq YUQORIDA turishi va ularning Stacking Context iyerarxiyasidan O'TIB KETISHI shart.
+  3. `dropUp` va dinamik pozitsiya o'lchoqlari `useLayoutEffect` hamda `getBoundingClientRect()` yordamida hisoblanishi SHART.
+  4. Forma kartochkalarida `overflow: visible !important;` xossasiga ega `.squircle-form-card` ishlatilishi majburiydir.
+  6. **Portal Event Preservation Invarianti**: `handleClickOutside` da ham `containerRef.current` (trigger) ham `menuRef.current` (portal menyu) bir vaqtda tekshirilishi va `rawVal` fallback resolution (`opt.id` / `opt.value` / `opt.name`) bajarilishi SHART.
+  7. **12px Konteynerlar-Arasi Masofa Invarianti**: Forma kartochkalari (`BLOCK 1`, `BLOCK 2`, `BLOCK 3`, `BLOCK 4`), submit tugmasi (`+ 求人を掲載する`) orasida strictly **aynan 12px** bo'lishi SHART (`marginBottom: '12px'`, `paddingBottom: '14px'`).
+  8. To'liq dizayn token'lari va qoidalar: `.agents/skills/dropdown-consistency/SKILL.md`.
+
+## 🚫 37. Safe i18n Translation Keys & Complete Job Edit Form State Persistence Invariant
+* **Xatolik**: 
+  1. Safari / WebKit brauzerida `i18n.t(key)` chaqiruviga `undefined` yoki `null` qiymati tushganda `i18next` ichida `nsSeparator` tekshiruvi orqali `TypeError: undefined is not an object (evaluating 'key.includes')` xatoligi kelib chiqishi va ErrorBoundary ilovani to'xtatishi.
+  2. Vakansiya saqlanganda yoki tahrirlash tugmasi (`求人を編集`) bosilganda ba'zi manzil va forma atributlari (`townAddress`, `buildingAddress`, `trainLine`, `subcategory`) saqlanmay yoki `newJob` state ichida o'zlashtirilmay qolishi.
+* **Yechim (MAJBURIY)**:
+  1. **i18n Safe Key Wrapper**: `src/i18n.js` da `i18n.t` funksiyasiga global xavfsizlik o'rami kiritiladi — agar `key` string bo'lmasa, `undefined` bo'lsa yoki `null` bo'lsa, `t()` hech zaman xato bermaydi va xavfsiz fallback matn qaytaradi.
+  2. **Forma State Yaxlitligi**: E'lon yaratish (`handleAddJob`) va tahrirlashga olish (`jobToEdit` useEffect) jarayonida barcha 4 bosqichli manzil maydonlari (`postalCode`, `prefecture`, `detailAddress`, `townAddress`, `buildingAddress`) hamda barcha ixtisoslashuv va bekat maydonlari (`trainLine`, `subcategory`, `nearestStation`, `walkTime`) 100% to'liq saqlanishi hamda state'ga tiklanishi shart.
+
+## 🚫 38. Zero Hardcoded i18n Fallback Arguments & 7-Locale Key Parity Invariant
+* **Xatolik**: 
+  1. JSX shablonlarida `t('jobsCountResult', '{{count}} ta vakansiya')` ko'rinishida ikkinchi argument sifatida qattiq o'zbekcha matn berilishi hamda shu kalit `ja.js` lug'atida bo'lmagani sababli, Yaponcha profil tanlanganda ham sahifada Uzbekcha yozuv ("6 ta vakansiya") chiqib qolishi.
+* **Yechim (MAJBURIY)**:
+  1. **Nol Qattiq Fallback Argumentlar**: Component JSX fayllarida `t('key', 'Uzbek text')` ko'rinishida ikkinchi argument sifatida qattiq tildagi matn berilishi QAT'IYAN TAQIQLANADI.
+  2. **7-Til Simmetriyasi**: Barcha kalitlar strictly barcha 7 ta til lug'atlarida (`ja.js`, `en.js`, `uz.js`, `ru.js`, `zh.js`, `vi.js`, `ne.js`) sinxron e'lon qilinishi shart (masalan `jobsCountResult`: `6件の求人`, `6 jobs found`, `6 ta vakansiya`, `6 вакансий`, `6 个职位`, `6 việc làm`, `6 वटा नोकरीहरू`).
+
+## 🚫 39. Sort & Results Bar Compact Visual Spacing Invariant
+* **Xatolik**: 
+  1. `.feed-header`, `.sort-results-bar` va `.jobs-list` elementlarining to'plangan padding va margin masofalari chiziq ostida 44px ortiqcha va xunuk bo'shliq hosil qilishi.
+* **Yechim (MAJBURIY)**:
 
 
+## 🚫 40. Profile Sub-Page Bottom Dock Clearance & Spacer Override
+* **Xatolik**:
+  1. `.profile-container.sub-page-view` sinfida `padding-bottom: 12px !important;` ishlatilganligi sababli, 96px umumiy pastki clearance masofasi buzilib, sub-pagelar (masalan `my_ads`, `settings`, `notifications`, `applications`) va ularning pastidagi tugmalar (Chiqish, Saqlash) suzuvchi `BottomNav` paneli ostida qolib ketgan.
+* **Yechim (MAJBURIY)**:
+  1. `.profile-container.sub-page-view` pastki bo'shlig'i `padding-bottom: 24px !important;` qilib o'rnatiladi.
+  2. `Profile.jsx` ichidagi har bir sub-page (`notifications`, `settings`, `about`, `my_ads`, `personalInfo`, `applications`, `saved_items`, `my_shoukai`, `employees`, `main`) taqida yagona `<div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />` ajratuvchi bo'shliq qo'yilishi shart. Bu `BottomNav` ustida har doim **aniq 12px vizual oraliq (gap)** bo'lishini kafolatlaydi (`(72px + 24px) - 84px = 12px`).
+
+## 🚫 42. Pastki Menyu Ortida E'lonlar Qotib Qolishini Oldini Olish Va To'liq Ekran Skroll Standarti (Live Under-Glass Backdrop Blur Scroll Invariant)
+* **Xatolik**: 
+  Sub-sahifalar va profil konteyneriga (`.profile-container`, `.profile-container.sub-page-view`) pastki menyudan bo'sh joy qoldirish uchun `bottom: 90px !important` kabi sun'iy pastki chegara o'rnatilishi. Bu konteyner balandligini sun'iy ravishda pastki menyu ustida qirqib qo'yadi hamda pastki menyuning shaffof shisha foni (`backdrop-filter: blur(24px)`) ortida kartochkalar scroll bo'lmay, harakatsiz/qotgan rasm kabi ko'rinib qolishiga olib keladi.
+  2. **Ichki Skroll Masofasi (`padding-bottom: 96px`)**: Pastki menyugacha bo'lgan masofa konteyner ichida `padding-bottom: 96px` orqali beriladi. Bu kontent skroll bo'lganda `BottomNav` shaffof oynasi ortidan jonli va silliq o'tishini, hamda skroll eng oxiriga yetganda eng so'nggi kartochka `BottomNav` menyusidan exact **12px toza va qotgan masofada (`96px - 84px = 12px`)** to'xtashini kafolatlaydi.
+
+## 🚫 43. Filter Header Pinned Back Button & Baseline Alignment Anti-Pattern
+* **Xatolik**: Pinned elementlar uchun scroll konteynerini `overflow: hidden` ga o'rab, ichki `overflow-y: auto` yaratish tufayli flexbox balandligi va scroll mexanizmi buzilishi. Shuningdek, sticky back button konteyneriga ixtiyoriy `top: 16px` offset berilishi oqibatida markaziy sarlavha (`詳細検索`) va `リセット` tugmasi bilan vertikal alignmentning (`baseline`) buzilib pastga tushib qolishi.
+* **Yechim**: 
+  - `feed-container` har doim yagona native scroll container (`overflow-y: auto; padding: 16px 14px 96px 14px; position: relative;`) bo'lishi shart.
+  - Sticky Back Button konteyneri (`height: 40px; align-items: center; top: 0; margin-bottom: -40px;`) va Sarlavha qatori (`minHeight: 40px; align-items: center; justify-content: center; position: relative; margin-bottom: 16px;`) 1:1 bir xil 40px balandlik va top: 0 offsetiga ega bo'lib, 3 ta element yagona gorizontal baseline bo'yicha 100% parallel tekislanishi shart.
 
 
 

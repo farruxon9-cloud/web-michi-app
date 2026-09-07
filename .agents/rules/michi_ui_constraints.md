@@ -12,7 +12,44 @@
 5. **No Raw Text Emojis**: Replace raw text emojis (`🗣️`, `🤖`) with Lucide vector icons wrapped in stylized 3D glassmorphic containers.
 6. **Mobile Navigation Header Spacing Invariants**:
    - **Back Button & Sticky Header Offset**: The floating back button (`<button className="icon-btn glass">`) must sit at exactly `top: 16px` and `left: 16px` with dimensions `40px × 40px` (`flex-shrink: 0`, `aspect-ratio: 1 / 1`, `border-radius: 50%`) across all sub-pages (`Profile.jsx`, `AssistHeroShowcase.jsx`, `JobDetail.jsx`, `DrivingAcademy.jsx`) for 1:1 visual parity.
-   - **Pinned vs. Unpinned Elements**: ONLY the back button must remain pinned/sticky at `top: 16px`. Social proof badges, titles, and subtitle headers must remain unpinned inside the scrollable content container so they scroll up naturally with page content.
-7. **Bottom Dock Bar Clearance Invariant**:
-   - **Bottom Clearance**: Scrollable views above the floating Bottom Navigation Dock Bar (dock height ~76px) MUST use a minimum of `padding-bottom: 180px` on their main container so the bottom-most card scrolls completely clear of the floating bottom dock bar with a visible, clean 16px+ visual gap.
-
+   - **Single-Row Centered Filter Header Bar**: Mobile filter drawer sub-pages MUST use a single compact 40px pinned header row with Back button on left, Title mathematically centered (`position: absolute; left: 50%; transform: translateX(-50%)`), and Reset button on right (`position: sticky; top: 0; z-index: 200;`) to save ~60px vertical height and prevent card crowding.
+7. **Bottom Dock Bar Clearance & Live Under-Glass Scroll Invariant**:
+   - **Full-Screen Container Positioning (`bottom: 0`)**: All scrollable main containers and sub-page views (`.dashboard-container`, `.feed-container`, `.academy-container`, `.profile-container`) MUST extend to full viewport height using `bottom: 0` (or `height: 100%`). NEVER clip outer containers height with fixed bottom bounds (such as `bottom: 90px !important`), which stops scrolling prematurely and causes a frozen/static background artifact behind `BottomNav`.
+   - **Uniform 12px Visual Gap**: Scrollable containers MUST apply `padding-bottom: 96px;` (or internal trailing clearance spacer) so that when scrolled all the way down, the last card halts with an exact, uniform 12px visual clearance gap (`96px - 84px = 12px`) above the floating bottom dock (`.bottom-nav`, top edge at `12px + 72px = 84px`), while allowing content to scroll live underneath the glassmorphism backdrop blur filter.
+8. **Mobile Filter Floating CTA Button Invariants**:
+    - **Full-Width Spanning**: Mobile sticky search/action buttons (`.townwork-btn-search-cta`) must use `width: 100%; max-width: 100%;` to fill the container width. Never apply rigid max-width caps (e.g., `max-width: 240px`) that cause half-width alignment gaps.
+    - **Pure Standalone Floating Element**: Do not wrap floating CTA buttons inside extra translucent glass cards, outer border containers, backdrop filters (`backdrop-filter`), or nested background gradient masks. The button must float cleanly as a single standalone pill element (`position: fixed; bottom: 96px; z-index: 250;`) inside a transparent wrapper with `pointer-events: none` (`pointer-events: auto` on the button itself), while outer scroll container uses `padding-bottom: 160px;` to guarantee exact 12px visual clearance above and below.
+9. **Prefecture & Location Banner Aesthetics**:
+    - Use Apple-style Banner Cards (`対象エリア (地域): 全ての地域 (全国) [変更 ▾]`) for prefecture/region selection inside accordion filter sections instead of generic inline select pills.
+10. **Flex Scroll Container Invariant**:
+    - **Explicit Container Heights**: Mobile flex-based scroll containers (e.g. `.feed-container` or sub-page inline views) nested inside flex parents (`flex: 1`) MUST explicitly include `height: 100%; max-height: 100%; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box;` to guarantee overflow scrollability across all browsers.
+12. **Page-Specific Invariant Specification Rules Architecture**:
+    - Every main page and sub-page MUST strictly adhere to its dedicated specification document located in `.agents/rules/pages/`:
+      - [01_dashboard.md](file:///.agents/rules/pages/01_dashboard.md): Home Dashboard (`Dashboard.jsx`)
+      - [02_driver_feed.md](file:///.agents/rules/pages/02_driver_feed.md): Jobs Feed (`DriverFeed.jsx`)
+      - [03_driving_academy.md](file:///.agents/rules/pages/03_driving_academy.md): Driving Academy (`DrivingAcademy.jsx`)
+      - [04_jdm_navigation.md](file:///.agents/rules/pages/04_jdm_navigation.md): JDM Navigation (`JDMNavigation.jsx`)
+      - [05_profile_main.md](file:///.agents/rules/pages/05_profile_main.md): Profile Main (`Profile.jsx`)
+      - [06_my_ads.md](file:///.agents/rules/pages/06_my_ads.md): My Posted Ads (`CompanyHome.jsx`)
+      - [07_personal_info.md](file:///.agents/rules/pages/07_personal_info.md): Personal Info (`personalInfo`)
+      - [08_applications.md](file:///.agents/rules/pages/08_applications.md): Applications (`applications`)
+      - [09_saved_items.md](file:///.agents/rules/pages/09_saved_items.md): Saved Items (`saved_items`)
+      - [10_notifications.md](file:///.agents/rules/pages/10_notifications.md): Notifications (`notifications`)
+      - [11_settings.md](file:///.agents/rules/pages/11_settings.md): Settings (`settings`)
+      - [12_platform_about.md](file:///.agents/rules/pages/12_platform_about.md): Platform About (`about`)
+      - [13_shoukai_referrals.md](file:///.agents/rules/pages/13_shoukai_referrals.md): Shoukai Referrals (`my_shoukai`)
+      - [14_employee_management.md](file:///.agents/rules/pages/14_employee_management.md): Employee Management (`employees`)
+      - [15_filter_drawer.md](file:///.agents/rules/pages/15_filter_drawer.md): Recruitment Filter Drawer (`TownworkFilterDrawer.jsx`)
+      - [16_assist_showcase.md](file:///.agents/rules/pages/16_assist_showcase.md): AI Assist Voice Showcase (`AssistHeroShowcase.jsx`)
+13. **Uniform Design Token System (Yagona Pikselik Standart Tizimi)**:
+    - Barcha sahifalar va sub-sahifalarda quyidagi **6 ta daxlsiz Design Token** qat'iy rioya qilinishi shart:
+      - **Yon Margin**: `14px` (barcha konteynerlar va `BottomNav` paneli `left: 14px; width: calc(100% - 28px)` bilan 1:1 simmetrik).
+      - **Orqaga Tugmasi (Sticky Back Button Invariant)**: `40x40px`, `border-radius: 50%`, `top: 16px`, `left: 16px` (`z-index: 250`). Barcha sub-sahifalarda ortga qaytish tugmasi istisnosiz `.profile-sticky-back` yoki `.personal-info-sticky-back` orqali sticky-pin holatida bo'lishi shart.
+      - **Kartochkalar Oraliq Gap (Flex Gap Invariant)**: `12px / 14px` (Bento gridlar, e'lon ro'yxatlari, profil menyulari va sub-sahifa bloklari orasida). Flex container ichidagi bola kartalarda har doim `margin-top: 0` saqlanib, masofa faqat ota flex-konteynerning `gap` tokeni orqali yagona va toza boshqariladi (hech qachon ikkilangan 28px margin accumulation ishlatilmaydi).
+      - **BottomNav Pastki Clearance (Micro-Compact Dock Gap)**: Sub-sahifalarda CSS'dagi `padding-bottom: 0px !important` va JSX'dagi bitta yagona `90px` trailing spacer (`<div style={{ height: '90px', minHeight: '90px', width: '100%', flexShrink: 0, clear: 'both' }} />`) orqali `BottomNav` paneli ustida aniq `6px` micro-compact vizual bo'shliq kafolatlanadi (hech qachon takroriy double-padding ishlatilmaydi).
+      - **Burchaklar Radiusi Ierarxiyasi (Border Radius Hierarchy)**: `24px` (BottomNav, Hero) → `20px` (Bento, Konteyner) → `16px` (Kartochka, Modal, Input) → `12px` (Logo, Badge) → `8px` (Pill, Tag).
+      - **Konteyner Full-Screen Positioning**: `bottom: 0` + `padding-bottom` (HECH QACHON `bottom: 90px !important` kabi sun'iy qirqish ishlatilmaydi).
+14. **Page Creation Blueprint Protocol (Yangi Sahifa Yaratish Blueprinti)**:
+    - Barcha 16 ta sahifa, sub-sahifa, drawer va modallar uchun `.agents/rules/pages/` katalogidagi `01_` dan `16_` gacha bo'lgan blueprint fayllari **majburiy daxlsiz standart** hisoblanadi. Kodga o'zgartirish kiritishdan oldin AI tegishli `.md` blueprintni o'qib rioya qilishi shart.
+    - Yangi sahifa yoki sub-modal yaratilganda u uchun ham `.agents/rules/pages/` katalogida alohida spetsifikatsiya fayli yaratilishi shart.
+    - Yangi sahifa qo'shilgandan so'ng `node scripts/deep_ui_audit.mjs` va `npx vitest run` audit skriptlari ishlatilishi va 100% Passed bo'lishi kafolatlanishi shart.

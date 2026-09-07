@@ -5,23 +5,22 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
-const srcDir = path.join(projectRoot, 'src');
 
 console.log('--- Codebase Map Skanerlash Boshlandi ---');
-console.log('Katalog:', srcDir);
+console.log('Project Root:', projectRoot);
 
-// Recursively find files
 function getFiles(dir, files = []) {
+  if (!fs.existsSync(dir)) return files;
   const list = fs.readdirSync(dir);
   for (const file of list) {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
     if (stat.isDirectory()) {
-      if (file !== 'node_modules' && file !== 'dist' && file !== '.git') {
+      if (file !== 'node_modules' && file !== 'dist' && file !== '.git' && file !== 'brain' && file !== 'build') {
         getFiles(filePath, files);
       }
     } else {
-      if (file.endsWith('.jsx') || file.endsWith('.js') || file.endsWith('.css')) {
+      if (file.endsWith('.jsx') || file.endsWith('.js') || file.endsWith('.mjs') || file.endsWith('.css') || file.endsWith('.md')) {
         files.push(filePath);
       }
     }
@@ -29,30 +28,31 @@ function getFiles(dir, files = []) {
   return files;
 }
 
-const allFiles = getFiles(srcDir);
+const srcFiles = getFiles(path.join(projectRoot, 'src'));
+const scriptFiles = getFiles(path.join(projectRoot, 'scripts'));
+const ruleFiles = getFiles(path.join(projectRoot, '.agents', 'rules'));
+const allFiles = [...srcFiles, ...scriptFiles, ...ruleFiles];
 
-// Categorized maps
 const map = {
-  components: {}, // Actual React Components (.jsx)
-  styles: {},     // CSS Stylesheets (.css)
-  tests: {},      // Unit tests (.test.jsx / .test.js)
-  utils: {},      // Utility modules (.js / .jsx in utils)
-  root: {}        // Other root files like App.jsx, i18n.js, etc.
+  components: {},
+  styles: {},
+  tests: {},
+  data: {},
+  utils: {},
+  scripts: {},
+  rules: {},
+  root: {}
 };
 
-// Helper to extract React Component name and props
 function extractComponentInfo(content, filename) {
-  // 1. Match standard export default function / export function
   const funcRegex = /export\s+(?:default\s+)?function\s+(\w+)\s*\(([^)]*)\)/;
   let match = funcRegex.exec(content);
   
-  // 2. Match const Component = React.memo(...) or const Component = (...) =>
   if (!match) {
     const arrowRegex = /export\s+const\s+(\w+)\s*=\s*(?:React\.memo\()?\(?([^)]*)\)?\s*=>/;
     match = arrowRegex.exec(content);
   }
   
-  // 3. Match fallback: local function named after file
   if (!match) {
     const defaultExportName = path.basename(filename, path.extname(filename));
     const defaultFuncRegex = new RegExp(`function\\s+(${defaultExportName})\\s*\\(([^)]*)\\)`);
@@ -65,9 +65,9 @@ function extractComponentInfo(content, filename) {
     const props = [];
     if (propsStr.startsWith('{') && propsStr.includes('}')) {
       const rawProps = propsStr
-        .replace(/[{}]/g, '') // remove brackets
+        .replace(/[{}]/g, '')
         .split(',')
-        .map(p => p.trim().split('=')[0].trim()) // split defaults
+        .map(p => p.trim().split('=')[0].trim())
         .filter(p => p && !p.startsWith('...'));
       props.push(...rawProps);
     } else if (propsStr) {
@@ -78,7 +78,6 @@ function extractComponentInfo(content, filename) {
   return null;
 }
 
-// Helper to extract exported functions from utility modules
 function extractUtilityExports(content) {
   const exports = [];
   const funcExportRegex = /export\s+function\s+(\w+)/g;
@@ -96,13 +95,11 @@ function extractUtilityExports(content) {
   return [...new Set(exports)];
 }
 
-// Process each file
 allFiles.forEach(file => {
   const content = fs.readFileSync(file, 'utf8');
   const relativePath = path.relative(projectRoot, file);
   const name = path.basename(file);
   
-  // Parse imports
   const importRegex = /import\s+(?:[\w\s{},*]+)\s+from\s+['"]([^'"]+)['"]/g;
   const imports = [];
   let match;
@@ -121,24 +118,32 @@ allFiles.forEach(file => {
     lines: linesCount
   };
 
-  // Group files
   if (relativePath.startsWith('src/components/')) {
     if (name.includes('.test.')) {
       map.tests[name] = fileData;
     } else if (name.endsWith('.css')) {
       map.styles[name] = fileData;
     } else if (name.endsWith('.jsx') || name.endsWith('.js')) {
-      // It's a React component
       const compInfo = extractComponentInfo(content, name);
       fileData.componentName = compInfo ? compInfo.name : name.split('.')[0];
       fileData.props = compInfo ? compInfo.props : [];
       map.components[name] = fileData;
     }
-  } else if (relativePath.startsWith('src/utils/')) {
+  } else if (relativePath.startsWith('src/data/')) {
     fileData.exports = extractUtilityExports(content);
-    map.utils[name] = fileData;
-  } else {
-    // Root files (App.jsx, main.jsx, i18n.js, etc.)
+    map.data[name] = fileData;
+  } else if (relativePath.startsWith('src/utils/')) {
+    if (name.includes('.test.')) {
+      map.tests[name] = fileData;
+    } else {
+      fileData.exports = extractUtilityExports(content);
+      map.utils[name] = fileData;
+    }
+  } else if (relativePath.startsWith('scripts/')) {
+    map.scripts[name] = fileData;
+  } else if (relativePath.startsWith('.agents/rules/')) {
+    map.rules[name] = fileData;
+  } else if (relativePath.startsWith('src/')) {
     if (name.endsWith('.jsx') || name.endsWith('.js')) {
       const compInfo = extractComponentInfo(content, name);
       if (compInfo) {
@@ -149,21 +154,19 @@ allFiles.forEach(file => {
   }
 });
 
-// Build Dependency Graph using Mermaid
 const dependencyLinks = [];
 const componentNames = Object.values(map.components).map(c => c.componentName);
 
 Object.values(map.components).forEach(comp => {
   comp.imports.forEach(imp => {
     const parts = imp.split('/');
-    const importedName = parts[parts.length - 1].split('.')[0]; // remove extension if any
+    const importedName = parts[parts.length - 1].split('.')[0];
     if (componentNames.includes(importedName) && comp.componentName !== importedName) {
       dependencyLinks.push(`  ${comp.componentName} --> ${importedName}`);
     }
   });
 });
 
-// Add App component links
 const appFile = map.root['App.jsx'];
 if (appFile && appFile.component) {
   appFile.imports.forEach(imp => {
@@ -177,11 +180,10 @@ if (appFile && appFile.component) {
 
 const uniqueLinks = [...new Set(dependencyLinks)].sort();
 
-// Generate Markdown Map
-let md = `# Michi Ilovasi: Loyiha Arxitekturasi Xaritasi (Codebase Map)
+let md = `# Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi va parametrlarini avtomatik tahlil qilish orqali yaratilgan. U yangi dasturchilar va AI yordamchilarga loyihaning to'liq tuzilishini bir soniyada tushunishga yordam beradi.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **${new Date().toLocaleString('uz-UZ')}**.
 
 ---
 
@@ -189,9 +191,12 @@ let md = `# Michi Ilovasi: Loyiha Arxitekturasi Xaritasi (Codebase Map)
 * **Jami skanerlangan fayllar:** ${allFiles.length} ta
 * **React Komponentlari:** ${Object.keys(map.components).length} ta
 * **Komponent Stillari (CSS):** ${Object.keys(map.styles).length} ta
+* **Geografiya va Ma'lumotlar Bazalari (data):** ${Object.keys(map.data).length} ta
 * **Unit Testlar (Vitest):** ${Object.keys(map.tests).length} ta
-* **Yordamchi funksiyalar (utils):** ${Object.keys(map.utils).length} ta
-* **Boshqa asosiy fayllar (root):** ${Object.keys(map.root).length} ta
+* **Yordamchi Funksiyalar (utils):** ${Object.keys(map.utils).length} ta
+* **Avtomatizatsiya Skriptlari (scripts):** ${Object.keys(map.scripts).length} ta
+* **Tizim va UI Qoidalari (.agents/rules):** ${Object.keys(map.rules).length} ta
+* **Boshqa asosiy fayllar (src/ root):** ${Object.keys(map.root).length} ta
 
 ---
 
@@ -217,7 +222,6 @@ Object.keys(map.components).sort().forEach(key => {
   md += `### 📦 [${info.componentName}](file:///${absPath})\n`;
   md += `* **Fayl yo'li:** \`${info.path}\` (${info.lines} qator, ${info.size} bayt)\n`;
   
-  // Link styles
   const baseName = key.split('.')[0];
   const cssFile = `${baseName}.css`;
   const testFile = `${baseName}.test.jsx`;
@@ -231,7 +235,6 @@ Object.keys(map.components).sort().forEach(key => {
     md += `* **Unit Testlari:** 🧪 [${testFile}](file:///${testPath})\n`;
   }
 
-  // Props
   md += `* **Qabul qiladigan parametrlari (Props):**\n`;
   if (info.props && info.props.length > 0) {
     info.props.forEach(prop => {
@@ -241,7 +244,6 @@ Object.keys(map.components).sort().forEach(key => {
     md += `  - *Parametrlar mavjud emas*\n`;
   }
   
-  // Imports
   md += `* **Import qilgan bog'liqliklari:**\n`;
   if (info.imports.length > 0) {
     info.imports.forEach(imp => {
@@ -249,6 +251,24 @@ Object.keys(map.components).sort().forEach(key => {
     });
   } else {
     md += `  - *Bog'liqliklar mavjud emas*\n`;
+  }
+  md += `\n`;
+});
+
+md += `\n---\n\n## 🗄️ Ma'lumotlar Bazalari va Modullar (Data Services)\n\n`;
+
+Object.keys(map.data).sort().forEach(key => {
+  const info = map.data[key];
+  const absPath = path.resolve(projectRoot, info.path);
+  md += `### 🗄️ [${key}](file:///${absPath})\n`;
+  md += `* **Yo'li:** \`${info.path}\` (${info.lines} qator, ${info.size} bayt)\n`;
+  md += `* **Eksport qilingan obyektlar/strukturalar:**\n`;
+  if (info.exports && info.exports.length > 0) {
+    info.exports.forEach(exp => {
+      md += `  - \`${exp}\`\n`;
+    });
+  } else {
+    md += `  - *Eksportlar aniqlanmadi*\n`;
   }
   md += `\n`;
 });
@@ -266,19 +286,27 @@ Object.keys(map.utils).sort().forEach(key => {
       md += `  - \`${exp}()\`\n`;
     });
   } else {
-    md += `  - *Eksportlar aniqlanmadi yoki yo'q*\n`;
+    md += `  - *Eksportlar aniqlanmadi*\n`;
   }
   md += `* **Importlari:** ${info.imports.map(i => `\`${i}\``).join(', ') || '*Yo\'q*'}\n\n`;
 });
 
-md += `\n---\n\n## 📄 Boshqa Tizim Fayllari (Root)\n\n`;
+md += `\n---\n\n## 🤖 Avtomatizatsiya va Tekshiruv Skriptlari (Scripts)\n\n`;
 
-Object.keys(map.root).sort().forEach(key => {
-  const info = map.root[key];
+Object.keys(map.scripts).sort().forEach(key => {
+  const info = map.scripts[key];
   const absPath = path.resolve(projectRoot, info.path);
-  md += `### 📄 [${key}](file:///${absPath})\n`;
-  md += `* **Yo'li:** \`${info.path}\` (${info.lines} qator)\n`;
-  md += `* **Importlari:** ${info.imports.map(i => `\`${i}\``).join(', ') || '*Yo\'q*'}\n\n`;
+  md += `### 🛠️ [${key}](file:///${absPath})\n`;
+  md += `* **Yo'li:** \`${info.path}\` (${info.lines} qator, ${info.size} bayt)\n\n`;
+});
+
+md += `\n---\n\n## 📜 Tizim va UI Invariant Qoidalari (.agents/rules)\n\n`;
+
+Object.keys(map.rules).sort().forEach(key => {
+  const info = map.rules[key];
+  const absPath = path.resolve(projectRoot, info.path);
+  md += `### 📜 [${key}](file:///${absPath})\n`;
+  md += `* **Yo'li:** \`${info.path}\` (${info.lines} qator)\n\n`;
 });
 
 const outputPath = path.join(projectRoot, 'codebase_map.md');

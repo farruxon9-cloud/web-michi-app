@@ -22,7 +22,7 @@ const CYAN = "\x1b[36m";
 const BOLD = "\x1b[1m";
 
 const LOCALES_DIR = 'src/locales';
-const LANGUAGES = ['ja', 'en', 'uz', 'ru', 'zh'];
+const LANGUAGES = ['ja', 'en', 'uz', 'ru', 'zh', 'vi', 'ne'];
 
 async function run() {
   console.log(`${BOLD}${CYAN}`);

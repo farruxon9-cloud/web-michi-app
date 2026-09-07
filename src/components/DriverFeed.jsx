@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone, Edit3, CheckCircle2, SlidersHorizontal, X, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone, Edit3, CheckCircle2, SlidersHorizontal, X, ChevronDown, ChevronUp, Check, ArrowLeft, Train, Navigation, Sparkles, RotateCcw } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import VerifiedBadge from './VerifiedBadge';
+import CustomMobilePickerModal from './CustomMobilePickerModal';
 import './DriverFeed.css';
+import { REGIONS, PREFECTURES, CITIES_BY_PREFECTURE, TRAIN_LINES_BY_PREFECTURE, getAllTrainLines, getAllCities } from '../data/japanLocationDB';
+import { JOB_CATEGORIES } from '../data/jobCategories';
+import { JOB_FEATURES } from '../data/jobFeatures';
 
 // ============================================================
 // TOWNWORK-STYLE JAPANESE RECRUITMENT LOCATION DATASETS
@@ -91,14 +95,14 @@ export const JAPAN_CITIES = [
 ];
 
 export const RADIUS_OPTIONS = [
-  { value: 1, label: '1km以内', sublabel: '徒歩15分くらい (15 daq. piyoda)' },
-  { value: 2, label: '2km以内', sublabel: '徒歩30分くらい (30 daq. piyoda)' },
-  { value: 3, label: '3km以内', sublabel: '車10分くらい (Avto 10 daq.)' },
-  { value: 5, label: '5km以内', sublabel: '車15分くらい (Avto 15 daq.)' },
-  { value: 7, label: '7km以内', sublabel: '車20分くらい (Avto 20 daq.)' },
-  { value: 10, label: '10km以内', sublabel: '車30分くらい (Avto 30 daq.)' },
-  { value: 15, label: '15km以内', sublabel: '車45分くらい (Avto 45 daq.)' },
-  { value: 20, label: '20km以内', sublabel: '車1時間くらい (Avto 1 soat)' }
+  { value: 1, label: '1km以内', labelUz: '1km radiusda', labelEn: 'Within 1km', sublabel: '徒歩15分くらい', sublabelUz: '15 daqiqa piyoda', sublabelEn: '~15 mins walk' },
+  { value: 2, label: '2km以内', labelUz: '2km radiusda', labelEn: 'Within 2km', sublabel: '徒歩30分くらい', sublabelUz: '30 daqiqa piyoda', sublabelEn: '~30 mins walk' },
+  { value: 3, label: '3km以内', labelUz: '3km radiusda', labelEn: 'Within 3km', sublabel: '車10分くらい', sublabelUz: 'Moshinada 10 daqiqa', sublabelEn: '~10 mins by car' },
+  { value: 5, label: '5km以内', labelUz: '5km radiusda', labelEn: 'Within 5km', sublabel: '車15分くらい', sublabelUz: 'Moshinada 15 daqiqa', sublabelEn: '~15 mins by car' },
+  { value: 7, label: '7km以内', labelUz: '7km radiusda', labelEn: 'Within 7km', sublabel: '車20分くらい', sublabelUz: 'Moshinada 20 daqiqa', sublabelEn: '~20 mins by car' },
+  { value: 10, label: '10km以内', labelUz: '10km radiusda', labelEn: 'Within 10km', sublabel: '車30分くらい', sublabelUz: 'Moshinada 30 daqiqa', sublabelEn: '~30 mins by car' },
+  { value: 15, label: '15km以内', labelUz: '15km radiusda', labelEn: 'Within 15km', sublabel: '車45分くらい', sublabelUz: 'Moshinada 45 daqiqa', sublabelEn: '~45 mins by car' },
+  { value: 20, label: '20km以内', labelUz: '20km radiusda', labelEn: 'Within 20km', sublabel: '車1時間くらい', sublabelUz: 'Moshinada 1 soat', sublabelEn: '~1 hour by car' }
 ];
 
 // ============================================================
@@ -113,15 +117,25 @@ export const MOCK_JOBS = [
     title: "Mahalliy yetkazib berish (Local Delivery)",
     salary: "¥300,000 / oyiga",
     type: "fulltime", // fulltime | parttime | contract
+    category: "delivery_driver",
+    subcategory: "delivery_local",
+    payType: "monthly",
+    duration: "long",
+    startTime: "8",
+    transportPaid: true,
+    noExperienceOk: true,
     shoukai: "¥50,000",
     shoukaiAmount: "¥50,000",
     image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800",
     verified: true,
-    location: "Tokyo, Koto-ku",
+    location: "東京都江東区 (Tokyo, Koto-ku)",
+    prefecture: "Tokyo",
+    city: "東京23区",
+    ward: "江東区",
     lat: 35.6329,
     lng: 139.7904,
-    fullAddress: "〒135-0063 Tokyo, Koto-ku, Ariake 3-1-1",
-    nearestStation: "Kokusai-tenjijo Station",
+    fullAddress: "〒135-0063 東京都江東区有明3-1-1 (Tokyo, Koto-ku, Ariake 3-1-1)",
+    nearestStation: "東京駅 (Tokyo Station)",
     walkTime: 8,
     hours: "08:00 - 17:00",
     dayOff: "shanba_yakshanba",
@@ -130,7 +144,7 @@ export const MOCK_JOBS = [
     foreigners: "foreigners_n3",
     housing: "housing_none",
     license: "lic_futsu",
-    description: "Koto-ku bo'ylab kichik posilkalarni mijozlarga yetkazib berish. Kuniga o'rtacha 80-100 ta posilka. Yo'nalishlar aniq belgilangan.",
+    description: "Koto-ku bo'ylab kichik posilkalarni mijozlarga yetkazib berish. Kuniga o'rtacha 80-100 ta posilka.",
     logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
     phone: "03-1234-5678",
     phoneMode: "public",
@@ -142,24 +156,34 @@ export const MOCK_JOBS = [
     title: "Xalqaro yuk tashish (Trailer)",
     salary: "¥500,000 / oyiga",
     type: "fulltime",
+    category: "delivery_driver",
+    subcategory: "driver_truck",
+    payType: "monthly",
+    duration: "long",
+    startTime: "9",
+    transportPaid: true,
+    noExperienceOk: false,
     shoukai: "¥100,000",
     shoukaiAmount: "¥100,000",
     image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
     verified: true,
-    location: "Kanagawa, Yokohama",
+    location: "神奈川県横浜市 (Kanagawa, Yokohama)",
+    prefecture: "Kanagawa",
+    city: "横浜市",
+    ward: "中区",
     lat: 35.4437,
     lng: 139.6380,
-    fullAddress: "〒231-0023 Kanagawa, Yokohama, Naka-ku, Yamashitacho 12",
-    nearestStation: "Motomachi-Chukagai Station",
+    fullAddress: "〒231-0023 神奈川県横浜市中区山下町12 (Kanagawa, Yokohama, Naka-ku)",
+    nearestStation: "横浜駅 (Yokohama Station)",
     walkTime: 12,
     hours: "shift",
     dayOff: "shift_rotation",
     bonus: "bonus_3",
     insurance: "insurance_full",
-    foreigners: "foreigners_visa", // visa support (implies N4)
+    foreigners: "foreigners_visa",
     housing: "housing_dorm",
     license: "lic_kenin",
-    description: "Yokohama portidan Kanto hududi bo'ylab dengiz konteynerlarini tashish. Tirkama (Ken'in) guvohnomasi majburiy.",
+    description: "Yokohama portidan Kanto hududi bo'ylab dengiz konteynerlarini tashish.",
     logo: "https://ui-avatars.com/api/?name=Nippon+Express&background=E63946&color=fff&size=100",
     phone: "045-222-3333",
     phoneMode: "interview_only",
@@ -172,15 +196,25 @@ export const MOCK_JOBS = [
     title: "Tungi reys haydovchisi (10t yuk mashinasi)",
     salary: "¥450,000 / oyiga",
     type: "contract",
+    category: "delivery_driver",
+    subcategory: "driver_truck",
+    payType: "monthly",
+    duration: "long",
+    startTime: "20",
+    transportPaid: true,
+    noExperienceOk: true,
     shoukai: "¥80,000",
     shoukaiAmount: "¥80,000",
     image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
     verified: true,
-    location: "Saitama, Omiya",
+    location: "埼玉県さいたま市 (Saitama, Omiya)",
+    prefecture: "Saitama",
+    city: "さいたま市",
+    ward: "大宮区",
     lat: 35.9064,
     lng: 139.6235,
-    fullAddress: "〒330-0854 Saitama, Omiya-ku, Sakuragicho 2-1",
-    nearestStation: "Omiya Station",
+    fullAddress: "〒330-0854 埼玉県さいたま市大宮区桜木町2-1 (Saitama, Omiya-ku)",
+    nearestStation: "大宮駅 (Omiya Station)",
     walkTime: 5,
     hours: "20:00 - 05:00",
     dayOff: "shanba_yakshanba",
@@ -189,7 +223,7 @@ export const MOCK_JOBS = [
     foreigners: "foreigners_visa_renew",
     housing: "housing_half",
     license: "lic_oogata",
-    description: "Kanto va Kansai o'rtasida yirik omborlar aro logistika tashish. Katta yuk mashinasi (Oogata) guvohnomasi majburiy.",
+    description: "Kanto va Kansai o'rtasida yirik omborlar aro logistika tashish.",
     logo: "https://ui-avatars.com/api/?name=Yamato+Transport&background=2A9D8F&color=fff&size=100",
     phone: "048-444-5555",
     phoneMode: "public",
@@ -201,15 +235,25 @@ export const MOCK_JOBS = [
     title: "Ekskavator va Maxsus texnika haydovchisi",
     salary: "¥380,000 / oyiga",
     type: "fulltime",
+    category: "construction",
+    subcategory: "construction_general",
+    payType: "monthly",
+    duration: "long",
+    startTime: "7",
+    transportPaid: true,
+    noExperienceOk: false,
     shoukai: "0",
     shoukaiAmount: "0",
     image: "https://images.unsplash.com/photo-1541888062837-7b247f082e05?auto=format&fit=crop&q=80&w=800",
     verified: false,
-    location: "Chiba, Matsudo",
+    location: "千葉県松戸市 (Chiba, Matsudo)",
+    prefecture: "Chiba",
+    city: "松戸市",
+    ward: "",
     lat: 35.7915,
     lng: 139.9015,
-    fullAddress: "〒270-2253 Chiba, Matsudo, Tokiwadaira 3-2-1",
-    nearestStation: "Tokiwadaira Station",
+    fullAddress: "〒270-2253 千葉県松戸市常盤平3-2-1 (Chiba, Matsudo)",
+    nearestStation: "船橋駅 (Funabashi Station)",
     walkTime: 15,
     hours: "07:00 - 16:00",
     dayOff: "shanba_yakshanba",
@@ -218,7 +262,7 @@ export const MOCK_JOBS = [
     foreigners: "foreigners_n2",
     housing: "housing_none",
     license: "lic_oogata_tokushu",
-    description: "Qurilish maydonchalarida maxsus texnika (Ekskavator) boshqarish. Sharyo-kei litsenziyasi bo'lishi shart.",
+    description: "Qurilish maydonchalarida maxsus texnika boshqarish.",
     logo: "https://ui-avatars.com/api/?name=Seino+Transport&background=E9C46A&color=333&size=100",
     phone: "047-666-7777",
     phoneMode: "interview_only",
@@ -230,15 +274,25 @@ export const MOCK_JOBS = [
     title: "Omborxona Forklift operatori",
     salary: "¥250,000 / oyiga",
     type: "parttime",
+    category: "warehouse_light",
+    subcategory: "tech_forklift",
+    payType: "monthly",
+    duration: "long",
+    startTime: "9",
+    transportPaid: true,
+    noExperienceOk: true,
     shoukai: "¥30,000",
     shoukaiAmount: "¥30,000",
     image: "https://images.unsplash.com/photo-1587293852726-70cdb56c28ea?auto=format&fit=crop&q=80&w=800",
     verified: true,
-    location: "Aichi, Nagoya",
+    location: "愛知県名古屋市 (Aichi, Nagoya)",
+    prefecture: "Aichi",
+    city: "名古屋市",
+    ward: "中村区",
     lat: 35.1815,
     lng: 136.9066,
-    fullAddress: "〒450-0002 Aichi, Nagoya, Nakamura-ku, Meieki 1-1-4",
-    nearestStation: "Nagoya Station",
+    fullAddress: "〒450-0002 愛知県名古屋市中村区名駅1-1-4 (Aichi, Nagoya, Nakamura-ku)",
+    nearestStation: "名古屋駅 (Nagoya Station)",
     walkTime: 10,
     hours: "09:00 - 14:00",
     dayOff: "flexible",
@@ -252,6 +306,45 @@ export const MOCK_JOBS = [
     phone: "052-888-9999",
     phoneMode: "public",
     isInternational: true,
+    isActive: true
+  },
+  {
+    id: 6,
+    company: "Sendai Logi Service",
+    title: "Sendai Shahri Ombor Saralash Ishchisi",
+    salary: "¥1,200 / soatiga",
+    type: "parttime",
+    category: "warehouse_light",
+    subcategory: "packing",
+    payType: "hourly",
+    duration: "short_1m",
+    startTime: "9",
+    transportPaid: true,
+    noExperienceOk: true,
+    shoukai: "¥20,000",
+    shoukaiAmount: "¥20,000",
+    image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=800",
+    verified: true,
+    location: "宮城県仙台市 (Miyagi, Sendai, Aoba-ku)",
+    prefecture: "Miyagi",
+    city: "仙台市",
+    ward: "青葉区",
+    lat: 38.2682,
+    lng: 140.8694,
+    fullAddress: "〒980-0021 宮城県仙台市青葉区中央1-1 (Miyagi, Sendai, Aoba-ku)",
+    nearestStation: "仙台駅 (Sendai Station)",
+    walkTime: 4,
+    hours: "09:00 - 17:00",
+    dayOff: "flexible",
+    bonus: "bonus_none",
+    insurance: "insurance_full",
+    foreigners: "foreigners_nolang",
+    housing: "housing_none",
+    license: "none",
+    description: "Sendai bekati yaqinida ombor mahsulotlarini saralash va stiker yopishtirish.",
+    logo: "https://ui-avatars.com/api/?name=Sendai+Logi&background=2B2D42&color=fff&size=100",
+    phone: "022-111-2222",
+    phoneMode: "public",
     isActive: true
   }
 ];
@@ -306,7 +399,8 @@ export default function DriverFeed({
   onlyNearStation = false, setOnlyNearStation,
   isLoading = false
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n?.language || 'uz';
   const ENABLE_MAP_SEARCH = false; // Feature flag: Set to true in future to activate Map Search
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
@@ -317,10 +411,27 @@ export default function DriverFeed({
   // Townwork-style Location Filter States
   const [locationTab, setLocationTab] = useState('stations'); // 'stations' | 'cities' | 'radius'
   const [selectedRadius, setSelectedRadius] = useState(0); // 0 = off, 1, 2, 3, 5, 7, 10, 15, 20
+  const [isPrefPickerOpen, setIsPrefPickerOpen] = useState(false);
   const [expandedLines, setExpandedLines] = useState({ line_tohoku: true, line_senzan: true });
   const [expandedCities, setExpandedCities] = useState({ city_sendai: true });
   const [selectedStations, setSelectedStations] = useState([]);
   const [selectedCitiesList, setSelectedCitiesList] = useState([]);
+
+  // Townwork-style Category & Feature Filter States
+  const [selectedJobCategories, setSelectedJobCategories] = useState([]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState([]);
+  const [selectedEmploymentTypes, setSelectedEmploymentTypes] = useState([]);
+  const [selectedDurations, setSelectedDurations] = useState([]);
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState([]);
+  const [selectedFeatures, setSelectedFeatures] = useState([]);
+  const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'salary_high' | 'salary_low'
+
+  const [expandedJobCats, setExpandedJobCats] = useState({});
+  const [isLocationSectionOpen, setIsLocationSectionOpen] = useState(false);
+  const [isStationsSectionOpen, setIsStationsSectionOpen] = useState(false);
+  const [isRadiusSectionOpen, setIsRadiusSectionOpen] = useState(false);
+  const [isJobCatSectionOpen, setIsJobCatSectionOpen] = useState(false);
+  const [isFeatureSectionOpen, setIsFeatureSectionOpen] = useState(false);
 
   // Reset pagination when any filter changes
   useEffect(() => {
@@ -334,7 +445,9 @@ export default function DriverFeed({
     searchQuery, activeSegment, selectedLicenses,
     selectedLangLevel, selectedBenefits, minSalary,
     selectedPrefecture, selectedCity, stationQuery, onlyNearStation,
-    locationTab, selectedRadius, selectedStations, selectedCitiesList
+    locationTab, selectedRadius, selectedStations, selectedCitiesList,
+    selectedJobCategories, selectedEmploymentTypes, selectedDurations,
+    selectedTimeSlots, selectedFeatures, sortBy
   ]);
 
   const showLoading = isLoading || localLoading;
@@ -355,7 +468,13 @@ export default function DriverFeed({
     || onlyNearStation === true
     || selectedRadius > 0
     || selectedStations.length > 0
-    || selectedCitiesList.length > 0;
+    || selectedCitiesList.length > 0
+    || selectedJobCategories.length > 0
+    || selectedSubcategories.length > 0
+    || selectedEmploymentTypes.length > 0
+    || selectedDurations.length > 0
+    || selectedTimeSlots.length > 0
+    || selectedFeatures.length > 0;
 
   const handleResetFilters = () => {
     setSelectedLicenses([]);
@@ -370,6 +489,17 @@ export default function DriverFeed({
     setSelectedRadius(0);
     setSelectedStations([]);
     setSelectedCitiesList([]);
+    setSelectedJobCategories([]);
+    setSelectedSubcategories([]);
+    setSelectedEmploymentTypes([]);
+    setSelectedDurations([]);
+    setSelectedTimeSlots([]);
+    setSelectedFeatures([]);
+    setIsLocationSectionOpen(false);
+    setIsStationsSectionOpen(false);
+    setIsRadiusSectionOpen(false);
+    setIsJobCatSectionOpen(false);
+    setIsFeatureSectionOpen(false);
   };
 
   // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
@@ -410,15 +540,17 @@ export default function DriverFeed({
     const matchBenefits = !selectedBenefits || selectedBenefits.length === 0 || selectedBenefits.every(benefit => {
       if (benefit === 'housing') return job.housing && job.housing !== 'housing_none';
       if (benefit === 'foreigner') return job.foreigners && job.foreigners !== 'foreigners_none';
-      if (benefit === 'bonus') return job.bonus && job.bonus !== 'bonus_none';
+      if (benefit === 'bonus') return job.bonus && job.bonus !== 'bonus_none' && !job.bonus.includes('なし') && !job.bonus.includes('Yo\'q') && !job.bonus.includes('No Bonus');
       if (benefit === 'insurance') return job.insurance && job.insurance.startsWith('insurance_');
       if (benefit === 'international') return job.isInternational === true;
+      if (benefit === 'signon_bonus') return (job.hasShoukai === true || job.hasShoukai === 'yes' || Number(job.shoukaiFee) > 0 || (job.shoukai && job.shoukai !== '0' && job.shoukai !== 'Yo\'q'));
       return true;
     });
 
     // 4. Salary filter
     const matchSalary = !minSalary || minSalary === 0 || getSalaryNumber(job.salary) >= minSalary;
 
+    // 5. Prefecture and City location filter
     // 5. Prefecture and City location filter
     const prefSq = (selectedPrefecture && selectedPrefecture !== 'all') ? selectedPrefecture.toLowerCase() : '';
     const matchPrefecture = !prefSq || 
@@ -430,7 +562,9 @@ export default function DriverFeed({
     const matchCity = !citySq || 
       (job.location && job.location.toLowerCase().includes(citySq)) ||
       (job.fullAddress && job.fullAddress.toLowerCase().includes(citySq)) ||
-      (job.detailAddress && job.detailAddress.toLowerCase().includes(citySq));
+      (job.detailAddress && job.detailAddress.toLowerCase().includes(citySq)) ||
+      (job.city && job.city.toLowerCase().includes(citySq)) ||
+      (job.ward && job.ward.toLowerCase().includes(citySq));
 
     // 6. Station query filter
     const stSq = (stationQuery || '').toLowerCase();
@@ -452,15 +586,841 @@ export default function DriverFeed({
 
     // 9. Multi-selected Cities/Wards Checkboxes Filter
     const matchSelectedCitiesList = !selectedCitiesList || selectedCitiesList.length === 0 || selectedCitiesList.some(c => {
-      const cClean = c.replace('区', '').replace('市', '').toLowerCase();
+      const cClean = c.replace(/(区|市)$/g, '').toLowerCase();
       return (job.location && job.location.toLowerCase().includes(cClean)) ||
-             (job.fullAddress && job.fullAddress.toLowerCase().includes(cClean));
+             (job.fullAddress && job.fullAddress.toLowerCase().includes(cClean)) ||
+             (job.city && job.city.toLowerCase().includes(cClean)) ||
+             (job.ward && job.ward.toLowerCase().includes(cClean));
     });
+
+    // 10. Job Category & Subcategory Filter
+    const matchJobCategory = (!selectedJobCategories || selectedJobCategories.length === 0 || selectedJobCategories.some(catId => job.category === catId || job.subcategory === catId))
+      && (!selectedSubcategories || selectedSubcategories.length === 0 || selectedSubcategories.some(subId => job.subcategory === subId || job.category === subId));
+
+    // 11. Employment Type Filter
+    const matchEmploymentType = !selectedEmploymentTypes || selectedEmploymentTypes.length === 0 || selectedEmploymentTypes.includes(job.type);
+
+    // 12. Duration Filter
+    const matchDuration = !selectedDurations || selectedDurations.length === 0 || selectedDurations.some(d => {
+      if (d === 'long') return job.duration === 'long' || !job.duration;
+      if (d === 'short_1w') return job.duration === 'short_1w';
+      if (d === 'short_1m') return job.duration === 'short_1m';
+      if (d === 'single_day') return job.duration === 'single_day';
+      return true;
+    });
+
+    // 13. Time Slot Filter
+    const matchTimeSlot = !selectedTimeSlots || selectedTimeSlots.length === 0 || selectedTimeSlots.some(ts => {
+      const st = parseInt(job.startTime || '8', 10);
+      if (ts === 'morning') return st >= 6 && st < 9;
+      if (ts === 'daytime') return st >= 9 && st < 18;
+      if (ts === 'evening') return st >= 16 && st < 20;
+      if (ts === 'night') return st >= 20 && st < 24;
+      if (ts === 'midnight') return st >= 0 && st < 6;
+      return true;
+    });
+
+    // 14. Special Features Filter
+    const matchFeatures = !selectedFeatures || selectedFeatures.length === 0 || selectedFeatures.every(f => {
+      if (f === 'foreigner_welcome') return job.foreigners && job.foreigners !== 'foreigners_none';
+      if (f === 'no_experience') return job.noExperienceOk === true || job.experienceRequired === false;
+      if (f === 'daily_pay') return job.payType === 'daily';
+      if (f === 'weekly_pay') return job.payType === 'weekly';
+      if (f === 'transport_paid') return job.transportPaid === true;
+      if (f === 'dormitory') return job.housing && job.housing !== 'housing_none';
+      if (f === 'insurance') return job.insurance && job.insurance.startsWith('insurance_');
+      if (f === 'tokutei_ginou') return job.isInternational === true;
+      if (f === 'visa_support') return job.foreigners === 'foreigners_visa' || job.foreigners === 'foreigners_visa_renew';
+      if (f === 'promotion') return job.bonus && job.bonus !== 'bonus_none';
+      if (f === 'signon_bonus') return (job.hasShoukai === true || job.hasShoukai === 'yes' || Number(job.shoukaiFee) > 0 || (job.shoukai && job.shoukai !== '0' && job.shoukai !== 'Yo\'q'));
+      if (f === 'shift_day') return job.hours === 'day' || job.hours === 'daytime' || (job.description && job.description.includes('日勤'));
+      if (f === 'shift_night') return job.hours === 'night' || job.hours === 'midnight' || (job.description && (job.description.includes('夜勤') || job.description.includes('深夜')));
+      if (f === 'shift_rotation') return job.hours === 'shift' || (job.description && job.description.includes('シフト'));
+      if (f === 'off_2days_full') return job.dayOff?.includes('2') || (job.description && job.description.includes('完全週休2日'));
+      if (f === 'off_paid') return job.hasPaidLeave === true || (job.description && job.description.includes('有給'));
+      if (f === 'truck_at') return job.truckType?.includes('AT') || (job.description && job.description.includes('AT'));
+      if (f === 'truck_etc_navi') return job.hasNavi === true || (job.description && (job.description.includes('カーナビ') || job.description.includes('ETC')));
+      if (f === 'truck_camera') return job.hasCamera === true || (job.description && (job.description.includes('バックカメラ') || job.description.includes('ドラレコ')));
+      if (f === 'truck_dedicated') return job.dedicatedTruck === true || (job.description && job.description.includes('専用車'));
+      if (f === 'load_pallet') return job.loadingMethod === 'pallet' || (job.description && job.description.includes('パレット'));
+      if (f === 'load_forklift') return job.loadingMethod === 'forklift' || (job.description && job.description.includes('フォークリフト'));
+      if (f === 'load_hand') return job.loadingMethod === 'hand' || (job.description && job.description.includes('手積み'));
+      if (f === 'highway_ok') return job.highwayOk === true || (job.description && job.description.includes('高速'));
+      return true;
+    });
+
+    // 15. GPS Radius Distance Filter (Haversine formula)
+    const matchRadius = !selectedRadius || selectedRadius === 0 || (() => {
+      if (!job.lat || !job.lng) return true;
+      const refLat = 35.6812; // Tokyo Center reference coordinate
+      const refLng = 139.7671;
+      const dLat = (job.lat - refLat) * (Math.PI / 180);
+      const dLon = (job.lng - refLng) * (Math.PI / 180);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(refLat * (Math.PI / 180)) * Math.cos(job.lat * (Math.PI / 180)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distKm = 6371 * c;
+      return distKm <= selectedRadius;
+    })();
 
     return matchSegment && matchSearch && matchLicense && matchLang && 
            matchBenefits && matchSalary && matchPrefecture && matchCity && 
-           matchStation && matchWalkTime && matchSelectedStations && matchSelectedCitiesList;
+           matchStation && matchWalkTime && matchSelectedStations && 
+           matchSelectedCitiesList && matchJobCategory && matchEmploymentType && 
+           matchDuration && matchTimeSlot && matchFeatures && matchRadius;
+  }).sort((a, b) => {
+    if (sortBy === 'salary_high') return getSalaryNumber(b.salary) - getSalaryNumber(a.salary);
+    if (sortBy === 'salary_low') return getSalaryNumber(a.salary) - getSalaryNumber(b.salary);
+    return (b.id || 0) - (a.id || 0);
   });
+
+  const getJobCategoryLabel = (catId) => {
+    for (const cat of JOB_CATEGORIES) {
+      if (cat.id === catId) {
+        if (currentLang === 'uz') return cat.nameUz || cat.name;
+        if (currentLang === 'en') return cat.nameEn || cat.name;
+        return cat.name;
+      }
+      for (const sub of cat.subcategories) {
+        if (sub.id === catId) {
+          if (currentLang === 'uz') return sub.nameUz || sub.name;
+          if (currentLang === 'en') return sub.nameEn || sub.name;
+          return sub.name;
+        }
+      }
+    }
+    return catId;
+  };
+
+  const getEmploymentLabel = (empId) => {
+    const found = JOB_FEATURES.employment.options.find(o => o.id === empId);
+    if (!found) return empId;
+    if (currentLang === 'uz') return found.nameUz || found.name;
+    if (currentLang === 'en') return found.nameEn || found.name;
+    return found.name;
+  };
+
+  const getFeatureLabel = (featId) => {
+    const found = JOB_FEATURES.special.options.find(o => o.id === featId);
+    if (!found) return featId;
+    if (currentLang === 'uz') return found.nameUz || found.name;
+    if (currentLang === 'en') return found.nameEn || found.name;
+    return found.name;
+  };
+
+  const getDurationLabel = (durId) => {
+    const found = JOB_FEATURES.duration.options.find(o => o.id === durId);
+    if (!found) return durId;
+    if (currentLang === 'uz') return found.nameUz || found.name;
+    if (currentLang === 'en') return found.nameEn || found.name;
+    return found.name;
+  };
+
+  const getTimeSlotLabel = (tsId) => {
+    const found = JOB_FEATURES.timeSlot.options.find(o => o.id === tsId);
+    if (!found) return tsId;
+    if (currentLang === 'uz') return found.nameUz || found.name;
+    if (currentLang === 'en') return found.nameEn || found.name;
+    return found.name;
+  };
+
+  /* ========================================================================
+     LOCATION & FEATURE INLINE FILTER PAGE VIEW
+     Modal overlay-lar o'rniga CompanyHome.jsx kabi ketma-ketlikdagi oddiy sahifa.
+     ======================================================================== */
+  if (isFilterDrawerOpen) {
+    return (
+      <div className="feed-container fade-in hide-scrollbar" style={{ flex: 1, height: '100%', maxHeight: '100%', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px 14px 96px 14px', boxSizing: 'border-box', position: 'relative' }}>
+        
+        {/* ONLY Pinned Sticky Back Button (Stays sticky at top: 0, z-index: 300) */}
+        <div style={{
+          position: 'sticky',
+          top: 0,
+          left: 0,
+          zIndex: 300,
+          pointerEvents: 'none',
+          marginBottom: '-40px',
+          display: 'flex',
+          alignItems: 'center',
+          height: '40px',
+          width: '40px'
+        }}>
+          <button 
+            type="button" 
+            onClick={() => setIsFilterDrawerOpen(false)}
+            style={{
+              pointerEvents: 'auto',
+              width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--glass-border)',
+              background: 'var(--card-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+              color: 'var(--text-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.1)', transition: 'transform 0.15s ease', flexShrink: 0
+            }}
+            aria-label="Back"
+          >
+            <ArrowLeft size={18} />
+          </button>
+        </div>
+
+        {/* Scrollable Header Title Row (Title & Reset scroll away naturally) */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          minHeight: '40px',
+          marginBottom: '16px',
+          boxSizing: 'border-box'
+        }}>
+          {/* Centered Title */}
+          <h3 style={{
+            margin: 0,
+            fontSize: '17px',
+            fontWeight: '900',
+            color: 'var(--text-main)',
+            letterSpacing: '-0.3px',
+            whiteSpace: 'nowrap'
+          }}>
+            {t('advancedFilters', '詳細検索')}
+          </h3>
+
+          {/* Reset Button (Scrolls away naturally with title) */}
+          <button 
+            type="button" 
+            onClick={handleResetFilters}
+            style={{
+              pointerEvents: 'auto',
+              position: 'absolute',
+              right: 0,
+              display: 'flex', alignItems: 'center', gap: '4px',
+              background: 'rgba(10, 132, 255, 0.08)', border: 'none',
+              color: 'var(--primary)', fontWeight: '700', fontSize: '12.5px',
+              padding: '6px 12px', borderRadius: '14px', cursor: 'pointer',
+              transition: 'all 0.15s ease', flexShrink: 0
+            }}
+          >
+            <RotateCcw size={12} color="var(--primary)" />
+            <span>{t('clearAll', 'リセット')}</span>
+          </button>
+        </div>
+
+        {/* Scrollable Filter Form Body in sequence */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          
+          {/* SECTION 1: Prefektura va Shaharlar (市区町村) */}
+          <div className="job-category-section" style={{
+            background: 'var(--card-bg)', borderRadius: '20px',
+            border: selectedCitiesList.length > 0 ? '1px solid rgba(10, 132, 255, 0.4)' : '1px solid var(--glass-border)',
+            boxShadow: selectedCitiesList.length > 0 ? '0 8px 24px rgba(10, 132, 255, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden', transition: 'all 0.25s ease'
+          }}>
+            <div 
+              className="category-section-header"
+              onClick={() => setIsLocationSectionOpen(!isLocationSectionOpen)}
+              style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '38px', height: '38px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #0A84FF 0%, #0056B3 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(10, 132, 255, 0.35)', flexShrink: 0
+                }}>
+                  <MapPin size={20} color="#FFFFFF" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
+                    {t('searchByCities', '都道府県・市区町村から探す')}
+                  </span>
+                  <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
+                    エリア・勤務地の指定
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {selectedCitiesList.length > 0 && (
+                  <span style={{
+                    fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #0A84FF, #5E5CE6)', color: '#FFF',
+                    boxShadow: '0 2px 8px rgba(10, 132, 255, 0.3)'
+                  }}>
+                    {selectedCitiesList.length}件
+                  </span>
+                )}
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(118, 118, 128, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isLocationSectionOpen ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+                </div>
+              </div>
+            </div>
+
+            {isLocationSectionOpen && (
+              <div style={{ padding: '14px 16px' }}>
+                {/* Option B: Premium Apple-style Banner Card */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  marginBottom: '16px', padding: '12px 16px',
+                  background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.07) 0%, rgba(94, 92, 230, 0.07) 100%)',
+                  borderRadius: '16px', border: '1px solid rgba(10, 132, 255, 0.2)',
+                  boxShadow: '0 4px 14px rgba(10, 132, 255, 0.06)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '32px', height: '32px', borderRadius: '10px',
+                      background: 'rgba(10, 132, 255, 0.15)', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                    }}>
+                      <MapPin size={17} color="var(--primary)" />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                        対象エリア (地域)
+                      </span>
+                      <span style={{ fontSize: '14.5px', fontWeight: '900', color: 'var(--text-main)', marginTop: '1px' }}>
+                        {selectedPrefecture === 'all' 
+                          ? t('allPrefectures', '全ての地域 (全国)') 
+                          : PREFECTURES.find(p => p.nameEn === selectedPrefecture)?.name || selectedPrefecture}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button 
+                    type="button"
+                    className="prefecture-pill-btn"
+                    onClick={() => setIsPrefPickerOpen(true)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer',
+                      border: 'none', background: 'var(--primary)',
+                      color: '#FFFFFF', fontWeight: '800', fontSize: '12.5px',
+                      padding: '7px 14px', borderRadius: '14px',
+                      boxShadow: '0 4px 12px rgba(10, 132, 255, 0.3)',
+                      transition: 'transform 0.15s ease'
+                    }}
+                  >
+                    <span>変更</span>
+                    <ChevronDown size={14} color="#FFF" />
+                  </button>
+                </div>
+
+                {/* Cities / Wards checkboxes */}
+                <div className="tab-cities-wrapper">
+                  {(() => {
+                    const prefKey = (selectedPrefecture || 'all').toLowerCase();
+                    const citiesList = prefKey === 'all' ? getAllCities() : (CITIES_BY_PREFECTURE[prefKey] || []);
+                    return citiesList.map(city => {
+                      const isExpanded = !!expandedCities[city.id];
+                      const hasWards = city.wards && city.wards.length > 0;
+                      const isCityChecked = selectedCitiesList.includes(city.name);
+
+                      return (
+                        <div key={city.id} className="townwork-accordion-item">
+                          <div className="townwork-accordion-header">
+                            <label className="townwork-checkbox-label">
+                              <div 
+                                className={`townwork-square-checkbox ${isCityChecked ? 'checked' : ''}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedCitiesList(prev => 
+                                    prev.includes(city.name) ? prev.filter(c => c !== city.name) : [...prev, city.name]
+                                  );
+                                }}
+                              >
+                                {isCityChecked && <Check size={14} color="#FFF" />}
+                              </div>
+                              <span>{city.name}</span>
+                            </label>
+                            {hasWards && (
+                              <div 
+                                onClick={() => setExpandedCities(prev => ({ ...prev, [city.id]: !prev[city.id] }))}
+                                style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                              >
+                                {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                              </div>
+                            )}
+                          </div>
+
+                          {hasWards && isExpanded && (
+                            <div className="townwork-accordion-body">
+                              {city.wards.map(ward => {
+                                const isWardChecked = selectedCitiesList.includes(ward);
+                                return (
+                                  <div 
+                                    key={ward} 
+                                    className="townwork-sub-checkbox-item"
+                                    onClick={() => {
+                                      setSelectedCitiesList(prev => 
+                                        prev.includes(ward) ? prev.filter(w => w !== ward) : [...prev, ward]
+                                      );
+                                    }}
+                                  >
+                                    <div className={`townwork-square-checkbox ${isWardChecked ? 'checked' : ''}`} style={{ width: '16px', height: '16px' }}>
+                                      {isWardChecked && <Check size={11} color="#FFF" />}
+                                    </div>
+                                    <span>{ward}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 2: Bekat va Liniyalar (駅・路線) */}
+          <div className="job-category-section" style={{
+            background: 'var(--card-bg)', borderRadius: '20px',
+            border: selectedStations.length > 0 ? '1px solid rgba(48, 209, 88, 0.4)' : '1px solid var(--glass-border)',
+            boxShadow: selectedStations.length > 0 ? '0 8px 24px rgba(48, 209, 88, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden', transition: 'all 0.25s ease'
+          }}>
+            <div 
+              className="category-section-header"
+              onClick={() => setIsStationsSectionOpen(!isStationsSectionOpen)}
+              style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '38px', height: '38px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #30D158 0%, #248A3D 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(48, 209, 88, 0.35)', flexShrink: 0
+                }}>
+                  <Train size={20} color="#FFFFFF" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
+                    {t('searchByStations', '沿線・駅から探す')}
+                  </span>
+                  <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
+                    路線名・最寄り駅の指定
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {selectedStations.length > 0 && (
+                  <span style={{
+                    fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #30D158, #248A3D)', color: '#FFF',
+                    boxShadow: '0 2px 8px rgba(48, 209, 88, 0.3)'
+                  }}>
+                    {selectedStations.length}件
+                  </span>
+                )}
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(118, 118, 128, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isStationsSectionOpen ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+                </div>
+              </div>
+            </div>
+
+            {isStationsSectionOpen && (
+              <div style={{ padding: '14px 16px' }}>
+                <div className="tab-stations-wrapper">
+                  {(() => {
+                    const prefKey = (selectedPrefecture || 'all').toLowerCase();
+                    const linesList = prefKey === 'all' ? getAllTrainLines() : (TRAIN_LINES_BY_PREFECTURE[prefKey] || []);
+                    return linesList.map(line => {
+                      const isExpanded = !!expandedLines[line.id];
+                      const isLineSelected = line.stations.length > 0 && line.stations.every(st => selectedStations.includes(st));
+
+                      return (
+                        <div key={line.id} className="townwork-accordion-item">
+                          <div className="townwork-accordion-header">
+                            <label className="townwork-checkbox-label">
+                              <div 
+                                className={`townwork-square-checkbox ${isLineSelected ? 'checked' : ''}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (isLineSelected) {
+                                    setSelectedStations(prev => prev.filter(st => !line.stations.includes(st)));
+                                  } else {
+                                    setSelectedStations(prev => Array.from(new Set([...prev, ...line.stations])));
+                                  }
+                                }}
+                              >
+                                {isLineSelected && <Check size={14} color="#FFF" />}
+                              </div>
+                              <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: line.color, boxShadow: `0 0 6px ${line.color}` }} />
+                              <span>{line.name}</span>
+                            </label>
+                            <div 
+                              onClick={() => setExpandedLines(prev => ({ ...prev, [line.id]: !prev[line.id] }))}
+                              style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                            >
+                              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                            </div>
+                          </div>
+
+                          {isExpanded && (
+                            <div className="townwork-accordion-body">
+                              {line.stations.map(st => {
+                                const isStChecked = selectedStations.includes(st);
+                                return (
+                                  <div 
+                                    key={st} 
+                                    className="townwork-sub-checkbox-item"
+                                    onClick={() => {
+                                      setSelectedStations(prev => 
+                                        prev.includes(st) ? prev.filter(item => item !== st) : [...prev, st]
+                                      );
+                                    }}
+                                  >
+                                    <div className={`townwork-square-checkbox ${isStChecked ? 'checked' : ''}`} style={{ width: '16px', height: '16px' }}>
+                                      {isStChecked && <Check size={11} color="#FFF" />}
+                                    </div>
+                                    <span>{st}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 3: Joriy Joylashuvdan Masofa (現在地) */}
+          <div className="job-category-section" style={{
+            background: 'var(--card-bg)', borderRadius: '20px',
+            border: selectedRadius > 0 ? '1px solid rgba(255, 159, 10, 0.4)' : '1px solid var(--glass-border)',
+            boxShadow: selectedRadius > 0 ? '0 8px 24px rgba(255, 159, 10, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden', transition: 'all 0.25s ease'
+          }}>
+            <div 
+              className="category-section-header"
+              onClick={() => setIsRadiusSectionOpen(!isRadiusSectionOpen)}
+              style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '38px', height: '38px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #FF9F0A 0%, #C27803 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(255, 159, 10, 0.35)', flexShrink: 0
+                }}>
+                  <Navigation size={20} color="#FFFFFF" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
+                    {t('searchByRadius', '現在地からの距離')}
+                  </span>
+                  <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
+                    指定半径・周辺エリア
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {selectedRadius > 0 && (
+                  <span style={{
+                    fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #FF9F0A, #FFB340)', color: '#FFF',
+                    boxShadow: '0 2px 8px rgba(255, 159, 10, 0.3)'
+                  }}>
+                    {selectedRadius} km
+                  </span>
+                )}
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(118, 118, 128, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isRadiusSectionOpen ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+                </div>
+              </div>
+            </div>
+
+            {isRadiusSectionOpen && (
+              <div style={{ padding: '14px 16px' }}>
+                <div className="townwork-radius-list">
+                  {RADIUS_OPTIONS.map(opt => {
+                    const isSelected = selectedRadius === opt.value;
+                    return (
+                      <div 
+                        key={opt.value} 
+                        className={`townwork-radius-item ${isSelected ? 'selected' : ''}`}
+                        onClick={() => setSelectedRadius(opt.value)}
+                      >
+                        <div className="townwork-radio-circle">
+                          {isSelected && <div className="townwork-radio-inner" />}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-main)' }}>
+                            {currentLang === 'uz' ? opt.labelUz : currentLang === 'en' ? opt.labelEn : opt.label}
+                          </span>
+                          <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+                            {currentLang === 'uz' ? opt.sublabelUz : currentLang === 'en' ? opt.sublabelEn : opt.sublabel}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 4: Job Categories */}
+          <div className="job-category-section" style={{
+            background: 'var(--card-bg)', borderRadius: '20px',
+            border: (selectedJobCategories.length + selectedSubcategories.length) > 0 ? '1px solid rgba(175, 82, 222, 0.4)' : '1px solid var(--glass-border)',
+            boxShadow: (selectedJobCategories.length + selectedSubcategories.length) > 0 ? '0 8px 24px rgba(175, 82, 222, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden', transition: 'all 0.25s ease'
+          }}>
+            <div 
+              className="category-section-header"
+              onClick={() => setIsJobCatSectionOpen(!isJobCatSectionOpen)}
+              style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '38px', height: '38px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #AF52DE 0%, #7928CA 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(175, 82, 222, 0.35)', flexShrink: 0
+                }}>
+                  <Briefcase size={20} color="#FFFFFF" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
+                    {t('searchByJobCategory', '職種から探す')}
+                  </span>
+                  <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
+                    トラック・ドライバー種別
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {(selectedJobCategories.length + selectedSubcategories.length) > 0 && (
+                  <span style={{
+                    fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #AF52DE, #C770F0)', color: '#FFF',
+                    boxShadow: '0 2px 8px rgba(175, 82, 222, 0.3)'
+                  }}>
+                    {selectedJobCategories.length + selectedSubcategories.length}件
+                  </span>
+                )}
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(118, 118, 128, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isJobCatSectionOpen ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+                </div>
+              </div>
+            </div>
+
+            {isJobCatSectionOpen && (
+              <div className="category-accordion-list" style={{ padding: '4px 14px 14px 14px' }}>
+                {JOB_CATEGORIES.map(cat => {
+                  const isCatExpanded = !!expandedJobCats[cat.id];
+                  return (
+                    <div key={cat.id} className="townwork-accordion-item">
+                      <div className="townwork-accordion-header">
+                        <label className="townwork-checkbox-label">
+                          <span>{cat.icon} {currentLang === 'uz' ? (cat.nameUz || cat.name) : cat.name}</span>
+                        </label>
+                        {cat.subcategories && cat.subcategories.length > 0 && (
+                          <div 
+                            onClick={() => setExpandedJobCats(prev => ({ ...prev, [cat.id]: !prev[cat.id] }))}
+                            style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                          >
+                            {isCatExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                          </div>
+                        )}
+                      </div>
+
+                      {cat.subcategories && isCatExpanded && (
+                        <div className="townwork-accordion-body">
+                          {cat.subcategories.map(sub => {
+                            const isSubChecked = selectedSubcategories.includes(sub.id);
+                            return (
+                              <div 
+                                key={sub.id} 
+                                className="townwork-sub-checkbox-item"
+                                onClick={() => {
+                                  setSelectedSubcategories(prev => 
+                                    prev.includes(sub.id) ? prev.filter(s => s !== sub.id) : [...prev, sub.id]
+                                  );
+                                }}
+                              >
+                                <div className={`townwork-square-checkbox ${isSubChecked ? 'checked' : ''}`} style={{ width: '16px', height: '16px' }}>
+                                  {isSubChecked && <Check size={11} color="#FFF" />}
+                                </div>
+                                <span>{currentLang === 'uz' ? (sub.nameUz || sub.name) : sub.name}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 5: Features */}
+          <div className="job-category-section" style={{
+            background: 'var(--card-bg)', borderRadius: '20px',
+            border: (selectedEmploymentTypes.length + selectedFeatures.length) > 0 ? '1px solid rgba(255, 214, 10, 0.5)' : '1px solid var(--glass-border)',
+            boxShadow: (selectedEmploymentTypes.length + selectedFeatures.length) > 0 ? '0 8px 24px rgba(255, 214, 10, 0.12)' : '0 4px 20px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden', transition: 'all 0.25s ease'
+          }}>
+            <div 
+              className="category-section-header"
+              onClick={() => setIsFeatureSectionOpen(!isFeatureSectionOpen)}
+              style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '38px', height: '38px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #FFD60A 0%, #D4A300 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(255, 214, 10, 0.35)', flexShrink: 0
+                }}>
+                  <Sparkles size={20} color="#FFFFFF" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
+                    {t('searchByFeatures', 'こだわり条件から探す')}
+                  </span>
+                  <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
+                    雇用形態・給与・設備条件
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {(selectedEmploymentTypes.length + selectedFeatures.length) > 0 && (
+                  <span style={{
+                    fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #FFD60A, #FF9F0A)', color: '#000',
+                    boxShadow: '0 2px 8px rgba(255, 214, 10, 0.3)'
+                  }}>
+                    {selectedEmploymentTypes.length + selectedFeatures.length}件
+                  </span>
+                )}
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(118, 118, 128, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isFeatureSectionOpen ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+                </div>
+              </div>
+            </div>
+
+            {isFeatureSectionOpen && (
+              <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                <div className="filter-section">
+                  <h4 style={{ margin: '0 0 10px 0', fontSize: '13.5px', fontWeight: '800', color: 'var(--text-main)' }}>
+                    {JOB_FEATURES.employment.icon} {currentLang === 'uz' ? (JOB_FEATURES.employment.titleUz || JOB_FEATURES.employment.title) : JOB_FEATURES.employment.title}
+                  </h4>
+                  <div className="filter-tags">
+                    {JOB_FEATURES.employment.options.map(item => {
+                      const isSelected = selectedEmploymentTypes.includes(item.id);
+                      return (
+                        <button 
+                          key={item.id} 
+                          type="button"
+                          className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
+                          onClick={() => {
+                            setSelectedEmploymentTypes(prev => 
+                              prev.includes(item.id) ? prev.filter(i => i !== item.id) : [...prev, item.id]
+                            );
+                          }}
+                        >
+                          {currentLang === 'uz' ? (item.nameUz || item.name) : item.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {[JOB_FEATURES.shift, JOB_FEATURES.holiday, JOB_FEATURES.truckEquip, JOB_FEATURES.loading, JOB_FEATURES.highway].map(cat => cat && (
+                  <div key={cat.title} className="filter-section">
+                    <h4 style={{ margin: '0 0 10px 0', fontSize: '13.5px', fontWeight: '800', color: 'var(--text-main)' }}>
+                      {cat.icon} {currentLang === 'uz' ? (cat.titleUz || cat.title) : currentLang === 'en' ? (cat.titleEn || cat.title) : cat.title}
+                    </h4>
+                    <div className="filter-tags">
+                      {cat.options.map(item => {
+                        const isSelected = selectedFeatures.includes(item.id);
+                        return (
+                          <button 
+                            key={item.id} 
+                            type="button"
+                            className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
+                            onClick={() => {
+                              setSelectedFeatures(prev => 
+                                prev.includes(item.id) ? prev.filter(i => i !== item.id) : [...prev, item.id]
+                              );
+                            }}
+                          >
+                            {currentLang === 'uz' ? (item.nameUz || item.name) : currentLang === 'en' ? (item.nameEn || item.name) : item.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Pinned Search CTA Button Dock — floating exactly 12px above BottomNav */}
+        <div style={{
+          position: 'fixed',
+          bottom: '96px',
+          left: 'var(--screen-margin-x, 14px)',
+          width: 'var(--card-width-full, calc(100% - 28px))',
+          zIndex: 250,
+          pointerEvents: 'none',
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          <button 
+            type="button" 
+            className="townwork-btn-search-cta" 
+            onClick={() => setIsFilterDrawerOpen(false)}
+            style={{
+              pointerEvents: 'auto',
+              width: '100%', height: '52px', fontSize: '16px', fontWeight: '800',
+              borderRadius: '26px', background: 'linear-gradient(135deg, #0A84FF 0%, #5E5CE6 100%)',
+              color: '#FFFFFF', boxShadow: '0 10px 28px rgba(10, 132, 255, 0.45)',
+              border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '8px', cursor: 'pointer', transition: 'all 0.15s ease',
+              flexShrink: 0
+            }}
+          >
+            <Search size={19} color="#FFF" />
+            <span>{t('searchCountBtn', '{{count}}件 検索', { count: filteredJobs.length })}</span>
+          </button>
+        </div>
+
+        {/* Custom Mobile Prefecture Picker Modal Sheet */}
+        {isPrefPickerOpen && (
+          <CustomMobilePickerModal
+            isOpen={isPrefPickerOpen}
+            onClose={() => setIsPrefPickerOpen(false)}
+            title={t('selectPrefecture', '都道府県を選択')}
+            options={[
+              { value: 'all', label: `📍 ${t('allPrefectures', '全ての地域')}` },
+              ...PREFECTURES.map(p => ({
+                value: p.nameEn,
+                label: `${p.name} (${p.nameEn})`
+              }))
+            ]}
+            selectedValue={selectedPrefecture}
+            onSelect={(val) => {
+              setSelectedPrefecture(val);
+              setIsPrefPickerOpen(false);
+            }}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="feed-container fade-in">
@@ -501,7 +1461,7 @@ export default function DriverFeed({
           <button 
             className={`filter-toggle-btn ${hasActiveFilters ? 'active' : ''}`}
             onClick={() => setIsFilterDrawerOpen(true)}
-            title={t('advancedFilters', 'Kengaytirilgan filtrlar')}
+            title={t('advancedFilters', '詳細検索')}
           >
             <SlidersHorizontal size={20} />
             {hasActiveFilters && <span className="filter-badge"></span>}
@@ -513,26 +1473,110 @@ export default function DriverFeed({
             className={`segment ${activeSegment === 'all' ? 'active' : ''}`}
             onClick={() => setActiveSegment('all')}
           >
-            {t('allJobs', "Barchasi")}
+            {t('allJobs', "すべて")}
           </div>
           <div 
             className={`segment ${activeSegment === 'international' ? 'active' : ''}`}
             onClick={() => setActiveSegment('international')}
           >
-            {t('tokuteiGinouSegment', 'Tokutei Ginou')}
+            {t('tokuteiGinouSegment', '特定技能')}
           </div>
           <div 
             className={`segment ${activeSegment === 'permanent' ? 'active' : ''}`}
             onClick={() => setActiveSegment('permanent')}
           >
-            {t('fullTime', "Doimiy ish")}
+            {t('fullTime', "正社員")}
           </div>
           <div 
             className={`segment ${activeSegment === 'hourly' ? 'active' : ''}`}
             onClick={() => setActiveSegment('hourly')}
           >
-            {t('partTime', "Soatbay ish")}
+            {t('partTime', "アルバイト")}
           </div>
+        </div>
+
+        {/* Active Filter Chips Row */}
+        {hasActiveFilters && (
+          <div className="active-filter-chips-row hide-scrollbar" style={{ marginTop: '8px' }}>
+            {selectedPrefecture !== 'all' && (
+              <span className="active-chip" onClick={() => setSelectedPrefecture('all')}>
+                📍 {selectedPrefecture} <X size={12} />
+              </span>
+            )}
+            {selectedCity !== 'all' && (
+              <span className="active-chip" onClick={() => setSelectedCity('all')}>
+                🏙️ {selectedCity} <X size={12} />
+              </span>
+            )}
+            {minSalary > 0 && (
+              <span className="active-chip" onClick={() => setMinSalary(0)}>
+                💰 {minSalary.toLocaleString()}円+ <X size={12} />
+              </span>
+            )}
+            {selectedLicenses.map(lic => (
+              <span key={lic} className="active-chip" onClick={() => setSelectedLicenses(prev => prev.filter(i => i !== lic))}>
+                🪪 {lic} <X size={12} />
+              </span>
+            ))}
+            {selectedStations.map(st => (
+              <span key={st} className="active-chip" onClick={() => setSelectedStations(prev => prev.filter(item => item !== st))}>
+                🚉 {st} <X size={12} />
+              </span>
+            ))}
+            {selectedCitiesList.map(c => (
+              <span key={c} className="active-chip" onClick={() => setSelectedCitiesList(prev => prev.filter(item => item !== c))}>
+                📍 {c} <X size={12} />
+              </span>
+            ))}
+            {selectedJobCategories.map(catId => (
+              <span key={catId} className="active-chip" onClick={() => setSelectedJobCategories(prev => prev.filter(item => item !== catId))}>
+                💼 {getJobCategoryLabel(catId)} <X size={12} />
+              </span>
+            ))}
+            {selectedEmploymentTypes.map(emp => (
+              <span key={emp} className="active-chip" onClick={() => setSelectedEmploymentTypes(prev => prev.filter(item => item !== emp))}>
+                📋 {getEmploymentLabel(emp)} <X size={12} />
+              </span>
+            ))}
+            {selectedDurations.map(dur => (
+              <span key={dur} className="active-chip" onClick={() => setSelectedDurations(prev => prev.filter(item => item !== dur))}>
+                📅 {getDurationLabel(dur)} <X size={12} />
+              </span>
+            ))}
+            {selectedTimeSlots.map(ts => (
+              <span key={ts} className="active-chip" onClick={() => setSelectedTimeSlots(prev => prev.filter(item => item !== ts))}>
+                🕐 {getTimeSlotLabel(ts)} <X size={12} />
+              </span>
+            ))}
+            {selectedFeatures.map(f => (
+              <span key={f} className="active-chip" onClick={() => setSelectedFeatures(prev => prev.filter(item => item !== f))}>
+                ⭐ {getFeatureLabel(f)} <X size={12} />
+              </span>
+            ))}
+            {selectedRadius > 0 && (
+              <span className="active-chip" onClick={() => setSelectedRadius(0)}>
+                🎯 {selectedRadius}km <X size={12} />
+              </span>
+            )}
+            {onlyNearStation && (
+              <span className="active-chip" onClick={() => setOnlyNearStation(false)}>
+                🚶 {t('nearStationChip', '駅から徒歩10分')} <X size={12} />
+              </span>
+            )}
+            <button type="button" className="clear-all-chip" onClick={handleResetFilters}>
+              {t('clearAll', 'リセット')}
+            </button>
+          </div>
+        )}
+
+        {/* Sort & Results Bar */}
+        <div className="sort-results-bar">
+          <span className="result-count">{t('jobsCountResult', '{{count}} 件の求人', { count: filteredJobs.length })}</span>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="sort-select">
+            <option value="newest">{t('newest', '新着順')}</option>
+            <option value="salary_high">{t('salary_high', '給与が高い順')}</option>
+            <option value="salary_low">{t('salary_low', '給与が低い順')}</option>
+          </select>
         </div>
       </div>
 
@@ -546,7 +1590,7 @@ export default function DriverFeed({
           </>
         ) : filteredJobs.length === 0 ? (
           <div className="no-jobs glass" style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-secondary)', border: '1px solid var(--glass-border)', borderRadius: '12px', width: '100%' }}>
-            {t('noJobsFound', 'Mos ish e\'lonlari topilmadi')}
+            {t('noJobsFound', '該当する求人が見つかりませんでした')}
           </div>
         ) : (
           filteredJobs.slice(0, visibleCount).map(job => {
@@ -572,17 +1616,17 @@ export default function DriverFeed({
                     {job.isInternational ? (
                       <div className="international-card-tag">
                         <Globe size={10} style={{ marginRight: '2px' }} />
-                        <span>{t('foreigners_visa', 'Tokutei Ginou • Xalqaro Ish')}</span>
+                        <span>{t('foreigners_visa', '特定技能 • 海外人材')}</span>
                       </div>
                     ) : job.foreigners === 'foreigners_visa_renew' ? (
                       <div className="local-visa-renew-tag">
                         <span className="briefcase-icon">💼</span>
-                        <span>{t('foreigners_visa_renew', 'Vizani Uzaytirish Ko\'magi')}</span>
+                        <span>{t('foreigners_visa_renew', 'ビザ更新支援あり')}</span>
                       </div>
                     ) : job.foreigners === 'foreigners_ok' ? (
                       <div className="local-foreigner-ok-tag">
                         <span className="users-icon">👥</span>
-                        <span>{t('foreigners_ok', 'Chet elliklar ochiq (Vizasiz)')}</span>
+                        <span>{t('foreigners_ok', '外国人歓迎')}</span>
                       </div>
                     ) : null}
                     {/* Kompaniya nomi va tasdiqlash belgisi */}
@@ -598,7 +1642,7 @@ export default function DriverFeed({
                     {/* Maosh — eng muhim ma'lumot */}
                     <div className="job-card-salary">
                       <Banknote size={15} />
-                      <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : ''}</span>
+                      <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', '月給')}`) : ''}</span>
                     </div>
 
                     {/* Qisqa ma'lumot chiplari (minimalistik ikonkalar bilan) */}
@@ -617,18 +1661,23 @@ export default function DriverFeed({
                       </span>
                       <span className="job-chip">
                         <Clock size={12} />
-                        {job.hours === 'shift' ? t('shiftWork', 'Smenali') : (job.hours ? t(job.hours, job.hours) : '')}
+                        {job.hours === 'shift' ? t('shiftWork', 'シフト制') : (job.hours ? t(job.hours, job.hours) : '')}
                       </span>
                       {job.foreigners && job.foreigners !== 'foreigners_none' && (
                         <span className="job-chip chip-highlight">
                           <Globe size={12} />
-                          {t(job.foreigners, 'Chet elliklar')}
+                          {t(job.foreigners, '外国人歓迎')}
                         </span>
                       )}
                       {job.housing && job.housing !== 'housing_none' && (
                         <span className="job-chip chip-green">
                           <Home size={12} />
-                          {t(job.housing, 'Uy-joy')}
+                          {t(job.housing, '寮あり')}
+                        </span>
+                      )}
+                      {(job.hasShoukai || job.shoukaiFee > 0 || (job.shoukai && job.shoukai !== '0')) && (
+                        <span className="job-chip chip-gold" style={{ background: 'rgba(255, 215, 0, 0.15)', color: '#D4AF37', borderColor: 'rgba(255, 215, 0, 0.4)', fontWeight: '700' }}>
+                          🎁 {t('signonBonusBadgeLabel', '入社祝い金')} {job.shoukaiFee ? `¥${Number(job.shoukaiFee).toLocaleString()}` : (job.shoukaiAmount || job.shoukai || '¥50,000')}
                         </span>
                       )}
                     </div>
@@ -649,7 +1698,7 @@ export default function DriverFeed({
                         style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
                       >
                         <Edit3 size={13} />
-                        {t('editJob', 'Tahrirlash')}
+                        {t('editJob', '編集')}
                       </button>
                     ) : (
                       <>
@@ -660,7 +1709,7 @@ export default function DriverFeed({
                           style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', fontWeight: '700' }}
                         >
                           <Phone size={13} />
-                          {t('callSchool', "Qo'ng'iroq")}
+                          {t('callSchool', "電話する")}
                         </a>
                         <button 
                           className="job-card-btn btn-shoukai"
@@ -672,8 +1721,8 @@ export default function DriverFeed({
                         >
                           <Share2 size={13} />
                           {((job.shoukai && job.shoukai !== "0") || job.hasShoukai) 
-                            ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` 
-                            : t('shoukai', 'Shoukai')}
+                            ? `${t('shoukai', '紹介')} (${t('shoukaiAvailableLabel', '特典あり')})` 
+                            : t('shoukai', '紹介')}
                         </button>
                       </>
                     )
@@ -690,7 +1739,7 @@ export default function DriverFeed({
                           style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                         >
                           <CheckCircle2 size={13} />
-                          {t('appliedStatus', 'Topshirilgan')}
+                          {t('appliedStatus', '応募済み')}
                         </button>
                       );
                     }
@@ -704,7 +1753,7 @@ export default function DriverFeed({
                         style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                       >
                         <Briefcase size={13} />
-                        {t('applyJob', 'Ishga topshirish')}
+                        {t('applyJob', '応募する')}
                       </button>
                     );
                   })()}
@@ -718,8 +1767,8 @@ export default function DriverFeed({
                   >
                     <Share2 size={13} />
                     {((job.shoukai && job.shoukai !== "0") || job.hasShoukai) 
-                      ? `${t('shoukai', 'Shoukai')} (${t('shoukaiAvailableLabel', 'Puli Bor')})` 
-                      : t('shoukai', 'Shoukai')}
+                      ? `${t('shoukai', '紹介')} (${t('shoukaiAvailableLabel', '特典あり')})` 
+                      : t('shoukai', '紹介')}
                   </button>
                     </>
                   )}
@@ -759,308 +1808,17 @@ export default function DriverFeed({
                 e.currentTarget.style.borderColor = 'var(--glass-border)';
               }}
             >
-              <span>{t('loadMore', 'Ko\'proq yuklash')}</span>
+              <span>{t('loadMore', 'もっと見る')}</span>
             </button>
           </div>
         )}
         {filteredJobs.length === 0 && (
           <div className="empty-feed">
             <Search size={40} color="#C7C7CC" />
-            <p>{t('noJobsFound', "Mos e'lon topilmadi")}</p>
+            <p>{t('noJobsFound', "条件に合う求人が見つかりませんでした")}</p>
           </div>
         )}
       </div>
-
-      {/* ====== TOWNWORK-STYLE RECRUITMENT LOCATION FILTER DRAWER ====== */}
-      {isFilterDrawerOpen && createPortal(
-        <div className="filter-drawer-overlay animate-fade-in" onClick={() => setIsFilterDrawerOpen(false)}>
-          <div className="townwork-filter-drawer glass animate-slide-up" onClick={(e) => e.stopPropagation()}>
-            
-            {/* Yellow / Primary Branded Header Banner */}
-            <div className="townwork-filter-banner">
-              <div className="townwork-banner-title-row">
-                <h3>勤務地から探す (Hudud bo'yicha qidiruv)</h3>
-                <button className="filter-close-btn" onClick={() => setIsFilterDrawerOpen(false)} aria-label="Close">
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* 3 Top Location Tabs */}
-              <div className="townwork-banner-tabs">
-                <button 
-                  type="button" 
-                  className={`townwork-tab-btn ${locationTab === 'stations' ? 'active' : ''}`}
-                  onClick={() => setLocationTab('stations')}
-                >
-                  駅・路線
-                </button>
-                <button 
-                  type="button" 
-                  className={`townwork-tab-btn ${locationTab === 'cities' ? 'active' : ''}`}
-                  onClick={() => setLocationTab('cities')}
-                >
-                  市区町村
-                </button>
-                <button 
-                  type="button" 
-                  className={`townwork-tab-btn ${locationTab === 'radius' ? 'active' : ''}`}
-                  onClick={() => setLocationTab('radius')}
-                >
-                  現在地
-                </button>
-              </div>
-            </div>
-
-            {/* Prefecture Pill Dropdown Header Bar */}
-            {locationTab !== 'radius' && (
-              <div className="prefecture-selector-bar">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600' }}>Prefecture:</span>
-                  <select 
-                    value={selectedPrefecture} 
-                    onChange={(e) => setSelectedPrefecture(e.target.value)}
-                    className="prefecture-pill-btn"
-                  >
-                    <option value="Miyagi">📍 宮城県 (Miyagi)</option>
-                    <option value="Tokyo">📍 東京都 (Tokyo)</option>
-                    <option value="Kanagawa">📍 神奈川県 (Kanagawa)</option>
-                    <option value="Osaka">📍 大阪府 (Osaka)</option>
-                    <option value="all">📍 全ての地域 (All)</option>
-                  </select>
-                </div>
-              </div>
-            )}
-
-            {/* Scrollable Main Filter Content */}
-            <div className="filter-drawer-content hide-scrollbar" style={{ padding: 0 }}>
-              
-              {/* TAB 1: Train Lines & Stations (駅・路線) */}
-              {locationTab === 'stations' && (
-                <div className="tab-stations-wrapper">
-                  {JAPAN_TRAIN_LINES.filter(l => selectedPrefecture === 'all' || l.prefecture === selectedPrefecture).map(line => {
-                    const isExpanded = !!expandedLines[line.id];
-                    const isLineSelected = line.stations.every(st => selectedStations.includes(st));
-
-                    return (
-                      <div key={line.id} className="townwork-accordion-item">
-                        <div className="townwork-accordion-header">
-                          <label className="townwork-checkbox-label">
-                            <div 
-                              className={`townwork-square-checkbox ${isLineSelected ? 'checked' : ''}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (isLineSelected) {
-                                  setSelectedStations(prev => prev.filter(st => !line.stations.includes(st)));
-                                } else {
-                                  setSelectedStations(prev => Array.from(new Set([...prev, ...line.stations])));
-                                }
-                              }}
-                            >
-                              {isLineSelected && <Check size={14} color="#FFF" />}
-                            </div>
-                            <span>{line.name}</span>
-                          </label>
-                          <div 
-                            onClick={() => setExpandedLines(prev => ({ ...prev, [line.id]: !prev[line.id] }))}
-                            style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
-                          >
-                            {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                          </div>
-                        </div>
-
-                        {/* Station Checkboxes Body */}
-                        {isExpanded && (
-                          <div className="townwork-accordion-body">
-                            {line.stations.map(st => {
-                              const isStChecked = selectedStations.includes(st);
-                              return (
-                                <div 
-                                  key={st} 
-                                  className="townwork-sub-checkbox-item"
-                                  onClick={() => {
-                                    setSelectedStations(prev => 
-                                      prev.includes(st) ? prev.filter(item => item !== st) : [...prev, st]
-                                    );
-                                  }}
-                                >
-                                  <div className={`townwork-square-checkbox ${isStChecked ? 'checked' : ''}`} style={{ width: '16px', height: '16px' }}>
-                                    {isStChecked && <Check size={11} color="#FFF" />}
-                                  </div>
-                                  <span>{st}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* TAB 2: Cities & Municipalities (市区町村) */}
-              {locationTab === 'cities' && (
-                <div className="tab-cities-wrapper">
-                  {JAPAN_CITIES.filter(c => selectedPrefecture === 'all' || c.prefecture === selectedPrefecture).map(city => {
-                    const isExpanded = !!expandedCities[city.id];
-                    const hasWards = city.wards && city.wards.length > 0;
-                    const isCityChecked = selectedCitiesList.includes(city.name);
-
-                    return (
-                      <div key={city.id} className="townwork-accordion-item">
-                        <div className="townwork-accordion-header">
-                          <label className="townwork-checkbox-label">
-                            <div 
-                              className={`townwork-square-checkbox ${isCityChecked ? 'checked' : ''}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedCitiesList(prev => 
-                                  prev.includes(city.name) ? prev.filter(c => c !== city.name) : [...prev, city.name]
-                                );
-                              }}
-                            >
-                              {isCityChecked && <Check size={14} color="#FFF" />}
-                            </div>
-                            <span>{city.name}</span>
-                          </label>
-                          {hasWards && (
-                            <div 
-                              onClick={() => setExpandedCities(prev => ({ ...prev, [city.id]: !prev[city.id] }))}
-                              style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
-                            >
-                              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Wards Checkboxes Body */}
-                        {hasWards && isExpanded && (
-                          <div className="townwork-accordion-body">
-                            {city.wards.map(ward => {
-                              const isWardChecked = selectedCitiesList.includes(ward);
-                              return (
-                                <div 
-                                  key={ward} 
-                                  className="townwork-sub-checkbox-item"
-                                  onClick={() => {
-                                    setSelectedCitiesList(prev => 
-                                      prev.includes(ward) ? prev.filter(w => w !== ward) : [...prev, ward]
-                                    );
-                                  }}
-                                >
-                                  <div className={`townwork-square-checkbox ${isWardChecked ? 'checked' : ''}`} style={{ width: '16px', height: '16px' }}>
-                                    {isWardChecked && <Check size={11} color="#FFF" />}
-                                  </div>
-                                  <span>{ward}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* TAB 3: Current Location Radius (現在地) */}
-              {locationTab === 'radius' && (
-                <div className="townwork-radius-list">
-                  {RADIUS_OPTIONS.map(opt => {
-                    const isSelected = selectedRadius === opt.value;
-                    return (
-                      <div 
-                        key={opt.value} 
-                        className={`townwork-radius-item ${isSelected ? 'selected' : ''}`}
-                        onClick={() => setSelectedRadius(opt.value)}
-                      >
-                        <div className="townwork-radio-circle">
-                          {isSelected && <div className="townwork-radio-inner" />}
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-main)' }}>{opt.label}</span>
-                          <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>{opt.sublabel}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Additional Filters (Licenses, Japanese Level, Salary, Benefits) */}
-              <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '18px', borderTop: '1px solid var(--glass-border)' }}>
-                {/* Licenses */}
-                <div className="filter-section">
-                  <h4 style={{ margin: '0 0 8px 0', fontSize: '13.5px', fontWeight: '800', color: 'var(--text-main)' }}>{t('filterLicenses', 'Haydovchilik guvohnomasi')}</h4>
-                  <div className="filter-tags">
-                    {[
-                      { id: 'lic_futsu', label: t('lic_futsu', 'Futsu (Yengil)') },
-                      { id: 'lic_chugata', label: t('lic_chugata', 'Chugata (O\'rta)') },
-                      { id: 'lic_oogata', label: t('lic_oogata', 'Oogata (Katta)') },
-                      { id: 'lic_kenin', label: t('lic_kenin', 'Ken\'in (Trailer)') },
-                      { id: 'tech_forklift', label: t('tech_forklift', 'Forklift') }
-                    ].map(item => {
-                      const isSelected = selectedLicenses.includes(item.id);
-                      return (
-                        <button 
-                          key={item.id} 
-                          className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
-                          onClick={() => {
-                            setSelectedLicenses(prev => 
-                              prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]
-                            );
-                          }}
-                        >
-                          {item.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Salary */}
-                <div className="filter-section">
-                  <h4 style={{ margin: '0 0 8px 0', fontSize: '13.5px', fontWeight: '800', color: 'var(--text-main)' }}>{t('filterSalary', 'Minimal oylik maosh')}</h4>
-                  <div className="filter-tags">
-                    {[
-                      { id: 0, label: t('salary_all', 'Barchasi') },
-                      { id: 250000, label: '¥250,000+' },
-                      { id: 350000, label: '¥350,000+' },
-                      { id: 450000, label: '¥450,000+' }
-                    ].map(item => {
-                      const isSelected = minSalary === item.id;
-                      return (
-                        <button 
-                          key={item.id} 
-                          className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
-                          onClick={() => setMinSalary(item.id)}
-                        >
-                          {item.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Floating Bottom Sticky Bar */}
-            <div className="townwork-filter-bottom-bar">
-              <button type="button" className="townwork-btn-clear" onClick={handleResetFilters}>
-                クリア (Tozalash)
-              </button>
-              <button 
-                type="button" 
-                className="townwork-btn-search-cta" 
-                onClick={() => setIsFilterDrawerOpen(false)}
-              >
-                {filteredJobs.length}件 検索
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.getElementById('root') || document.body
-      )}
 
       {/* ====== REAL LEAFLET MAP MODAL (Behind ENABLE_MAP_SEARCH feature flag) ====== */}
       {ENABLE_MAP_SEARCH && (

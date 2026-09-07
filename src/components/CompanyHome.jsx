@@ -2,87 +2,263 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload, Clock, Banknote, Share2, Briefcase, CheckCircle2, Globe } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
+import CustomMobilePickerModal from './CustomMobilePickerModal';
+import CustomInlineDropdown from './CustomInlineDropdown';
 import { compressImage } from '../utils/imageCompressor';
+import { lookupJapaneseZipcode, cleanAddressKanji, JAPAN_PREFECTURE_MAP } from '../utils/japaneseZipcodeLookup';
+import { ALL_47_PREFECTURES } from '../data/japanRegions.js';
+import { getCitiesByPrefecture } from '../data/japanCities.js';
+import { getAllTrainLineOptions, getStationsByLine, getStationsByPrefecture } from '../data/japanStations.js';
 import './DriverFeed.css';
+import { JOB_CATEGORIES } from '../data/jobCategories';
 
 const INITIAL_COMPANY_JOBS = [
   {
-    id: 1, company: "Sagawa Express", title: "Mahalliy yetkazib berish (Local Delivery)", salary: "¥300,000 / oyiga",
-    image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Tokyo, Koto-ku", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
-    nearestStation: "Kokusai-tenjijo Station", walkTime: 8
+    id: 1,
+    company: "Sagawa Express",
+    title: "Mahalliy yetkazib berish (Local Delivery)",
+    salary: "¥300,000 / oyiga",
+    type: "fulltime",
+    category: "delivery_driver",
+    subcategory: "delivery_local",
+    payType: "monthly",
+    duration: "long",
+    startTime: "8",
+    transportPaid: true,
+    noExperienceOk: true,
+    shoukai: "¥50,000",
+    shoukaiAmount: "¥50,000",
+    image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800",
+    verified: true,
+    location: "東京都江東区 (Tokyo, Koto-ku)",
+    prefecture: "Tokyo",
+    city: "東京23区",
+    ward: "江東区",
+    fullAddress: "〒135-0063 東京都江東区有明3-1-1 (Tokyo, Koto-ku, Ariake 3-1-1)",
+    nearestStation: "東京駅 (Tokyo Station)",
+    walkTime: 8,
+    logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    phone: "03-1234-5678",
+    phoneMode: "public",
+    isActive: true
   },
   {
-    id: 2, company: "Sagawa Express", title: "Xalqaro yuk tashish (Trailer)", salary: "¥500,000 / oyiga",
-    image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Kanagawa, Yokohama", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
-    nearestStation: "Motomachi-Chukagai Station", walkTime: 12
+    id: 2,
+    company: "Sagawa Express",
+    title: "Xalqaro yuk tashish (Trailer)",
+    salary: "¥500,000 / oyiga",
+    type: "fulltime",
+    category: "delivery_driver",
+    subcategory: "driver_truck",
+    payType: "monthly",
+    duration: "long",
+    startTime: "9",
+    transportPaid: true,
+    noExperienceOk: false,
+    shoukai: "¥100,000",
+    shoukaiAmount: "¥100,000",
+    image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
+    verified: true,
+    location: "神奈川県横浜市 (Kanagawa, Yokohama)",
+    prefecture: "Kanagawa",
+    city: "横浜市",
+    ward: "中区",
+    fullAddress: "〒231-0023 神奈川県横浜市中区山下町12 (Kanagawa, Yokohama, Naka-ku)",
+    nearestStation: "横浜駅 (Yokohama Station)",
+    walkTime: 12,
+    logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    phone: "045-222-3333",
+    phoneMode: "interview_only",
+    isInternational: true,
+    isActive: true
   },
   {
-    id: 3, company: "Sagawa Express", title: "Tungi reys haydovchisi (10t)", salary: "¥450,000 / oyiga",
-    image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Saitama, Omiya", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
-    nearestStation: "Omiya Station", walkTime: 5
+    id: 3,
+    company: "Sagawa Express",
+    title: "Tungi reys haydovchisi (10t)",
+    salary: "¥450,000 / oyiga",
+    type: "contract",
+    category: "delivery_driver",
+    subcategory: "driver_truck",
+    payType: "monthly",
+    duration: "long",
+    startTime: "20",
+    transportPaid: true,
+    noExperienceOk: true,
+    shoukai: "¥80,000",
+    shoukaiAmount: "¥80,000",
+    image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
+    verified: true,
+    location: "埼玉県さいたま市 (Saitama, Omiya)",
+    prefecture: "Saitama",
+    city: "さいたま市",
+    ward: "大宮区",
+    fullAddress: "〒330-0854 埼玉県さいたま市大宮区桜木町2-1 (Saitama, Omiya-ku)",
+    nearestStation: "大宮駅 (Omiya Station)",
+    walkTime: 5,
+    logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    phone: "048-444-5555",
+    phoneMode: "public",
+    isActive: true
   },
   {
-    id: 4, company: "Sagawa Express", title: "Ekskavator va Maxsus texnika haydovchisi", salary: "¥380,000 / oyiga",
-    image: "https://images.unsplash.com/photo-1541888062837-7b247f082e05?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Chiba, Matsudo", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
-    nearestStation: "Tokiwadaira Station", walkTime: 15
+    id: 4,
+    company: "Sagawa Express",
+    title: "Ekskavator va Maxsus texnika haydovchisi",
+    salary: "¥380,000 / oyiga",
+    type: "fulltime",
+    category: "construction",
+    subcategory: "construction_general",
+    payType: "monthly",
+    duration: "long",
+    startTime: "7",
+    transportPaid: true,
+    noExperienceOk: false,
+    shoukai: "0",
+    shoukaiAmount: "0",
+    image: "https://images.unsplash.com/photo-1541888062837-7b247f082e05?auto=format&fit=crop&q=80&w=800",
+    verified: true,
+    location: "千葉県松戸市 (Chiba, Matsudo)",
+    prefecture: "Chiba",
+    city: "松戸市",
+    ward: "",
+    fullAddress: "〒270-2253 千葉県松戸市常盤平3-2-1 (Chiba, Matsudo)",
+    nearestStation: "船橋駅 (Funabashi Station)",
+    walkTime: 15,
+    logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    phone: "047-666-7777",
+    phoneMode: "interview_only",
+    isActive: true
   },
   {
-    id: 5, company: "Sagawa Express", title: "Omborxona Forklift operatori", salary: "¥250,000 / oyiga",
-    image: "https://images.unsplash.com/photo-1587293852726-70cdb56c28ea?auto=format&fit=crop&q=80&w=800", verified: true,
-    location: "Aichi, Nagoya", logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
-    nearestStation: "Nagoya Station", walkTime: 10
+    id: 5,
+    company: "Sagawa Express",
+    title: "Omborxona Forklift operatori",
+    salary: "¥250,000 / oyiga",
+    type: "parttime",
+    category: "warehouse_light",
+    subcategory: "tech_forklift",
+    payType: "monthly",
+    duration: "long",
+    startTime: "9",
+    transportPaid: true,
+    noExperienceOk: true,
+    shoukai: "¥30,000",
+    shoukaiAmount: "¥30,000",
+    image: "https://images.unsplash.com/photo-1587293852726-70cdb56c28ea?auto=format&fit=crop&q=80&w=800",
+    verified: true,
+    location: "愛知県名古屋市 (Aichi, Nagoya)",
+    prefecture: "Aichi",
+    city: "名古屋市",
+    ward: "中村区",
+    fullAddress: "〒450-0002 愛知県名古屋市中村区名駅1-1-4 (Aichi, Nagoya, Nakamura-ku)",
+    nearestStation: "名古屋駅 (Nagoya Station)",
+    walkTime: 10,
+    logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
+    phone: "052-888-9999",
+    phoneMode: "public",
+    isInternational: true,
+    isActive: true
   }
 ];
 
-const parseAddress = (fullAddress = '') => {
-  if (!fullAddress) return { postalCode: '', prefecture: '', detailAddress: '' };
+const parseAddress = (fullAddressInput = '') => {
+  const fullAddress = fullAddressInput || '';
+  if (!fullAddress) return { postalCode: '', prefecture: '', detailAddress: '', townAddress: '', buildingAddress: '' };
   
   // Extract postal code (e.g. 330-0854 or 〒330-0854)
   const pcMatch = fullAddress.match(/(\d{3}-\d{4})/);
   const postalCode = pcMatch ? pcMatch[1] : '';
   
-  // Prefecture list (English/Japanese matching)
-  const prefectures = [
-    'Tokyo', 'Saitama', 'Chiba', 'Kanagawa', 'Osaka', 'Kyoto', 
-    'Aichi', 'Fukuoka', 'Hyogo', 'Shizuoka', 'Hiroshima', 'Hokkaido',
-    '東京', '埼玉', '千葉', '神奈川', '大阪', '京都', '愛知', '福岡', '兵庫', '静岡', '広島', '北海道'
-  ];
-  
-  let prefecture = '';
-  for (const pref of prefectures) {
-    if (fullAddress.includes(pref)) {
-      prefecture = pref;
+  let prefectureKey = '';
+  let matchedPrefStr = '';
+
+  // 1. Check all 47 Japanese Prefectures
+  for (const [prefJa, info] of Object.entries(JAPAN_PREFECTURE_MAP)) {
+    if (fullAddress.includes(prefJa) || fullAddress.includes(info.key) || fullAddress.includes(info.en)) {
+      prefectureKey = info.key;
+      matchedPrefStr = fullAddress.includes(prefJa) ? prefJa : info.key;
       break;
     }
   }
-  
-  // Remaining part is detail address
+
+  // 2. Clean detail address
   let detailAddress = fullAddress;
   if (postalCode) {
     detailAddress = detailAddress.replace(`〒${postalCode}`, '').replace(postalCode, '');
   }
-  if (prefecture) {
-    detailAddress = detailAddress.replace(prefecture, '');
+  if (matchedPrefStr) {
+    detailAddress = detailAddress.replace(matchedPrefStr, '');
   }
   
   // Clean punctuation
-  detailAddress = detailAddress.trim().replace(/^,/, '').replace(/^[，、]/, '').trim();
+  detailAddress = detailAddress
+    .replace(/^\s*[,\(\)（），、]\s*/, '')
+    .replace(/\s*[,\(\)（），、]\s*$/, '')
+    .trim();
   
-  return { postalCode, prefecture, detailAddress };
+  return {
+    postalCode,
+    prefecture: prefectureKey,
+    detailAddress
+  };
 };
 
 export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, schools, setSchools, profileData, jobToEdit, setJobToEdit, onFormToggle, onApply, onApplySchool, onShoukai, applications = [], schoolApplications = [] }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'ja';
+  
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAdTypeSelect, setShowAdTypeSelect] = useState(false);
   const [showJobTypeSelect, setShowJobTypeSelect] = useState(false);
-  const [selectedAdType, setSelectedAdType] = useState('job');
+  const [selectedAdType, setSelectedAdType] = useState('job'); // 'job' | 'school'
   const [jobImage, setJobImage] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Address lookup state
+  const [isFetchingAddress, setIsFetchingAddress] = useState(false);
+  const [addressLookupStatus, setAddressLookupStatus] = useState(null); // { success: boolean, text: string }
+
+  const fetchAddressByZip = async (rawZip) => {
+    const cleanZip = String(rawZip || '').replace(/[^0-9]/g, '');
+    if (cleanZip.length !== 7) return;
+
+    setIsFetchingAddress(true);
+    setAddressLookupStatus(null);
+    try {
+      const result = await lookupJapaneseZipcode(cleanZip);
+      if (result.success) {
+        setNewJob(prev => ({
+          ...prev,
+          postalCode: result.formattedZip,
+          prefecture: result.prefecture,
+          detailAddress: result.city,
+          townAddress: result.town
+        }));
+        setErrors(prev => ({
+          ...prev,
+          postalCode: null,
+          prefecture: null,
+          detailAddress: null,
+          townAddress: null
+        }));
+        setAddressLookupStatus({
+          success: true,
+          text: `${result.prefectureJa} ${result.cityKanji} ${result.townKanji}`
+        });
+      } else {
+        setAddressLookupStatus({
+          success: false,
+          text: result.error || '住所が見つかりませんでした'
+        });
+      }
+    } catch (err) {
+      console.warn('Ultra-precise zipcode lookup error:', err);
+      setAddressLookupStatus({ success: false, text: 'エラーが発生しました' });
+    } finally {
+      setIsFetchingAddress(false);
+    }
+  };
 
   React.useEffect(() => {
     if (onFormToggle) {
@@ -96,24 +272,28 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       setSelectedAdType(isCourse ? 'school' : 'job');
       
       const parsed = parseAddress(jobToEdit.fullAddress);
-      const postalCode = jobToEdit.postalCode || parsed.postalCode;
-      const prefecture = jobToEdit.prefecture || parsed.prefecture;
-      const detailAddress = jobToEdit.detailAddress || parsed.detailAddress;
+      const postalCode = jobToEdit.postalCode || parsed.postalCode || '';
+      const prefecture = jobToEdit.prefecture || parsed.prefecture || '';
+      const detailAddress = jobToEdit.detailAddress || parsed.detailAddress || '';
+      const townAddress = jobToEdit.townAddress || parsed.townAddress || '';
+      const buildingAddress = jobToEdit.buildingAddress || parsed.buildingAddress || '';
 
       if (isCourse) {
         setNewJob({
           id: jobToEdit.id,
-          title: jobToEdit.type || jobToEdit.title,
-          salary: jobToEdit.price || jobToEdit.salary,
+          title: jobToEdit.type || jobToEdit.title || '',
+          salary: jobToEdit.price || jobToEdit.salary || '',
           bonus: jobToEdit.discount || jobToEdit.bonus || '',
-          location: jobToEdit.location,
-          fullAddress: jobToEdit.fullAddress,
+          location: jobToEdit.location || '',
+          fullAddress: jobToEdit.fullAddress || '',
           postalCode,
           prefecture,
           detailAddress,
-          phone: jobToEdit.phone,
-          email: jobToEdit.email,
-          description: jobToEdit.description,
+          townAddress,
+          buildingAddress,
+          phone: jobToEdit.phone || '',
+          email: jobToEdit.email || '',
+          description: jobToEdit.description || '',
           langs: jobToEdit.langs || ['UZ', 'JP'],
           courses: jobToEdit.courses || ['Oogata', 'Chugata', 'Futsu'],
           hasShoukai: (jobToEdit.shoukaiFee > 0 || jobToEdit.hasShoukai === 'yes' || jobToEdit.hasShoukai === true) ? 'yes' : 'no',
@@ -125,21 +305,25 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       } else {
         setNewJob({
           id: jobToEdit.id,
-          title: jobToEdit.title,
-          salary: jobToEdit.salary,
-          location: jobToEdit.location,
-          fullAddress: jobToEdit.fullAddress,
+          title: jobToEdit.title || '',
+          salary: jobToEdit.salary || '',
+          location: jobToEdit.location || '',
+          fullAddress: jobToEdit.fullAddress || '',
           postalCode,
           prefecture,
           detailAddress,
-          phone: jobToEdit.phone,
-          email: jobToEdit.email,
+          townAddress,
+          buildingAddress,
+          trainLine: jobToEdit.trainLine || '',
+          subcategory: jobToEdit.subcategory || '',
+          phone: jobToEdit.phone || '',
+          email: jobToEdit.email || '',
           hours: jobToEdit.hours || '',
           bonus: jobToEdit.bonus || '',
           insurance: jobToEdit.insurance || '',
           foreigners: jobToEdit.foreigners || '',
           housing: jobToEdit.housing || '',
-          description: jobToEdit.description,
+          description: jobToEdit.description || '',
           dayOff: jobToEdit.dayOff || '',
           hasShoukai: (jobToEdit.hasShoukai === true || jobToEdit.hasShoukai === 'yes' || jobToEdit.shoukaiFee > 0) ? 'yes' : 'no',
           shoukaiFee: jobToEdit.shoukaiFee ? String(jobToEdit.shoukaiFee) : '',
@@ -169,6 +353,10 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     postalCode: '',
     prefecture: '',
     detailAddress: '',
+    townAddress: '',
+    buildingAddress: '',
+    trainLine: '',
+    nearestStation: '',
     phone: '', 
     email: '', 
     hours: '', 
@@ -186,11 +374,15 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     license: [], // Array for regular job licenses if needed
     phoneMode: 'public',
     isInternational: false,
-    type: 'fulltime',
+    type: '',
+    subcategory: '',
     nearestStation: '',
     walkTime: ''
   });
   const [errors, setErrors] = useState({});
+  const [isSubcategoryPickerOpen, setIsSubcategoryPickerOpen] = useState(false);
+  const [isPrefecturePickerOpen, setIsPrefecturePickerOpen] = useState(false);
+  const [isBonusPickerOpen, setIsBonusPickerOpen] = useState(false);
 
   const WORK_HOURS_OPTIONS = [
     { value: '08:00 - 17:00 (Kunduzgi)', key: 'wh_day' },
@@ -313,6 +505,11 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     const newErrors = {};
     if (!newJob.title) newErrors.title = t('reqTitle');
     if (!newJob.salary) newErrors.salary = t('reqSalary');
+    if (!isAdCourse && !newJob.type) newErrors.type = t('reqJobType', '選択してください');
+    if (!newJob.bonus) newErrors.bonus = t('reqBonus', '選択してください');
+    if (!isAdCourse && !newJob.subcategory) newErrors.subcategory = t('reqSubcategory', '選択してください');
+    if (!isAdCourse && !newJob.trainLine) newErrors.trainLine = t('reqTrainLine', '利用路線を選択してください');
+    if (!isAdCourse && !newJob.nearestStation) newErrors.nearestStation = t('reqNearestStation', '最寄り駅を選択または入力してください');
     if (!newJob.phone) newErrors.phone = t('reqPhone');
     if (!newJob.email) newErrors.email = t('reqEmail');
     if (!newJob.description) newErrors.description = t('reqDesc');
@@ -331,6 +528,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     if (!newJob.detailAddress) {
       newErrors.detailAddress = t('reqDetailAddress');
     }
+    if (!newJob.townAddress) {
+      newErrors.townAddress = t('reqTownAddress', '町名・丁目を入力してください');
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -339,9 +539,15 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       const errorList = [];
       if (newErrors.title) errorList.push(isAdCourse ? t('schoolTypeLabel') : t('jobTitleLabel'));
       if (newErrors.salary) errorList.push(isAdCourse ? t('schoolPriceLabel') : t('salaryLabel'));
+      if (newErrors.type) errorList.push(t('jobTypeLabel'));
+      if (newErrors.bonus) errorList.push(isAdCourse ? t('schoolDiscountLabel') : t('bonusLabel'));
+      if (newErrors.subcategory) errorList.push(t('jobSubcategoryLabel'));
+      if (newErrors.trainLine) errorList.push(t('trainLineLabel', '利用路線'));
+      if (newErrors.nearestStation) errorList.push(t('nearestStationLabel', '最寄り駅'));
       if (newErrors.postalCode) errorList.push(t('postalCodeLabel'));
       if (newErrors.prefecture) errorList.push(t('prefectureLabel'));
       if (newErrors.detailAddress) errorList.push(t('detailAddressLabel'));
+      if (newErrors.townAddress) errorList.push(t('townAddressLabel', '町名・丁目'));
       if (newErrors.phone) errorList.push(t('phoneLabel'));
       if (newErrors.email) errorList.push(t('emailLabel'));
       if (newErrors.description) errorList.push(isAdCourse ? t('schoolDescLabel') : t('jobDescLabel'));
@@ -354,9 +560,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     
     setErrors({});
 
-    // Compute short location and full address from 3 fields
-    const cityPart = newJob.detailAddress.split(',')[0].split(' ')[0].trim();
-    const generatedLocation = `${newJob.prefecture}, ${cityPart || newJob.prefecture}`;
+    // Compute short location and full address from 4 structured fields
+    const cityPart = newJob.detailAddress;
+    const townPart = newJob.townAddress;
+    const buildingPart = newJob.buildingAddress;
+    const generatedLocation = `${newJob.prefecture}, ${cityPart}`.trim();
+    const constructedFullAddress = `${newJob.prefecture}${cityPart}${townPart}${buildingPart ? ' ' + buildingPart : ''}`;
     const generatedFullAddress = `〒${newJob.postalCode} ${newJob.prefecture}, ${newJob.detailAddress}`;
 
     if (isAdCourse) {
@@ -373,6 +582,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         postalCode: newJob.postalCode,
         prefecture: newJob.prefecture,
         detailAddress: newJob.detailAddress,
+        townAddress: newJob.townAddress || '',
+        buildingAddress: newJob.buildingAddress || '',
         description: newJob.description,
         courses: newJob.courses,
         phone: newJob.phone,
@@ -399,6 +610,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         postalCode: newJob.postalCode,
         prefecture: newJob.prefecture,
         detailAddress: newJob.detailAddress,
+        townAddress: newJob.townAddress || '',
+        buildingAddress: newJob.buildingAddress || '',
+        trainLine: newJob.trainLine || '',
         phone: newJob.phone,
         email: newJob.email,
         hours: newJob.hours,
@@ -418,6 +632,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         shoukaiConditions: newJob.shoukaiConditions || t('defaultJobShoukaiConditions'),
         phoneMode: newJob.phoneMode || 'public',
         isInternational: newJob.isInternational || false,
+        category: 'delivery_driver',
+        subcategory: newJob.subcategory || 'delivery_local',
+        license: newJob.license || 'lic_futsu',
         type: newJob.type || 'fulltime',
         nearestStation: newJob.nearestStation || '',
         walkTime: newJob.walkTime ? Number(newJob.walkTime) : ''
@@ -440,6 +657,10 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       postalCode: '',
       prefecture: '',
       detailAddress: '',
+      townAddress: '',
+      buildingAddress: '',
+      trainLine: '',
+      subcategory: '',
       phone: '', 
       email: '', 
       hours: '', 
@@ -467,7 +688,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {options.map(optObj => {
             const opt = typeof optObj === 'string' ? optObj : optObj.value;
-            const label = typeof optObj === 'string' ? t(optObj, optObj) : t(optObj.key, optObj.value);
+            const label = typeof optObj === 'string' 
+              ? t(optObj, optObj) 
+              : (optObj.key ? t(optObj.key, optObj.value) : (optObj.value || optObj.name || ''));
             const isSelected = isMulti ? (selectedValue && selectedValue.includes(opt)) : selectedValue === opt;
             return (
               <button
@@ -499,11 +722,11 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     };
 
     return (
-      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px', position: 'relative' }}>
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '14px', position: 'relative' }}>
         {/* Pinned Sticky Back Button */}
         <div style={{ 
           position: 'sticky', 
-          top: '12px', 
+          top: '16px', 
           left: '16px', 
           zIndex: 120, 
           width: 'fit-content',
@@ -611,7 +834,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           />
 
           {/* BLOCK 1: Asosiy Ma'lumotlar */}
-          <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '24px' }}>
+          <div className="glass squircle-form-card" style={{ padding: '24px 20px', marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>1</div>
               <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-main)', fontWeight: '700' }}>
@@ -652,144 +875,294 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             </div>
 
             {!isAdCourse && (
-              <div className="input-group chip-group-container" style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px', display: 'block', color: 'var(--text-main)' }}>
-                  {t('jobTypeLabel')} <span style={{ color: '#FF3B30' }}>*</span>
-                </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {[
-                    { value: 'fulltime', label: t('jobType_fulltime') },
-                    { value: 'contract', label: t('jobType_contract') },
-                    { value: 'parttime', label: t('jobType_parttime') }
-                  ].map(opt => {
-                    const isSelected = newJob.type === opt.value;
-                    const isDisabled = newJob.isInternational && opt.value === 'parttime';
-                    return (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        className={`form-chip ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
-                        disabled={isDisabled}
-                        onClick={() => {
-                          setNewJob({ ...newJob, type: opt.value });
-                        }}
-                        style={{
-                          opacity: isDisabled ? 0.45 : 1,
-                          cursor: isDisabled ? 'not-allowed' : 'pointer',
-                          textDecoration: isDisabled ? 'line-through' : 'none'
-                        }}
-                      >
-                        {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
-                {newJob.isInternational && (
-                  <span style={{ fontSize: '11.5px', color: '#FF9F0A', marginTop: '8px', display: 'block', fontWeight: '500', lineHeight: '1.4' }}>
+              <>
+                <CustomInlineDropdown
+                  label={t('jobTypeLabel')}
+                  required={true}
+                  value={newJob.type}
+                  placeholder={`-- ${t('jobTypeLabel')} --`}
+                  error={errors.type}
+                  options={[
+                    { id: 'fulltime', name: t('jobType_fulltime') },
+                    { id: 'contract', name: t('jobType_contract') },
+                    { id: 'parttime', name: t('jobType_parttime') },
+                    { id: 'outsourcing', name: t('jobType_outsourcing') },
+                    { id: 'dispatch', name: t('jobType_dispatch') },
+                    { id: 'intern', name: t('jobType_intern') }
+                  ]}
+                  onChange={(val) => {
+                    setNewJob({ ...newJob, type: val });
+                    setErrors(prev => ({ ...prev, type: null }));
+                  }}
+                />
+                {newJob.isInternational && newJob.type === 'parttime' && (
+                  <span style={{ fontSize: '11.5px', color: '#FF9F0A', marginBottom: '12px', display: 'block', fontWeight: '500', lineHeight: '1.4' }}>
                     {t('sswArubaitoWarning')}
                   </span>
                 )}
-              </div>
+              </>
             )}
 
-            <div className="input-group" style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                {isAdCourse ? t('schoolDiscountLabel') : t('bonusLabel')}
-              </label>
-              <input 
-                type="text" 
-                value={newJob.bonus} 
-                onChange={e => setNewJob({...newJob, bonus: e.target.value})} 
-                placeholder={isAdCourse ? t('schoolDiscountPlaceholder') : t('bonusPlaceholder')} 
-                className="auth-input"
-                maxLength={50}
+            <CustomInlineDropdown
+              label={isAdCourse ? t('schoolDiscountLabel') : t('bonusLabel')}
+              required={true}
+              value={newJob.bonus}
+              placeholder={isAdCourse ? t('schoolDiscountPlaceholder') : `-- ${t('bonusLabel')} --`}
+              error={errors.bonus}
+              options={[
+                { id: 'bonus_none', name: t('bonus_none') },
+                { id: 'bonus_1', name: t('bonus_1') },
+                { id: 'bonus_2', name: t('bonus_2') },
+                { id: 'bonus_performance', name: t('bonus_performance') },
+                { id: 'bonus_signon', name: t('bonus_signon') }
+              ]}
+              onChange={(val) => {
+                setNewJob({ ...newJob, bonus: val });
+                setErrors(prev => ({ ...prev, bonus: null }));
+              }}
+              allowCustom={true}
+              customPlaceholder={t('customBonusPlaceholder')}
+            />
+
+            {!isAdCourse && (
+              <CustomInlineDropdown
+                label={t('jobSubcategoryLabel', '職種・免許')}
+                required={true}
+                value={newJob.subcategory}
+                placeholder={`-- ${t('jobSubcategoryLabel', '職種・免許')} --`}
+                error={errors.subcategory}
+                options={JOB_CATEGORIES[0]?.subcategories.map(sub => ({
+                  id: sub.id,
+                  name: currentLang === 'uz' ? sub.nameUz : currentLang === 'en' ? (sub.nameEn || sub.name) : sub.name
+                })) || []}
+                onChange={(val) => {
+                  setNewJob({ ...newJob, subcategory: val });
+                  setErrors(prev => ({ ...prev, subcategory: null }));
+                }}
               />
-            </div>
+            )}
             
             {/* 3-Part Structured Address Questionnaire */}
             <div className="input-group" style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-main)', display: 'block', marginBottom: '3px' }}>
+                  {t('postalCodeLabel', '郵便番号')} <span style={{ color: '#FF3B30' }}>*</span>
+                </label>
+                <span style={{ fontSize: '11.5px', color: 'var(--text-secondary, #8e8e93)', display: 'block', lineHeight: '1.4' }}>
+                  {t('postalCodeHelp', '※ 郵便番号（7桁）を入力すると住所が自動入力されます')}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+                  {/* Classic Japanese Postal Symbol 〒 Badge */}
+                  <span
+                    style={{
+                      position: 'absolute',
+                      left: '12px',
+                      fontWeight: '800',
+                      fontSize: '15px',
+                      color: 'var(--primary, #0084FF)',
+                      pointerEvents: 'none',
+                      userSelect: 'none'
+                    }}
+                  >
+                    〒
+                  </span>
+                  <input 
+                    type="text" 
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    autoComplete="off"
+                    name="michi_job_postal_code"
+                    data-lpignore="true"
+                    value={newJob.postalCode} 
+                    onChange={e => {
+                      let val = e.target.value.replace(/[^0-9-]/g, '');
+                      if (val.replace(/-/g, '').length === 3 && val.length === 3 && !val.includes('-')) {
+                        val = val + '-';
+                      }
+                      setNewJob({ ...newJob, postalCode: val }); 
+                      setErrors(prev => ({ ...prev, postalCode: null })); 
+                      const digits = val.replace(/[^0-9]/g, '');
+                      if (digits.length === 7) {
+                        fetchAddressByZip(val);
+                      } else {
+                        setAddressLookupStatus(null);
+                      }
+                    }} 
+                    placeholder={t('postalCodePlaceholder', '100-0001')} 
+                    className="auth-input"
+                    style={{ 
+                      paddingLeft: '32px',
+                      borderColor: errors.postalCode ? '#FF3B30' : addressLookupStatus?.success ? '#30D158' : 'var(--glass-border)',
+                      fontWeight: '600',
+                      letterSpacing: '1px'
+                    }}
+                    maxLength={8}
+                  />
+                </div>
+
+                {/* Auto-fill Button */}
+                <button
+                  type="button"
+                  onClick={() => fetchAddressByZip(newJob.postalCode || '')}
+                  disabled={isFetchingAddress || (newJob.postalCode || '').replace(/[^0-9]/g, '').length !== 7}
+                  style={{
+                    background: (newJob.postalCode || '').replace(/[^0-9]/g, '').length === 7 ? 'var(--primary, #0084FF)' : 'var(--card-bg, rgba(120, 120, 128, 0.16))',
+                    color: (newJob.postalCode || '').replace(/[^0-9]/g, '').length === 7 ? '#ffffff' : 'var(--text-secondary, #8e8e93)',
+                    border: '1px solid var(--glass-border, rgba(0, 0, 0, 0.12))',
+                    borderRadius: '12px',
+                    padding: '0 14px',
+                    height: '44px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    cursor: (newJob.postalCode || '').replace(/[^0-9]/g, '').length === 7 ? 'pointer' : 'not-allowed',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s ease',
+                    boxShadow: (newJob.postalCode || '').replace(/[^0-9]/g, '').length === 7 ? '0 4px 12px rgba(0, 132, 255, 0.3)' : 'none'
+                  }}
+                >
+                  {isFetchingAddress ? (
+                    <span>⏳ ...</span>
+                  ) : (
+                    <>
+                      <span>⚡</span>
+                      <span>{t('autoFillAddress')}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {errors.postalCode && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.postalCode}</span>}
+
+              {/* Status Feedback Badge */}
+              {addressLookupStatus && (
+                <div
+                  style={{
+                    marginTop: '8px',
+                    padding: '9px 12px',
+                    borderRadius: '10px',
+                    background: addressLookupStatus.success ? 'rgba(48, 209, 88, 0.12)' : 'rgba(255, 159, 10, 0.12)',
+                    border: `1px solid ${addressLookupStatus.success ? 'rgba(48, 209, 88, 0.3)' : 'rgba(255, 159, 10, 0.35)'}`,
+                    color: addressLookupStatus.success ? '#28a745' : '#D97706',
+                    fontSize: '12.5px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '6px',
+                    lineHeight: '1.4'
+                  }}
+                >
+                  <span style={{ fontSize: '14px', flexShrink: 0 }}>{addressLookupStatus.success ? '✓' : '💡'}</span>
+                  <span>
+                    {addressLookupStatus.success 
+                      ? `${t('addressAutoFilled')}: ${addressLookupStatus.text}` 
+                      : t('manualAddressTip')}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <CustomInlineDropdown
+              label={t('prefectureLabel')}
+              required={true}
+              value={newJob.prefecture}
+              placeholder={`-- ${t('selectPrefecture')} --`}
+              error={errors.prefecture}
+              options={ALL_47_PREFECTURES.map(pref => ({
+                id: pref.id,
+                name: pref.kanji,
+                kanji: pref.kanji
+              }))}
+              onChange={(val) => {
+                setNewJob({ ...newJob, prefecture: val });
+                setErrors(prev => ({ ...prev, prefecture: null }));
+              }}
+            />
+
+            <CustomInlineDropdown
+              label={t('cityAddressLabel', '市区町村')}
+              required={true}
+              value={newJob.detailAddress}
+              placeholder={newJob.prefecture ? `-- ${t('cityAddressLabel', '市区町村')} --` : t('selectPrefectureFirst', '-- 都道府県を先に選択してください --')}
+              error={errors.detailAddress}
+              options={getCitiesByPrefecture(newJob.prefecture)}
+              onChange={(val) => {
+                setNewJob({ ...newJob, detailAddress: val });
+                setErrors(prev => ({ ...prev, detailAddress: null }));
+              }}
+              allowCustom={Boolean(newJob.prefecture)}
+              customPlaceholder={t('cityAddressPlaceholder', '例：松戸市 / 千代田区')}
+            />
+
+            <div className="input-group" style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                {t('postalCodeLabel')} <span style={{ color: '#FF3B30' }}>*</span>
+                {t('townAddressLabel', '町名・丁目')} <span style={{ color: '#FF3B30' }}>*</span>
               </label>
               <input 
                 type="text" 
-                value={newJob.postalCode} 
+                value={newJob.townAddress || ''} 
                 onChange={e => {
-                  let val = e.target.value.replace(/[^0-9-]/g, '');
-                  if (val.length === 3 && !val.includes('-')) {
-                    val = val + '-';
-                  }
-                  setNewJob({...newJob, postalCode: val}); 
-                  setErrors(prev => ({...prev, postalCode: null})); 
+                  setNewJob({ ...newJob, townAddress: e.target.value }); 
+                  setErrors(prev => ({ ...prev, townAddress: null })); 
                 }} 
-                placeholder="100-0001" 
+                placeholder={t('townAddressPlaceholder', '例：常盤平 2-25 / 丸の内 1-1')} 
                 className="auth-input"
-                style={{ borderColor: errors.postalCode ? '#FF3B30' : 'var(--glass-border)' }}
-                maxLength={8}
+                style={{ borderColor: errors.townAddress ? '#FF3B30' : 'var(--glass-border)' }}
+                maxLength={80}
               />
-              {errors.postalCode && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.postalCode}</span>}
+              {errors.townAddress && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.townAddress}</span>}
             </div>
 
             <div className="input-group" style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                {t('prefectureLabel')} <span style={{ color: '#FF3B30' }}>*</span>
-              </label>
-              <select
-                value={newJob.prefecture}
-                onChange={e => {
-                  setNewJob({...newJob, prefecture: e.target.value});
-                  setErrors(prev => ({...prev, prefecture: null}));
-                }}
-                className="auth-input"
-                style={{ 
-                  borderColor: errors.prefecture ? '#FF3B30' : 'var(--glass-border)',
-                  background: 'var(--card-bg)',
-                  color: 'var(--text-main)',
-                  padding: '12px'
-                }}
-              >
-                <option value="">-- {t('selectPrefecture')} --</option>
-                {['Tokyo', 'Kanagawa', 'Saitama', 'Chiba', 'Osaka', 'Kyoto', 'Aichi', 'Fukuoka', 'Hokkaido', 'Boshqa'].map(pref => (
-                  <option key={pref} value={pref}>{t(pref, pref)}</option>
-                ))}
-              </select>
-              {errors.prefecture && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.prefecture}</span>}
-            </div>
-
-            <div className="input-group">
-              <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                {t('detailAddressLabel')} <span style={{ color: '#FF3B30' }}>*</span>
+                {t('buildingAddressLabel', '建物名・部屋番号（任意）')}
               </label>
               <input 
                 type="text" 
-                value={newJob.detailAddress} 
-                onChange={e => {
-                  setNewJob({...newJob, detailAddress: e.target.value}); 
-                  setErrors(prev => ({...prev, detailAddress: null})); 
-                }} 
-                placeholder="Chiyoda-ku, Marunouchi 1-1" 
+                value={newJob.buildingAddress || ''} 
+                onChange={e => setNewJob({ ...newJob, buildingAddress: e.target.value })} 
+                placeholder={t('buildingAddressPlaceholder', '例：公団住宅 1-38-305 / 常盤平ビル 3F')} 
                 className="auth-input"
-                style={{ borderColor: errors.detailAddress ? '#FF3B30' : 'var(--glass-border)' }}
                 maxLength={100}
               />
-              {errors.detailAddress && <span style={{ color: '#FF3B30', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.detailAddress}</span>}
             </div>
 
             {!isAdCourse && (
               <>
-                <div className="input-group" style={{ marginBottom: '16px' }}>
-                  <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
-                    {t('nearestStationLabel')}
-                  </label>
-                  <input 
-                    type="text" 
-                    value={newJob.nearestStation} 
-                    onChange={e => setNewJob({...newJob, nearestStation: e.target.value})} 
-                    placeholder={t('nearestStationPlaceholder')} 
-                    className="auth-input"
-                    maxLength={50}
-                  />
-                </div>
+                <CustomInlineDropdown
+                  label={t('trainLineLabel', '利用路線')}
+                  required={true}
+                  value={newJob.trainLine}
+                  placeholder={`-- ${t('trainLineLabel', '利用路線を選択')} --`}
+                  error={errors.trainLine}
+                  options={getAllTrainLineOptions()}
+                  onChange={(val) => {
+                    setNewJob({ ...newJob, trainLine: val, nearestStation: '' });
+                    setErrors(prev => ({ ...prev, trainLine: null, nearestStation: null }));
+                  }}
+                  allowCustom={true}
+                  customPlaceholder={t('trainLinePlaceholder', '例：JR山手線 / JR常磐線 / 東京メトロ丸ノ内線')}
+                />
+
+                <CustomInlineDropdown
+                  label={t('nearestStationLabel', '最寄り駅')}
+                  required={true}
+                  value={newJob.nearestStation}
+                  placeholder={newJob.trainLine ? `-- ${t('nearestStationLabel', '最寄り駅を選択')} --` : t('selectTrainLineFirst', '-- 路線を先に選択してください --')}
+                  error={errors.nearestStation}
+                  options={getStationsByLine(newJob.trainLine)}
+                  onChange={(val) => {
+                    setNewJob({ ...newJob, nearestStation: val });
+                    setErrors(prev => ({ ...prev, nearestStation: null }));
+                  }}
+                  allowCustom={Boolean(newJob.trainLine)}
+                  customPlaceholder={t('nearestStationPlaceholder', '例：新宿駅 / 松戸駅 / 梅田駅')}
+                />
 
                 <div className="input-group" style={{ marginBottom: '16px' }}>
                   <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
@@ -817,7 +1190,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
           {/* BLOCK 2: Ish Sharoitlari (Chips) */}
           {!isAdCourse && (
-            <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '24px' }}>
+            <div className="glass squircle-form-card" style={{ padding: '24px 20px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
                 <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>2</div>
                 <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-main)', fontWeight: '700' }}>
@@ -871,7 +1244,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
           {/* Conditional Sections For Driving School */}
           {isAdCourse && (
-            <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '24px' }}>
+            <div className="glass squircle-form-card" style={{ padding: '24px 20px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
                 <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>2</div>
                 <h4 style={{ margin: 0, fontSize: '18px', color: 'var(--text-main)', fontWeight: '700' }}>
@@ -896,7 +1269,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           )}
 
           {/* BLOCK 3: Contact & Description */}
-          <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '24px' }}>
+          <div className="glass squircle-form-card" style={{ padding: '24px 20px', marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
                 {isAdCourse ? '3' : '3'}
@@ -987,7 +1360,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           </div>
 
           {/* BLOCK 4: Shoukai (Referral) */}
-          <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '32px', border: errors.hasShoukai ? '2px solid #FF3B30' : '2px solid rgba(255, 159, 10, 0.3)', background: 'linear-gradient(145deg, rgba(255, 159, 10, 0.05) 0%, rgba(255, 159, 10, 0.01) 100%)' }}>
+          <div className="glass squircle" style={{ padding: '24px 20px', marginBottom: '12px', border: errors.hasShoukai ? '2px solid #FF3B30' : '2px solid rgba(255, 159, 10, 0.3)', background: 'linear-gradient(145deg, rgba(255, 159, 10, 0.05) 0%, rgba(255, 159, 10, 0.01) 100%)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#FF9F0A', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
                 {isAdCourse ? '4' : '4'}
@@ -1056,6 +1429,21 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                   <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
                     {t('shoukaiSumLabel')} <span style={{ color: '#FF3B30' }}>*</span>
                   </label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+                    {['30000', '50000', '100000', '200000'].map(amount => (
+                      <button
+                        key={amount}
+                        type="button"
+                        className={`form-chip ${String(newJob.shoukaiFee) === amount ? 'selected' : ''}`}
+                        onClick={() => {
+                          setNewJob({ ...newJob, shoukaiFee: amount });
+                          setErrors(prev => ({ ...prev, shoukaiFee: null }));
+                        }}
+                      >
+                        ¥{Number(amount).toLocaleString()}
+                      </button>
+                    ))}
+                  </div>
                   <div style={{ position: 'relative' }}>
                     <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-main)', fontWeight: 'bold' }}>¥</span>
                     <input 
@@ -1098,7 +1486,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               padding: '16px', 
               fontSize: '17px', 
               fontWeight: '700', 
-              marginBottom: '20px',
+              marginBottom: '0px',
               boxShadow: '0 8px 24px rgba(90, 85, 234, 0.4)',
               display: 'flex',
               alignItems: 'center',
@@ -1110,6 +1498,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             <Plus size={20} />
             {isAdCourse ? t('publishSchoolAd') : t('publishJob')}
           </button>
+
         </div>
       </div>
     );
@@ -1150,7 +1539,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           </h2>
         </div>
 
-        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ padding: '0 14px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <p style={{ fontSize: '14.5px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
             {t('recruitmentChooseDesc')}
           </p>
@@ -1307,10 +1696,10 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   
   // ===== MAIN JOB LIST =====
   return (
-    <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
+    <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '32px' }}>
       
       {/* ADD ANNOUNCEMENT BUTTON CARD */}
-      <div style={{ padding: '0 16px', marginBottom: '24px' }}>
+      <div style={{ padding: '0 14px', marginBottom: '24px' }}>
         <div 
           onClick={() => {
             if (profileData?.companyType === 'driving_school') {
@@ -1361,7 +1750,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         </h2>
       </div>
 
-      <div className="jobs-list hide-scrollbar" style={{ marginBottom: '24px' }}>
+      <div className="jobs-list hide-scrollbar" style={{ marginBottom: '0px', paddingBottom: '0px' }}>
         {(jobs || []).length === 0 ? (
           <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13.5px' }}>
             {t('noJobsYet')}
@@ -1475,7 +1864,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             </h2>
           </div>
 
-          <div className="jobs-list hide-scrollbar">
+          <div className="jobs-list hide-scrollbar" style={{ marginBottom: '0px', paddingBottom: '0px' }}>
             {(schools || []).length === 0 ? (
               <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13.5px' }}>
                 {t('noSchoolsYet')}
@@ -1582,7 +1971,10 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           </div>
         </>
       )}
+
+
+      {/* Explicit BottomNav clearance spacer for spacious clearance gap */}
+      <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
     </div>
   );
-
 }

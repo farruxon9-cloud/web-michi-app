@@ -214,6 +214,7 @@ export default function Profile({
           <div className="skeleton-pulse skeleton-row" />
           <div className="skeleton-pulse skeleton-row" />
         </div>
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2294,8 +2295,8 @@ const getLicenseLabel = (type) => {
             ))
           )}
         </div>
-        {/* Enshteyn Spacer for BottomNav Clearance */}
-        <div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0 }} />
+        {/* 96px dock clearance so notifications list scrolls cleanly past floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2368,28 +2369,28 @@ const getLicenseLabel = (type) => {
             <h4 className="settings-section-title">{t('soundSettings')}</h4>
             <div className="sound-options">
               <button 
-                className={`sound-option ${soundSettings.sound && soundSettings.vibration ? 'active' : ''}`}
+                className={`sound-option profile-btn-interactive ${soundSettings.sound && soundSettings.vibration ? 'active' : ''}`}
                 onClick={() => setSoundSettings({ sound: true, vibration: true })}
               >
                 <Volume2 size={20} />
                 <span>{t('soundOn')}</span>
               </button>
               <button 
-                className={`sound-option ${!soundSettings.sound && soundSettings.vibration ? 'active' : ''}`}
+                className={`sound-option profile-btn-interactive ${!soundSettings.sound && soundSettings.vibration ? 'active' : ''}`}
                 onClick={() => setSoundSettings({ sound: false, vibration: true })}
               >
                 <Vibrate size={20} />
                 <span>{t('vibration')}</span>
               </button>
               <button 
-                className={`sound-option ${soundSettings.sound && !soundSettings.vibration ? 'active' : ''}`}
+                className={`sound-option profile-btn-interactive ${soundSettings.sound && !soundSettings.vibration ? 'active' : ''}`}
                 onClick={() => setSoundSettings({ sound: true, vibration: false })}
               >
                 <VolumeX size={20} />
                 <span>{t('silent')}</span>
               </button>
               <button 
-                className={`sound-option ${!soundSettings.sound && !soundSettings.vibration ? 'active' : ''}`}
+                className={`sound-option profile-btn-interactive ${!soundSettings.sound && !soundSettings.vibration ? 'active' : ''}`}
                 onClick={() => setSoundSettings({ sound: false, vibration: false })}
               >
                 <BellOff size={20} />
@@ -2397,10 +2398,9 @@ const getLicenseLabel = (type) => {
               </button>
             </div>
           </div>
-
-          {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
-          <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
         </div>
+        {/* 96px dock clearance so settings menu scroll cleanly past floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2424,6 +2424,9 @@ const getLicenseLabel = (type) => {
   if (activePage === 'about') {
     return (
       <div className="profile-container sub-page-view fade-in">
+        <div className="profile-sticky-back">
+          <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+        </div>
         <div className="about-glow-container about-page-wrapper" style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px 14px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           
           {/* Clip Orbs container to prevent horizontal scrolling/shaking */}
@@ -2433,26 +2436,8 @@ const getLicenseLabel = (type) => {
           </div>
 
           {/* Sleek Integrated Header Row */}
-          <div className="about-animate-item about-delay-1" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, paddingTop: '4px' }}>
-            <button 
-              className="icon-btn glass" 
-              onClick={() => setActivePage('main')} 
-              style={{ 
-                width: '38px', 
-                height: '38px', 
-                borderRadius: '50%', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                border: '1.2px solid var(--glass-border)',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.04), inset 0 1px 1.5px rgba(255,255,255,0.4)',
-                cursor: 'pointer',
-                flexShrink: 0
-              }}
-            >
-              <ArrowLeft size={18} />
-            </button>
-            <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, color: 'var(--text-main)', letterSpacing: '-0.02em', flex: 1, textAlign: 'center', marginRight: '38px' }}>
+          <div className="about-animate-item about-delay-1" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', position: 'relative', zIndex: 2, paddingTop: '44px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '900', margin: 0, color: 'var(--text-main)', letterSpacing: '-0.02em', textAlign: 'center' }}>
               {t('aboutAppTitle')}
             </h2>
           </div>
@@ -2668,9 +2653,9 @@ const getLicenseLabel = (type) => {
               © 2026 Michi (道). All rights reserved.
             </div>
           </div>
-        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
-        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
         </div>
+        {/* 90px dock clearance spacer (yielding 6px micro-compact visual gap above 84px BottomNav) */}
+        <div style={{ height: '90px', minHeight: '90px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2719,8 +2704,7 @@ const getLicenseLabel = (type) => {
           applications={applications}
           schoolApplications={schoolApplications}
         />
-        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
-        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3180,9 +3164,9 @@ const getLicenseLabel = (type) => {
               )}
             </div>
           </div>
-        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
-        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
         </div>
+        {/* 96px dock clearance so personal info page content scrolls cleanly past floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3534,6 +3518,8 @@ const getLicenseLabel = (type) => {
             })
           )}
         </div>
+        {/* 96px dock clearance so applications list scrolls cleanly past floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3631,8 +3617,8 @@ const getLicenseLabel = (type) => {
             </>
           )}
         </div>
-        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
-        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
+        {/* 96px dock clearance so saved items list scrolls cleanly past floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3685,8 +3671,7 @@ const getLicenseLabel = (type) => {
               ))
             )}
           </div>
-        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
-        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
+
         </div>
       );
     }
@@ -3758,8 +3743,8 @@ const getLicenseLabel = (type) => {
             </>
           )}
         </div>
-        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
-        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
+        {/* 96px dock clearance so my shoukai list scrolls cleanly past floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3862,6 +3847,8 @@ const getLicenseLabel = (type) => {
           )}
 
         </div>
+        {/* 96px dock clearance so employees list scrolls cleanly past floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -5822,14 +5809,14 @@ const getLicenseLabel = (type) => {
           </div>
         </div>
 
-        <button className="logout-btn glass squircle" onClick={onLogout}>
+        <button className="logout-btn glass" onClick={onLogout}>
           <LogOut size={20} />
           <span>{t('logout')}</span>
         </button>
-
-        {/* Precise 14px Inter-Card Visual Symmetry Spacer */}
-        <div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />
       </div>
+
+      {/* 96px dock clearance so logout button and profile menu scroll cleanly past floating BottomNav (96px - 84px = 12px gap) */}
+      <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
       {/* Universal Japanese Vehicle Fleet Picker Modal */}
       <JapaneseVehiclePickerModal

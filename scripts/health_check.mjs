@@ -203,6 +203,46 @@ try {
   fail("Layout validatsiyasi xatolik bilan tugadi!");
 }
 
+// 8. 47 PREFEKTURA SHAHAR VA TUMANLARI AUDITI
+header("8. 47 Prefektura Shahar va Tumanlari Validatsiyasi");
+try {
+  const cityOutput = execSync("node scripts/verify_all_47_cities.mjs 2>&1", { encoding: "utf-8" });
+  if (cityOutput.includes("47/47 Prefektura passed")) {
+    pass("47 Prefektura Geografiyasi: Barcha 47 prefektura va 501 shahar/tuman mukammal passed");
+  } else {
+    fail("47 Prefektura Geografiyasi: Ba'zi prefekturalarda shahar/tumanlar yetishmayapti!");
+  }
+} catch (e) {
+  fail("47 Prefektura Geografiyasi validatsiyasida xatolik yuz berdi!");
+}
+
+// 9. 47 PREFEKTURA METRO VA TEMIRYO'L BEKATLARI AUDITI
+header("9. 47 Prefektura Metro va Temiryo'l Bekatlari Validatsiyasi");
+try {
+  const stationOutput = execSync("node scripts/verify_all_47_stations.mjs 2>&1", { encoding: "utf-8" });
+  if (stationOutput.includes("47/47 Prefektura passed")) {
+    pass("47 Prefektura Metro & Temiryo'l Bekatlari: Barcha 47 prefektura va 562 staytsiyalar liniyalar bilan passed");
+  } else {
+    fail("47 Prefektura Bekatlari: Ba'zi prefekturalarda bekatlar yetishmayapti!");
+  }
+} catch (e) {
+  fail("47 Prefektura Bekatlari validatsiyasida xatolik yuz berdi!");
+}
+
+// 10. CODEBASE MAP VA MANTIQIY FIKRLASH TAHLILI
+header("10. Codebase Map va Mantiqiy Fikrlash Tahlili");
+try {
+  const mapOutput = execSync("node scripts/generate_codebase_map.js 2>&1", { encoding: "utf-8" });
+  const logicOutput = execSync("node scripts/analyze_code_logic.mjs 2>&1", { encoding: "utf-8" });
+  if (mapOutput.includes("Codebase Map muvaffaqiyatli yangilandi") && logicOutput.includes("YAKUNIY MANTIQIY TAHLIL NATIJASI")) {
+    pass("Codebase Map & Logical Reasoning: Loyiha xaritasi va mantiqiy tahlil passed");
+  } else {
+    fail("Codebase Map yoki Mantiqiy tahlilda xatolik yuz berdi!");
+  }
+} catch (e) {
+  fail("Mantiqiy tahlil va Codebase Map validatsiyasida xatolik yuz berdi!");
+}
+
 // YAKUNIY NATIJA
 console.log(`\n${BOLD}${CYAN}`);
 console.log("══════════════════════════════════════════════");

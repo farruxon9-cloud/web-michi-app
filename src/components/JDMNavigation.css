@@ -10,7 +10,7 @@
   box-sizing: border-box;
   overflow-y: auto;
   position: relative;
-  padding-bottom: 100px; /* Space for sticky bottom vehicle selector */
+  padding-bottom: 96px; /* Space for sticky bottom vehicle selector */
 }
 
 /* Header style with sleek JDM blur */
@@ -18,7 +18,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 20px;
+  padding: 14px 14px;
   background: var(--glass-bg);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
@@ -29,8 +29,8 @@
 }
 
 .nav-back-btn {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 1px solid var(--glass-border);
   background: var(--card-bg);
@@ -82,8 +82,8 @@
 .jdm-nav-content-grid {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
+  gap: 14px;
+  padding: 14px;
   width: 100%;
   box-sizing: border-box;
 }

@@ -33,9 +33,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, Banknote, Edit3 } from 'lucide-react';
+import { Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, Banknote, Edit3, SlidersHorizontal, X } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
+import CustomInlineDropdown from './CustomInlineDropdown';
 import './DrivingAcademy.css';
 import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinadi
 
@@ -214,26 +216,57 @@ export default function DrivingAcademy({
 
   const [visibleCount, setVisibleCount] = useState(10);
 
-  // Reset pagination when search query changes
+  const [selectedCourse, setSelectedCourse] = useState('all');
+  const [selectedPrefecture, setSelectedPrefecture] = useState('all');
+  const [selectedLang, setSelectedLang] = useState('all');
+  const [onlyShoukai, setOnlyShoukai] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const hasActiveFilters = selectedCourse !== 'all' || selectedPrefecture !== 'all' || selectedLang !== 'all' || onlyShoukai;
+
+  const resetFilters = () => {
+    setSelectedCourse('all');
+    setSelectedPrefecture('all');
+    setSelectedLang('all');
+    setOnlyShoukai(false);
+    if (setSearchQuery) setSearchQuery('');
+  };
+
+  // Reset pagination when search query or filters change
   useEffect(() => {
     setVisibleCount(10);
-  }, [searchQuery]);
+  }, [searchQuery, selectedCourse, selectedPrefecture, selectedLang, onlyShoukai]);
 
 
-  // Filtrlash: qidiruv bo'yicha
+  // Filtrlash: qidiruv, toifa, prefektura, til va shoukai bo'yicha
   const filteredSchools = schools.filter(school => {
     const query = searchQuery.toLowerCase();
     const localizedName = t(`school_${school.id}_name`, school.name).toLowerCase();
     const localizedLocation = t(`school_${school.id}_location`, school.location).toLowerCase();
     const localizedType = t(`school_${school.id}_type`, school.type).toLowerCase();
     
-    return !searchQuery || 
+    const matchesSearch = !searchQuery || 
       localizedName.includes(query) ||
       school.name.toLowerCase().includes(query) ||
       localizedLocation.includes(query) ||
       school.location.toLowerCase().includes(query) ||
       localizedType.includes(query) ||
       school.type.toLowerCase().includes(query);
+
+    const matchesCourse = selectedCourse === 'all' || 
+      (school.courses && school.courses.includes(selectedCourse)) ||
+      (school.type && school.type.includes(selectedCourse));
+
+    const matchesPrefecture = selectedPrefecture === 'all' ||
+      (school.location && school.location.toLowerCase().includes(selectedPrefecture.toLowerCase())) ||
+      (school.fullAddress && school.fullAddress.toLowerCase().includes(selectedPrefecture.toLowerCase()));
+
+    const matchesLang = selectedLang === 'all' ||
+      (school.langs && school.langs.includes(selectedLang));
+
+    const matchesShoukai = !onlyShoukai || (school.shoukaiFee > 0);
+
+    return matchesSearch && matchesCourse && matchesPrefecture && matchesLang && matchesShoukai;
   });
 
 
@@ -482,7 +515,7 @@ export default function DrivingAcademy({
                       className="academy-apply-btn"
                       style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', fontWeight: '700' }}
                     >
-                      <Phone size={15} /> {t('callSchool', 'Qo\'ng\'iroq')}
+                      <Phone size={15} /> {t('callSchool', "Qo'ng'iroq")}
                     </a>
                     <button 
                       className="academy-shoukai-btn"
@@ -516,7 +549,7 @@ export default function DrivingAcademy({
                     href={`tel:${school.phone || '+819012345678'}`} 
                     className="academy-call-btn"
                   >
-                    <Phone size={15} /> {t('callSchool', 'Qo\'ng\'iroq')}
+                    <Phone size={15} /> {t('callSchool', "Qo'ng'iroq")}
                   </a>
                 </>
               )}
@@ -528,6 +561,137 @@ export default function DrivingAcademy({
 
 
   /* ========================================================================
+     FILTR SAHIFASI (INLINE FILTER PAGE VIEW)
+     Modal popupsiz, oddiy sahifa ketma-ketligida ko'rinadi.
+     ======================================================================== */
+  if (isFilterOpen) {
+    return (
+      <div className="feed-container fade-in hide-scrollbar" style={{ flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '12px 16px 100px 16px' }}>
+        {/* Pinned Back Button Bar */}
+        <div style={{ position: 'sticky', top: 0, zIndex: 200, padding: '4px 0 8px 0', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+          <button 
+            type="button" 
+            onClick={() => setIsFilterOpen(false)}
+            style={{
+              pointerEvents: 'auto',
+              width: '38px', height: '38px', borderRadius: '50%', border: '1px solid var(--glass-border)',
+              background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+              color: 'var(--text-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.12)'
+            }}
+            aria-label="Back"
+          >
+            <ArrowLeft size={18} />
+          </button>
+        </div>
+
+        {/* Unpinned Title & Reset Row (Scrolls naturally) */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 6px 14px 6px', marginBottom: '8px' }}>
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>
+            {t('schoolFilters', '自動車学校の絞り込み')}
+          </h3>
+          <button 
+            type="button" 
+            onClick={resetFilters}
+            style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', fontSize: '13.5px', cursor: 'pointer' }}
+          >
+            {t('clearAll', 'リセット')}
+          </button>
+        </div>
+
+        {/* Form section sequence matching CompanyHome.jsx */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          
+          {/* SECTION 1: Course / License Filter (コース・免許) */}
+          <div className="glass squircle-form-card" style={{ padding: '18px 16px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+            <label style={{ fontSize: '13.5px', fontWeight: '700', color: 'var(--primary)', marginBottom: '10px', display: 'block' }}>
+              📚 {t('courseOffered', 'コース・免許')}
+            </label>
+            <CustomInlineDropdown
+              value={selectedCourse}
+              onChange={(val) => setSelectedCourse(val)}
+              options={[
+                { value: 'all', label: t('allCourses', 'すべてのコース') },
+                { value: 'Oogata', label: t('lic_oogata', '大型自動車 (Oogata)') },
+                { value: 'Chugata', label: t('lic_chugata', '中型自動車 (Chugata)') },
+                { value: 'Futsu', label: t('lic_futsu', '普通自動車 (Futsu)') },
+                { value: 'Forklift', label: t('lic_forklift', 'フォークリフト (Forklift)') },
+                { value: 'Nirin', label: t('lic_nirin', '二輪車 (Nirin)') }
+              ]}
+              placeholder={t('allCourses', 'すべてのコース')}
+            />
+          </div>
+
+          {/* SECTION 2: Prefecture Filter (都道府県) */}
+          <div className="glass squircle-form-card" style={{ padding: '18px 16px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+            <label style={{ fontSize: '13.5px', fontWeight: '700', color: 'var(--primary)', marginBottom: '10px', display: 'block' }}>
+              📍 {t('prefectureLabel', '都道府県')}
+            </label>
+            <CustomInlineDropdown
+              value={selectedPrefecture}
+              onChange={(val) => setSelectedPrefecture(val)}
+              options={[
+                { value: 'all', label: t('allLocations', 'すべての地域') },
+                { value: 'Tokyo', label: 'Tokyo (東京)' },
+                { value: 'Saitama', label: 'Saitama (埼玉)' },
+                { value: 'Chiba', label: 'Chiba (千葉)' },
+                { value: 'Kanagawa', label: 'Kanagawa (神奈川)' },
+                { value: 'Osaka', label: 'Osaka (大阪)' }
+              ]}
+              placeholder={t('selectPrefecture', '都道府県を選択')}
+            />
+          </div>
+
+          {/* SECTION 3: Instruction Language Filter (授業言語) */}
+          <div className="glass squircle-form-card" style={{ padding: '18px 16px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+            <label style={{ fontSize: '13.5px', fontWeight: '700', color: 'var(--primary)', marginBottom: '10px', display: 'block' }}>
+              🗣️ {t('languageLabel', '授業言語')}
+            </label>
+            <CustomInlineDropdown
+              value={selectedLang}
+              onChange={(val) => setSelectedLang(val)}
+              options={[
+                { value: 'all', label: t('allLanguages', 'すべての言語') },
+                { value: 'UZ', label: "O'zbekcha (UZ)" },
+                { value: 'JP', label: 'Yaponcha (JP)' },
+                { value: 'EN', label: 'Inglizcha (EN)' },
+                { value: 'RU', label: 'Ruscha (RU)' }
+              ]}
+              placeholder={t('selectLanguage', '言語を選択')}
+            />
+          </div>
+
+          {/* SECTION 4: Referral Reward Checkbox (紹介手当ありの学校のみ) */}
+          <div className="glass squircle-form-card" style={{ padding: '18px 16px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <input
+              type="checkbox"
+              id="onlyShoukaiCheckPage"
+              checked={onlyShoukai}
+              onChange={(e) => setOnlyShoukai(e.target.checked)}
+              style={{ accentColor: 'var(--primary)', width: '20px', height: '20px', cursor: 'pointer' }}
+            />
+            <label htmlFor="onlyShoukaiCheckPage" style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', cursor: 'pointer' }}>
+              🎁 {t('onlyShoukaiBonus', '紹介手当ありの学校のみ')}
+            </label>
+          </div>
+
+          {/* Bottom CTA Search Button */}
+          <div style={{ marginTop: '12px' }}>
+            <button 
+              type="button" 
+              className="townwork-btn-search-cta" 
+              onClick={() => setIsFilterOpen(false)}
+              style={{ width: '100%', height: '48px', fontSize: '15px', fontWeight: '800', borderRadius: '16px' }}
+            >
+              {t('searchCountBtn', '{{count}}件 検索', { count: filteredSchools.length })}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ========================================================================
      RO'YXAT SAHIFASI (LIST VIEW)
      Barcha maktablarni kartochkalar shaklida ko'rsatadi.
      DriverFeed.css dagi job-card stillarini qayta ishlatadi.
@@ -535,17 +699,57 @@ export default function DrivingAcademy({
   return (
     <div className="feed-container fade-in">
       
-      {/* ------- QIDIRUV PANELI ------- */}
+      {/* ------- QIDIRUV VA FILTR PANELI ------- */}
       <div className="feed-header glass">
-        <div className="search-bar">
-          <Search size={20} color="#8E8E93" />
-          <input 
-            type="text" 
-            placeholder={t('searchSchoolPlaceholder', "Avtomaktab yoki shahar nomi...")} 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="search-row">
+          <div className="search-bar">
+            <Search size={20} color="#8E8E93" />
+            <input 
+              type="text" 
+              placeholder={t('searchSchoolPlaceholder', "Avtomaktab yoki shahar nomi...")} 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <button 
+            type="button"
+            className={`filter-toggle-btn ${hasActiveFilters ? 'active' : ''}`}
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            title={t('schoolFilters', 'Avtomaktab filtrlari')}
+          >
+            <SlidersHorizontal size={20} />
+            {hasActiveFilters && <span className="filter-badge"></span>}
+          </button>
         </div>
+
+        {/* Active Filter Chips */}
+        {hasActiveFilters && (
+          <div className="active-filter-chips-row hide-scrollbar" style={{ marginTop: '8px' }}>
+            {selectedCourse !== 'all' && (
+              <span className="active-chip" onClick={() => setSelectedCourse('all')}>
+                📚 {selectedCourse} <X size={12} />
+              </span>
+            )}
+            {selectedPrefecture !== 'all' && (
+              <span className="active-chip" onClick={() => setSelectedPrefecture('all')}>
+                📍 {selectedPrefecture} <X size={12} />
+              </span>
+            )}
+            {selectedLang !== 'all' && (
+              <span className="active-chip" onClick={() => setSelectedLang('all')}>
+                🗣️ {selectedLang} <X size={12} />
+              </span>
+            )}
+            {onlyShoukai && (
+              <span className="active-chip" onClick={() => setOnlyShoukai(false)}>
+                🎁 {t('shoukaiBonusOnly', 'Shoukai mukofotli')} <X size={12} />
+              </span>
+            )}
+            <span className="clear-all-chip" onClick={resetFilters}>
+              {t('clearFilters', 'Tozalash')}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ------- MAKTABLAR RO'YXATI ------- */}
@@ -705,7 +909,7 @@ export default function DrivingAcademy({
                 e.currentTarget.style.borderColor = 'var(--glass-border)';
               }}
             >
-              <span>{t('loadMore', 'Ko\'proq yuklash')}</span>
+              <span>{t('loadMore', "Ko'proq yuklash")}</span>
             </button>
           </div>
         )}

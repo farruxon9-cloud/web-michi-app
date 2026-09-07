@@ -1,17 +1,20 @@
-# Michi Ilovasi: Loyiha Arxitekturasi Xaritasi (Codebase Map)
+# Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi va parametrlarini avtomatik tahlil qilish orqali yaratilgan. U yangi dasturchilar va AI yordamchilarga loyihaning to'liq tuzilishini bir soniyada tushunishga yordam beradi.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **07/09/2026, 17:09:23**.
 
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 84 ta
-* **React Komponentlari:** 22 ta
+* **Jami skanerlangan fayllar:** 132 ta
+* **React Komponentlari:** 26 ta
 * **Komponent Stillari (CSS):** 17 ta
-* **Unit Testlar (Vitest):** 5 ta
-* **Yordamchi funksiyalar (utils):** 23 ta
-* **Boshqa asosiy fayllar (root):** 17 ta
+* **Geografiya va Ma'lumotlar Bazalari (data):** 8 ta
+* **Unit Testlar (Vitest):** 17 ta
+* **Yordamchi Funksiyalar (utils):** 19 ta
+* **Avtomatizatsiya Skriptlari (scripts):** 12 ta
+* **Tizim va UI Qoidalari (.agents/rules):** 17 ta
+* **Boshqa asosiy fayllar (src/ root):** 16 ta
 
 ---
 
@@ -36,17 +39,23 @@ graph TD
   App --> ServiceComingSoon
   App --> Splash
   App --> VoiceAssistant
+  CompanyHome --> CustomInlineDropdown
+  CompanyHome --> CustomMobilePickerModal
   CompanyHome --> VerifiedBadge
+  DrivingAcademy --> CustomInlineDropdown
   DrivingAcademy --> VerifiedBadge
   JDMNavigation --> LaneIndicator
+  JapaneseVehiclePickerModal --> LazyVehicleImage
   JobDetail --> VerifiedBadge
   LanguageSelect --> MichiLogo
+  LazyVehicleImage --> VehicleGradientCard
   Profile --> AssistHeroShowcase
   Profile --> CompanyHome
   Profile --> DrivingAcademy
   Profile --> JapaneseVehiclePickerModal
   Profile --> ResumeBuilder
   Profile --> VerifiedBadge
+  SkeletonCard --> CustomMobilePickerModal
   SkeletonCard --> VerifiedBadge
   Splash --> MichiLogo
   
@@ -73,7 +82,7 @@ graph TD
   - `lucide-react`
 
 ### 📦 [AssistHeroShowcase](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/AssistHeroShowcase.jsx)
-* **Fayl yo'li:** `src/components/AssistHeroShowcase.jsx` (364 qator, 15129 bayt)
+* **Fayl yo'li:** `src/components/AssistHeroShowcase.jsx` (366 qator, 15284 bayt)
 * **Komponent Stillari:** 🎨 [AssistHeroShowcase.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/AssistHeroShowcase.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onBack`
@@ -104,7 +113,7 @@ graph TD
   - `../utils/haptics`
 
 ### 📦 [CompanyHome](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/CompanyHome.jsx)
-* **Fayl yo'li:** `src/components/CompanyHome.jsx` (1589 qator, 76843 bayt)
+* **Fayl yo'li:** `src/components/CompanyHome.jsx` (1981 qator, 87613 bayt)
 * **Unit Testlari:** 🧪 [CompanyHome.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/CompanyHome.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
   - `onJobClick`
@@ -127,10 +136,52 @@ graph TD
   - `react-i18next`
   - `lucide-react`
   - `./VerifiedBadge`
+  - `./CustomMobilePickerModal`
+  - `./CustomInlineDropdown`
   - `../utils/imageCompressor`
+  - `../utils/japaneseZipcodeLookup`
+  - `../data/japanRegions.js`
+  - `../data/japanCities.js`
+  - `../data/japanStations.js`
+  - `../data/jobCategories`
+
+### 📦 [CustomInlineDropdown](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/CustomInlineDropdown.jsx)
+* **Fayl yo'li:** `src/components/CustomInlineDropdown.jsx` (268 qator, 9689 bayt)
+* **Unit Testlari:** 🧪 [CustomInlineDropdown.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/CustomInlineDropdown.test.jsx)
+* **Qabul qiladigan parametrlari (Props):**
+  - `label`
+  - `required`
+  - `value`
+  - `options`
+  - `placeholder`
+  - `onChange`
+  - `error`
+  - `allowCustom`
+  - `customPlaceholder`
+* **Import qilgan bog'liqliklari:**
+  - `react`
+  - `react-dom`
+  - `lucide-react`
+
+### 📦 [CustomMobilePickerModal](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/CustomMobilePickerModal.jsx)
+* **Fayl yo'li:** `src/components/CustomMobilePickerModal.jsx` (292 qator, 11041 bayt)
+* **Unit Testlari:** 🧪 [CustomMobilePickerModal.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/CustomMobilePickerModal.test.jsx)
+* **Qabul qiladigan parametrlari (Props):**
+  - `isOpen`
+  - `onClose`
+  - `title`
+  - `items`
+  - `options`
+  - `selectedValue`
+  - `onSelect`
+  - `allowCustom`
+* **Import qilgan bog'liqliklari:**
+  - `react`
+  - `react-i18next`
+  - `lucide-react`
 
 ### 📦 [Dashboard](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Dashboard.jsx)
-* **Fayl yo'li:** `src/components/Dashboard.jsx` (636 qator, 27542 bayt)
+* **Fayl yo'li:** `src/components/Dashboard.jsx` (637 qator, 27745 bayt)
 * **Komponent Stillari:** 🎨 [Dashboard.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Dashboard.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `setActiveTab`
@@ -153,7 +204,7 @@ graph TD
   - `../utils/haptics`
 
 ### 📦 [SkeletonCard](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.jsx)
-* **Fayl yo'li:** `src/components/DriverFeed.jsx` (841 qator, 38123 bayt)
+* **Fayl yo'li:** `src/components/DriverFeed.jsx` (1984 qator, 95235 bayt)
 * **Komponent Stillari:** 🎨 [DriverFeed.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.css)
 * **Unit Testlari:** 🧪 [DriverFeed.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -163,10 +214,15 @@ graph TD
   - `react-dom`
   - `react-i18next`
   - `lucide-react`
+  - `leaflet`
   - `./VerifiedBadge`
+  - `./CustomMobilePickerModal`
+  - `../data/japanLocationDB`
+  - `../data/jobCategories`
+  - `../data/jobFeatures`
 
 ### 📦 [DrivingAcademy](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.jsx)
-* **Fayl yo'li:** `src/components/DrivingAcademy.jsx` (722 qator, 32262 bayt)
+* **Fayl yo'li:** `src/components/DrivingAcademy.jsx` (926 qator, 42404 bayt)
 * **Komponent Stillari:** 🎨 [DrivingAcademy.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.css)
 * **Unit Testlari:** 🧪 [DrivingAcademy.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -189,12 +245,14 @@ graph TD
   - `setSearchQuery`
 * **Import qilgan bog'liqliklari:**
   - `react`
+  - `react-dom`
   - `react-i18next`
   - `lucide-react`
   - `./VerifiedBadge`
+  - `./CustomInlineDropdown`
 
 ### 📦 [ErrorBoundary](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/ErrorBoundary.jsx)
-* **Fayl yo'li:** `src/components/ErrorBoundary.jsx` (77 qator, 2623 bayt)
+* **Fayl yo'li:** `src/components/ErrorBoundary.jsx` (78 qator, 2647 bayt)
 * **Komponent Stillari:** 🎨 [ErrorBoundary.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/ErrorBoundary.css)
 * **Qabul qiladigan parametrlari (Props):**
   - *Parametrlar mavjud emas*
@@ -230,7 +288,7 @@ graph TD
   - `../utils/poiSearch`
 
 ### 📦 [JapaneseVehiclePickerModal](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JapaneseVehiclePickerModal.jsx)
-* **Fayl yo'li:** `src/components/JapaneseVehiclePickerModal.jsx` (445 qator, 17750 bayt)
+* **Fayl yo'li:** `src/components/JapaneseVehiclePickerModal.jsx` (393 qator, 15952 bayt)
 * **Qabul qiladigan parametrlari (Props):**
   - `isOpen`
   - `onClose`
@@ -238,12 +296,14 @@ graph TD
   - `selectedVehicleId`
 * **Import qilgan bog'liqliklari:**
   - `react`
+  - `react-i18next`
   - `lucide-react`
   - `../services/vehicleApiService`
   - `../data/japaneseVehiclesMaster`
+  - `./LazyVehicleImage`
 
 ### 📦 [JobDetail](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JobDetail.jsx)
-* **Fayl yo'li:** `src/components/JobDetail.jsx` (406 qator, 20008 bayt)
+* **Fayl yo'li:** `src/components/JobDetail.jsx` (406 qator, 20231 bayt)
 * **Komponent Stillari:** 🎨 [JobDetail.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/JobDetail.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `job`
@@ -271,7 +331,7 @@ graph TD
   - `../utils/laneGuidance`
 
 ### 📦 [LanguageSelect](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/LanguageSelect.jsx)
-* **Fayl yo'li:** `src/components/LanguageSelect.jsx` (61 qator, 2248 bayt)
+* **Fayl yo'li:** `src/components/LanguageSelect.jsx` (62 qator, 2318 bayt)
 * **Komponent Stillari:** 🎨 [LanguageSelect.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/LanguageSelect.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onFinish`
@@ -280,6 +340,22 @@ graph TD
   - `react-i18next`
   - `lucide-react`
   - `./MichiLogo`
+
+### 📦 [LazyVehicleImage](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/LazyVehicleImage.jsx)
+* **Fayl yo'li:** `src/components/LazyVehicleImage.jsx` (125 qator, 3738 bayt)
+* **Unit Testlari:** 🧪 [LazyVehicleImage.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/LazyVehicleImage.test.jsx)
+* **Qabul qiladigan parametrlari (Props):**
+  - `make`
+  - `model`
+  - `photoUrl`
+  - `bodyStyle`
+  - `type`
+  - `height`
+  - `onPhotoLoaded`
+* **Import qilgan bog'liqliklari:**
+  - `react`
+  - `../services/vehicleApiService`
+  - `./VehicleGradientCard`
 
 ### 📦 [MichiLogo](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/MichiLogo.jsx)
 * **Fayl yo'li:** `src/components/MichiLogo.jsx` (28 qator, 776 bayt)
@@ -292,7 +368,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (5218 qator, 276385 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (5871 qator, 300049 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -355,6 +431,8 @@ graph TD
   - `./ResumeBuilder`
   - `./AssistHeroShowcase`
   - `./JapaneseVehiclePickerModal`
+  - `../services/vehicleApiService`
+  - `../data/japaneseVehiclesMaster`
 
 ### 📦 [ResumeBuilder](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/ResumeBuilder.jsx)
 * **Fayl yo'li:** `src/components/ResumeBuilder.jsx` (1271 qator, 51913 bayt)
@@ -374,7 +452,7 @@ graph TD
   - `../utils/resumeGenerator`
 
 ### 📦 [RobotAvatar](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/RobotAvatar.jsx)
-* **Fayl yo'li:** `src/components/RobotAvatar.jsx` (44 qator, 1417 bayt)
+* **Fayl yo'li:** `src/components/RobotAvatar.jsx` (52 qator, 1941 bayt)
 * **Komponent Stillari:** 🎨 [RobotAvatar.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/RobotAvatar.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `isVoiceActive`
@@ -382,6 +460,7 @@ graph TD
   - `onClick`
 * **Import qilgan bog'liqliklari:**
   - `react`
+  - `react-i18next`
 
 ### 📦 [RoleSelect](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/RoleSelect.jsx)
 * **Fayl yo'li:** `src/components/RoleSelect.jsx` (1132 qator, 55242 bayt)
@@ -415,6 +494,19 @@ graph TD
   - `react`
   - `./MichiLogo`
 
+### 📦 [VehicleGradientCard](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VehicleGradientCard.jsx)
+* **Fayl yo'li:** `src/components/VehicleGradientCard.jsx` (130 qator, 4195 bayt)
+* **Unit Testlari:** 🧪 [VehicleGradientCard.test.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VehicleGradientCard.test.jsx)
+* **Qabul qiladigan parametrlari (Props):**
+  - `make`
+  - `model`
+  - `bodyStyle`
+  - `type`
+  - `height`
+* **Import qilgan bog'liqliklari:**
+  - `react`
+  - `lucide-react`
+
 ### 📦 [VerifiedBadge](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VerifiedBadge.jsx)
 * **Fayl yo'li:** `src/components/VerifiedBadge.jsx` (29 qator, 830 bayt)
 * **Qabul qiladigan parametrlari (Props):**
@@ -423,7 +515,7 @@ graph TD
   - `react`
 
 ### 📦 [VoiceAssistant](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.jsx)
-* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (3188 qator, 135972 bayt)
+* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (3188 qator, 136058 bayt)
 * **Komponent Stillari:** 🎨 [VoiceAssistant.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `isActive`
@@ -472,6 +564,67 @@ graph TD
 
 ---
 
+## 🗄️ Ma'lumotlar Bazalari va Modullar (Data Services)
+
+### 🗄️ [japanCities.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japanCities.js)
+* **Yo'li:** `src/data/japanCities.js` (649 qator, 29703 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `getCitiesByPrefecture`
+  - `JAPAN_CITIES_BY_PREFECTURE`
+
+### 🗄️ [japanLocationDB.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japanLocationDB.js)
+* **Yo'li:** `src/data/japanLocationDB.js` (562 qator, 18190 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `getAllTrainLines`
+  - `getAllCities`
+  - `REGIONS`
+  - `PREFECTURES`
+  - `CITIES_BY_PREFECTURE`
+  - `TRAIN_LINES_BY_PREFECTURE`
+
+### 🗄️ [japanRegions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japanRegions.js)
+* **Yo'li:** `src/data/japanRegions.js` (124 qator, 5306 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `JAPAN_REGIONS`
+  - `ALL_47_PREFECTURES`
+
+### 🗄️ [japanStations.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japanStations.js)
+* **Yo'li:** `src/data/japanStations.js` (266 qator, 12437 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `getAllTrainLineOptions`
+  - `getStationsByLine`
+  - `getStationsByPrefecture`
+  - `JAPAN_STATIONS_BY_PREFECTURE`
+
+### 🗄️ [japaneseVehiclesDb.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseVehiclesDb.js)
+* **Yo'li:** `src/data/japaneseVehiclesDb.js` (306 qator, 9116 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `queryJapaneseVehicles`
+  - `JAPANESE_AUTOMAKERS`
+  - `HISTORICAL_ERAS`
+  - `JAPANESE_VEHICLE_DATABASE`
+
+### 🗄️ [japaneseVehiclesMaster.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseVehiclesMaster.js)
+* **Yo'li:** `src/data/japaneseVehiclesMaster.js` (145 qator, 21452 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `queryMasterJapaneseVehicles`
+  - `JAPANESE_AUTOMAKERS_MASTER`
+  - `JAPANESE_HISTORICAL_ERAS`
+  - `MASTER_VEHICLE_DATABASE`
+
+### 🗄️ [jobCategories.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/jobCategories.js)
+* **Yo'li:** `src/data/jobCategories.js` (39 qator, 3163 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `JOB_CATEGORIES`
+
+### 🗄️ [jobFeatures.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/jobFeatures.js)
+* **Yo'li:** `src/data/jobFeatures.js` (144 qator, 7026 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `JOB_FEATURES`
+
+
+---
+
 ## 🛠️ Yordamchi Funksiyalar (Utils)
 
 ### ⚙️ [bookmarkManager.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/bookmarkManager.js)
@@ -487,12 +640,6 @@ graph TD
   - `BOOKMARK_CATEGORIES()`
 * **Importlari:** *Yo'q*
 
-### ⚙️ [bookmarkManager.test.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/bookmarkManager.test.js)
-* **Yo'li:** `src/utils/bookmarkManager.test.js` (137 qator, 5030 bayt)
-* **Eksport qilingan funksiyalari:**
-  - *Eksportlar aniqlanmadi yoki yo'q*
-* **Importlari:** `vitest`, `./bookmarkManager`
-
 ### ⚙️ [deadReckoning.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/deadReckoning.js)
 * **Yo'li:** `src/utils/deadReckoning.js` (144 qator, 4734 bayt)
 * **Eksport qilingan funksiyalari:**
@@ -501,12 +648,6 @@ graph TD
   - `extrapolatePositionAlongRoute()`
   - `isPositionInTunnel()`
 * **Importlari:** *Yo'q*
-
-### ⚙️ [deadReckoning.test.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/deadReckoning.test.js)
-* **Yo'li:** `src/utils/deadReckoning.test.js` (99 qator, 3522 bayt)
-* **Eksport qilingan funksiyalari:**
-  - *Eksportlar aniqlanmadi yoki yo'q*
-* **Importlari:** `vitest`, `./deadReckoning`
 
 ### ⚙️ [gpsMatching.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/gpsMatching.js)
 * **Yo'li:** `src/utils/gpsMatching.js` (135 qator, 4698 bayt)
@@ -539,11 +680,19 @@ graph TD
   - `toJapaneseEraYear()`
 * **Importlari:** *Yo'q*
 
-### ⚙️ [japaneseEra.test.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/japaneseEra.test.js)
-* **Yo'li:** `src/utils/japaneseEra.test.js` (62 qator, 2156 bayt)
+### ⚙️ [japaneseZipcodeLookup.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/japaneseZipcodeLookup.js)
+* **Yo'li:** `src/utils/japaneseZipcodeLookup.js` (205 qator, 8312 bayt)
 * **Eksport qilingan funksiyalari:**
-  - *Eksportlar aniqlanmadi yoki yo'q*
-* **Importlari:** `vitest`, `./japaneseEra`
+  - `getPrefectureByPostalPrefix()`
+  - `cleanAddressKanji()`
+  - `JAPAN_PREFECTURE_MAP()`
+* **Importlari:** *Yo'q*
+
+### ⚙️ [jobPostingNormalizer.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/jobPostingNormalizer.js)
+* **Yo'li:** `src/utils/jobPostingNormalizer.js` (71 qator, 3709 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `normalizeJobPosting()`
+* **Importlari:** *Yo'q*
 
 ### ⚙️ [laneGuidance.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/laneGuidance.js)
 * **Yo'li:** `src/utils/laneGuidance.js` (181 qator, 6488 bayt)
@@ -576,24 +725,12 @@ graph TD
   - `getPrefectureTilePresets()`
 * **Importlari:** *Yo'q*
 
-### ⚙️ [offlineTileDownloader.test.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/offlineTileDownloader.test.js)
-* **Yo'li:** `src/utils/offlineTileDownloader.test.js` (83 qator, 2737 bayt)
-* **Eksport qilingan funksiyalari:**
-  - *Eksportlar aniqlanmadi yoki yo'q*
-* **Importlari:** `vitest`, `./offlineTileDownloader`
-
 ### ⚙️ [overpassRestrictions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/overpassRestrictions.js)
 * **Yo'li:** `src/utils/overpassRestrictions.js` (469 qator, 15064 bayt)
 * **Eksport qilingan funksiyalari:**
   - `checkOverpassRestrictions()`
   - `mergeRestrictionResults()`
 * **Importlari:** *Yo'q*
-
-### ⚙️ [overpassRestrictions.test.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/overpassRestrictions.test.js)
-* **Yo'li:** `src/utils/overpassRestrictions.test.js` (93 qator, 3057 bayt)
-* **Eksport qilingan funksiyalari:**
-  - *Eksportlar aniqlanmadi yoki yo'q*
-* **Importlari:** `vitest`, `./overpassRestrictions`
 
 ### ⚙️ [poiSearch.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/poiSearch.js)
 * **Yo'li:** `src/utils/poiSearch.js` (134 qator, 3682 bayt)
@@ -602,9 +739,9 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### ⚙️ [resumeGenerator.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/resumeGenerator.js)
-* **Yo'li:** `src/utils/resumeGenerator.js` (557 qator, 19227 bayt)
+* **Yo'li:** `src/utils/resumeGenerator.js` (565 qator, 19537 bayt)
 * **Eksport qilingan funksiyalari:**
-  - *Eksportlar aniqlanmadi yoki yo'q*
+  - *Eksportlar aniqlanmadi*
 * **Importlari:** `pdfmake/build/pdfmake`, `./japaneseEra`
 
 ### ⚙️ [turnInstructions.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/turnInstructions.js)
@@ -621,12 +758,6 @@ graph TD
   - `parseValhallaSteps()`
   - `decodePolyline6()`
 * **Importlari:** `./turnRadiusPhysics`, `./laneGuidance`
-
-### ⚙️ [turnInstructions.test.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/turnInstructions.test.js)
-* **Yo'li:** `src/utils/turnInstructions.test.js` (89 qator, 3199 bayt)
-* **Eksport qilingan funksiyalari:**
-  - *Eksportlar aniqlanmadi yoki yo'q*
-* **Importlari:** `vitest`, `./turnInstructions`
 
 ### ⚙️ [turnRadiusPhysics.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/turnRadiusPhysics.js)
 * **Yo'li:** `src/utils/turnRadiusPhysics.js` (410 qator, 12621 bayt)
@@ -669,73 +800,97 @@ graph TD
 
 ---
 
-## 📄 Boshqa Tizim Fayllari (Root)
+## 🤖 Avtomatizatsiya va Tekshiruv Skriptlari (Scripts)
 
-### 📄 [App.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/App.css)
-* **Yo'li:** `src/App.css` (318 qator)
-* **Importlari:** *Yo'q*
+### 🛠️ [analyze_code_logic.mjs](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/analyze_code_logic.mjs)
+* **Yo'li:** `scripts/analyze_code_logic.mjs` (166 qator, 5748 bayt)
 
-### 📄 [App.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/App.jsx)
-* **Yo'li:** `src/App.jsx` (1343 qator)
-* **Importlari:** `react`, `lucide-react`, `react-i18next`, `./components/Splash`, `./components/LanguageSelect`, `./components/RoleSelect`, `./components/BottomNav`, `./components/Dashboard`, `./components/DriverFeed`, `./components/JobDetail`, `./components/DrivingAcademy`, `./components/ServiceComingSoon`, `./components/Profile`, `./components/AdminDashboard`, `./components/CompanyHome`, `./components/VoiceAssistant`, `./components/RobotAvatar`, `./components/JDMNavigation`, `./components/AssistHeroShowcase`, `./components/ErrorBoundary`
+### 🛠️ [deep_ui_audit.mjs](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/deep_ui_audit.mjs)
+* **Yo'li:** `scripts/deep_ui_audit.mjs` (176 qator, 6700 bayt)
 
-### 📄 [en.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/en.js)
-* **Yo'li:** `src/locales/en.js` (631 qator)
-* **Importlari:** *Yo'q*
+### 🛠️ [generate_codebase_map.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/generate_codebase_map.js)
+* **Yo'li:** `scripts/generate_codebase_map.js` (316 qator, 10307 bayt)
 
-### 📄 [i18n.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/i18n.js)
-* **Yo'li:** `src/i18n.js` (13 qator)
-* **Importlari:** `i18next`, `react-i18next`, `./locales`
+### 🛠️ [generate_extra_role_screenshots.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/generate_extra_role_screenshots.js)
+* **Yo'li:** `scripts/generate_extra_role_screenshots.js` (69 qator, 2380 bayt)
 
-### 📄 [index.css](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/index.css)
-* **Yo'li:** `src/index.css` (308 qator)
-* **Importlari:** *Yo'q*
+### 🛠️ [generate_pdf_report.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/generate_pdf_report.js)
+* **Yo'li:** `scripts/generate_pdf_report.js` (445 qator, 16774 bayt)
 
-### 📄 [index.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/index.js)
-* **Yo'li:** `src/locales/index.js` (18 qator)
-* **Importlari:** `./uz.js`, `./ja.js`, `./en.js`, `./vi.js`, `./zh.js`, `./ne.js`, `./ru.js`
+### 🛠️ [generate_screenshots.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/generate_screenshots.js)
+* **Yo'li:** `scripts/generate_screenshots.js` (222 qator, 7894 bayt)
 
-### 📄 [ja.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/ja.js)
-* **Yo'li:** `src/locales/ja.js` (721 qator)
-* **Importlari:** *Yo'q*
+### 🛠️ [health_check.mjs](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/health_check.mjs)
+* **Yo'li:** `scripts/health_check.mjs` (271 qator, 8843 bayt)
 
-### 📄 [japaneseVehiclesDb.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseVehiclesDb.js)
-* **Yo'li:** `src/data/japaneseVehiclesDb.js` (306 qator)
-* **Importlari:** *Yo'q*
+### 🛠️ [validate_i18n.mjs](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/validate_i18n.mjs)
+* **Yo'li:** `scripts/validate_i18n.mjs` (152 qator, 5301 bayt)
 
-### 📄 [japaneseVehiclesMaster.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseVehiclesMaster.js)
-* **Yo'li:** `src/data/japaneseVehiclesMaster.js` (145 qator)
-* **Importlari:** *Yo'q*
+### 🛠️ [validate_layout.mjs](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/validate_layout.mjs)
+* **Yo'li:** `scripts/validate_layout.mjs` (96 qator, 2818 bayt)
 
-### 📄 [main.jsx](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/main.jsx)
-* **Yo'li:** `src/main.jsx` (69 qator)
-* **Importlari:** `react`, `react-dom/client`, `./App.jsx`
+### 🛠️ [validate_vehicle_db.mjs](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/validate_vehicle_db.mjs)
+* **Yo'li:** `scripts/validate_vehicle_db.mjs` (216 qator, 7368 bayt)
 
-### 📄 [ne.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/ne.js)
-* **Yo'li:** `src/locales/ne.js` (505 qator)
-* **Importlari:** *Yo'q*
+### 🛠️ [verify_all_47_cities.mjs](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/verify_all_47_cities.mjs)
+* **Yo'li:** `scripts/verify_all_47_cities.mjs` (68 qator, 2326 bayt)
 
-### 📄 [ru.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/ru.js)
-* **Yo'li:** `src/locales/ru.js` (70 qator)
-* **Importlari:** *Yo'q*
+### 🛠️ [verify_all_47_stations.mjs](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/verify_all_47_stations.mjs)
+* **Yo'li:** `scripts/verify_all_47_stations.mjs` (71 qator, 2703 bayt)
 
-### 📄 [uz.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/uz.js)
-* **Yo'li:** `src/locales/uz.js` (635 qator)
-* **Importlari:** *Yo'q*
 
-### 📄 [vehicleApiService.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/vehicleApiService.js)
-* **Yo'li:** `src/services/vehicleApiService.js` (184 qator)
-* **Importlari:** *Yo'q*
+---
 
-### 📄 [vehicleApiService.test.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/vehicleApiService.test.js)
-* **Yo'li:** `src/services/vehicleApiService.test.js` (75 qator)
-* **Importlari:** `vitest`, `./vehicleApiService`
+## 📜 Tizim va UI Invariant Qoidalari (.agents/rules)
 
-### 📄 [vi.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/vi.js)
-* **Yo'li:** `src/locales/vi.js` (522 qator)
-* **Importlari:** *Yo'q*
+### 📜 [01_dashboard.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/01_dashboard.md)
+* **Yo'li:** `.agents/rules/pages/01_dashboard.md` (46 qator)
 
-### 📄 [zh.js](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/locales/zh.js)
-* **Yo'li:** `src/locales/zh.js` (510 qator)
-* **Importlari:** *Yo'q*
+### 📜 [02_driver_feed.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/02_driver_feed.md)
+* **Yo'li:** `.agents/rules/pages/02_driver_feed.md` (42 qator)
+
+### 📜 [03_driving_academy.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/03_driving_academy.md)
+* **Yo'li:** `.agents/rules/pages/03_driving_academy.md` (29 qator)
+
+### 📜 [04_jdm_navigation.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/04_jdm_navigation.md)
+* **Yo'li:** `.agents/rules/pages/04_jdm_navigation.md` (23 qator)
+
+### 📜 [05_profile_main.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/05_profile_main.md)
+* **Yo'li:** `.agents/rules/pages/05_profile_main.md` (31 qator)
+
+### 📜 [06_my_ads.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/06_my_ads.md)
+* **Yo'li:** `.agents/rules/pages/06_my_ads.md` (29 qator)
+
+### 📜 [07_personal_info.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/07_personal_info.md)
+* **Yo'li:** `.agents/rules/pages/07_personal_info.md` (29 qator)
+
+### 📜 [08_applications.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/08_applications.md)
+* **Yo'li:** `.agents/rules/pages/08_applications.md` (22 qator)
+
+### 📜 [09_saved_items.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/09_saved_items.md)
+* **Yo'li:** `.agents/rules/pages/09_saved_items.md` (22 qator)
+
+### 📜 [10_notifications.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/10_notifications.md)
+* **Yo'li:** `.agents/rules/pages/10_notifications.md` (22 qator)
+
+### 📜 [11_settings.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/11_settings.md)
+* **Yo'li:** `.agents/rules/pages/11_settings.md` (23 qator)
+
+### 📜 [12_platform_about.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/12_platform_about.md)
+* **Yo'li:** `.agents/rules/pages/12_platform_about.md` (22 qator)
+
+### 📜 [13_shoukai_referrals.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/13_shoukai_referrals.md)
+* **Yo'li:** `.agents/rules/pages/13_shoukai_referrals.md` (22 qator)
+
+### 📜 [14_employee_management.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/14_employee_management.md)
+* **Yo'li:** `.agents/rules/pages/14_employee_management.md` (22 qator)
+
+### 📜 [15_filter_drawer.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/15_filter_drawer.md)
+* **Yo'li:** `.agents/rules/pages/15_filter_drawer.md` (31 qator)
+
+### 📜 [michi_ui_constraints.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/michi_ui_constraints.md)
+* **Yo'li:** `.agents/rules/michi_ui_constraints.md` (45 qator)
+
+### 📜 [past_mistakes.md](file:////Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/past_mistakes.md)
+* **Yo'li:** `.agents/rules/past_mistakes.md` (265 qator)
 
