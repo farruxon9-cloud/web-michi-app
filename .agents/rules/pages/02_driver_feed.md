@@ -8,7 +8,7 @@ Ushbu qoida loyihamizning **Vakansiyalar Ro'yxati (Jobs Feed)** sahifasi uchun b
 - **Container Selector**: `.feed-container`
 - **Flex Parent Binding**: `flex: 1; height: 100%; max-height: 100%; min-height: 0; display: flex; flex-direction: column;`
 - **Scroll Behavior**: `overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box;`
-- **Bottom Clearance**: `padding-bottom: 90px;` (yields micro-compact 6px visual gap above 84px BottomNav).
+- **Bottom Clearance**: `padding-bottom: 88px;` (yields tight 4px visual gap above 84px BottomNav).
 
 ---
 
