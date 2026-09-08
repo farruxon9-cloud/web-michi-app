@@ -1019,29 +1019,42 @@ export default function DrivingAcademy({
             </button>
 
             {isLangSectionOpen && (
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {[
-                  { id: 'all', label: t('allLanguages', 'すべての言語') },
+                  { id: 'all', label: t('allLanguages', 'すべての言語'), fullWidth: true },
                   { id: 'UZ', label: t('lang_uz', "ウズベク語 (UZ)") },
                   { id: 'JP', label: t('lang_jp', '日本語 (JP)') },
                   { id: 'EN', label: t('lang_en', '英語 (EN)') },
                   { id: 'RU', label: t('lang_ru', 'ロシア語 (RU)') }
-                ].map(l => (
-                  <button
-                    key={l.id}
-                    type="button"
-                    onClick={() => setSelectedLang(l.id)}
-                    style={{
-                      padding: '8px 12px', borderRadius: '12px', border: selectedLang === l.id ? '1px solid #AF52DE' : '1px solid var(--glass-border)',
-                      background: selectedLang === l.id ? 'rgba(175, 82, 222, 0.12)' : 'var(--glass-bg)',
-                      color: selectedLang === l.id ? '#AF52DE' : 'var(--text-main)',
-                      fontWeight: selectedLang === l.id ? '800' : '600', fontSize: '13px',
-                      cursor: 'pointer', transition: 'all 0.15s ease'
-                    }}
-                  >
-                    {l.label}
-                  </button>
-                ))}
+                ].map(l => {
+                  const isSelected = selectedLang === l.id;
+                  return (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => setSelectedLang(l.id)}
+                      style={{
+                        gridColumn: l.fullWidth ? 'span 2' : 'span 1',
+                        padding: '10px 12px',
+                        borderRadius: '12px',
+                        border: isSelected ? '1.5px solid #AF52DE' : '1px solid var(--glass-border)',
+                        background: isSelected ? 'rgba(175, 82, 222, 0.12)' : 'var(--card-bg)',
+                        color: isSelected ? '#AF52DE' : 'var(--text-main)',
+                        fontWeight: isSelected ? '800' : '600',
+                        fontSize: '12.5px',
+                        textAlign: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: isSelected ? '0 2px 8px rgba(175, 82, 222, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.02)',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {l.label}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1085,29 +1098,42 @@ export default function DrivingAcademy({
             </button>
 
             {isPriceSectionOpen && (
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {[
-                  { id: 'all', label: t('allPrices', 'すべての価格帯') },
+                  { id: 'all', label: t('allPrices', 'すべての価格帯'), fullWidth: true },
                   { id: 'under250k', label: '~¥250,000' },
                   { id: '250k_300k', label: '¥250,000 ~ ¥300,000' },
                   { id: '300k_350k', label: '¥300,000 ~ ¥350,000' },
                   { id: 'over350k', label: '¥350,000~' }
-                ].map(p => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setSelectedPriceRange(p.id)}
-                    style={{
-                      padding: '8px 12px', borderRadius: '12px', border: selectedPriceRange === p.id ? '1px solid #30D158' : '1px solid var(--glass-border)',
-                      background: selectedPriceRange === p.id ? 'rgba(48, 209, 88, 0.12)' : 'var(--glass-bg)',
-                      color: selectedPriceRange === p.id ? '#30D158' : 'var(--text-main)',
-                      fontWeight: selectedPriceRange === p.id ? '800' : '600', fontSize: '13px',
-                      cursor: 'pointer', transition: 'all 0.15s ease'
-                    }}
-                  >
-                    {p.label}
-                  </button>
-                ))}
+                ].map(p => {
+                  const isSelected = selectedPriceRange === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSelectedPriceRange(p.id)}
+                      style={{
+                        gridColumn: p.fullWidth ? 'span 2' : 'span 1',
+                        padding: '10px 12px',
+                        borderRadius: '12px',
+                        border: isSelected ? '1.5px solid #30D158' : '1px solid var(--glass-border)',
+                        background: isSelected ? 'rgba(48, 209, 88, 0.12)' : 'var(--card-bg)',
+                        color: isSelected ? '#30D158' : 'var(--text-main)',
+                        fontWeight: isSelected ? '800' : '600',
+                        fontSize: '12.5px',
+                        textAlign: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: isSelected ? '0 2px 8px rgba(48, 209, 88, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.02)',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {p.label}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
