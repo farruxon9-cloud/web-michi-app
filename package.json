@@ -10,6 +10,8 @@
     "postbuild": "npx cap sync",
     "lint": "eslint .",
     "preview": "vite preview",
+    "find": "node scripts/fast_lookup.mjs",
+    "impact": "node scripts/analyze_impact.mjs",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "test": "vitest run",

@@ -63,3 +63,6 @@
     - Har qanday yangi interfeys matni, modal sarlavhasi yoki dinamik holat (status) kaliti yaratilganda u barcha **8 ta locale faylida** (`src/locales/{uz,ja,en,id,vi,ru,zh,ne}.js`) teng va to'liq tarjima qilinishi SHART.
     - Qaysidir til faylida kalit tushib qolishi yoki yapon/inglizcha matn boshqa tillarga placeholder qilib qoldirilishi MAN ETILADI.
     - Candidate Resume (`candidateResume`, `fullNameLabel`, `jlptVerified`, `viewResumeBtn`, `hideResumeBtn`), App Statuses (`statusSubmitted`, `statusReviewing`, `statusReviewed`, `statusInterview`, `statusAccepted`, `statusRejected`) hamda HR status simulyatsiya tugmalari har bir tilda 100% toza aks etishi majburiydir.
+18. **Sticky Back Button Bounded Scroll Container Invariant (Rule 18)**:
+    - Sticky ortga qaytish tugmasi (`position: sticky; top: 16px; z-index: 300`) joylashgan ota-konteyner HECH QACHON `height: 100%` yoki `max-height: 100%` bilan cheklanmasligi shart (agarda ichki scroll emas, tashqi `.sub-page-view` scroll qilinsa).
+    - Agarda ota-konteyner `height: 100%` ga ega bo'lsa, `height: auto; maxHeight: none; overflow-y: visible;` inline-style override qo'llanib, ota-konteyner balandligi forma kontentining to'liq balandligiga mos ravishda tabiiy ravishda cho'zilishi kafolatlanishi shart.

@@ -695,44 +695,16 @@ export default function DriverFeed({
   };
 
   const getEmploymentLabel = (empId) => {
-    const found = JOB_FEATURES.employment.options.find(o => o.id === empId);
-    if (!found) return empId;
-    if (currentLang === 'uz') return found.nameUz || found.name;
-    if (currentLang === 'en') return found.nameEn || found.name;
-    return found.name;
+    const item = JOB_FEATURES.employment.options.find(opt => opt.id === empId);
+    if (!item) return empId;
+    if (currentLang === 'uz') return item.nameUz || item.name;
+    if (currentLang === 'en') return item.nameEn || item.name;
+    return item.name;
   };
 
-  const getFeatureLabel = (featId) => {
-    const found = JOB_FEATURES.special.options.find(o => o.id === featId);
-    if (!found) return featId;
-    if (currentLang === 'uz') return found.nameUz || found.name;
-    if (currentLang === 'en') return found.nameEn || found.name;
-    return found.name;
-  };
-
-  const getDurationLabel = (durId) => {
-    const found = JOB_FEATURES.duration.options.find(o => o.id === durId);
-    if (!found) return durId;
-    if (currentLang === 'uz') return found.nameUz || found.name;
-    if (currentLang === 'en') return found.nameEn || found.name;
-    return found.name;
-  };
-
-  const getTimeSlotLabel = (tsId) => {
-    const found = JOB_FEATURES.timeSlot.options.find(o => o.id === tsId);
-    if (!found) return tsId;
-    if (currentLang === 'uz') return found.nameUz || found.name;
-    if (currentLang === 'en') return found.nameEn || found.name;
-    return found.name;
-  };
-
-  /* ========================================================================
-     LOCATION & FEATURE INLINE FILTER PAGE VIEW
-     Modal overlay-lar o'rniga CompanyHome.jsx kabi ketma-ketlikdagi oddiy sahifa.
-     ======================================================================== */
   if (isFilterDrawerOpen) {
     return (
-      <div className="feed-container fade-in hide-scrollbar" style={{ flex: 1, height: '100%', maxHeight: '100%', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px 14px 160px 14px', boxSizing: 'border-box', position: 'relative' }}>
+      <div className="feed-container fade-in hide-scrollbar" style={{ flex: 1, height: '100%', maxHeight: '100%', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '6px 14px 0 14px', boxSizing: 'border-box', position: 'relative' }}>
         
         {/* ONLY Pinned Sticky Back Button (Stays sticky at top: 0, z-index: 300) */}
         <div style={{
@@ -770,7 +742,7 @@ export default function DriverFeed({
           justifyContent: 'center',
           position: 'relative',
           minHeight: '40px',
-          marginBottom: '16px',
+          marginBottom: '4px',
           boxSizing: 'border-box'
         }}>
           {/* Centered Title */}
@@ -806,7 +778,7 @@ export default function DriverFeed({
         </div>
 
         {/* Scrollable Filter Form Body in sequence */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           
           {/* SECTION 1: Prefektura va Shaharlar (市区町村) */}
           <div className="job-category-section" style={{
@@ -1367,6 +1339,9 @@ export default function DriverFeed({
             )}
           </div>
         </div>
+
+        {/* Learned Rule Invariant: 160px Clearance Spacer so filter content scrolls past floating CTA button (148px dock top + 12px gap = 160px) */}
+        <div style={{ height: '160px', minHeight: '160px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
         {/* Pinned Search CTA Button Dock — floating exactly 12px above BottomNav */}
         <div style={{

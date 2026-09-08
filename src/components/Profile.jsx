@@ -215,7 +215,7 @@ export default function Profile({
           <div className="skeleton-pulse skeleton-row" />
           <div className="skeleton-pulse skeleton-row" />
         </div>
-        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2312,7 +2312,7 @@ const getLicenseLabel = (type) => {
           )}
         </div>
         {/* 96px dock clearance so notifications list scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2416,7 +2416,7 @@ const getLicenseLabel = (type) => {
           </div>
         </div>
         {/* 96px dock clearance so settings menu scroll cleanly past floating BottomNav */}
-        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2720,7 +2720,7 @@ const getLicenseLabel = (type) => {
           applications={applications}
           schoolApplications={schoolApplications}
         />
-        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3182,7 +3182,7 @@ const getLicenseLabel = (type) => {
           </div>
         </div>
         {/* 96px dock clearance so personal info page content scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3591,7 +3591,7 @@ const getLicenseLabel = (type) => {
           )}
         </div>
         {/* 96px dock clearance so applications list scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3690,7 +3690,7 @@ const getLicenseLabel = (type) => {
           )}
         </div>
         {/* 96px dock clearance so saved items list scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3816,7 +3816,7 @@ const getLicenseLabel = (type) => {
           )}
         </div>
         {/* 96px dock clearance so my shoukai list scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3920,7 +3920,7 @@ const getLicenseLabel = (type) => {
 
         </div>
         {/* 96px dock clearance so employees list scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -5887,8 +5887,8 @@ const getLicenseLabel = (type) => {
         </button>
       </div>
 
-      {/* 96px dock clearance so logout button and profile menu scroll cleanly past floating BottomNav (96px - 84px = 12px gap) */}
-      <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* 100px dock clearance so logout button lifts cleanly above floating BottomNav (100px - 84px = 16px gap) */}
+      <div style={{ height: '100px', minHeight: '100px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
       {/* Universal Japanese Vehicle Fleet Picker Modal */}
       <JapaneseVehiclePickerModal

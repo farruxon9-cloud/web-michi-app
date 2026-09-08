@@ -204,7 +204,7 @@
   padding: 0 14px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .menu-group {
@@ -736,7 +736,7 @@ html.light-mode .contract-btn:active {
   font-weight: 600;
   cursor: pointer;
   width: 100%;
-  margin-top: 8px !important;
+  margin-top: 0 !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
 }
 

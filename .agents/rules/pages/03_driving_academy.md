@@ -35,7 +35,8 @@ Ushbu qoida **Avtomaktablar (Driving Academy)** bo'limi uchun barcha layout va g
   4. **Instruction Languages**: `UZ`, `JP`, `EN`, `RU`, `ZH`, `VI`.
   5. **Price Range Brackets**: `~¥250,000`, `¥250k ~ ¥300k`, `¥300k ~ ¥350k`, `¥350,000~` (Rendered in symmetrical 2-column CSS Grid `repeat(2, 1fr)` with `allPrices` spanning 2 columns, eliminating awkward whitespace).
   6. **Perks & Features**: `shuttle` (無料送迎バス), `dormitory` (宿舎・食事付き), `subsidy` (教育訓練給付金対象), `installment` (ローン・分割払いOK), `nightClass` (ナイター教習), `femaleInstructor` (女性指導員), `kidsRoom` (託児所完備), `shoukai` (紹介手当).
-- **Explicit 120px Trailing Dock Clearance Spacer**: Dedicated `<div style={{ height: '120px', minHeight: '120px', width: '100%', flexShrink: 0, clear: 'both' }} />` spacer directly following Section 6 (`こだわり条件・特典`), so Section 6 floats cleanly above the fixed Search CTA button (`bottom: 96px`, `height: 52px`) and halts with an EXACT **12px clearance gap**!
+- **Explicit 160px Trailing Dock Clearance Spacer**: Dedicated `<div style={{ height: '160px', minHeight: '160px', width: '100%', flexShrink: 0, clear: 'both' }} />` spacer directly following Section 6 (`こだわり条件・特典`), so Section 6 floats cleanly past the fixed Search CTA button (`bottom: 96px`, `height: 52px` -> Top Edge = `148px`) and halts with an EXACT **12px clearance gap** (`160px - 148px = 12px`)!
+- **100% Initial State Reset & Accordion Collapse Invariant (Rule 49)**: `resetFilters` (`リセット`) MUST clear all filter value selections AND collapse all 6 accordion sections back to default folded state (`false`), resetting activeTab to `'course'` and visibleCount to `10`.
 
 ---
 
@@ -54,3 +55,6 @@ Ushbu qoida **Avtomaktablar (Driving Academy)** bo'limi uchun barcha layout va g
 2. **No Missing Back Button Offset**: Back button must never collide with screen notch or title text.
 3. **No Hardcoded Static Filter Lists**: Filters must dynamically filter all mock and server school items across all attributes.
 4. **No Header Overlapping**: Filter header elements must never stack on separate unpinned layers.
+5. **No Partial Filter Resets**: Never leave accordion sections open or active tabs un-reset when clicking `リセット`.
+6. **No Undefined Variable References in Active Chips**: Never reference singular or un-declared state variables (like `selectedCourse` or `onlyShoukai`) in active filter chips.
+

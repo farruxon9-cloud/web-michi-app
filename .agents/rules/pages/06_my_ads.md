@@ -19,10 +19,28 @@ Ushbu qoida **Mening E'lonlarim (`マイ掲載一覧`)** sahifasi uchun barcha l
 ---
 
 ## ⚓ 3. Bottom Clearance & Trailing Spacer
-- **Explicit Trailing Spacer**: `<div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />` (Placed inside `Profile.jsx` and `CompanyHome.jsx`).
-- **Visual Gap Result**: Last card halts with a clean, spacious clearance gap above `BottomNav` without being covered.
+- **Explicit Trailing Spacer**: `<div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />` (Placed inside `CompanyHome.jsx` form views).
+- **Visual Gap Result**: `求人を掲載する` ("Publish Job") button halts **100% ULTRA-SNUG with minimal zero-void clearance gap** directly adjacent to the top boundary of `BottomNav` (`12px` spacer + `16px` flex gap = `28px` total clearance).
 
 ---
 
-## 🚫 4. Forbidden Patterns
-1. **No Missing Trailing Spacer**: `CompanyHome` must always include the trailing 96px clearance spacer div to prevent iOS scroll collapsing.
+## 📍 4. Sticky Back Button & Unbounded Form Scroll Container Invariant
+- **Unbounded Form Scroll Container**: `CompanyHome.jsx` formasida `renderForm()`, `showJobTypeSelect` va `showAdTypeSelect` ko'rinishlarida outer `.feed-container` elementiga har doim `height: auto; maxHeight: none; overflowY: visible; display: block; paddingBottom: 0px;` xossalari berilishi SHART.
+- **Sticky Pinning Scope**: Ota-konteyner `height: 100%` bilan cheklanmasligi sababli `.profile-sticky-back` (`top: 16px; z-index: 300`) ortga qaytish tugmasi butun forma balandligi bo'ylab (2000px+) eng pastki tugmagacha uzliksiz PINNED bo'lib turadi.
+- **Trailing Dock Clearance Spacer**: Forma oxiriga `<div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0 }} />` joylashtirilishi shart.
+
+---
+
+## 🚫 5. Forbidden Patterns
+1. **No Missing Trailing Spacer**: `CompanyHome` must always include the trailing 12px clearance spacer div to prevent iOS scroll collapsing while maintaining ultra-compact BottomNav alignment.
+2. **No Height Capped Sticky Parents**: Never render sticky header back buttons inside `.feed-container` wrappers that lack `height: auto; maxHeight: none;` overrides, which clips container height to viewport and stops sticky pinning halfway down the form.
+
+---
+
+## 📋 6. Tarixiy Kamchilik va Yechim (Defect History & Compact Clearance Resolution)
+- **Kamchilik**: `CompanyHome.jsx` faylidagi **マイ掲載一覧** (Mening E'lonlarim) asosiy ro'yxati hamda e'lon yaratish formalarida (`showAddForm`, `showJobTypeSelect`, `showAdTypeSelect`) eng oxirgi kartochka va submit tugmalari ostida 80px–124px li ortiqcha spacer hamda `padding-bottom: 32px` qo'yilgan edi. Oqibatda eng pastki element va suzuvchi `BottomNav` navigatsiyasi o'rtasida 44px–60px keraksiz va xunuk ochiq bo'shliq (blank void) paydo bo'lgan.
+- **Yechim va Qoida (MAJBURIY)**:
+  1. `CompanyHome.jsx` ning barcha ko'rinishlarida (asosiy `マイ掲載一覧` ro'yxati va forma sahifalari oxirida) trailing clearance spacer strictly **`12px`** (`<div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />`) qilib o'rnatilishi SHART.
+  2. Outer `feed-container` dagi `paddingBottom: '32px'` butunlay olib tashlanib, `paddingBottom: '0px'` ga o'tkazilishi SHART.
+  3. Bu eng oxirgi e'lon kartochkasi va `+ 求人を掲載する` tugmasini pastki `BottomNav` paneli (`height: 72px`, `bottom: 12px`) bilan 100% parallel, absolyut zich hamda hech qanday keraksiz va xunuk ochiq bo'shliqlarsiz mukammal tutashishini kafolatlaydi.
+

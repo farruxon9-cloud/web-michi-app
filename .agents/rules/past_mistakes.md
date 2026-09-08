@@ -257,3 +257,34 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 ## 🚫 45. Header Container Overlap & Unpinned Header Controls
 * **Xatolik**: Headerdagi title matni yoki action tugmalari (masalan, `リセット`) ortga qaytish tugmasi bilan birgalikda sticky qilib qo'yilishi yoki o'ng/chap chetlardagi konteynerlar ustma-ust (overlap) tushib, sarlavha matnini ekran markazidan siljitib yuborishi. Shuningdek status tugmalarida oddiy emojilardan foydalanish.
 * **Yechim**: Header bo'limlarida har doim FAQAT va FAQAT ⬅️ Ortga Qaytish Tugmasi (`40x40px`, `border-radius: 50%`) `sticky` (pinned) qilinadi. Sarlavha containeri esa `minHeight: 40px`, `alignItems: 'center'`, `justifyContent: 'center'` bilan to'liq markazlashtiriladi hamda `margin-bottom: -40px` offseti orqali yagona horizontal baseline hosil qilinadi. Status tugmalarida emojilar o'rniga Lucide vector ikonkalari ishlatiladi.
+
+## 🚫 46. Form Submit Button & Floating BottomNav Compact Clearance Invariant
+* **Xatolik**: Forma yoki e'lon yaratish sahifalarida (`CompanyHome.jsx` -> `showAddForm`, `showJobTypeSelect`, `showAdTypeSelect`) eng pastdagi "E'lon joylash" (`+ 求人を掲載する`) va submit tugmalari ostida 84px–124px li ortiqcha spacer qo'yilishi va flex container `gap: 16px` qo'shilib, pastki menyu (`BottomNav`) o'rtasida 44px–60px keraksiz va xunuk ochiq bo'shliq (blank void) hosil qilishi.
+* **Yechim (MAJBURIY)**:
+  1. `flexDirection: 'column'` va `gap: 16px` ga ega shakl konteynerlarida trailing clearance spacer balandligi strictly **`12px`** (yoki minimal `12px`–`16px`) qilib o'rnatilishi shart.
+  2. Natijada `12px` spacer + `16px` flex gap = **28px** pastki clearance hosil bo'ladi va eng pastki e'lon joylash submit tugmasi suzuvchi `BottomNav` paneli (`height: 72px`, `bottom: 12px`, Top Edge = `84px`) bilan absolyut va zich, hech qanday keraksiz ochiq bo'shliqlarsiz mukammal va parallel tutashib turishi majburiydir.
+
+## 🚫 47. Profile Main View Logout Button BottomNav Clearance Invariant
+* **Xatolik**: Profil asosiy ko'rinishida (`Profile.jsx`) eng pastki `ログアウト` (Chiqish) tugmasi ostidagi trailing spacer `80px` qilib o'rnatilishi tufayli, `BottomNav` paneli (`height: 72px`, `bottom: 12px`, Top Edge = `84px`) tugmani 4px ga bosib/ustma-ust tushib qolishi hamda ortida qotib qolishi.
+* **Yechim (MAJBURIY)**:
+  1. `Profile.jsx` asosiy ko'rinishi oxiridagi `logout-btn` ostidagi ajratuvchi spacer balandligi strictly **`100px`** (`<div style={{ height: '100px', minHeight: '100px', width: '100%', flexShrink: 0, clear: 'both' }} />`) qilib o'rnatilishi shart.
+  2. Natijada `100px - 84px = 16px` exact visual breathing gap hosil bo'ladi va `ログアウト` tugmasi `BottomNav` ustida hech qanday ustma-ust tushmasdan, bemalol va silliq joylashishi kafolatlanadi.
+
+## 🚫 48. Floating Search CTA Dock Clearance & 12px Gap Invariant
+* **Xatolik**: Avtomaktab va ish e'lonlari filtr darchalarida (`DrivingAcademy.jsx` -> `isFilterOpen`, `DriverFeed.jsx` -> `isFilterDrawerOpen`) suzuvchi qidiruv tugmasi (`bottom: 96px`, `height: 52px` -> Top Edge = `148px`) mavjud bo'lganida, trailing clearance spacer yetarsiz (80px–120px) qilib qo'yilishi va outer padding bottom `40px` qilinishi. Bu kontentning eng oxirgi akordeon/konteynerini suzuvchi qidiruv tugmasining ostida 28px ga to'sib qolishiga, skroll to'xtab qolishiga va 12px masofa tugma ostida ko'rinmay ketishiga olib keladi.
+* **Yechim (MAJBURIY)**:
+  1. Suzuvchi qidiruv tugmasi top edge = `148px` bo'lganda, skroll clearance height strictly **`160px`** (`148px + 12px = 160px`) qilib belgilanishi shart (`<div style={{ height: '160px', minHeight: '160px', width: '100%', flexShrink: 0, clear: 'both' }} />`).
+  2. Outer `feed-container` dagi `paddingBottom: '40px'` olib tashlanib, `paddingBottom: '0px'` ga o'tkazilishi shart.
+  3. Bu filtrlar ro'yxatini suzuvchi qidiruv tugmasi ostidan 100% to'liq va silliq skroll bo'lib o'tishini hamda eng oxirgi konteyner suzuvchi tugma ustida **anig'i bilan roppa-rosa 12px vizual masofada (`160px - 148px = 12px`)** to'xtashini kafolatlaydi.
+
+## 🚫 49. Complete Initial State Reset & Accordion Collapse Invariant
+* **Xatolik**:
+  1. Filtr reset tugmasi (`resetFilters` / `リセット`) bosilganda faqatgina qiymat o'zgaruvchilarini (`selectedPrefecture`, `selectedCourses`, h.k.) nollab, foydalanuvchi ochgan akordeon bo'limlarini (`isCourseSectionOpen`, `isLocationSectionOpen`, h.k.) ochilganicha qoldirish. Bu sahifaning dastlabki toza holatiga qaytmasligiga va forma chalkash bo'lib qolishiga olib keladi.
+  2. Faol filtr chipchalari satrida (`active-filter-chips-row`) e'lon qilinmagan o'zgaruvchilarga (`selectedCourse` singular, `onlyShoukai`) murojaat qilish. Bu filtr tanlanganda JavaScript `ReferenceError` xatosini berib ilovani qotirib qo'yadi.
+* **Yechim (MAJBURIY)**:
+  1. **100% Dastlabki Holatga Qaytish (Full Initial State Restore)**: `resetFilters` tugmasi bosilganda tanlangan barcha filtr qiymatlari tozallanishi Bilan birga, ochilgan barcha akordeon bo'limlari strictly yig'ilib yopilishi (`setIsSectionOpen(false)`), faol tab dastlabki tabga (`activeFilterTab = 'course'`) va sahifalash `10` ga o'tkazilishi SHART.
+  2. **Safe Multi-Select Chip Arrays**: Active chip darchalarida barqaror va e'lon qilingan massiv holatlaridan (`selectedCourses.map`, `selectedStyles.map`, `selectedFeatures.map`) foydalanilishi hamda e'lon qilinmagan yagona o'zgaruvchilarga murojaat QAT'IYAN TAQIQLANADI.
+
+
+
+

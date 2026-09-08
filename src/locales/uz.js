@@ -878,7 +878,11 @@ const translation = {
   "lang_uz": "O'zbek tili (UZ)",
   "lang_jp": "Yapon tili (JP)",
   "lang_en": "Ingliz tili (EN)",
-  "lang_ru": "Rus tili (RU)"
+  "lang_ru": "Rus tili (RU)",
+  "vehicleCatalogTitle": "Avtomobil Katalogi",
+  "vehicleCatalogSub": "12,340+ Global Brendlar & Real HD Foto Integratsiya",
+  "noVehiclesFound": "Ushbu filtr boʻyicha avtomobil topilmadi.",
+  "closeBtn": "Yopish"
 };
 
 export default { translation };

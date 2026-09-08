@@ -293,6 +293,7 @@ export default function DrivingAcademy({
     (searchQuery && searchQuery.length > 0);
 
   const resetFilters = () => {
+    // 1. Reset all filter value selections
     setSelectedPrefecture('all');
     setSelectedCourses([]);
     setSelectedStyles([]);
@@ -300,6 +301,20 @@ export default function DrivingAcademy({
     setSelectedPriceRange('all');
     setSelectedFeatures([]);
     if (setSearchQuery) setSearchQuery('');
+
+    // 2. Collapse all filter accordion sections back to default folded state (Rule 20)
+    setIsLocationSectionOpen(false);
+    setIsCourseSectionOpen(false);
+    setIsStyleSectionOpen(false);
+    setIsLangSectionOpen(false);
+    setIsPriceSectionOpen(false);
+    setIsFeatureSectionOpen(false);
+
+    // 3. Reset active tab indicator back to default 'course' tab
+    setActiveFilterTab('course');
+
+    // 4. Reset pagination count
+    setVisibleCount(10);
   };
 
   // Reset pagination when search query or filters change
@@ -685,7 +700,7 @@ export default function DrivingAcademy({
     };
 
     return (
-      <div className="feed-container fade-in hide-scrollbar" style={{ flex: 1, height: '100%', maxHeight: '100%', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 14px 40px 14px', boxSizing: 'border-box', position: 'relative' }}>
+      <div className="feed-container fade-in hide-scrollbar" style={{ flex: 1, height: '100%', maxHeight: '100%', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 14px 0 14px', boxSizing: 'border-box', position: 'relative' }}>
         
         {/* ONLY Pinned Sticky Back Button (Stays sticky at top: 0, z-index: 300) */}
         <div style={{
@@ -1204,8 +1219,8 @@ export default function DrivingAcademy({
 
         </div>
 
-        {/* Learned Rule Invariant: Compact 124px Trailing Dock Clearance Spacer (Rule 7, Rule 8, Rule 13 Item 49) */}
-        <div style={{ height: '124px', minHeight: '124px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* Learned Rule Invariant: 160px Clearance Spacer so filter content scrolls past floating CTA button (148px dock top + 12px gap = 160px) */}
+        <div style={{ height: '160px', minHeight: '160px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
         {/* Pinned Search CTA Button Dock — floating 12px above BottomNav */}
         <div style={{
@@ -1294,11 +1309,21 @@ export default function DrivingAcademy({
         {/* Active Filter Chips */}
         {hasActiveFilters && (
           <div className="active-filter-chips-row hide-scrollbar" style={{ marginTop: '8px' }}>
-            {selectedCourse !== 'all' && (
-              <span className="active-chip" onClick={() => setSelectedCourse('all')}>
-                📚 {selectedCourse} <X size={12} />
+            {selectedCourses.length > 0 && selectedCourses.map(course => (
+              <span key={course} className="active-chip" onClick={() => setSelectedCourses(prev => prev.filter(c => c !== course))}>
+                🚗 {course} <X size={12} />
               </span>
-            )}
+            ))}
+            {selectedStyles.length > 0 && selectedStyles.map(style => (
+              <span key={style} className="active-chip" onClick={() => setSelectedStyles(prev => prev.filter(s => s !== style))}>
+                🏫 {style} <X size={12} />
+              </span>
+            ))}
+            {selectedFeatures.length > 0 && selectedFeatures.map(feat => (
+              <span key={feat} className="active-chip" onClick={() => setSelectedFeatures(prev => prev.filter(f => f !== feat))}>
+                ✨ {feat} <X size={12} />
+              </span>
+            ))}
             {selectedPrefecture !== 'all' && (
               <span className="active-chip" onClick={() => setSelectedPrefecture('all')}>
                 📍 {selectedPrefecture} <X size={12} />
@@ -1309,13 +1334,18 @@ export default function DrivingAcademy({
                 🗣️ {selectedLang} <X size={12} />
               </span>
             )}
-            {onlyShoukai && (
-              <span className="active-chip" onClick={() => setOnlyShoukai(false)}>
-                🎁 {t('shoukaiBonusOnly', 'Shoukai mukofotli')} <X size={12} />
+            {selectedPriceRange !== 'all' && (
+              <span className="active-chip" onClick={() => setSelectedPriceRange('all')}>
+                💰 {selectedPriceRange} <X size={12} />
+              </span>
+            )}
+            {searchQuery && searchQuery.length > 0 && (
+              <span className="active-chip" onClick={() => setSearchQuery && setSearchQuery('')}>
+                🔍 {searchQuery} <X size={12} />
               </span>
             )}
             <span className="clear-all-chip" onClick={resetFilters}>
-              {t('clearFilters', 'Tozalash')}
+              {t('clearAll', 'リセット')}
             </span>
           </div>
         )}

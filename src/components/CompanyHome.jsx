@@ -722,17 +722,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     };
 
     return (
-      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '14px', position: 'relative' }}>
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', height: 'auto', maxHeight: 'none', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px', position: 'relative' }}>
         {/* Pinned Sticky Back Button */}
-        <div style={{ 
-          position: 'sticky', 
-          top: '16px', 
-          left: '16px', 
-          zIndex: 120, 
-          width: 'fit-content',
-          marginBottom: '-40px',
-          pointerEvents: 'none'
-        }}>
+        <div className="profile-sticky-back" style={{ zIndex: 300, top: '16px' }}>
           <button 
             className="icon-btn glass animate-scale-up" 
             onClick={handleFormBack}
@@ -1483,11 +1475,11 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             className="btn-primary squircle" 
             style={{ 
               width: '100%', 
-              padding: '16px', 
-              fontSize: '17px', 
+              padding: '14px', 
+              fontSize: '16px', 
               fontWeight: '700', 
               marginBottom: '0px',
-              boxShadow: '0 8px 24px rgba(90, 85, 234, 0.4)',
+              boxShadow: '0 6px 20px rgba(90, 85, 234, 0.35)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1499,6 +1491,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             {isAdCourse ? t('publishSchoolAd') : t('publishJob')}
           </button>
 
+          {/* Trailing Clearance Spacer */}
+          <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0 }} />
         </div>
       </div>
     );
@@ -1506,17 +1500,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
   if (showJobTypeSelect) {
     return (
-      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px', position: 'relative' }}>
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', height: 'auto', maxHeight: 'none', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px', position: 'relative' }}>
         {/* Pinned Sticky Back Button */}
-        <div style={{ 
-          position: 'sticky', 
-          top: '12px', 
-          left: '16px', 
-          zIndex: 120, 
-          width: 'fit-content',
-          marginBottom: '-40px',
-          pointerEvents: 'none'
-        }}>
+        <div className="profile-sticky-back" style={{ zIndex: 300, top: '16px' }}>
           <button 
             className="icon-btn glass animate-scale-up" 
             onClick={handleFormBack}
@@ -1600,6 +1586,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               </p>
             </div>
           </div>
+          {/* Trailing Clearance Spacer */}
+          <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0 }} />
         </div>
       </div>
     );
@@ -1607,17 +1595,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
   if (showAdTypeSelect) {
     return (
-      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px', position: 'relative' }}>
+      <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', height: 'auto', maxHeight: 'none', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px', position: 'relative' }}>
         {/* Pinned Sticky Back Button */}
-        <div style={{ 
-          position: 'sticky', 
-          top: '12px', 
-          left: '16px', 
-          zIndex: 120, 
-          width: 'fit-content',
-          marginBottom: '-40px',
-          pointerEvents: 'none'
-        }}>
+        <div className="profile-sticky-back" style={{ zIndex: 300, top: '16px' }}>
           <button 
             className="icon-btn glass animate-scale-up" 
             onClick={handleFormBack}
@@ -1688,6 +1668,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               </p>
             </div>
           </div>
+          {/* Trailing Clearance Spacer */}
+          <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0 }} />
         </div>
       </div>
     );
@@ -1696,7 +1678,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   
   // ===== MAIN JOB LIST =====
   return (
-    <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', overflowY: 'visible', paddingTop: '10px', paddingBottom: '32px' }}>
+    <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', height: 'auto', maxHeight: 'none', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
       
       {/* ADD ANNOUNCEMENT BUTTON CARD */}
       <div style={{ padding: '0 14px', marginBottom: '24px' }}>
@@ -1973,8 +1955,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       )}
 
 
-      {/* Explicit BottomNav clearance spacer for spacious clearance gap */}
-      <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* Explicit BottomNav clearance spacer for compact clearance gap */}
+      <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
     </div>
   );
 }

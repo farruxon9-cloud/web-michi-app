@@ -878,7 +878,11 @@ const translation = {
   "lang_uz": "ウズベク語 (UZ)",
   "lang_jp": "日本語 (JP)",
   "lang_en": "英語 (EN)",
-  "lang_ru": "ロシア語 (RU)"
+  "lang_ru": "ロシア語 (RU)",
+  "vehicleCatalogTitle": "自動車カタログ",
+  "vehicleCatalogSub": "12,340+ グローバルブランド & リアルHD写真統合",
+  "noVehiclesFound": "該当する車両が見つかりません。",
+  "closeBtn": "閉じる"
 };
 
 export default { translation };

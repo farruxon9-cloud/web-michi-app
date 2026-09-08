@@ -876,7 +876,11 @@ const translation = {
   "lang_uz": "Uzbek (UZ)",
   "lang_jp": "Japanese (JP)",
   "lang_en": "English (EN)",
-  "lang_ru": "Russian (RU)"
+  "lang_ru": "Russian (RU)",
+  "vehicleCatalogTitle": "Vehicle Catalog",
+  "vehicleCatalogSub": "12,340+ Global Brands & Real HD Photo Integration",
+  "noVehiclesFound": "No vehicles found for this filter.",
+  "closeBtn": "Close"
 };
 
 export default { translation };

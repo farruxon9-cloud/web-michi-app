@@ -56,5 +56,36 @@ describe('DrivingAcademy Component Render', () => {
       />
     );
     expect(html).toContain('feed-container');
+    expect(html).toContain('filter-toggle-btn');
+  });
+
+  it('renders active filter chips safely when searchQuery is present without crashing', () => {
+    const html = renderToString(
+      <DrivingAcademy 
+        schools={[]} 
+        schoolApplications={[]} 
+        verifiedCompanies={[]} 
+        isContractActive={false} 
+        searchQuery="Tokyo"
+        setSearchQuery={vi.fn()}
+      />
+    );
+    expect(html).toContain('active-filter-chips-row');
+    expect(html).toContain('Tokyo');
+    expect(html).toContain('リセット');
+  });
+
+  it('renders default closed accordion sections upon reset', () => {
+    const html = renderToString(
+      <DrivingAcademy 
+        schools={[]} 
+        schoolApplications={[]} 
+        verifiedCompanies={[]} 
+        isContractActive={false} 
+      />
+    );
+    // Verified accordion default collapsed state (Rule 20)
+    expect(html).not.toContain('selected-prefecture-chip');
   });
 });
+
