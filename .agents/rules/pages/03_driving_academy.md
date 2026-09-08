@@ -33,7 +33,7 @@ Ushbu qoida **Avtomaktablar (Driving Academy)** bo'limi uchun barcha layout va g
   2. **License Categories / Offered Courses**: Multi-select chips for `Futsu`, `Oogata`, `Chugata`, `JunChugata`, `FutsuNishu`, `OogataNishu`, `Forklift`, `Tokushu`, `Nirin`.
   3. **Training Style**: Multi-select chips for `Tsugaku` (Qatnab o'qish), `Gashuku` (Yashab/Lagerda o'qish), `ShortTerm` (Tezlashtirilgan), `OnlineTheory` (Masofaviy nazariya).
   4. **Instruction Languages**: `UZ`, `JP`, `EN`, `RU`, `ZH`, `VI`.
-  5. **Price Range Brackets**: `~¥250,000`, `¥250k ~ ¥300k`, `¥300k ~ ¥350k`, `¥350,000~`.
+  5. **Price Range Brackets**: `~¥250,000`, `¥250k ~ ¥300k`, `¥300k ~ ¥350k`, `¥350,000~` (Rendered in symmetrical 2-column CSS Grid `repeat(2, 1fr)` with `allPrices` spanning 2 columns, eliminating awkward whitespace).
   6. **Perks & Features**: `shuttle` (無料送迎バス), `dormitory` (宿舎・食事付き), `subsidy` (教育訓練給付金対象), `installment` (ローン・分割払いOK), `nightClass` (ナイター教習), `femaleInstructor` (女性指導員), `kidsRoom` (託児所完備), `shoukai` (紹介手当).
 - **Explicit 120px Trailing Dock Clearance Spacer**: Dedicated `<div style={{ height: '120px', minHeight: '120px', width: '100%', flexShrink: 0, clear: 'both' }} />` spacer directly following Section 6 (`こだわり条件・特典`), so Section 6 floats cleanly above the fixed Search CTA button (`bottom: 96px`, `height: 52px`) and halts with an EXACT **12px clearance gap**!
 
