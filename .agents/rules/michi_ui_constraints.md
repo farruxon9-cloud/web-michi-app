@@ -53,3 +53,6 @@
     - Barcha 16 ta sahifa, sub-sahifa, drawer va modallar uchun `.agents/rules/pages/` katalogidagi `01_` dan `16_` gacha bo'lgan blueprint fayllari **majburiy daxlsiz standart** hisoblanadi. Kodga o'zgartirish kiritishdan oldin AI tegishli `.md` blueprintni o'qib rioya qilishi shart.
     - Yangi sahifa yoki sub-modal yaratilganda u uchun ham `.agents/rules/pages/` katalogida alohida spetsifikatsiya fayli yaratilishi shart.
     - Yangi sahifa qo'shilgandan so'ng `node scripts/deep_ui_audit.mjs` va `npx vitest run` audit skriptlari ishlatilishi va 100% Passed bo'lishi kafolatlanishi shart.
+15. **Pure Single-Language Filter Drawer Invariant**:
+    - Filtr menyularidagi (`DrivingAcademy.jsx`, `DriverFeed.jsx`) birorta sarlavha, litsenziya, dars uslubi, imtiyoz pill tugmasi yoki til tugmasi qavs ichida aralash matnlar bilan berilmasligi shart (masalan, `通学コース (Qatnab o'qish)`, `合宿免許 (Yashab/Lagerda o'qish)`, `O'zbekcha (UZ)` kabi anti-patternlar QAT'IYAN TAQIQLANADI).
+    - Barcha matnlar tegishli i18n lug'at klyuchlari (`ja.js`, `uz.js`, `en.js`, `ru.js`) orqali har bir til uchun 100% toza va yagona render qilinishi shart.

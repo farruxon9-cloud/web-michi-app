@@ -39,7 +39,18 @@ Ushbu qoida **Avtomaktablar (Driving Academy)** bo'limi uchun barcha layout va g
 
 ---
 
-## 🚫 5. Forbidden Patterns
-1. **No Missing Back Button Offset**: Back button must never collide with screen notch or title text.
-2. **No Hardcoded Static Filter Lists**: Filters must dynamically filter all mock and server school items across all attributes.
-3. **No Header Overlapping**: Filter header elements must never stack on separate unpinned layers.
+## 🌐 5. Pure Single-Language Isolation & Translation Invariant
+- **Single-Language Rule**: Every filter section header, license chip, study style option (`styleOptions`), feature pill (`featureOptions`), and language option (`languageOptions`) MUST render strictly in the active `i18n` locale (`ja`, `uz`, `en`, `ru`) via clean `t('key')` calls.
+- **Dynamic Translation Keys**:
+  - `ja`: `通学コース`, `合宿免許`, `ウズベク語 (UZ)`, `日本語 (JP)`, `英語 (EN)`, `ロシア語 (RU)`
+  - `uz`: `Qatnab o'qish kursi`, `Yashab / Lagerda o'qish`, `O'zbek tili (UZ)`, `Yapon tili (JP)`, `Ingliz tili (EN)`, `Rus tili (RU)`
+  - `en`: `Commuter Course`, `Residential Camp License`, `Uzbek (UZ)`, `Japanese (JP)`, `English (EN)`, `Russian (RU)`
+  - `ru`: `Курс с ежедневным посещением`, `Обучение с проживанием (Лагерь)`, `Узбекский (UZ)`, `Японский (JP)`, `Английский (EN)`, `Русский (RU)`
+
+---
+
+## 🚫 6. Forbidden Patterns
+1. **No Mixed Parenthetical Language Strings**: NEVER render hardcoded mixed parenthetical strings in filter chips (such as `通学コース (Qatnab o'qish)`, `合宿免許 (Yashab/Lagerda o'qish)`, `O'zbekcha (UZ)`). Every fallback string in `t('key', 'fallback')` MUST be pure single-language in the target language.
+2. **No Missing Back Button Offset**: Back button must never collide with screen notch or title text.
+3. **No Hardcoded Static Filter Lists**: Filters must dynamically filter all mock and server school items across all attributes.
+4. **No Header Overlapping**: Filter header elements must never stack on separate unpinned layers.
