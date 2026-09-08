@@ -647,33 +647,33 @@ export default function DrivingAcademy({
      ======================================================================== */
   if (isFilterOpen) {
     const courseOptions = [
-      { id: 'Futsu', icon: <Car size={15} />, name: t('lic_futsu', '普通自動車 (Futsu)') },
-      { id: 'Oogata', icon: <Truck size={15} />, name: t('lic_oogata', '大型自動車 (Oogata)') },
-      { id: 'Chugata', icon: <Truck size={15} />, name: t('lic_chugata', '中型自動車 (Chugata)') },
-      { id: 'JunChugata', icon: <Truck size={15} />, name: t('lic_junchugata', '準中型自動車 (Jun-Chugata)') },
-      { id: 'FutsuNishu', icon: <Car size={15} />, name: t('lic_futsunishu', '普通二種 (Taksi)') },
-      { id: 'OogataNishu', icon: <Bus size={15} />, name: t('lic_oogatanishu', '大型二種 (Avtobus)') },
-      { id: 'Forklift', icon: <Layers size={15} />, name: t('lic_forklift', 'フォークリフト (Forklift)') },
-      { id: 'Tokushu', icon: <Award size={15} />, name: t('lic_tokushu', '大型特殊 (Tokushu)') },
-      { id: 'Nirin', icon: <Car size={15} />, name: t('lic_nirin', '自動二輪車 (Nirin)') }
+      { id: 'Futsu', icon: <Car size={15} />, name: t('lic_futsu', '普通自動車') },
+      { id: 'Oogata', icon: <Truck size={15} />, name: t('lic_oogata', '大型自動車') },
+      { id: 'Chugata', icon: <Truck size={15} />, name: t('lic_chugata', '中型自動車') },
+      { id: 'JunChugata', icon: <Truck size={15} />, name: t('lic_junchugata', '準中型自動車') },
+      { id: 'FutsuNishu', icon: <Car size={15} />, name: t('lic_futsunishu', '普通二種 (タクシー)') },
+      { id: 'OogataNishu', icon: <Bus size={15} />, name: t('lic_oogatanishu', '大型二種 (バス)') },
+      { id: 'Forklift', icon: <Layers size={15} />, name: t('lic_forklift', 'フォークリフト') },
+      { id: 'Tokushu', icon: <Award size={15} />, name: t('lic_tokushu', '大型特殊') },
+      { id: 'Nirin', icon: <Car size={15} />, name: t('lic_nirin', '自動二輪車') }
     ];
 
     const styleOptions = [
-      { id: 'Tsugaku', icon: <Building2 size={15} />, name: t('style_tsugaku', '通学コース (Qatnab o\'qish)') },
-      { id: 'Gashuku', icon: <GraduationCap size={15} />, name: t('style_gashuku', '合宿免許 (Yashab/Lagerda o\'qish)') },
-      { id: 'ShortTerm', icon: <Clock size={15} />, name: t('style_shortterm', '短期集中コース (Tezlashtirilgan)') },
-      { id: 'OnlineTheory', icon: <Globe size={15} />, name: t('style_onlinetheory', 'オンライン学科対応 (Masofaviy nazariya)') }
+      { id: 'Tsugaku', icon: <Building2 size={15} />, name: t('style_tsugaku', '通学コース') },
+      { id: 'Gashuku', icon: <GraduationCap size={15} />, name: t('style_gashuku', '合宿免許') },
+      { id: 'ShortTerm', icon: <Clock size={15} />, name: t('style_shortterm', '短期集中コース') },
+      { id: 'OnlineTheory', icon: <Globe size={15} />, name: t('style_onlinetheory', 'オンライン学科対応') }
     ];
 
     const featureOptions = [
-      { id: 'shuttle', icon: <Bus size={15} />, name: t('feat_shuttle', '無料送迎バスあり (Free Shuttle)') },
-      { id: 'dormitory', icon: <GraduationCap size={15} />, name: t('feat_dormitory', '宿舎・食事付き (Dormitory/Meals)') },
-      { id: 'subsidy', icon: <ShieldCheck size={15} />, name: t('feat_subsidy', '教育訓練給付金対象 (Govt Subsidy)') },
-      { id: 'installment', icon: <CreditCard size={15} />, name: t('feat_installment', 'ローン・分割払いOK (Installment)') },
-      { id: 'nightClass', icon: <Clock size={15} />, name: t('feat_nightclass', 'ナイター教習対応 (Night Classes)') },
-      { id: 'femaleInstructor', icon: <Users size={15} />, name: t('feat_female', '女性指導員在籍 (Female Instructors)') },
-      { id: 'kidsRoom', icon: <Users size={15} />, name: t('feat_kidsroom', '託児所・キッズルーム (Kids Room)') },
-      { id: 'shoukai', icon: <Gift size={15} />, name: t('feat_shoukai', '紹介手当・キャッシュバック (Referral Bonus)') }
+      { id: 'shuttle', icon: <Bus size={15} />, name: t('feat_shuttle', '無料送迎バスあり') },
+      { id: 'dormitory', icon: <GraduationCap size={15} />, name: t('feat_dormitory', '宿舎・食事付き') },
+      { id: 'subsidy', icon: <ShieldCheck size={15} />, name: t('feat_subsidy', '教育訓練給付金対象') },
+      { id: 'installment', icon: <CreditCard size={15} />, name: t('feat_installment', 'ローン・分割払いOK') },
+      { id: 'nightClass', icon: <Clock size={15} />, name: t('feat_nightclass', 'ナイター教習対応') },
+      { id: 'femaleInstructor', icon: <Users size={15} />, name: t('feat_female', '女性指導員在籍') },
+      { id: 'kidsRoom', icon: <Users size={15} />, name: t('feat_kidsroom', '託児所・キッズルーム') },
+      { id: 'shoukai', icon: <Gift size={15} />, name: t('feat_shoukai', '紹介手当・キャッシュバック') }
     ];
 
     const toggleMultiSelect = (setter, list, item) => {
@@ -1022,10 +1022,10 @@ export default function DrivingAcademy({
               <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {[
                   { id: 'all', label: t('allLanguages', 'すべての言語') },
-                  { id: 'UZ', label: "O'zbekcha (UZ)" },
-                  { id: 'JP', label: 'Yaponcha (JP)' },
-                  { id: 'EN', label: 'Inglizcha (EN)' },
-                  { id: 'RU', label: 'Ruscha (RU)' }
+                  { id: 'UZ', label: t('lang_uz', "ウズベク語 (UZ)") },
+                  { id: 'JP', label: t('lang_jp', '日本語 (JP)') },
+                  { id: 'EN', label: t('lang_en', '英語 (EN)') },
+                  { id: 'RU', label: t('lang_ru', 'ロシア語 (RU)') }
                 ].map(l => (
                   <button
                     key={l.id}

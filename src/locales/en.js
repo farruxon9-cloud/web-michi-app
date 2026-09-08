@@ -850,7 +850,30 @@ const translation = {
   "customBonusPlaceholder": "Enter other benefits...",
   "searchByCities": "Search by Prefecture & City",
   "searchByStations": "Search by Train Line & Station",
-  "searchByRadius": "Search by Current Location Distance"
+  "searchByRadius": "Search by Current Location Distance",
+  "lic_futsu": "Standard Motor Vehicle (Futsu)",
+  "lic_oogata": "Heavy Truck (Oogata)",
+  "lic_chugata": "Medium Truck (Chugata)",
+  "lic_junchugata": "Semi-Medium Truck (Jun-Chugata)",
+  "lic_futsunishu": "Commercial Class 2 Taxi License",
+  "lic_oogatanishu": "Commercial Bus License",
+  "lic_tokushu": "Special Heavy Equipment",
+  "style_tsugaku": "Commuter Course",
+  "style_gashuku": "Residential Camp License",
+  "style_shortterm": "Short-Term Intensive Course",
+  "style_onlinetheory": "Online Theory Classes",
+  "feat_shuttle": "Free Shuttle Bus",
+  "feat_dormitory": "Dormitory & Meals Included",
+  "feat_subsidy": "Govt Training Subsidy Eligible",
+  "feat_installment": "Installments / Credit Available",
+  "feat_nightclass": "Night Classes Available",
+  "feat_female": "Female Instructors",
+  "feat_kidsroom": "Daycare / Kids Room",
+  "feat_shoukai": "Referral Reward / Cashback",
+  "lang_uz": "Uzbek (UZ)",
+  "lang_jp": "Japanese (JP)",
+  "lang_en": "English (EN)",
+  "lang_ru": "Russian (RU)"
 };
 
 export default { translation };

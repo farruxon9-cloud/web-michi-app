@@ -850,7 +850,30 @@ const translation = {
   "customBonusPlaceholder": "Введите другие льготы...",
   "searchByCities": "Поиск по префектурам и городам",
   "searchByStations": "Поиск по линиям и станциям",
-  "searchByRadius": "Поиск по расстоянию от текущего места"
+  "searchByRadius": "Поиск по расстоянию от текущего места",
+  "lic_futsu": "Легковой автомобиль (Futsu)",
+  "lic_oogata": "Крупногабаритный грузовик (Oogata)",
+  "lic_chugata": "Среднегабаритный грузовик (Chugata)",
+  "lic_junchugata": "Полусредний грузовик (Jun-Chugata)",
+  "lic_futsunishu": "Коммерческие права на такси",
+  "lic_oogatanishu": "Коммерческие права на автобус",
+  "lic_tokushu": "Спецтехника (Tokushu)",
+  "style_tsugaku": "Курс с ежедневным посещением",
+  "style_gashuku": "Обучение с проживанием (Лагерь)",
+  "style_shortterm": "Ускоренный интенсивный курс",
+  "style_onlinetheory": "Онлайн-теория",
+  "feat_shuttle": "Бесплатный трансферный автобус",
+  "feat_dormitory": "Проживание и питание включены",
+  "feat_subsidy": "Субсидия на обучение от государства",
+  "feat_installment": "Рассрочка / Кредит",
+  "feat_nightclass": "Вечерние занятия",
+  "feat_female": "Инструкторы-женщины",
+  "feat_kidsroom": "Детская комната",
+  "feat_shoukai": "Бонус за рекомендацию",
+  "lang_uz": "Узбекский (UZ)",
+  "lang_jp": "Японский (JP)",
+  "lang_en": "Английский (EN)",
+  "lang_ru": "Русский (RU)"
 };
 
 export default { translation };

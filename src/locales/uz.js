@@ -852,7 +852,30 @@ const translation = {
   "salary_low": "Maosh: Pastdan yuqoriga",
   "jobSubcategoryLabel": "Ish yo'nalishi va litsenziya",
   "postalCodeHelp": "※ 7 xonali indeks kiritilganda manzil avtomatik to'ldiriladi",
-  "customBonusPlaceholder": "Boshqa imtiyozlarni kiriting..."
+  "customBonusPlaceholder": "Boshqa imtiyozlarni kiriting...",
+  "lic_futsu": "Futsu yengil avtomobili",
+  "lic_oogata": "Oogata katta yuk avtomobili",
+  "lic_chugata": "Chugata o'rta yuk avtomobili",
+  "lic_junchugata": "Jun-Chugata yuk avtomobili",
+  "lic_futsunishu": "Taksi guvohnomasi (Futsu Nishu)",
+  "lic_oogatanishu": "Avtobus guvohnomasi (Oogata Nishu)",
+  "lic_tokushu": "Maxsus texnika (Tokushu)",
+  "style_tsugaku": "Qatnab o'qish kursi",
+  "style_gashuku": "Yashab / Lagerda o'qish",
+  "style_shortterm": "Tezlashtirilgan o'qish",
+  "style_onlinetheory": "Masofaviy (Online) nazariya",
+  "feat_shuttle": "Bepul avtobus qatnovi",
+  "feat_dormitory": "Yataqxona va taomlar bilan",
+  "feat_subsidy": "Davlat ta'lim subsidiyasi",
+  "feat_installment": "Bo'lib to'lash (Muddatli to'lov)",
+  "feat_nightclass": "Kechki darslar mavjud",
+  "feat_female": "Ayol yo'riqchilar mavjud",
+  "feat_kidsroom": "Bolalar xonasi / Bog'cha",
+  "feat_shoukai": "Tavsiya bonusi / Keshlash",
+  "lang_uz": "O'zbek tili (UZ)",
+  "lang_jp": "Yapon tili (JP)",
+  "lang_en": "Ingliz tili (EN)",
+  "lang_ru": "Rus tili (RU)"
 };
 
 export default { translation };

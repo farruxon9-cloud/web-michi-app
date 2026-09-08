@@ -852,7 +852,30 @@ const translation = {
   "salary_low": "給与が低い順",
   "jobSubcategoryLabel": "職種・免許",
   "postalCodeHelp": "※ 郵便番号（7桁）を入力すると住所が自動入力されます",
-  "customBonusPlaceholder": "その他の特典を入力..."
+  "customBonusPlaceholder": "その他の特典を入力...",
+  "lic_futsu": "普通自動車",
+  "lic_oogata": "大型自動車",
+  "lic_chugata": "中型自動車",
+  "lic_junchugata": "準中型自動車",
+  "lic_futsunishu": "普通二種 (タクシー)",
+  "lic_oogatanishu": "大型二種 (バス)",
+  "lic_tokushu": "大型特殊",
+  "style_tsugaku": "通学コース",
+  "style_gashuku": "合宿免許",
+  "style_shortterm": "短期集中コース",
+  "style_onlinetheory": "オンライン学科対応",
+  "feat_shuttle": "無料送迎バスあり",
+  "feat_dormitory": "宿舎・食事付き",
+  "feat_subsidy": "教育訓練給付金対象",
+  "feat_installment": "ローン・分割払いOK",
+  "feat_nightclass": "ナイター教習対応",
+  "feat_female": "女性指導員在籍",
+  "feat_kidsroom": "託児所・キッズルーム",
+  "feat_shoukai": "紹介手当・キャッシュバック",
+  "lang_uz": "ウズベク語 (UZ)",
+  "lang_jp": "日本語 (JP)",
+  "lang_en": "英語 (EN)",
+  "lang_ru": "ロシア語 (RU)"
 };
 
 export default { translation };
