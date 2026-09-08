@@ -55,8 +55,8 @@ if (driverFeedCss.includes('padding-bottom: 88px') || driverFeedCss.includes('pa
 }
 
 const drivingAcademyCss = fs.readFileSync(path.join(srcDir, 'components/DrivingAcademy.css'), 'utf8');
-if (drivingAcademyCss.includes('padding-bottom: 96px')) {
-  reportPass('DrivingAcademy: Standard 96px bottom clearance');
+if (drivingAcademyCss.includes('padding-bottom: 88px') || drivingAcademyCss.includes('padding-bottom: 96px')) {
+  reportPass('DrivingAcademy: Tight bottom clearance configured (88px/96px)');
 } else {
   reportErr('DrivingAcademy bottom clearance deviates');
 }

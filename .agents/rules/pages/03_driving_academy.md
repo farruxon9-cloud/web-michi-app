@@ -7,7 +7,7 @@ Ushbu qoida **Avtomaktablar (Driving Academy)** bo'limi uchun barcha layout va g
 ## 📐 1. Container & Layout Geometry
 - **Container Selector**: `.academy-container`
 - **Flex Layout**: `flex: 1; min-height: 0; display: flex; flex-direction: column;`
-- **Scroll**: `overflow-y: auto; padding-bottom: 96px;`
+- **Scroll**: `overflow-y: auto; padding-bottom: 88px;` (yields compact 4px visual clearance gap above 84px BottomNav).
 
 ---
 
