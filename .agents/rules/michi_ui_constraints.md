@@ -56,3 +56,6 @@
 15. **Pure Single-Language Filter Drawer Invariant**:
     - Filtr menyularidagi (`DrivingAcademy.jsx`, `DriverFeed.jsx`) birorta sarlavha, litsenziya, dars uslubi, imtiyoz pill tugmasi yoki til tugmasi qavs ichida aralash matnlar bilan berilmasligi shart (masalan, `通学コース (Qatnab o'qish)`, `合宿免許 (Yashab/Lagerda o'qish)`, `O'zbekcha (UZ)` kabi anti-patternlar QAT'IYAN TAQIQLANADI).
     - Barcha matnlar tegishli i18n lug'at klyuchlari (`ja.js`, `uz.js`, `en.js`, `ru.js`) orqali har bir til uchun 100% toza va yagona render qilinishi shart.
+16. **Symmetrical 2-Column Grid & Zero-Whitespace Invariant**:
+    - Narx va maosh diapazonlari kabi tanlov variantlarida tarqoq `flex-wrap` va o'ng tomonda ochiq vizual bo'shliqlar (awkward empty whitespace) qoldirish QAT'IYAN TAQIQLANADI.
+    - Barcha diapazon va tanlov tugmalari har doim **2 ustunli CSS Grid (`grid-template-columns: repeat(2, 1fr); gap: 8px`)** orqali 1:1 simmetrik, toza va teng 50% enida joylashtirilishi shart (`Barchasi` / `すべての...` esa `grid-column: span 2` bilan tepani to'liq qoplaydi).
