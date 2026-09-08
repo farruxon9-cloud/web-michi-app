@@ -12,7 +12,7 @@
   flex-direction: column;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 92px;
+  padding-bottom: 90px;
   box-sizing: border-box;
 }
 

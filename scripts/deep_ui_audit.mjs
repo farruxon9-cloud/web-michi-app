@@ -48,8 +48,8 @@ if (dashboardCss.includes('padding-bottom: 96px')) {
 }
 
 const driverFeedCss = fs.readFileSync(path.join(srcDir, 'components/DriverFeed.css'), 'utf8');
-if (driverFeedCss.includes('padding-bottom: 92px') || driverFeedCss.includes('padding-bottom: 96px')) {
-  reportPass('DriverFeed: Compact bottom clearance configured (92px/96px)');
+if (driverFeedCss.includes('padding-bottom: 90px') || driverFeedCss.includes('padding-bottom: 92px') || driverFeedCss.includes('padding-bottom: 96px')) {
+  reportPass('DriverFeed: Micro-compact bottom clearance configured (90px/92px/96px)');
 } else {
   reportErr('DriverFeed bottom clearance deviates');
 }
