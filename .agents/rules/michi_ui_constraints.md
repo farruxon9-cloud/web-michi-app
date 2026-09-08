@@ -59,3 +59,7 @@
 16. **Symmetrical 2-Column Grid & Zero-Whitespace Invariant**:
     - Narx va maosh diapazonlari kabi tanlov variantlarida tarqoq `flex-wrap` va o'ng tomonda ochiq vizual bo'shliqlar (awkward empty whitespace) qoldirish QAT'IYAN TAQIQLANADI.
     - Barcha diapazon va tanlov tugmalari har doim **2 ustunli CSS Grid (`grid-template-columns: repeat(2, 1fr); gap: 8px`)** orqali 1:1 simmetrik, toza va teng 50% enida joylashtirilishi shart (`Barchasi` / `すべての...` esa `grid-column: span 2` bilan tepani to'liq qoplaydi).
+17. **i18n Multi-Language Dictionary Complete Coverage Standard (Rule 42)**:
+    - Har qanday yangi interfeys matni, modal sarlavhasi yoki dinamik holat (status) kaliti yaratilganda u barcha **8 ta locale faylida** (`src/locales/{uz,ja,en,id,vi,ru,zh,ne}.js`) teng va to'liq tarjima qilinishi SHART.
+    - Qaysidir til faylida kalit tushib qolishi yoki yapon/inglizcha matn boshqa tillarga placeholder qilib qoldirilishi MAN ETILADI.
+    - Candidate Resume (`candidateResume`, `fullNameLabel`, `jlptVerified`, `viewResumeBtn`, `hideResumeBtn`), App Statuses (`statusSubmitted`, `statusReviewing`, `statusReviewed`, `statusInterview`, `statusAccepted`, `statusRejected`) hamda HR status simulyatsiya tugmalari har bir tilda 100% toza aks etishi majburiydir.

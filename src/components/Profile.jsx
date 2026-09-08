@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot, Navigation, Zap, Mic, Truck, RotateCcw, UserCheck, UserX, Car } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot, Navigation, Zap, Mic, Truck, RotateCcw, UserCheck, UserX, Car, FileCheck, Calendar } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
@@ -178,6 +178,7 @@ export default function Profile({
   setActivePage,
   profileActivePageSource,
   setProfileActivePageSource,
+  scrollToTopTrigger = 0,
   onJobClick,
   onSchoolClick,
   showProfileBadges = true,
@@ -245,6 +246,21 @@ export default function Profile({
       }
     }
   }, [activePage, savedMainScroll]);
+
+  // BottomNav'da My Page tabini takroran (2-marta) yoki sub-sahifada turib bosganda profil asosiy sahifasini eng yuqoridan scroll qilib ochish
+  React.useEffect(() => {
+    if (scrollToTopTrigger > 0) {
+      setSavedMainScroll(0);
+      const container = document.querySelector('.profile-container');
+      if (container) {
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+        container.scrollTop = 0;
+      }
+      if (window.scrollY !== 0) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [scrollToTopTrigger]);
 
   // --- STATISTIKA VA SANARLARNI HISOBLASH (DYNAMIC MENUS & USER BADGES) ---
   // Hamma bo'limlar uchun bosilgan o'zgarishlar sanoqlari (badges) dynamic ravishda hisoblanadi.
@@ -3345,15 +3361,15 @@ const getLicenseLabel = (type) => {
                       
                       {expandedAppId === app.id && (
                         <div className="applicant-resume-collapsible slide-down glass" style={{ padding: '16px', borderRadius: '12px', marginTop: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
-                          <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--primary)', fontWeight: 'bold' }}>📄 {t('myResume')}</h4>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--primary)', fontWeight: 'bold' }}>📄 {userRole === 'company' ? t('candidateResume') : t('myResume')}</h4>
                           
                           <div className="resume-grid" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('namePlaceholder').replace(' ✱', '')}:</span>
+                              <span style={{ color: '#8E8E93' }}>{t('fullNameLabel')}:</span>
                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.fullName}</strong>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                              <span style={{ color: '#8E8E93' }}>Email:</span>
+                              <span style={{ color: '#8E8E93' }}>{t('emailLabel')}:</span>
                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.email}</strong>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
@@ -3434,7 +3450,7 @@ const getLicenseLabel = (type) => {
                                 <span style={{ color: '#8E8E93' }}>{t('jlptLevelLabel')}:</span>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', background: 'rgba(48, 209, 88, 0.08)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(48, 209, 88, 0.2)' }}>
                                   <ShieldCheck size={14} color="#30D158" />
-                                  <strong style={{ color: '#30D158', fontSize: '12px' }}>JLPT {resumeInfo.jlptStatus.level} Verified ✓</strong>
+                                  <strong style={{ color: '#30D158', fontSize: '12px' }}>JLPT {resumeInfo.jlptStatus.level} {t('jlptVerified')}</strong>
                                   <span style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>({resumeInfo.jlptStatus.certNo})</span>
                                 </div>
                               </div>
@@ -3462,54 +3478,110 @@ const getLicenseLabel = (type) => {
                     <div className="demo-status-btns" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
                       <button 
                         className={`demo-btn reviewed ${app.status === 'reviewed' ? 'active' : ''}`} 
+                        disabled={app.status === 'reviewed'}
                         style={{ 
                           flex: '1 1 calc(50% - 4px)', 
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justify: 'center',
+                          gap: '6px',
+                          padding: '10px 12px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
                           background: app.status === 'reviewed' ? '#0A84FF' : 'rgba(10, 132, 255, 0.08)', 
                           color: app.status === 'reviewed' ? '#fff' : '#0A84FF',
-                          border: '1px solid rgba(10, 132, 255, 0.2)'
+                          border: '1px solid rgba(10, 132, 255, 0.2)',
+                          opacity: app.status === 'reviewed' ? 1 : 0.85,
+                          cursor: app.status === 'reviewed' ? 'default' : 'pointer',
+                          fontWeight: app.status === 'reviewed' ? '600' : '500',
+                          transition: 'all 0.2s ease'
                         }} 
                         onClick={() => onChangeAppStatus(app.id, 'reviewed')}
                       >
-                        ✓ {t('simulateReviewed')}
+                        <FileCheck size={16} />
+                        <span>{t('simulateReviewed')}</span>
+                        {app.status === 'reviewed' && <CheckCircle2 size={14} style={{ marginLeft: 'auto' }} />}
                       </button>
                       
                       <button 
                         className={`demo-btn interview ${app.status === 'interview' ? 'active' : ''}`} 
+                        disabled={app.status === 'interview'}
                         style={{ 
                           flex: '1 1 calc(50% - 4px)', 
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justify: 'center',
+                          gap: '6px',
+                          padding: '10px 12px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
                           background: app.status === 'interview' ? '#AF52DE' : 'rgba(175, 82, 222, 0.08)', 
                           color: app.status === 'interview' ? '#fff' : '#AF52DE',
-                          border: '1px solid rgba(175, 82, 222, 0.2)'
+                          border: '1px solid rgba(175, 82, 222, 0.2)',
+                          opacity: app.status === 'interview' ? 1 : 0.85,
+                          cursor: app.status === 'interview' ? 'default' : 'pointer',
+                          fontWeight: app.status === 'interview' ? '600' : '500',
+                          transition: 'all 0.2s ease'
                         }} 
                         onClick={() => onChangeAppStatus(app.id, 'interview')}
                       >
-                        📅 {t('simulateInterview')}
+                        <Calendar size={16} />
+                        <span>{t('simulateInterview')}</span>
+                        {app.status === 'interview' && <CheckCircle2 size={14} style={{ marginLeft: 'auto' }} />}
                       </button>
 
                       <button 
                         className={`demo-btn accepted ${app.status === 'accepted' ? 'active' : ''}`} 
+                        disabled={app.status === 'accepted'}
                         style={{ 
                           flex: '1 1 calc(50% - 4px)', 
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justify: 'center',
+                          gap: '6px',
+                          padding: '10px 12px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
                           background: app.status === 'accepted' ? '#34C759' : 'rgba(52, 199, 89, 0.08)', 
                           color: app.status === 'accepted' ? '#fff' : '#34C759',
-                          border: '1px solid rgba(52, 199, 89, 0.2)'
+                          border: '1px solid rgba(52, 199, 89, 0.2)',
+                          opacity: app.status === 'accepted' ? 1 : 0.85,
+                          cursor: app.status === 'accepted' ? 'default' : 'pointer',
+                          fontWeight: app.status === 'accepted' ? '600' : '500',
+                          transition: 'all 0.2s ease'
                         }} 
                         onClick={() => onChangeAppStatus(app.id, 'accepted')}
                       >
-                        🎉 {t('simulateAccept')}
+                        <UserCheck size={16} />
+                        <span>{t('simulateAccept')}</span>
+                        {app.status === 'accepted' && <CheckCircle2 size={14} style={{ marginLeft: 'auto' }} />}
                       </button>
 
                       <button 
                         className={`demo-btn rejected ${app.status === 'rejected' ? 'active' : ''}`} 
+                        disabled={app.status === 'rejected'}
                         style={{ 
                           flex: '1 1 calc(50% - 4px)', 
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justify: 'center',
+                          gap: '6px',
+                          padding: '10px 12px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
                           background: app.status === 'rejected' ? '#FF3B30' : 'rgba(255, 59, 48, 0.08)', 
                           color: app.status === 'rejected' ? '#fff' : '#FF3B30',
-                          border: '1px solid rgba(255, 59, 48, 0.2)'
+                          border: '1px solid rgba(255, 59, 48, 0.2)',
+                          opacity: app.status === 'rejected' ? 1 : 0.85,
+                          cursor: app.status === 'rejected' ? 'default' : 'pointer',
+                          fontWeight: app.status === 'rejected' ? '600' : '500',
+                          transition: 'all 0.2s ease'
                         }} 
                         onClick={() => onChangeAppStatus(app.id, 'rejected')}
                       >
-                        ✗ {t('simulateReject')}
+                        <UserX size={16} />
+                        <span>{t('simulateReject')}</span>
+                        {app.status === 'rejected' && <CheckCircle2 size={14} style={{ marginLeft: 'auto' }} />}
                       </button>
                     </div>
                   )}

@@ -199,6 +199,7 @@ function App() {
   // Brauzerda tablar almashganda (masalan home tabiga o'tib qaytganda) profil reset bo'lmasligi uchun bu holat App.jsx darajasida saqlanadi.
   const [profileActivePage, setProfileActivePage] = useState('main');
   const [profileActivePageSource, setProfileActivePageSource] = useState('profile');
+  const [profileScrollToTopTrigger, setProfileScrollToTopTrigger] = useState(0);
 
   // backTab: Profilning saqlanganlaridan e'longa kirilganda, ortga qaytish manzilini eslab qoluvchi o'zgaruvchi.
   const [backTab, setBackTab] = useState(null);
@@ -459,41 +460,52 @@ function App() {
     setApplications(prev => [...prev, newApp]);
   };
 
-  // Simulate status change (for demo)
+  // Simulate status change (for demo - single-click idempotent)
   const handleChangeAppStatus = (appId, newStatus) => {
+    const targetApp = applications.find(a => a.id === appId);
+    if (!targetApp || targetApp.status === newStatus) {
+      return; // Already in this status! Prevent duplicate notification bell increment.
+    }
+
     setApplications(prev => prev.map(a => 
       a.id === appId ? { ...a, status: newStatus } : a
     ));
 
-    const app = applications.find(a => a.id === appId);
-    if (app && (newStatus === 'accepted' || newStatus === 'interview' || newStatus === 'reviewed' || newStatus === 'rejected')) {
+    if (newStatus === 'accepted' || newStatus === 'interview' || newStatus === 'reviewed' || newStatus === 'rejected') {
       const notif = {
         id: Date.now(),
         type: newStatus,
-        company: app.company,
-        title: app.title,
+        company: targetApp.company,
+        title: targetApp.title,
         date: new Date().toLocaleString(),
         read: false,
       };
       setNotifications(prev => [notif, ...prev]);
 
       if (newStatus === 'accepted') {
-        // Add to user work history
+        // Add to user work history if not already present
         setProfileData(prev => {
-          const newWork = { company: app.company, position: app.title, years: 'Hozirgi vaqtda' };
           const updatedHistory = [...(prev.workHistory || [])];
-          if (updatedHistory.length >= 3) {
-            updatedHistory.shift(); // Remove oldest
+          if (updatedHistory.some(w => w.company === targetApp.company && w.position === targetApp.title)) {
+            return prev;
           }
-          updatedHistory.push(newWork);
+          if (updatedHistory.length >= 3) {
+            updatedHistory.shift();
+          }
+          updatedHistory.push({ company: targetApp.company, position: targetApp.title, years: 'Hozirgi vaqtda' });
           return { ...prev, workHistory: updatedHistory };
         });
 
-        // Auto-add to company HR employees as verified
-        setCompanyEmployees(prev => [
-          ...prev, 
-          { id: Date.now(), name: profileData.fullName, phone: profileData.phone || '+81 000-0000', role: app.title, verified: true, michiId: profileData.userId }
-        ]);
+        // Auto-add to company HR employees if not already present
+        setCompanyEmployees(prev => {
+          if (prev.some(emp => emp.michiId === profileData.userId && emp.role === targetApp.title)) {
+            return prev;
+          }
+          return [
+            ...prev, 
+            { id: Date.now(), name: profileData.fullName, phone: profileData.phone || '+81 000-0000', role: targetApp.title, verified: true, michiId: profileData.userId }
+          ];
+        });
       }
     }
   };
@@ -991,6 +1003,7 @@ function App() {
             setActivePage={setProfileActivePage}
             profileActivePageSource={profileActivePageSource}
             setProfileActivePageSource={setProfileActivePageSource}
+            scrollToTopTrigger={profileScrollToTopTrigger}
             onJobClick={setSelectedJob}
             onSchoolClick={handleSchoolClick}
             showProfileBadges={showProfileBadges}
@@ -1160,9 +1173,12 @@ function App() {
             // Close JDM Navigation when switching tabs
             setShowJDMNavigation(false);
             
-            // Agar foydalanuvchi faol turgan profile tabini takroran (2-marta) bossa, profilning asosiy oynasiga qaytaradi
-            if (tab === 'profile' && activeTab === 'profile') {
-              setProfileActivePage('main');
+            // Agar foydalanuvchi profile tabini takroran (2-marta) bossa yoki sub-sahifadan turib bossa, profilning asosiy oynasiga qaytaradi va eng yuqoridan scroll qiladi
+            if (tab === 'profile') {
+              if (activeTab === 'profile' || profileActivePage !== 'main') {
+                setProfileActivePage('main');
+                setProfileScrollToTopTrigger(prev => prev + 1);
+              }
             }
             
             setSelectedJob(null);

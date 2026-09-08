@@ -254,12 +254,6 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   - Floating dock o'lchamlariga tayanib yagona va aniq `padding-bottom: 160px` (`148px + 12px = 160px`) parametri ishlatilishi shart.
   - Aniq hisoblangan padding ustiga takroriy inline spacer divlar qo'shish qat'iyan taqiqlanadi. Shunda akordeonlar yopiq yoki ochiq bo'lishidan qat'i nazar scroll oxirida tugma ustida doim 100% exact 12px visual gap saqlanadi.
 
-
-
-
-
-
-
-
-
-
+## 🚫 45. Header Container Overlap & Unpinned Header Controls
+* **Xatolik**: Headerdagi title matni yoki action tugmalari (masalan, `リセット`) ortga qaytish tugmasi bilan birgalikda sticky qilib qo'yilishi yoki o'ng/chap chetlardagi konteynerlar ustma-ust (overlap) tushib, sarlavha matnini ekran markazidan siljitib yuborishi. Shuningdek status tugmalarida oddiy emojilardan foydalanish.
+* **Yechim**: Header bo'limlarida har doim FAQAT va FAQAT ⬅️ Ortga Qaytish Tugmasi (`40x40px`, `border-radius: 50%`) `sticky` (pinned) qilinadi. Sarlavha containeri esa `minHeight: 40px`, `alignItems: 'center'`, `justifyContent: 'center'` bilan to'liq markazlashtiriladi hamda `margin-bottom: -40px` offseti orqali yagona horizontal baseline hosil qilinadi. Status tugmalarida emojilar o'rniga Lucide vector ikonkalari ishlatiladi.

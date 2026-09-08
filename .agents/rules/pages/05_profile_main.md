@@ -28,7 +28,14 @@ Ushbu qoida **Profil Asosiy Menyusi (Profile Main)** uchun barcha layout va spet
 
 ---
 
-## 🚫 4. Forbidden Patterns
+## 🔄 5. BottomNav Tab Repeat Click & Scroll Reset
+- **Repeat Click Behavior**: BottomNav pastki menyusidagi **My Page / Profile (`profile`)** tugmasi 2-marta (takroran) yoki biron sub-sahifada turib bosilganda:
+  1. Agarda foydalanuvchi sub-sahifada (`applications`, `settings`, `edit_profile` va h.k.) bo'lsa, uni profilning **asosiy sahifasiga (`main`)** qaytaradi.
+  2. Profil asosiy sahifasini va `.profile-container` skrollini silliq ravishda eng yuqoriga (**`scrollTop: 0`**) reset qiladi.
+
+---
+
+## 🚫 6. Forbidden Patterns
 1. **No Heights Clipping**: `.profile-container` height must never be clipped with `bottom: 90px !important`.
 2. **No Missing Trailing Spacer**: Main profile page must always include the 96px trailing spacer after `.logout-btn`.
 3. **No Merged Cards**: Never nest `.logout-btn` inside a preceding `.menu-group` container.
