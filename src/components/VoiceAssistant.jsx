@@ -1226,11 +1226,12 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
         setStatus('thinking');
         const parsedName = await parseResumeFieldWithGemini('ask_name', cleanText, isUz, isJa);
         setTempResumeData(prev => ({ ...prev, fullName: parsedName }));
+        triggerUpdate('fullName', parsedName);
         setResumeStep('confirm_name');
         speakStepMsg(isUz 
-          ? `Ismingizni "${parsedName}" deb yozaymi? Tasdiqlaysizmi?` 
-          : isJa ? `お名前は「${parsedName}」でよろしいですか？` 
-          : `Is your name "${parsedName}"? Confirm?`);
+          ? `Ismingizni "${parsedName}" deb yozdim. Tasdiqlaysizmi?` 
+          : isJa ? `お名前「${parsedName}」と入力いたしました。よろしいですか？` 
+          : `Entered name "${parsedName}". Confirm?`);
         break;
 
       case 'confirm_name':
@@ -1242,6 +1243,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
             : isJa ? "ありがとうございます。次にお名前のフリガナ（カタカナ）を教えてください。" 
             : "Great. Now please state the furigana pronunciation of your name in Katakana.");
         } else if (isNegative) {
+          triggerUpdate('fullName', '');
           setResumeStep('ask_name');
           speakStepMsg(isUz 
             ? "Qaytadan ism va familiyangizni ayting." 
@@ -1249,8 +1251,8 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
             : "Please state your full name again.");
         } else {
           speakStepMsg(isUz 
-            ? `Ismingizni "${tempResumeDataRef.current.fullName}" deb yozaymi? Ha yoki Yo'q deb javob bering.` 
-            : isJa ? `お名前は「${tempResumeDataRef.current.fullName}」でよろしいですか？はい、か、いいえ、で教えてください。` 
+            ? `Ismingizni "${tempResumeDataRef.current.fullName}" deb yozdim. Ha yoki Yo'q deb javob bering.` 
+            : isJa ? `お名前「${tempResumeDataRef.current.fullName}」でよろしいですか？はい、か、いいえ、で教えてください。` 
             : `Confirm name "${tempResumeDataRef.current.fullName}"? Yes or No.`);
         }
         break;
@@ -1259,11 +1261,12 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
         setStatus('thinking');
         const parsedFurigana = await parseResumeFieldWithGemini('ask_furigana', cleanText, isUz, isJa);
         setTempResumeData(prev => ({ ...prev, furigana: parsedFurigana }));
+        triggerUpdate('furigana', parsedFurigana);
         setResumeStep('confirm_furigana');
         speakStepMsg(isUz
-          ? `Furigana talaffuzini "${parsedFurigana}" deb yozaymi? Tasdiqlaysizmi?`
-          : isJa ? `フリガナは「${parsedFurigana}」でよろしいですか？`
-          : `Is the furigana "${parsedFurigana}"? Confirm?`);
+          ? `Furigana talaffuzini "${parsedFurigana}" deb yozdim. Tasdiqlaysizmi?`
+          : isJa ? `フリガナ「${parsedFurigana}」と入力いたしました。よろしいですか？`
+          : `Entered furigana "${parsedFurigana}". Confirm?`);
         break;
 
       case 'confirm_furigana':
@@ -1275,12 +1278,13 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
             : isJa ? "生年月日を西暦で教えてください（例：1995年5月15日）。"
             : "Please state your date of birth (e.g. May 15th, 1995).");
         } else if (isNegative) {
+          triggerUpdate('furigana', '');
           setResumeStep('ask_furigana');
           speakStepMsg(isUz ? "Qaytadan furiganani ayting." : isJa ? "もう一度フリガナを教えてください。" : "What is the furigana?");
         } else {
           speakStepMsg(isUz 
             ? `Furigana "${tempResumeDataRef.current.furigana}"? Ha yoki Yo'q.` 
-            : isJa ? `フリガナは「${tempResumeDataRef.current.furigana}」でよろしいですか？` 
+            : isJa ? `フリガナ「${tempResumeDataRef.current.furigana}」でよろしいですか？` 
             : `Confirm furigana "${tempResumeDataRef.current.furigana}"?`);
         }
         break;
@@ -1289,11 +1293,12 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
         setStatus('thinking');
         const parsedDate = await parseResumeFieldWithGemini('ask_birthdate', cleanText, isUz, isJa);
         setTempResumeData(prev => ({ ...prev, birthDate: parsedDate }));
+        triggerUpdate('birthDate', parsedDate);
         setResumeStep('confirm_birthdate');
         speakStepMsg(isUz
-          ? `Tug'ilgan kuningizni "${parsedDate}" deb yozaymi? Tasdiqlaysizmi?`
-          : isJa ? `生年月日は「${parsedDate}」でよろしいですか？`
-          : `Is your date of birth "${parsedDate}"? Confirm?`);
+          ? `Tug'ilgan kuningizni "${parsedDate}" deb yozdim. Tasdiqlaysizmi?`
+          : isJa ? `生年月日「${parsedDate}」と入力いたしました。よろしいですか？`
+          : `Entered date of birth "${parsedDate}". Confirm?`);
         break;
 
       case 'confirm_birthdate':
@@ -1305,6 +1310,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
             : isJa ? "性別を教えてください（男性、または女性）。"
             : "Please state your gender (Male or Female).");
         } else if (isNegative) {
+          triggerUpdate('birthDate', '');
           setResumeStep('ask_birthdate');
           speakStepMsg(isUz ? "Qaytadan tug'ilgan kuningizni ayting." : isJa ? "もう一度生年月日を教えてください。" : "What is your date of birth?");
         } else {
@@ -1323,6 +1329,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
           genderLabel = isUz ? "Ayol" : isJa ? "女性" : "Female";
         }
         setTempResumeData(prev => ({ ...prev, gender: selectedGender, genderLabel }));
+        triggerUpdate('gender', selectedGender);
         setResumeStep('confirm_gender');
         speakStepMsg(isUz
           ? `Jinsingiz "${genderLabel}"? Tasdiqlaysizmi?`
@@ -1351,11 +1358,12 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
 
       case 'ask_birthplace':
         setTempResumeData(prev => ({ ...prev, birthPlace: cleanText }));
+        triggerUpdate('birthPlace', cleanText);
         setResumeStep('confirm_birthplace');
         speakStepMsg(isUz 
-          ? `Tug'ilgan joyingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
-          : isJa ? `出身地は「${cleanText}」でよろしいですか？` 
-          : `Is your place of birth "${cleanText}"? Confirm?`);
+          ? `Tug'ilgan joyingizni "${cleanText}" deb yozdim. Tasdiqlaysizmi?` 
+          : isJa ? `出身地「${cleanText}」と入力いたしました。よろしいですか？` 
+          : `Entered place of birth "${cleanText}". Confirm?`);
         break;
 
       case 'confirm_birthplace':
@@ -1367,6 +1375,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
             : isJa ? "国籍（または民族）を教えてください。" 
             : "What is your nationality?");
         } else if (isNegative) {
+          triggerUpdate('birthPlace', '');
           setResumeStep('ask_birthplace');
           speakStepMsg(isUz ? "Qaytadan tug'ilgan joyingizni ayting." : isJa ? "もう一度出身地を教えてください。" : "What is your place of birth?");
         } else {
@@ -1379,11 +1388,12 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
 
       case 'ask_nationality':
         setTempResumeData(prev => ({ ...prev, nationality: cleanText }));
+        triggerUpdate('nationality', cleanText);
         setResumeStep('confirm_nationality');
         speakStepMsg(isUz 
-          ? `Millatingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?` 
-          : isJa ? `国籍は「${cleanText}」でよろしいですか？` 
-          : `Is your nationality "${cleanText}"? Confirm?`);
+          ? `Millatingizni "${cleanText}" deb yozdim. Tasdiqlaysizmi?` 
+          : isJa ? `国籍「${cleanText}」と入力いたしました。よろしいですか？` 
+          : `Entered nationality "${cleanText}". Confirm?`);
         break;
 
       case 'confirm_nationality':
@@ -1395,6 +1405,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
             : isJa ? "郵便番号（7桁）を教えてください。"
             : "Please state your 7-digit Japanese postal code.");
         } else if (isNegative) {
+          triggerUpdate('nationality', '');
           setResumeStep('ask_nationality');
           speakStepMsg(isUz ? "Qaytadan millatingizni ayting." : isJa ? "もう一度国籍を教えてください。" : "What is your nationality?");
         } else {
@@ -1409,11 +1420,12 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
         setStatus('thinking');
         const formattedPostal = await parseResumeFieldWithGemini('ask_postalcode', cleanText, isUz, isJa);
         setTempResumeData(prev => ({ ...prev, postalCode: formattedPostal }));
+        triggerUpdate('postalCode', formattedPostal);
         setResumeStep('confirm_postalcode');
         speakStepMsg(isUz
-          ? `Pochta indeksingizni "${formattedPostal}" deb yozaymi? Tasdiqlaysizmi?`
-          : isJa ? `郵便番号は「${formattedPostal}」でよろしいですか？`
-          : `Is your postal code "${formattedPostal}"? Confirm?`);
+          ? `Pochta indeksingizni "${formattedPostal}" deb yozdim. Tasdiqlaysizmi?`
+          : isJa ? `郵便番号「${formattedPostal}」と入力いたしました。よろしいですか？`
+          : `Entered postal code "${formattedPostal}". Confirm?`);
         break;
 
       case 'confirm_postalcode':
@@ -1425,6 +1437,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
             : isJa ? "次に、現住所を都道府県から詳しく教えてください。"
             : "Please state your full current address, starting from prefecture.");
         } else if (isNegative) {
+          triggerUpdate('postalCode', '');
           setResumeStep('ask_postalcode');
           speakStepMsg(isUz ? "Qaytadan pochta indeksini ayting." : isJa ? "もう一度郵便番号を教えてください。" : "What is your postal code?");
         } else {
@@ -1437,11 +1450,12 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
 
       case 'ask_address':
         setTempResumeData(prev => ({ ...prev, address: cleanText }));
+        triggerUpdate('address', cleanText);
         setResumeStep('confirm_address');
         speakStepMsg(isUz
-          ? `Manzilingizni "${cleanText}" deb yozaymi? Tasdiqlaysizmi?`
-          : isJa ? `ご住所は「${cleanText}」でよろしいですか？`
-          : `Is your address "${cleanText}"? Confirm?`);
+          ? `Manzilingizni "${cleanText}" deb yozdim. Tasdiqlaysizmi?`
+          : isJa ? `ご住所「${cleanText}」と入力いたしました。よろしいですか？`
+          : `Entered address "${cleanText}". Confirm?`);
         break;
 
       case 'confirm_address':
@@ -1453,6 +1467,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
             : isJa ? "電話番号を教えてください。" 
             : "Please state your phone number.");
         } else if (isNegative) {
+          triggerUpdate('address', '');
           setResumeStep('ask_address');
           speakStepMsg(isUz ? "Qaytadan yashash manzilingizni ayting." : isJa ? "もう一度住所を教えてください。" : "What is your address?");
         } else {
@@ -1467,11 +1482,12 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
         setStatus('thinking');
         const formattedPhone = await parseResumeFieldWithGemini('ask_phone', cleanText, isUz, isJa);
         setTempResumeData(prev => ({ ...prev, phone: formattedPhone }));
+        triggerUpdate('phone', formattedPhone);
         setResumeStep('confirm_phone');
         speakStepMsg(isUz 
-          ? `Telefon raqamingizni "${formattedPhone}" deb yozaymi? Tasdiqlaysizmi?` 
-          : isJa ? `電話番号は「${formattedPhone}」でよろしいですか？` 
-          : `Is your phone "${formattedPhone}"? Confirm?`);
+          ? `Telefon raqamingizni "${formattedPhone}" deb yozdim. Tasdiqlaysizmi?` 
+          : isJa ? `電話番号「${formattedPhone}」と入力いたしました。よろしいですか？` 
+          : `Entered phone "${formattedPhone}". Confirm?`);
         break;
 
       case 'confirm_phone':
@@ -1483,6 +1499,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
             : isJa ? "メールアドレスを教えてください。"
             : "Please state your email address.");
         } else if (isNegative) {
+          triggerUpdate('phone', '');
           setResumeStep('ask_phone');
           speakStepMsg(isUz ? "Qaytadan telefon raqamingizni ayting." : isJa ? "もう一度電話番号を教えてください。" : "What is your phone number?");
         } else {
@@ -1497,11 +1514,12 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
         // Replace spaces or common voice spelling errors for emails
         const emailClean = cleanText.replace(/\s+/g, '').toLowerCase().replace(/at/g, '@').replace(/dot/g, '.');
         setTempResumeData(prev => ({ ...prev, email: emailClean }));
+        triggerUpdate('email', emailClean);
         setResumeStep('confirm_email');
         speakStepMsg(isUz
-          ? `Email manzilingizni "${emailClean}" deb yozaymi? Tasdiqlaysizmi?`
-          : isJa ? `メールアドレスは「${emailClean}」でよろしいですか？`
-          : `Is your email "${emailClean}"? Confirm?`);
+          ? `Email manzilingizni "${emailClean}" deb yozdim. Tasdiqlaysizmi?`
+          : isJa ? `メールアドレス「${emailClean}」と入力いたしました。よろしいですか？`
+          : `Entered email "${emailClean}". Confirm?`);
         break;
 
       case 'confirm_email':
