@@ -877,6 +877,52 @@ export default function DrivingAcademy({
 
             {isLocationSectionOpen && (
               <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)' }}>
+                {/* Prefecture Selection Header Card */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  marginBottom: '16px', padding: '12px 16px',
+                  background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.07) 0%, rgba(94, 92, 230, 0.07) 100%)',
+                  borderRadius: '16px', border: '1px solid rgba(10, 132, 255, 0.2)',
+                  boxShadow: '0 4px 14px rgba(10, 132, 255, 0.06)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '32px', height: '32px', borderRadius: '10px',
+                      background: 'rgba(10, 132, 255, 0.15)', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                    }}>
+                      <MapPin size={17} color="var(--primary)" />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                        {t('targetAreaLabel', '対象エリア (地域)')}
+                      </span>
+                      <span style={{ fontSize: '14.5px', fontWeight: '900', color: 'var(--text-main)', marginTop: '1px' }}>
+                        {selectedPrefecture === 'all' 
+                          ? t('allPrefectures', '全ての地域 (全国)') 
+                          : PREFECTURES.find(p => p.nameEn === selectedPrefecture)?.name || selectedPrefecture}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button 
+                    type="button"
+                    className="prefecture-pill-btn"
+                    onClick={() => setIsPrefPickerOpen(true)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer',
+                      border: 'none', background: 'var(--primary)',
+                      color: '#FFFFFF', fontWeight: '800', fontSize: '12.5px',
+                      padding: '7px 14px', borderRadius: '14px',
+                      boxShadow: '0 4px 12px rgba(10, 132, 255, 0.3)',
+                      transition: 'transform 0.15s ease'
+                    }}
+                  >
+                    <span>{t('change', '変更')}</span>
+                    <ChevronDown size={14} color="#FFF" />
+                  </button>
+                </div>
+
                 {/* Cities / Wards checkboxes */}
                 <div className="tab-cities-wrapper">
                   {(() => {
