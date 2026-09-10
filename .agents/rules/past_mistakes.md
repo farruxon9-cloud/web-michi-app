@@ -378,7 +378,17 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **API Response Mapping**: `lookupJapaneseZipcode` qaytaradigan atributlar (`prefJa`, `detailAddress`, `townAddress`) strictly `prefecture`, `detailAddress`, `townAddress` state maydonlariga 1-ga-1 o'zlashtirilishi SHART.
   2. **Silent Unknown Zipcode Acceptance**: Bazada mavjud bo'lmagan poçta indeksi kiritilganda tizim uni toza va indamay qabul qiladi (`100-0001`), validatsiya xatosi berilmaydi va foydalanuvchiga hududni ro'yxatdan o'zi tanlash maslahati ko'rsatiladi.
   3. **Live Search City Selection**: `CustomInlineDropdown` darchasi 500+ Yaponiyaning barcha shaharlari va shaharchalarini ko'rsatadi hamda live search (`🔍 Qidirish / 検索...`) orqali tezkor topish va `allowCustom={true}` orqali ixtiyoriy matn kiritish imkonini beradi.
-  4. **Zen-kaku Normalization**: Zen-kaku yapon raqamlari (`０-９`) ASCII `0-9` raqamlariga avtomatik o'g'irilishi hamda 7 ta raqam bo'lishi bilan `100-0001` formati shakllanishi SHART.
+
+## 🚫 63. Universal Japanese Text Audit & i18n Particle Grammar Invariant
+* **Xatolik**: 
+  1. Yaponcha lug'at fayllarida (`ja.js`) va boshqa tillar lug'at matnlarida yaponcha gap ichida inglizcha yuklamalar tushib qolishi (masalan `"新しい求人票 of 作成"` -> `of` inglizcha bog'lovchi xatosi).
+  2. Sub-sahifalar va modallarda ishlatiladigan `t('key')` kalitlarining ba'zi joylarda `ja.js` lug'atida ta'riflanmagani sababli raw kalit yozuvlari (`bonus_1`, `jobType_outsourcing`) ekranga chiqib qolishi.
+  3. `プロファイル作成` kabi texnik yaponcha so'zlar yapon mehnati interfeysida yaponcha tabiiy `プロフィール作成` o'rnida ishlatilishi.
+* **Yechim (MAJBURIY)**:
+  1. **100% Zero-Typo Japanese Grammar Integrity**: Yaponcha barcha sarlavhalar, tavsiflar, darcha matnlari va placeholderlar strictly yapon tili grammatikasi qoidalariga mos professional business Japanese (Keigo 敬語) va toza zarf va bog'lovchilar (`の`, `を`, `に`, `で`) bilan yozilishi SHART.
+  2. **Zero Raw Translation Key Leakage**: Har qanday `.jsx` komponentdagi `t('key')` chaqiruvi majburiy ravishda `ja.js` va boshqa 7 ta tillarda to'liq shaklda e'lon qilinishi hamda Japanese fallback matni bilan ta'minlanishi SHART.
+  3. **Natural Business Katakana**: User profile va rezyume bilan bog'liq yozuvlar strictly `プロフィール` shaklida aks ettirilishi SHART.
+
 
 
 

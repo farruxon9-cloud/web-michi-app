@@ -1,19 +1,19 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:19:45**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:24:06**.
 
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 173 ta
+* **Jami skanerlangan fayllar:** 174 ta
 * **React Komponentlari:** 26 ta
 * **Komponent Stillari (CSS):** 17 ta
 * **Geografiya va Ma'lumotlar Bazalari (data):** 14 ta
 * **Unit Testlar (Vitest):** 33 ta
 * **Yordamchi Funksiyalar (utils):** 19 ta
 * **Tashqi API va Xizmatlar (services):** 17 ta
-* **Avtomatizatsiya Skriptlari (scripts):** 15 ta
+* **Avtomatizatsiya Skriptlari (scripts):** 16 ta
 * **Tizim va UI Qoidalari (.agents/rules):** 18 ta
 * **Boshqa asosiy fayllar (src/ root):** 14 ta
 
@@ -968,6 +968,9 @@ graph TD
 ### 🛠️ [analyze_impact.mjs](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/analyze_impact.mjs)
 * **Yo'li:** `scripts/analyze_impact.mjs` (199 qator, 7921 bayt)
 
+### 🛠️ [audit_missing_t_keys.mjs](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/audit_missing_t_keys.mjs)
+* **Yo'li:** `scripts/audit_missing_t_keys.mjs` (50 qator, 1447 bayt)
+
 ### 🛠️ [audit_voice_understanding.mjs](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/audit_voice_understanding.mjs)
 * **Yo'li:** `scripts/audit_voice_understanding.mjs` (137 qator, 5615 bayt)
 
@@ -1219,11 +1222,11 @@ graph LR
 | `manualAddressTip` | 💡 郵便番号が確認されました。都道府県・市区町村 | 💡 Postal code accepted.  | 💡 Poçta indeksi qabul qi | L283 |
 | `reqTitle` | タイトルを入力してください | Title is required | Sarlavha kiritilishi shar | L537 |
 | `reqSalary` | 給与・受講料を入力してください | Salary/Fee is required | Narx/Maosh kiritilishi sh | L538 |
-| `reqJobType` | — | — | — | L539 |
-| `reqBonus` | — | — | — | L540 |
-| `reqSubcategory` | — | — | — | L541 |
-| `reqTrainLine` | — | — | — | L542 |
-| `reqNearestStation` | — | — | — | L543 |
+| `reqJobType` | 雇用形態を選択してください | — | — | L539 |
+| `reqBonus` | 賞与・特典を選択してください | — | — | L540 |
+| `reqSubcategory` | 職種・免許を選択してください | — | — | L541 |
+| `reqTrainLine` | 利用路線を選択してください | — | — | L542 |
+| `reqNearestStation` | 最寄り駅を選択または入力してください | — | — | L543 |
 | `reqPhone` | 電話番号を入力してください | Phone number is required | Telefon raqam kiritilishi | L544 |
 | `reqEmail` | メールアドレスを入力してください | Email address is required | Email kiritilishi shart | L545 |
 | `reqDesc` | 詳細説明を入力してください | Description is required | Batafsil ma'lumot kiritil | L546 |
@@ -1242,7 +1245,7 @@ graph LR
 | `schoolDiscountLabel` | 受講割引・特典 | Course Discount & Benefit | O'quv chegirmasi va imtiy | L574 |
 | `bonusLabel` | 賞与・割引特典 | Bonus & Benefits | Mukofot va Imtiyozlar | L574 |
 | `jobSubcategoryLabel` | 職種・免許 | Job Category & License | Ish yo'nalishi va litsenz | L575 |
-| `trainLineLabel` | — | — | — | L576 |
+| `trainLineLabel` | 利用路線 | — | — | L576 |
 | `nearestStationLabel` | 最寄り駅 | Nearest Station | Eng yaqin stansiya | L577 |
 | `postalCodeLabel` | 郵便番号 | Postal Code | Pochta indeksi | L578 |
 | `prefectureLabel` | 都道府県 | Prefecture | Prefektura | L579 |
@@ -1288,7 +1291,7 @@ graph LR
 | `musicPaused` | BGM一時停止 | Music Paused | Musiqa pauzada | L363 |
 | `manageAdsSub` | 掲載の管理 | Manage Ads | E'lonlarni boshqarish | L438 |
 | `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L439 |
-| `myAdsDesc` | 新しい求人票 of 作成や応募ドライバーを管理しま | Create new job openings a | Yangi vakansiyalar e'lon  | L440 |
+| `myAdsDesc` | 新しい求人票の作成や応募ドライバーを管理します。 | Create new job openings a | Yangi vakansiyalar e'lon  | L440 |
 | `manageAppsSub` | 応募ステータスの確認 | Check Application Status | Arizalar holatini tekshir | L457 |
 | `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L458 |
 | `myApplicationsDesc` | 送った応募の一覧や企業からの返信状況を確認します。 | Track submitted applicati | Yuborilgan arizalar va ja | L459 |
@@ -1539,19 +1542,19 @@ graph LR
 | `noInternetWait` | インターネット接続がありません。接続の再開を待って | No internet connection. W | Internet aloqasi yo'q. Ta | L228 |
 | `offlineSpeechNotSupported` | — | — | — | L720 |
 | `speechError` | 音声認識エラーが発生しました。もう一度お試しくださ | Speech recognition error  | Ovozni eshitishda xatolik | L831 |
-| `micDeniedTitle` | — | — | — | L1817 |
+| `micDeniedTitle` | マイクのアクセス許可が必要です | — | — | L1817 |
 | `aiSystemBusy` | システムが混雑しています。少々お待ちください。 | System is busy. Please tr | システムが混雑しています。少々お待ちください。 | L1946 |
 | `aiError` | 申し訳ありません、リクエストを処理できませんでした | Sorry, could not process  | 申し訳ありません、リクエストを処理できませんでした | L1947 |
-| `apiRequiredDesc` | — | — | — | L2344 |
-| `saveKeyBtn` | — | — | — | L2369 |
-| `getFreeKey` | — | — | — | L2378 |
+| `apiRequiredDesc` | 音声アシスタントを使用するには、無料のGoogle | — | — | L2344 |
+| `saveKeyBtn` | 保存 | — | — | L2369 |
+| `getFreeKey` | 無料のAPIキーを取得 (Google AI St | — | — | L2378 |
 | `howToEnable` | — | — | — | L2390 |
-| `step1` | — | — | — | L2392 |
+| `step1` | ブラウザのアドレスバーにある鍵マークをクリックして | — | — | L2392 |
 | `step2` | — | — | — | L2393 |
-| `step3` | — | — | — | L2394 |
-| `checkPermissionBtn` | — | — | — | L2409 |
-| `userSaid` | — | — | — | L2431 |
-| `aiThinking` | — | — | — | L2445 |
+| `step3` | ページを再読み込みするか、下のボタンを押してくださ | — | — | L2394 |
+| `checkPermissionBtn` | 権限を再確認 | — | — | L2409 |
+| `userSaid` | あなた | — | — | L2431 |
+| `aiThinking` | AIが回答を作成中... | — | — | L2445 |
 
 
 ---
