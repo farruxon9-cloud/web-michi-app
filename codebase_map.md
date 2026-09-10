@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **09/09/2026, 20:51:19**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 15:28:44**.
 
 ---
 
@@ -520,7 +520,7 @@ graph TD
   - `react`
 
 ### 📦 [VoiceAssistant](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.jsx)
-* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (3249 qator, 139935 bayt)
+* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (3250 qator, 140124 bayt)
 * **Komponent Stillari:** 🎨 [VoiceAssistant.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `isActive`
@@ -1172,7 +1172,7 @@ graph LR
 
 > Ushbu bo'lim har bir i18n kalitining 3 tildagi tarjimasini va aynan qaysi komponentda ishlatilishini ko'rsatadi.
 
-**Jami ishlatilgan i18n kalitlar:** 612 ta, **16** ta komponentda tarqalgan
+**Jami ishlatilgan i18n kalitlar:** 611 ta, **16** ta komponentda tarqalgan
 
 ### 📄 AdminDashboard (9 ta kalit)
 
@@ -1529,27 +1529,26 @@ graph LR
 | `comingSoon` | 近日公開 | Coming Soon | Tez Kunda | L15 |
 | `comingSoonDesc` | 自動車サービスセクションは間もなく開始されます。最 | The auto service section  | Avtoservislar bo'limi tez | L16 |
 
-### 📄 VoiceAssistant (17 ta kalit)
+### 📄 VoiceAssistant (16 ta kalit)
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
 | `noInternetWait` | インターネット接続がありません。接続の再開を待って | No internet connection. W | Internet aloqasi yo'q. Ta | L241 |
 | `offlineSpeechNotSupported` | — | — | — | L706 |
-| `offlineWarningMsg` | — | — | — | L808 |
-| `speechError` | 音声認識エラーが発生しました。もう一度お試しくださ | Speech recognition error  | Ovozni eshitishda xatolik | L836 |
-| `micDeniedTitle` | — | — | — | L2586 |
-| `aiSystemBusy` | システムが混雑しています。少々お待ちください。 | System is busy. Please tr | システムが混雑しています。少々お待ちください。 | L2715 |
-| `aiError` | 申し訳ありません、リクエストを処理できませんでした | Sorry, could not process  | 申し訳ありません、リクエストを処理できませんでした | L2716 |
-| `apiRequiredDesc` | — | — | — | L3118 |
-| `saveKeyBtn` | — | — | — | L3143 |
-| `getFreeKey` | — | — | — | L3152 |
-| `howToEnable` | — | — | — | L3164 |
-| `step1` | — | — | — | L3166 |
-| `step2` | — | — | — | L3167 |
-| `step3` | — | — | — | L3168 |
-| `checkPermissionBtn` | — | — | — | L3183 |
-| `userSaid` | — | — | — | L3205 |
-| `aiThinking` | — | — | — | L3219 |
+| `speechError` | 音声認識エラーが発生しました。もう一度お試しくださ | Speech recognition error  | Ovozni eshitishda xatolik | L837 |
+| `micDeniedTitle` | — | — | — | L2587 |
+| `aiSystemBusy` | システムが混雑しています。少々お待ちください。 | System is busy. Please tr | システムが混雑しています。少々お待ちください。 | L2716 |
+| `aiError` | 申し訳ありません、リクエストを処理できませんでした | Sorry, could not process  | 申し訳ありません、リクエストを処理できませんでした | L2717 |
+| `apiRequiredDesc` | — | — | — | L3119 |
+| `saveKeyBtn` | — | — | — | L3144 |
+| `getFreeKey` | — | — | — | L3153 |
+| `howToEnable` | — | — | — | L3165 |
+| `step1` | — | — | — | L3167 |
+| `step2` | — | — | — | L3168 |
+| `step3` | — | — | — | L3169 |
+| `checkPermissionBtn` | — | — | — | L3184 |
+| `userSaid` | — | — | — | L3206 |
+| `aiThinking` | — | — | — | L3220 |
 
 
 ---
@@ -1570,7 +1569,7 @@ graph LR
 | **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
 | **Profile** | component | 5987 | 1x | 11 ta bug | App.jsx |
-| **VoiceAssistant** | component | 3249 | 1x | 1 ta bug | App.jsx |
+| **VoiceAssistant** | component | 3250 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
 

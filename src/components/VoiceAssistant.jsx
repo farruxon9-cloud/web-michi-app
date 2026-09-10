@@ -799,22 +799,23 @@ export default function VoiceAssistant({
         console.log(`Local NLP matched command: ${localResult.command}`);
         handleGeminiSuccess(localResult, text);
       } else {
-        // 2. Second check: If online, delegate complex/conversational queries to Gemini Cloud
-        if (navigator.onLine) {
-          console.log("No local command matched. Delegating to Gemini Cloud...");
-          processTextWithGemini(text);
+        // 2. Local-First Standalone Assistant Guidance Mode (100% API-Key-Free for v1.0.0 Stable MVP)
+        const lang = currentLang.substring(0, 2).toLowerCase();
+        let localGuideMsg = "";
+        if (lang === 'uz') {
+          localGuideMsg = "Assalomu alaykum! Men Michi — sizning shaxsiy yordamchingizman. Ilovadagi ishlar, avtomaktablar yoki rezyume to'ldirish bo'yicha yordam bera olaman. Masalan: 'Ishlarni ko'rsat', 'Profilni och', yoki 'Rezyume yaratish' deb ayting!";
+        } else if (lang === 'ja') {
+          localGuideMsg = "こんにちは！ミチと申します。求人検索、自動車学校、履歴書作成をお手伝いいたします。「求人を見せて」「マイページ」「履歴書作成」とお気軽にお申し付けください。";
         } else {
-          // Unmatched complex query during offline mode
-          const offlineWarning = t('offlineWarningMsg', "Kechirasiz, oflayn rejimda faqat musiqani boshqarish yoki profilni ochish mumkin.");
-          setAiResponseText(offlineWarning);
-          speakResponse(offlineWarning, currentLang, () => {
-            if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-            pillTimeoutRef.current = setTimeout(() => {
-              setShowPill(false);
-              if (isVoiceStandbyRef.current) scheduleRelisten();
-            }, 4500);
-          });
+          localGuideMsg = "Hello! I'm Michi, your personal assistant. I can help you find jobs, driving schools, or build your resume. Try saying 'Show jobs', 'Open profile', or 'Create resume'!";
         }
+
+        const fallbackResult = {
+          command: 'NONE',
+          response: localGuideMsg,
+          language: lang
+        };
+        handleGeminiSuccess(fallbackResult, text);
       }
     };
 
