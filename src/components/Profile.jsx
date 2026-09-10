@@ -247,10 +247,15 @@ export default function Profile({
     if (activePage === 'main') {
       // Restore scroll only if user manually backed out without clicking My Page tab reset
       if (savedMainScroll > 0 && scrollToTopTrigger === lastScrollToTopRef.current) {
-        const container = mainContainerRef.current || document.querySelector('.profile-container');
-        if (container) {
-          container.scrollTop = savedMainScroll;
-        }
+        const restoreScroll = () => {
+          const container = mainContainerRef.current || document.querySelector('.profile-container');
+          if (container) {
+            container.scrollTop = savedMainScroll;
+          }
+        };
+        restoreScroll();
+        requestAnimationFrame(restoreScroll);
+        setTimeout(restoreScroll, 40);
       }
     } else {
       const containers = document.querySelectorAll('.profile-container');
@@ -2530,7 +2535,7 @@ const getLicenseLabel = (type) => {
             {/* AI Flagship Sub-Project Bento Card (Compact & Sleek) */}
             <div 
               className="about-glass-card about-span-2 about-animate-item about-delay-3"
-              onClick={() => setActivePage('assist_showcase')}
+              onClick={() => handleOpenSubPage('assist_showcase')}
               style={{ 
                 padding: '14px 16px', 
                 cursor: 'pointer',
@@ -2803,7 +2808,7 @@ const getLicenseLabel = (type) => {
                 </button>
               )
             ) : (
-              <button className="edit-btn" style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={() => setActivePage('resume_builder')}>
+              <button className="edit-btn" style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={() => handleOpenSubPage('resume_builder')}>
                 <Edit3 size={16} /> {t('editInfo')}
               </button>
             )}
@@ -4119,7 +4124,7 @@ const getLicenseLabel = (type) => {
                   WebkitBackdropFilter: 'blur(8px)',
                   transition: 'all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)'
                 }}
-                onClick={() => setActivePage('resume_builder')}
+                onClick={() => handleOpenSubPage('resume_builder')}
                 title={i18n.language === 'ja' ? '日本標準履歴書PDFを作成・編集' : i18n.language === 'en' ? 'Create / Edit Resume PDF' : 'Yapon Rezyumesi (PDF) Yaratish / Tahrirlash'}
               >
                 <FileText size={13} strokeWidth={2.5} color="#30D158" />
