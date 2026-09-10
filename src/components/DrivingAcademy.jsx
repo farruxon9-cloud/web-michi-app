@@ -877,25 +877,8 @@ export default function DrivingAcademy({
 
             {isLocationSectionOpen && (
               <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)' }}>
-                <button
-                  type="button"
-                  onClick={() => setIsPrefPickerOpen(true)}
-                  style={{
-                    width: '100%', padding: '12px 14px', borderRadius: '14px',
-                    border: '1px solid var(--glass-border)', background: 'var(--glass-bg)',
-                    color: 'var(--text-main)', fontSize: '14px', fontWeight: '700',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer'
-                  }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <MapPin size={15} color="#0A84FF" />
-                    <span>{selectedPrefecture === 'all' ? t('selectPrefecture', '都道府県を選択') : selectedPrefecture}</span>
-                  </span>
-                  <span style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: '800' }}>{t('change', '変更')} →</span>
-                </button>
-
                 {/* Cities / Wards checkboxes */}
-                <div className="tab-cities-wrapper" style={{ marginTop: '12px' }}>
+                <div className="tab-cities-wrapper">
                   {(() => {
                     const prefKey = (selectedPrefecture || 'all').toLowerCase();
                     const citiesList = prefKey === 'all' ? getAllCities() : (CITIES_BY_PREFECTURE[prefKey] || []);
