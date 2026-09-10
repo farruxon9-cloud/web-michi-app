@@ -253,36 +253,48 @@ export default function VoiceAssistant({
         } else if (!hasGreetedRef.current && !isFillingResumeRef.current) {
           hasGreetedRef.current = true;
           
-          const hour = new Date().getHours();
-          let greeting = '';
-          const lang = speechLang || i18n.language || 'uz';
-          const isUz = lang.startsWith('uz');
-          const isJa = lang.startsWith('ja');
-          
-          if (isUz) {
-            if (hour >= 6 && hour < 12) greeting = "Xayrli tong! Men Michi — sizning shaxsiy yordamchingizman. Hozirda ilovamiz rivojlantirish va sinov bosqichida. Sizga qanday yordam bera olaman?";
-            else if (hour >= 12 && hour < 18) greeting = "Assalomu alaykum! Men Michi — sizning shaxsiy yordamchingizman. Hozirda ilovamiz rivojlantirish va sinov bosqichida. Sizga qanday yordam bera olaman?";
-            else if (hour >= 18 && hour < 22) greeting = "Xayrli kech! Men Michi — sizning shaxsiy yordamchingizman. Hozirda ilovamiz rivojlantirish va sinov bosqichida. Sizga qanday yordam bera olaman?";
-            else greeting = "Kechki soatlarda ham xizmatingizdaman! Men Michi, sizning shaxsiy yordamchingizman. Ilovamiz rivojlantirish bosqichida. Qanday yordam kerak?";
-          } else if (isJa) {
-            if (hour >= 6 && hour < 12) greeting = "おはようございます！ミチと申します。当アプリは現在開発・改善フェーズでございます。何かお手伝いできることはございますか？";
-            else if (hour >= 12 && hour < 18) greeting = "こんにちは！ミチと申します。当アプリは現在開発・改善フェーズでございます。何かお手伝いできることはございますか？";
-            else if (hour >= 18 && hour < 22) greeting = "こんばんは！ミチと申します。当アプリは現在開発・改善フェーズでございます。何かお手伝いできることはございますか？";
-            else greeting = "夜遅くまでお疲れ様です！ミチと申します。当アプリは現在開発フェーズでございます。何かお手伝いできますか？";
-          } else { // en
-            if (hour >= 6 && hour < 12) greeting = "Good morning! I'm Michi, your personal assistant. The app is currently under active development. How can I help you today?";
-            else if (hour >= 12 && hour < 18) greeting = "Hello! I'm Michi, your personal assistant. The app is currently under active development. How can I help you today?";
-            else if (hour >= 18 && hour < 22) greeting = "Good evening! I'm Michi, your personal assistant. The app is currently under active development. How can I help you today?";
-            else greeting = "Working late? I'm Michi, your personal assistant. The app is under development. How can I help you today?";
-          }
-          
-          setAiResponseText(greeting);
-          setShowPill(true);
-          setStatus('speaking');
-          speakResponse(greeting, lang, () => {
+          const todayStr = new Date().toISOString().split('T')[0];
+          const lastGreetDate = localStorage.getItem('michi_ai_last_greet_date');
+          const alreadyGreetedToday = lastGreetDate === todayStr;
+          localStorage.setItem('michi_ai_last_greet_date', todayStr);
+
+          if (alreadyGreetedToday) {
+            // Already greeted today: skip repetitive salutations and listen directly
             setStatus('idle');
             startListeningSequence();
-          });
+          } else {
+            // First time today: greet politely once!
+            const hour = new Date().getHours();
+            let greeting = '';
+            const lang = speechLang || i18n.language || 'uz';
+            const isUz = lang.startsWith('uz');
+            const isJa = lang.startsWith('ja');
+            
+            if (isUz) {
+              if (hour >= 6 && hour < 12) greeting = "Xayrli tong! Sizga qanday yordam bera olaman?";
+              else if (hour >= 12 && hour < 18) greeting = "Assalomu alaykum! Sizga qanday yordam bera olaman?";
+              else if (hour >= 18 && hour < 22) greeting = "Xayrli kech! Sizga qanday yordam bera olaman?";
+              else greeting = "Kechki soatlarda ham xizmatingizdaman! Qanday yordam kerak?";
+            } else if (isJa) {
+              if (hour >= 6 && hour < 12) greeting = "おはようございます！何かお手伝いできますか？";
+              else if (hour >= 12 && hour < 18) greeting = "こんにちは！何かお手伝いできますか？";
+              else if (hour >= 18 && hour < 22) greeting = "こんばんは！何かお手伝いできますか？";
+              else greeting = "夜遅くまでお疲れ様です！何かお手伝いできますか？";
+            } else { // en
+              if (hour >= 6 && hour < 12) greeting = "Good morning! How can I help you today?";
+              else if (hour >= 12 && hour < 18) greeting = "Hello! How can I help you today?";
+              else if (hour >= 18 && hour < 22) greeting = "Good evening! How can I help you today?";
+              else greeting = "Working late? How can I help you today?";
+            }
+            
+            setAiResponseText(greeting);
+            setShowPill(true);
+            setStatus('speaking');
+            speakResponse(greeting, lang, () => {
+              setStatus('idle');
+              startListeningSequence();
+            });
+          }
         } else {
           // If already greeted or currently speaking, do not cancel speech synthesis!
           if (statusRef.current !== 'speaking' && statusRef.current !== 'listening' && statusRef.current !== 'thinking') {

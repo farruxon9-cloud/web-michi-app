@@ -109,6 +109,19 @@ export const VOICE_LEXICON = [
       en: "Sure, going back!"
     }
   },
+  {
+    command: 'SAY_HELLO',
+    patterns: {
+      uz: ['salom', 'assalomu alaykum', 'assalom alaykum', 'salom alaykum', 'privet', 'xayrli kun', 'xayrli tong', 'xayrli kech'],
+      ja: ['こんにちは', 'おはよう', 'こんばんは', 'ハロー', 'どうも', 'おはよ', 'こんちは'],
+      en: ['hello', 'hi', 'hey', 'good day', 'good morning', 'good afternoon', 'greetings']
+    },
+    responses: {
+      uz: "Assalomu alaykum! Sizga qanday yordam bera olaman?",
+      ja: "こんにちは！何かお手伝いできますか？",
+      en: "Hello! How can I help you today?"
+    }
+  },
   // ==================== MUSIC CONTROLS ====================
   {
     command: 'MUSIC_PLAY',

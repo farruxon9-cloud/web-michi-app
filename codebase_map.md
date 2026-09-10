@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:04:33**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:07:01**.
 
 ---
 
@@ -520,7 +520,7 @@ graph TD
   - `react`
 
 ### 📦 [VoiceAssistant](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.jsx)
-* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (2497 qator, 103562 bayt)
+* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (2509 qator, 103350 bayt)
 * **Komponent Stillari:** 🎨 [VoiceAssistant.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `isActive`
@@ -837,7 +837,7 @@ graph TD
 * **Importlari:** `./turnInstructions`
 
 ### ⚙️ [voiceLexicon.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/voiceLexicon.js)
-* **Yo'li:** `src/utils/voiceLexicon.js` (470 qator, 19091 bayt)
+* **Yo'li:** `src/utils/voiceLexicon.js` (483 qator, 19603 bayt)
 * **Eksport qilingan funksiyalari:**
   - `getSimilarity()`
   - `VOICE_LEXICON()`
@@ -1537,21 +1537,21 @@ graph LR
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
 | `noInternetWait` | インターネット接続がありません。接続の再開を待って | No internet connection. W | Internet aloqasi yo'q. Ta | L228 |
-| `offlineSpeechNotSupported` | — | — | — | L698 |
-| `speechError` | 音声認識エラーが発生しました。もう一度お試しくださ | Speech recognition error  | Ovozni eshitishda xatolik | L823 |
-| `micDeniedTitle` | — | — | — | L1809 |
-| `aiSystemBusy` | システムが混雑しています。少々お待ちください。 | System is busy. Please tr | システムが混雑しています。少々お待ちください。 | L1938 |
-| `aiError` | 申し訳ありません、リクエストを処理できませんでした | Sorry, could not process  | 申し訳ありません、リクエストを処理できませんでした | L1939 |
-| `apiRequiredDesc` | — | — | — | L2336 |
-| `saveKeyBtn` | — | — | — | L2361 |
-| `getFreeKey` | — | — | — | L2370 |
-| `howToEnable` | — | — | — | L2382 |
-| `step1` | — | — | — | L2384 |
-| `step2` | — | — | — | L2385 |
-| `step3` | — | — | — | L2386 |
-| `checkPermissionBtn` | — | — | — | L2401 |
-| `userSaid` | — | — | — | L2423 |
-| `aiThinking` | — | — | — | L2437 |
+| `offlineSpeechNotSupported` | — | — | — | L710 |
+| `speechError` | 音声認識エラーが発生しました。もう一度お試しくださ | Speech recognition error  | Ovozni eshitishda xatolik | L835 |
+| `micDeniedTitle` | — | — | — | L1821 |
+| `aiSystemBusy` | システムが混雑しています。少々お待ちください。 | System is busy. Please tr | システムが混雑しています。少々お待ちください。 | L1950 |
+| `aiError` | 申し訳ありません、リクエストを処理できませんでした | Sorry, could not process  | 申し訳ありません、リクエストを処理できませんでした | L1951 |
+| `apiRequiredDesc` | — | — | — | L2348 |
+| `saveKeyBtn` | — | — | — | L2373 |
+| `getFreeKey` | — | — | — | L2382 |
+| `howToEnable` | — | — | — | L2394 |
+| `step1` | — | — | — | L2396 |
+| `step2` | — | — | — | L2397 |
+| `step3` | — | — | — | L2398 |
+| `checkPermissionBtn` | — | — | — | L2413 |
+| `userSaid` | — | — | — | L2435 |
+| `aiThinking` | — | — | — | L2449 |
 
 
 ---
@@ -1572,7 +1572,7 @@ graph LR
 | **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
 | **Profile** | component | 5987 | 1x | 11 ta bug | App.jsx |
-| **VoiceAssistant** | component | 2497 | 1x | 1 ta bug | App.jsx |
+| **VoiceAssistant** | component | 2509 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
 
