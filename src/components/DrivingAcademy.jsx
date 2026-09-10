@@ -840,16 +840,28 @@ export default function DrivingAcademy({
                     {t('prefectureHeader', '都道府県・市区町村から探す')}
                   </h4>
                   <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                    {selectedPrefecture === 'all' ? t('allLocations', 'すべての地域') : selectedPrefecture}
+                    {selectedCitiesList.length > 0 
+                      ? `${selectedCitiesList.length} ${t('selected', '件選択中')}` 
+                      : (selectedPrefecture === 'all' ? t('allLocations', 'すべての地域') : selectedPrefecture)}
                   </p>
                 </div>
               </div>
-              <div style={{
-                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transform: isLocationSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
-              }}>
-                <ChevronDown size={16} color="var(--text-secondary)" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {selectedCitiesList.length > 0 && (
+                  <span style={{
+                    background: 'var(--primary)', color: '#FFFFFF', fontSize: '11px',
+                    fontWeight: '800', padding: '2px 8px', borderRadius: '10px'
+                  }}>
+                    {selectedCitiesList.length}件
+                  </span>
+                )}
+                <div style={{
+                  width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transform: isLocationSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
+                }}>
+                  <ChevronDown size={16} color="var(--text-secondary)" />
+                </div>
               </div>
             </button>
 
@@ -1491,10 +1503,24 @@ export default function DrivingAcademy({
                   </span>
                 )
               )}
-              {selectedPrefecture !== 'all' && (
-                <span className="active-chip" onClick={() => setSelectedPrefecture('all')}>
-                  📍 {selectedPrefecture} <span className="active-chip-close"><X size={11} /></span>
-                </span>
+              {selectedCitiesList.length > 0 ? (
+                selectedCitiesList.length <= 2 ? (
+                  selectedCitiesList.map(c => (
+                    <span key={c} className="active-chip" onClick={() => setSelectedCitiesList(prev => prev.filter(x => x !== c))}>
+                      📍 {c} <span className="active-chip-close"><X size={11} /></span>
+                    </span>
+                  ))
+                ) : (
+                  <span className="active-chip" onClick={() => setSelectedCitiesList([])} title={selectedCitiesList.join(', ')}>
+                    📍 {selectedCitiesList[0]} <span className="active-chip-count">外{selectedCitiesList.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                  </span>
+                )
+              ) : (
+                selectedPrefecture !== 'all' && (
+                  <span className="active-chip" onClick={() => setSelectedPrefecture('all')}>
+                    📍 {selectedPrefecture} <span className="active-chip-close"><X size={11} /></span>
+                  </span>
+                )
               )}
               {selectedLang !== 'all' && (
                 <span className="active-chip" onClick={() => setSelectedLang('all')}>
