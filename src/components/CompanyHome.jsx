@@ -229,14 +229,30 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       const result = await lookupJapaneseZipcode(digits);
       if (result.success) {
         const formattedZip = `${digits.slice(0, 3)}-${digits.slice(3)}`;
-        const prefValue = result.prefJa || result.prefectureKey;
-        const cityValue = result.detailAddress || result.cityJa || '';
+        
+        // Find matching prefecture object from ALL_47_PREFECTURES
+        const matchedPref = ALL_47_PREFECTURES.find(p => 
+          p.id.toLowerCase() === (result.prefectureKey || '').toLowerCase() ||
+          p.kanji === result.prefJa ||
+          (result.prefJa && p.name.includes(result.prefJa))
+        );
+        const prefId = matchedPref ? matchedPref.id : (result.prefectureKey || result.prefJa);
+
+        // Find city list for this prefecture
+        const cities = getCitiesByPrefecture(prefId);
+        const cityKanji = result.detailAddress || result.cityJa || '';
+        const matchedCity = cities.find(c => 
+          c.kanji === cityKanji || 
+          c.name === cityKanji || 
+          (cityKanji && (cityKanji.includes(c.kanji) || c.kanji.includes(cityKanji)))
+        );
+        const cityValue = matchedCity ? matchedCity.name : cityKanji;
         const townValue = result.townAddress || result.townJa || '';
 
         setNewJob(prev => ({
           ...prev,
           postalCode: formattedZip,
-          prefecture: prefValue,
+          prefecture: prefId,
           detailAddress: cityValue,
           townAddress: townValue
         }));
@@ -249,7 +265,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         }));
         setAddressLookupStatus({
           success: true,
-          text: `${result.prefJa || ''} ${cityValue} ${townValue}`.trim()
+          text: `${result.prefJa || matchedPref?.kanji || ''} ${cityValue} ${townValue}`.trim()
         });
       } else {
         const formattedZip = `${digits.slice(0, 3)}-${digits.slice(3)}`;

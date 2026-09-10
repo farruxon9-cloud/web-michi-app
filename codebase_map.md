@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:10:39**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:12:41**.
 
 ---
 
@@ -115,7 +115,7 @@ graph TD
   - `../utils/haptics`
 
 ### 📦 [CompanyHome](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/CompanyHome.jsx)
-* **Fayl yo'li:** `src/components/CompanyHome.jsx` (1979 qator, 88424 bayt)
+* **Fayl yo'li:** `src/components/CompanyHome.jsx` (1995 qator, 89181 bayt)
 * **Unit Testlari:** 🧪 [CompanyHome.test.jsx](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/CompanyHome.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
   - `onJobClick`
@@ -1216,36 +1216,36 @@ graph LR
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
-| `manualAddressTip` | — | — | — | L267 |
-| `reqTitle` | タイトルを入力してください | Title is required | Sarlavha kiritilishi shar | L521 |
-| `reqSalary` | 給与・受講料を入力してください | Salary/Fee is required | Narx/Maosh kiritilishi sh | L522 |
-| `reqJobType` | — | — | — | L523 |
-| `reqBonus` | — | — | — | L524 |
-| `reqSubcategory` | — | — | — | L525 |
-| `reqTrainLine` | — | — | — | L526 |
-| `reqNearestStation` | — | — | — | L527 |
-| `reqPhone` | 電話番号を入力してください | Phone number is required | Telefon raqam kiritilishi | L528 |
-| `reqEmail` | メールアドレスを入力してください | Email address is required | Email kiritilishi shart | L529 |
-| `reqDesc` | 詳細説明を入力してください | Description is required | Batafsil ma'lumot kiritil | L530 |
-| `reqShoukai` | 紹介金の有無を選択してください | Please select referral st | Shoukai holatini belgilas | L531 |
-| `reqShoukaiSum` | 紹介金額を入力してください | Referral fee is required | Shoukai summasini kiritis | L532 |
-| `reqPostalCode` | 郵便番号を入力してください | Postal code is required | Pochta indeksi kiritilish | L536 |
-| `invalidPostalCode` | 郵便番号は xxx-xxxx 形式で入力してくださ | Postal code must be in xx | Pochta indeksi xxx-xxxx f | L538 |
-| `reqPrefecture` | 都道府県を選択してください | Prefecture is required | Prefektura tanlanishi sha | L541 |
-| `reqDetailAddress` | 詳細住所を入力してください | Detailed address is requi | Batafsil manzil kiritilis | L544 |
-| `reqTownAddress` | — | — | — | L547 |
-| `schoolTypeLabel` | 教習免許区分・カテゴリー | License Category / Class | Toifalar / Kategoriya | L555 |
-| `jobTitleLabel` | 求人タイトル（職種） | Job Title | Sarlavha (Vakansiya) | L555 |
-| `schoolPriceLabel` | 基本受講料金 | Base Course Tuition | Boshlang'ich o'qish narxi | L556 |
-| `salaryLabel` | 月給（平均） | Monthly Salary (Average) | Oylik maosh (O'rtacha) | L556 |
-| `jobTypeLabel` | 雇用形態 | Employment Type | Bandlik shakli | L557 |
-| `schoolDiscountLabel` | 受講割引・特典 | Course Discount & Benefit | O'quv chegirmasi va imtiy | L558 |
-| `bonusLabel` | 賞与・割引特典 | Bonus & Benefits | Mukofot va Imtiyozlar | L558 |
-| `jobSubcategoryLabel` | 職種・免許 | Job Category & License | Ish yo'nalishi va litsenz | L559 |
-| `trainLineLabel` | — | — | — | L560 |
-| `nearestStationLabel` | 最寄り駅 | Nearest Station | Eng yaqin stansiya | L561 |
-| `postalCodeLabel` | 郵便番号 | Postal Code | Pochta indeksi | L562 |
-| `prefectureLabel` | 都道府県 | Prefecture | Prefektura | L563 |
+| `manualAddressTip` | 💡 郵便番号が確認されました。都道府県・市区町村 | 💡 Postal code accepted.  | 💡 Poçta indeksi qabul qi | L283 |
+| `reqTitle` | タイトルを入力してください | Title is required | Sarlavha kiritilishi shar | L537 |
+| `reqSalary` | 給与・受講料を入力してください | Salary/Fee is required | Narx/Maosh kiritilishi sh | L538 |
+| `reqJobType` | — | — | — | L539 |
+| `reqBonus` | — | — | — | L540 |
+| `reqSubcategory` | — | — | — | L541 |
+| `reqTrainLine` | — | — | — | L542 |
+| `reqNearestStation` | — | — | — | L543 |
+| `reqPhone` | 電話番号を入力してください | Phone number is required | Telefon raqam kiritilishi | L544 |
+| `reqEmail` | メールアドレスを入力してください | Email address is required | Email kiritilishi shart | L545 |
+| `reqDesc` | 詳細説明を入力してください | Description is required | Batafsil ma'lumot kiritil | L546 |
+| `reqShoukai` | 紹介金の有無を選択してください | Please select referral st | Shoukai holatini belgilas | L547 |
+| `reqShoukaiSum` | 紹介金額を入力してください | Referral fee is required | Shoukai summasini kiritis | L548 |
+| `reqPostalCode` | 郵便番号を入力してください | Postal code is required | Pochta indeksi kiritilish | L552 |
+| `invalidPostalCode` | 郵便番号は xxx-xxxx 形式で入力してくださ | Postal code must be in xx | Pochta indeksi xxx-xxxx f | L554 |
+| `reqPrefecture` | 都道府県を選択してください | Prefecture is required | Prefektura tanlanishi sha | L557 |
+| `reqDetailAddress` | 詳細住所を入力してください | Detailed address is requi | Batafsil manzil kiritilis | L560 |
+| `reqTownAddress` | 町名・丁目を選択または入力してください | Please enter town or dist | Ko'cha va dahani kiriting | L563 |
+| `schoolTypeLabel` | 教習免許区分・カテゴリー | License Category / Class | Toifalar / Kategoriya | L571 |
+| `jobTitleLabel` | 求人タイトル（職種） | Job Title | Sarlavha (Vakansiya) | L571 |
+| `schoolPriceLabel` | 基本受講料金 | Base Course Tuition | Boshlang'ich o'qish narxi | L572 |
+| `salaryLabel` | 月給（平均） | Monthly Salary (Average) | Oylik maosh (O'rtacha) | L572 |
+| `jobTypeLabel` | 雇用形態 | Employment Type | Bandlik shakli | L573 |
+| `schoolDiscountLabel` | 受講割引・特典 | Course Discount & Benefit | O'quv chegirmasi va imtiy | L574 |
+| `bonusLabel` | 賞与・割引特典 | Bonus & Benefits | Mukofot va Imtiyozlar | L574 |
+| `jobSubcategoryLabel` | 職種・免許 | Job Category & License | Ish yo'nalishi va litsenz | L575 |
+| `trainLineLabel` | — | — | — | L576 |
+| `nearestStationLabel` | 最寄り駅 | Nearest Station | Eng yaqin stansiya | L577 |
+| `postalCodeLabel` | 郵便番号 | Postal Code | Pochta indeksi | L578 |
+| `prefectureLabel` | 都道府県 | Prefecture | Prefektura | L579 |
 | ... | *+104 ta kalit* | | | |
 
 ### 📄 CustomMobilePickerModal (5 ta kalit)
@@ -1565,7 +1565,7 @@ graph LR
 | Fayl | Turi | Qatorlar | Ishlatilgan joylar | Bug tarixi | Importerlar |
 |---|---|---|---|---|---|
 | **VerifiedBadge** | component | 29 | 5x | 0 ta bug | CompanyHome.jsx, DriverFeed.jsx, DrivingAcademy.jsx, JobDetail.jsx, Profile.jsx |
-| **CompanyHome** | component | 1979 | 3x | 3 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
+| **CompanyHome** | component | 1995 | 3x | 3 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
 | **DriverFeed** | component | 1971 | 3x | 7 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
 | **DrivingAcademy** | component | 1528 | 3x | 4 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
