@@ -373,10 +373,12 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 ## 🚫 62. Japanese Postal Code Lookup API Mapping & Zen-kaku Normalization Invariant
 * **Xatolik**: 
   1. E'lon yaratish shaklida (`CompanyHome.jsx`) poçta indeksi qidiruvi natijasini o'zlashtirishda `result.prefecture`, `result.city`, `result.town` kabi `lookupJapaneseZipcode` modulida MAVJUD BO'LMAGAN kalitlarga murojaat qilingani tufayli, auto-fill ishlamay `undefined` qiymatlar saqlanishi va forma validatsiya xatoligi berishi.
-  2. Yapon klaviaturalaridagi to'liq enli raqamlar (`０-９`) tozalanganda o'chib ketishi va Backspace tugmasi 3-raqamni o'chirishga yo'l qo me'yor bermasligi.
+  2. Bazada topilmagan 7-xonali poçta indekslari kiritilganda forma topshirish to'silib qolishi va yapon klaviaturalaridagi to'liq enli raqamlar (`０-９`) tozalanganda o'chib ketishi.
 * **Yechim (MAJBURIY)**:
   1. **API Response Mapping**: `lookupJapaneseZipcode` qaytaradigan atributlar (`prefJa`, `detailAddress`, `townAddress`) strictly `prefecture`, `detailAddress`, `townAddress` state maydonlariga 1-ga-1 o'zlashtirilishi SHART.
-  2. **Zen-kaku Normalization**: Zen-kaku yapon raqamlari (`０-９`) ASCII `0-9` raqamlariga avtomatik o'g'irilishi hamda 7 ta raqam bo'lishi bilan `100-0001` formati shakllanib, prefektura, shahar va tuman avtomatik to'ldirilishi SHART.
+  2. **Silent Unknown Zipcode Acceptance**: Bazada mavjud bo'lmagan poçta indeksi kiritilganda tizim uni toza va indamay qabul qiladi (`100-0001`), validatsiya xatosi berilmaydi va foydalanuvchiga hududni ro'yxatdan o'zi tanlash maslahati ko'rsatiladi.
+  3. **Live Search City Selection**: `CustomInlineDropdown` darchasi 500+ Yaponiyaning barcha shaharlari va shaharchalarini ko'rsatadi hamda live search (`🔍 Qidirish / 検索...`) orqali tezkor topish va `allowCustom={true}` orqali ixtiyoriy matn kiritish imkonini beradi.
+  4. **Zen-kaku Normalization**: Zen-kaku yapon raqamlari (`０-９`) ASCII `0-9` raqamlariga avtomatik o'g'irilishi hamda 7 ta raqam bo'lishi bilan `100-0001` formati shakllanishi SHART.
 
 
 

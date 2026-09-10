@@ -54,11 +54,10 @@ Ushbu qoida **Mening E'lonlarim (`マイ掲載一覧`)** sahifasi uchun barcha l
   2. Outer `feed-container` dagi `paddingBottom: '32px'` butunlay olib tashlanib, `paddingBottom: '0px'` ga o'tkazilishi SHART.
   3. Bu eng oxirgi e'lon kartochkasi va `+ 求人を掲載する` tugmasini pastki `BottomNav` paneli (`height: 72px`, `bottom: 12px`) bilan 100% parallel, absolyut zich hamda hech qanday keraksiz va xunuk ochiq bo'shliqlarsiz mukammal tutashishini kafolatlaydi.
 
----
-
 ## 📮 8. Japanese Postal Code Lookup API Mapping & Input Normalization Invariant (Rule 62 Invariant)
-- **Zipcode API Response Mapping**: `lookupJapaneseZipcode` qaytaradigan obyekt atributlari (`prefJa`, `detailAddress`, `townAddress`) strictly `CompanyHome.jsx` state maydonlariga (`prefecture`, `detailAddress`, `townAddress`) 1-ga-1 to'g'ri o'zlashtirilishi SHART (`result.prefecture` yoki `result.city` kabi mavjud bo'lmagan kalitlar ishlatilishi TAQIQLANADI).
+- **Zipcode API Response Mapping**: `lookupJapaneseZipcode` qaytaradigan obyekt atributlari (`prefJa`, `detailAddress`, `townAddress`) strictly `CompanyHome.jsx` state maydonlariga (`prefecture`, `detailAddress`, `townAddress`) 1-ga-1 to'g'ri o'zlashtirilishi SHART.
+- **Silent Unknown Zipcode Acceptance**: Agar poçta indeksi bazada yoki internet API larida topilmasa (noma'lum yoki yangi kiritilgan poçta indeksi bo'lsa), tizim 7 ta raqamli poçta indeksini (`100-0001`) indamay va toza qabul qiladi (forma bloklanmaydi, `errors.postalCode` tozalanadi). Shuning bilan birga foydalanuvchiga prefektura va shahar/tumanni ro'yxatdan o'zi tanlashi uchun muloyim maslahat ko'rsatiladi.
+- **Live Search & Custom City/Town Selection**: Shahar va tumanlar dropdowni (`CustomInlineDropdown`) 500+ Yaponiyaning barcha shaharlari (`市`), tumanlari (`区`), va shaharchalarini (`町`, `村`) ko'rsatadi, jonli qidiruv qutisi (`🔍 Qidirish / 検索...`) hamda `allowCustom={true}` orqali ixtiyoriy matn kiritish imkonini beradi.
 - **Zen-kaku Full-width Normalization**: Yapon tili klaviaturalaridagi to'liq enli raqamlar (`０-９`) strictly ASCII raqamlariga (`0-9`) avtomatik o'tkazilishi shart: `.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0))`.
-- **Smooth Hyphenation & Auto-Lookup**: Poçta indeksi 7 ta raqamga yetishi bilan (`digits.length === 7`) manzil avtomatik ravishda `100-0001` formatlanib, prefektura, shahar va tuman maydonlari avtomatik to'ldirilishi va yashil status nishoni ko'rsatilishi SHART.
 
 

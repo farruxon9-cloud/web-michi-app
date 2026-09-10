@@ -82,10 +82,23 @@ export default function CustomInlineDropdown({
     };
   }, []);
 
+  const [filterQuery, setFilterQuery] = useState('');
+
   const formattedOptions = [
     ...(options[0]?.id === '' ? [] : [{ id: '', name: placeholder }]),
     ...options
   ];
+
+  const filteredFormattedOptions = formattedOptions.filter(opt => {
+    if (!filterQuery.trim()) return true;
+    if (opt.id === '') return true;
+    const q = filterQuery.trim().toLowerCase();
+    return (
+      String(opt.name || '').toLowerCase().includes(q) ||
+      String(opt.kanji || '').toLowerCase().includes(q) ||
+      String(opt.id || '').toLowerCase().includes(q)
+    );
+  });
 
   const selectedOption = formattedOptions.find(opt => {
     if (!value) return false;
@@ -118,7 +131,10 @@ export default function CustomInlineDropdown({
       {/* Trigger Box */}
       <div
         className="auth-input"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setFilterQuery('');
+        }}
         style={{
           background: 'var(--card-bg)',
           color: 'var(--text-main)',
@@ -163,6 +179,25 @@ export default function CustomInlineDropdown({
             boxShadow: '0 16px 40px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1)'
           }}
         >
+          {options.length > 5 && (
+            <div style={{ padding: '6px 6px 4px 6px', borderBottom: '1px solid var(--glass-border, rgba(0, 0, 0, 0.08))' }}>
+              <input
+                type="text"
+                value={filterQuery}
+                onChange={e => setFilterQuery(e.target.value)}
+                placeholder="🔍 Qidirish / 検索..."
+                className="auth-input"
+                style={{
+                  fontSize: '12.5px',
+                  padding: '6px 10px',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  borderRadius: '10px'
+                }}
+                onClick={e => e.stopPropagation()}
+              />
+            </div>
+          )}
           <div
             className="hide-scrollbar"
             style={{
@@ -176,7 +211,7 @@ export default function CustomInlineDropdown({
               gap: '4px'
             }}
           >
-            {formattedOptions.map(opt => {
+            {filteredFormattedOptions.map(opt => {
               const rawVal = opt.id !== undefined ? opt.id : opt.value !== undefined ? opt.value : opt.name;
               const isPlaceholder = rawVal === '' || rawVal === null || rawVal === undefined;
               const isSelected = !isPlaceholder && Boolean(value) && (

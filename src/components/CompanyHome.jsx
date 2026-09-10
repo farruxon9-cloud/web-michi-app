@@ -252,9 +252,19 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           text: `${result.prefJa || ''} ${cityValue} ${townValue}`.trim()
         });
       } else {
+        const formattedZip = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+        setNewJob(prev => ({
+          ...prev,
+          postalCode: formattedZip
+        }));
+        setErrors(prev => ({
+          ...prev,
+          postalCode: null
+        }));
         setAddressLookupStatus({
-          success: false,
-          text: result.error || '郵便番号が見つかりませんでした'
+          success: true,
+          isManualTip: true,
+          text: t('manualAddressTip', '💡 郵便番号が確認されました。都道府県・市区町村をリストから選択してください')
         });
       }
     } catch (err) {
