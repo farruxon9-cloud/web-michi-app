@@ -37,13 +37,13 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, 
-  Banknote, Edit3, SlidersHorizontal, X, ChevronDown, RotateCcw,
+  Banknote, Edit3, SlidersHorizontal, X, ChevronDown, ChevronUp, RotateCcw,
   Car, GraduationCap, Sparkles, Globe, Truck, Bus, CreditCard, ShieldCheck, 
   Clock, Gift, Users, Award, Shield, Check, Layers, Building2
 } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import CustomMobilePickerModal from './CustomMobilePickerModal';
-import { PREFECTURES } from '../data/japanLocationDB';
+import { PREFECTURES, CITIES_BY_PREFECTURE, getAllCities } from '../data/japanLocationDB';
 import CustomInlineDropdown from './CustomInlineDropdown';
 import './DrivingAcademy.css';
 import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinadi
@@ -267,6 +267,8 @@ export default function DrivingAcademy({
 
   // Filter States
   const [selectedPrefecture, setSelectedPrefecture] = useState('all');
+  const [selectedCitiesList, setSelectedCitiesList] = useState([]);
+  const [expandedCities, setExpandedCities] = useState({});
   const [selectedCourses, setSelectedCourses] = useState([]);
   const [selectedStyles, setSelectedStyles] = useState([]);
   const [selectedLang, setSelectedLang] = useState('all');
@@ -285,6 +287,7 @@ export default function DrivingAcademy({
   const [isFeatureSectionOpen, setIsFeatureSectionOpen] = useState(false);
 
   const hasActiveFilters = selectedPrefecture !== 'all' || 
+    selectedCitiesList.length > 0 ||
     selectedCourses.length > 0 || 
     selectedStyles.length > 0 || 
     selectedLang !== 'all' || 
@@ -295,6 +298,8 @@ export default function DrivingAcademy({
   const resetFilters = () => {
     // 1. Reset all filter value selections
     setSelectedPrefecture('all');
+    setSelectedCitiesList([]);
+    setExpandedCities({});
     setSelectedCourses([]);
     setSelectedStyles([]);
     setSelectedLang('all');
@@ -320,10 +325,10 @@ export default function DrivingAcademy({
   // Reset pagination when search query or filters change
   useEffect(() => {
     setVisibleCount(10);
-  }, [searchQuery, selectedPrefecture, selectedCourses, selectedStyles, selectedLang, selectedPriceRange, selectedFeatures]);
+  }, [searchQuery, selectedPrefecture, selectedCitiesList, selectedCourses, selectedStyles, selectedLang, selectedPriceRange, selectedFeatures]);
 
 
-  // Filtrlash: qidiruv, kurs, uslub, prefektura, til, narx va imkoniyatlar bo'yicha
+  // Filtrlash: qidiruv, kurs, uslub, prefektura, shaharlar, til, narx va imkoniyatlar bo'yicha
   const filteredSchools = schools.filter(school => {
     const query = (searchQuery || '').toLowerCase();
     const localizedName = t(`school_${school.id}_name`, school.name).toLowerCase();
@@ -349,6 +354,9 @@ export default function DrivingAcademy({
       (school.location && school.location.toLowerCase().includes(selectedPrefecture.toLowerCase())) ||
       (school.fullAddress && school.fullAddress.toLowerCase().includes(selectedPrefecture.toLowerCase()));
 
+    const matchesCitiesList = !selectedCitiesList || selectedCitiesList.length === 0 ||
+      selectedCitiesList.some(c => (school.location || '').includes(c) || (school.fullAddress || '').includes(c) || (school.name || '').includes(c));
+
     const matchesLang = selectedLang === 'all' ||
       (school.langs && school.langs.includes(selectedLang));
 
@@ -362,7 +370,7 @@ export default function DrivingAcademy({
     const matchesFeatures = selectedFeatures.length === 0 ||
       selectedFeatures.every(f => f === 'shoukai' ? school.shoukaiFee > 0 : (school.features || []).includes(f));
 
-    return matchesSearch && matchesCourse && matchesStyle && matchesPrefecture && matchesLang && matchesPrice && matchesFeatures;
+    return matchesSearch && matchesCourse && matchesStyle && matchesPrefecture && matchesCitiesList && matchesLang && matchesPrice && matchesFeatures;
   });
 
 
@@ -863,6 +871,72 @@ export default function DrivingAcademy({
                   </span>
                   <span style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: '800' }}>{t('change', '変更')} →</span>
                 </button>
+
+                {/* Cities / Wards checkboxes */}
+                <div className="tab-cities-wrapper" style={{ marginTop: '12px' }}>
+                  {(() => {
+                    const prefKey = (selectedPrefecture || 'all').toLowerCase();
+                    const citiesList = prefKey === 'all' ? getAllCities() : (CITIES_BY_PREFECTURE[prefKey] || []);
+                    return citiesList.map(city => {
+                      const isExpanded = !!expandedCities[city.id];
+                      const hasWards = city.wards && city.wards.length > 0;
+                      const isCityChecked = selectedCitiesList.includes(city.name);
+
+                      return (
+                        <div key={city.id} className="townwork-accordion-item">
+                          <div className="townwork-accordion-header">
+                            <label className="townwork-checkbox-label">
+                              <div 
+                                className={`townwork-square-checkbox ${isCityChecked ? 'checked' : ''}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedCitiesList(prev => 
+                                    prev.includes(city.name) ? prev.filter(c => c !== city.name) : [...prev, city.name]
+                                  );
+                                }}
+                              >
+                                {isCityChecked && <Check size={14} color="#FFF" />}
+                              </div>
+                              <span>{city.name}</span>
+                            </label>
+                            {hasWards && (
+                              <div 
+                                onClick={() => setExpandedCities(prev => ({ ...prev, [city.id]: !prev[city.id] }))}
+                                style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                              >
+                                {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                              </div>
+                            )}
+                          </div>
+
+                          {hasWards && isExpanded && (
+                            <div className="townwork-accordion-body">
+                              {city.wards.map(ward => {
+                                const isWardChecked = selectedCitiesList.includes(ward);
+                                return (
+                                  <div 
+                                    key={ward} 
+                                    className="townwork-sub-checkbox-item"
+                                    onClick={() => {
+                                      setSelectedCitiesList(prev => 
+                                        prev.includes(ward) ? prev.filter(w => w !== ward) : [...prev, ward]
+                                      );
+                                    }}
+                                  >
+                                    <div className={`townwork-square-checkbox ${isWardChecked ? 'checked' : ''}`} style={{ width: '16px', height: '16px' }}>
+                                      {isWardChecked && <Check size={11} color="#FFF" />}
+                                    </div>
+                                    <span>{ward}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
               </div>
             )}
           </div>
