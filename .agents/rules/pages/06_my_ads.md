@@ -55,6 +55,11 @@ Ushbu qoida **Mening E'lonlarim (`マイ掲載一覧`)** sahifasi uchun barcha l
   3. Bu eng oxirgi e'lon kartochkasi va `+ 求人を掲載する` tugmasini pastki `BottomNav` paneli (`height: 72px`, `bottom: 12px`) bilan 100% parallel, absolyut zich hamda hech qanday keraksiz va xunuk ochiq bo'shliqlarsiz mukammal tutashishini kafolatlaydi.
 
 ## 📮 8. Japanese Postal Code Lookup API Mapping & Input Normalization Invariant (Rule 62 Invariant)
+- **4-Tier Distinct Address Field Separation**: Manzil elementlari aralashtirib biriktirilmaydi. 4 ta alohida maydonning har biriga strictly o'ziga tegishli hududiy bo'linma biriktirilishi SHART:
+  1. `都道府県 *`: FAQAT Prefektura nomi (`千葉県` / `Chiba`).
+  2. `市区町村 *`: FAQAT Shahar yoki Tuman nomi (`松戸市`).
+  3. `町名・丁目 *`: FAQAT Ko'cha, Daha yoki Mahalla nomi (`常盤平`).
+  4. `建物名・部屋番号`: Ixtiyoriy bino nomi va xonadon raqami.
 - **Zipcode API Response Mapping**: `lookupJapaneseZipcode` qaytaradigan obyekt atributlari (`prefJa`, `detailAddress`, `townAddress`) strictly `CompanyHome.jsx` state maydonlariga (`prefecture`, `detailAddress`, `townAddress`) 1-ga-1 to'g'ri o'zlashtirilishi SHART.
 - **Silent Unknown Zipcode Acceptance**: Agar poçta indeksi bazada yoki internet API larida topilmasa (noma'lum yoki yangi kiritilgan poçta indeksi bo'lsa), tizim 7 ta raqamli poçta indeksini (`100-0001`) indamay va toza qabul qiladi (forma bloklanmaydi, `errors.postalCode` tozalanadi). Shuning bilan birga foydalanuvchiga prefektura va shahar/tumanni ro'yxatdan o'zi tanlashi uchun muloyim maslahat ko'rsatiladi.
 - **Live Search & Custom City/Town Selection**: Shahar va tumanlar dropdowni (`CustomInlineDropdown`) 500+ Yaponiyaning barcha shaharlari (`市`), tumanlari (`区`), va shaharchalarini (`町`, `村`) ko'rsatadi, jonli qidiruv qutisi (`🔍 Qidirish / 検索...`) hamda `allowCustom={true}` orqali ixtiyoriy matn kiritish imkonini beradi.

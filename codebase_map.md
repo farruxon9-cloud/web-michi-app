@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:12:41**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:14:37**.
 
 ---
 
@@ -728,7 +728,7 @@ graph TD
 * **Importlari:** *Yo'q*
 
 ### ⚙️ [japaneseZipcodeLookup.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/japaneseZipcodeLookup.js)
-* **Yo'li:** `src/utils/japaneseZipcodeLookup.js` (205 qator, 8312 bayt)
+* **Yo'li:** `src/utils/japaneseZipcodeLookup.js` (206 qator, 8579 bayt)
 * **Eksport qilingan funksiyalari:**
   - `getPrefectureByPostalPrefix()`
   - `cleanAddressKanji()`
@@ -1028,7 +1028,7 @@ graph TD
 * **Yo'li:** `.agents/rules/pages/05_profile_main.md` (53 qator)
 
 ### 📜 [06_my_ads.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/06_my_ads.md)
-* **Yo'li:** `.agents/rules/pages/06_my_ads.md` (64 qator)
+* **Yo'li:** `.agents/rules/pages/06_my_ads.md` (69 qator)
 
 ### 📜 [07_personal_info.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/07_personal_info.md)
 * **Yo'li:** `.agents/rules/pages/07_personal_info.md` (58 qator)
