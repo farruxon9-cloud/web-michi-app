@@ -238,37 +238,43 @@ export default function Profile({
     setActivePage('main');
   };
 
-  // Track scroll-to-top triggers to differentiate explicit reset from sub-page scroll restoration
-  const lastScrollToTopRef = React.useRef(0);
+  // Track scroll-to-top triggers to differentiate explicit BottomNav reset from sub-page scroll restoration
   const prevScrollToTopRef = React.useRef(scrollToTopTrigger);
 
   // Sub-sahifadan qaytilganda asosiy profil skrollini aynan bosilgan joyga qaytarish, sub-sahifa ochilganda esa topga reset qilish
   React.useEffect(() => {
     if (activePage === 'main') {
-      // Restore scroll only if user manually backed out without clicking My Page tab reset
-      if (savedMainScroll > 0 && scrollToTopTrigger === lastScrollToTopRef.current) {
+      if (savedMainScroll > 0) {
+        let attempts = 0;
+        const maxAttempts = 15;
         const restoreScroll = () => {
           const container = mainContainerRef.current || document.querySelector('.profile-container');
           if (container) {
             container.scrollTop = savedMainScroll;
+            if (container.scrollTop < savedMainScroll && attempts < maxAttempts) {
+              attempts++;
+              setTimeout(restoreScroll, 30);
+            }
           }
         };
+
         restoreScroll();
         requestAnimationFrame(restoreScroll);
         setTimeout(restoreScroll, 40);
+        setTimeout(restoreScroll, 120);
+        setTimeout(restoreScroll, 250);
       }
     } else {
       const containers = document.querySelectorAll('.profile-container');
       containers.forEach(c => { c.scrollTop = 0; });
     }
-  }, [activePage, savedMainScroll, scrollToTopTrigger]);
+  }, [activePage, savedMainScroll]);
 
   // BottomNav'da My Page tabini takroran (2-marta) yoki sub-sahifada turib bosganda profil asosiy sahifasini eng yuqoridan scroll qilib ochish
   React.useEffect(() => {
     // ONLY execute scroll reset if scrollToTopTrigger actually INCREMENTED (user clicked BottomNav profile tab)
     if (scrollToTopTrigger > 0 && scrollToTopTrigger !== prevScrollToTopRef.current) {
       prevScrollToTopRef.current = scrollToTopTrigger;
-      lastScrollToTopRef.current = scrollToTopTrigger;
       setSavedMainScroll(0);
 
       // Force reset to main active page if on sub-page
@@ -313,6 +319,8 @@ export default function Profile({
         clearTimeout(t1);
         clearTimeout(t2);
       };
+    } else {
+      prevScrollToTopRef.current = scrollToTopTrigger;
     }
   }, [scrollToTopTrigger]);
 

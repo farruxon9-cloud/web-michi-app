@@ -327,9 +327,9 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. Scroll reset jarayoni faqat bitta 40ms taymer bilan amalga oshirilib, CSS transformatsiyalari va re-render vaqtida smooth scroll inertsiyada to'xtab qolishi.
   3. `BottomNav.jsx` dagi drag tolerance cheklovi (`dragDistance.current > 4px`) tufayli barmoq tebranishi (double-tap jitter) ikkinchi `click` hodisasini bekor qilib yuborishi.
 * **Yechim (MAJBURIY)**:
-  1. `scrollToTopTrigger` o'zgarganda `savedMainScroll` qiymati darhol `0` ga tushirilishi va `lastScrollToTopRef.current` saqlanishi SHART. `activePage === 'main'` ga o'tganda faqat `scrollToTopTrigger === lastScrollToTopRef.current` bo'lgandagina eski scroll tiklanadi.
-  2. Scroll reset jarayoni multi-frame (`requestAnimationFrame` + `setTimeout 40ms` + `setTimeout 150ms`) orqali bajarilib, barcha `.profile-container` hamda `mainContainerRef.current` scroll joylashuvi strictly `scrollTop = 0` va `scrollTo({ top: 0, behavior: 'smooth' })` qilib nollanishi SHART.
-  3. `BottomNav.jsx` da `dragDistance.current` ruxsat etilgan tebranish masofasi `12px` ga hamda `onClick` toleransi `25px` ga oshirilishi SHART.
+  1. Sub-sahifalarga kirishda `handleOpenSubPage` orqali `container.scrollTop` xotirada `savedMainScroll` o'zgaruvchisiga saqlanadi.
+  2. Sub-sahifadan Orqaga tugmasi orqali qaytilganda `savedMainScroll > 0` bo'lsa, DOM elementining layout balandligi to'liq tayyor bo'lishini ta'minlovchi `restoreScroll` retry ilgagi (requestAnimationFrame + 30ms x 15 takroriy layout settle tekshiruvi) orqali scroll aynan 100% bosilgan joyiga qaytarilishi SHART.
+  3. BottomNav orqali `scrollToTopTrigger` oshgandagina `savedMainScroll(0)` bajarilib profil eng yuqorisiga reset qilinadi.
 
 ## 🚫 53. Navigation Origin Isolation & Sub-Page Route Preserving Invariant
 * **Xatolik**: Home dashboard (`Dashboard.jsx`) kabi sahifalardan `マイ掲載一覧` (`my_ads`) yoki `受信した応募` (`applications`) kabi sub-sahifalarga o'tish tugmalari bosilganda, `setActiveTab('profile')` wrapperi `setProfileActivePage('main')` deb Profil sub-sahifasini majburiy ravishda `main` ga o'tkazib yuborishi.

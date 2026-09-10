@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:41:20**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:53:10**.
 
 ---
 
@@ -372,7 +372,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (6072 qator, 314496 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (6085 qator, 314794 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -1421,36 +1421,36 @@ graph LR
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
-| `roleGuest` | ゲスト | Guest | Mehmon | L2152 |
-| `cancelEdit` | キャンセル | Cancel | Bekor qilish | L2797 |
-| `logout` | ログアウト | Logout | Tizimdan chiqish | L6020 |
-| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L3146 |
-| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L3147 |
-| `emailLabel` | メールアドレス | Email | Email | L3471 |
-| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L3884 |
-| `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L2750 |
-| `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3326 |
-| `roleDriver` | ドライバー (求職者) | Driver (Job Seeker) | Haydovchi (Ish izlovchi) | L2149 |
-| `roleCompanyLabel` | 企業 | Company | Kompaniya | L2150 |
-| `roleSchool` | 自動車学校 | Driving School | AvtoMaktab | L2151 |
-| `currentAddressLabel` | 現住所 | My current residence | Hozirgi yashash joyim | L2191 |
-| `currentlyStudyingLabel` | 在学中 | Currently studying | Hozir ham o'qiyman | L2192 |
-| `notifications` | 通知 | Notifications | Bildirishnomalar | L2290 |
-| `markAllRead` | すべて既読にする | Mark all read | Hammasini o'qilgan deb be | L2295 |
-| `noNotifications` | 通知はまだありません | No notifications yet | Hali bildirishnomalar yo' | L2304 |
-| `acceptedNotifTitle` | 応募が採用されました！ | Application Accepted! | Ariza qabul qilindi! | L2321 |
-| `interviewNotifTitle` | 面接のご招待 | Interview Invitation | Suhbatga taklif | L2322 |
-| `reviewedNotifTitle` | 応募が確認されました | Application Reviewed | Ariza ko'rib chiqildi | L2323 |
-| `rejectedNotifTitle` | 応募が却下されました | Application Rejected | Ariza rad etildi | L2324 |
-| `shoukaiPaidNotif` | 紹介報酬が支払われました | Shoukai reward paid | Shoukai mukofoti to'landi | L2325 |
-| `newNotification` | 新着 | New | Yangi | L2328 |
-| `acceptedNotifMsg` | あなたの応募が採用されました： | Your application has been | Arizangiz qabul qilindi: | L2331 |
-| `interviewNotifMsg` | 面接にご招待されました： | You are invited for an in | Siz suhbatga taklif qilin | L2332 |
-| `reviewedNotifMsg` | あなたの応募が確認されました： | Your application was revi | Arizangiz ko'rib chiqildi | L2333 |
-| `rejectedNotifMsg` | あなたの応募が却下されました： | Your application was reje | Arizangiz rad etildi: | L2334 |
-| `shoukaiPaidMsg` | 紹介報酬が支払われました： | paid shoukai reward of | shoukai mukofoti to'landi | L2335 |
-| `employeeRequestMsg` | 従業員リクエストメッセージ | Employee Request Message | Xodim so'rov xabari | L2336 |
-| `employeeConfirmed` | 従業員として確認されました！ | Employment confirmed! | Xodimlik tasdiqlandi! | L2348 |
+| `roleGuest` | ゲスト | Guest | Mehmon | L2165 |
+| `cancelEdit` | キャンセル | Cancel | Bekor qilish | L2810 |
+| `logout` | ログアウト | Logout | Tizimdan chiqish | L6033 |
+| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L3159 |
+| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L3160 |
+| `emailLabel` | メールアドレス | Email | Email | L3484 |
+| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L3897 |
+| `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L2763 |
+| `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3339 |
+| `roleDriver` | ドライバー (求職者) | Driver (Job Seeker) | Haydovchi (Ish izlovchi) | L2162 |
+| `roleCompanyLabel` | 企業 | Company | Kompaniya | L2163 |
+| `roleSchool` | 自動車学校 | Driving School | AvtoMaktab | L2164 |
+| `currentAddressLabel` | 現住所 | My current residence | Hozirgi yashash joyim | L2204 |
+| `currentlyStudyingLabel` | 在学中 | Currently studying | Hozir ham o'qiyman | L2205 |
+| `notifications` | 通知 | Notifications | Bildirishnomalar | L2303 |
+| `markAllRead` | すべて既読にする | Mark all read | Hammasini o'qilgan deb be | L2308 |
+| `noNotifications` | 通知はまだありません | No notifications yet | Hali bildirishnomalar yo' | L2317 |
+| `acceptedNotifTitle` | 応募が採用されました！ | Application Accepted! | Ariza qabul qilindi! | L2334 |
+| `interviewNotifTitle` | 面接のご招待 | Interview Invitation | Suhbatga taklif | L2335 |
+| `reviewedNotifTitle` | 応募が確認されました | Application Reviewed | Ariza ko'rib chiqildi | L2336 |
+| `rejectedNotifTitle` | 応募が却下されました | Application Rejected | Ariza rad etildi | L2337 |
+| `shoukaiPaidNotif` | 紹介報酬が支払われました | Shoukai reward paid | Shoukai mukofoti to'landi | L2338 |
+| `newNotification` | 新着 | New | Yangi | L2341 |
+| `acceptedNotifMsg` | あなたの応募が採用されました： | Your application has been | Arizangiz qabul qilindi: | L2344 |
+| `interviewNotifMsg` | 面接にご招待されました： | You are invited for an in | Siz suhbatga taklif qilin | L2345 |
+| `reviewedNotifMsg` | あなたの応募が確認されました： | Your application was revi | Arizangiz ko'rib chiqildi | L2346 |
+| `rejectedNotifMsg` | あなたの応募が却下されました： | Your application was reje | Arizangiz rad etildi: | L2347 |
+| `shoukaiPaidMsg` | 紹介報酬が支払われました： | paid shoukai reward of | shoukai mukofoti to'landi | L2348 |
+| `employeeRequestMsg` | 従業員リクエストメッセージ | Employee Request Message | Xodim so'rov xabari | L2349 |
+| `employeeConfirmed` | 従業員として確認されました！ | Employment confirmed! | Xodimlik tasdiqlandi! | L2361 |
 | ... | *+157 ta kalit* | | | |
 
 ### 📄 ResumeBuilder (70 ta kalit)
@@ -1571,7 +1571,7 @@ graph LR
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 6072 | 1x | 12 ta bug | App.jsx |
+| **Profile** | component | 6085 | 1x | 12 ta bug | App.jsx |
 | **VoiceAssistant** | component | 2505 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
