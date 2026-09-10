@@ -16,7 +16,10 @@ Ushbu qoida loyihamizning **Vakansiyalar Ro'yxati (Jobs Feed)** sahifasi uchun b
 ## 🎯 2. Header & Filter Control Bar
 - **Header Padding**: `padding: 12px 14px;` (14px side margin 1:1 match).
 - **Search & Filter Button Row**: `height: 44px`, `gap: 8px`.
-- **Active Filter Chips Bar**: `display: flex; gap: 8px; overflow-x: auto; padding: 4px 14px;`
+- **Active Filter Chips Bar (`.active-filter-chips-container`)**:
+  - `display: flex; align-items: center; position: relative; width: 100%; gap: 8px;`
+  - **Smart Chip Grouping**: 3+ selected locations, stations, licenses, or features automatically summarize: `📍 東京23区 外3件 ×` (or `🚉 品川駅 外2件 ×`, `🪪 大型免許 外2件 ×`). Clicking `×` clears all items in that category.
+  - **Sticky Reset Button (`.sticky-reset-btn`)**: `position: sticky; right: 0; flex-shrink: 0; z-index: 10;` with glass shadow background. Guarantees `リセット` button is 100% visible on screen at all times without horizontal scrolling.
 
 ---
 
