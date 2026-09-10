@@ -1223,15 +1223,30 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
 
     switch (currentStep) {
       case 'ask_name':
+        const immediateName = cleanJapaneseCopula(cleanText);
+        if (!immediateName) {
+          speakStepMsg(isUz 
+            ? "Ismingizni yaxshi eshita olmadim. Iltimos, ism va familiyangizni qaytadan ayting." 
+            : isJa ? "お名前が聞き取れませんでした。もう一度お名前をフルネームで教えてください。" 
+            : "Could not hear your name. Please state your full name again.");
+          break;
+        }
         setStatus('thinking');
+        triggerUpdate('fullName', immediateName);
+        setTempResumeData(prev => ({ ...prev, fullName: immediateName }));
+
         const parsedName = await parseResumeFieldWithGemini('ask_name', cleanText, isUz, isJa);
-        setTempResumeData(prev => ({ ...prev, fullName: parsedName }));
-        triggerUpdate('fullName', parsedName);
+        const finalName = parsedName || immediateName;
+        if (finalName !== immediateName) {
+          triggerUpdate('fullName', finalName);
+          setTempResumeData(prev => ({ ...prev, fullName: finalName }));
+        }
+
         setResumeStep('confirm_name');
         speakStepMsg(isUz 
-          ? `Ismingizni "${parsedName}" deb yozdim. Tasdiqlaysizmi?` 
-          : isJa ? `お名前「${parsedName}」と入力いたしました。よろしいですか？` 
-          : `Entered name "${parsedName}". Confirm?`);
+          ? `Ismingizni "${finalName}" deb yozdim. Tasdiqlaysizmi?` 
+          : isJa ? `お名前「${finalName}」と入力いたしました。よろしいですか？` 
+          : `Entered name "${finalName}". Confirm?`);
         break;
 
       case 'confirm_name':
