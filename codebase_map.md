@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:53:10**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:56:24**.
 
 ---
 
@@ -1025,7 +1025,7 @@ graph TD
 * **Yo'li:** `.agents/rules/pages/04_jdm_navigation.md` (23 qator)
 
 ### 📜 [05_profile_main.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/05_profile_main.md)
-* **Yo'li:** `.agents/rules/pages/05_profile_main.md` (47 qator)
+* **Yo'li:** `.agents/rules/pages/05_profile_main.md` (53 qator)
 
 ### 📜 [06_my_ads.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/06_my_ads.md)
 * **Yo'li:** `.agents/rules/pages/06_my_ads.md` (57 qator)

@@ -28,13 +28,19 @@ Ushbu qoida **Profil Asosiy Menyusi (Profile Main)** uchun barcha layout va spet
 
 ---
 
-## 🔄 5. BottomNav Tab Repeat Click & Multi-Frame Scroll Reset (Rule 52 & Rule 53 Invariant)
-- **Repeat Click & Trigger Guard Behavior**: BottomNav pastki menyusidagi **My Page / Profile (`profile`)** tugmasi 2-marta (takroran) yoki biron sub-sahifada (`applications`, `notifications`, `settings`, `personalInfo`, `saved_items`, `my_shoukai`, `employees`) turib bosilganda:
-  1. `scrollToTopTrigger` qiymati strictly oshgandagina (`scrollToTopTrigger !== prevScrollToTopRef.current`) reset bajariladi. Stale (eskirgan) trigger qiymatlari sub-sahifa o'tishlarida (`my_ads`, `applications`) resetni NOTO'G'RI qayta ishga tushirishidan saqlanadi.
-  2. Foydalanuvchini profilning **asosiy sahifasiga (`main`)** qaytaradi.
-  3. Barcha ochiq tahrirlash formalari va modallarni (`isEditing`, `isFormOpen`, `isVehiclePickerOpen` va h.k.) yopadi.
-  4. Multi-frame reset (`requestAnimationFrame` + `setTimeout 40ms` + `setTimeout 150ms`) orqali barcha `.profile-container` hamda `mainContainerRef.current` skrollini silliq ravishda eng yuqoriga (**`scrollTop = 0`**, **`scrollTo({ top: 0, behavior: 'smooth' })`**) reset qiladi.
-  5. `BottomNav.jsx` da `dragDistance.current` tebranish masofasi `12px` hamda `onClick` toleransi `25px` bo'lib, double-tap jitterlar 100% to'siqsiz yetib boradi.
+## 🔄 5. Sub-Page Scroll Restoration & BottomNav Multi-Frame Reset (Rule 52 Invariant)
+1. **Sub-Page Entry Scroll Recording (`handleOpenSubPage`)**:
+   - Sub-sahifalarga (`personalInfo`, `applications`, `saved_items`, `my_shoukai`, `my_ads`, `employees`, `notifications`, `settings`, `about`, `resume_builder`) kirishda `handleOpenSubPage` funksiyasi profil container'ining `scrollTop` (masalan `550px`) qiymatini `savedMainScroll` o'zgaruvchisiga saqlaydi.
+
+2. **Back Button Scroll Restoration (`Layout-Settle Retry`)**:
+   - Sub-sahifadan **Orqaga (ArrowLeft)** tugmasi bosilib profil asosiy ko'rinishiga (`main`) qaytilganda:
+   - Synchronous mount paytida DOM layout elementlarining vizual balandligi (`scrollHeight`) hali to'liq hisoblanmagani tufayli skrollning `0` ga clamped bo'lishining oldini olish uchun `restoreScroll` helperi ishlatiladi.
+   - `requestAnimationFrame` + `30ms x 15` layout-settle retry taymerlari orqali `container.scrollTop = savedMainScroll` masofasi foydalanuvchi profilni bosgan **aynan o'sha pikselligiga (100% exact)** tiklanadi.
+
+3. **BottomNav Explicit Reset Isolation**:
+   - Faqatgina foydalanuvchi pastki menyudagi **My Page / Profile (`profile`)** tabini atayin 2-marta bosganda va `scrollToTopTrigger` oshgandagina `savedMainScroll(0)` bajarilib, profil sahifasi eng yuqoriga (`scrollTop = 0`) silliq nollanadi.
+   - Multi-frame reset (`requestAnimationFrame` + `setTimeout 40ms` + `setTimeout 150ms`) orqali barcha `.profile-container` hamda `mainContainerRef.current` skrollini silliq ravishda eng yuqoriga (**`scrollTop = 0`**, **`scrollTo({ top: 0, behavior: 'smooth' })`**) reset qiladi.
+   - `BottomNav.jsx` da `dragDistance.current` tebranish masofasi `12px` hamda `onClick` toleransi `25px` bo'lib, double-tap jitterlar 100% to'siqsiz yetib boradi.
 
 ---
 
