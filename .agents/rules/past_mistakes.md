@@ -362,6 +362,15 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Master Japanese Logistics Dictionary (`japaneseLogisticsDictionary.js`)**: Litsenziyalar, yuk mashinasi turlari, ish tartibi, vizalar va maosh terminlari 100% `japaneseLogisticsDictionary.js` da indekslanishi hamda `japaneseLanguageEngine.lookupTerm` orqali mantiqan tushunilishi SHART.
   2. **Professional Keigo Honorific Formatting (`japaneseLanguageEngine.js`)**: Yaponcha barcha AI javoblari `japaneseLanguageEngine.applyKeigoPoliteness` yordamida rasmiy muloyimlik shakliga (*"かしこまりました。求人を検索いたします。"* / *"お疲れ様です。"* ) o'tkazilishi SHART.
 
+## 🚫 61. Sub-Card Padding Excess & Container Spacing Asymmetry Invariant
+* **Xatolik**: 
+  1. Profile va Resume sub-cardlarida (`.profile-subcard`) eski `padding: 18px 16px` hamda `gap: 16px` ishlatilishi tufayli bitta-ikkita elementga ega sub-cardlar (masalan `特殊技術・資格証明書`) baland va vizual bo'sh bo'lib ko'rinishi.
+  2. Sub-cardlar va qo'shni konteynerlar (`マイカー (登録車両)`) o'rtasidagi pastki margin masofalarining (`marginBottom`) har xil yoki me'yordan ortiqcha (10px–14px) bo'lib, vizual uzilish va bo'shliqlar hosil qilishi.
+* **Yechim (MAJBURIY)**:
+  1. **Ixcham Glassmorphism Sub-Card Layout (`.profile-subcard`)**: Barcha profile va resume sub-group cardlari strictly `border-radius: 16px`, `padding: 12px 14px`, `gap: 10px`, hamda `.profile-subcard-icon-wrap` (`32x32px`), `.profile-subcard-title` (`14.5px`) o'lchamlari bilan shakllantirilishi SHART.
+  2. **Aniq Qat'iy Masofa va Simmetriya**: `特殊技術・資格証明書` konteyneri va `マイカー (登録車両)` konteynerlari orasidagi va ostidagi vertical margin masofasi (`marginBottom`) strictly **`4px`** qilib o'rnatilishi hamda 100% vertikal masofa simmetriyasi ta'minlanishi SHART.
+
+
 
 
 

@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:31:33**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:41:20**.
 
 ---
 
@@ -372,7 +372,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (6072 qator, 314498 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (6072 qator, 314496 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -1031,7 +1031,7 @@ graph TD
 * **Yo'li:** `.agents/rules/pages/06_my_ads.md` (57 qator)
 
 ### 📜 [07_personal_info.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/07_personal_info.md)
-* **Yo'li:** `.agents/rules/pages/07_personal_info.md` (51 qator)
+* **Yo'li:** `.agents/rules/pages/07_personal_info.md` (58 qator)
 
 ### 📜 [08_applications.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/08_applications.md)
 * **Yo'li:** `.agents/rules/pages/08_applications.md` (31 qator)
@@ -1064,7 +1064,7 @@ graph TD
 * **Yo'li:** `.agents/rules/michi_ui_constraints.md` (69 qator)
 
 ### 📜 [past_mistakes.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/past_mistakes.md)
-* **Yo'li:** `.agents/rules/past_mistakes.md` (377 qator)
+* **Yo'li:** `.agents/rules/past_mistakes.md` (386 qator)
 
 
 ---
@@ -1571,7 +1571,7 @@ graph LR
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 6072 | 1x | 11 ta bug | App.jsx |
+| **Profile** | component | 6072 | 1x | 12 ta bug | App.jsx |
 | **VoiceAssistant** | component | 2505 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
