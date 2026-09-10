@@ -387,7 +387,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **100% Zero-Typo Japanese Grammar Integrity**: Yaponcha barcha sarlavhalar, tavsiflar, darcha matnlari va placeholderlar strictly yapon tili grammatikasi qoidalariga mos professional business Japanese (Keigo 敬語) va toza zarf va bog'lovchilar (`の`, `を`, `に`, `で`) bilan yozilishi SHART.
   2. **Zero Raw Translation Key Leakage**: Har qanday `.jsx` komponentdagi `t('key')` chaqiruvi majburiy ravishda `ja.js` va boshqa 7 ta tillarda to'liq shaklda e'lon qilinishi hamda Japanese fallback matni bilan ta'minlanishi SHART.
-  3. **Natural Business Katakana**: User profile va rezyume bilan bog'liq yozuvlar strictly `プロフィール` shaklida aks ettirilishi SHART.
+
+## 🚫 64. Compact Smart Filter Chip Aggregation & Sticky Reset Button Invariant
+* **Xatolik**: 
+  1. Qidiruv va Avtomaktab filtrlarida (`DriverFeed.jsx`, `DrivingAcademy.jsx`) foydalanuvchi bir nechta hudud (`📍 東京23区`, `📍 八王子市`, `📍 立川市`, `📍 武蔵野市` ...) tanlaganda, barcha chiplar alohida ketma-ket chiqarilishi hamda gorizontal skroll tufayli eng pastdagi `リセット` (Clear All) tugmasi ekrandan o'ngga surilib ko'rinmay qolishi.
+* **Yechim (MAJBURIY)**:
+  1. **Smart Location & Feature Aggregation**: 3 va undan ortiq hudud, bekat, litsenziya yoki xususiyatlar tanlanganda, chiplar avtomatik ravishda birinchi tanlov va qolganlar soni ko'rinishida ixchamlashtirilishi SHART: **`📍 東京23区 外3件 ×`** (yoki `🚉 品川駅 外2件 ×`, `🪪 大型免許 外2件 ×`). Chipdagi `×` bosilganda barcha tanlangan elementlar tozalanadi.
+  2. **Pinned Sticky Reset Button (`.sticky-reset-btn`)**: Active filter bar idishida (`.active-filter-chips-container`) `リセット` tugmasi strictly `.sticky-reset-btn` klassi bilan o'ng tomonda `position: sticky; right: 0; z-index: 10;` ko'rinishida fikslanadi. Chiplar soni qancha bo'lishidan qat'i nazar, `リセット` tugmasi **DOIMO ekranning o'ng tomonida 100% ko'rinib va bosilishga tayyor turishi SHART**.
+
 
 
 

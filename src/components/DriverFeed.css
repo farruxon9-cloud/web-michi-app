@@ -1073,13 +1073,23 @@ html.dark-mode .townwork-tab-btn.active::after {
 }
 
 /* Active Filter Chips Bar */
+.active-filter-chips-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  gap: 8px;
+}
+
 .active-filter-chips-row {
   display: flex;
   gap: 6px;
   overflow-x: auto;
-  padding: 4px 0 10px 0;
+  padding: 4px 0 6px 0;
   flex-wrap: nowrap;
   align-items: center;
+  flex: 1;
+  min-width: 0;
 }
 
 .active-chip {
@@ -1113,7 +1123,20 @@ html.dark-mode .townwork-tab-btn.active::after {
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
+  transition: all 0.2s;
   flex-shrink: 0;
+}
+
+.sticky-reset-btn {
+  position: sticky;
+  right: 0;
+  flex-shrink: 0;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--card-bg, #ffffff);
+  box-shadow: -8px 0 14px var(--card-bg, #ffffff);
   transition: all 0.2s;
 }
 

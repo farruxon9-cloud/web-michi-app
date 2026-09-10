@@ -1472,74 +1472,109 @@ export default function DriverFeed({
 
         {/* Active Filter Chips Row */}
         {hasActiveFilters && (
-          <div className="active-filter-chips-row hide-scrollbar" style={{ marginTop: '8px' }}>
-            {selectedPrefecture !== 'all' && (
-              <span className="active-chip" onClick={() => setSelectedPrefecture('all')}>
-                📍 {selectedPrefecture} <X size={12} />
-              </span>
-            )}
-            {selectedCity !== 'all' && (
-              <span className="active-chip" onClick={() => setSelectedCity('all')}>
-                🏙️ {selectedCity} <X size={12} />
-              </span>
-            )}
-            {minSalary > 0 && (
-              <span className="active-chip" onClick={() => setMinSalary(0)}>
-                💰 {minSalary.toLocaleString()}円+ <X size={12} />
-              </span>
-            )}
-            {selectedLicenses.map(lic => (
-              <span key={lic} className="active-chip" onClick={() => setSelectedLicenses(prev => prev.filter(i => i !== lic))}>
-                🪪 {lic} <X size={12} />
-              </span>
-            ))}
-            {selectedStations.map(st => (
-              <span key={st} className="active-chip" onClick={() => setSelectedStations(prev => prev.filter(item => item !== st))}>
-                🚉 {st} <X size={12} />
-              </span>
-            ))}
-            {selectedCitiesList.map(c => (
-              <span key={c} className="active-chip" onClick={() => setSelectedCitiesList(prev => prev.filter(item => item !== c))}>
-                📍 {c} <X size={12} />
-              </span>
-            ))}
-            {selectedJobCategories.map(catId => (
-              <span key={catId} className="active-chip" onClick={() => setSelectedJobCategories(prev => prev.filter(item => item !== catId))}>
-                💼 {getJobCategoryLabel(catId)} <X size={12} />
-              </span>
-            ))}
-            {selectedEmploymentTypes.map(emp => (
-              <span key={emp} className="active-chip" onClick={() => setSelectedEmploymentTypes(prev => prev.filter(item => item !== emp))}>
-                📋 {getEmploymentLabel(emp)} <X size={12} />
-              </span>
-            ))}
-            {selectedDurations.map(dur => (
-              <span key={dur} className="active-chip" onClick={() => setSelectedDurations(prev => prev.filter(item => item !== dur))}>
-                📅 {getDurationLabel(dur)} <X size={12} />
-              </span>
-            ))}
-            {selectedTimeSlots.map(ts => (
-              <span key={ts} className="active-chip" onClick={() => setSelectedTimeSlots(prev => prev.filter(item => item !== ts))}>
-                🕐 {getTimeSlotLabel(ts)} <X size={12} />
-              </span>
-            ))}
-            {selectedFeatures.map(f => (
-              <span key={f} className="active-chip" onClick={() => setSelectedFeatures(prev => prev.filter(item => item !== f))}>
-                ⭐ {getFeatureLabel(f)} <X size={12} />
-              </span>
-            ))}
-            {selectedRadius > 0 && (
-              <span className="active-chip" onClick={() => setSelectedRadius(0)}>
-                🎯 {selectedRadius}km <X size={12} />
-              </span>
-            )}
-            {onlyNearStation && (
-              <span className="active-chip" onClick={() => setOnlyNearStation(false)}>
-                🚶 {t('nearStationChip', '駅から徒歩10分')} <X size={12} />
-              </span>
-            )}
-            <button type="button" className="clear-all-chip" onClick={handleResetFilters}>
-              {t('clearAll', 'リセット')}
+          <div className="active-filter-chips-container" style={{ marginTop: '8px' }}>
+            <div className="active-filter-chips-row hide-scrollbar">
+              {selectedPrefecture !== 'all' && (
+                <span className="active-chip" onClick={() => setSelectedPrefecture('all')}>
+                  📍 {selectedPrefecture} <X size={12} />
+                </span>
+              )}
+              {selectedCity !== 'all' && (
+                <span className="active-chip" onClick={() => setSelectedCity('all')}>
+                  🏙️ {selectedCity} <X size={12} />
+                </span>
+              )}
+              {minSalary > 0 && (
+                <span className="active-chip" onClick={() => setMinSalary(0)}>
+                  💰 {minSalary.toLocaleString()}円+ <X size={12} />
+                </span>
+              )}
+              {selectedLicenses.length > 0 && (
+                selectedLicenses.length <= 2 ? (
+                  selectedLicenses.map(lic => (
+                    <span key={lic} className="active-chip" onClick={() => setSelectedLicenses(prev => prev.filter(i => i !== lic))}>
+                      🪪 {lic} <X size={12} />
+                    </span>
+                  ))
+                ) : (
+                  <span className="active-chip" onClick={() => setSelectedLicenses([])} title={selectedLicenses.join(', ')}>
+                    🪪 {selectedLicenses[0]} 外{selectedLicenses.length - 1}件 <X size={12} />
+                  </span>
+                )
+              )}
+              {selectedStations.length > 0 && (
+                selectedStations.length <= 2 ? (
+                  selectedStations.map(st => (
+                    <span key={st} className="active-chip" onClick={() => setSelectedStations(prev => prev.filter(item => item !== st))}>
+                      🚉 {st} <X size={12} />
+                    </span>
+                  ))
+                ) : (
+                  <span className="active-chip" onClick={() => setSelectedStations([])} title={selectedStations.join(', ')}>
+                    🚉 {selectedStations[0]} 外{selectedStations.length - 1}件 <X size={12} />
+                  </span>
+                )
+              )}
+              {selectedCitiesList.length > 0 && (
+                selectedCitiesList.length <= 2 ? (
+                  selectedCitiesList.map(c => (
+                    <span key={c} className="active-chip" onClick={() => setSelectedCitiesList(prev => prev.filter(item => item !== c))}>
+                      📍 {c} <X size={12} />
+                    </span>
+                  ))
+                ) : (
+                  <span className="active-chip" onClick={() => setSelectedCitiesList([])} title={selectedCitiesList.join(', ')}>
+                    📍 {selectedCitiesList[0]} 外{selectedCitiesList.length - 1}件 <X size={12} />
+                  </span>
+                )
+              )}
+              {selectedJobCategories.map(catId => (
+                <span key={catId} className="active-chip" onClick={() => setSelectedJobCategories(prev => prev.filter(item => item !== catId))}>
+                  💼 {getJobCategoryLabel(catId)} <X size={12} />
+                </span>
+              ))}
+              {selectedEmploymentTypes.map(emp => (
+                <span key={emp} className="active-chip" onClick={() => setSelectedEmploymentTypes(prev => prev.filter(item => item !== emp))}>
+                  📋 {getEmploymentLabel(emp)} <X size={12} />
+                </span>
+              ))}
+              {selectedDurations.map(dur => (
+                <span key={dur} className="active-chip" onClick={() => setSelectedDurations(prev => prev.filter(item => item !== dur))}>
+                  📅 {getDurationLabel(dur)} <X size={12} />
+                </span>
+              ))}
+              {selectedTimeSlots.map(ts => (
+                <span key={ts} className="active-chip" onClick={() => setSelectedTimeSlots(prev => prev.filter(item => item !== ts))}>
+                  🕐 {getTimeSlotLabel(ts)} <X size={12} />
+                </span>
+              ))}
+              {selectedFeatures.length > 0 && (
+                selectedFeatures.length <= 2 ? (
+                  selectedFeatures.map(f => (
+                    <span key={f} className="active-chip" onClick={() => setSelectedFeatures(prev => prev.filter(item => item !== f))}>
+                      ⭐ {getFeatureLabel(f)} <X size={12} />
+                    </span>
+                  ))
+                ) : (
+                  <span className="active-chip" onClick={() => setSelectedFeatures([])} title={selectedFeatures.map(getFeatureLabel).join(', ')}>
+                    ⭐ {getFeatureLabel(selectedFeatures[0])} 外{selectedFeatures.length - 1}件 <X size={12} />
+                  </span>
+                )
+              )}
+              {selectedRadius > 0 && (
+                <span className="active-chip" onClick={() => setSelectedRadius(0)}>
+                  🎯 {selectedRadius}km <X size={12} />
+                </span>
+              )}
+              {onlyNearStation && (
+                <span className="active-chip" onClick={() => setOnlyNearStation(false)}>
+                  🚶 {t('nearStationChip', '駅から徒歩10分')} <X size={12} />
+                </span>
+              )}
+            </div>
+            <button type="button" className="clear-all-chip sticky-reset-btn" onClick={handleResetFilters}>
+              <RotateCcw size={12} />
+              <span>{t('clearAll', 'リセット')}</span>
             </button>
           </div>
         )}

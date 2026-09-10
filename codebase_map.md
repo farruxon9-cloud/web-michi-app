@@ -1,19 +1,19 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:24:06**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:34:17**.
 
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 174 ta
+* **Jami skanerlangan fayllar:** 173 ta
 * **React Komponentlari:** 26 ta
 * **Komponent Stillari (CSS):** 17 ta
 * **Geografiya va Ma'lumotlar Bazalari (data):** 14 ta
 * **Unit Testlar (Vitest):** 33 ta
 * **Yordamchi Funksiyalar (utils):** 19 ta
 * **Tashqi API va Xizmatlar (services):** 17 ta
-* **Avtomatizatsiya Skriptlari (scripts):** 16 ta
+* **Avtomatizatsiya Skriptlari (scripts):** 15 ta
 * **Tizim va UI Qoidalari (.agents/rules):** 18 ta
 * **Boshqa asosiy fayllar (src/ root):** 14 ta
 
@@ -206,7 +206,7 @@ graph TD
   - `../utils/haptics`
 
 ### 📦 [SkeletonCard](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.jsx)
-* **Fayl yo'li:** `src/components/DriverFeed.jsx` (1971 qator, 94827 bayt)
+* **Fayl yo'li:** `src/components/DriverFeed.jsx` (2006 qator, 96817 bayt)
 * **Komponent Stillari:** 🎨 [DriverFeed.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.css)
 * **Unit Testlari:** 🧪 [DriverFeed.test.jsx](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -224,7 +224,7 @@ graph TD
   - `../data/jobFeatures`
 
 ### 📦 [DrivingAcademy](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.jsx)
-* **Fayl yo'li:** `src/components/DrivingAcademy.jsx` (1528 qator, 72485 bayt)
+* **Fayl yo'li:** `src/components/DrivingAcademy.jsx` (1555 qator, 73859 bayt)
 * **Komponent Stillari:** 🎨 [DrivingAcademy.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.css)
 * **Unit Testlari:** 🧪 [DrivingAcademy.test.jsx](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -968,9 +968,6 @@ graph TD
 ### 🛠️ [analyze_impact.mjs](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/analyze_impact.mjs)
 * **Yo'li:** `scripts/analyze_impact.mjs` (199 qator, 7921 bayt)
 
-### 🛠️ [audit_missing_t_keys.mjs](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/audit_missing_t_keys.mjs)
-* **Yo'li:** `scripts/audit_missing_t_keys.mjs` (50 qator, 1447 bayt)
-
 ### 🛠️ [audit_voice_understanding.mjs](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/audit_voice_understanding.mjs)
 * **Yo'li:** `scripts/audit_voice_understanding.mjs` (137 qator, 5615 bayt)
 
@@ -1067,7 +1064,7 @@ graph TD
 * **Yo'li:** `.agents/rules/michi_ui_constraints.md` (69 qator)
 
 ### 📜 [past_mistakes.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/past_mistakes.md)
-* **Yo'li:** `.agents/rules/past_mistakes.md` (397 qator)
+* **Yo'li:** `.agents/rules/past_mistakes.md` (407 qator)
 
 
 ---
@@ -1302,12 +1299,12 @@ graph LR
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
 | `selectPrefecture` | 都道府県を選択 | Select Prefecture | Prefekturani tanlang | L1381 |
-| `perMonth` | 月額 | per month | oyiga | L1620 |
-| `shiftWork` | シフト制 | Shift System | Smena bo'yicha | L1639 |
-| `shoukaiAvailable` | 紹介金対象 | Referral Reward Available | Shoukai mavjud | L1950 |
-| `editJob` | 求人を編集 | Edit Job | E'lonni tahrirlash | L1676 |
-| `applyJob` | 応募する | Apply Now | Topshirish | L1731 |
-| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L1699 |
+| `perMonth` | 月額 | per month | oyiga | L1655 |
+| `shiftWork` | シフト制 | Shift System | Smena bo'yicha | L1674 |
+| `shoukaiAvailable` | 紹介金対象 | Referral Reward Available | Shoukai mavjud | L1985 |
+| `editJob` | 求人を編集 | Edit Job | E'lonni tahrirlash | L1711 |
+| `applyJob` | 応募する | Apply Now | Topshirish | L1766 |
+| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L1734 |
 | `searchPlaceholder` | 市区町村名や会社名で探す | Search by city or company | Shahar yoki kompaniya nom | L1409 |
 | `advancedFilters` | 詳細検索 | Advanced Search | Kengaytirilgan filtrlar | L757 |
 | `clearAll` | リセット | Reset | Tozalash | L776 |
@@ -1323,14 +1320,14 @@ graph LR
 | `tokuteiGinouSegment` | 特定技能 | Tokutei Ginou | Tokutei Ginou | L1457 |
 | `fullTime` | 正社員 | Full-Time | Doimiy ish (Seishain) | L1463 |
 | `partTime` | アルバイト・パート | Part-Time / Hourly | Soatbay / Part-time | L1469 |
-| `nearStationChip` | 駅から徒歩10分 | 10 min walk to station | Bekatgacha 10 min piyoda | L1538 |
-| `jobsCountResult` | — | — | — | L1549 |
-| `newest` | 新着順 | Newest | Yangi e'lonlar | L1551 |
-| `salary_high` | 給与が高い順 | Salary: High to Low | Maosh: Yuqoridan pastga | L1552 |
-| `salary_low` | 給与が低い順 | Salary: Low to High | Maosh: Pastdan yuqoriga | L1553 |
-| `noJobsFound` | 該当する求人が見つかりませんでした | No jobs found matching th | Mos e'lonlar topilmadi | L1568 |
-| `foreigners_visa` | 特定技能 • 国際採用 | Tokutei Ginou • Internati | Tokutei Ginou • Xalqaro I | L1594 |
-| `foreigners_visa_renew` | ビザ更新支援 | Visa Renewal Support | Vizani Uzaytirish Ko'magi | L1599 |
+| `nearStationChip` | 駅から徒歩10分 | 10 min walk to station | Bekatgacha 10 min piyoda | L1571 |
+| `jobsCountResult` | — | — | — | L1584 |
+| `newest` | 新着順 | Newest | Yangi e'lonlar | L1586 |
+| `salary_high` | 給与が高い順 | Salary: High to Low | Maosh: Yuqoridan pastga | L1587 |
+| `salary_low` | 給与が低い順 | Salary: Low to High | Maosh: Pastdan yuqoriga | L1588 |
+| `noJobsFound` | 該当する求人が見つかりませんでした | No jobs found matching th | Mos e'lonlar topilmadi | L1603 |
+| `foreigners_visa` | 特定技能 • 国際採用 | Tokutei Ginou • Internati | Tokutei Ginou • Xalqaro I | L1629 |
+| `foreigners_visa_renew` | ビザ更新支援 | Visa Renewal Support | Vizani Uzaytirish Ko'magi | L1634 |
 | ... | *+7 ta kalit* | | | |
 
 ### 📄 DrivingAcademy (71 ta kalit)
@@ -1346,7 +1343,7 @@ graph LR
 | `allPrefectures` | 全ての地域 | All Prefectures | Barcha hududlar | L1261 |
 | `callSchool` | 電話する | Call | Qo'ng'iroq | L614 |
 | `shoukai` | 紹介 | Referral | Shoukai | L620 |
-| `loadMore` | もっと見る | Load More | Ko'proq yuklash | L1511 |
+| `loadMore` | もっと見る | Load More | Ko'proq yuklash | L1538 |
 | `addressMaskedNotice` | 詳細な住所は面接設定時に開示されます | Detailed address will be  | Aniq manzil faqat suhbatg | L245 |
 | `courseOffered` | 提供コース | Courses Offered | Taklif qilinadigan kursla | L456 |
 | `memberDiscount` | 会員割引あり | Member discount | A'zolar uchun chegirma | L470 |
@@ -1569,12 +1566,12 @@ graph LR
 |---|---|---|---|---|---|
 | **VerifiedBadge** | component | 29 | 5x | 0 ta bug | CompanyHome.jsx, DriverFeed.jsx, DrivingAcademy.jsx, JobDetail.jsx, Profile.jsx |
 | **CompanyHome** | component | 1996 | 3x | 3 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
-| **DriverFeed** | component | 1971 | 3x | 7 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
-| **DrivingAcademy** | component | 1528 | 3x | 4 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
+| **DriverFeed** | component | 2006 | 3x | 7 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
+| **DrivingAcademy** | component | 1555 | 3x | 4 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 6085 | 1x | 12 ta bug | App.jsx |
+| **Profile** | component | 6085 | 1x | 13 ta bug | App.jsx |
 | **VoiceAssistant** | component | 2505 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk

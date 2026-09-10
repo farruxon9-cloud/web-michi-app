@@ -1308,45 +1308,72 @@ export default function DrivingAcademy({
 
         {/* Active Filter Chips */}
         {hasActiveFilters && (
-          <div className="active-filter-chips-row hide-scrollbar" style={{ marginTop: '8px' }}>
-            {selectedCourses.length > 0 && selectedCourses.map(course => (
-              <span key={course} className="active-chip" onClick={() => setSelectedCourses(prev => prev.filter(c => c !== course))}>
-                🚗 {course} <X size={12} />
-              </span>
-            ))}
-            {selectedStyles.length > 0 && selectedStyles.map(style => (
-              <span key={style} className="active-chip" onClick={() => setSelectedStyles(prev => prev.filter(s => s !== style))}>
-                🏫 {style} <X size={12} />
-              </span>
-            ))}
-            {selectedFeatures.length > 0 && selectedFeatures.map(feat => (
-              <span key={feat} className="active-chip" onClick={() => setSelectedFeatures(prev => prev.filter(f => f !== feat))}>
-                ✨ {feat} <X size={12} />
-              </span>
-            ))}
-            {selectedPrefecture !== 'all' && (
-              <span className="active-chip" onClick={() => setSelectedPrefecture('all')}>
-                📍 {selectedPrefecture} <X size={12} />
-              </span>
-            )}
-            {selectedLang !== 'all' && (
-              <span className="active-chip" onClick={() => setSelectedLang('all')}>
-                🗣️ {selectedLang} <X size={12} />
-              </span>
-            )}
-            {selectedPriceRange !== 'all' && (
-              <span className="active-chip" onClick={() => setSelectedPriceRange('all')}>
-                💰 {selectedPriceRange} <X size={12} />
-              </span>
-            )}
-            {searchQuery && searchQuery.length > 0 && (
-              <span className="active-chip" onClick={() => setSearchQuery && setSearchQuery('')}>
-                🔍 {searchQuery} <X size={12} />
-              </span>
-            )}
-            <span className="clear-all-chip" onClick={resetFilters}>
-              {t('clearAll', 'リセット')}
-            </span>
+          <div className="active-filter-chips-container" style={{ marginTop: '8px' }}>
+            <div className="active-filter-chips-row hide-scrollbar">
+              {selectedCourses.length > 0 && (
+                selectedCourses.length <= 2 ? (
+                  selectedCourses.map(course => (
+                    <span key={course} className="active-chip" onClick={() => setSelectedCourses(prev => prev.filter(c => c !== course))}>
+                      🚗 {course} <X size={12} />
+                    </span>
+                  ))
+                ) : (
+                  <span className="active-chip" onClick={() => setSelectedCourses([])} title={selectedCourses.join(', ')}>
+                    🚗 {selectedCourses[0]} 外{selectedCourses.length - 1}件 <X size={12} />
+                  </span>
+                )
+              )}
+              {selectedStyles.length > 0 && (
+                selectedStyles.length <= 2 ? (
+                  selectedStyles.map(style => (
+                    <span key={style} className="active-chip" onClick={() => setSelectedStyles(prev => prev.filter(s => s !== style))}>
+                      🏫 {style} <X size={12} />
+                    </span>
+                  ))
+                ) : (
+                  <span className="active-chip" onClick={() => setSelectedStyles([])} title={selectedStyles.join(', ')}>
+                    🏫 {selectedStyles[0]} 外{selectedStyles.length - 1}件 <X size={12} />
+                  </span>
+                )
+              )}
+              {selectedFeatures.length > 0 && (
+                selectedFeatures.length <= 2 ? (
+                  selectedFeatures.map(feat => (
+                    <span key={feat} className="active-chip" onClick={() => setSelectedFeatures(prev => prev.filter(f => f !== feat))}>
+                      ✨ {feat} <X size={12} />
+                    </span>
+                  ))
+                ) : (
+                  <span className="active-chip" onClick={() => setSelectedFeatures([])} title={selectedFeatures.join(', ')}>
+                    ✨ {selectedFeatures[0]} 外{selectedFeatures.length - 1}件 <X size={12} />
+                  </span>
+                )
+              )}
+              {selectedPrefecture !== 'all' && (
+                <span className="active-chip" onClick={() => setSelectedPrefecture('all')}>
+                  📍 {selectedPrefecture} <X size={12} />
+                </span>
+              )}
+              {selectedLang !== 'all' && (
+                <span className="active-chip" onClick={() => setSelectedLang('all')}>
+                  🗣️ {selectedLang} <X size={12} />
+                </span>
+              )}
+              {selectedPriceRange !== 'all' && (
+                <span className="active-chip" onClick={() => setSelectedPriceRange('all')}>
+                  💰 {selectedPriceRange} <X size={12} />
+                </span>
+              )}
+              {searchQuery && searchQuery.length > 0 && (
+                <span className="active-chip" onClick={() => setSearchQuery && setSearchQuery('')}>
+                  🔍 {searchQuery} <X size={12} />
+                </span>
+              )}
+            </div>
+            <button type="button" className="clear-all-chip sticky-reset-btn" onClick={resetFilters}>
+              <RotateCcw size={12} />
+              <span>{t('clearAll', 'リセット')}</span>
+            </button>
           </div>
         )}
       </div>
