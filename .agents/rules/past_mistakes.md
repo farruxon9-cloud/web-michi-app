@@ -395,6 +395,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Smart Location & Feature Aggregation**: 3 va undan ortiq hudud, bekat, litsenziya yoki xususiyatlar tanlanganda, chiplar avtomatik ravishda birinchi tanlov va qolganlar soni ko'rinishida ixchamlashtirilishi SHART: **`📍 東京23区 外3件 ×`** (yoki `🚉 品川駅 外2件 ×`, `🪪 大型免許 外2件 ×`). Chipdagi `×` bosilganda barcha tanlangan elementlar tozalanadi.
   2. **Pinned Sticky Reset Button (`.sticky-reset-btn`)**: Active filter bar idishida (`.active-filter-chips-container`) `リセット` tugmasi strictly `.sticky-reset-btn` klassi bilan o'ng tomonda `position: sticky; right: 0; z-index: 10;` ko'rinishida fikslanadi. Chiplar soni qancha bo'lishidan qat'i nazar, `リセット` tugmasi **DOIMO ekranning o'ng tomonida 100% ko'rinib va bosilishga tayyor turishi SHART**.
 
+## 🚫 65. Location Drawer Parity & Target Area Banner Invariant
+* **Xatolik**: 
+  1. Avtomaktablar filtrida (`DrivingAcademy.jsx`) `都道府県・市区町村から探す` bo'limida shahar/tuman va bekat akordeonlarining yetishmasligi hamda oddiy va takrorlanuvchi tugma kartochkasi ishlatilishi.
+* **Yechim (MAJBURIY)**:
+  1. **Strict 1:1 Location & Station Parity**: `DrivingAcademy.jsx` va `DriverFeed.jsx` joylashuv va bekatlar filtristrictly 1:1 bir xil tuzilishga ega bo'lishi SHART: 501 shahar/tumanlar akordeoni (`tab-cities-wrapper`) hamda rasmiy chiziq ranglari 🟢🟡🟠🔴🩷🔵 bilan bekatlar akordeoni (`tab-stations-wrapper`).
+  2. **Target Area Header Banner (`対象エリア (地域)`)**: Location drawer ichidagi prefektura ko'rsatkichi strictly gradient fon, `対象エリア (地域)` sarlavhasi, tanlangan prefektura nomi (`全ての地域 (全国)` / `東京都`) hamda o'ng tomondagi moviy `変更 ⌄` pill tugmasidan iborat banner card ko'rinishida bo'lishi SHART. Orticha va takrorlanuvchi ichki button-cardlar taqiqlanadi.
+  3. **Complete Active Chips Rendering**: Active chips satrida strictly shaharlar (`📍`), bekatlar (`🚃`), kurslar (`🚗`), o'qish uslublari (`🏫`), til (`🗣️`), narx (`💰`) va qidiruv kalitlari ixcham guruhlanib chiqishi SHART.
+
 
 
 

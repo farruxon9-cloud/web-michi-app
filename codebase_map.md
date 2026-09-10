@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:50:21**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 19:14:48**.
 
 ---
 
@@ -224,7 +224,7 @@ graph TD
   - `../data/jobFeatures`
 
 ### 📦 [DrivingAcademy](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.jsx)
-* **Fayl yo'li:** `src/components/DrivingAcademy.jsx` (1623 qator, 76852 bayt)
+* **Fayl yo'li:** `src/components/DrivingAcademy.jsx` (1894 qator, 92270 bayt)
 * **Komponent Stillari:** 🎨 [DrivingAcademy.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.css)
 * **Unit Testlari:** 🧪 [DrivingAcademy.test.jsx](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -1064,7 +1064,7 @@ graph TD
 * **Yo'li:** `.agents/rules/michi_ui_constraints.md` (69 qator)
 
 ### 📜 [past_mistakes.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/past_mistakes.md)
-* **Yo'li:** `.agents/rules/past_mistakes.md` (414 qator)
+* **Yo'li:** `.agents/rules/past_mistakes.md` (422 qator)
 
 
 ---
@@ -1175,7 +1175,7 @@ graph LR
 
 > Ushbu bo'lim har bir i18n kalitining 3 tildagi tarjimasini va aynan qaysi komponentda ishlatilishini ko'rsatadi.
 
-**Jami ishlatilgan i18n kalitlar:** 622 ta, **16** ta komponentda tarqalgan
+**Jami ishlatilgan i18n kalitlar:** 624 ta, **16** ta komponentda tarqalgan
 
 ### 📄 AdminDashboard (9 ta kalit)
 
@@ -1330,41 +1330,41 @@ graph LR
 | `foreigners_visa_renew` | ビザ更新支援 | Visa Renewal Support | Vizani Uzaytirish Ko'magi | L1634 |
 | ... | *+7 ta kalit* | | | |
 
-### 📄 DrivingAcademy (81 ta kalit)
+### 📄 DrivingAcademy (84 ta kalit)
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
-| `emailLabel` | メールアドレス | Email | Email | L490 |
-| `defaultSchoolShoukaiConditions` | 教習所への入校および受講開始が確認された時点で紹介 | Referral reward is paid o | O'qishni boshlagandan so' | L521 |
-| `selectPrefecture` | 都道府県を選択 | Select Prefecture | Prefekturani tanlang | L862 |
-| `shoukaiAvailable` | 紹介金対象 | Referral Reward Available | Shoukai mavjud | L515 |
-| `editJob` | 求人を編集 | Edit Job | E'lonni tahrirlash | L605 |
-| `clearAll` | リセット | Reset | Tozalash | L771 |
-| `allPrefectures` | 全ての地域 | All Prefectures | Barcha hududlar | L1261 |
-| `callSchool` | 電話する | Call | Qo'ng'iroq | L614 |
-| `shoukai` | 紹介 | Referral | Shoukai | L620 |
-| `loadMore` | もっと見る | Load More | Ko'proq yuklash | L1606 |
+| `emailLabel` | メールアドレス | Email | Email | L508 |
+| `defaultSchoolShoukaiConditions` | 教習所への入校および受講開始が確認された時点で紹介 | Referral reward is paid o | O'qishni boshlagandan so' | L539 |
+| `selectPrefecture` | 都道府県を選択 | Select Prefecture | Prefekturani tanlang | L1503 |
+| `shoukaiAvailable` | 紹介金対象 | Referral Reward Available | Shoukai mavjud | L533 |
+| `editJob` | 求人を編集 | Edit Job | E'lonni tahrirlash | L623 |
+| `clearAll` | リセット | Reset | Tozalash | L789 |
+| `allPrefectures` | 全ての地域 | All Prefectures | Barcha hududlar | L902 |
+| `searchByStations` | 沿線・駅から探す | Search by Train Line & St | 沿線・駅から探す | L1018 |
+| `callSchool` | 電話する | Call | Qo'ng'iroq | L632 |
+| `shoukai` | 紹介 | Referral | Shoukai | L638 |
+| `loadMore` | もっと見る | Load More | Ko'proq yuklash | L1877 |
 | `addressMaskedNotice` | 詳細な住所は面接設定時に開示されます | Detailed address will be  | Aniq manzil faqat suhbatg | L245 |
-| `courseOffered` | 提供コース | Courses Offered | Taklif qilinadigan kursla | L456 |
-| `memberDiscount` | 会員割引あり | Member discount | A'zolar uchun chegirma | L470 |
-| `schoolDesc` | 学校について | About this school | Maktab haqida | L477 |
-| `schoolPhone` | 電話番号 | Phone | Telefon | L486 |
-| `fullAddress` | 住所（詳細） | Full Address | To'liq manzil | L494 |
-| `shoukaiShare` | シェア / 紹介 | Share / Shoukai | Ulashish / Shoukai | L509 |
-| `shoukaiDesc` | 友達を紹介して報酬を獲得 | Refer a friend and earn r | Do'stingizni taklif qilin | L511 |
-| `shoukaiConditionsTitle` | 紹介の条件と注記 | Referral Terms and Notes | Shoukai shartlari va izoh | L519 |
-| `shoukaiBy` | 紹介者 | Referred by | Taklif qilgan | L535 |
-| `recommendEmployee` | 社員を推薦する | Recommend Employee | Xodimni tavsiya etish | L546 |
-| `applyToSchool` | 学校に応募 | Apply to School | Maktabga topshirish | L546 |
-| `shoukaiPaid` | 支払済み | Paid | To'langan | L568 |
-| `appliedToSchool` | 出願済み | Applied | Topshirilgan | L635 |
-| `lic_futsu` | 普通自動車 | Standard Motor Vehicle (F | Futsu yengil avtomobili | L665 |
-| `lic_oogata` | 大型自動車 | Heavy Truck (Oogata) | Oogata katta yuk avtomobi | L666 |
-| `lic_chugata` | 中型自動車 | Medium Truck (Chugata) | Chugata o'rta yuk avtomob | L667 |
-| `lic_junchugata` | 準中型自動車 | Semi-Medium Truck (Jun-Ch | Jun-Chugata yuk avtomobil | L668 |
-| `lic_futsunishu` | 普通二種 (タクシー) | Commercial Class 2 Taxi L | Taksi guvohnomasi (Futsu  | L669 |
-| `lic_oogatanishu` | 大型二種 (バス) | Commercial Bus License | Avtobus guvohnomasi (Ooga | L670 |
-| ... | *+51 ta kalit* | | | |
+| `courseOffered` | 提供コース | Courses Offered | Taklif qilinadigan kursla | L474 |
+| `memberDiscount` | 会員割引あり | Member discount | A'zolar uchun chegirma | L488 |
+| `schoolDesc` | 学校について | About this school | Maktab haqida | L495 |
+| `schoolPhone` | 電話番号 | Phone | Telefon | L504 |
+| `fullAddress` | 住所（詳細） | Full Address | To'liq manzil | L512 |
+| `shoukaiShare` | シェア / 紹介 | Share / Shoukai | Ulashish / Shoukai | L527 |
+| `shoukaiDesc` | 友達を紹介して報酬を獲得 | Refer a friend and earn r | Do'stingizni taklif qilin | L529 |
+| `shoukaiConditionsTitle` | 紹介の条件と注記 | Referral Terms and Notes | Shoukai shartlari va izoh | L537 |
+| `shoukaiBy` | 紹介者 | Referred by | Taklif qilgan | L553 |
+| `recommendEmployee` | 社員を推薦する | Recommend Employee | Xodimni tavsiya etish | L564 |
+| `applyToSchool` | 学校に応募 | Apply to School | Maktabga topshirish | L564 |
+| `shoukaiPaid` | 支払済み | Paid | To'langan | L586 |
+| `appliedToSchool` | 出願済み | Applied | Topshirilgan | L653 |
+| `lic_futsu` | 普通自動車 | Standard Motor Vehicle (F | Futsu yengil avtomobili | L683 |
+| `lic_oogata` | 大型自動車 | Heavy Truck (Oogata) | Oogata katta yuk avtomobi | L684 |
+| `lic_chugata` | 中型自動車 | Medium Truck (Chugata) | Chugata o'rta yuk avtomob | L685 |
+| `lic_junchugata` | 準中型自動車 | Semi-Medium Truck (Jun-Ch | Jun-Chugata yuk avtomobil | L686 |
+| `lic_futsunishu` | 普通二種 (タクシー) | Commercial Class 2 Taxi L | Taksi guvohnomasi (Futsu  | L687 |
+| ... | *+54 ta kalit* | | | |
 
 ### 📄 JDMNavigation (1 ta kalit)
 
@@ -1566,8 +1566,8 @@ graph LR
 |---|---|---|---|---|---|
 | **VerifiedBadge** | component | 29 | 5x | 0 ta bug | CompanyHome.jsx, DriverFeed.jsx, DrivingAcademy.jsx, JobDetail.jsx, Profile.jsx |
 | **CompanyHome** | component | 1996 | 3x | 3 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
-| **DriverFeed** | component | 2006 | 3x | 8 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
-| **DrivingAcademy** | component | 1623 | 3x | 5 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
+| **DriverFeed** | component | 2006 | 3x | 9 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
+| **DrivingAcademy** | component | 1894 | 3x | 6 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
