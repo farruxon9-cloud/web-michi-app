@@ -933,11 +933,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               placeholder={isAdCourse ? t('schoolDiscountPlaceholder') : `-- ${t('bonusLabel')} --`}
               error={errors.bonus}
               options={[
-                { id: 'bonus_none', name: t('bonus_none') },
-                { id: 'bonus_1', name: t('bonus_1') },
-                { id: 'bonus_2', name: t('bonus_2') },
-                { id: 'bonus_performance', name: t('bonus_performance') },
-                { id: 'bonus_signon', name: t('bonus_signon') }
+                { id: 'bonus_none', name: t('bonus_none', '賞与なし') },
+                { id: 'bonus_1', name: t('bonus_1', '賞与年1回') },
+                { id: 'bonus_2', name: t('bonus_2', '賞与年2回') },
+                { id: 'bonus_3', name: t('bonus_3', '賞与年3回') },
+                { id: 'bonus_performance', name: t('bonus_performance', '業績連動賞与') },
+                { id: 'bonus_signon', name: t('bonus_signon', '入社祝い金あり') }
               ]}
               onChange={(val) => {
                 setNewJob({ ...newJob, bonus: val });

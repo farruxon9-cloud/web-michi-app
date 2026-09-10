@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:14:37**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:19:45**.
 
 ---
 
@@ -115,7 +115,7 @@ graph TD
   - `../utils/haptics`
 
 ### 📦 [CompanyHome](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/CompanyHome.jsx)
-* **Fayl yo'li:** `src/components/CompanyHome.jsx` (1995 qator, 89181 bayt)
+* **Fayl yo'li:** `src/components/CompanyHome.jsx` (1996 qator, 89292 bayt)
 * **Unit Testlari:** 🧪 [CompanyHome.test.jsx](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/CompanyHome.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
   - `onJobClick`
@@ -1175,7 +1175,7 @@ graph LR
 
 > Ushbu bo'lim har bir i18n kalitining 3 tildagi tarjimasini va aynan qaysi komponentda ishlatilishini ko'rsatadi.
 
-**Jami ishlatilgan i18n kalitlar:** 611 ta, **16** ta komponentda tarqalgan
+**Jami ishlatilgan i18n kalitlar:** 612 ta, **16** ta komponentda tarqalgan
 
 ### 📄 AdminDashboard (9 ta kalit)
 
@@ -1212,7 +1212,7 @@ graph LR
 | `navAcademy` | 教習所 | Academy | Avtomaktablar | L14 |
 | `navProfile` | マイページ | Profile | Profil | L15 |
 
-### 📄 CompanyHome (134 ta kalit)
+### 📄 CompanyHome (135 ta kalit)
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
@@ -1246,7 +1246,7 @@ graph LR
 | `nearestStationLabel` | 最寄り駅 | Nearest Station | Eng yaqin stansiya | L577 |
 | `postalCodeLabel` | 郵便番号 | Postal Code | Pochta indeksi | L578 |
 | `prefectureLabel` | 都道府県 | Prefecture | Prefektura | L579 |
-| ... | *+104 ta kalit* | | | |
+| ... | *+105 ta kalit* | | | |
 
 ### 📄 CustomMobilePickerModal (5 ta kalit)
 
@@ -1565,7 +1565,7 @@ graph LR
 | Fayl | Turi | Qatorlar | Ishlatilgan joylar | Bug tarixi | Importerlar |
 |---|---|---|---|---|---|
 | **VerifiedBadge** | component | 29 | 5x | 0 ta bug | CompanyHome.jsx, DriverFeed.jsx, DrivingAcademy.jsx, JobDetail.jsx, Profile.jsx |
-| **CompanyHome** | component | 1995 | 3x | 3 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
+| **CompanyHome** | component | 1996 | 3x | 3 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
 | **DriverFeed** | component | 1971 | 3x | 7 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
 | **DrivingAcademy** | component | 1528 | 3x | 4 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
