@@ -2809,7 +2809,7 @@ const getLicenseLabel = (type) => {
             )}
           </div>
         </div>
-        <div className="profile-menu" style={{ paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className="profile-menu" style={{ paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {/* CARD 1: Basic Information */}
           <div className="profile-subcard glass squircle">
             <div className="profile-subcard-header">
@@ -4092,7 +4092,7 @@ const getLicenseLabel = (type) => {
 
         {/* Resume Card - Glassmorphism Sub-Group Cards */}
         {(userRole === 'driver' || userRole === 'guest') && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', marginBottom: '10px' }}>
             {/* Main Header with Action CTA */}
             <div className="glass squircle" style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', borderRadius: '18px', background: 'var(--card-bg)', border: '1px solid var(--glass-border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
@@ -4287,25 +4287,13 @@ const getLicenseLabel = (type) => {
 
         {/* Mening Mashinam (My Vehicle) Card */}
         {(userRole === 'driver' || userRole === 'guest') && (
-          <div className="menu-group glass squircle resume-card">
-            <div className="resume-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <div className="profile-subcard glass squircle" style={{ marginBottom: '10px' }}>
+            <div className="profile-subcard-header" style={{ justifyContent: 'space-between', width: '100%' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '10px',
-                  background: 'rgba(48, 209, 88, 0.12)',
-                  border: '1px solid rgba(48, 209, 88, 0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <Car size={18} strokeWidth={2.2} color="#30D158" />
+                <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(52, 199, 89, 0.12)', color: '#34C759' }}>
+                  <Car size={18} />
                 </div>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '850', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
-                  {getProfileLangText('myVehicleTitle')}
-                </h3>
+                <span className="profile-subcard-title">{getProfileLangText('myVehicleTitle')}</span>
               </div>
               {!isEditingVehicle && (
                 <button 
