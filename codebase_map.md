@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:10:23**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:14:16**.
 
 ---
 
@@ -520,7 +520,7 @@ graph TD
   - `react`
 
 ### 📦 [VoiceAssistant](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.jsx)
-* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (2509 qator, 103350 bayt)
+* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (2509 qator, 104895 bayt)
 * **Komponent Stillari:** 🎨 [VoiceAssistant.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `isActive`
