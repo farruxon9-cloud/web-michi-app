@@ -4287,7 +4287,7 @@ const getLicenseLabel = (type) => {
 
         {/* Mening Mashinam (My Vehicle) Card */}
         {(userRole === 'driver' || userRole === 'guest') && (
-          <div className="profile-subcard glass squircle" style={{ marginBottom: '10px' }}>
+          <div className="profile-subcard glass squircle" style={{ marginBottom: '4px' }}>
             <div className="profile-subcard-header" style={{ justifyContent: 'space-between', width: '100%' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                 <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(52, 199, 89, 0.12)', color: '#34C759' }}>
