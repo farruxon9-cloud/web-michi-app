@@ -4090,13 +4090,14 @@ const getLicenseLabel = (type) => {
           </div>
         )}
 
-        {/* Resume Card */}
+        {/* Resume Card - Glassmorphism Sub-Group Cards */}
         {(userRole === 'driver' || userRole === 'guest') && (
-          <div className="menu-group glass squircle resume-card">
-            <div className="resume-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%', marginBottom: '20px' }}>
+            {/* Main Header with Action CTA */}
+            <div className="glass squircle" style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', borderRadius: '18px', background: 'var(--card-bg)', border: '1px solid var(--glass-border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                 <FileText size={20} color="#0A84FF" />
-                <h3>{t('myResume')}</h3>
+                <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: 'var(--text-main)' }}>{t('myResume')}</h3>
               </div>
               <button 
                 type="button"
@@ -4125,116 +4126,162 @@ const getLicenseLabel = (type) => {
                 <span style={{ letterSpacing: '-0.2px' }}>{t('createResume')}</span>
               </button>
             </div>
-            <div className="resume-body">
-              <div className="resume-field">
-                <span className="field-label">{t('birthDateLabel')}</span>
-                <span className="field-value">{profileData.birthDate || t('notProvided')}</span>
-              </div>
-              <div className="resume-field">
-                <span className="field-label">{t('birthPlaceLabel')}</span>
-                <span className="field-value">{profileData.birthPlace || t('notProvided')}</span>
-              </div>
-              <div className="resume-field">
-                <span className="field-label">{t('nationalityLabel')}</span>
-                <span className="field-value">{profileData.nationality || t('notProvided')}</span>
-              </div>
 
-              {/* Living Address History */}
-              <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-                <span className="resume-section-title">{t('livingAddressTitle')}</span>
-                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {profileData.addressHistory && profileData.addressHistory.length > 0 ? (
-                    profileData.addressHistory.map((a, i) => (
-                      <div key={i} className="resume-address-card squircle">
-                        <span className="address-text">{a.address}</span>
-                        {a.isCurrent && (
-                          <span className="resume-current-tag living">
-                            {t('currentAddressLabel')}
+            {/* SUBCARD 1: Basic Info */}
+            <div className="profile-subcard glass squircle">
+              <div className="profile-subcard-header">
+                <div className="profile-subcard-icon-wrap">
+                  <User size={18} />
+                </div>
+                <span className="profile-subcard-title">{t('basicInfoTitle', '基本情報')}</span>
+              </div>
+              <div className="resume-body" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div className="resume-field">
+                  <span className="field-label">{t('birthDateLabel')}</span>
+                  <span className="field-value">{profileData.birthDate || t('notProvided')}</span>
+                </div>
+                <div className="resume-field">
+                  <span className="field-label">{t('birthPlaceLabel')}</span>
+                  <span className="field-value">{profileData.birthPlace || t('notProvided')}</span>
+                </div>
+                <div className="resume-field">
+                  <span className="field-label">{t('nationalityLabel')}</span>
+                  <span className="field-value">{profileData.nationality || t('notProvided')}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* SUBCARD 2: Living Address History */}
+            <div className="profile-subcard glass squircle">
+              <div className="profile-subcard-header">
+                <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(255, 149, 0, 0.12)', color: '#FF9500' }}>
+                  <MapPin size={18} />
+                </div>
+                <span className="profile-subcard-title">{t('livingAddressTitle')}</span>
+              </div>
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {profileData.addressHistory && profileData.addressHistory.length > 0 ? (
+                  profileData.addressHistory.map((a, i) => (
+                    <div key={i} className="glass squircle" style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', borderRadius: '14px' }}>
+                      <span style={{ fontSize: '14px', color: 'var(--text-main)', fontWeight: '500' }}>{a.address}</span>
+                      {a.isCurrent && (
+                        <span style={{ fontSize: '11px', background: 'rgba(10, 132, 255, 0.12)', color: '#0A84FF', padding: '3px 10px', borderRadius: '12px', fontWeight: 'bold' }}>
+                          {t('currentAddressLabel')}
+                        </span>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <span style={{ fontSize: '13px', color: '#8E8E93' }}>{profileData.address || t('notProvided')}</span>
+                )}
+              </div>
+            </div>
+
+            {/* SUBCARD 3: Education History */}
+            <div className="profile-subcard glass squircle">
+              <div className="profile-subcard-header">
+                <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(175, 82, 222, 0.12)', color: '#AF52DE' }}>
+                  <GraduationCap size={18} />
+                </div>
+                <span className="profile-subcard-title">{t('educationTitle')}</span>
+              </div>
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {profileData.educationHistory && profileData.educationHistory.length > 0 ? (
+                  profileData.educationHistory.map((edu, i) => (
+                    <div key={i} className="glass squircle" style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', width: '100%', display: 'flex', flexDirection: 'column', gap: '4px', borderRadius: '14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <strong style={{ fontSize: '15px', color: 'var(--text-main)' }}>{edu.school}</strong>
+                        {edu.isCurrent && (
+                          <span style={{ fontSize: '11px', background: 'rgba(52, 199, 89, 0.12)', color: '#34C759', padding: '3px 10px', borderRadius: '12px', fontWeight: 'bold' }}>
+                            {t('currentlyStudyingLabel')}
                           </span>
                         )}
                       </div>
-                    ))
-                  ) : (
-                    <span className="resume-empty-state">{profileData.address || t('notProvided')}</span>
-                  )}
-                </div>
+                      {edu.major && <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{edu.major}</span>}
+                      <span style={{ fontSize: '12px', color: '#8E8E93', marginTop: '2px' }}>
+                        📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel') : edu.endDate || '?'}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <span style={{ fontSize: '13px', color: '#8E8E93', whiteSpace: 'pre-wrap' }}>{profileData.education || t('notProvided')}</span>
+                )}
               </div>
+            </div>
 
-              {/* Education History */}
-              <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-                <span className="resume-section-title">{t('educationTitle')}</span>
-                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {profileData.educationHistory && profileData.educationHistory.length > 0 ? (
-                    profileData.educationHistory.map((edu, i) => (
-                      <div key={i} className="resume-edu-card">
-                        <div className="edu-top">
-                          <span className="edu-school">{edu.school}</span>
-                          {edu.isCurrent && (
-                            <span className="resume-current-tag studying">
-                              {t('currentlyStudyingLabel')}
-                            </span>
-                          )}
-                        </div>
-                        {edu.major && <span className="edu-major">{edu.major}</span>}
-                        <span className="edu-dates">
-                          📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel') : edu.endDate || '?'}
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <span className="resume-empty-state" style={{ whiteSpace: 'pre-wrap' }}>{profileData.education || t('notProvided')}</span>
-                  )}
+            {/* SUBCARD 4: Driver's Licenses */}
+            <div className="profile-subcard glass squircle">
+              <div className="profile-subcard-header">
+                <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(52, 199, 89, 0.12)', color: '#34C759' }}>
+                  <Award size={18} />
                 </div>
+                <span className="profile-subcard-title">{t('driverLicensesLabel')}</span>
               </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {profileData.driverLicenses && profileData.driverLicenses.length > 0 ? 
+                  profileData.driverLicenses.map(l => (
+                    <span key={l} style={{ background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', border: '1px solid rgba(10, 132, 255, 0.2)', padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <CheckCircle2 size={13} color="#0A84FF" /> {t(`lic_${l}`)}
+                    </span>
+                  )) : 
+                  <span style={{ fontSize: '13px', color: '#8E8E93' }}>{t('notProvided')}</span>
+                }
+              </div>
+            </div>
 
-              {/* Driver Licenses */}
-              <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
-                <span className="resume-section-title">{t('driverLicensesLabel')}</span>
-                <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
-                  {profileData.driverLicenses && profileData.driverLicenses.length > 0 ? 
-                    profileData.driverLicenses.map(l => (
-                      <span key={l} className="resume-badge-chip license">{t(`lic_${l}`)}</span>
-                    )) : 
-                    <span className="resume-empty-state">{t('notProvided')}</span>
-                  }
+            {/* SUBCARD 5: Special Qualifications & Certificates */}
+            <div className="profile-subcard glass squircle">
+              <div className="profile-subcard-header">
+                <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(255, 45, 85, 0.12)', color: '#FF2D55' }}>
+                  <FileCheck size={18} />
                 </div>
+                <span className="profile-subcard-title">{t('techCertsLabel')}</span>
               </div>
-
-              {/* Tech Certificates */}
-              <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
-                <span className="resume-section-title">{t('techCertsLabel')}</span>
-                <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {profileData.techCertificates && profileData.techCertificates.length > 0 ? 
                     profileData.techCertificates.map(tc => (
-                      <span key={tc} className="resume-badge-chip cert">{t(`tech_${tc}`)}</span>
+                      <span key={tc} style={{ background: 'rgba(255, 149, 0, 0.1)', color: '#FF9500', border: '1px solid rgba(255, 149, 0, 0.2)', padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <Sparkles size={13} color="#FF9500" /> {t(`tech_${tc}`)}
+                      </span>
                     )) : 
-                    <span className="resume-empty-state">{t('notProvided')}</span>
+                    <span style={{ fontSize: '13px', color: '#8E8E93' }}>{t('notProvided')}</span>
                   }
                 </div>
-              </div>
 
-              {/* Work Experience */}
-              {profileData.workHistory && profileData.workHistory.length > 0 && (
-                <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-                  <span className="resume-section-title">{t('workExperience')}</span>
-                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {profileData.workHistory.map((w, i) => (
-                      <div key={i} className="resume-timeline-item">
-                        <span className="work-company">{w.company}</span>
-                        {w.position && <span className="work-position">{w.position}</span>}
-                        <span className="work-dates">
-                          📅 {w.startDate || '?'} ~ {w.isCurrent ? t('currentPosition') : w.endDate || '?'}
-                        </span>
-                        {w.isCurrent && (
-                          <span className="work-current-badge">{t('currentPosition')}</span>
-                        )}
-                      </div>
-                    ))}
+                {/* JLPT Verified Badge section */}
+                {profileData.jlptStatus && profileData.jlptStatus.verified && (
+                  <div className="glass squircle animate-scale-up" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'rgba(48, 209, 88, 0.08)', border: '1px solid rgba(48, 209, 88, 0.3)', borderRadius: '14px', marginTop: '4px' }}>
+                    <ShieldCheck size={20} color="#30D158" className="animate-pulse" />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <strong style={{ fontSize: '14px', color: '#30D158' }}>JLPT {profileData.jlptStatus.level} Verified ✓</strong>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Cert No: {profileData.jlptStatus.certNo}</span>
+                    </div>
                   </div>
-                </div>
-              )}
-
+                )}
+              </div>
             </div>
+
+            {/* SUBCARD 6: Work Experience */}
+            {profileData.workHistory && profileData.workHistory.length > 0 && (
+              <div className="profile-subcard glass squircle">
+                <div className="profile-subcard-header">
+                  <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(10, 132, 255, 0.12)', color: '#0A84FF' }}>
+                    <Briefcase size={18} />
+                  </div>
+                  <span className="profile-subcard-title">{t('workExperience')}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {profileData.workHistory.map((w, i) => (
+                    <div key={i} className="glass squircle" style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', width: '100%', display: 'flex', flexDirection: 'column', gap: '3px', borderRadius: '14px' }}>
+                      <strong style={{ fontSize: '14.5px', color: 'var(--text-main)' }}>{w.company}</strong>
+                      <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{w.position}</span>
+                      <span style={{ fontSize: '11.5px', color: '#8E8E93' }}>{w.startDate} - {w.isCurrent ? t('currentPosition') : w.endDate}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
