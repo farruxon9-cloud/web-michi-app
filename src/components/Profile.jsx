@@ -4092,7 +4092,7 @@ const getLicenseLabel = (type) => {
 
         {/* Resume Card - Glassmorphism Sub-Group Cards */}
         {(userRole === 'driver' || userRole === 'guest') && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', marginBottom: '6px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', marginBottom: '4px' }}>
             {/* Main Header with Action CTA */}
             <div className="glass squircle" style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', borderRadius: '18px', background: 'var(--card-bg)', border: '1px solid var(--glass-border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
