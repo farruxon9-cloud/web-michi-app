@@ -1314,12 +1314,12 @@ export default function DrivingAcademy({
                 selectedCourses.length <= 2 ? (
                   selectedCourses.map(course => (
                     <span key={course} className="active-chip" onClick={() => setSelectedCourses(prev => prev.filter(c => c !== course))}>
-                      🚗 {course} <X size={12} />
+                      🚗 {course} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedCourses([])} title={selectedCourses.join(', ')}>
-                    🚗 {selectedCourses[0]} 外{selectedCourses.length - 1}件 <X size={12} />
+                    🚗 {selectedCourses[0]} <span className="active-chip-count">外{selectedCourses.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1327,12 +1327,12 @@ export default function DrivingAcademy({
                 selectedStyles.length <= 2 ? (
                   selectedStyles.map(style => (
                     <span key={style} className="active-chip" onClick={() => setSelectedStyles(prev => prev.filter(s => s !== style))}>
-                      🏫 {style} <X size={12} />
+                      🏫 {style} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedStyles([])} title={selectedStyles.join(', ')}>
-                    🏫 {selectedStyles[0]} 外{selectedStyles.length - 1}件 <X size={12} />
+                    🏫 {selectedStyles[0]} <span className="active-chip-count">外{selectedStyles.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1340,33 +1340,33 @@ export default function DrivingAcademy({
                 selectedFeatures.length <= 2 ? (
                   selectedFeatures.map(feat => (
                     <span key={feat} className="active-chip" onClick={() => setSelectedFeatures(prev => prev.filter(f => f !== feat))}>
-                      ✨ {feat} <X size={12} />
+                      ✨ {feat} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedFeatures([])} title={selectedFeatures.join(', ')}>
-                    ✨ {selectedFeatures[0]} 外{selectedFeatures.length - 1}件 <X size={12} />
+                    ✨ {selectedFeatures[0]} <span className="active-chip-count">外{selectedFeatures.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
               {selectedPrefecture !== 'all' && (
                 <span className="active-chip" onClick={() => setSelectedPrefecture('all')}>
-                  📍 {selectedPrefecture} <X size={12} />
+                  📍 {selectedPrefecture} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
               {selectedLang !== 'all' && (
                 <span className="active-chip" onClick={() => setSelectedLang('all')}>
-                  🗣️ {selectedLang} <X size={12} />
+                  🗣️ {selectedLang} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
               {selectedPriceRange !== 'all' && (
                 <span className="active-chip" onClick={() => setSelectedPriceRange('all')}>
-                  💰 {selectedPriceRange} <X size={12} />
+                  💰 {selectedPriceRange} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
               {searchQuery && searchQuery.length > 0 && (
                 <span className="active-chip" onClick={() => setSearchQuery && setSearchQuery('')}>
-                  🔍 {searchQuery} <X size={12} />
+                  🔍 {searchQuery} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
             </div>

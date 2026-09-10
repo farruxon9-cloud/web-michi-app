@@ -1095,35 +1095,79 @@ html.dark-mode .townwork-tab-btn.active::after {
 .active-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 11px;
-  border-radius: 16px;
-  background: rgba(10, 132, 255, 0.1);
-  border: 1px solid var(--primary);
-  color: var(--primary);
-  font-size: 12px;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.12) 0%, rgba(10, 132, 255, 0.05) 100%);
+  border: 1px solid rgba(10, 132, 255, 0.28);
+  box-shadow: 0 3px 10px rgba(10, 132, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #0066CC;
+  font-size: 12.5px;
   font-weight: 700;
+  letter-spacing: -0.2px;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 
 .active-chip:hover {
-  background: rgba(10, 132, 255, 0.2);
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.2) 0%, rgba(10, 132, 255, 0.1) 100%);
+  border-color: rgba(10, 132, 255, 0.45);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(10, 132, 255, 0.15);
+}
+
+.active-chip:active {
+  transform: scale(0.96);
+}
+
+.active-chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 132, 255, 0.16);
+  color: #0055B8;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  border: 1px solid rgba(10, 132, 255, 0.22);
+  margin-left: 2px;
+}
+
+.active-chip-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: rgba(10, 132, 255, 0.15);
+  color: #0066CC;
+  transition: all 0.15s ease;
+  margin-left: 1px;
+}
+
+.active-chip:hover .active-chip-close {
+  background: rgba(10, 132, 255, 0.3);
+  color: #004499;
 }
 
 .clear-all-chip {
   padding: 5px 12px;
-  border-radius: 16px;
-  background: rgba(255, 59, 48, 0.1);
-  border: 1px solid #FF3B30;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.12) 0%, rgba(255, 59, 48, 0.05) 100%);
+  border: 1px solid rgba(255, 59, 48, 0.3);
   color: #FF3B30;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
+  letter-spacing: -0.2px;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 
@@ -1136,12 +1180,18 @@ html.dark-mode .townwork-tab-btn.active::after {
   align-items: center;
   gap: 4px;
   background: var(--card-bg, #ffffff);
-  box-shadow: -8px 0 14px var(--card-bg, #ffffff);
-  transition: all 0.2s;
+  box-shadow: -10px 0 16px var(--card-bg, #ffffff), 0 3px 10px rgba(255, 59, 48, 0.08);
 }
 
-.clear-all-chip:hover {
-  background: rgba(255, 59, 48, 0.2);
+.clear-all-chip:hover, .sticky-reset-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.2) 0%, rgba(255, 59, 48, 0.1) 100%);
+  border-color: rgba(255, 59, 48, 0.45);
+  transform: translateY(-1px);
+  box-shadow: -10px 0 16px var(--card-bg, #ffffff), 0 5px 14px rgba(255, 59, 48, 0.15);
+}
+
+.clear-all-chip:active, .sticky-reset-btn:active {
+  transform: scale(0.96);
 }
 
 /* Sort and Results Counter Bar */

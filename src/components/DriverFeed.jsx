@@ -1476,29 +1476,29 @@ export default function DriverFeed({
             <div className="active-filter-chips-row hide-scrollbar">
               {selectedPrefecture !== 'all' && (
                 <span className="active-chip" onClick={() => setSelectedPrefecture('all')}>
-                  📍 {selectedPrefecture} <X size={12} />
+                  📍 {selectedPrefecture} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
               {selectedCity !== 'all' && (
                 <span className="active-chip" onClick={() => setSelectedCity('all')}>
-                  🏙️ {selectedCity} <X size={12} />
+                  🏙️ {selectedCity} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
               {minSalary > 0 && (
                 <span className="active-chip" onClick={() => setMinSalary(0)}>
-                  💰 {minSalary.toLocaleString()}円+ <X size={12} />
+                  💰 {minSalary.toLocaleString()}円+ <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
               {selectedLicenses.length > 0 && (
                 selectedLicenses.length <= 2 ? (
                   selectedLicenses.map(lic => (
                     <span key={lic} className="active-chip" onClick={() => setSelectedLicenses(prev => prev.filter(i => i !== lic))}>
-                      🪪 {lic} <X size={12} />
+                      🪪 {lic} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedLicenses([])} title={selectedLicenses.join(', ')}>
-                    🪪 {selectedLicenses[0]} 外{selectedLicenses.length - 1}件 <X size={12} />
+                    🪪 {selectedLicenses[0]} <span className="active-chip-count">外{selectedLicenses.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1506,12 +1506,12 @@ export default function DriverFeed({
                 selectedStations.length <= 2 ? (
                   selectedStations.map(st => (
                     <span key={st} className="active-chip" onClick={() => setSelectedStations(prev => prev.filter(item => item !== st))}>
-                      🚉 {st} <X size={12} />
+                      🚉 {st} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedStations([])} title={selectedStations.join(', ')}>
-                    🚉 {selectedStations[0]} 外{selectedStations.length - 1}件 <X size={12} />
+                    🚉 {selectedStations[0]} <span className="active-chip-count">外{selectedStations.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1519,56 +1519,56 @@ export default function DriverFeed({
                 selectedCitiesList.length <= 2 ? (
                   selectedCitiesList.map(c => (
                     <span key={c} className="active-chip" onClick={() => setSelectedCitiesList(prev => prev.filter(item => item !== c))}>
-                      📍 {c} <X size={12} />
+                      📍 {c} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedCitiesList([])} title={selectedCitiesList.join(', ')}>
-                    📍 {selectedCitiesList[0]} 外{selectedCitiesList.length - 1}件 <X size={12} />
+                    📍 {selectedCitiesList[0]} <span className="active-chip-count">外{selectedCitiesList.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
               {selectedJobCategories.map(catId => (
                 <span key={catId} className="active-chip" onClick={() => setSelectedJobCategories(prev => prev.filter(item => item !== catId))}>
-                  💼 {getJobCategoryLabel(catId)} <X size={12} />
+                  💼 {getJobCategoryLabel(catId)} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               ))}
               {selectedEmploymentTypes.map(emp => (
                 <span key={emp} className="active-chip" onClick={() => setSelectedEmploymentTypes(prev => prev.filter(item => item !== emp))}>
-                  📋 {getEmploymentLabel(emp)} <X size={12} />
+                  📋 {getEmploymentLabel(emp)} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               ))}
               {selectedDurations.map(dur => (
                 <span key={dur} className="active-chip" onClick={() => setSelectedDurations(prev => prev.filter(item => item !== dur))}>
-                  📅 {getDurationLabel(dur)} <X size={12} />
+                  📅 {getDurationLabel(dur)} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               ))}
               {selectedTimeSlots.map(ts => (
                 <span key={ts} className="active-chip" onClick={() => setSelectedTimeSlots(prev => prev.filter(item => item !== ts))}>
-                  🕐 {getTimeSlotLabel(ts)} <X size={12} />
+                  🕐 {getTimeSlotLabel(ts)} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               ))}
               {selectedFeatures.length > 0 && (
                 selectedFeatures.length <= 2 ? (
                   selectedFeatures.map(f => (
                     <span key={f} className="active-chip" onClick={() => setSelectedFeatures(prev => prev.filter(item => item !== f))}>
-                      ⭐ {getFeatureLabel(f)} <X size={12} />
+                      ⭐ {getFeatureLabel(f)} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedFeatures([])} title={selectedFeatures.map(getFeatureLabel).join(', ')}>
-                    ⭐ {getFeatureLabel(selectedFeatures[0])} 外{selectedFeatures.length - 1}件 <X size={12} />
+                    ⭐ {getFeatureLabel(selectedFeatures[0])} <span className="active-chip-count">外{selectedFeatures.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
               {selectedRadius > 0 && (
                 <span className="active-chip" onClick={() => setSelectedRadius(0)}>
-                  🎯 {selectedRadius}km <X size={12} />
+                  🎯 {selectedRadius}km <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
               {onlyNearStation && (
                 <span className="active-chip" onClick={() => setOnlyNearStation(false)}>
-                  🚶 {t('nearStationChip', '駅から徒歩10分')} <X size={12} />
+                  🚶 {t('nearStationChip', '駅から徒歩10分')} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
             </div>

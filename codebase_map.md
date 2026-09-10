@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:34:17**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:45:38**.
 
 ---
 
@@ -206,7 +206,7 @@ graph TD
   - `../utils/haptics`
 
 ### 📦 [SkeletonCard](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.jsx)
-* **Fayl yo'li:** `src/components/DriverFeed.jsx` (2006 qator, 96817 bayt)
+* **Fayl yo'li:** `src/components/DriverFeed.jsx` (2006 qator, 97720 bayt)
 * **Komponent Stillari:** 🎨 [DriverFeed.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.css)
 * **Unit Testlari:** 🧪 [DriverFeed.test.jsx](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -224,7 +224,7 @@ graph TD
   - `../data/jobFeatures`
 
 ### 📦 [DrivingAcademy](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.jsx)
-* **Fayl yo'li:** `src/components/DrivingAcademy.jsx` (1555 qator, 73859 bayt)
+* **Fayl yo'li:** `src/components/DrivingAcademy.jsx` (1555 qator, 74418 bayt)
 * **Komponent Stillari:** 🎨 [DrivingAcademy.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.css)
 * **Unit Testlari:** 🧪 [DrivingAcademy.test.jsx](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -1016,7 +1016,7 @@ graph TD
 * **Yo'li:** `.agents/rules/pages/01_dashboard.md` (63 qator)
 
 ### 📜 [02_driver_feed.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/02_driver_feed.md)
-* **Yo'li:** `.agents/rules/pages/02_driver_feed.md` (44 qator)
+* **Yo'li:** `.agents/rules/pages/02_driver_feed.md` (47 qator)
 
 ### 📜 [03_driving_academy.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/03_driving_academy.md)
 * **Yo'li:** `.agents/rules/pages/03_driving_academy.md` (62 qator)
@@ -1064,7 +1064,7 @@ graph TD
 * **Yo'li:** `.agents/rules/michi_ui_constraints.md` (69 qator)
 
 ### 📜 [past_mistakes.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/past_mistakes.md)
-* **Yo'li:** `.agents/rules/past_mistakes.md` (407 qator)
+* **Yo'li:** `.agents/rules/past_mistakes.md` (414 qator)
 
 
 ---
@@ -1566,12 +1566,12 @@ graph LR
 |---|---|---|---|---|---|
 | **VerifiedBadge** | component | 29 | 5x | 0 ta bug | CompanyHome.jsx, DriverFeed.jsx, DrivingAcademy.jsx, JobDetail.jsx, Profile.jsx |
 | **CompanyHome** | component | 1996 | 3x | 3 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
-| **DriverFeed** | component | 2006 | 3x | 7 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
-| **DrivingAcademy** | component | 1555 | 3x | 4 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
+| **DriverFeed** | component | 2006 | 3x | 8 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
+| **DrivingAcademy** | component | 1555 | 3x | 5 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 6085 | 1x | 13 ta bug | App.jsx |
+| **Profile** | component | 6085 | 1x | 12 ta bug | App.jsx |
 | **VoiceAssistant** | component | 2505 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
