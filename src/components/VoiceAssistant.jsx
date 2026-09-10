@@ -179,6 +179,8 @@ export default function VoiceAssistant({
     }
   }, []);
 
+  const pendingResumeStartRef = useRef(false);
+
   // Listen for auto-start resume flow from ResumeBuilder toggle
   useEffect(() => {
     const handleResumeStart = () => {
@@ -187,26 +189,9 @@ export default function VoiceAssistant({
       
       hasGreetedRef.current = true;
       isFillingResumeRef.current = true;
+      pendingResumeStartRef.current = true;
       setIsFillingResume(true);
       setResumeStep('ask_name');
-      
-      const lang = speechLangRef.current || i18n.language || 'uz';
-      const greetings = {
-        uz: "Assalomu alaykum! Men sizning shaxsiy yordamchingizman. Rezyumengizni to'ldirishda sizga yordam beraman. Ismingiz va familiyangizni ayting, iltimos.",
-        ja: "こんにちは！履歴書作成アシスタントです。ご質問にお答えいただければ履歴書を作成いたします。まず、お名前をフルネームでお聞かせください。",
-        en: "Hello! I am your resume assistant. I will help build your resume. Please tell me your full name."
-      };
-      const greeting = greetings[lang.startsWith('uz') ? 'uz' : lang.startsWith('ja') ? 'ja' : 'en'] || greetings['uz'];
-      
-      setAiResponseText(greeting);
-      setTranscript('');
-      setShowPill(true);
-      setStatus('speaking');
-      
-      speakResponse(greeting, lang, () => {
-        setStatus('idle');
-        startLocalSpeechRecognition();
-      });
     };
     
     window.addEventListener('michi-voice-resume-start', handleResumeStart);
@@ -244,7 +229,28 @@ export default function VoiceAssistant({
         setShowPill(true);
         speakResponse('インターネット接続がありません。接続を待機しています。', 'ja');
       } else if (apiKey && !showKeyInput) {
-        if (!hasGreetedRef.current && !isFillingResumeRef.current) {
+        if (pendingResumeStartRef.current) {
+          pendingResumeStartRef.current = false;
+          hasGreetedRef.current = true;
+          
+          const lang = speechLangRef.current || i18n.language || 'uz';
+          const greetings = {
+            uz: "Assalomu alaykum! Men sizning shaxsiy yordamchingizman. Rezyumengizni to'ldirishda sizga yordam beraman. Ismingiz va familiyangizni ayting, iltimos.",
+            ja: "こんにちは！履歴書作成アシスタントです。ご質問にお答えいただければ履歴書を作成いたします。まず、お名前をフルネームでお聞かせください。",
+            en: "Hello! I am your resume assistant. I will help build your resume. Please tell me your full name."
+          };
+          const greeting = greetings[lang.startsWith('uz') ? 'uz' : lang.startsWith('ja') ? 'ja' : 'en'] || greetings['uz'];
+          
+          setAiResponseText(greeting);
+          setTranscript('');
+          setShowPill(true);
+          setStatus('speaking');
+          
+          speakResponse(greeting, lang, () => {
+            setStatus('idle');
+            startLocalSpeechRecognition();
+          });
+        } else if (!hasGreetedRef.current && !isFillingResumeRef.current) {
           hasGreetedRef.current = true;
           
           const hour = new Date().getHours();
