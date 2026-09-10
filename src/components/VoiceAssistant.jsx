@@ -1983,10 +1983,19 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
     speakResponse(politeResponse, detectedLang, () => {
       if (isDelayedCommand) {
-        // Wait 500ms after speaking finishes before executing navigation/close commands
+        // Wait 400ms after speaking finishes before executing navigation
         setTimeout(() => {
           executeVoiceCommand(aiResult.command, aiResult);
-        }, 500);
+          // Always maintain continuous speech listening loop after navigation (except OPEN_RESUME which starts its own prompt loop)
+          if (aiResult.command !== 'OPEN_RESUME') {
+            setTimeout(() => {
+              if (isActiveRef.current && statusRef.current !== 'listening' && statusRef.current !== 'speaking') {
+                setStatus('idle');
+                startLocalSpeechRecognition();
+              }
+            }, 300);
+          }
+        }, 400);
       } else {
         // Continuous Conversational Dialogue Loop:
         // Re-open microphone automatically so user can keep asking subsequent questions endlessly
@@ -2025,7 +2034,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
       return !!(hasFullName && hasBirthDate && hasPhone && hasAddress && hasEducation);
     };
 
-    // List of navigation commands that require closing modal overlays for tab visibility
+    // List of navigation commands that require resetting selection overlays for tab visibility
     const isNavigationCommand = [
       'NAVIGATE_TO_HOME', 'NAVIGATE_TO_JOBS', 'NAVIGATE_TO_ACADEMY',
       'NAVIGATE_TO_SERVICE', 'NAVIGATE_TO_PROFILE', 'OPEN_RESUME',
@@ -2045,68 +2054,54 @@ Return ONLY the raw JSON object, no markdown wrappers.
         if (setSelectedJobRef.current) setSelectedJobRef.current(null);
         if (setSelectedSchoolRef.current) setSelectedSchoolRef.current(null);
         if (setProfileActivePageRef.current) setProfileActivePageRef.current('main');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_HOME':
         if (setActiveTabRef.current) setActiveTabRef.current('home');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_JOBS':
         if (setActiveTabRef.current) setActiveTabRef.current('jobs');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_ACADEMY':
         if (setActiveTabRef.current) setActiveTabRef.current('academy');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_SERVICE':
         if (setActiveTabRef.current) setActiveTabRef.current('service');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_PROFILE':
         if (setActiveTabRef.current) setActiveTabRef.current('profile');
         if (setProfileActivePageRef.current) setProfileActivePageRef.current('main');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_NOTIFICATIONS':
         if (setActiveTabRef.current) setActiveTabRef.current('profile');
         if (setProfileActivePageRef.current) setProfileActivePageRef.current('notifications');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_SETTINGS':
         if (setActiveTabRef.current) setActiveTabRef.current('profile');
         if (setProfileActivePageRef.current) setProfileActivePageRef.current('settings');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_APPLICATIONS':
         if (setActiveTabRef.current) setActiveTabRef.current('profile');
         if (setProfileActivePageRef.current) setProfileActivePageRef.current('applications');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_SAVED':
         if (setActiveTabRef.current) setActiveTabRef.current('profile');
         if (setProfileActivePageRef.current) setProfileActivePageRef.current('saved_items');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_SHOUKAI':
         if (setActiveTabRef.current) setActiveTabRef.current('profile');
         if (setProfileActivePageRef.current) setProfileActivePageRef.current('my_shoukai');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_MY_ADS':
         if (setActiveTabRef.current) setActiveTabRef.current('profile');
         if (setProfileActivePageRef.current) setProfileActivePageRef.current('my_ads');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_EMPLOYEES':
         if (setActiveTabRef.current) setActiveTabRef.current('profile');
         if (setProfileActivePageRef.current) setProfileActivePageRef.current('employees');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'NAVIGATE_TO_PERSONAL_INFO':
         if (setActiveTabRef.current) setActiveTabRef.current('profile');
         if (setProfileActivePageRef.current) setProfileActivePageRef.current('personalInfo');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
       case 'MUSIC_PLAY':
         if (activeMusicPlayer) {

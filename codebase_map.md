@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 16:52:16**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 16:57:01**.
 
 ---
 
@@ -520,7 +520,7 @@ graph TD
   - `react`
 
 ### 📦 [VoiceAssistant](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.jsx)
-* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (2502 qator, 104052 bayt)
+* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (2497 qator, 103538 bayt)
 * **Komponent Stillari:** 🎨 [VoiceAssistant.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `isActive`
@@ -1542,16 +1542,16 @@ graph LR
 | `micDeniedTitle` | — | — | — | L1809 |
 | `aiSystemBusy` | システムが混雑しています。少々お待ちください。 | System is busy. Please tr | システムが混雑しています。少々お待ちください。 | L1938 |
 | `aiError` | 申し訳ありません、リクエストを処理できませんでした | Sorry, could not process  | 申し訳ありません、リクエストを処理できませんでした | L1939 |
-| `apiRequiredDesc` | — | — | — | L2341 |
-| `saveKeyBtn` | — | — | — | L2366 |
-| `getFreeKey` | — | — | — | L2375 |
-| `howToEnable` | — | — | — | L2387 |
-| `step1` | — | — | — | L2389 |
-| `step2` | — | — | — | L2390 |
-| `step3` | — | — | — | L2391 |
-| `checkPermissionBtn` | — | — | — | L2406 |
-| `userSaid` | — | — | — | L2428 |
-| `aiThinking` | — | — | — | L2442 |
+| `apiRequiredDesc` | — | — | — | L2336 |
+| `saveKeyBtn` | — | — | — | L2361 |
+| `getFreeKey` | — | — | — | L2370 |
+| `howToEnable` | — | — | — | L2382 |
+| `step1` | — | — | — | L2384 |
+| `step2` | — | — | — | L2385 |
+| `step3` | — | — | — | L2386 |
+| `checkPermissionBtn` | — | — | — | L2401 |
+| `userSaid` | — | — | — | L2423 |
+| `aiThinking` | — | — | — | L2437 |
 
 
 ---
@@ -1572,7 +1572,7 @@ graph LR
 | **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
 | **Profile** | component | 5987 | 1x | 11 ta bug | App.jsx |
-| **VoiceAssistant** | component | 2502 | 1x | 1 ta bug | App.jsx |
+| **VoiceAssistant** | component | 2497 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
 
