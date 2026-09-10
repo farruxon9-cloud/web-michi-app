@@ -1275,6 +1275,74 @@ export default function DrivingAcademy({
     );
   }
 
+  const getCourseLabel = (id) => {
+    const map = {
+      'Futsu': t('lic_futsu', '普通自動車'),
+      'Oogata': t('lic_oogata', '大型自動車'),
+      'Chugata': t('lic_chugata', '中型自動車'),
+      'JunChugata': t('lic_junchugata', '準中型自動車'),
+      'FutsuNishu': t('lic_futsunishu', '普通二種'),
+      'OogataNishu': t('lic_oogatanishu', '大型二種'),
+      'Forklift': t('lic_forklift', 'フォークリフト'),
+      'Tokushu': t('lic_tokushu', '大型特殊'),
+      'Nirin': t('lic_nirin', '自動二輪車')
+    };
+    return map[id] || id;
+  };
+
+  const getStyleLabel = (id) => {
+    const map = {
+      'Tsugaku': t('style_tsugaku', '通学コース'),
+      'Gashuku': t('style_gashuku', '合宿免許'),
+      'ShortTerm': t('style_shortterm', '短期集中'),
+      'OnlineTheory': t('style_onlinetheory', 'オンライン学科')
+    };
+    return map[id] || id;
+  };
+
+  const getAcademyFeatureLabel = (id) => {
+    const map = {
+      'shuttle': t('feat_shuttle', '無料送迎バス'),
+      'dormitory': t('feat_dormitory', '宿舎・食事付き'),
+      'subsidy': t('feat_subsidy', '教育訓練給付金'),
+      'installment': t('feat_installment', 'ローン・分割払い'),
+      'nightClass': t('feat_nightclass', 'ナイター教習'),
+      'femaleInstructor': t('feat_female', '女性指導員'),
+      'kidsRoom': t('feat_kidsroom', '託児所あり'),
+      'shoukai': t('feat_shoukai', '紹介手当あり')
+    };
+    return map[id] || id;
+  };
+
+  const getAcademyLangLabel = (code) => {
+    const map = {
+      'UZ': t('lang_uz', 'ウズベク語'),
+      'JP': t('lang_jp', '日本語'),
+      'EN': t('lang_en', '英語'),
+      'RU': t('lang_ru', 'ロシア語'),
+      'VI': t('lang_vi', 'ベトナム語'),
+      'ZH': t('lang_zh', '中国語'),
+      'NE': t('lang_ne', 'ネパール語')
+    };
+    return map[code] || code;
+  };
+
+  const getAcademyPriceLabel = (val) => {
+    const map = {
+      'under20': t('price_under20', '20万円以下'),
+      'under20万': t('price_under20', '20万円以下'),
+      'under250k': t('price_under250k', '25万円以下'),
+      '20to30': t('price_20to30', '20万円〜30万円'),
+      '20to30万': t('price_20to30', '20万円〜30万円'),
+      '250k_300k': t('price_250k_300k', '25万円〜30万円'),
+      '300k_350k': t('price_300k_350k', '30万円〜35万円'),
+      'over30': t('price_over30', '30万円以上'),
+      'over30万': t('price_over30', '30万円以上'),
+      'over350k': t('price_over350k', '35万円以上')
+    };
+    return map[val] || val;
+  };
+
   /* ========================================================================
      RO'YXAT SAHIFASI (LIST VIEW)
      Barcha maktablarni kartochkalar shaklida ko'rsatadi.
@@ -1314,12 +1382,12 @@ export default function DrivingAcademy({
                 selectedCourses.length <= 2 ? (
                   selectedCourses.map(course => (
                     <span key={course} className="active-chip" onClick={() => setSelectedCourses(prev => prev.filter(c => c !== course))}>
-                      🚗 {course} <span className="active-chip-close"><X size={11} /></span>
+                      🚗 {getCourseLabel(course)} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
-                  <span className="active-chip" onClick={() => setSelectedCourses([])} title={selectedCourses.join(', ')}>
-                    🚗 {selectedCourses[0]} <span className="active-chip-count">外{selectedCourses.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                  <span className="active-chip" onClick={() => setSelectedCourses([])} title={selectedCourses.map(getCourseLabel).join(', ')}>
+                    🚗 {getCourseLabel(selectedCourses[0])} <span className="active-chip-count">外{selectedCourses.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1327,12 +1395,12 @@ export default function DrivingAcademy({
                 selectedStyles.length <= 2 ? (
                   selectedStyles.map(style => (
                     <span key={style} className="active-chip" onClick={() => setSelectedStyles(prev => prev.filter(s => s !== style))}>
-                      🏫 {style} <span className="active-chip-close"><X size={11} /></span>
+                      🏫 {getStyleLabel(style)} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
-                  <span className="active-chip" onClick={() => setSelectedStyles([])} title={selectedStyles.join(', ')}>
-                    🏫 {selectedStyles[0]} <span className="active-chip-count">外{selectedStyles.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                  <span className="active-chip" onClick={() => setSelectedStyles([])} title={selectedStyles.map(getStyleLabel).join(', ')}>
+                    🏫 {getStyleLabel(selectedStyles[0])} <span className="active-chip-count">外{selectedStyles.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1340,12 +1408,12 @@ export default function DrivingAcademy({
                 selectedFeatures.length <= 2 ? (
                   selectedFeatures.map(feat => (
                     <span key={feat} className="active-chip" onClick={() => setSelectedFeatures(prev => prev.filter(f => f !== feat))}>
-                      ✨ {feat} <span className="active-chip-close"><X size={11} /></span>
+                      ✨ {getAcademyFeatureLabel(feat)} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
-                  <span className="active-chip" onClick={() => setSelectedFeatures([])} title={selectedFeatures.join(', ')}>
-                    ✨ {selectedFeatures[0]} <span className="active-chip-count">外{selectedFeatures.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                  <span className="active-chip" onClick={() => setSelectedFeatures([])} title={selectedFeatures.map(getAcademyFeatureLabel).join(', ')}>
+                    ✨ {getAcademyFeatureLabel(selectedFeatures[0])} <span className="active-chip-count">外{selectedFeatures.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1356,12 +1424,12 @@ export default function DrivingAcademy({
               )}
               {selectedLang !== 'all' && (
                 <span className="active-chip" onClick={() => setSelectedLang('all')}>
-                  🗣️ {selectedLang} <span className="active-chip-close"><X size={11} /></span>
+                  🗣️ {getAcademyLangLabel(selectedLang)} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
               {selectedPriceRange !== 'all' && (
                 <span className="active-chip" onClick={() => setSelectedPriceRange('all')}>
-                  💰 {selectedPriceRange} <span className="active-chip-close"><X size={11} /></span>
+                  💰 {getAcademyPriceLabel(selectedPriceRange)} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
               {searchQuery && searchQuery.length > 0 && (

@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:45:38**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 18:50:21**.
 
 ---
 
@@ -224,7 +224,7 @@ graph TD
   - `../data/jobFeatures`
 
 ### 📦 [DrivingAcademy](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.jsx)
-* **Fayl yo'li:** `src/components/DrivingAcademy.jsx` (1555 qator, 74418 bayt)
+* **Fayl yo'li:** `src/components/DrivingAcademy.jsx` (1623 qator, 76852 bayt)
 * **Komponent Stillari:** 🎨 [DrivingAcademy.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.css)
 * **Unit Testlari:** 🧪 [DrivingAcademy.test.jsx](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -1175,7 +1175,7 @@ graph LR
 
 > Ushbu bo'lim har bir i18n kalitining 3 tildagi tarjimasini va aynan qaysi komponentda ishlatilishini ko'rsatadi.
 
-**Jami ishlatilgan i18n kalitlar:** 612 ta, **16** ta komponentda tarqalgan
+**Jami ishlatilgan i18n kalitlar:** 622 ta, **16** ta komponentda tarqalgan
 
 ### 📄 AdminDashboard (9 ta kalit)
 
@@ -1330,7 +1330,7 @@ graph LR
 | `foreigners_visa_renew` | ビザ更新支援 | Visa Renewal Support | Vizani Uzaytirish Ko'magi | L1634 |
 | ... | *+7 ta kalit* | | | |
 
-### 📄 DrivingAcademy (71 ta kalit)
+### 📄 DrivingAcademy (81 ta kalit)
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
@@ -1343,7 +1343,7 @@ graph LR
 | `allPrefectures` | 全ての地域 | All Prefectures | Barcha hududlar | L1261 |
 | `callSchool` | 電話する | Call | Qo'ng'iroq | L614 |
 | `shoukai` | 紹介 | Referral | Shoukai | L620 |
-| `loadMore` | もっと見る | Load More | Ko'proq yuklash | L1538 |
+| `loadMore` | もっと見る | Load More | Ko'proq yuklash | L1606 |
 | `addressMaskedNotice` | 詳細な住所は面接設定時に開示されます | Detailed address will be  | Aniq manzil faqat suhbatg | L245 |
 | `courseOffered` | 提供コース | Courses Offered | Taklif qilinadigan kursla | L456 |
 | `memberDiscount` | 会員割引あり | Member discount | A'zolar uchun chegirma | L470 |
@@ -1364,7 +1364,7 @@ graph LR
 | `lic_junchugata` | 準中型自動車 | Semi-Medium Truck (Jun-Ch | Jun-Chugata yuk avtomobil | L668 |
 | `lic_futsunishu` | 普通二種 (タクシー) | Commercial Class 2 Taxi L | Taksi guvohnomasi (Futsu  | L669 |
 | `lic_oogatanishu` | 大型二種 (バス) | Commercial Bus License | Avtobus guvohnomasi (Ooga | L670 |
-| ... | *+41 ta kalit* | | | |
+| ... | *+51 ta kalit* | | | |
 
 ### 📄 JDMNavigation (1 ta kalit)
 
@@ -1567,7 +1567,7 @@ graph LR
 | **VerifiedBadge** | component | 29 | 5x | 0 ta bug | CompanyHome.jsx, DriverFeed.jsx, DrivingAcademy.jsx, JobDetail.jsx, Profile.jsx |
 | **CompanyHome** | component | 1996 | 3x | 3 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
 | **DriverFeed** | component | 2006 | 3x | 8 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
-| **DrivingAcademy** | component | 1555 | 3x | 5 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
+| **DrivingAcademy** | component | 1623 | 3x | 5 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
