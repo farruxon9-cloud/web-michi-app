@@ -292,7 +292,7 @@ const translation = {
   "manageAdsSub": "掲載の管理",
   "manageAppsSub": "応募ステータスの確認",
   "myApplicationsDesc": "送った応募の一覧や企業からの返信状況を確認します。",
-  "myAdsDesc": "新しい求人票 of 作成や応募ドライバーを管理します。",
+  "myAdsDesc": "新しい求人票の作成や応募ドライバーを管理します。",
   "noJobsYet": "Пока нет опубликованных вакансий",
   "yourJobsAndCourses": "掲載中の求人およびコース",
   "backToDashboard": "ダッシュボードに戻る",
