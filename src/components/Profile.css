@@ -1669,9 +1669,55 @@ button.profile-btn-interactive {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.fleet-dot-pill:hover {
-  transform: scale(1.25);
-  background: rgba(0, 132, 255, 0.4) !important;
+
+/* Glassmorphism Profile Sub-Group Cards */
+.profile-subcard {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+  box-sizing: border-box;
 }
+
+.profile-subcard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(10, 132, 255, 0.08);
+}
+
+.profile-subcard-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.profile-subcard-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: rgba(10, 132, 255, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-subcard-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.2px;
+}
+
 
 

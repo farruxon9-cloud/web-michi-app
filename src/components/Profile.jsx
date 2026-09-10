@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot, Navigation, Zap, Mic, Truck, RotateCcw, UserCheck, UserX, Car, FileCheck, Calendar } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot, Navigation, Zap, Mic, Truck, RotateCcw, UserCheck, UserX, Car, FileCheck, Calendar, Award, GraduationCap, CreditCard } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
@@ -2809,16 +2809,23 @@ const getLicenseLabel = (type) => {
             )}
           </div>
         </div>
-        <div className="profile-menu" style={{ paddingTop: '16px' }}>
-          <div className="menu-group glass squircle" style={{ padding: '20px' }}>
-            <div className="resume-body">
+        <div className="profile-menu" style={{ paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* CARD 1: Basic Information */}
+          <div className="profile-subcard glass squircle">
+            <div className="profile-subcard-header">
+              <div className="profile-subcard-icon-wrap">
+                <User size={18} />
+              </div>
+              <span className="profile-subcard-title">{t('basicInfoTitle', '基本情報')}</span>
+            </div>
+            <div className="resume-body" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {/* Name */}
               <div className="resume-field">
                 <span className="field-label">{t('namePlaceholder').replace(' ✱', '')}</span>
                 {isEditing ? (
                   <input className="edit-input" value={editData.fullName || ''} onChange={(e) => setEditData({...editData, fullName: e.target.value})} maxLength={50} />
                 ) : (
-                  <span className="field-value">{profileData.fullName}</span>
+                  <span className="field-value" style={{ fontWeight: '600', color: 'var(--text-main)' }}>{profileData.fullName}</span>
                 )}
               </div>
               {/* Email */}
@@ -2857,229 +2864,274 @@ const getLicenseLabel = (type) => {
                       <span className="field-value">{profileData.nationality || t('notProvided')}</span>
                     )}
                   </div>
-                  {/* Living Address History */}
-                  <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-                    <span className="field-label">{t('livingAddressTitle')}</span>
-                    {isEditing ? (
-                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {(editData.addressHistory || []).map((entry, index) => (
-                          <div key={index} className="work-entry glass squircle" style={{ padding: '12px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.01)', width: '100%' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                              <span style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '13px' }}>#{index + 1}</span>
-                              <button 
-                                type="button" 
-                                className="remove-work-btn"
-                                style={{ background: 'rgba(255, 59, 48, 0.08)', border: 'none', color: '#FF3B30', cursor: 'pointer', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                onClick={() => removeEditAddressEntry(index)}
-                              >
-                                <X size={14} />
-                              </button>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                              <input
-                                type="text"
-                                placeholder={t('livingAddressPlaceholder')}
-                                className="edit-input"
-                                style={{ width: '100%' }}
-                                value={entry.address}
-                                onChange={(e) => updateEditAddressEntry(index, 'address', e.target.value)}
-                                maxLength={120}
+                </>
+              )}
+            </div>
+          </div>
+
+          {(userRole === 'driver' || userRole === 'guest') && (
+            <>
+              {/* CARD 2: Living Address History */}
+              <div className="profile-subcard glass squircle">
+                <div className="profile-subcard-header">
+                  <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(255, 149, 0, 0.12)', color: '#FF9500' }}>
+                    <MapPin size={18} />
+                  </div>
+                  <span className="profile-subcard-title">{t('livingAddressTitle')}</span>
+                </div>
+                <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px', width: '100%' }}>
+                  {isEditing ? (
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {(editData.addressHistory || []).map((entry, index) => (
+                        <div key={index} className="work-entry glass squircle" style={{ padding: '12px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.01)', width: '100%' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <span style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '13px' }}>#{index + 1}</span>
+                            <button 
+                              type="button" 
+                              className="remove-work-btn"
+                              style={{ background: 'rgba(255, 59, 48, 0.08)', border: 'none', color: '#FF3B30', cursor: 'pointer', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              onClick={() => removeEditAddressEntry(index)}
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <input
+                              type="text"
+                              placeholder={t('livingAddressPlaceholder')}
+                              className="edit-input"
+                              style={{ width: '100%' }}
+                              value={entry.address}
+                              onChange={(e) => updateEditAddressEntry(index, 'address', e.target.value)}
+                              maxLength={120}
+                            />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                              <input 
+                                type="checkbox" 
+                                id={`edit-addr-current-${index}`} 
+                                checked={entry.isCurrent || false}
+                                onChange={(e) => updateEditAddressEntry(index, 'isCurrent', e.target.checked)}
+                                style={{ cursor: 'pointer' }}
                               />
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                                <input 
-                                  type="checkbox" 
-                                  id={`edit-addr-current-${index}`} 
-                                  checked={entry.isCurrent || false}
-                                  onChange={(e) => updateEditAddressEntry(index, 'isCurrent', e.target.checked)}
-                                  style={{ cursor: 'pointer' }}
-                                />
-                                <label htmlFor={`edit-addr-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentAddressLabel')}</label>
-                              </div>
+                              <label htmlFor={`edit-addr-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentAddressLabel')}</label>
                             </div>
                           </div>
-                        ))}
-                        {(editData.addressHistory || []).length < 3 && (
-                          <button type="button" className="add-work-btn" style={{ width: '100%', padding: '10px', borderRadius: '12px', background: 'rgba(10, 132, 255, 0.08)', border: '1px dashed rgba(10, 132, 255, 0.3)', color: '#0A84FF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} onClick={addEditAddressEntry}>
-                            <Plus size={15} /> {t('addAddressBtn')}
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {profileData.addressHistory && profileData.addressHistory.length > 0 ? (
-                          profileData.addressHistory.map((a, i) => (
-                            <div key={i} className="glass squircle" style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                              <span style={{ fontSize: '14px', color: 'var(--text-main)' }}>{a.address}</span>
-                              {a.isCurrent && (
-                                <span style={{ fontSize: '11px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '3px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
-                                  {t('currentAddressLabel')}
+                        </div>
+                      ))}
+                      {(editData.addressHistory || []).length < 3 && (
+                        <button type="button" className="add-work-btn" style={{ width: '100%', padding: '10px', borderRadius: '12px', background: 'rgba(10, 132, 255, 0.08)', border: '1px dashed rgba(10, 132, 255, 0.3)', color: '#0A84FF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} onClick={addEditAddressEntry}>
+                          <Plus size={15} /> {t('addAddressBtn')}
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {profileData.addressHistory && profileData.addressHistory.length > 0 ? (
+                        profileData.addressHistory.map((a, i) => (
+                          <div key={i} className="glass squircle" style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', borderRadius: '14px' }}>
+                            <span style={{ fontSize: '14px', color: 'var(--text-main)', fontWeight: '500' }}>{a.address}</span>
+                            {a.isCurrent && (
+                              <span style={{ fontSize: '11px', background: 'rgba(10, 132, 255, 0.12)', color: '#0A84FF', padding: '3px 10px', borderRadius: '12px', fontWeight: 'bold' }}>
+                                {t('currentAddressLabel')}
+                              </span>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <span className="field-value">{profileData.address || t('notProvided')}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* CARD 3: Education History */}
+              <div className="profile-subcard glass squircle">
+                <div className="profile-subcard-header">
+                  <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(175, 82, 222, 0.12)', color: '#AF52DE' }}>
+                    <GraduationCap size={18} />
+                  </div>
+                  <span className="profile-subcard-title">{t('educationTitle')}</span>
+                </div>
+                <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px', width: '100%' }}>
+                  {isEditing ? (
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {(editData.educationHistory || []).map((entry, index) => (
+                        <div key={index} className="work-entry glass squircle" style={{ padding: '12px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.01)', width: '100%' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <span style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '13px' }}>#{index + 1}</span>
+                            <button 
+                              type="button" 
+                              className="remove-work-btn"
+                              style={{ background: 'rgba(255, 59, 48, 0.08)', border: 'none', color: '#FF3B30', cursor: 'pointer', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              onClick={() => removeEditEducationEntry(index)}
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <input
+                              type="text"
+                              placeholder={t('educationSchoolPlaceholder')}
+                              className="edit-input"
+                              style={{ width: '100%' }}
+                              value={entry.school}
+                              onChange={(e) => updateEditEducationEntry(index, 'school', e.target.value)}
+                              maxLength={100}
+                            />
+                            <input
+                              type="text"
+                              placeholder={t('educationMajorPlaceholder')}
+                              className="edit-input"
+                              style={{ width: '100%' }}
+                              value={entry.major}
+                              onChange={(e) => updateEditEducationEntry(index, 'major', e.target.value)}
+                              maxLength={100}
+                            />
+                            <div className="work-dates-row" style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
+                              <div style={{ flex: 1 }}>
+                                <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('startDateLabel')}</label>
+                                <input
+                                  type="month"
+                                  className="edit-input"
+                                  style={{ width: '100%' }}
+                                  value={entry.startDate || ''}
+                                  onChange={(e) => updateEditEducationEntry(index, 'startDate', e.target.value)}
+                                />
+                              </div>
+                              <div style={{ flex: 1, opacity: entry.isCurrent ? 0.5 : 1 }}>
+                                <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('endDateLabel')}</label>
+                                <input
+                                  type="month"
+                                  className="edit-input"
+                                  style={{ width: '100%' }}
+                                  value={entry.endDate || ''}
+                                  onChange={(e) => updateEditEducationEntry(index, 'endDate', e.target.value)}
+                                  disabled={entry.isCurrent}
+                                />
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                              <input 
+                                type="checkbox" 
+                                id={`edit-edu-current-${index}`} 
+                                checked={entry.isCurrent || false}
+                                onChange={(e) => updateEditEducationEntry(index, 'isCurrent', e.target.checked)}
+                                style={{ cursor: 'pointer' }}
+                              />
+                              <label htmlFor={`edit-edu-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentlyStudyingLabel')}</label>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {(editData.educationHistory || []).length < 3 && (
+                        <button type="button" className="add-work-btn" style={{ width: '100%', padding: '10px', borderRadius: '12px', background: 'rgba(10, 132, 255, 0.08)', border: '1px dashed rgba(10, 132, 255, 0.3)', color: '#0A84FF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} onClick={addEditEducationEntry}>
+                          <Plus size={15} /> {t('addEducationBtn')}
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {profileData.educationHistory && profileData.educationHistory.length > 0 ? (
+                        profileData.educationHistory.map((edu, i) => (
+                          <div key={i} className="glass squircle" style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', width: '100%', display: 'flex', flexDirection: 'column', gap: '4px', borderRadius: '14px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                              <strong style={{ fontSize: '15px', color: 'var(--text-main)' }}>{edu.school}</strong>
+                              {edu.isCurrent && (
+                                <span style={{ fontSize: '11px', background: 'rgba(52, 199, 89, 0.12)', color: '#34C759', padding: '3px 10px', borderRadius: '12px', fontWeight: 'bold' }}>
+                                  {t('currentlyStudyingLabel')}
                                 </span>
                               )}
                             </div>
-                          ))
-                        ) : (
-                          <span className="field-value">{profileData.address || t('notProvided')}</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Education History */}
-                  <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px', marginTop: '12px' }}>
-                    <span className="field-label">{t('educationTitle')}</span>
-                    {isEditing ? (
-                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {(editData.educationHistory || []).map((entry, index) => (
-                          <div key={index} className="work-entry glass squircle" style={{ padding: '12px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.01)', width: '100%' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                              <span style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '13px' }}>#{index + 1}</span>
-                              <button 
-                                type="button" 
-                                className="remove-work-btn"
-                                style={{ background: 'rgba(255, 59, 48, 0.08)', border: 'none', color: '#FF3B30', cursor: 'pointer', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                onClick={() => removeEditEducationEntry(index)}
-                              >
-                                <X size={14} />
-                              </button>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                              <input
-                                type="text"
-                                placeholder={t('educationSchoolPlaceholder')}
-                                className="edit-input"
-                                style={{ width: '100%' }}
-                                value={entry.school}
-                                onChange={(e) => updateEditEducationEntry(index, 'school', e.target.value)}
-                                maxLength={100}
-                              />
-                              <input
-                                type="text"
-                                placeholder={t('educationMajorPlaceholder')}
-                                className="edit-input"
-                                style={{ width: '100%' }}
-                                value={entry.major}
-                                onChange={(e) => updateEditEducationEntry(index, 'major', e.target.value)}
-                                maxLength={100}
-                              />
-                              <div className="work-dates-row" style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
-                                <div style={{ flex: 1 }}>
-                                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('startDateLabel')}</label>
-                                  <input
-                                    type="month"
-                                    className="edit-input"
-                                    style={{ width: '100%' }}
-                                    value={entry.startDate || ''}
-                                    onChange={(e) => updateEditEducationEntry(index, 'startDate', e.target.value)}
-                                  />
-                                </div>
-                                <div style={{ flex: 1, opacity: entry.isCurrent ? 0.5 : 1 }}>
-                                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '2px' }}>{t('endDateLabel')}</label>
-                                  <input
-                                    type="month"
-                                    className="edit-input"
-                                    style={{ width: '100%' }}
-                                    value={entry.endDate || ''}
-                                    onChange={(e) => updateEditEducationEntry(index, 'endDate', e.target.value)}
-                                    disabled={entry.isCurrent}
-                                  />
-                                </div>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                                <input 
-                                  type="checkbox" 
-                                  id={`edit-edu-current-${index}`} 
-                                  checked={entry.isCurrent || false}
-                                  onChange={(e) => updateEditEducationEntry(index, 'isCurrent', e.target.checked)}
-                                  style={{ cursor: 'pointer' }}
-                                />
-                                <label htmlFor={`edit-edu-current-${index}`} style={{ fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>{t('currentlyStudyingLabel')}</label>
-                              </div>
-                            </div>
+                            {edu.major && <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{edu.major}</span>}
+                            <span style={{ fontSize: '12px', color: '#8E8E93', marginTop: '2px' }}>
+                              📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel') : edu.endDate || '?'}
+                            </span>
                           </div>
-                        ))}
-                        {(editData.educationHistory || []).length < 3 && (
-                          <button type="button" className="add-work-btn" style={{ width: '100%', padding: '10px', borderRadius: '12px', background: 'rgba(10, 132, 255, 0.08)', border: '1px dashed rgba(10, 132, 255, 0.3)', color: '#0A84FF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} onClick={addEditEducationEntry}>
-                            <Plus size={15} /> {t('addEducationBtn')}
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {profileData.educationHistory && profileData.educationHistory.length > 0 ? (
-                          profileData.educationHistory.map((edu, i) => (
-                            <div key={i} className="glass squircle" style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--glass-border)', width: '100%', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <strong style={{ fontSize: '15px', color: 'var(--text-main)' }}>{edu.school}</strong>
-                                {edu.isCurrent && (
-                                  <span style={{ fontSize: '11px', background: 'rgba(52, 199, 89, 0.1)', color: '#34C759', padding: '3px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
-                                    {t('currentlyStudyingLabel')}
-                                  </span>
-                                )}
-                              </div>
-                              {edu.major && <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{edu.major}</span>}
-                              <span style={{ fontSize: '12px', color: '#8E8E93', marginTop: '2px' }}>
-                                📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel') : edu.endDate || '?'}
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <span className="field-value" style={{ whiteSpace: 'pre-wrap' }}>{profileData.education || t('notProvided')}</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                                  <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
-                  <span className="field-label" style={{marginBottom: '4px'}}>{t('driverLicensesLabel')}</span>
-                  <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
-                    {profileData.driverLicenses && profileData.driverLicenses.length > 0 ? 
-                      profileData.driverLicenses.map(l => (
-                        <span key={l} className="badge-blue" style={{background: '#e3f2fd', color: '#1976d2', padding: '4px 10px', borderRadius: '20px', fontSize: '13px'}}>{t(`lic_${l}`)}</span>
-                      )) : 
-                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided')}</span>
-                    }
-                  </div>
-                </div>
-                <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
-                  <span className="field-label" style={{marginBottom: '4px'}}>{t('techCertsLabel')}</span>
-                  <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
-                    {profileData.techCertificates && profileData.techCertificates.length > 0 ? 
-                      profileData.techCertificates.map(tc => (
-                        <span key={tc} className="badge-blue" style={{background: '#fdf3e3', color: '#d27d19', padding: '4px 10px', borderRadius: '20px', fontSize: '13px'}}>{t(`tech_${tc}`)}</span>
-                      )) : 
-                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided')}</span>
-                    }
-                  </div>
-                </div>
-                <div className="resume-field" style={{flexDirection: 'column', alignItems: 'flex-start', gap: '8px'}}>
-                  <span className="field-label" style={{marginBottom: '4px'}}>{t('jlptLanguageLabel')}</span>
-                  <div>
-                    {profileData.jlptStatus && profileData.jlptStatus.verified ? (
-                      <div className="glass squircle animate-scale-up" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', background: 'rgba(48, 209, 88, 0.08)', border: '1px solid rgba(48, 209, 88, 0.3)', borderRadius: '12px' }}>
-                        <ShieldCheck size={18} color="#30D158" className="animate-pulse" />
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <strong style={{ fontSize: '13.5px', color: '#30D158' }}>JLPT {profileData.jlptStatus.level} Verified ✓</strong>
-                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Cert No: {profileData.jlptStatus.certNo}</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <span style={{fontSize: '13px', color: '#8E8E93'}}>{t('notProvided')}</span>
-                    )}
-                  </div>
-                </div>
-                  {/* Work History */}
-                  {profileData.workHistory && profileData.workHistory.length > 0 && (
-                    <div className="resume-field">
-                      <span className="field-label">{t('workExperience')}</span>
-                      {profileData.workHistory.map((w, i) => (
-                        <div key={i} className="work-history-item">
-                          <strong>{w.company}</strong>
-                          <span>{w.position} • {w.startDate} - {w.isCurrent ? t('currentPosition') : w.endDate}</span>
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <span className="field-value" style={{ whiteSpace: 'pre-wrap' }}>{profileData.education || t('notProvided')}</span>
+                      )}
                     </div>
                   )}
-                </>
+                </div>
+              </div>
+
+              {/* CARD 4: Driver's Licenses */}
+              <div className="profile-subcard glass squircle">
+                <div className="profile-subcard-header">
+                  <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(52, 199, 89, 0.12)', color: '#34C759' }}>
+                    <Award size={18} />
+                  </div>
+                  <span className="profile-subcard-title">{t('driverLicensesLabel')}</span>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {profileData.driverLicenses && profileData.driverLicenses.length > 0 ? 
+                    profileData.driverLicenses.map(l => (
+                      <span key={l} style={{ background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', border: '1px solid rgba(10, 132, 255, 0.2)', padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <CheckCircle2 size={13} color="#0A84FF" /> {t(`lic_${l}`)}
+                      </span>
+                    )) : 
+                    <span style={{ fontSize: '13px', color: '#8E8E93' }}>{t('notProvided')}</span>
+                  }
+                </div>
+              </div>
+
+              {/* CARD 5: Special Qualifications & Languages */}
+              <div className="profile-subcard glass squircle">
+                <div className="profile-subcard-header">
+                  <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(255, 45, 85, 0.12)', color: '#FF2D55' }}>
+                    <FileCheck size={18} />
+                  </div>
+                  <span className="profile-subcard-title">{t('techCertsLabel')}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {profileData.techCertificates && profileData.techCertificates.length > 0 ? 
+                      profileData.techCertificates.map(tc => (
+                        <span key={tc} style={{ background: 'rgba(255, 149, 0, 0.1)', color: '#FF9500', border: '1px solid rgba(255, 149, 0, 0.2)', padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <Sparkles size={13} color="#FF9500" /> {t(`tech_${tc}`)}
+                        </span>
+                      )) : 
+                      <span style={{ fontSize: '13px', color: '#8E8E93' }}>{t('notProvided')}</span>
+                    }
+                  </div>
+
+                  {/* JLPT Verified Badge section */}
+                  {profileData.jlptStatus && profileData.jlptStatus.verified && (
+                    <div className="glass squircle animate-scale-up" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'rgba(48, 209, 88, 0.08)', border: '1px solid rgba(48, 209, 88, 0.3)', borderRadius: '14px', marginTop: '4px' }}>
+                      <ShieldCheck size={20} color="#30D158" className="animate-pulse" />
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <strong style={{ fontSize: '14px', color: '#30D158' }}>JLPT {profileData.jlptStatus.level} Verified ✓</strong>
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Cert No: {profileData.jlptStatus.certNo}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* CARD 6: Work Experience (if available) */}
+              {profileData.workHistory && profileData.workHistory.length > 0 && (
+                <div className="profile-subcard glass squircle">
+                  <div className="profile-subcard-header">
+                    <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(10, 132, 255, 0.12)', color: '#0A84FF' }}>
+                      <Briefcase size={18} />
+                    </div>
+                    <span className="profile-subcard-title">{t('workExperience')}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {profileData.workHistory.map((w, i) => (
+                      <div key={i} className="glass squircle" style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', width: '100%', display: 'flex', flexDirection: 'column', gap: '3px', borderRadius: '14px' }}>
+                        <strong style={{ fontSize: '14.5px', color: 'var(--text-main)' }}>{w.company}</strong>
+                        <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{w.position}</span>
+                        <span style={{ fontSize: '11.5px', color: '#8E8E93' }}>{w.startDate} - {w.isCurrent ? t('currentPosition') : w.endDate}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
+            </>
+          )}
               {/* Company fields */}
               {userRole === 'company' && (
                 <>
@@ -3227,8 +3279,6 @@ const getLicenseLabel = (type) => {
                   </div>
                 </>
               )}
-            </div>
-          </div>
         </div>
         {/* 96px dock clearance so personal info page content scrolls cleanly past floating BottomNav */}
         <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />

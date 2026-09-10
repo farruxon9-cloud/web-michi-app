@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:17:09**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:23:27**.
 
 ---
 
@@ -372,7 +372,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (5987 qator, 307921 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (6037 qator, 310507 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -1423,13 +1423,13 @@ graph LR
 |---|---|---|---|---|
 | `roleGuest` | ゲスト | Guest | Mehmon | L2152 |
 | `cancelEdit` | キャンセル | Cancel | Bekor qilish | L2797 |
-| `logout` | ログアウト | Logout | Tizimdan chiqish | L5935 |
-| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L3094 |
-| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L3095 |
-| `emailLabel` | メールアドレス | Email | Email | L3421 |
-| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L3834 |
+| `logout` | ログアウト | Logout | Tizimdan chiqish | L5985 |
+| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L3146 |
+| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L3147 |
+| `emailLabel` | メールアドレス | Email | Email | L3471 |
+| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L3884 |
 | `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L2750 |
-| `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3276 |
+| `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3326 |
 | `roleDriver` | ドライバー (求職者) | Driver (Job Seeker) | Haydovchi (Ish izlovchi) | L2149 |
 | `roleCompanyLabel` | 企業 | Company | Kompaniya | L2150 |
 | `roleSchool` | 自動車学校 | Driving School | AvtoMaktab | L2151 |
@@ -1571,7 +1571,7 @@ graph LR
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 5987 | 1x | 11 ta bug | App.jsx |
+| **Profile** | component | 6037 | 1x | 11 ta bug | App.jsx |
 | **VoiceAssistant** | component | 2505 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
