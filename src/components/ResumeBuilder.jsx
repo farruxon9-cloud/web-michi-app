@@ -544,14 +544,12 @@ export default function ResumeBuilder({
               className="theme-toggle-btn"
               onClick={() => {
                 const nextVal = !isVoiceStandby;
+                if (nextVal) {
+                  // Synchronously trigger resume voice flow before setting active state
+                  window.dispatchEvent(new CustomEvent('michi-voice-resume-start'));
+                }
                 setIsVoiceStandby(nextVal);
                 setIsVoiceActive(nextVal);
-                if (nextVal) {
-                  // AI yoqilganda rezyume to'ldirish oqimini avtomatik boshlash
-                  setTimeout(() => {
-                    window.dispatchEvent(new CustomEvent('michi-voice-resume-start'));
-                  }, 600);
-                }
               }}
               aria-label="Toggle AI Assistant"
             >

@@ -287,6 +287,9 @@ export default function VoiceAssistant({
     } else {
       stopAllVoiceActivities();
       hasGreetedRef.current = false;
+      isFillingResumeRef.current = false;
+      setIsFillingResume(false);
+      setResumeStep('idle');
     }
 
     return () => {
