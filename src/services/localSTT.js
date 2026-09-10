@@ -35,11 +35,13 @@ class LocalSTTService {
 
     let text = rawText.trim();
     
-    // Remove filler noise words in Japanese/Uzbek
+    // Remove filler noise words & polite copulas in Japanese/Uzbek
     if (lang.startsWith('ja')) {
       text = text.replace(/^(えーと|あのー|うーん|ええと)\s*/g, '');
+      text = text.replace(/(と申します|と言います|です|だ|であります)\s*$/g, '').trim();
     } else if (lang.startsWith('uz')) {
       text = text.replace(/^(haligi|shuning uchun|yana|ha|e)\s*/gi, '');
+      text = text.replace(/\s+(deb aytaman|man|manman)\s*$/gi, '').trim();
     }
 
     // Capitalize first letter for Latin text

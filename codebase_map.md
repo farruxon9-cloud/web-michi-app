@@ -1,19 +1,19 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 15:59:56**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 16:01:53**.
 
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 172 ta
+* **Jami skanerlangan fayllar:** 173 ta
 * **React Komponentlari:** 26 ta
 * **Komponent Stillari (CSS):** 17 ta
 * **Geografiya va Ma'lumotlar Bazalari (data):** 14 ta
 * **Unit Testlar (Vitest):** 33 ta
 * **Yordamchi Funksiyalar (utils):** 19 ta
 * **Tashqi API va Xizmatlar (services):** 17 ta
-* **Avtomatizatsiya Skriptlari (scripts):** 14 ta
+* **Avtomatizatsiya Skriptlari (scripts):** 15 ta
 * **Tizim va UI Qoidalari (.agents/rules):** 18 ta
 * **Boshqa asosiy fayllar (src/ root):** 14 ta
 
@@ -906,7 +906,7 @@ graph TD
 * **Importlari:** `./semanticRouter.js`
 
 ### 🔌 [localSTT.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/localSTT.js)
-* **Yo'li:** `src/services/localSTT.js` (68 qator, 1803 bayt)
+* **Yo'li:** `src/services/localSTT.js` (70 qator, 1966 bayt)
 * **Eksport qilingan funksiyalari:**
   - `localSTT()`
 * **Importlari:** *Yo'q*
@@ -967,6 +967,9 @@ graph TD
 
 ### 🛠️ [analyze_impact.mjs](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/analyze_impact.mjs)
 * **Yo'li:** `scripts/analyze_impact.mjs` (199 qator, 7921 bayt)
+
+### 🛠️ [audit_voice_understanding.mjs](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/audit_voice_understanding.mjs)
+* **Yo'li:** `scripts/audit_voice_understanding.mjs` (137 qator, 5615 bayt)
 
 ### 🛠️ [deep_ui_audit.mjs](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/scripts/deep_ui_audit.mjs)
 * **Yo'li:** `scripts/deep_ui_audit.mjs` (176 qator, 6944 bayt)
