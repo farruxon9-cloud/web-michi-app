@@ -193,9 +193,24 @@ export const VOICE_LEXICON = [
   {
     command: 'OPEN_RESUME',
     patterns: {
-      uz: ['rezyume', 'anketa', 'rezume', 'hujjat', 'cv', 'resume', 'curriculum vitae'],
-      ja: ['履歴書', 'レジュメ', '履歴書作成', 'プロフィール作成'],
-      en: ['resume', 'cv', 'resume builder', 'curriculum vitae']
+      uz: [
+        'rezyume yozmoqchiman', 'rezyume yaratmoqchiman', 'rezyumeni to\'ldirmoqchiman',
+        'rezyume yozish', 'rezyume to\'ldirish', 'rezyume tayyorlash', 'rezyume qilmoqchiman',
+        'rezyume tayyorlamoqchiman', 'yaponcha rezyume', 'rezyume och', 'rezyumeni och',
+        'rezyume formasini och', 'rezyume sahifasi', 'rezyume bo\'limi', 'rezyume bolimi',
+        'rezyume yaratish', 'anketa to\'ldirish', 'anketa yozmoqchiman', 'anketa yaratmoqchiman',
+        'rezyume', 'anketa', 'rezume', 'hujjat', 'cv', 'resume', 'curriculum vitae'
+      ],
+      ja: [
+        '履歴書を書く', '履歴書を作りたい', '履歴書を作成したい', '履歴書を書きたい',
+        '履歴書ページ', '履歴書画面', '履歴書ツール', '履歴書を作成', 'レジュメ作成',
+        '履歴書', 'レジュメ', '履歴書作成', 'プロフィール作成'
+      ],
+      en: [
+        'i want to write a resume', 'write resume', 'build resume', 'create resume',
+        'make resume', 'open resume', 'fill resume', 'start resume',
+        'resume', 'cv', 'resume builder', 'curriculum vitae'
+      ]
     },
     responses: {
       uz: "Rezyume yaratish bo'limini ochaman!",

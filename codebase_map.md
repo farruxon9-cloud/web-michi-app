@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:07:01**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:10:23**.
 
 ---
 
@@ -837,7 +837,7 @@ graph TD
 * **Importlari:** `./turnInstructions`
 
 ### ⚙️ [voiceLexicon.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/voiceLexicon.js)
-* **Yo'li:** `src/utils/voiceLexicon.js` (483 qator, 19603 bayt)
+* **Yo'li:** `src/utils/voiceLexicon.js` (498 qator, 20379 bayt)
 * **Eksport qilingan funksiyalari:**
   - `getSimilarity()`
   - `VOICE_LEXICON()`
