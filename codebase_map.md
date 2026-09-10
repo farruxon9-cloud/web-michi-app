@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 15:32:44**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 15:55:47**.
 
 ---
 
@@ -520,7 +520,7 @@ graph TD
   - `react`
 
 ### 📦 [VoiceAssistant](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.jsx)
-* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (3250 qator, 140124 bayt)
+* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (3273 qator, 140921 bayt)
 * **Komponent Stillari:** 🎨 [VoiceAssistant.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `isActive`
@@ -1535,20 +1535,20 @@ graph LR
 |---|---|---|---|---|
 | `noInternetWait` | インターネット接続がありません。接続の再開を待って | No internet connection. W | Internet aloqasi yo'q. Ta | L241 |
 | `offlineSpeechNotSupported` | — | — | — | L706 |
-| `speechError` | 音声認識エラーが発生しました。もう一度お試しくださ | Speech recognition error  | Ovozni eshitishda xatolik | L837 |
-| `micDeniedTitle` | — | — | — | L2587 |
-| `aiSystemBusy` | システムが混雑しています。少々お待ちください。 | System is busy. Please tr | システムが混雑しています。少々お待ちください。 | L2716 |
-| `aiError` | 申し訳ありません、リクエストを処理できませんでした | Sorry, could not process  | 申し訳ありません、リクエストを処理できませんでした | L2717 |
-| `apiRequiredDesc` | — | — | — | L3119 |
-| `saveKeyBtn` | — | — | — | L3144 |
-| `getFreeKey` | — | — | — | L3153 |
-| `howToEnable` | — | — | — | L3165 |
-| `step1` | — | — | — | L3167 |
-| `step2` | — | — | — | L3168 |
-| `step3` | — | — | — | L3169 |
-| `checkPermissionBtn` | — | — | — | L3184 |
-| `userSaid` | — | — | — | L3206 |
-| `aiThinking` | — | — | — | L3220 |
+| `speechError` | 音声認識エラーが発生しました。もう一度お試しくださ | Speech recognition error  | Ovozni eshitishda xatolik | L830 |
+| `micDeniedTitle` | — | — | — | L2580 |
+| `aiSystemBusy` | システムが混雑しています。少々お待ちください。 | System is busy. Please tr | システムが混雑しています。少々お待ちください。 | L2709 |
+| `aiError` | 申し訳ありません、リクエストを処理できませんでした | Sorry, could not process  | 申し訳ありません、リクエストを処理できませんでした | L2710 |
+| `apiRequiredDesc` | — | — | — | L3112 |
+| `saveKeyBtn` | — | — | — | L3137 |
+| `getFreeKey` | — | — | — | L3146 |
+| `howToEnable` | — | — | — | L3158 |
+| `step1` | — | — | — | L3160 |
+| `step2` | — | — | — | L3161 |
+| `step3` | — | — | — | L3162 |
+| `checkPermissionBtn` | — | — | — | L3177 |
+| `userSaid` | — | — | — | L3199 |
+| `aiThinking` | — | — | — | L3213 |
 
 
 ---
@@ -1569,7 +1569,7 @@ graph LR
 | **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
 | **Profile** | component | 5987 | 1x | 11 ta bug | App.jsx |
-| **VoiceAssistant** | component | 3250 | 1x | 1 ta bug | App.jsx |
+| **VoiceAssistant** | component | 3273 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
 

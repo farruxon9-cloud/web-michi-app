@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mic, MicOff, WifiOff, Lock, X, Sparkles, Key, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Mic, MicOff, WifiOff, Lock, X, Sparkles, Key, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
 import './VoiceAssistant.css';
 import { matchLexiconCommand } from '../utils/voiceLexicon';
 import { actionRegistry } from '../services/actionRegistry';
@@ -799,23 +799,16 @@ export default function VoiceAssistant({
         console.log(`Local NLP matched command: ${localResult.command}`);
         handleGeminiSuccess(localResult, text);
       } else {
-        // 2. Local-First Standalone Assistant Guidance Mode (100% API-Key-Free for v1.0.0 Stable MVP)
-        const lang = currentLang.substring(0, 2).toLowerCase();
-        let localGuideMsg = "";
-        if (lang === 'uz') {
-          localGuideMsg = "Assalomu alaykum! Men Michi — sizning shaxsiy yordamchingizman. Ilovadagi ishlar, avtomaktablar yoki rezyume to'ldirish bo'yicha yordam bera olaman. Masalan: 'Ishlarni ko'rsat', 'Profilni och', yoki 'Rezyume yaratish' deb ayting!";
-        } else if (lang === 'ja') {
-          localGuideMsg = "こんにちは！ミチと申します。求人検索、自動車学校、履歴書作成をお手伝いいたします。「求人を見せて」「マイページ」「履歴書作成」とお気軽にお申し付けください。";
-        } else {
-          localGuideMsg = "Hello! I'm Michi, your personal assistant. I can help you find jobs, driving schools, or build your resume. Try saying 'Show jobs', 'Open profile', or 'Create resume'!";
-        }
-
-        const fallbackResult = {
-          command: 'NONE',
-          response: localGuideMsg,
-          language: lang
-        };
-        handleGeminiSuccess(fallbackResult, text);
+        // 2. Unmatched / Unsupported Speech Input: Display transcription, stay silent, auto-clear after 2.5s, and re-listen!
+        console.log(`Unmatched speech input "${text}". Staying silent and re-listening...`);
+        setStatus('idle');
+        if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+        pillTimeoutRef.current = setTimeout(() => {
+          setTranscript('');
+          if (isActiveRef.current) {
+            startLocalSpeechRecognition();
+          }
+        }, 2500);
       }
     };
 
@@ -3236,6 +3229,36 @@ Return ONLY the raw JSON object, no markdown wrappers.
               title={speechLang === 'ja' ? '音声言語を変更' : speechLang === 'en' ? 'Change Voice Language' : "Ovozli tilni o'zgartirish"}
             >
               {speechLang === 'uz' ? '🇺🇿 UZ' : speechLang === 'ja' ? '🇯🇵 JA' : '🇬🇧 EN'}
+            </button>
+
+            <button 
+              className="voice-cache-clear-btn" 
+              onClick={() => {
+                localStorage.removeItem('michi_ai_memory_cache');
+                setConversationHistory([]);
+                const msg = speechLang.startsWith('ja') 
+                  ? "【AIキャッシュ消去】会話メモリを全消去いたしました。"
+                  : speechLang.startsWith('uz')
+                  ? "AI kesh bazasi muvaffaqiyatli tozalandi!"
+                  : "AI memory cache cleared successfully!";
+                setAiResponseText(msg);
+                speakResponse(msg, speechLang);
+              }}
+              title={speechLang === 'ja' ? 'AIキャッシュ消去' : speechLang === 'uz' ? 'AI kesh bazasini tozalash' : 'Clear AI Cache'}
+              style={{
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                color: '#ef4444',
+                fontSize: '11px',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <Trash2 size={10} /> {speechLang === 'ja' ? 'キャッシュ消去' : speechLang === 'uz' ? 'Keshni tozalash' : 'Clear Cache'}
             </button>
             
             <button className="voice-bubble-close-btn" onClick={() => setShowPill(false)}>
