@@ -185,14 +185,16 @@ export default function VoiceAssistant({
       // Agar allaqachon rezyume to'ldirilayotgan bo'lsa, qayta boshlamaymiz
       if (isFillingResumeRef.current) return;
       
+      hasGreetedRef.current = true;
+      isFillingResumeRef.current = true;
       setIsFillingResume(true);
       setResumeStep('ask_name');
       
-      const lang = i18n.language || 'uz';
+      const lang = speechLangRef.current || i18n.language || 'uz';
       const greetings = {
-        uz: "Assalomu alaykum! Men sizning shaxsiy yordamchingizman. Rezyumengizni to'ldirishda sizga yordam beraman. Savollarimga javob bersangiz, sizning o'rningizga rezyumeni mukammal tarzda to'ldirib beraman. Xo'sh, boshlaymizmi? Ismingiz va familiyangizni ayting, iltimos.",
-        ja: "こんにちは！私はあなたの履歴書作成アシスタントです。ご質問にお答えいただければ、あなたに代わって履歴書を丁寧に作成いたします。それでは、始めましょう。まず、お名前をフルネームでお聞かせください。",
-        en: "Hello! I am your personal resume assistant. I will help you fill out your resume. Just answer my questions and I will complete it for you perfectly. Let's begin! Please tell me your full name."
+        uz: "Assalomu alaykum! Men sizning shaxsiy yordamchingizman. Rezyumengizni to'ldirishda sizga yordam beraman. Ismingiz va familiyangizni ayting, iltimos.",
+        ja: "こんにちは！履歴書作成アシスタントです。ご質問にお答えいただければ履歴書を作成いたします。まず、お名前をフルネームでお聞かせください。",
+        en: "Hello! I am your resume assistant. I will help build your resume. Please tell me your full name."
       };
       const greeting = greetings[lang.startsWith('uz') ? 'uz' : lang.startsWith('ja') ? 'ja' : 'en'] || greetings['uz'];
       
@@ -252,20 +254,20 @@ export default function VoiceAssistant({
           const isJa = lang.startsWith('ja');
           
           if (isUz) {
-            if (hour >= 6 && hour < 12) greeting = "Xayrli tong! Men Michi — sizning shaxsiy yordamchingizman. Sizga qanday yordam bera olaman?";
-            else if (hour >= 12 && hour < 18) greeting = "Assalomu alaykum! Men Michi — sizning shaxsiy yordamchingizman. Sizga qanday yordam bera olaman?";
-            else if (hour >= 18 && hour < 22) greeting = "Xayrli kech! Men Michi — sizning shaxsiy yordamchingizman. Sizga qanday yordam bera olaman?";
-            else greeting = "Kech soatlarda ham sizga yordam berishdan xursandman! Men Michi, sizning shaxsiy yordamchingizman. Qanday yordam kerak?";
+            if (hour >= 6 && hour < 12) greeting = "Xayrli tong! Men Michi — sizning shaxsiy yordamchingizman. Hozirda ilovamiz rivojlantirish va sinov bosqichida. Sizga qanday yordam bera olaman?";
+            else if (hour >= 12 && hour < 18) greeting = "Assalomu alaykum! Men Michi — sizning shaxsiy yordamchingizman. Hozirda ilovamiz rivojlantirish va sinov bosqichida. Sizga qanday yordam bera olaman?";
+            else if (hour >= 18 && hour < 22) greeting = "Xayrli kech! Men Michi — sizning shaxsiy yordamchingizman. Hozirda ilovamiz rivojlantirish va sinov bosqichida. Sizga qanday yordam bera olaman?";
+            else greeting = "Kechki soatlarda ham xizmatingizdaman! Men Michi, sizning shaxsiy yordamchingizman. Ilovamiz rivojlantirish bosqichida. Qanday yordam kerak?";
           } else if (isJa) {
-            if (hour >= 6 && hour < 12) greeting = "おはようございます！ミチと申します。お手伝いできることがございましたら、お気軽にお申し付けください。";
-            else if (hour >= 12 && hour < 18) greeting = "こんにちは！ミチと申します。お手伝いできることがございましたら、お気軽にお申し付けください。";
-            else if (hour >= 18 && hour < 22) greeting = "こんばんは！ミチと申します。お手伝いできることがございましたら、お気軽にお申し付けください。";
-            else greeting = "夜遅くまでお疲れ様です！ミチと申します。何かお手伝いできることはございますか？";
+            if (hour >= 6 && hour < 12) greeting = "おはようございます！ミチと申します。当アプリは現在開発・改善フェーズでございます。何かお手伝いできることはございますか？";
+            else if (hour >= 12 && hour < 18) greeting = "こんにちは！ミチと申します。当アプリは現在開発・改善フェーズでございます。何かお手伝いできることはございますか？";
+            else if (hour >= 18 && hour < 22) greeting = "こんばんは！ミチと申します。当アプリは現在開発・改善フェーズでございます。何かお手伝いできることはございますか？";
+            else greeting = "夜遅くまでお疲れ様です！ミチと申します。当アプリは現在開発フェーズでございます。何かお手伝いできますか？";
           } else { // en
-            if (hour >= 6 && hour < 12) greeting = "Good morning! I'm Michi, your personal assistant. How can I help you today?";
-            else if (hour >= 12 && hour < 18) greeting = "Hello! I'm Michi, your personal assistant. How can I help you today?";
-            else if (hour >= 18 && hour < 22) greeting = "Good evening! I'm Michi, your personal assistant. How can I help you today?";
-            else greeting = "Working late? I'm Michi, your personal assistant. How can I help you today?";
+            if (hour >= 6 && hour < 12) greeting = "Good morning! I'm Michi, your personal assistant. The app is currently under active development. How can I help you today?";
+            else if (hour >= 12 && hour < 18) greeting = "Hello! I'm Michi, your personal assistant. The app is currently under active development. How can I help you today?";
+            else if (hour >= 18 && hour < 22) greeting = "Good evening! I'm Michi, your personal assistant. The app is currently under active development. How can I help you today?";
+            else greeting = "Working late? I'm Michi, your personal assistant. The app is under development. How can I help you today?";
           }
           
           setAiResponseText(greeting);
@@ -276,7 +278,10 @@ export default function VoiceAssistant({
             startListeningSequence();
           });
         } else {
-          startListeningSequence();
+          // If already greeted or currently speaking, do not cancel speech synthesis!
+          if (statusRef.current !== 'speaking' && statusRef.current !== 'listening' && statusRef.current !== 'thinking') {
+            startListeningSequence();
+          }
         }
       }
     } else {
