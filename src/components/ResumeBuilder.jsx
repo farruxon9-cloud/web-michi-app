@@ -150,6 +150,9 @@ export default function ResumeBuilder({
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
       }
+      // Auto-turn OFF AI voice assistant when leaving Resume Builder page so it resets cleanly
+      if (setIsVoiceActive) setIsVoiceActive(false);
+      if (setIsVoiceStandby) setIsVoiceStandby(false);
     };
   }, []);
 

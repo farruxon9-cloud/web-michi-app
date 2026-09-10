@@ -235,9 +235,9 @@ export default function VoiceAssistant({
           
           const lang = speechLangRef.current || i18n.language || 'uz';
           const greetings = {
-            uz: "Assalomu alaykum! Men sizning shaxsiy yordamchingizman. Rezyumengizni to'ldirishda sizga yordam beraman. Ismingiz va familiyangizni ayting, iltimos.",
-            ja: "こんにちは！履歴書作成アシスタントです。ご質問にお答えいただければ履歴書を作成いたします。まず、お名前をフルネームでお聞かせください。",
-            en: "Hello! I am your resume assistant. I will help build your resume. Please tell me your full name."
+            uz: "Savollarimga qisqacha javob bersangiz, rezyumengizni to'g'ri to'ldirib boraman. Boshladik: Ismingiz va familiyangizni ayting.",
+            ja: "ご質問にお答えいただければ、履歴書を正確に入力いたします。それでは、お名前をフルネームで教えてください。",
+            en: "Please answer my questions to complete your resume. First, please state your full name."
           };
           const greeting = greetings[lang.startsWith('uz') ? 'uz' : lang.startsWith('ja') ? 'ja' : 'en'] || greetings['uz'];
           
@@ -2173,9 +2173,9 @@ Return ONLY the raw JSON object, no markdown wrappers.
         
         const welcomeLang = i18n.language || 'uz';
         const welcomeMsgs = {
-          uz: "Qani boshladik! Yaponcha rezyumengizni birgalikda to'ldiramiz. Ismingiz va familiyangizni ayting.",
-          ja: "履歴書の作成を開始します。まず、お名前をフルネームで教えてください。",
-          en: "Let's build your Japanese resume. Please state your full name."
+          uz: "Savollarimga qisqacha javob bersangiz, rezyumengizni to'g'ri to'ldirib boraman. Boshladik: Ismingiz va familiyangizni ayting.",
+          ja: "ご質問にお答えいただければ、履歴書を正確に入力いたします。それでは、お名前をフルネームで教えてください。",
+          en: "Please answer my questions to complete your resume. First, please state your full name."
         };
         const welcomeMsg = welcomeMsgs[welcomeLang.startsWith('uz') ? 'uz' : welcomeLang.startsWith('ja') ? 'ja' : 'en'] || welcomeMsgs['uz'];
         

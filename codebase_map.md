@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 16:57:01**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 17:04:33**.
 
 ---
 
@@ -440,7 +440,7 @@ graph TD
   - `../data/japaneseVehiclesMaster`
 
 ### 📦 [ResumeBuilder](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/ResumeBuilder.jsx)
-* **Fayl yo'li:** `src/components/ResumeBuilder.jsx` (1269 qator, 51855 bayt)
+* **Fayl yo'li:** `src/components/ResumeBuilder.jsx` (1272 qator, 52059 bayt)
 * **Komponent Stillari:** 🎨 [ResumeBuilder.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/ResumeBuilder.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `profileData`
@@ -520,7 +520,7 @@ graph TD
   - `react`
 
 ### 📦 [VoiceAssistant](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.jsx)
-* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (2497 qator, 103538 bayt)
+* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (2497 qator, 103562 bayt)
 * **Komponent Stillari:** 🎨 [VoiceAssistant.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `isActive`
@@ -1457,36 +1457,36 @@ graph LR
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
-| `postalCodeLabel` | 郵便番号 | Postal Code | Pochta indeksi | L726 |
-| `phoneLabel` | 電話番号 | Phone Number | Telefon | L752 |
-| `birthPlaceLabel` | 出生地 | Place of Birth | Tug'ilgan joyi | L685 |
-| `nationalityLabel` | 国籍 | Nationality | Millati | L701 |
-| `livingAddressTitle` | 現住所履歴 | Living Address History | Yashash manzillari | L739 |
-| `educationTitle` | 学歴履歴 | Education History | Ta'lim ma'lumotlari | L781 |
-| `workExperience` | 職歴 | Work Experience | Ish tajribasi | L887 |
-| `fullNameLabel` | 氏名（漢字またはローマ字） | Full Name | Ism va familiya | L579 |
-| `company` | 企業 | Company | Kompaniya | L895 |
-| `pdfError` | PDFの作成中にエラーが発生しました | An error occurred while g | PDF yaratishda xatolik yu | L501 |
-| `popupBlocked` | ポップアップがブロックされました。ブラウザの設定か | Pop-up window was blocked | Pop-up oyna bloklandi. Br | L525 |
-| `previewNotReady` | PDFの準備中です... | PDF preview is being prep | PDF hali tayyor emas. Ilt | L528 |
-| `resumeBuilderTitle` | 履歴書作成ツール | Japanese Resume Builder | Yapon Rezyumesi Generator | L568 |
-| `personalInfo` | 個人情報 | Personal Information | Shaxsiy Ma'lumotlar | L574 |
-| `step1Desc` | 履歴書に必要な個人情報を入力してください。お名前の | Please fill in your perso | Rirekisho rezyumesi uchun | L575 |
-| `fullNameHint` | ローマ字（例: YAMADA TARO）または漢字 | Enter in English letters  | Yapon tilida to'ldirish u | L581 |
-| `katakanaNameLabel` | ふりがな（カタカナ） | Katakana Pronunciation | Katakanada yozilishi | L595 |
-| `furiganaHint` | お名前のカタカナ読みを入力してください（例: ヤマ | Enter your name pronuncia | Ismingizning yaponcha kat | L597 |
-| `genderLabel` | 性別 | Gender | Jins | L611 |
-| `male` | 男 | Male | Erkak | L618 |
-| `female` | 女 | Female | Ayol | L625 |
-| `dobLabel` | 生年月日 | Date of Birth | Tug'ilgan sana (Kun, Oy,  | L631 |
-| `dobHint` | 生年月日を日、月、和暦（年）の順で選択してください | Select your birth date in | Tug'ilgan kuningizni kun, | L633 |
-| `daySuffix` | 日 | day | kun | L647 |
-| `monthSuffix` | 月 | month | oy | L660 |
-| `yearSuffix` | 年 | year | yil | L673 |
-| `birthPlaceHint` | 出生国または出身地を入力してください（例：日本、東 | Enter your country or pla | Tug'ilgan mamlakatingiz y | L687 |
-| `birthPlacePlaceholder` | 例：日本 | e.g., United Kingdom | Masalan: O'zbekiston | L695 |
-| `nationalityHint` | 国籍を入力してください（例：日本）。 | Enter your nationality (e | Fuqaroligingiz yoki milla | L703 |
-| `nationalityPlaceholder` | 例：日本 | e.g., British | Masalan: O'zbekistonlik | L711 |
+| `postalCodeLabel` | 郵便番号 | Postal Code | Pochta indeksi | L729 |
+| `phoneLabel` | 電話番号 | Phone Number | Telefon | L755 |
+| `birthPlaceLabel` | 出生地 | Place of Birth | Tug'ilgan joyi | L688 |
+| `nationalityLabel` | 国籍 | Nationality | Millati | L704 |
+| `livingAddressTitle` | 現住所履歴 | Living Address History | Yashash manzillari | L742 |
+| `educationTitle` | 学歴履歴 | Education History | Ta'lim ma'lumotlari | L784 |
+| `workExperience` | 職歴 | Work Experience | Ish tajribasi | L890 |
+| `fullNameLabel` | 氏名（漢字またはローマ字） | Full Name | Ism va familiya | L582 |
+| `company` | 企業 | Company | Kompaniya | L898 |
+| `pdfError` | PDFの作成中にエラーが発生しました | An error occurred while g | PDF yaratishda xatolik yu | L504 |
+| `popupBlocked` | ポップアップがブロックされました。ブラウザの設定か | Pop-up window was blocked | Pop-up oyna bloklandi. Br | L528 |
+| `previewNotReady` | PDFの準備中です... | PDF preview is being prep | PDF hali tayyor emas. Ilt | L531 |
+| `resumeBuilderTitle` | 履歴書作成ツール | Japanese Resume Builder | Yapon Rezyumesi Generator | L571 |
+| `personalInfo` | 個人情報 | Personal Information | Shaxsiy Ma'lumotlar | L577 |
+| `step1Desc` | 履歴書に必要な個人情報を入力してください。お名前の | Please fill in your perso | Rirekisho rezyumesi uchun | L578 |
+| `fullNameHint` | ローマ字（例: YAMADA TARO）または漢字 | Enter in English letters  | Yapon tilida to'ldirish u | L584 |
+| `katakanaNameLabel` | ふりがな（カタカナ） | Katakana Pronunciation | Katakanada yozilishi | L598 |
+| `furiganaHint` | お名前のカタカナ読みを入力してください（例: ヤマ | Enter your name pronuncia | Ismingizning yaponcha kat | L600 |
+| `genderLabel` | 性別 | Gender | Jins | L614 |
+| `male` | 男 | Male | Erkak | L621 |
+| `female` | 女 | Female | Ayol | L628 |
+| `dobLabel` | 生年月日 | Date of Birth | Tug'ilgan sana (Kun, Oy,  | L634 |
+| `dobHint` | 生年月日を日、月、和暦（年）の順で選択してください | Select your birth date in | Tug'ilgan kuningizni kun, | L636 |
+| `daySuffix` | 日 | day | kun | L650 |
+| `monthSuffix` | 月 | month | oy | L663 |
+| `yearSuffix` | 年 | year | yil | L676 |
+| `birthPlaceHint` | 出生国または出身地を入力してください（例：日本、東 | Enter your country or pla | Tug'ilgan mamlakatingiz y | L690 |
+| `birthPlacePlaceholder` | 例：日本 | e.g., United Kingdom | Masalan: O'zbekiston | L698 |
+| `nationalityHint` | 国籍を入力してください（例：日本）。 | Enter your nationality (e | Fuqaroligingiz yoki milla | L706 |
+| `nationalityPlaceholder` | 例：日本 | e.g., British | Masalan: O'zbekistonlik | L714 |
 | ... | *+40 ta kalit* | | | |
 
 ### 📄 RoleSelect (86 ta kalit)
@@ -1588,7 +1588,7 @@ graph LR
 | **AssistHeroShowcase** | component | 366 | 2x | 1 ta bug | App.jsx, Profile.jsx |
 | **Dashboard** | component | 637 | 1x | 2 ta bug | App.jsx |
 | **JobDetail** | component | 406 | 1x | 2 ta bug | App.jsx |
-| **ResumeBuilder** | component | 1269 | 1x | 0 ta bug | Profile.jsx |
+| **ResumeBuilder** | component | 1272 | 1x | 0 ta bug | Profile.jsx |
 | **RoleSelect** | component | 1132 | 1x | 0 ta bug | App.jsx |
 
 ### 🟢 MEDIUM Risk
