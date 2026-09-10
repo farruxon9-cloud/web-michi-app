@@ -3306,8 +3306,8 @@ const getLicenseLabel = (type) => {
                 </div>
               )}
         </div>
-        {/* 128px dock clearance so personal info page content scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '128px', minHeight: '128px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 116px dock clearance so personal info page content scrolls cleanly past floating BottomNav */}
+        <div style={{ height: '116px', minHeight: '116px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
