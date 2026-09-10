@@ -220,11 +220,14 @@ export default function Profile({
     );
   }
 
+  // Dedicated React ref for main profile scroll container
+  const mainContainerRef = React.useRef(null);
+
   // Saved main Profile scroll position when navigating to sub-pages
   const [savedMainScroll, setSavedMainScroll] = useState(0);
 
   const handleOpenSubPage = (page) => {
-    const container = document.querySelector('.profile-container');
+    const container = mainContainerRef.current || document.querySelector('.profile-container');
     if (container) {
       setSavedMainScroll(container.scrollTop);
     }
@@ -235,30 +238,76 @@ export default function Profile({
     setActivePage('main');
   };
 
+  // Track scroll-to-top triggers to differentiate explicit reset from sub-page scroll restoration
+  const lastScrollToTopRef = React.useRef(0);
+  const prevScrollToTopRef = React.useRef(scrollToTopTrigger);
+
   // Sub-sahifadan qaytilganda asosiy profil skrollini aynan bosilgan joyga qaytarish, sub-sahifa ochilganda esa topga reset qilish
   React.useEffect(() => {
-    const container = document.querySelector('.profile-container');
-    if (container) {
-      if (activePage === 'main') {
-        container.scrollTop = savedMainScroll;
-      } else {
-        container.scrollTop = 0;
+    if (activePage === 'main') {
+      // Restore scroll only if user manually backed out without clicking My Page tab reset
+      if (savedMainScroll > 0 && scrollToTopTrigger === lastScrollToTopRef.current) {
+        const container = mainContainerRef.current || document.querySelector('.profile-container');
+        if (container) {
+          container.scrollTop = savedMainScroll;
+        }
       }
+    } else {
+      const containers = document.querySelectorAll('.profile-container');
+      containers.forEach(c => { c.scrollTop = 0; });
     }
-  }, [activePage, savedMainScroll]);
+  }, [activePage, savedMainScroll, scrollToTopTrigger]);
 
   // BottomNav'da My Page tabini takroran (2-marta) yoki sub-sahifada turib bosganda profil asosiy sahifasini eng yuqoridan scroll qilib ochish
   React.useEffect(() => {
-    if (scrollToTopTrigger > 0) {
+    // ONLY execute scroll reset if scrollToTopTrigger actually INCREMENTED (user clicked BottomNav profile tab)
+    if (scrollToTopTrigger > 0 && scrollToTopTrigger !== prevScrollToTopRef.current) {
+      prevScrollToTopRef.current = scrollToTopTrigger;
+      lastScrollToTopRef.current = scrollToTopTrigger;
       setSavedMainScroll(0);
-      const container = document.querySelector('.profile-container');
-      if (container) {
-        container.scrollTo({ top: 0, behavior: 'smooth' });
-        container.scrollTop = 0;
+
+      // Force reset to main active page if on sub-page
+      if (setActivePage) {
+        setActivePage('main');
       }
-      if (window.scrollY !== 0) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+
+      // Reset any active editing forms, modals, or expanded sub-cards
+      if (typeof setIsEditing === 'function') setIsEditing(false);
+      if (typeof setIsEditingVehicle === 'function') setIsEditingVehicle(false);
+      if (typeof setIsVehiclePickerOpen === 'function') setIsVehiclePickerOpen(false);
+      if (typeof setIsFormOpen === 'function') setIsFormOpen(false);
+      if (typeof setAcceptingAppId === 'function') setAcceptingAppId(null);
+      if (typeof setExpandedAppId === 'function') setExpandedAppId(null);
+      
+      const performScrollReset = () => {
+        const containers = document.querySelectorAll('.profile-container');
+        containers.forEach(c => {
+          c.scrollTop = 0;
+          if (c.scrollTo) {
+            try { c.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) { c.scrollTop = 0; }
+          }
+        });
+        if (mainContainerRef.current) {
+          mainContainerRef.current.scrollTop = 0;
+          if (mainContainerRef.current.scrollTo) {
+            try { mainContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { mainContainerRef.current.scrollTop = 0; }
+          }
+        }
+        if (window.scrollY !== 0) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      };
+
+      performScrollReset();
+      const rafId = requestAnimationFrame(performScrollReset);
+      const t1 = setTimeout(performScrollReset, 40);
+      const t2 = setTimeout(performScrollReset, 150);
+
+      return () => {
+        cancelAnimationFrame(rafId);
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
     }
   }, [scrollToTopTrigger]);
 
@@ -2312,7 +2361,7 @@ const getLicenseLabel = (type) => {
           )}
         </div>
         {/* 96px dock clearance so notifications list scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2416,7 +2465,7 @@ const getLicenseLabel = (type) => {
           </div>
         </div>
         {/* 96px dock clearance so settings menu scroll cleanly past floating BottomNav */}
-        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2720,7 +2769,7 @@ const getLicenseLabel = (type) => {
           applications={applications}
           schoolApplications={schoolApplications}
         />
-        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3182,7 +3231,7 @@ const getLicenseLabel = (type) => {
           </div>
         </div>
         {/* 96px dock clearance so personal info page content scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3591,7 +3640,7 @@ const getLicenseLabel = (type) => {
           )}
         </div>
         {/* 96px dock clearance so applications list scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3690,7 +3739,7 @@ const getLicenseLabel = (type) => {
           )}
         </div>
         {/* 96px dock clearance so saved items list scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3816,7 +3865,7 @@ const getLicenseLabel = (type) => {
           )}
         </div>
         {/* 96px dock clearance so my shoukai list scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3920,14 +3969,14 @@ const getLicenseLabel = (type) => {
 
         </div>
         {/* 96px dock clearance so employees list scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
 
   // ===== MAIN PROFILE PAGE =====
   return (
-    <div className="profile-container sub-page-view fade-in">
+    <div className="profile-container sub-page-view fade-in" ref={mainContainerRef}>
       <div className="profile-header">
         <div className="profile-avatar-wrap" onClick={() => fileInputRef.current?.click()}>
           <img src={getAvatarSrc()} alt="User" className="profile-avatar" />

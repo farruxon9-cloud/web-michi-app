@@ -31,13 +31,23 @@ Ushbu qoida **Mening E'lonlarim (`マイ掲載一覧`)** sahifasi uchun barcha l
 
 ---
 
-## 🚫 5. Forbidden Patterns
-1. **No Missing Trailing Spacer**: `CompanyHome` must always include the trailing 12px clearance spacer div to prevent iOS scroll collapsing while maintaining ultra-compact BottomNav alignment.
-2. **No Height Capped Sticky Parents**: Never render sticky header back buttons inside `.feed-container` wrappers that lack `height: auto; maxHeight: none;` overrides, which clips container height to viewport and stops sticky pinning halfway down the form.
+## 🔘 5. Home Dashboard `マイ掲載一覧` Button Navigation Origin Rule (Rule 53 Invariant)
+- **Home Dashboard Card Click**: Home pagedagi `マイ掲載一覧` (My Posted Ads / `my_ads`) Bento kartasi bosilganda:
+  1. `setProfileActivePageSource('home')` o'rnatiladi (Back button Home sahifasiga qaytarishi uchun).
+  2. `setProfileActivePage('my_ads')` o'rnatiladi.
+  3. `setActiveTab('profile')` chaqiriladi (WITHOUT `{ fromBottomNav: true }`).
+  4. App `profileActivePage` qiymatini `main` ga almashtirmasligi va strictly `CompanyHome` (`my_ads`) sahifasini 100% toza va daxlsiz ochishi SHART.
 
 ---
 
-## 📋 6. Tarixiy Kamchilik va Yechim (Defect History & Compact Clearance Resolution)
+## 🚫 6. Forbidden Patterns
+1. **No Missing Trailing Spacer**: `CompanyHome` must always include the trailing 12px clearance spacer div to prevent iOS scroll collapsing while maintaining ultra-compact BottomNav alignment.
+2. **No Height Capped Sticky Parents**: Never render sticky header back buttons inside `.feed-container` wrappers that lack `height: auto; maxHeight: none;` overrides, which clips container height to viewport and stops sticky pinning halfway down the form.
+3. **No BottomNav Route Override**: Never allow `setActiveTab('profile')` calls originating from Home Dashboard cards to reset `my_ads` back to `main`.
+
+---
+
+## 📋 7. Tarixiy Kamchilik va Yechim (Defect History & Compact Clearance Resolution)
 - **Kamchilik**: `CompanyHome.jsx` faylidagi **マイ掲載一覧** (Mening E'lonlarim) asosiy ro'yxati hamda e'lon yaratish formalarida (`showAddForm`, `showJobTypeSelect`, `showAdTypeSelect`) eng oxirgi kartochka va submit tugmalari ostida 80px–124px li ortiqcha spacer hamda `padding-bottom: 32px` qo'yilgan edi. Oqibatda eng pastki element va suzuvchi `BottomNav` navigatsiyasi o'rtasida 44px–60px keraksiz va xunuk ochiq bo'shliq (blank void) paydo bo'lgan.
 - **Yechim va Qoida (MAJBURIY)**:
   1. `CompanyHome.jsx` ning barcha ko'rinishlarida (asosiy `マイ掲載一覧` ro'yxati va forma sahifalari oxirida) trailing clearance spacer strictly **`12px`** (`<div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />`) qilib o'rnatilishi SHART.

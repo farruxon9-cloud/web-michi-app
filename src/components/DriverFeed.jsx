@@ -1795,6 +1795,9 @@ export default function DriverFeed({
         )}
       </div>
 
+      {/* Learned Rule Invariant: 92px Compact Dock Clearance Spacer so job feed cards (including Tokutei Ginou) scroll cleanly past floating BottomNav with ultra-compact gap */}
+      <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
+
       {/* ====== REAL LEAFLET MAP MODAL (Behind ENABLE_MAP_SEARCH feature flag) ====== */}
       {ENABLE_MAP_SEARCH && (
         <JobMapModal 

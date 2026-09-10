@@ -1519,6 +1519,9 @@ export default function DrivingAcademy({
           </div>
         )}
       </div>
+
+      {/* Learned Rule Invariant: 92px Compact Dock Clearance Spacer so driving academy school cards scroll cleanly past floating BottomNav with ultra-compact gap */}
+      <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
     </div>
   );
 }

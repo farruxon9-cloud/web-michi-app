@@ -22,7 +22,7 @@ Ushbu qoida **Arizalar va Murojaatlar (`applications`)** sub-sahifasi uchun barc
   - `viewResumeBtn` tugmasi orqali nomzodning to'liq ismi (`fullNameLabel`), telefoni, JLPT darajasi (`jlptVerified`), yashash manzillari tarixi va o'qish/ish tajribalari barcha 8 ta tilda vizualizatsiya qilinishi shart.
 - **HR Simulation Control Grid**:
   - Kompaniya HR hodimi har bir nomzod arizasining holatini real-vaqtda o'zgartira oladi (`simulateInterview`, `simulateAccept`, `simulateReject`).
-- **Trailing Spacer**: `<div style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0 }} />`
+- **Trailing Clearance Spacer**: `<div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />` MUST follow `.applications-list`. No matter how many application containers exist (1, 10, or 100), scrolling ALWAYS halts with exact **12px visual clearance gap (`96px - 84px = 12px`)** above `BottomNav` top edge (84px).
 
 ---
 

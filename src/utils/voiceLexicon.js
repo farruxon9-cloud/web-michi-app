@@ -1,4 +1,5 @@
 // src/utils/voiceLexicon.js
+import { japaneseNewsService } from '../services/japaneseNewsService.js';
 
 // Levenshtein Distance algorithm to calculate string similarity percentage
 export const getSimilarity = (str1, str2) => {
@@ -33,9 +34,9 @@ export const VOICE_LEXICON = [
   {
     command: 'NAVIGATE_TO_HOME',
     patterns: {
-      uz: ['bosh sahifa', 'asosiy sahifa', 'uyga o\'tish', 'uyga otish', 'uy sahifa', 'boshiga', 'dashboard', 'home', 'go home', 'bosh sahifaga o\'tish', 'bosh sahifaga otish'],
-      ja: ['ホーム', 'メイン画面', 'トップページ', 'メイン', 'トップ', 'ダッシュボード'],
-      en: ['home', 'go home', 'dashboard', 'main page']
+      uz: ['bosh sahifa', 'asosiy sahifa', 'uyga o\'tish', 'uyga otish', 'uy sahifa', 'boshiga', 'dashboard', 'home', 'go home', 'bosh sahifaga o\'tish', 'bosh sahifaga otish', 'bosh sahifani och', 'asosiy', 'bosh', 'asosiy sahifaga o\'tish', 'uyga', 'bosh sahifani ko\'rsat'],
+      ja: ['ホーム', 'メイン画面', 'トップページ', 'メイン', 'トップ', 'ダッシュボード', 'ホーム画面', 'ホームに戻る', 'ホームを開いて', 'トップ画面'],
+      en: ['home', 'go home', 'dashboard', 'main page', 'home page', 'open home', 'show home']
     },
     responses: {
       uz: "Xo'p, bosh sahifaga o'tkazaman!",
@@ -46,9 +47,9 @@ export const VOICE_LEXICON = [
   {
     command: 'NAVIGATE_TO_JOBS',
     patterns: {
-      uz: ['ish top', 'ish qidir', 'ishlar', 'ish e\'lonlari', 'ish elonlari', 'vakansiyalar', 'rabota', 'ishlarni ko\'rsat', 'ishlarni korsat', 'ishlar bo\'limi', 'ishlar bolimi', 'jobs', 'find jobs', 'work', 'ish e\'lonlariga o\'tish', 'ish elonlariga otish'],
-      ja: ['求人', '仕事', 'ワーク', '求人検索', '仕事を探して', '求人情報'],
-      en: ['jobs', 'job listings', 'find jobs', 'vacancies', 'work']
+      uz: ['ish top', 'ish qidir', 'ishlar', 'ish e\'lonlari', 'ish elonlari', 'vakansiyalar', 'rabota', 'ishlarni ko\'rsat', 'ishlarni korsat', 'ishlar bo\'limi', 'ishlar bolimi', 'jobs', 'find jobs', 'work', 'ish e\'lonlariga o\'tish', 'ish elonlariga otish', 'ish sahifasini och', 'ishlar sahifasi', 'ishlarni och', 'vakansiyalarni ko\'rsat', 'ish sahifasi', 'vakansiya'],
+      ja: ['求人', '仕事', 'ワーク', '求人検索', '仕事を探して', '求人情報', '求人一覧', '仕事一覧', '求人画面', '求人を開いて', '仕事画面', '求人ページ'],
+      en: ['jobs', 'job listings', 'find jobs', 'vacancies', 'work', 'open jobs', 'jobs page', 'show jobs']
     },
     responses: {
       uz: "Xo'p, ish e'lonlari sahifasiga o'tkazaman!",
@@ -59,9 +60,9 @@ export const VOICE_LEXICON = [
   {
     command: 'NAVIGATE_TO_ACADEMY',
     patterns: {
-      uz: ['maktab', 'avtomaktab', 'avto maktab', 'haydovchilik maktabi', 'kurslar', 'prava kurslari', 'prava', 'guvohnoma', 'academy', 'school', 'driving school', 'avtomaktabga o\'tish', 'avtomaktabga otish'],
-      ja: ['免許', '教習所', '学校', '自動車学校', 'アカデミー', 'ドライビングスクール'],
-      en: ['academy', 'driving school', 'license school', 'courses']
+      uz: ['maktab', 'avtomaktab', 'avto maktab', 'haydovchilik maktabi', 'kurslar', 'prava kurslari', 'prava', 'guvohnoma', 'academy', 'school', 'driving school', 'avtomaktabga o\'tish', 'avtomaktabga otish', 'avtomaktablar', 'avtomaktabni och', 'maktabni och', 'maktablar', 'avtomaktablar sahifasi', 'avtomaktab sahifasi', 'o\'quv markazi', 'oquv markazi', 'maktabga o\'tish'],
+      ja: ['免許', '教習所', '学校', '自動車学校', 'アカデミー', 'ドライビングスクール', '教習所画面', '教習所を開いて', '自動車学校を開いて', '学ぶ', '教習所一覧', '学校一覧'],
+      en: ['academy', 'driving school', 'license school', 'courses', 'open academy', 'school page', 'driving academy', 'show schools']
     },
     responses: {
       uz: "Xo'p, avtomaktablar sahifasiga o'tkazaman!",
@@ -72,9 +73,9 @@ export const VOICE_LEXICON = [
   {
     command: 'NAVIGATE_TO_SERVICE',
     patterns: {
-      uz: ['servis', 'xizmat', 'xizmatlar', 'servislar', 'coming soon', 'tez kunda', 'service', 'services', 'servis bo\'limiga o\'tish', 'servis bolimiga otish'],
-      ja: ['サービス', 'その他'],
-      en: ['service', 'services', 'coming soon']
+      uz: ['servis', 'xizmat', 'xizmatlar', 'servislar', 'coming soon', 'tez kunda', 'service', 'services', 'servis bo\'limiga o\'tish', 'servis bolimiga otish', 'xizmatlar bo\'limi', 'xizmatlarni och', 'servisni och', 'servislar sahifasi', 'xizmatlar sahifasi'],
+      ja: ['サービス', 'その他', 'サービス画面', 'サービスを開いて', 'サービス一覧', 'サービスページ'],
+      en: ['service', 'services', 'coming soon', 'open services', 'services page', 'show services']
     },
     responses: {
       uz: "Xo'p, xizmatlar bo'limiga o'tkazaman!",
@@ -85,9 +86,9 @@ export const VOICE_LEXICON = [
   {
     command: 'NAVIGATE_TO_PROFILE',
     patterns: {
-      uz: ['profilim', 'profilni och', 'mening sahifam', 'kabinetim', 'shaxsiy kabinet', 'kabinetga', 'profile', 'my page', 'profilimga o\'tish', 'profilimga otish'],
-      ja: ['マイページ', 'プロフィール', 'マイアカウント'],
-      en: ['profile', 'my page', 'account']
+      uz: ['profilim', 'profilni och', 'mening sahifam', 'kabinetim', 'shaxsiy kabinet', 'kabinetga', 'profile', 'my page', 'profilimga o\'tish', 'profilimga otish', 'profil', 'profil sahifasi', 'profilni ko\'rsat', 'kabinet', 'mening kabinetim'],
+      ja: ['マイページ', 'プロフィール', 'マイアカウント', 'マイページを開いて', 'マイページに移動', 'プロフィール画面', 'マイページ画面', 'プロフィールを開いて'],
+      en: ['profile', 'my page', 'account', 'open profile', 'my profile', 'show profile', 'my account']
     },
     responses: {
       uz: "Xo'p, profil sahifasiga o'tkazaman!",
@@ -138,9 +139,9 @@ export const VOICE_LEXICON = [
   {
     command: 'MUSIC_NEXT',
     patterns: {
-      uz: ['keyingi', 'oldinga', 'keyingisi', 'almashtir', 'boshqa qo\'shiq', 'next track', 'next song', 'boshqasi', 'keyingi qo\'shiq'],
-      ja: ['次の曲', '次へ', 'ネクスト', 'スキップ', '変えて', 'かえて', '次のトラック', '次'],
-      en: ['next', 'skip', 'forward', 'another song', 'next song', 'next track']
+      uz: ['keyingi qo\'shiq', 'keyingi trek', 'keyingi trekka', 'oldinga qo\'shiq', 'boshqa qo\'shiq', 'next track', 'next song', 'keyingi qo\'shiqni qo\'y'],
+      ja: ['次の曲', '次のトラック', 'スキップ', '曲を変えて', '次の曲を再生'],
+      en: ['next song', 'next track', 'skip song', 'another song']
     },
     responses: {
       uz: "Keyingi qo'shiqni qo'yaman!",
@@ -311,7 +312,7 @@ export const VOICE_LEXICON = [
     command: 'NAVIGATE_TO_PERSONAL_INFO',
     patterns: {
       uz: ['shaxsiy ma\'lumotlar', 'shaxsiy ma\'lumotlarim', 'mening ma\'lumotlarim', 'personal info'],
-      ja: ['個人情報', '個人情報を開いて', '基本情報'],
+      ja: ['個人情報', '個人情報を開いて', '基本情報', '個人情報編集'],
       en: ['personal info', 'personal information', 'my info', 'basic info']
     },
     responses: {
@@ -319,15 +320,111 @@ export const VOICE_LEXICON = [
       ja: "はい、個人情報を開きます！",
       en: "Sure, opening your personal information!"
     }
+  },
+  {
+    command: 'RESET_FILTERS',
+    patterns: {
+      uz: ['filterni tozalash', 'filtrlarni reset qil', 'filtrlarni tozalash', 'filterni yech', 'filterni reset qilish'],
+      ja: ['フィルターリセット', '条件クリア', 'リセット', '条件解除', '絞り込み解除', 'フィルタークリア'],
+      en: ['reset filters', 'clear filters', 'reset search']
+    },
+    responses: {
+      uz: "Barcha filtrlar tozalandi!",
+      ja: "すべての検索条件をリセットいたしました！",
+      en: "All search filters have been reset!"
+    }
+  },
+  {
+    command: 'READ_NEWS',
+    patterns: {
+      uz: ['yangiliklar', 'yangilik', 'xabar', 'xabarlar', 'bugungi yangiliklar', 'so\'nggi yangiliklar', 'songgi yangiliklar', 'yangilik o\'qish', 'yangiliklar ko\'rsat'],
+      ja: ['ニュース', '今日のニュース', 'ニュースを教えて', '最新ニュース', 'ニュースを聞かせて', 'ニュース一覧'],
+      en: ['news', 'today news', 'read news', 'latest news', 'show news']
+    },
+    responses: {
+      uz: "Bugungi Yaponiya yangiliklarini taqdim etaman.",
+      ja: "本日の最新ニュースをお伝えいたします。",
+      en: "Here is today's main news bulletin."
+    }
+  },
+  {
+    command: 'NEXT_NEWS',
+    patterns: {
+      uz: ['keyingi xabar', 'keyingi yangilik', 'keyingi yangiliklar', 'keyingi xabarlar', 'keyingisi', 'boshqa xabar', 'boshqa yangilik', 'keyingi article'],
+      ja: ['次ニュース', '次のニュース', '次のニュースをお願い', 'つぎのニュース', '他のニュース', 'つぎニュース', '次へニュース'],
+      en: ['next news', 'next article', 'another news', 'next bulletin', 'next story']
+    },
+    responses: {
+      uz: "Keyingi yangilikni o'qib beraman.",
+      ja: "次のニュースをお伝えいたします。",
+      en: "Reading next news bulletin."
+    }
   }
 ];
 
 // Matches user input text against the lexicon patterns using direct matching & fuzzy similarity
-export const matchLexiconCommand = (text, userLang = 'uz') => {
+export const matchLexiconCommand = async (text, userLang = 'uz') => {
   const cleanText = text.toLowerCase().trim();
   if (!cleanText) return null;
 
   const targetLang = userLang.startsWith('uz') ? 'uz' : userLang.startsWith('ja') ? 'ja' : 'en';
+
+  // 0. HIGH PRIORITY: Time, Date & News Interceptions (0ms Local Real-time & Internet News)
+  if (/(今何時|何時ですか|いまなんじ|時間を教えて|現在時刻|soat nech|vaqt nech|what time is it|current time)/i.test(cleanText)) {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    let timeResp = '';
+    if (targetLang === 'ja') {
+      const ampm = hours < 12 ? '午前' : '午後';
+      const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+      timeResp = `ただいま${ampm}${displayHours}時${minutes}分でございます。`;
+    } else if (targetLang === 'uz') {
+      timeResp = `Hozir soat ${hours}:${minutes < 10 ? '0' + minutes : minutes}.`;
+    } else {
+      timeResp = `The current time is ${hours}:${minutes < 10 ? '0' + minutes : minutes}.`;
+    }
+    return { command: 'GET_TIME', response: timeResp, language: targetLang };
+  }
+
+  if (/(今日の日付|今日は何日|何曜日|bugungi sana|nechanchi sana|what date is it)/i.test(cleanText)) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const date = now.getDate();
+    let dateResp = '';
+    if (targetLang === 'ja') {
+      dateResp = `本日は${year}年${month}月${date}日でございます。`;
+    } else if (targetLang === 'uz') {
+      dateResp = `Bugungi sana: ${year}-yil ${date}-${month}.`;
+    } else {
+      dateResp = `Today is ${now.toDateString()}.`;
+    }
+    return { command: 'GET_DATE', response: dateResp, language: targetLang };
+  }
+
+  // Next news bulletin request (Fetches live RSS feeds in real-time)
+  if (/(keyingi xabar|keyingi yangilik|keyingisi|boshqa xabar|boshqa yangilik|次ニュース|次のニュース|つぎのニュース|他のニュース|つぎニュース|next news|another news|next article)/i.test(cleanText)) {
+    const newsBulletin = await japaneseNewsService.getLiveOrNextNewsBulletin(targetLang);
+    return { command: 'NEXT_NEWS', response: newsBulletin, language: targetLang };
+  }
+
+  // Today / Latest news request (Fetches live RSS feeds in real-time)
+  if (/(ニュース|今日のニュース|ニュースを教えて|最新ニュース|ニュースを聞かせて|yangilik|yangiliklar|xabar|xabarlar|bugungi yangiliklar|news|read news|latest news)/i.test(cleanText)) {
+    const newsBulletin = await japaneseNewsService.getLiveOrTodayNewsBulletin(targetLang);
+    return { command: 'READ_NEWS', response: newsBulletin, language: targetLang };
+  }
+
+  // Special Language Switch Interceptions
+  if (/(yaponchaga|日本語に|japanese)/i.test(cleanText)) {
+    return { command: 'CHANGE_LANGUAGE', response: "日本語に変更します。", language: 'ja', targetLang: 'ja' };
+  }
+  if (/(o'zbekchaga|ウズベク|uzbek)/i.test(cleanText)) {
+    return { command: 'CHANGE_LANGUAGE', response: "O'zbek tiliga o'zgartiraman.", language: 'uz', targetLang: 'uz' };
+  }
+  if (/(inglizchaga|英語に|english)/i.test(cleanText)) {
+    return { command: 'CHANGE_LANGUAGE', response: "Switching to English.", language: 'en', targetLang: 'en' };
+  }
 
   // 1. Direct Match Check (Substring inclusion)
   for (const entry of VOICE_LEXICON) {
@@ -366,17 +463,6 @@ export const matchLexiconCommand = (text, userLang = 'uz') => {
   if (highestScore >= 0.75) {
     console.log(`Fuzzy NLP match: Matched command "${bestMatch.command}" with score ${Math.round(highestScore*100)}%`);
     return bestMatch;
-  }
-
-  // 3. Special Language Switch Interceptions
-  if (/(yaponchaga|日本語に|japanese)/i.test(cleanText)) {
-    return { command: 'CHANGE_LANGUAGE', response: "日本語に変更します。", language: 'ja', targetLang: 'ja' };
-  }
-  if (/(o'zbekchaga|ウズベク|uzbek)/i.test(cleanText)) {
-    return { command: 'CHANGE_LANGUAGE', response: "O'zbek tiliga o'zgartiraman.", language: 'uz', targetLang: 'uz' };
-  }
-  if (/(inglizchaga|英語に|english)/i.test(cleanText)) {
-    return { command: 'CHANGE_LANGUAGE', response: "Switching to English.", language: 'en', targetLang: 'en' };
   }
 
   return null;

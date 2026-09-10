@@ -1,6 +1,29 @@
 # Michi Ilovasi: Tarixiy Saboqlar va Xatolar Xotirasi (Past Mistakes Log)
 
-Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning oldini olish qoidalarini jamlaydi. Har safar kodga o'zgartirish kiritishdan oldin, ushbu qoidalar qayta o'qilishi shart.
+Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning oldini olish qoidalarini jamlaydi. Har safar kodga o'zgartirish kiritishdan oldin, ushbu qoidalar hamda alohida sahifa qoidalari o'qilishi shart.
+
+---
+
+## 🗺️ Sahifalar va Bo'limlar Bo'yicha Alohida Qoidalar va Xatolar Mundarijasi
+
+| Sahifa / Bo'lim | Tegishli Komponent va CSS | Alohida Qoida va Xatolar Fayli | Asosiy Invariantlar |
+| :--- | :--- | :--- | :--- |
+| **01. Home Dashboard** | `Dashboard.jsx`, `Dashboard.css` | [`01_dashboard.md`](file:///.agents/rules/pages/01_dashboard.md) | Compact Bento Grid, 24px/20px Border Radius, Home Header |
+| **02. Jobs Feed** | `DriverFeed.jsx`, `DriverFeed.css` | [`02_driver_feed.md`](file:///.agents/rules/pages/02_driver_feed.md) | **Rule 50**: Tokutei Ginou & Job Feed 92px Clearance Spacer, Pure Single-Language Filters |
+| **03. Driving Academy** | `DrivingAcademy.jsx`, `DrivingAcademy.css` | [`03_driving_academy.md`](file:///.agents/rules/pages/03_driving_academy.md) | **Rule 48 & 49**: 92px Main / 160px Filter Clearance Spacer, 100% Reset & Accordion Collapse |
+| **04. JDM Navigation** | `JDMNavigation.jsx`, `JDMNavigation.css` | [`04_jdm_navigation.md`](file:///.agents/rules/pages/04_jdm_navigation.md) | Navigation Mode Map Viewport, Bottom Vehicle Selector Clearance |
+| **05. Profile Main** | `Profile.jsx`, `Profile.css` | [`05_profile_main.md`](file:///.agents/rules/pages/05_profile_main.md) | **Rule 47**: Logout Button 100px Spacer (16px Breathing Gap above BottomNav) |
+| **06. My Posted Ads** | `CompanyHome.jsx` | [`06_my_ads.md`](file:///.agents/rules/pages/06_my_ads.md) | **Rule 46**: Form Submit 28px Clearance / 12px Spacer Invariant |
+| **07. Personal Info** | `Profile.jsx` (`personalInfo`) | [`07_personal_info.md`](file:///.agents/rules/pages/07_personal_info.md) | 90px Sub-Page Clearance Spacer, Japanese Vehicle Picker Modal Geometry |
+| **08. Applications** | `Profile.jsx` (`applications`) | [`08_applications.md`](file:///.agents/rules/pages/08_applications.md) | **Rule 51**: Sub-Page 96px Clearance Spacer (Exact 12px gap above BottomNav) |
+| **09. Saved Items** | `Profile.jsx` (`saved_items`) | [`09_saved_items.md`](file:///.agents/rules/pages/09_saved_items.md) | Bookmark Manager Sync, Saved Item Card Actions |
+| **10. Notifications** | `Profile.jsx` (`notifications`) | [`10_notifications.md`](file:///.agents/rules/pages/10_notifications.md) | Notification List Clearance & Read Status Flags |
+| **11. Settings** | `Profile.jsx` (`settings`) | [`11_settings.md`](file:///.agents/rules/pages/11_settings.md) | Theme Switcher, i18n Language Picker, Cache Actions |
+| **12. Platform About** | `Profile.jsx` (`about`) | [`12_platform_about.md`](file:///.agents/rules/pages/12_platform_about.md) | Exclusive AI Showcase Card & Vision View |
+| **13. Shoukai Referrals** | `Profile.jsx` (`my_shoukai`) | [`13_shoukai_referrals.md`](file:///.agents/rules/pages/13_shoukai_referrals.md) | Shoukai Bonus Calculation & Copy Link Actions |
+| **14. Employee Mgmt** | `Profile.jsx` (`employees`) | [`14_employee_management.md`](file:///.agents/rules/pages/14_employee_management.md) | Company Employee List & Permission Badges |
+| **15. Filter Drawer** | `TownworkFilterDrawer.jsx` | [`15_filter_drawer.md`](file:///.agents/rules/pages/15_filter_drawer.md) | Townwork 3-Tab Filter Header, 160px CTA Clearance |
+| **16. Assist Showcase** | `AssistHeroShowcase.jsx` | [`16_assist_showcase.md`](file:///.agents/rules/pages/16_assist_showcase.md) | Voice Assistant Interface, Pinned Back Button Offset |
 
 ---
 
@@ -284,6 +307,69 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **100% Dastlabki Holatga Qaytish (Full Initial State Restore)**: `resetFilters` tugmasi bosilganda tanlangan barcha filtr qiymatlari tozallanishi Bilan birga, ochilgan barcha akordeon bo'limlari strictly yig'ilib yopilishi (`setIsSectionOpen(false)`), faol tab dastlabki tabga (`activeFilterTab = 'course'`) va sahifalash `10` ga o'tkazilishi SHART.
   2. **Safe Multi-Select Chip Arrays**: Active chip darchalarida barqaror va e'lon qilingan massiv holatlaridan (`selectedCourses.map`, `selectedStyles.map`, `selectedFeatures.map`) foydalanilishi hamda e'lon qilinmagan yagona o'zgaruvchilarga murojaat QAT'IYAN TAQIQLANADI.
+
+## 🚫 50. Job Feed Trailing Clearance Spacer & 92px Dock Clearance Invariant
+* **Xatolik**: Ish e'lonlari sahifasida (`DriverFeed.jsx` -> `.jobs-list`) yoki `特定技能` (Tokutei Ginou) segmentida trailing dock clearance spacer qo'yilmasdan faqat `.feed-container` da `padding-bottom: 88px` berilishi. Bu oxirgi e'lon kartochkasi yoki `もっと見る` (Load More) tugmasining suzuvchi `BottomNav` (Top Edge = `84px`) paneliga yopishib qolishiga va yetarsiz bo'shliq tufayli scroll trap hosil bo'lishiga olib keladi.
+* **Yechim (MAJBURIY)**:
+  1. `.feed-container` dagi `padding-bottom` strictly **`0px`** qilib o'rnatilishi shart.
+  2. `.jobs-list` konteyneridan so'ng strictly yagona va aniq `<div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />` trailing clearance spacer qo'yilishi SHART.
+  3. Bu kelajakda `特定技能`, `正社員`, `アルバイト` e'lonlari ro'yxati qancha ko'payishidan va `もっと見る` bosilishidan qat'i nazar, eng oxirgi e'lon kartochkasi pastki menyu ustida me'yorda va ixcham **8px visual gap (`92px - 84px = 8px`)** masofada to'xtashini kafolatlaydi.
+
+## 🚫 51. Profile Sub-Pages 96px Dock Clearance & No 80px Overlap Invariant
+* **Xatolik**: Profil sub-sahifalarida (`Profile.jsx` -> `applications` (`受信した応募`), `notifications`, `settings`, `personalInfo`, `saved_items`, `my_shoukai`, `employees`) trailing clearance height `80px` qilib qo'yilishi. `BottomNav` paneli top edge `84px` (balandlik: `72px`, bottom: `12px`) bo'lgani sababli, `80px - 84px = -4px` hisobi bo'yicha pastki menyu eng oxirgi ariza/bildirishnoma konteynerining pastki chegarasini 4px ga bosib/ustiga tushib qolishi hamda 0px vizual bo'shliq tufayli scroll trap hosil qilishi.
+* **Yechim (MAJBURIY)**:
+  1. Barcha profil sub-sahifalari oxirida strictly `<div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />` trailing clearance spacer ishlatilishi SHART (`80px` ishlatish qat'iyan TAQIQLANADI).
+  2. Bu kelajakda `受信した応募` arizalari, bildirishnomalar yoki saqlangan e'lonlar soni nechtaga ko'payishidan qat'i nazar, eng oxirgi kartochka konteyneri suzuvchi `BottomNav` ustida **anig'i bilan roppa-rosa 12px visual gap (`96px - 84px = 12px`)** masofada toza va ajralib to'xtashini kafolatlaydi.
+
+## 🚫 52. Profile Double-Click Reset & Multi-Frame Scroll Restoration Invariant
+* **Xatolik**: `BottomNav` paneli orqali `My Page` (Profil) tugmasini 2 va undan ko'p marta bosganda yoki sub-sahifalardan (`notifications`, `settings`, `personalInfo`, `applications`, `saved_items`, `my_shoukai`, `employees`) turib `My Page` bosilganda:
+  1. Sub-sahifada bo'lganda `mainContainerRef` unmount qilingani uchun `useEffect([activePage])` ilgari saqlangan `savedMainScroll` (masalan 500px) ni qayta tiklab, `scrollToTopTrigger` buyrug'ini ustidan bosib ketishi.
+  2. Scroll reset jarayoni faqat bitta 40ms taymer bilan amalga oshirilib, CSS transformatsiyalari va re-render vaqtida smooth scroll inertsiyada to'xtab qolishi.
+  3. `BottomNav.jsx` dagi drag tolerance cheklovi (`dragDistance.current > 4px`) tufayli barmoq tebranishi (double-tap jitter) ikkinchi `click` hodisasini bekor qilib yuborishi.
+* **Yechim (MAJBURIY)**:
+  1. `scrollToTopTrigger` o'zgarganda `savedMainScroll` qiymati darhol `0` ga tushirilishi va `lastScrollToTopRef.current` saqlanishi SHART. `activePage === 'main'` ga o'tganda faqat `scrollToTopTrigger === lastScrollToTopRef.current` bo'lgandagina eski scroll tiklanadi.
+  2. Scroll reset jarayoni multi-frame (`requestAnimationFrame` + `setTimeout 40ms` + `setTimeout 150ms`) orqali bajarilib, barcha `.profile-container` hamda `mainContainerRef.current` scroll joylashuvi strictly `scrollTop = 0` va `scrollTo({ top: 0, behavior: 'smooth' })` qilib nollanishi SHART.
+  3. `BottomNav.jsx` da `dragDistance.current` ruxsat etilgan tebranish masofasi `12px` ga hamda `onClick` toleransi `25px` ga oshirilishi SHART.
+
+## 🚫 53. Navigation Origin Isolation & Sub-Page Route Preserving Invariant
+* **Xatolik**: Home dashboard (`Dashboard.jsx`) kabi sahifalardan `マイ掲載一覧` (`my_ads`) yoki `受信した応募` (`applications`) kabi sub-sahifalarga o'tish tugmalari bosilganda, `setActiveTab('profile')` wrapperi `setProfileActivePage('main')` deb Profil sub-sahifasini majburiy ravishda `main` ga o'tkazib yuborishi.
+* **Yechim (MAJBURIY)**:
+  1. `BottomNav.jsx` faqat o'zidan amalga oshirilgan bosishlar uchun `setActiveTab(tabId, { fromBottomNav: true })` flagini uzatishi SHART.
+  2. `App.jsx` dagi `setActiveTab` wrapperi faqat va faqat `options.fromBottomNav === true` bo'lgandagina `setProfileActivePage('main')` resetini bajarishi shart.
+## 🚫 55. AI Assistant Action Registry & Sub-10ms Semantic Intent Router Isolation Invariant
+* **Xatolik**:
+  1. AI voice assistant da foydalanuvchi buyruqlarini (masalan, `求人を見る`, `ishlarni ko'rsat`, `show jobs`, `マイページ`, `musiqa qo'y`) faqat bulutdagi Gemini/LLM REST API so'rovlariga topshirish. Bu API limitlariga (429 Rate Limit), yuqori javob kutish vaqtiga (1-3s latency) va internet yo'qolganda ilova buyruqlarining to'liq ishlamay qolishiga olib keladi.
+  2. Vektorli n-gram hisoblashda ko'p tilli (Yapon, O'zbek, Ingliz) namuna jumlalarni bitta umumiy o'rtacha centroidga yig'ish. Bu tillar o'rtasida feature tokenlar suyulib (dilute bo'lib), kosinus o'xshashlik balining 0.45 dan pastga tushib ketishiga olib keladi.
+## 🚫 57. Screen & UI Structure Knowledge Base Context Invariant
+* **Xatolik**: AI Assistant ga faqat sahifa nomini (masalan, `jobs`) bilishi va ekrandagi aniq bo'limlar, filtr chiplari, sub-sahifalar hamda tugmalar nomlarini bilmasligi. Bu AI ning foydalanuvchiga ekranda aynan nimalar ko'rinib turganini va qaysi harakatlar mavjudligini tushuntira olmasligiga olib keladi.
+* **Yechim (MAJBURIY)**:
+  1. **Comprehensive Screen Knowledge Base (`screenStructureIndex.js`)**: Michi App dagi barcha 7 ta asosiy sahifa (`home`, `jobs`, `academy`, `company`, `profile`, `community`, `tools`), sub-sahifalar va modallar `screenStructureIndex.js` da strukturalangan holatda indekslanishi SHART.
+## 🚫 58. Deep Microscopic UI Element Schema & DOM Target Invariant
+* **Xatolik**: AI Assistant ning faqat bo'limlar nomini bilishi, lekin har bir bo'lim ichidagi muayyan input maydonlari (`text_input`, `range_slider`, `modal_picker`), selektorlar va `stateProp` o'zgaruvchilarini mikroskopik darajada bilmasligi. Bu AI ning foydalanuvchiga muayyan inputga nimani yozish yoki qaysi slayderni surishni aniq ko'rsata olmasligiga olib keladi.
+* **Yechim (MAJBURIY)**:
+  1. **Deep Microscopic Element Indexing (`deepUISchemaIndex.js`)**: Har bir bo'lim va modal ichidagi har bir input, checkbox, slayder, teg va tugma `deepUISchemaIndex.js` da uning tipi, selektori, `stateProp` va enum opsiyalari bilan to'liq indekslanishi SHART.
+  2. **Automatic Schema Enrichment**: `screenStructureIndex` har bir sahifa kontekstini shakllantirganda `deepUISchemaIndex` dan barcha mikroskopik maydonlar tafsilotlarini avtomatik biriktirib uzatishi SHART.
+
+## 🚫 59. Logical Reasoning & Multi-Step Goal Decomposition Invariant
+* **Xatolik**: Foydalanuvchi ko'p bosqichli murakkab so'rov bersa (masalan, *"Tokyoda 350,000 yen maoshli katta yuk mashinasi ishini top va ariza topshir"*), AI Assistant ning so'rovni faqat bitta bo'lakka bo me'yor qisqartirib, qolgan parametrlarni (maosh, shahar, litsenziya) tushirib qoldirishi.
+* **Yechim (MAJBURIY)**:
+  1. **Chain-of-Thought Goal Decomposition (`reasoningEngine.js`)**: Har qanday birikmali so me'yoriy so'rov `reasoningEngine.decomposeGoal` yordamida mantiqiy micro-harakatlar zanjiriga (`FILTER_JOBS` → `prefecture`, `minSalary`, `license`) bo'linishi hamda barcha parametrlar bilan birga ijro etilishi SHART.
+  2. **Profile & Visa Compatibility Deduction**: Litsenziya yetishmasligi (masalan, faqat 普通 bo'la turib 大型 so'ralganda) yoki talaba vizasi cheklovlari `reasoningEngine.inferJobCompatibility` orqali mantiqiy aniqlanib, foydalanuvchiga to'g'ri maslahat (Avtomaktab kursiga yo'naltirish) berilishi SHART.
+
+## 🚫 60. Master Japanese Logistics Domain Dictionary & Keigo Honorific Invariant
+* **Xatolik**: AI Assistant ning yaponcha professional transport terminologiyasini (masalan, `地場配送`, `点呼`, `手積み手降ろし`, `ウイング車`, `歩合制`, `特定技能1号`) va yaponcha rasmiy muloyimlik (Keigo 敬語) shakllarini bilmasligi yoki qo'pollik bilan javob berishi.
+* **Yechim (MAJBURIY)**:
+  1. **Master Japanese Logistics Dictionary (`japaneseLogisticsDictionary.js`)**: Litsenziyalar, yuk mashinasi turlari, ish tartibi, vizalar va maosh terminlari 100% `japaneseLogisticsDictionary.js` da indekslanishi hamda `japaneseLanguageEngine.lookupTerm` orqali mantiqan tushunilishi SHART.
+  2. **Professional Keigo Honorific Formatting (`japaneseLanguageEngine.js`)**: Yaponcha barcha AI javoblari `japaneseLanguageEngine.applyKeigoPoliteness` yordamida rasmiy muloyimlik shakliga (*"かしこまりました。求人を検索いたします。"* / *"お疲れ様です。"* ) o'tkazilishi SHART.
+
+
+
+
+
+
+
+
+
 
 
 

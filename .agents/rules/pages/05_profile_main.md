@@ -28,10 +28,13 @@ Ushbu qoida **Profil Asosiy Menyusi (Profile Main)** uchun barcha layout va spet
 
 ---
 
-## 🔄 5. BottomNav Tab Repeat Click & Scroll Reset
-- **Repeat Click Behavior**: BottomNav pastki menyusidagi **My Page / Profile (`profile`)** tugmasi 2-marta (takroran) yoki biron sub-sahifada turib bosilganda:
-  1. Agarda foydalanuvchi sub-sahifada (`applications`, `settings`, `edit_profile` va h.k.) bo'lsa, uni profilning **asosiy sahifasiga (`main`)** qaytaradi.
-  2. Profil asosiy sahifasini va `.profile-container` skrollini silliq ravishda eng yuqoriga (**`scrollTop: 0`**) reset qiladi.
+## 🔄 5. BottomNav Tab Repeat Click & Multi-Frame Scroll Reset (Rule 52 & Rule 53 Invariant)
+- **Repeat Click & Trigger Guard Behavior**: BottomNav pastki menyusidagi **My Page / Profile (`profile`)** tugmasi 2-marta (takroran) yoki biron sub-sahifada (`applications`, `notifications`, `settings`, `personalInfo`, `saved_items`, `my_shoukai`, `employees`) turib bosilganda:
+  1. `scrollToTopTrigger` qiymati strictly oshgandagina (`scrollToTopTrigger !== prevScrollToTopRef.current`) reset bajariladi. Stale (eskirgan) trigger qiymatlari sub-sahifa o'tishlarida (`my_ads`, `applications`) resetni NOTO'G'RI qayta ishga tushirishidan saqlanadi.
+  2. Foydalanuvchini profilning **asosiy sahifasiga (`main`)** qaytaradi.
+  3. Barcha ochiq tahrirlash formalari va modallarni (`isEditing`, `isFormOpen`, `isVehiclePickerOpen` va h.k.) yopadi.
+  4. Multi-frame reset (`requestAnimationFrame` + `setTimeout 40ms` + `setTimeout 150ms`) orqali barcha `.profile-container` hamda `mainContainerRef.current` skrollini silliq ravishda eng yuqoriga (**`scrollTop = 0`**, **`scrollTo({ top: 0, behavior: 'smooth' })`**) reset qiladi.
+  5. `BottomNav.jsx` da `dragDistance.current` tebranish masofasi `12px` hamda `onClick` toleransi `25px` bo'lib, double-tap jitterlar 100% to'siqsiz yetib boradi.
 
 ---
 
@@ -40,3 +43,4 @@ Ushbu qoida **Profil Asosiy Menyusi (Profile Main)** uchun barcha layout va spet
 2. **No Missing Trailing Spacer**: Main profile page must always include the 100px trailing spacer after `.logout-btn`.
 3. **No Merged Cards**: Never nest `.logout-btn` inside a preceding `.menu-group` container.
 4. **No Double Side Margins**: Never add inline side margins to `.logout-btn` that shrink its width relative to `.menu-group`.
+5. **No Single-Frame Scroll Reset**: Never rely on a single 40ms timeout for scroll reset; multi-frame fallback (`requestAnimationFrame` + dual timers) is strictly required.

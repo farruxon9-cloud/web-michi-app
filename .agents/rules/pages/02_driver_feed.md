@@ -8,7 +8,8 @@ Ushbu qoida loyihamizning **Vakansiyalar Ro'yxati (Jobs Feed)** sahifasi uchun b
 - **Container Selector**: `.feed-container`
 - **Flex Parent Binding**: `flex: 1; height: 100%; max-height: 100%; min-height: 0; display: flex; flex-direction: column;`
 - **Scroll Behavior**: `overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box;`
-- **Bottom Clearance**: `padding-bottom: 88px;` (yields tight 4px visual gap above 84px BottomNav).
+- **Bottom Clearance**: `padding-bottom: 0px;` (Controlled strictly via explicit `92px` trailing clearance spacer after `.jobs-list` in `DriverFeed.jsx`).
+- **Explicit 92px Trailing Dock Clearance Spacer Invariant**: `<div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />` MUST follow `.jobs-list`. No matter how many job cards are loaded for `特定技能` (Tokutei Ginou), `正社員`, `アルバイト`, or `すべて`, scrolling ALWAYS halts with exact **8px compact visual gap (`92px - 84px = 8px`)** above `BottomNav` top edge (84px).
 
 ---
 
@@ -36,6 +37,7 @@ Ushbu qoida loyihamizning **Vakansiyalar Ro'yxati (Jobs Feed)** sahifasi uchun b
 
 ---
 
-## 🚫 5. Forbidden Patterns
+## 🚫 5. Forbidden Patterns & Page Anti-Patterns
 1. **No Mixed Languages**: Vacancy tags and salary terms must render strictly in active i18n locale without mixed parentheses.
 2. **No Truncated Descriptions**: `overflow-wrap: anywhere; word-break: break-word;` must be set on job detail preview.
+3. **No Unspaced Job List Ends**: NEVER leave `.jobs-list` without the explicit `92px` trailing clearance spacer in `DriverFeed.jsx`. Missing spacer causes `特定技能` (Tokutei Ginou) and other job feed cards to stick directly against `BottomNav` or get trapped behind floating search CTA buttons.

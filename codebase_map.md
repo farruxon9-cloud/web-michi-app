@@ -1,18 +1,18 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **08/09/2026, 19:02:30**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **09/09/2026, 20:51:19**.
 
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 137 ta
+* **Jami skanerlangan fayllar:** 172 ta
 * **React Komponentlari:** 26 ta
 * **Komponent Stillari (CSS):** 17 ta
-* **Geografiya va Ma'lumotlar Bazalari (data):** 8 ta
-* **Unit Testlar (Vitest):** 20 ta
+* **Geografiya va Ma'lumotlar Bazalari (data):** 14 ta
+* **Unit Testlar (Vitest):** 33 ta
 * **Yordamchi Funksiyalar (utils):** 19 ta
-* **Tashqi API va Xizmatlar (services):** 1 ta
+* **Tashqi API va Xizmatlar (services):** 17 ta
 * **Avtomatizatsiya Skriptlari (scripts):** 14 ta
 * **Tizim va UI Qoidalari (.agents/rules):** 18 ta
 * **Boshqa asosiy fayllar (src/ root):** 14 ta
@@ -98,7 +98,7 @@ graph TD
   - `lucide-react`
 
 ### 📦 [BottomNav](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/BottomNav.jsx)
-* **Fayl yo'li:** `src/components/BottomNav.jsx` (172 qator, 6055 bayt)
+* **Fayl yo'li:** `src/components/BottomNav.jsx` (173 qator, 5928 bayt)
 * **Komponent Stillari:** 🎨 [BottomNav.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/BottomNav.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `activeTab`
@@ -206,7 +206,7 @@ graph TD
   - `../utils/haptics`
 
 ### 📦 [SkeletonCard](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.jsx)
-* **Fayl yo'li:** `src/components/DriverFeed.jsx` (1968 qator, 94542 bayt)
+* **Fayl yo'li:** `src/components/DriverFeed.jsx` (1971 qator, 94827 bayt)
 * **Komponent Stillari:** 🎨 [DriverFeed.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.css)
 * **Unit Testlari:** 🧪 [DriverFeed.test.jsx](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -224,7 +224,7 @@ graph TD
   - `../data/jobFeatures`
 
 ### 📦 [DrivingAcademy](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.jsx)
-* **Fayl yo'li:** `src/components/DrivingAcademy.jsx` (1525 qator, 72212 bayt)
+* **Fayl yo'li:** `src/components/DrivingAcademy.jsx` (1528 qator, 72485 bayt)
 * **Komponent Stillari:** 🎨 [DrivingAcademy.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.css)
 * **Unit Testlari:** 🧪 [DrivingAcademy.test.jsx](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DrivingAcademy.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -372,7 +372,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (5938 qator, 305516 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (5987 qator, 307921 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -520,7 +520,7 @@ graph TD
   - `react`
 
 ### 📦 [VoiceAssistant](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.jsx)
-* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (3188 qator, 136058 bayt)
+* **Fayl yo'li:** `src/components/VoiceAssistant.jsx` (3249 qator, 139935 bayt)
 * **Komponent Stillari:** 🎨 [VoiceAssistant.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/VoiceAssistant.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `isActive`
@@ -540,6 +540,7 @@ graph TD
   - `selectedSchool`
   - `setSelectedJob`
   - `setSelectedSchool`
+  - `profileActivePage`
   - `setProfileActivePage`
   - `setJobSearchQuery`
   - `setJobActiveSegment`
@@ -565,6 +566,17 @@ graph TD
   - `react-i18next`
   - `lucide-react`
   - `../utils/voiceLexicon`
+  - `../services/actionRegistry`
+  - `../services/semanticRouter`
+  - `../services/localTTS`
+  - `../services/localSTT`
+  - `../services/voiceQuality`
+  - `../services/learningEngine`
+  - `../services/screenStructureIndex`
+  - `../services/reasoningEngine`
+  - `../services/japaneseLanguageEngine`
+  - `../services/autonomousWebSearchEngine`
+  - `../services/multiAiMeshEngine`
 
 
 ---
@@ -601,6 +613,31 @@ graph TD
   - `getStationsByPrefecture`
   - `JAPAN_STATIONS_BY_PREFECTURE`
 
+### 🗄️ [japaneseExtendedResourcesLibrary.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseExtendedResourcesLibrary.js)
+* **Yo'li:** `src/data/japaneseExtendedResourcesLibrary.js` (72 qator, 3446 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `JAPANESE_EXTENDED_RESOURCES_LIBRARY`
+
+### 🗄️ [japaneseGlobalTextbookLibrary.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseGlobalTextbookLibrary.js)
+* **Yo'li:** `src/data/japaneseGlobalTextbookLibrary.js` (182 qator, 17909 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `JAPANESE_GLOBAL_TEXTBOOK_LIBRARY`
+
+### 🗄️ [japaneseJLPTMasterLibrary.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseJLPTMasterLibrary.js)
+* **Yo'li:** `src/data/japaneseJLPTMasterLibrary.js` (138 qator, 6324 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `JAPANESE_JLPT_MASTER_LIBRARY`
+
+### 🗄️ [japaneseLogisticsDictionary.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseLogisticsDictionary.js)
+* **Yo'li:** `src/data/japaneseLogisticsDictionary.js` (67 qator, 4760 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `JAPANESE_LOGISTICS_DICTIONARY`
+
+### 🗄️ [japaneseUniversalMasterDictionary.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseUniversalMasterDictionary.js)
+* **Yo'li:** `src/data/japaneseUniversalMasterDictionary.js` (111 qator, 7792 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `JAPANESE_UNIVERSAL_MASTER_DICTIONARY`
+
 ### 🗄️ [japaneseVehiclesDb.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/japaneseVehiclesDb.js)
 * **Yo'li:** `src/data/japaneseVehiclesDb.js` (306 qator, 9116 bayt)
 * **Eksport qilingan obyektlar/strukturalar:**
@@ -616,6 +653,11 @@ graph TD
   - `JAPANESE_AUTOMAKERS_MASTER`
   - `JAPANESE_HISTORICAL_ERAS`
   - `MASTER_VEHICLE_DATABASE`
+
+### 🗄️ [jlptN5toN1GrammarData.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/jlptN5toN1GrammarData.js)
+* **Yo'li:** `src/data/jlptN5toN1GrammarData.js` (168 qator, 16220 bayt)
+* **Eksport qilingan obyektlar/strukturalar:**
+  - `JLPT_N5_TO_N1_DATA`
 
 ### 🗄️ [jobCategories.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/data/jobCategories.js)
 * **Yo'li:** `src/data/jobCategories.js` (39 qator, 3163 bayt)
@@ -795,17 +837,110 @@ graph TD
 * **Importlari:** `./turnInstructions`
 
 ### ⚙️ [voiceLexicon.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/utils/voiceLexicon.js)
-* **Yo'li:** `src/utils/voiceLexicon.js` (384 qator, 14149 bayt)
+* **Yo'li:** `src/utils/voiceLexicon.js` (470 qator, 19091 bayt)
 * **Eksport qilingan funksiyalari:**
   - `getSimilarity()`
   - `VOICE_LEXICON()`
   - `matchLexiconCommand()`
-* **Importlari:** *Yo'q*
+* **Importlari:** `../services/japaneseNewsService.js`
 
 
 ---
 
 ## 🔌 Tashqi API va Xizmatlar Modullari (Services)
+
+### 🔌 [actionRegistry.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/actionRegistry.js)
+* **Yo'li:** `src/services/actionRegistry.js` (473 qator, 14709 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `actionRegistry()`
+* **Importlari:** *Yo'q*
+
+### 🔌 [autonomousWebSearchEngine.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/autonomousWebSearchEngine.js)
+* **Yo'li:** `src/services/autonomousWebSearchEngine.js` (109 qator, 4690 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `autonomousWebSearchEngine()`
+* **Importlari:** *Yo'q*
+
+### 🔌 [deepUISchemaIndex.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/deepUISchemaIndex.js)
+* **Yo'li:** `src/services/deepUISchemaIndex.js` (212 qator, 8104 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `DEEP_UI_ELEMENT_SCHEMA()`
+  - `deepUISchemaIndex()`
+* **Importlari:** *Yo'q*
+
+### 🔌 [japaneseJLPTMasterEngine.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/japaneseJLPTMasterEngine.js)
+* **Yo'li:** `src/services/japaneseJLPTMasterEngine.js` (154 qator, 5146 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `japaneseJLPTMasterEngine()`
+* **Importlari:** `../data/japaneseJLPTMasterLibrary.js`
+
+### 🔌 [japaneseLanguageEngine.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/japaneseLanguageEngine.js)
+* **Yo'li:** `src/services/japaneseLanguageEngine.js` (223 qator, 8345 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `japaneseLanguageEngine()`
+* **Importlari:** `../data/japaneseLogisticsDictionary.js`, `../data/japaneseUniversalMasterDictionary.js`, `./jlptN1LanguageEngine.js`, `./japaneseJLPTMasterEngine.js`, `./japaneseTextbookEngine.js`
+
+### 🔌 [japaneseNewsService.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/japaneseNewsService.js)
+* **Yo'li:** `src/services/japaneseNewsService.js` (238 qator, 8735 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `JAPANESE_NEWS_DATABASE()`
+  - `japaneseNewsService()`
+* **Importlari:** *Yo'q*
+
+### 🔌 [japaneseTextbookEngine.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/japaneseTextbookEngine.js)
+* **Yo'li:** `src/services/japaneseTextbookEngine.js` (168 qator, 5104 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `japaneseTextbookEngine()`
+* **Importlari:** `../data/japaneseGlobalTextbookLibrary.js`, `../data/japaneseExtendedResourcesLibrary.js`
+
+### 🔌 [jlptN1LanguageEngine.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/jlptN1LanguageEngine.js)
+* **Yo'li:** `src/services/jlptN1LanguageEngine.js` (284 qator, 8598 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `jlptN1LanguageEngine()`
+* **Importlari:** `../data/jlptN5toN1GrammarData.js`
+
+### 🔌 [learningEngine.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/learningEngine.js)
+* **Yo'li:** `src/services/learningEngine.js` (128 qator, 4294 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `learningEngine()`
+* **Importlari:** `./semanticRouter.js`
+
+### 🔌 [localSTT.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/localSTT.js)
+* **Yo'li:** `src/services/localSTT.js` (68 qator, 1803 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `localSTT()`
+* **Importlari:** *Yo'q*
+
+### 🔌 [localTTS.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/localTTS.js)
+* **Yo'li:** `src/services/localTTS.js` (222 qator, 6629 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `localTTS()`
+* **Importlari:** *Yo'q*
+
+### 🔌 [multiAiMeshEngine.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/multiAiMeshEngine.js)
+* **Yo'li:** `src/services/multiAiMeshEngine.js` (163 qator, 6252 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `multiAiMeshEngine()`
+* **Importlari:** `./autonomousWebSearchEngine.js`, `./japaneseLanguageEngine.js`
+
+### 🔌 [reasoningEngine.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/reasoningEngine.js)
+* **Yo'li:** `src/services/reasoningEngine.js` (192 qator, 8287 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `reasoningEngine()`
+* **Importlari:** `./actionRegistry.js`, `./screenStructureIndex.js`
+
+### 🔌 [screenStructureIndex.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/screenStructureIndex.js)
+* **Yo'li:** `src/services/screenStructureIndex.js` (172 qator, 10048 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `APP_UI_STRUCTURE_MAP()`
+  - `screenStructureIndex()`
+* **Importlari:** `./deepUISchemaIndex.js`
+
+### 🔌 [semanticRouter.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/semanticRouter.js)
+* **Yo'li:** `src/services/semanticRouter.js` (139 qator, 4060 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `semanticRouter()`
+* **Importlari:** `./actionRegistry.js`
 
 ### 🔌 [vehicleApiService.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/vehicleApiService.js)
 * **Yo'li:** `src/services/vehicleApiService.js` (250 qator, 7978 bayt)
@@ -814,6 +949,12 @@ graph TD
   - `setCachedData()`
   - `clearVehicleCache()`
   - `POPULAR_GLOBAL_BRANDS()`
+* **Importlari:** *Yo'q*
+
+### 🔌 [voiceQuality.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/voiceQuality.js)
+* **Yo'li:** `src/services/voiceQuality.js` (63 qator, 1735 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `voiceQuality()`
 * **Importlari:** *Yo'q*
 
 
@@ -869,22 +1010,22 @@ graph TD
 ## 📜 Tizim va UI Invariant Qoidalari (.agents/rules)
 
 ### 📜 [01_dashboard.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/01_dashboard.md)
-* **Yo'li:** `.agents/rules/pages/01_dashboard.md` (46 qator)
+* **Yo'li:** `.agents/rules/pages/01_dashboard.md` (63 qator)
 
 ### 📜 [02_driver_feed.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/02_driver_feed.md)
-* **Yo'li:** `.agents/rules/pages/02_driver_feed.md` (42 qator)
+* **Yo'li:** `.agents/rules/pages/02_driver_feed.md` (44 qator)
 
 ### 📜 [03_driving_academy.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/03_driving_academy.md)
-* **Yo'li:** `.agents/rules/pages/03_driving_academy.md` (61 qator)
+* **Yo'li:** `.agents/rules/pages/03_driving_academy.md` (62 qator)
 
 ### 📜 [04_jdm_navigation.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/04_jdm_navigation.md)
 * **Yo'li:** `.agents/rules/pages/04_jdm_navigation.md` (23 qator)
 
 ### 📜 [05_profile_main.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/05_profile_main.md)
-* **Yo'li:** `.agents/rules/pages/05_profile_main.md` (43 qator)
+* **Yo'li:** `.agents/rules/pages/05_profile_main.md` (47 qator)
 
 ### 📜 [06_my_ads.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/06_my_ads.md)
-* **Yo'li:** `.agents/rules/pages/06_my_ads.md` (47 qator)
+* **Yo'li:** `.agents/rules/pages/06_my_ads.md` (57 qator)
 
 ### 📜 [07_personal_info.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/07_personal_info.md)
 * **Yo'li:** `.agents/rules/pages/07_personal_info.md` (29 qator)
@@ -920,7 +1061,7 @@ graph TD
 * **Yo'li:** `.agents/rules/michi_ui_constraints.md` (69 qator)
 
 ### 📜 [past_mistakes.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/past_mistakes.md)
-* **Yo'li:** `.agents/rules/past_mistakes.md` (291 qator)
+* **Yo'li:** `.agents/rules/past_mistakes.md` (377 qator)
 
 
 ---
@@ -990,11 +1131,11 @@ graph TD
 | **DriverFeed** | 10 | `onJobClick`, `jobs`, `isContractActive`, `verifiedCompanies`, `onShoukai`, `onApply` +4 ta |
 | **AdminDashboard** | 3 | `verifiedCompanies`, `onToggleVerify`, `onLogout` |
 | **RobotAvatar** | 3 | `isVoiceActive`, `voiceStatus`, `onClick` |
+| **BottomNav** | 3 | `activeTab`, `setActiveTab`, `options` |
 | **RoleSelect** | 2 | `onSelectRole`, `onGuest` |
 | **Moon** | 2 | `size`, `strokeWidth` |
 | **Sun** | 2 | `size`, `strokeWidth` |
 | **JobDetail** | 2 | `job`, `onBack` |
-| **BottomNav** | 2 | `activeTab`, `setActiveTab` |
 | **VoiceAssistant** | 2 | `isActive`, `onClose` |
 | **Splash** | 1 | `onFinish` |
 | **LanguageSelect** | 1 | `onFinish` |
@@ -1013,11 +1154,11 @@ graph LR
   App["App.jsx"] -->|"10 prop"| DriverFeed
   App["App.jsx"] -->|"3 prop"| AdminDashboard
   App["App.jsx"] -->|"3 prop"| RobotAvatar
+  App["App.jsx"] -->|"3 prop"| BottomNav
   App["App.jsx"] -->|"2 prop"| RoleSelect
   App["App.jsx"] -->|"2 prop"| Moon
   App["App.jsx"] -->|"2 prop"| Sun
   App["App.jsx"] -->|"2 prop"| JobDetail
-  App["App.jsx"] -->|"2 prop"| BottomNav
   App["App.jsx"] -->|"2 prop"| VoiceAssistant
   App["App.jsx"] -->|"1 prop"| Splash
 
@@ -1031,7 +1172,7 @@ graph LR
 
 > Ushbu bo'lim har bir i18n kalitining 3 tildagi tarjimasini va aynan qaysi komponentda ishlatilishini ko'rsatadi.
 
-**Jami ishlatilgan i18n kalitlar:** 617 ta, **16** ta komponentda tarqalgan
+**Jami ishlatilgan i18n kalitlar:** 612 ta, **16** ta komponentda tarqalgan
 
 ### 📄 AdminDashboard (9 ta kalit)
 
@@ -1053,10 +1194,10 @@ graph LR
 |---|---|---|---|---|
 | `referralPrompt` | 紹介リンクからアクセスしましたか？その場合は、紹介 | Did you join via a referr | Havola orqali kirdingizmi | L445 |
 | `roleGuest` | ゲスト | Guest | Mehmon | L628 |
-| `completeResumeModalTitle` | 履歴書を完成させてください | Please Complete Your Resu | Rezyumeni to'ldiring | L1304 |
-| `completeResumeModalDesc` | この求人に応募するには履歴書の入力が必要です。 | Filling out your resume i | Ushbu vakansiyaga ariza t | L1307 |
-| `completeResumeBtn` | 履歴書を入力する | Fill Resume Now | Rezyumeni to'ldirish | L1330 |
-| `cancelEdit` | キャンセル | Cancel | Bekor qilish | L1347 |
+| `completeResumeModalTitle` | 履歴書を完成させてください | Please Complete Your Resu | Rezyumeni to'ldiring | L1303 |
+| `completeResumeModalDesc` | この求人に応募するには履歴書の入力が必要です。 | Filling out your resume i | Ushbu vakansiyaga ariza t | L1306 |
+| `completeResumeBtn` | 履歴書を入力する | Fill Resume Now | Rezyumeni to'ldirish | L1329 |
+| `cancelEdit` | キャンセル | Cancel | Bekor qilish | L1346 |
 
 ### 📄 BottomNav (5 ta kalit)
 
@@ -1157,7 +1298,7 @@ graph LR
 | `selectPrefecture` | 都道府県を選択 | Select Prefecture | Prefekturani tanlang | L1381 |
 | `perMonth` | 月額 | per month | oyiga | L1620 |
 | `shiftWork` | シフト制 | Shift System | Smena bo'yicha | L1639 |
-| `shoukaiAvailable` | 紹介金対象 | Referral Reward Available | Shoukai mavjud | L1947 |
+| `shoukaiAvailable` | 紹介金対象 | Referral Reward Available | Shoukai mavjud | L1950 |
 | `editJob` | 求人を編集 | Edit Job | E'lonni tahrirlash | L1676 |
 | `applyJob` | 応募する | Apply Now | Topshirish | L1731 |
 | `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L1699 |
@@ -1277,36 +1418,36 @@ graph LR
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
-| `roleGuest` | ゲスト | Guest | Mehmon | L2103 |
-| `cancelEdit` | キャンセル | Cancel | Bekor qilish | L2748 |
-| `logout` | ログアウト | Logout | Tizimdan chiqish | L5886 |
-| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L3045 |
-| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L3046 |
-| `emailLabel` | メールアドレス | Email | Email | L3372 |
-| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L3785 |
-| `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L2701 |
-| `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3227 |
-| `roleDriver` | ドライバー (求職者) | Driver (Job Seeker) | Haydovchi (Ish izlovchi) | L2100 |
-| `roleCompanyLabel` | 企業 | Company | Kompaniya | L2101 |
-| `roleSchool` | 自動車学校 | Driving School | AvtoMaktab | L2102 |
-| `currentAddressLabel` | 現住所 | My current residence | Hozirgi yashash joyim | L2142 |
-| `currentlyStudyingLabel` | 在学中 | Currently studying | Hozir ham o'qiyman | L2143 |
-| `notifications` | 通知 | Notifications | Bildirishnomalar | L2241 |
-| `markAllRead` | すべて既読にする | Mark all read | Hammasini o'qilgan deb be | L2246 |
-| `noNotifications` | 通知はまだありません | No notifications yet | Hali bildirishnomalar yo' | L2255 |
-| `acceptedNotifTitle` | 応募が採用されました！ | Application Accepted! | Ariza qabul qilindi! | L2272 |
-| `interviewNotifTitle` | 面接のご招待 | Interview Invitation | Suhbatga taklif | L2273 |
-| `reviewedNotifTitle` | 応募が確認されました | Application Reviewed | Ariza ko'rib chiqildi | L2274 |
-| `rejectedNotifTitle` | 応募が却下されました | Application Rejected | Ariza rad etildi | L2275 |
-| `shoukaiPaidNotif` | 紹介報酬が支払われました | Shoukai reward paid | Shoukai mukofoti to'landi | L2276 |
-| `newNotification` | 新着 | New | Yangi | L2279 |
-| `acceptedNotifMsg` | あなたの応募が採用されました： | Your application has been | Arizangiz qabul qilindi: | L2282 |
-| `interviewNotifMsg` | 面接にご招待されました： | You are invited for an in | Siz suhbatga taklif qilin | L2283 |
-| `reviewedNotifMsg` | あなたの応募が確認されました： | Your application was revi | Arizangiz ko'rib chiqildi | L2284 |
-| `rejectedNotifMsg` | あなたの応募が却下されました： | Your application was reje | Arizangiz rad etildi: | L2285 |
-| `shoukaiPaidMsg` | 紹介報酬が支払われました： | paid shoukai reward of | shoukai mukofoti to'landi | L2286 |
-| `employeeRequestMsg` | 従業員リクエストメッセージ | Employee Request Message | Xodim so'rov xabari | L2287 |
-| `employeeConfirmed` | 従業員として確認されました！ | Employment confirmed! | Xodimlik tasdiqlandi! | L2299 |
+| `roleGuest` | ゲスト | Guest | Mehmon | L2152 |
+| `cancelEdit` | キャンセル | Cancel | Bekor qilish | L2797 |
+| `logout` | ログアウト | Logout | Tizimdan chiqish | L5935 |
+| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L3094 |
+| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L3095 |
+| `emailLabel` | メールアドレス | Email | Email | L3421 |
+| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L3834 |
+| `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L2750 |
+| `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3276 |
+| `roleDriver` | ドライバー (求職者) | Driver (Job Seeker) | Haydovchi (Ish izlovchi) | L2149 |
+| `roleCompanyLabel` | 企業 | Company | Kompaniya | L2150 |
+| `roleSchool` | 自動車学校 | Driving School | AvtoMaktab | L2151 |
+| `currentAddressLabel` | 現住所 | My current residence | Hozirgi yashash joyim | L2191 |
+| `currentlyStudyingLabel` | 在学中 | Currently studying | Hozir ham o'qiyman | L2192 |
+| `notifications` | 通知 | Notifications | Bildirishnomalar | L2290 |
+| `markAllRead` | すべて既読にする | Mark all read | Hammasini o'qilgan deb be | L2295 |
+| `noNotifications` | 通知はまだありません | No notifications yet | Hali bildirishnomalar yo' | L2304 |
+| `acceptedNotifTitle` | 応募が採用されました！ | Application Accepted! | Ariza qabul qilindi! | L2321 |
+| `interviewNotifTitle` | 面接のご招待 | Interview Invitation | Suhbatga taklif | L2322 |
+| `reviewedNotifTitle` | 応募が確認されました | Application Reviewed | Ariza ko'rib chiqildi | L2323 |
+| `rejectedNotifTitle` | 応募が却下されました | Application Rejected | Ariza rad etildi | L2324 |
+| `shoukaiPaidNotif` | 紹介報酬が支払われました | Shoukai reward paid | Shoukai mukofoti to'landi | L2325 |
+| `newNotification` | 新着 | New | Yangi | L2328 |
+| `acceptedNotifMsg` | あなたの応募が採用されました： | Your application has been | Arizangiz qabul qilindi: | L2331 |
+| `interviewNotifMsg` | 面接にご招待されました： | You are invited for an in | Siz suhbatga taklif qilin | L2332 |
+| `reviewedNotifMsg` | あなたの応募が確認されました： | Your application was revi | Arizangiz ko'rib chiqildi | L2333 |
+| `rejectedNotifMsg` | あなたの応募が却下されました： | Your application was reje | Arizangiz rad etildi: | L2334 |
+| `shoukaiPaidMsg` | 紹介報酬が支払われました： | paid shoukai reward of | shoukai mukofoti to'landi | L2335 |
+| `employeeRequestMsg` | 従業員リクエストメッセージ | Employee Request Message | Xodim so'rov xabari | L2336 |
+| `employeeConfirmed` | 従業員として確認されました！ | Employment confirmed! | Xodimlik tasdiqlandi! | L2348 |
 | ... | *+157 ta kalit* | | | |
 
 ### 📄 ResumeBuilder (70 ta kalit)
@@ -1388,32 +1529,27 @@ graph LR
 | `comingSoon` | 近日公開 | Coming Soon | Tez Kunda | L15 |
 | `comingSoonDesc` | 自動車サービスセクションは間もなく開始されます。最 | The auto service section  | Avtoservislar bo'limi tez | L16 |
 
-### 📄 VoiceAssistant (22 ta kalit)
+### 📄 VoiceAssistant (17 ta kalit)
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
-| `noInternetWait` | インターネット接続がありません。接続の再開を待って | No internet connection. W | Internet aloqasi yo'q. Ta | L227 |
-| `screenContextHome` | — | — | — | L668 |
-| `screenContextJobs` | — | — | — | L669 |
-| `screenContextAcademy` | — | — | — | L670 |
-| `screenContextProfile` | — | — | — | L671 |
-| `screenContextService` | — | — | — | L672 |
-| `offlineSpeechNotSupported` | — | — | — | L686 |
-| `offlineWarningMsg` | — | — | — | L779 |
-| `speechError` | 音声認識エラーが発生しました。もう一度お試しくださ | Speech recognition error  | Ovozni eshitishda xatolik | L807 |
-| `aiError` | 申し訳ありません、リクエストを処理できませんでした | Sorry, could not process  | 申し訳ありません、リクエストを処理できませんでした | L2222 |
-| `micDeniedTitle` | — | — | — | L2553 |
-| `aiSystemBusy` | システムが混雑しています。少々お待ちください。 | System is busy. Please tr | システムが混雑しています。少々お待ちください。 | L2682 |
-| `apiRequiredDesc` | — | — | — | L3057 |
-| `saveKeyBtn` | — | — | — | L3082 |
-| `getFreeKey` | — | — | — | L3091 |
-| `howToEnable` | — | — | — | L3103 |
-| `step1` | — | — | — | L3105 |
-| `step2` | — | — | — | L3106 |
-| `step3` | — | — | — | L3107 |
-| `checkPermissionBtn` | — | — | — | L3122 |
-| `userSaid` | — | — | — | L3144 |
-| `aiThinking` | — | — | — | L3158 |
+| `noInternetWait` | インターネット接続がありません。接続の再開を待って | No internet connection. W | Internet aloqasi yo'q. Ta | L241 |
+| `offlineSpeechNotSupported` | — | — | — | L706 |
+| `offlineWarningMsg` | — | — | — | L808 |
+| `speechError` | 音声認識エラーが発生しました。もう一度お試しくださ | Speech recognition error  | Ovozni eshitishda xatolik | L836 |
+| `micDeniedTitle` | — | — | — | L2586 |
+| `aiSystemBusy` | システムが混雑しています。少々お待ちください。 | System is busy. Please tr | システムが混雑しています。少々お待ちください。 | L2715 |
+| `aiError` | 申し訳ありません、リクエストを処理できませんでした | Sorry, could not process  | 申し訳ありません、リクエストを処理できませんでした | L2716 |
+| `apiRequiredDesc` | — | — | — | L3118 |
+| `saveKeyBtn` | — | — | — | L3143 |
+| `getFreeKey` | — | — | — | L3152 |
+| `howToEnable` | — | — | — | L3164 |
+| `step1` | — | — | — | L3166 |
+| `step2` | — | — | — | L3167 |
+| `step3` | — | — | — | L3168 |
+| `checkPermissionBtn` | — | — | — | L3183 |
+| `userSaid` | — | — | — | L3205 |
+| `aiThinking` | — | — | — | L3219 |
 
 
 ---
@@ -1427,14 +1563,14 @@ graph LR
 | Fayl | Turi | Qatorlar | Ishlatilgan joylar | Bug tarixi | Importerlar |
 |---|---|---|---|---|---|
 | **VerifiedBadge** | component | 29 | 5x | 0 ta bug | CompanyHome.jsx, DriverFeed.jsx, DrivingAcademy.jsx, JobDetail.jsx, Profile.jsx |
-| **CompanyHome** | component | 1963 | 3x | 1 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
-| **DriverFeed** | component | 1968 | 3x | 5 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
-| **DrivingAcademy** | component | 1525 | 3x | 3 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
-| **JDMNavigation** | component | 4708 | 3x | 0 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
-| **BottomNav** | component | 172 | 1x | 16 ta bug | App.jsx |
+| **CompanyHome** | component | 1963 | 3x | 2 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
+| **DriverFeed** | component | 1971 | 3x | 7 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
+| **DrivingAcademy** | component | 1528 | 3x | 4 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
+| **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
+| **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 5938 | 1x | 5 ta bug | App.jsx |
-| **VoiceAssistant** | component | 3188 | 1x | 1 ta bug | App.jsx |
+| **Profile** | component | 5987 | 1x | 11 ta bug | App.jsx |
+| **VoiceAssistant** | component | 3249 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
 
@@ -1444,8 +1580,11 @@ graph LR
 | **CustomMobilePickerModal** | component | 292 | 3x | 0 ta bug | CompanyHome.jsx, DriverFeed.jsx, DrivingAcademy.jsx |
 | **haptics** | util | 38 | 3x | 0 ta bug | BottomNav.jsx, Dashboard.jsx, JDMNavigation.jsx |
 | **imageCompressor** | util | 62 | 3x | 0 ta bug | CompanyHome.jsx, Profile.jsx, RoleSelect.jsx |
+| **actionRegistry** | service | 473 | 3x | 0 ta bug | VoiceAssistant.jsx, reasoningEngine.js, semanticRouter.js |
 | **vehicleApiService** | service | 250 | 3x | 0 ta bug | JapaneseVehiclePickerModal.jsx, LazyVehicleImage.jsx, Profile.jsx |
 | **japanLocationDB** | data | 562 | 3x | 0 ta bug | DriverFeed.jsx, DrivingAcademy.jsx, japanStations.js |
+| **AssistHeroShowcase** | component | 366 | 2x | 1 ta bug | App.jsx, Profile.jsx |
+| **Dashboard** | component | 637 | 1x | 2 ta bug | App.jsx |
 | **JobDetail** | component | 406 | 1x | 2 ta bug | App.jsx |
 | **ResumeBuilder** | component | 1271 | 1x | 0 ta bug | Profile.jsx |
 | **RoleSelect** | component | 1132 | 1x | 0 ta bug | App.jsx |
@@ -1454,10 +1593,13 @@ graph LR
 
 | Fayl | Turi | Ishlatilgan joylar | Importerlar |
 |---|---|---|---|
-| AssistHeroShowcase | component | 2x | App.jsx, Profile.jsx |
 | MichiLogo | component | 2x | LanguageSelect.jsx, Splash.jsx |
 | laneGuidance | util | 2x | LaneIndicator.jsx, turnInstructions.js |
 | turnInstructions | util | 2x | JDMNavigation.jsx, voiceGuidance.js |
+| autonomousWebSearchEngine | service | 2x | VoiceAssistant.jsx, multiAiMeshEngine.js |
+| japaneseLanguageEngine | service | 2x | VoiceAssistant.jsx, multiAiMeshEngine.js |
+| screenStructureIndex | service | 2x | VoiceAssistant.jsx, reasoningEngine.js |
+| semanticRouter | service | 2x | VoiceAssistant.jsx, learningEngine.js |
 | japanRegions | data | 2x | CompanyHome.jsx, japanCities.js |
 | japaneseVehiclesMaster | data | 2x | JapaneseVehiclePickerModal.jsx, Profile.jsx |
 | jobCategories | data | 2x | CompanyHome.jsx, DriverFeed.jsx |
@@ -1467,7 +1609,6 @@ graph LR
 | Fayl | Turi | Ishlatilgan joylar |
 |---|---|---|
 | AdminDashboard | component | 1x |
-| Dashboard | component | 1x |
 | JapaneseVehiclePickerModal | component | 1x |
 | LaneIndicator | component | 1x |
 | LanguageSelect | component | 1x |
@@ -1490,8 +1631,25 @@ graph LR
 | turnRadiusPhysics | util | 1x |
 | voiceGuidance | util | 1x |
 | voiceLexicon | util | 1x |
+| deepUISchemaIndex | service | 1x |
+| japaneseJLPTMasterEngine | service | 1x |
+| japaneseNewsService | service | 1x |
+| japaneseTextbookEngine | service | 1x |
+| jlptN1LanguageEngine | service | 1x |
+| learningEngine | service | 1x |
+| localSTT | service | 1x |
+| localTTS | service | 1x |
+| multiAiMeshEngine | service | 1x |
+| reasoningEngine | service | 1x |
+| voiceQuality | service | 1x |
 | japanCities | data | 1x |
 | japanStations | data | 1x |
+| japaneseExtendedResourcesLibrary | data | 1x |
+| japaneseGlobalTextbookLibrary | data | 1x |
+| japaneseJLPTMasterLibrary | data | 1x |
+| japaneseLogisticsDictionary | data | 1x |
+| japaneseUniversalMasterDictionary | data | 1x |
+| jlptN5toN1GrammarData | data | 1x |
 | jobFeatures | data | 1x |
 | jobPostingNormalizer | util | 0x |
 | japaneseVehiclesDb | data | 0x |
@@ -1501,8 +1659,8 @@ graph LR
 | Daraja | Soni |
 |---|---|
 | 🔴 CRITICAL | 9 |
-| 🟡 HIGH | 9 |
-| 🟢 MEDIUM | 7 |
-| ⚪ LOW | 29 |
-| **JAMI** | **54** |
+| 🟡 HIGH | 12 |
+| 🟢 MEDIUM | 10 |
+| ⚪ LOW | 45 |
+| **JAMI** | **76** |
 

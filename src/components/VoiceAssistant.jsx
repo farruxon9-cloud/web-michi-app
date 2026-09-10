@@ -3,13 +3,24 @@ import { useTranslation } from 'react-i18next';
 import { Mic, MicOff, WifiOff, Lock, X, Sparkles, Key, AlertTriangle, RefreshCw } from 'lucide-react';
 import './VoiceAssistant.css';
 import { matchLexiconCommand } from '../utils/voiceLexicon';
+import { actionRegistry } from '../services/actionRegistry';
+import { semanticRouter } from '../services/semanticRouter';
+import { localTTS } from '../services/localTTS';
+import { localSTT } from '../services/localSTT';
+import { voiceQuality } from '../services/voiceQuality';
+import { learningEngine } from '../services/learningEngine';
+import { screenStructureIndex } from '../services/screenStructureIndex';
+import { reasoningEngine } from '../services/reasoningEngine';
+import { japaneseLanguageEngine } from '../services/japaneseLanguageEngine';
+import { autonomousWebSearchEngine } from '../services/autonomousWebSearchEngine';
+import { multiAiMeshEngine } from '../services/multiAiMeshEngine';
 
 export default function VoiceAssistant({ 
   isActive, onClose, onStartVoice, isVoiceStandby, setIsVoiceStandby, 
   setActiveTab, musicPlayer, onStatusChange, activeTab,
   jobs = [], schools = [], profileData = {}, applications = [],
   selectedJob, selectedSchool,
-  setSelectedJob, setSelectedSchool, setProfileActivePage,
+  setSelectedJob, setSelectedSchool, profileActivePage = 'main', setProfileActivePage,
   setJobSearchQuery, setJobActiveSegment, setAcademySearchQuery,
   handleApplyJob, handleApplySchool, handleShoukai, userRole,
   selectedLicenses, setSelectedLicenses,
@@ -100,6 +111,9 @@ export default function VoiceAssistant({
 
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+
+  const profileActivePageRef = useRef(profileActivePage);
+  profileActivePageRef.current = profileActivePage;
 
   const setProfileActivePageRef = useRef(setProfileActivePage);
   setProfileActivePageRef.current = setProfileActivePage;
@@ -570,52 +584,24 @@ export default function VoiceAssistant({
       console.warn("Google Translate direct Audio playback failed, cascading to native synthesis:", e);
     }
 
-    // 4. Default Offline Fallback: Web Speech Synthesis
-    console.log("Cascading TTS: Falling back to device Web Speech Synthesis...");
-    if (!('speechSynthesis' in window)) {
-      if (onEndCallback) onEndCallback();
-      setStatus('idle');
-      return;
-    }
+    // 4. Default Offline Engine: localTTS with emotion modulation & text preprocessing
+    console.log("Cascading TTS: Playing via localTTS engine...");
+    const emotion = voiceQuality.detectEmotion(text);
+    const speechParams = voiceQuality.getSpeechParams(emotion);
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const standardLangMap = { 'ja': 'ja-JP', 'uz': 'en-US', 'en': 'en-US' };
-    utterance.lang = standardLangMap[lang] || 'ja-JP';
-
-    const voices = window.speechSynthesis.getVoices();
-    const jaVoice = voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
-    if (jaVoice) {
-      utterance.voice = jaVoice;
-    }
-
-    let resolved = false;
-    const cleanUp = () => {
-      if (resolved) return;
-      resolved = true;
-      if (safetyTimer) clearTimeout(safetyTimer);
-      setStatus('idle');
-    };
-
-    const safetyTimer = setTimeout(() => {
-      window.speechSynthesis.cancel();
-      cleanUp();
-      if (onEndCallback) onEndCallback();
-    }, Math.max(5000, text.length * 250));
-
-    utterance.onend = () => {
-      cleanUp();
-      if (onEndCallback) onEndCallback();
-    };
-
-    utterance.onerror = (e) => {
-      console.error('Speech synthesis error:', e);
-      cleanUp();
-      if (onEndCallback) onEndCallback();
-    };
-
-    synthesisUtteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+    localTTS.speak(text, {
+      lang,
+      pitch: speechParams.pitch,
+      rate: speechParams.rate,
+      onEnd: () => {
+        setStatus('idle');
+        if (onEndCallback) onEndCallback();
+      },
+      onError: () => {
+        setStatus('idle');
+        if (onEndCallback) onEndCallback();
+      }
+    });
   };
 
   // Helper to decode and play audio buffer with Web Audio API
@@ -661,21 +647,55 @@ export default function VoiceAssistant({
     }
   };
 
-  // Get screen context for READ_SCREEN
+  // Get screen context for READ_SCREEN and AI reasoning
   const getScreenContext = () => {
     const tab = activeTabRef.current || 'home';
-    const contexts = {
-      'home': t('screenContextHome', 'Asosiy sahifa (Dashboard) — ish e\'lonlari, musiqa pleyer va boshqaruv paneli ko\'rsatilmoqda.'),
-      'jobs': t('screenContextJobs', 'Ish e\'lonlari sahifasi — mavjud vakansiyalar ro\'yxati ko\'rsatilmoqda.'),
-      'academy': t('screenContextAcademy', 'Avtomaktablar sahifasi — Yaponiyadagi avtomaktablar ro\'yxati ko\'rsatilmoqda.'),
-      'profile': t('screenContextProfile', 'Profil sahifasi — shaxsiy ma\'lumotlar va sozlamalar ko\'rsatilmoqda.'),
-      'service': t('screenContextService', 'Xizmatlar sahifasi ko\'rsatilmoqda.')
-    };
-    return contexts[tab] || contexts['home'];
+    const subPage = profileActivePageRef?.current || 'main';
+    const lang = speechLangRef.current || 'uz';
+    return screenStructureIndex.getRichScreenContext(tab, subPage, lang);
   };
 
-  const interceptLocalCommand = (text) => {
-    return matchLexiconCommand(text, speechLangRef.current || 'uz');
+  // Initialize semantic router vectors on component mount
+  useEffect(() => {
+    semanticRouter.initialize();
+  }, []);
+
+  const interceptLocalCommand = async (text) => {
+    // 1. Exact / Levenshtein lexicon match
+    const lexiconMatch = await matchLexiconCommand(text, speechLangRef.current || 'uz');
+    if (lexiconMatch) {
+      console.log(`[LexiconRouter] Matched local command "${lexiconMatch.command}"`);
+      return lexiconMatch;
+    }
+    // 2. Logical Reasoning Engine: Multi-step Goal & Constraint Decomposition
+    const goalSteps = reasoningEngine.decomposeGoal(text);
+    if (goalSteps.length > 0) {
+      console.log(`[ReasoningEngine] Decomposed goal into ${goalSteps.length} steps:`, goalSteps);
+      const primaryStep = goalSteps[0];
+      const responseText = actionRegistry.getResponse(primaryStep.action, speechLangRef.current || 'uz') || "Kerakli shartlar bo'yicha filter o'rnatmoqdaman.";
+      return {
+        command: primaryStep.action,
+        response: responseText,
+        parameters: primaryStep.params || {}
+      };
+    }
+
+    // 3. High-speed Semantic Vector Router match
+    const semanticMatch = semanticRouter.classify(text);
+    if (semanticMatch) {
+      console.log(`[SemanticRouter] Matched intent "${semanticMatch.command}" (Confidence: ${semanticMatch.confidence})`);
+      let responseText = actionRegistry.getResponse(semanticMatch.command, speechLangRef.current || 'uz') || "Tushundim.";
+      if ((speechLangRef.current || 'uz').startsWith('ja')) {
+        responseText = japaneseLanguageEngine.applyKeigoPoliteness(responseText, 'ja');
+      }
+      return {
+        command: semanticMatch.command,
+        response: responseText,
+        parameters: {}
+      };
+    }
+
+    return null;
   };
 
   // Local-First Speech-to-Text Recognition for instant local matching and online fallback
@@ -689,18 +709,26 @@ export default function VoiceAssistant({
     }
 
     // Expose mic stream and analyser node for real-time visualizer canvas waves
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      localStreamRef.current = stream;
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      audioContextRef.current = audioCtx;
-      const source = audioCtx.createMediaStreamSource(stream);
-      const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 256;
-      source.connect(analyser);
-      analyserRef.current = analyser;
-    } catch (e) {
-      console.warn("Failed to create visualizer analyser for local recognition:", e);
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        localStreamRef.current = stream;
+        setMicPermission('granted');
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioContextRef.current = audioCtx;
+        const source = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        source.connect(analyser);
+        analyserRef.current = analyser;
+      } catch (e) {
+        console.warn("Failed to create visualizer analyser for local recognition:", e);
+        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+          setMicPermission('denied');
+          setStatus('idle');
+          return;
+        }
+      }
     }
 
     setStatus('listening');
@@ -720,10 +748,11 @@ export default function VoiceAssistant({
 
     let gotResult = false;
 
-    recognition.onresult = (event) => {
+    recognition.onresult = async (event) => {
       gotResult = true;
-      const text = event.results[0][0].transcript;
-      console.log(`STT transcription: "${text}"`);
+      const rawText = event.results[0][0].transcript;
+      const text = localSTT.cleanTranscription(rawText, currentLang);
+      console.log(`STT raw: "${rawText}" -> cleaned: "${text}"`);
 
       // Standby background mode wake word filtering to avoid false positives from background noise
       if (!isActiveRef.current) {
@@ -765,7 +794,7 @@ export default function VoiceAssistant({
       }
 
       // 1. First check: Intercept local commands immediately (0-token, 0ms latency)
-      const localResult = interceptLocalCommand(text);
+      const localResult = await interceptLocalCommand(text);
       if (localResult) {
         console.log(`Local NLP matched command: ${localResult.command}`);
         handleGeminiSuccess(localResult, text);
@@ -2021,12 +2050,7 @@ Ushbu matndan faqat telefon raqamini aniqlab, raqamlar va chiziqchalar formatida
             systemInstruction: {
               parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
             },
-            generationConfig: { responseMimeType: "application/json" },
-            tools: [
-              {
-                googleSearch: {}
-              }
-            ]
+            generationConfig: { responseMimeType: "application/json" }
           })
         }
       );
@@ -2125,7 +2149,7 @@ ${viewingContext}
     setStatus('thinking');
 
     // Fast-path: Check local intent interceptor first to save API tokens and get 0ms response time
-    const localResult = interceptLocalCommand(text);
+    const localResult = await interceptLocalCommand(text);
     if (localResult) {
       console.log(`Hybrid routing: Intercepted local command "${localResult.command}" for text "${text}"`);
       handleGeminiSuccess(localResult, text);
@@ -2139,8 +2163,15 @@ ${viewingContext}
     const localTimeContext = `\nCurrent local date and time: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}, ${now.toLocaleTimeString('en-US', { hour12: false })}. You MUST use this local date and time context to answer questions about the current day, date, year, month, or time in the user's language.`;
 
     const systemPrompt = `
-You are "Michi AI" — the smart voice assistant for the Michi app (a premium Japanese platform for truck driver jobs and driving academy courses).
+You are "Michi AI" — the universal AI voice assistant for the Michi platform, capable of understanding, constructing sentences, and answering across ALL professional domains (IT, Business, Healthcare, Tourism, Construction, Manufacturing, Food Service, Retail, Agriculture, Education, and Logistics).
 ${localTimeContext}
+
+STRICT COMPREHENSION & HONORIFIC ETIQUETTE RULES:
+1. UNIVERSAL & FULL COMPREHENSION: You MUST accurately understand ANY user speech across all industries, regardless of casual tone, slang, regional dialects, or JLPT proficiency level (N5 to N1).
+2. HONORIFIC & RESPECTFUL TONE: You MUST ALWAYS respond in a warm, highly respectful, clear, and easy-to-understand polite tone for EVERY user.
+   - If Japanese: ALWAYS use proper Keigo (丁寧語 / 尊敬語 / 謙譲語). Always start polite responses with greetings like "かしこまりました。" or "お疲れ様でございます。".
+   - If Uzbek: ALWAYS use highly respectful Uzbek forms ("Assalomu alaykum", "Siz", "-siz", "marhamat").
+   - If English: ALWAYS use warm, professional, and polite expressions ("Certainly", "It is my pleasure", "Here is").
 
 The user is sending you a text message. You must analyze the message and return a JSON structure.
 
@@ -2149,7 +2180,7 @@ Your task: analyze the user's message and return a JSON object:
   "userTranscription": "${text}",
   "command": "<COMMAND or NONE>",
   "parameters": <optional JSON object with parameters for FILTER_JOBS or FILTER_ACADEMIES>,
-  "response": "<short natural response in user's language confirming the action or answering the question>",
+  "response": "<short natural response in user's language confirming the action or answering the question in strict polite honorific tone>",
   "language": "<detected language: uz, ja, or en>"
 }
 
@@ -2216,18 +2247,20 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
     } catch (error) {
       if (!isActiveRef.current) return;
-      console.error('Gemini API Text Error:', error);
-      setStatus('error');
+      console.error('Gemini primary API error, activating Multi-AI Cascading Mesh (Free Web -> DeepSeek V3/R1 -> Local):', error);
       
-      const errorText = t('aiError', 'Tushunib bo\'lmadi. Qaytadan urinib ko\'ring.');
-      setErrorMessage(errorText);
-      speakResponse(errorText, 'uz', () => {
-        if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-        pillTimeoutRef.current = setTimeout(() => {
-          setShowPill(false);
-          if (isVoiceStandbyRef.current) scheduleRelisten();
-        }, 4000);
-      });
+      const userLang = speechLangRef.current || 'uz';
+      
+      // Cascading AI Mesh: Free Web Scraper -> DeepSeek V3 / R1 Open API -> Gemini Rotation Pool -> Local Engine
+      const meshResult = await multiAiMeshEngine.processCascadingQuery(text, userLang);
+
+      const fallbackResult = {
+        command: 'NONE',
+        response: meshResult.text,
+        language: userLang
+      };
+
+      handleGeminiSuccess(fallbackResult, text);
     }
   };
 
@@ -2657,7 +2690,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
       // Fail-safe: Override command using local NLP parser if transcription matches local patterns
       const finalTranscription = aiResult.userTranscription || '';
       if (finalTranscription) {
-        const localOverride = interceptLocalCommand(finalTranscription);
+        const localOverride = await interceptLocalCommand(finalTranscription);
         if (localOverride) {
           console.log(`Local fail-safe override: Changing command "${aiResult.command}" to "${localOverride.command}" for transcription "${finalTranscription}"`);
           aiResult.command = localOverride.command;
@@ -2695,14 +2728,20 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
   // Handle successful Gemini JSON parsing and routing
   const handleGeminiSuccess = (aiResult, userText) => {
-    setAiResponseText(aiResult.response);
     const detectedLang = aiResult.language || 'ja';
+    const politeResponse = japaneseLanguageEngine.formatPoliteResponse(aiResult.response, detectedLang);
+    setAiResponseText(politeResponse);
+
+    // Record positive feedback in local learning engine
+    if (userText && aiResult.command) {
+      learningEngine.recordFeedback(userText, aiResult.command, true);
+    }
 
     // Store interaction in conversation history
     setConversationHistory(prev => [
       ...prev,
       { role: 'user', parts: [{ text: userText }] },
-      { role: 'model', parts: [{ text: aiResult.response }] }
+      { role: 'model', parts: [{ text: politeResponse }] }
     ]);
 
     const isDelayedCommand = [
@@ -2719,18 +2758,29 @@ Return ONLY the raw JSON object, no markdown wrappers.
       executeVoiceCommand(aiResult.command, aiResult);
     }
 
-    speakResponse(aiResult.response, detectedLang, () => {
+    speakResponse(politeResponse, detectedLang, () => {
       if (isDelayedCommand) {
         // Wait 500ms after speaking finishes before executing navigation/close commands
         setTimeout(() => {
           executeVoiceCommand(aiResult.command, aiResult);
         }, 500);
+      } else {
+        // Continuous Conversational Dialogue Loop:
+        // Re-open microphone automatically so user can keep asking subsequent questions endlessly
+        if (isActiveRef.current) {
+          setTimeout(() => {
+            if (isActiveRef.current && statusRef.current !== 'listening') {
+              setStatus('idle');
+              startLocalSpeechRecognition();
+            }
+          }, 300);
+        }
       }
       
       if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
       pillTimeoutRef.current = setTimeout(() => {
-        setShowPill(false);
-        if (isVoiceStandbyRef.current) scheduleRelisten();
+        if (!isActiveRef.current) setShowPill(false);
+        if (isVoiceStandbyRef.current && !isActiveRef.current) scheduleRelisten();
       }, isDelayedCommand ? 1200 : 3500);
     });
   };
@@ -2957,6 +3007,17 @@ Return ONLY the raw JSON object, no markdown wrappers.
         }
         if (shouldClose && onCloseRef.current) onCloseRef.current();
         break;
+      case 'RESET_FILTERS':
+        if (setJobSearchQuery) setJobSearchQuery('');
+        if (setJobActiveSegment) setJobActiveSegment('all');
+        if (setSelectedLicenses) setSelectedLicenses([]);
+        if (setSelectedLangLevel) setSelectedLangLevel('all');
+        if (setSelectedBenefits) setSelectedBenefits([]);
+        if (setMinSalary) setMinSalary(0);
+        if (setSelectedPrefecture) setSelectedPrefecture('all');
+        if (setActiveTabRef.current) setActiveTabRef.current('jobs');
+        if (shouldClose && onCloseRef.current) onCloseRef.current();
+        break;
       case 'FILTER_ACADEMIES':
         if (setAcademySearchQuery) {
           const params = result.parameters || {};
@@ -3171,7 +3232,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
             <button 
               className="voice-lang-toggle-bubble" 
               onClick={cycleSpeechLanguage}
-              title={currentLang === 'ja' ? '音声言語を変更' : currentLang === 'en' ? 'Change Voice Language' : "Ovozli tilni o'zgartirish"}
+              title={speechLang === 'ja' ? '音声言語を変更' : speechLang === 'en' ? 'Change Voice Language' : "Ovozli tilni o'zgartirish"}
             >
               {speechLang === 'uz' ? '🇺🇿 UZ' : speechLang === 'ja' ? '🇯🇵 JA' : '🇬🇧 EN'}
             </button>

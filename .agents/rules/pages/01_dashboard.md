@@ -40,6 +40,23 @@ Ushbu qoida loyihamizning **Asosiy Sahifasi (Home Dashboard)** uchun barcha o'zg
 
 ---
 
-## 🚫 6. Page-Specific Constraints & Forbidden Patterns
+## 🔘 6. Bento Action Card Button Navigation Rules (Rule 53 Invariant)
+- **`マイ掲載一覧` (My Posted Ads / `my_ads`) Button**:
+  Home pagedagi `マイ掲載一覧` Bento kartasi (`bento-my-ads-card`) bosilganda:
+  1. `setProfileActivePageSource('home')` berilishi shart.
+  2. `setProfileActivePage('my_ads')` o'rnatilishi shart.
+  3. `setActiveTab('profile')` chaqirilganda `{ fromBottomNav: true }` berilmaydi.
+  4. Natijada ilova `my_ads` (`CompanyHome`) e'lonlarni boshqarish sahifasini 100% toza va daxlsiz ochadi.
+- **`Mening arizalarim` (`applications`) Button**:
+  Home pagedagi `Mening arizalarim` Bento kartasi (`bento-my-apps-card`) bosilganda:
+  1. `setProfileActivePageSource('home')` berilishi shart.
+  2. `setProfileActivePage('applications')` o'rnatilishi shart.
+  3. `setActiveTab('profile')` chaqirilganda `{ fromBottomNav: true }` berilmaydi.
+  4. Natijada ilova `applications` (`受信した応募`) arizalar sahifasini toza va daxlsiz ochadi.
+
+---
+
+## 🚫 7. Page-Specific Constraints & Forbidden Patterns
 1. **No Fixed Height Clipping**: `.dashboard-container` da `bottom: 96px !important` berish QAT'IYAN TAQIQLANADI (`bottom: 0` va `padding-bottom: 96px` ishlatilishi shart).
 2. **No Horizontal Overflow**: Barcha bento flex text elementlarida `min-width: 0;` mavjud bo'lishi shart.
+3. **No BottomNav Route Override**: Dashboard kartalaridan `setActiveTab('profile')` chaqirilganda `setProfileActivePage` o'rnatgan sub-sahifa o'zgaruvchisini (`my_ads`, `applications`) reset qilib yuborish QAT'IYAN TAQIQLANADI.

@@ -1169,16 +1169,14 @@ function App() {
       {!(activeTab === 'profile' && profileActivePage === 'resume_builder') && (
         <BottomNav 
           activeTab={activeTab} 
-          setActiveTab={(tab) => {
+          setActiveTab={(tab, options = {}) => {
             // Close JDM Navigation when switching tabs
             setShowJDMNavigation(false);
             
-            // Agar foydalanuvchi profile tabini takroran (2-marta) bossa yoki sub-sahifadan turib bossa, profilning asosiy oynasiga qaytaradi va eng yuqoridan scroll qiladi
-            if (tab === 'profile') {
-              if (activeTab === 'profile' || profileActivePage !== 'main') {
-                setProfileActivePage('main');
-                setProfileScrollToTopTrigger(prev => prev + 1);
-              }
+            // Agar foydalanuvchi profile tabini BEVOSITA BottomNav pastki menyusidan bossa, profilning asosiy oynasiga qaytaradi va eng yuqoridan scroll qiladi
+            if (tab === 'profile' && options.fromBottomNav) {
+              setProfileActivePage('main');
+              setProfileScrollToTopTrigger(prev => prev + 1);
             }
             
             setSelectedJob(null);
@@ -1238,6 +1236,7 @@ function App() {
         setMinSalary={setMinSalary}
         selectedPrefecture={selectedPrefecture}
         setSelectedPrefecture={setSelectedPrefecture}
+        profileActivePage={profileActivePage}
         setProfileActivePage={setProfileActivePage}
         setApplications={setApplications}
         toggleDarkMode={() => setDarkMode(prev => !prev)}

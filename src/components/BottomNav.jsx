@@ -23,7 +23,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
     } catch (e) {
       console.warn(e);
     }
-    setActiveTab(tabId);
+    setActiveTab(tabId, { fromBottomNav: true });
   };
 
   const activeIndex = navItems.findIndex((item) => item.id === activeTab);
@@ -36,7 +36,15 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
   const startOffset = React.useRef(0);
   const dragDistance = React.useRef(0);
 
+  const cleanupListeners = () => {
+    document.removeEventListener('mousemove', handlePointerMove);
+    document.removeEventListener('mouseup', handlePointerUp);
+    document.removeEventListener('touchmove', handlePointerMove);
+    document.removeEventListener('touchend', handlePointerUp);
+  };
+
   const handlePointerDown = (e) => {
+    cleanupListeners();
     isDragging.current = true;
     dragDistance.current = 0;
     const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
@@ -66,7 +74,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
     const deltaX = clientX - startX.current;
     dragDistance.current = Math.abs(deltaX);
     
-    if (dragDistance.current > 4 && e.cancelable) {
+    if (dragDistance.current > 12 && e.cancelable) {
       e.preventDefault();
     }
     
@@ -91,11 +99,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
   const handlePointerUp = (e) => {
     if (!isDragging.current) return;
     isDragging.current = false;
-    
-    document.removeEventListener('mousemove', handlePointerMove);
-    document.removeEventListener('mouseup', handlePointerUp);
-    document.removeEventListener('touchmove', handlePointerMove);
-    document.removeEventListener('touchend', handlePointerUp);
+    cleanupListeners();
     
     if (trackRef.current && indicatorRef.current) {
       const trackWidth = trackRef.current.getBoundingClientRect().width;
@@ -108,7 +112,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
       
       const closestIndex = Math.max(0, Math.min(4, Math.round(currentTranslateX / tabWidth)));
       
-      if (dragDistance.current > 5) {
+      if (dragDistance.current > 12) {
         handleTabClick(navItems[closestIndex].id);
       }
     }
@@ -116,10 +120,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
 
   React.useEffect(() => {
     return () => {
-      document.removeEventListener('mousemove', handlePointerMove);
-      document.removeEventListener('mouseup', handlePointerUp);
-      document.removeEventListener('touchmove', handlePointerMove);
-      document.removeEventListener('touchend', handlePointerUp);
+      cleanupListeners();
     };
   }, []);
 
@@ -151,7 +152,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
             key={item.id}
             className={`nav-item ${isActive ? 'active' : ''} ${item.isSpecial ? 'nav-item-special' : ''}`}
             onClick={() => {
-              if (dragDistance.current <= 5) {
+              if (dragDistance.current <= 25) {
                 handleTabClick(item.id);
               }
             }}
