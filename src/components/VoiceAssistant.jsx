@@ -233,23 +233,33 @@ export default function VoiceAssistant({
           pendingResumeStartRef.current = false;
           hasGreetedRef.current = true;
           
+          const todayStr = new Date().toISOString().split('T')[0];
+          const lastResumeGreetDate = localStorage.getItem('michi_ai_last_resume_greet_date');
+          const alreadyGreetedResumeToday = lastResumeGreetDate === todayStr;
+          localStorage.setItem('michi_ai_last_resume_greet_date', todayStr);
+
           const lang = speechLangRef.current || i18n.language || 'uz';
-          const greetings = {
-            uz: "Savollarimga qisqacha javob bersangiz, rezyumengizni to'g'ri to'ldirib boraman. Boshladik: Ismingiz va familiyangizni ayting.",
-            ja: "ご質問にお答えいただければ、履歴書を正確に入力いたします。それでは、お名前をフルネームで教えてください。",
-            en: "Please answer my questions to complete your resume. First, please state your full name."
-          };
-          const greeting = greetings[lang.startsWith('uz') ? 'uz' : lang.startsWith('ja') ? 'ja' : 'en'] || greetings['uz'];
-          
-          setAiResponseText(greeting);
-          setTranscript('');
-          setShowPill(true);
-          setStatus('speaking');
-          
-          speakResponse(greeting, lang, () => {
+          if (alreadyGreetedResumeToday) {
             setStatus('idle');
-            startLocalSpeechRecognition();
-          });
+            startListeningSequence();
+          } else {
+            const greetings = {
+              uz: "Tez orada rezyumeni sizning o'rningizga yozib berish imkoniyatlarim rivojlantirilmoqda. Yangilanishlarni kuting!",
+              ja: "只今、履歴書を自動作成する機能を開発中でございます。今後のアップデートにご期待ください！",
+              en: "Resume auto-fill features are currently under active development. Stay tuned for upcoming updates!"
+            };
+            const greeting = greetings[lang.startsWith('uz') ? 'uz' : lang.startsWith('ja') ? 'ja' : 'en'] || greetings['uz'];
+            
+            setAiResponseText(greeting);
+            setTranscript('');
+            setShowPill(true);
+            setStatus('speaking');
+            
+            speakResponse(greeting, lang, () => {
+              setStatus('idle');
+              startListeningSequence();
+            });
+          }
         } else if (!hasGreetedRef.current && !isFillingResumeRef.current) {
           hasGreetedRef.current = true;
           
@@ -790,30 +800,16 @@ export default function VoiceAssistant({
         localStreamRef.current = null;
       }
 
-      // Check if we are currently filling the voice resume questionnaire
-      if (isFillingResumeRef.current) {
-        console.log(`Voice resume questionnaire flow intercept: "${text}" (step: ${resumeStepRef.current})`);
-        processResumeFlow(text);
-        return;
-      }
-
-      // 1. First check: Intercept local commands immediately (0-token, 0ms latency)
-      const localResult = await interceptLocalCommand(text);
-      if (localResult) {
-        console.log(`Local NLP matched command: ${localResult.command}`);
-        handleGeminiSuccess(localResult, text);
-      } else {
-        // 2. Unmatched / Unsupported Speech Input: Display transcription, stay silent, auto-clear after 2.5s, and re-listen!
-        console.log(`Unmatched speech input "${text}". Staying silent and re-listening...`);
-        setStatus('idle');
-        if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-        pillTimeoutRef.current = setTimeout(() => {
-          setTranscript('');
-          if (isActiveRef.current) {
-            startLocalSpeechRecognition();
-          }
-        }, 2500);
-      }
+      // MVP 1.0 Mode: Display transcription text, take no action, auto-clear after 2.5s and continue listening
+      console.log(`MVP 1.0 Speech input recognized: "${text}". Displaying transcript, taking no action, and auto-clearing after 2.5s...`);
+      setStatus('idle');
+      if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+      pillTimeoutRef.current = setTimeout(() => {
+        setTranscript('');
+        if (isActiveRef.current) {
+          startLocalSpeechRecognition();
+        }
+      }, 2500);
     };
 
     recognition.onerror = (e) => {
