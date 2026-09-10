@@ -370,6 +370,15 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Ixcham Glassmorphism Sub-Card Layout (`.profile-subcard`)**: Barcha profile va resume sub-group cardlari strictly `border-radius: 16px`, `padding: 12px 14px`, `gap: 10px`, hamda `.profile-subcard-icon-wrap` (`32x32px`), `.profile-subcard-title` (`14.5px`) o'lchamlari bilan shakllantirilishi SHART.
   2. **Aniq Qat'iy Masofa va Simmetriya**: `特殊技術・資格証明書` konteyneri va `マイカー (登録車両)` konteynerlari orasidagi va ostidagi vertical margin masofasi (`marginBottom`) strictly **`4px`** qilib o'rnatilishi hamda 100% vertikal masofa simmetriyasi ta'minlanishi SHART.
 
+## 🚫 62. Japanese Postal Code Lookup API Mapping & Zen-kaku Normalization Invariant
+* **Xatolik**: 
+  1. E'lon yaratish shaklida (`CompanyHome.jsx`) poçta indeksi qidiruvi natijasini o'zlashtirishda `result.prefecture`, `result.city`, `result.town` kabi `lookupJapaneseZipcode` modulida MAVJUD BO'LMAGAN kalitlarga murojaat qilingani tufayli, auto-fill ishlamay `undefined` qiymatlar saqlanishi va forma validatsiya xatoligi berishi.
+  2. Yapon klaviaturalaridagi to'liq enli raqamlar (`０-９`) tozalanganda o'chib ketishi va Backspace tugmasi 3-raqamni o'chirishga yo'l qo me'yor bermasligi.
+* **Yechim (MAJBURIY)**:
+  1. **API Response Mapping**: `lookupJapaneseZipcode` qaytaradigan atributlar (`prefJa`, `detailAddress`, `townAddress`) strictly `prefecture`, `detailAddress`, `townAddress` state maydonlariga 1-ga-1 o'zlashtirilishi SHART.
+  2. **Zen-kaku Normalization**: Zen-kaku yapon raqamlari (`０-９`) ASCII `0-9` raqamlariga avtomatik o'g'irilishi hamda 7 ta raqam bo'lishi bilan `100-0001` formati shakllanib, prefektura, shahar va tuman avtomatik to'ldirilishi SHART.
+
+
 
 
 

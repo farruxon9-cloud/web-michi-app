@@ -220,20 +220,25 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   const [addressLookupStatus, setAddressLookupStatus] = useState(null); // { success: boolean, text: string }
 
   const fetchAddressByZip = async (rawZip) => {
-    const cleanZip = String(rawZip || '').replace(/[^0-9]/g, '');
-    if (cleanZip.length !== 7) return;
+    const digits = String(rawZip || '').replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0)).replace(/\D/g, '');
+    if (digits.length !== 7) return;
 
     setIsFetchingAddress(true);
     setAddressLookupStatus(null);
     try {
-      const result = await lookupJapaneseZipcode(cleanZip);
+      const result = await lookupJapaneseZipcode(digits);
       if (result.success) {
+        const formattedZip = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+        const prefValue = result.prefJa || result.prefectureKey;
+        const cityValue = result.detailAddress || result.cityJa || '';
+        const townValue = result.townAddress || result.townJa || '';
+
         setNewJob(prev => ({
           ...prev,
-          postalCode: result.formattedZip,
-          prefecture: result.prefecture,
-          detailAddress: result.city,
-          townAddress: result.town
+          postalCode: formattedZip,
+          prefecture: prefValue,
+          detailAddress: cityValue,
+          townAddress: townValue
         }));
         setErrors(prev => ({
           ...prev,
@@ -244,12 +249,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         }));
         setAddressLookupStatus({
           success: true,
-          text: `${result.prefectureJa} ${result.cityKanji} ${result.townKanji}`
+          text: `${result.prefJa || ''} ${cityValue} ${townValue}`.trim()
         });
       } else {
         setAddressLookupStatus({
           success: false,
-          text: result.error || '住所が見つかりませんでした'
+          text: result.error || '郵便番号が見つかりませんでした'
         });
       }
     } catch (err) {
@@ -968,17 +973,18 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                     autoComplete="off"
                     name="michi_job_postal_code"
                     data-lpignore="true"
-                    value={newJob.postalCode} 
+                    value={newJob.postalCode || ''} 
                     onChange={e => {
-                      let val = e.target.value.replace(/[^0-9-]/g, '');
-                      if (val.replace(/-/g, '').length === 3 && val.length === 3 && !val.includes('-')) {
-                        val = val + '-';
+                      const raw = e.target.value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0));
+                      const digits = raw.replace(/\D/g, '').slice(0, 7);
+                      let val = digits;
+                      if (digits.length > 3) {
+                        val = `${digits.slice(0, 3)}-${digits.slice(3)}`;
                       }
-                      setNewJob({ ...newJob, postalCode: val }); 
+                      setNewJob(prev => ({ ...prev, postalCode: val })); 
                       setErrors(prev => ({ ...prev, postalCode: null })); 
-                      const digits = val.replace(/[^0-9]/g, '');
                       if (digits.length === 7) {
-                        fetchAddressByZip(val);
+                        fetchAddressByZip(digits);
                       } else {
                         setAddressLookupStatus(null);
                       }
