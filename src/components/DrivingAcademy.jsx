@@ -39,11 +39,11 @@ import {
   Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, 
   Banknote, Edit3, SlidersHorizontal, X, ChevronDown, ChevronUp, RotateCcw,
   Car, GraduationCap, Sparkles, Globe, Truck, Bus, CreditCard, ShieldCheck, 
-  Clock, Gift, Users, Award, Shield, Check, Layers, Building2
+  Clock, Gift, Users, Award, Shield, Check, Layers, Building2, Train
 } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import CustomMobilePickerModal from './CustomMobilePickerModal';
-import { PREFECTURES, CITIES_BY_PREFECTURE, getAllCities } from '../data/japanLocationDB';
+import { PREFECTURES, CITIES_BY_PREFECTURE, TRAIN_LINES_BY_PREFECTURE, getAllTrainLines, getAllCities } from '../data/japanLocationDB';
 import CustomInlineDropdown from './CustomInlineDropdown';
 import './DrivingAcademy.css';
 import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinadi
@@ -269,6 +269,8 @@ export default function DrivingAcademy({
   const [selectedPrefecture, setSelectedPrefecture] = useState('all');
   const [selectedCitiesList, setSelectedCitiesList] = useState([]);
   const [expandedCities, setExpandedCities] = useState({});
+  const [selectedStations, setSelectedStations] = useState([]);
+  const [expandedLines, setExpandedLines] = useState({});
   const [selectedCourses, setSelectedCourses] = useState([]);
   const [selectedStyles, setSelectedStyles] = useState([]);
   const [selectedLang, setSelectedLang] = useState('all');
@@ -280,6 +282,7 @@ export default function DrivingAcademy({
 
   // Accordion open/close states (default false per Rule 20)
   const [isLocationSectionOpen, setIsLocationSectionOpen] = useState(false);
+  const [isStationsSectionOpen, setIsStationsSectionOpen] = useState(false);
   const [isCourseSectionOpen, setIsCourseSectionOpen] = useState(false);
   const [isStyleSectionOpen, setIsStyleSectionOpen] = useState(false);
   const [isLangSectionOpen, setIsLangSectionOpen] = useState(false);
@@ -288,6 +291,7 @@ export default function DrivingAcademy({
 
   const hasActiveFilters = selectedPrefecture !== 'all' || 
     selectedCitiesList.length > 0 ||
+    selectedStations.length > 0 ||
     selectedCourses.length > 0 || 
     selectedStyles.length > 0 || 
     selectedLang !== 'all' || 
@@ -300,6 +304,8 @@ export default function DrivingAcademy({
     setSelectedPrefecture('all');
     setSelectedCitiesList([]);
     setExpandedCities({});
+    setSelectedStations([]);
+    setExpandedLines({});
     setSelectedCourses([]);
     setSelectedStyles([]);
     setSelectedLang('all');
@@ -309,6 +315,7 @@ export default function DrivingAcademy({
 
     // 2. Collapse all filter accordion sections back to default folded state (Rule 20)
     setIsLocationSectionOpen(false);
+    setIsStationsSectionOpen(false);
     setIsCourseSectionOpen(false);
     setIsStyleSectionOpen(false);
     setIsLangSectionOpen(false);
@@ -325,7 +332,7 @@ export default function DrivingAcademy({
   // Reset pagination when search query or filters change
   useEffect(() => {
     setVisibleCount(10);
-  }, [searchQuery, selectedPrefecture, selectedCitiesList, selectedCourses, selectedStyles, selectedLang, selectedPriceRange, selectedFeatures]);
+  }, [searchQuery, selectedPrefecture, selectedCitiesList, selectedStations, selectedCourses, selectedStyles, selectedLang, selectedPriceRange, selectedFeatures]);
 
 
   // Filtrlash: qidiruv, kurs, uslub, prefektura, shaharlar, til, narx va imkoniyatlar bo'yicha
@@ -357,6 +364,9 @@ export default function DrivingAcademy({
     const matchesCitiesList = !selectedCitiesList || selectedCitiesList.length === 0 ||
       selectedCitiesList.some(c => (school.location || '').includes(c) || (school.fullAddress || '').includes(c) || (school.name || '').includes(c));
 
+    const matchesStations = !selectedStations || selectedStations.length === 0 ||
+      selectedStations.some(st => (school.location || '').includes(st) || (school.fullAddress || '').includes(st) || (school.name || '').includes(st) || (school.description || '').includes(st));
+
     const matchesLang = selectedLang === 'all' ||
       (school.langs && school.langs.includes(selectedLang));
 
@@ -370,7 +380,7 @@ export default function DrivingAcademy({
     const matchesFeatures = selectedFeatures.length === 0 ||
       selectedFeatures.every(f => f === 'shoukai' ? school.shoukaiFee > 0 : (school.features || []).includes(f));
 
-    return matchesSearch && matchesCourse && matchesStyle && matchesPrefecture && matchesCitiesList && matchesLang && matchesPrice && matchesFeatures;
+    return matchesSearch && matchesCourse && matchesStyle && matchesPrefecture && matchesCitiesList && matchesStations && matchesLang && matchesPrice && matchesFeatures;
   });
 
 
@@ -953,6 +963,125 @@ export default function DrivingAcademy({
             )}
           </div>
 
+          {/* SECTION 2: Bekat va Liniyalar (沿線・駅から探す) */}
+          <div className="job-category-section" style={{
+            background: 'var(--card-bg)', borderRadius: '18px', padding: '14px 16px',
+            border: selectedStations.length > 0 ? '1px solid rgba(48, 209, 88, 0.4)' : '1px solid var(--glass-border)',
+            boxShadow: selectedStations.length > 0 ? '0 8px 24px rgba(48, 209, 88, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.03)'
+          }}>
+            <button
+              type="button"
+              onClick={() => setIsStationsSectionOpen(!isStationsSectionOpen)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '36px', height: '36px', borderRadius: '10px', background: '#30D15815',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <Train size={18} color="#30D158" />
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                    {t('searchByStations', '沿線・駅から探す')}
+                  </h4>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                    {selectedStations.length === 0 ? t('allStations', '路線名・最寄り駅の指定') : `${selectedStations.length} ${t('selected', '件選択中')}`}
+                  </p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {selectedStations.length > 0 && (
+                  <span style={{
+                    background: '#30D158', color: '#FFFFFF', fontSize: '11px',
+                    fontWeight: '800', padding: '2px 8px', borderRadius: '10px'
+                  }}>
+                    {selectedStations.length}件
+                  </span>
+                )}
+                <div style={{
+                  width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transform: isStationsSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
+                }}>
+                  <ChevronDown size={16} color="var(--text-secondary)" />
+                </div>
+              </div>
+            </button>
+
+            {isStationsSectionOpen && (
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)' }}>
+                <div className="tab-stations-wrapper">
+                  {(() => {
+                    const prefKey = (selectedPrefecture || 'all').toLowerCase();
+                    const linesList = prefKey === 'all' ? getAllTrainLines() : (TRAIN_LINES_BY_PREFECTURE[prefKey] || []);
+                    return linesList.map(line => {
+                      const isExpanded = !!expandedLines[line.id];
+                      const isLineSelected = line.stations.length > 0 && line.stations.every(st => selectedStations.includes(st));
+
+                      return (
+                        <div key={line.id} className="townwork-accordion-item">
+                          <div className="townwork-accordion-header">
+                            <label className="townwork-checkbox-label">
+                              <div 
+                                className={`townwork-square-checkbox ${isLineSelected ? 'checked' : ''}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (isLineSelected) {
+                                    setSelectedStations(prev => prev.filter(st => !line.stations.includes(st)));
+                                  } else {
+                                    setSelectedStations(prev => Array.from(new Set([...prev, ...line.stations])));
+                                  }
+                                }}
+                              >
+                                {isLineSelected && <Check size={14} color="#FFF" />}
+                              </div>
+                              <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: line.color, boxShadow: `0 0 6px ${line.color}` }} />
+                              <span>{line.name}</span>
+                            </label>
+                            <div 
+                              onClick={() => setExpandedLines(prev => ({ ...prev, [line.id]: !prev[line.id] }))}
+                              style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                            >
+                              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                            </div>
+                          </div>
+
+                          {isExpanded && (
+                            <div className="townwork-accordion-body">
+                              {line.stations.map(st => {
+                                const isStChecked = selectedStations.includes(st);
+                                return (
+                                  <div 
+                                    key={st} 
+                                    className="townwork-sub-checkbox-item"
+                                    onClick={() => {
+                                      setSelectedStations(prev => 
+                                        prev.includes(st) ? prev.filter(item => item !== st) : [...prev, st]
+                                      );
+                                    }}
+                                  >
+                                    <div className={`townwork-square-checkbox ${isStChecked ? 'checked' : ''}`} style={{ width: '16px', height: '16px' }}>
+                                      {isStChecked && <Check size={11} color="#FFF" />}
+                                    </div>
+                                    <span>{st}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* SECTION 2: Litsenziya toifalari / Kurslar (取得希望の免許・コース) */}
           <div className="job-category-section" style={{
             background: 'var(--card-bg)', borderRadius: '18px', padding: '14px 16px',
@@ -1500,6 +1629,19 @@ export default function DrivingAcademy({
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedFeatures([])} title={selectedFeatures.map(getAcademyFeatureLabel).join(', ')}>
                     ✨ {getAcademyFeatureLabel(selectedFeatures[0])} <span className="active-chip-count">外{selectedFeatures.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                  </span>
+                )
+              )}
+              {selectedStations.length > 0 && (
+                selectedStations.length <= 2 ? (
+                  selectedStations.map(st => (
+                    <span key={st} className="active-chip" onClick={() => setSelectedStations(prev => prev.filter(s => s !== st))}>
+                      🚃 {st} <span className="active-chip-close"><X size={11} /></span>
+                    </span>
+                  ))
+                ) : (
+                  <span className="active-chip" onClick={() => setSelectedStations([])} title={selectedStations.join(', ')}>
+                    🚃 {selectedStations[0]} <span className="active-chip-count">外{selectedStations.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
