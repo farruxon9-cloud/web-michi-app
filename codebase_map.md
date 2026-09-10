@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 19:14:48**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **10/09/2026, 19:17:24**.
 
 ---
 
@@ -372,7 +372,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (6085 qator, 314794 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (6098 qator, 315807 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -1064,7 +1064,7 @@ graph TD
 * **Yo'li:** `.agents/rules/michi_ui_constraints.md` (69 qator)
 
 ### 📜 [past_mistakes.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/past_mistakes.md)
-* **Yo'li:** `.agents/rules/past_mistakes.md` (422 qator)
+* **Yo'li:** `.agents/rules/past_mistakes.md` (432 qator)
 
 
 ---
@@ -1417,19 +1417,19 @@ graph LR
 | `sswLanguageReq` | 🇯🇵 日本語要件：JLPT N4またはJFT- | 🇯🇵 Japanese: JLPT N4 or | 🇯🇵 Yapon Tili: JLPT N4  | L258 |
 | ... | *+7 ta kalit* | | | |
 
-### 📄 Profile (187 ta kalit)
+### 📄 Profile (188 ta kalit)
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
 | `roleGuest` | ゲスト | Guest | Mehmon | L2165 |
 | `cancelEdit` | キャンセル | Cancel | Bekor qilish | L2810 |
-| `logout` | ログアウト | Logout | Tizimdan chiqish | L6033 |
-| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L3159 |
-| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L3160 |
-| `emailLabel` | メールアドレス | Email | Email | L3484 |
-| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L3897 |
+| `logout` | ログアウト | Logout | Tizimdan chiqish | L6046 |
+| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L2864 |
+| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L2865 |
+| `emailLabel` | メールアドレス | Email | Email | L3497 |
+| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L3910 |
 | `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L2763 |
-| `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3339 |
+| `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3352 |
 | `roleDriver` | ドライバー (求職者) | Driver (Job Seeker) | Haydovchi (Ish izlovchi) | L2162 |
 | `roleCompanyLabel` | 企業 | Company | Kompaniya | L2163 |
 | `roleSchool` | 自動車学校 | Driving School | AvtoMaktab | L2164 |
@@ -1451,7 +1451,7 @@ graph LR
 | `shoukaiPaidMsg` | 紹介報酬が支払われました： | paid shoukai reward of | shoukai mukofoti to'landi | L2348 |
 | `employeeRequestMsg` | 従業員リクエストメッセージ | Employee Request Message | Xodim so'rov xabari | L2349 |
 | `employeeConfirmed` | 従業員として確認されました！ | Employment confirmed! | Xodimlik tasdiqlandi! | L2361 |
-| ... | *+157 ta kalit* | | | |
+| ... | *+158 ta kalit* | | | |
 
 ### 📄 ResumeBuilder (70 ta kalit)
 
@@ -1499,6 +1499,13 @@ graph LR
 | `currentAddressLabel` | 現住所 | My current residence | Hozirgi yashash joyim | L143 |
 | `currentlyStudyingLabel` | 在学中 | Currently studying | Hozir ham o'qiyman | L144 |
 | `namePlaceholder` | 氏名 (ローマ字) ✱ | Full Name (Latin alphabet | Ism Familya (Lotin alifbo | L615 |
+| `companyTypeLabel` | 事業種別 | Business Type | Faoliyat turi | L914 |
+| `typeTaxiCompany` | タクシー会社 | Taxi Company / Service | Taksi xizmati / Kompaniya | L922 |
+| `typeBusCompany` | バス会社 | Bus Company / Service | Avtobus xizmati / Yo'nali | L923 |
+| `typeSpecialMachinery` | 特殊車両・建設重機 | Special Machinery / Const | Maxsus texnika / Qurilish | L924 |
+| `typeOther` | その他 | Other | Boshqa | L925 |
+| `contactPersonPlaceholder` | 担当者名 | Contact Person Name | Mas'ul shaxs ismi | L973 |
+| `companyPhonePlaceholder` | 電話番号 | Phone Number | Telefon raqam | L982 |
 | `livingAddressTitle` | 現住所履歴 | Living Address History | Yashash manzillari | L651 |
 | `livingAddressPlaceholder` | 現住所を入力してください（都道府県、市区町村、番地 | Current address (Prefectu | Hozirgi manzilingiz (Pref | L669 |
 | `addAddressBtn` | 住所を追加 | Add Living Address | Yashash manzili qo'shish | L691 |
@@ -1511,18 +1518,11 @@ graph LR
 | `driverLicensesLabel` | 運転免許証 | Driver Licenses | Haydovchilik guvohnomalar | L774 |
 | `techCertsLabel` | 特殊技術・資格証明書 | Specialized Vehicles & Ce | Maxsus texnika va malaka  | L794 |
 | `workExperience` | 職歴 | Work Experience | Ish tajribasi | L817 |
-| `companyTypeLabel` | 事業種別 | Business Type | Faoliyat turi | L914 |
-| `typeTaxiCompany` | タクシー会社 | Taxi Company / Service | Taksi xizmati / Kompaniya | L922 |
-| `typeBusCompany` | バス会社 | Bus Company / Service | Avtobus xizmati / Yo'nali | L923 |
-| `typeSpecialMachinery` | 特殊車両・建設重機 | Special Machinery / Const | Maxsus texnika / Qurilish | L924 |
-| `typeOther` | その他 | Other | Boshqa | L925 |
+| `companyDetailsTitle` | 連絡先情報 | Contact Information | Bog'lanish Ma'lumotlari | L970 |
 | `companyAddressPlaceholder` | 住所（都道府県、市区町村） | Address (Prefecture, City | Manzil (Prefektura, Shaha | L931 |
-| `contactPersonPlaceholder` | 担当者名 | Contact Person Name | Mas'ul shaxs ismi | L973 |
-| `companyPhonePlaceholder` | 電話番号 | Phone Number | Telefon raqam | L982 |
 | `websitePlaceholder` | 企業のウェブサイト（任意） | Company Website (Optional | Kompaniya veb-sayti (ixti | L951 |
 | `employeeCountPlaceholder` | 従業員数 | Number of Employees | Xodimlar soni | L991 |
 | `companyDescPlaceholder` | 組織の簡単な説明（任意） | Brief description (Option | Tashkilot haqida qisqacha | L999 |
-| `registerTitle` | 登録 | Registration | Ro'yxatdan o'tish | L551 |
 | ... | *+56 ta kalit* | | | |
 
 ### 📄 ServiceComingSoon (2 ta kalit)
@@ -1569,9 +1569,9 @@ graph LR
 | **DriverFeed** | component | 2006 | 3x | 9 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
 | **DrivingAcademy** | component | 1894 | 3x | 6 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
-| **BottomNav** | component | 173 | 1x | 26 ta bug | App.jsx |
+| **BottomNav** | component | 173 | 1x | 28 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 6085 | 1x | 12 ta bug | App.jsx |
+| **Profile** | component | 6098 | 1x | 13 ta bug | App.jsx |
 | **VoiceAssistant** | component | 2505 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk

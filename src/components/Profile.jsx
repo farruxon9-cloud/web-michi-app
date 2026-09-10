@@ -2850,6 +2850,66 @@ const getLicenseLabel = (type) => {
                   <span className="field-value">{profileData.email}</span>
                 )}
               </div>
+              {/* Company basic fields */}
+              {userRole === 'company' && (
+                <>
+                  <div className="resume-field">
+                    <span className="field-label">{t('companyTypeLabel', '事業種別')}</span>
+                    {isEditing ? (
+                      <select 
+                        className="edit-input" 
+                        value={editData.companyType || 'logistics'}
+                        onChange={(e) => setEditData({...editData, companyType: e.target.value})}
+                      >
+                        <option value="logistics">{t('typeLogistics')}</option>
+                        <option value="driving_school">{t('typeDrivingSchool')}</option>
+                        <option value="taxi_company">{t('typeTaxiCompany')}</option>
+                        <option value="bus_company">{t('typeBusCompany')}</option>
+                        <option value="special_machinery">{t('typeSpecialMachinery')}</option>
+                        <option value="other">{t('typeOther')}</option>
+                      </select>
+                    ) : (
+                      <span className="field-value badge-blue">
+                        {profileData.companyType === 'logistics' ? t('typeLogistics') :
+                         profileData.companyType === 'driving_school' ? t('typeDrivingSchool') :
+                         profileData.companyType === 'taxi_company' ? t('typeTaxiCompany') :
+                         profileData.companyType === 'bus_company' ? t('typeBusCompany') :
+                         profileData.companyType === 'special_machinery' ? t('typeSpecialMachinery') :
+                         profileData.companyType === 'other' ? t('typeOther') :
+                         (profileData.companyType || t('notProvided'))}
+                      </span>
+                    )}
+                  </div>
+                  <div className="resume-field">
+                    <span className="field-label">{t('contactPersonPlaceholder', '担当者名')}</span>
+                    {isEditing ? (
+                      <input 
+                        type="text" 
+                        className="edit-input" 
+                        value={editData.contactPerson || ''} 
+                        onChange={(e) => setEditData({...editData, contactPerson: e.target.value})} 
+                        maxLength={50} 
+                      />
+                    ) : (
+                      <span className="field-value">{profileData.contactPerson || t('notProvided')}</span>
+                    )}
+                  </div>
+                  <div className="resume-field">
+                    <span className="field-label">{t('companyPhonePlaceholder', '電話番号')}</span>
+                    {isEditing ? (
+                      <input 
+                        type="tel" 
+                        className="edit-input" 
+                        value={editData.companyPhone || ''} 
+                        onChange={(e) => setEditData({...editData, companyPhone: e.target.value})} 
+                        maxLength={20} 
+                      />
+                    ) : (
+                      <span className="field-value">{profileData.companyPhone || t('notProvided')}</span>
+                    )}
+                  </div>
+                </>
+              )}
               {/* Driver fields */}
               {(userRole === 'driver' || userRole === 'guest') && (
                 <>
@@ -3145,156 +3205,109 @@ const getLicenseLabel = (type) => {
               )}
             </>
           )}
-              {/* Company fields */}
+              {/* CARD 2: Company Details & Registration */}
               {userRole === 'company' && (
-                <>
-                  <div className="resume-field">
-                    <span className="field-label">{t('companyTypeLabel')}</span>
-                    {isEditing ? (
-                      <select 
-                        className="edit-input" 
-                        value={editData.companyType || 'logistics'}
-                        onChange={(e) => setEditData({...editData, companyType: e.target.value})}
-                      >
-                        <option value="logistics">{t('typeLogistics')}</option>
-                        <option value="driving_school">{t('typeDrivingSchool')}</option>
-                        <option value="taxi_company">{t('typeTaxiCompany')}</option>
-                        <option value="bus_company">{t('typeBusCompany')}</option>
-                        <option value="special_machinery">{t('typeSpecialMachinery')}</option>
-                        <option value="other">{t('typeOther')}</option>
-                      </select>
-                    ) : (
-                      <span className="field-value badge-blue">
-                        {profileData.companyType === 'logistics' ? t('typeLogistics') :
-                         profileData.companyType === 'driving_school' ? t('typeDrivingSchool') :
-                         profileData.companyType === 'taxi_company' ? t('typeTaxiCompany') :
-                         profileData.companyType === 'bus_company' ? t('typeBusCompany') :
-                         profileData.companyType === 'special_machinery' ? t('typeSpecialMachinery') :
-                         profileData.companyType === 'other' ? t('typeOther') :
-                         (profileData.companyType || t('notProvided'))}
-                      </span>
-                    )}
+                <div className="profile-subcard glass squircle">
+                  <div className="profile-subcard-header">
+                    <div className="profile-subcard-icon-wrap" style={{ background: 'rgba(10, 132, 255, 0.12)', color: '#0A84FF' }}>
+                      <Building2 size={18} />
+                    </div>
+                    <span className="profile-subcard-title">{t('companyDetailsTitle', '企業詳細・登録情報')}</span>
                   </div>
-                  <div className="resume-field">
-                    <span className="field-label">{t('companyAddressPlaceholder')}</span>
-                    {isEditing ? (
-                      <input 
-                        type="text" 
-                        className="edit-input" 
-                        value={editData.companyAddress || ''} 
-                        onChange={(e) => setEditData({...editData, companyAddress: e.target.value})} 
-                        maxLength={120} 
-                      />
-                    ) : (
-                      <span className="field-value">{profileData.companyAddress || t('notProvided')}</span>
-                    )}
+                  <div className="resume-body" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="resume-field">
+                      <span className="field-label">{t('companyAddressPlaceholder', '住所（都道府県、市区町村）')}</span>
+                      {isEditing ? (
+                        <input 
+                          type="text" 
+                          className="edit-input" 
+                          value={editData.companyAddress || ''} 
+                          onChange={(e) => setEditData({...editData, companyAddress: e.target.value})} 
+                          maxLength={120} 
+                        />
+                      ) : (
+                        <span className="field-value">{profileData.companyAddress || t('notProvided')}</span>
+                      )}
+                    </div>
+                    <div className="resume-field">
+                      <span className="field-label">{t('corporateNumberLabel', '法人番号')}</span>
+                      {isEditing ? (
+                        <input 
+                          type="text" 
+                          className="edit-input" 
+                          value={editData.corporateNumber || ''} 
+                          onChange={(e) => setEditData({...editData, corporateNumber: e.target.value})} 
+                          maxLength={13} 
+                        />
+                      ) : (
+                        <span className="field-value">{profileData.corporateNumber || t('notProvided')}</span>
+                      )}
+                    </div>
+                    <div className="resume-field">
+                      <span className="field-label">{t('websitePlaceholder', '企業のウェブサイト')}</span>
+                      {isEditing ? (
+                        <input 
+                          type="url" 
+                          className="edit-input" 
+                          value={editData.website || ''} 
+                          onChange={(e) => setEditData({...editData, website: e.target.value})} 
+                          maxLength={100} 
+                        />
+                      ) : (
+                        <span className="field-value">
+                          {profileData.website ? (
+                            <a href={profileData.website} target="_blank" rel="noopener noreferrer" style={{ color: '#0A84FF', textDecoration: 'none' }}>{profileData.website}</a>
+                          ) : t('notProvided')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="resume-field">
+                      <span className="field-label">{t('establishedYearLabel', '設立年')}</span>
+                      {isEditing ? (
+                        <input 
+                          type="number" 
+                          className="edit-input" 
+                          value={editData.establishedYear || ''} 
+                          onChange={(e) => setEditData({...editData, establishedYear: e.target.value})} 
+                          maxLength={4} 
+                        />
+                      ) : (
+                        <span className="field-value">{profileData.establishedYear || t('notProvided')}</span>
+                      )}
+                    </div>
+                    <div className="resume-field">
+                      <span className="field-label">{t('employeeCountPlaceholder', '従業員数')}</span>
+                      {isEditing ? (
+                        <input 
+                          type="number" 
+                          className="edit-input" 
+                          value={editData.employeeCount || ''} 
+                          onChange={(e) => setEditData({...editData, employeeCount: e.target.value})} 
+                        />
+                      ) : (
+                        <span className="field-value">{profileData.employeeCount || t('notProvided')}</span>
+                      )}
+                    </div>
+                    <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                      <span className="field-label">{t('companyDescPlaceholder', '会社概要')}</span>
+                      {isEditing ? (
+                        <textarea 
+                          className="edit-input" 
+                          style={{ width: '100%', minHeight: '80px', resize: 'vertical', fontFamily: 'inherit' }}
+                          value={editData.companyDesc || ''} 
+                          onChange={(e) => setEditData({...editData, companyDesc: e.target.value})} 
+                          maxLength={300} 
+                        />
+                      ) : (
+                        <span className="field-value" style={{ whiteSpace: 'pre-wrap', width: '100%' }}>{profileData.companyDesc || t('notProvided')}</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="resume-field">
-                    <span className="field-label">{t('contactPersonPlaceholder')}</span>
-                    {isEditing ? (
-                      <input 
-                        type="text" 
-                        className="edit-input" 
-                        value={editData.contactPerson || ''} 
-                        onChange={(e) => setEditData({...editData, contactPerson: e.target.value})} 
-                        maxLength={50} 
-                      />
-                    ) : (
-                      <span className="field-value">{profileData.contactPerson || t('notProvided')}</span>
-                    )}
-                  </div>
-                  <div className="resume-field">
-                    <span className="field-label">{t('companyPhonePlaceholder')}</span>
-                    {isEditing ? (
-                      <input 
-                        type="tel" 
-                        className="edit-input" 
-                        value={editData.companyPhone || ''} 
-                        onChange={(e) => setEditData({...editData, companyPhone: e.target.value})} 
-                        maxLength={20} 
-                      />
-                    ) : (
-                      <span className="field-value">{profileData.companyPhone || t('notProvided')}</span>
-                    )}
-                  </div>
-                  <div className="resume-field">
-                    <span className="field-label">{t('corporateNumberLabel')}</span>
-                    {isEditing ? (
-                      <input 
-                        type="text" 
-                        className="edit-input" 
-                        value={editData.corporateNumber || ''} 
-                        onChange={(e) => setEditData({...editData, corporateNumber: e.target.value})} 
-                        maxLength={13} 
-                      />
-                    ) : (
-                      <span className="field-value">{profileData.corporateNumber || t('notProvided')}</span>
-                    )}
-                  </div>
-                  <div className="resume-field">
-                    <span className="field-label">{t('websitePlaceholder')}</span>
-                    {isEditing ? (
-                      <input 
-                        type="url" 
-                        className="edit-input" 
-                        value={editData.website || ''} 
-                        onChange={(e) => setEditData({...editData, website: e.target.value})} 
-                        maxLength={100} 
-                      />
-                    ) : (
-                      <span className="field-value">
-                        {profileData.website ? (
-                          <a href={profileData.website} target="_blank" rel="noopener noreferrer" style={{ color: '#0A84FF', textDecoration: 'none' }}>{profileData.website}</a>
-                        ) : t('notProvided')}
-                      </span>
-                    )}
-                  </div>
-                  <div className="resume-field">
-                    <span className="field-label">{t('establishedYearLabel')}</span>
-                    {isEditing ? (
-                      <input 
-                        type="number" 
-                        className="edit-input" 
-                        value={editData.establishedYear || ''} 
-                        onChange={(e) => setEditData({...editData, establishedYear: e.target.value})} 
-                        maxLength={4} 
-                      />
-                    ) : (
-                      <span className="field-value">{profileData.establishedYear || t('notProvided')}</span>
-                    )}
-                  </div>
-                  <div className="resume-field">
-                    <span className="field-label">{t('employeeCountPlaceholder')}</span>
-                    {isEditing ? (
-                      <input 
-                        type="number" 
-                        className="edit-input" 
-                        value={editData.employeeCount || ''} 
-                        onChange={(e) => setEditData({...editData, employeeCount: e.target.value})} 
-                      />
-                    ) : (
-                      <span className="field-value">{profileData.employeeCount || t('notProvided')}</span>
-                    )}
-                  </div>
-                  <div className="resume-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
-                    <span className="field-label">{t('companyDescPlaceholder')}</span>
-                    {isEditing ? (
-                      <textarea 
-                        className="edit-input" 
-                        style={{ width: '100%', minHeight: '80px', resize: 'vertical', fontFamily: 'inherit' }}
-                        value={editData.companyDesc || ''} 
-                        onChange={(e) => setEditData({...editData, companyDesc: e.target.value})} 
-                        maxLength={300} 
-                      />
-                    ) : (
-                      <span className="field-value" style={{ whiteSpace: 'pre-wrap', width: '100%' }}>{profileData.companyDesc || t('notProvided')}</span>
-                    )}
-                  </div>
-                </>
+                </div>
               )}
         </div>
-        {/* 96px dock clearance so personal info page content scrolls cleanly past floating BottomNav */}
-        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 140px dock clearance so personal info page content scrolls cleanly past floating BottomNav */}
+        <div style={{ height: '140px', minHeight: '140px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }

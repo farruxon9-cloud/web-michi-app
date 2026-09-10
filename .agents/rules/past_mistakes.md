@@ -403,6 +403,16 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. **Target Area Header Banner (`対象エリア (地域)`)**: Location drawer ichidagi prefektura ko'rsatkichi strictly gradient fon, `対象エリア (地域)` sarlavhasi, tanlangan prefektura nomi (`全ての地域 (全国)` / `東京都`) hamda o'ng tomondagi moviy `変更 ⌄` pill tugmasidan iborat banner card ko'rinishida bo'lishi SHART. Orticha va takrorlanuvchi ichki button-cardlar taqiqlanadi.
   3. **Complete Active Chips Rendering**: Active chips satrida strictly shaharlar (`📍`), bekatlar (`🚃`), kurslar (`🚗`), o'qish uslublari (`🏫`), til (`🗣️`), narx (`💰`) va qidiruv kalitlari ixcham guruhlanib chiqishi SHART.
 
+## 🚫 66. Company Profile Sub-Card Container & Dock Clearance Invariant
+* **Xatolik**: 
+  1. Kompaniya ma'lumotlari (`Profile.jsx` dagi `会社情報`) ko'rsatilganda `事業種別`, `住所`, `担当者名`, `電話番号`, `法人番号`, `企業のウェブサイト`, `設立年`, `従業員数`, `会社概要` kabi maydonlarning hech qanday `profile-subcard glass squircle` idishiga o'ralmasdan, to'g'ridan-to'g'ri ochiq fon ustiga tashlanib qolishi.
+  2. Sub-card bo'shliqlari yetishmagani sababli kontent pastki `BottomNav` orqasiga kirib o'qilmay qolishi.
+* **Yechim (MAJBURIY)**:
+  1. **Strict 2-SubCard Structure for Company Profile**: Kompaniya ma'lumotlari strictly 2 ta alohida `.profile-subcard glass squircle` idishlariga guruhlanishi SHART:
+     - **Card 1 (`基本情報`)**: Ism, Email, `事業種別` (badge-blue bilan), `担当者名`, `電話番号`.
+     - **Card 2 (`企業詳細・登録情報`)**: `<Building2 size={18} />` ikonkali sarlavha, `住所`, `法人番号`, `企業のウェブサイト` (moviy link bilan), `設立年`, `従業員数`, `会社概要`.
+  2. **140px Trailing Clearance Spacer**: Barcha subcard-lar va profillar pastida strictly `<div style={{ height: '140px', minHeight: '140px', width: '100%', flexShrink: 0, clear: 'both' }} />` tozalovchi bo'shliq qo'yilishi SHART. Kontent pastki navigatsiyadan to'liq 100% balandda toza skroll bo'lishi ta'minlanadi.
+
 
 
 
