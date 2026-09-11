@@ -411,7 +411,18 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Strict 2-SubCard Structure for Company Profile**: Kompaniya ma'lumotlari strictly 2 ta alohida `.profile-subcard glass squircle` idishlariga guruhlanishi SHART:
      - **Card 1 (`基本情報`)**: Ism, Email, `事業種別` (badge-blue bilan), `担当者名`, `電話番号`.
      - **Card 2 (`企業詳細・登録情報`)**: `<Building2 size={18} />` ikonkali sarlavha, `住所`, `法人番号`, `企業のウェブサイト` (moviy link bilan), `設立年`, `従業員数`, `会社概要`.
-  2. **76px Trailing Clearance Spacer**: Barcha subcard-lar va profillar pastida strictly `<div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />` tozalovchi bo'shliq qo'yilishi SHART. Kontent pastki navigatsiyadan to'liq 100% balandda toza skroll bo'lishi ta'minlanadi.
+  2. **96px Trailing Clearance Spacer**: Barcha subcard-lar va profillar pastida strictly `<div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />` tozalovchi bo'shliq qo'yilishi SHART. Kontent pastki navigatsiyadan to'liq 100% balandda toza skroll bo'lishi ta'minlanadi.
+
+## 🚫 67. Mathematical Trailing Clearance Formula Invariant (`96px - 84px = 12px Gap`)
+* **Xatolik**: Sub-sahifalarda (`Profile.jsx` -> `personalInfo` / `会社情報`, `applications`, `settings`, `about` va h.k.) pastki menyugacha bo'lgan trailing clearance spacer qiymatini tasodifiy (masalan 140px, 128px, 116px, 104px, 76px, 52px) o'zgartirish orqali pastki menyu va eng oxirgi kard o'rtasida katta ochiq bo'shliq (blank void) yoki ustma-ust tushish (overlay trap) hosil qilish.
+* **Yechim (MAJBURIY)**:
+  1. **Qat'iy Matematik Geometriya Formulasi**:
+     - Suzuvchi `BottomNav` paneli balandligi: `height: 72px`, pastdan masofasi `bottom: 12px` -> **Yuqori chegara (Top Edge) = 84px**.
+     - Sub-sahifalar oxiridagi trailing clearance spacer balandligi strictly **`96px`** (`<div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />`) bo'lishi SHART.
+  2. **Aniq 12px Vizual Oraliq (Gap)**:
+     - `96px (spacer balandligi) - 84px (BottomNav top edge) = 12px exact visual clearance gap`.
+     - Ushbu formula barcha sub-sahifalardagi eng oxirgi konteyner (masalan, `会社情報` dagi `企業詳細・登録情報` kardi) pastki navigatsiya tugmalarining ustida roppa-rosa va parallel ravishda **12px toza vizual oraliq** qoldirib to'xtashini 100% kafolatlaydi.
+
 
 
 

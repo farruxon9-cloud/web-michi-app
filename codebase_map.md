@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **11/09/2026, 14:03:48**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **11/09/2026, 14:05:48**.
 
 ---
 
@@ -1064,7 +1064,7 @@ graph TD
 * **Yo'li:** `.agents/rules/michi_ui_constraints.md` (69 qator)
 
 ### 📜 [past_mistakes.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/past_mistakes.md)
-* **Yo'li:** `.agents/rules/past_mistakes.md` (432 qator)
+* **Yo'li:** `.agents/rules/past_mistakes.md` (443 qator)
 
 
 ---
@@ -1569,9 +1569,9 @@ graph LR
 | **DriverFeed** | component | 2006 | 3x | 9 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
 | **DrivingAcademy** | component | 1894 | 3x | 6 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
-| **BottomNav** | component | 173 | 1x | 28 ta bug | App.jsx |
+| **BottomNav** | component | 173 | 1x | 30 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 6098 | 1x | 13 ta bug | App.jsx |
+| **Profile** | component | 6098 | 1x | 14 ta bug | App.jsx |
 | **VoiceAssistant** | component | 2505 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
