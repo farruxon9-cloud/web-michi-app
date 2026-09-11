@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **11/09/2026, 14:13:59**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **11/09/2026, 14:16:34**.
 
 ---
 
@@ -372,7 +372,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (6455 qator, 333576 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (6487 qator, 335164 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -1049,7 +1049,7 @@ graph TD
 * **Yo'li:** `.agents/rules/pages/12_platform_about.md` (24 qator)
 
 ### 📜 [13_shoukai_referrals.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/13_shoukai_referrals.md)
-* **Yo'li:** `.agents/rules/pages/13_shoukai_referrals.md` (22 qator)
+* **Yo'li:** `.agents/rules/pages/13_shoukai_referrals.md` (25 qator)
 
 ### 📜 [14_employee_management.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/14_employee_management.md)
 * **Yo'li:** `.agents/rules/pages/14_employee_management.md` (22 qator)
@@ -1423,14 +1423,14 @@ graph LR
 |---|---|---|---|---|
 | `roleGuest` | ゲスト | Guest | Mehmon | L2167 |
 | `cancelEdit` | キャンセル | Cancel | Bekor qilish | L2812 |
-| `logout` | ログアウト | Logout | Tizimdan chiqish | L6403 |
+| `logout` | ログアウト | Logout | Tizimdan chiqish | L6435 |
 | `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L2866 |
 | `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L2867 |
 | `emailLabel` | メールアドレス | Email | Email | L3499 |
-| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L4267 |
+| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L4299 |
 | `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L2765 |
 | `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3354 |
-| `viewDetails` | 詳細を見る | View Details | Batafsil ko'rish | L4024 |
+| `viewDetails` | 詳細を見る | View Details | Batafsil ko'rish | L4056 |
 | `roleDriver` | ドライバー (求職者) | Driver (Job Seeker) | Haydovchi (Ish izlovchi) | L2164 |
 | `roleCompanyLabel` | 企業 | Company | Kompaniya | L2165 |
 | `roleSchool` | 自動車学校 | Driving School | AvtoMaktab | L2166 |
@@ -1571,7 +1571,7 @@ graph LR
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 30 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 6455 | 1x | 14 ta bug | App.jsx |
+| **Profile** | component | 6487 | 1x | 14 ta bug | App.jsx |
 | **VoiceAssistant** | component | 2505 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk

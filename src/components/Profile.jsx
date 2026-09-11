@@ -3844,34 +3844,50 @@ const getLicenseLabel = (type) => {
             </h2>
           </div>
 
-          {/* Sub-Section Filter Segmented Tabs */}
-          <div style={{ padding: '0 16px', marginTop: '12px', display: 'flex', gap: '8px' }}>
+          {/* Sub-Section Filter Segmented Track Bar */}
+          <div style={{ 
+            margin: '12px 16px 0 16px', 
+            padding: '4px', 
+            borderRadius: '16px', 
+            background: 'var(--glass-bg, rgba(255, 255, 255, 0.08))', 
+            border: '1px solid var(--glass-border)', 
+            backdropFilter: 'blur(20px)',
+            display: 'flex', 
+            gap: '4px' 
+          }}>
             <button
               style={{
                 flex: 1,
-                padding: '8px 12px',
+                padding: '9px 12px',
                 borderRadius: '12px',
-                fontSize: '12.5px',
+                fontSize: '13px',
                 fontWeight: '700',
                 border: 'none',
                 cursor: 'pointer',
-                background: shoukaiTab === 'pending' ? 'var(--primary, #0A84FF)' : 'var(--glass-bg, rgba(255,255,255,0.1))',
+                background: shoukaiTab === 'pending' 
+                  ? 'linear-gradient(135deg, #0A84FF 0%, #0070E0 100%)' 
+                  : 'transparent',
                 color: shoukaiTab === 'pending' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
-                boxShadow: shoukaiTab === 'pending' ? '0 3px 10px rgba(10,132,255,0.3)' : 'none',
-                transition: 'all 0.2s ease'
+                boxShadow: shoukaiTab === 'pending' ? '0 4px 14px rgba(10, 132, 255, 0.4)' : 'none',
+                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
               }}
               onClick={() => setShoukaiTab('pending')}
             >
+              {shoukaiTab === 'pending' && (
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FFFFFF', display: 'inline-block' }} />
+              )}
               <span>未払い</span>
               <span style={{ 
-                background: shoukaiTab === 'pending' ? 'rgba(255,255,255,0.25)' : 'rgba(142,142,147,0.2)', 
-                padding: '2px 6px', 
-                borderRadius: '8px', 
-                fontSize: '11px' 
+                background: shoukaiTab === 'pending' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(142, 142, 147, 0.18)', 
+                color: shoukaiTab === 'pending' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                padding: '2px 7px', 
+                borderRadius: '10px', 
+                fontSize: '11.5px',
+                fontWeight: '800'
               }}>
                 {pendingApps.length}
               </span>
@@ -3880,29 +3896,36 @@ const getLicenseLabel = (type) => {
             <button
               style={{
                 flex: 1,
-                padding: '8px 12px',
+                padding: '9px 12px',
                 borderRadius: '12px',
-                fontSize: '12.5px',
+                fontSize: '13px',
                 fontWeight: '700',
                 border: 'none',
                 cursor: 'pointer',
-                background: shoukaiTab === 'paid' ? '#34C759' : 'var(--glass-bg, rgba(255,255,255,0.1))',
+                background: shoukaiTab === 'paid' 
+                  ? 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)' 
+                  : 'transparent',
                 color: shoukaiTab === 'paid' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
-                boxShadow: shoukaiTab === 'paid' ? '0 3px 10px rgba(52,199,89,0.3)' : 'none',
-                transition: 'all 0.2s ease'
+                boxShadow: shoukaiTab === 'paid' ? '0 4px 14px rgba(52, 199, 89, 0.4)' : 'none',
+                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
               }}
               onClick={() => setShoukaiTab('paid')}
             >
+              {shoukaiTab === 'paid' && (
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FFFFFF', display: 'inline-block' }} />
+              )}
               <span>支払完了</span>
               <span style={{ 
-                background: shoukaiTab === 'paid' ? 'rgba(255,255,255,0.25)' : 'rgba(142,142,147,0.2)', 
-                padding: '2px 6px', 
-                borderRadius: '8px', 
-                fontSize: '11px' 
+                background: shoukaiTab === 'paid' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(142, 142, 147, 0.18)', 
+                color: shoukaiTab === 'paid' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                padding: '2px 7px', 
+                borderRadius: '10px', 
+                fontSize: '11.5px',
+                fontWeight: '800'
               }}>
                 {paidApps.length}
               </span>
@@ -3910,28 +3933,37 @@ const getLicenseLabel = (type) => {
 
             <button
               style={{
-                padding: '8px 14px',
+                flex: 1,
+                padding: '9px 12px',
                 borderRadius: '12px',
-                fontSize: '12.5px',
+                fontSize: '13px',
                 fontWeight: '700',
                 border: 'none',
                 cursor: 'pointer',
-                background: shoukaiTab === 'all' ? 'var(--text-primary)' : 'var(--glass-bg, rgba(255,255,255,0.1))',
-                color: shoukaiTab === 'all' ? 'var(--bg-primary)' : 'var(--text-secondary, #8E8E93)',
+                background: shoukaiTab === 'all' 
+                  ? 'linear-gradient(135deg, #5E5CE6 0%, #4B4ACA 100%)' 
+                  : 'transparent',
+                color: shoukaiTab === 'all' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
-                transition: 'all 0.2s ease'
+                boxShadow: shoukaiTab === 'all' ? '0 4px 14px rgba(94, 92, 230, 0.4)' : 'none',
+                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
               }}
               onClick={() => setShoukaiTab('all')}
             >
+              {shoukaiTab === 'all' && (
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FFFFFF', display: 'inline-block' }} />
+              )}
               <span>全件</span>
               <span style={{ 
-                background: shoukaiTab === 'all' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.2)', 
-                padding: '2px 6px', 
-                borderRadius: '8px', 
-                fontSize: '11px' 
+                background: shoukaiTab === 'all' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(142, 142, 147, 0.18)', 
+                color: shoukaiTab === 'all' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                padding: '2px 7px', 
+                borderRadius: '10px', 
+                fontSize: '11.5px',
+                fontWeight: '800'
               }}>
                 {shoukaiApps.length}
               </span>
