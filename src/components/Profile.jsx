@@ -3306,8 +3306,8 @@ const getLicenseLabel = (type) => {
                 </div>
               )}
         </div>
-        {/* 76px dock clearance spacer so content scrolls cleanly past floating nav */}
-        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 52px dock clearance spacer lifting last container up by 24px past floating nav */}
+        <div style={{ height: '52px', minHeight: '52px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }

@@ -48,7 +48,7 @@ Personal info elements and resume sections must NEVER be dumped into a single fl
 ## 📝 3. Form Input Cards & Save CTA
 - **Input Fields Padding**: `padding: 14px; margin-bottom: 12px;`
 - **Save Changes CTA**: Full-width button with `padding: 14px; border-radius: 16px; font-weight: 700;`
-- **Trailing Dock Clearance**: `<div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />`
+- **Trailing Dock Clearance**: `<div style={{ height: '52px', minHeight: '52px', width: '100%', flexShrink: 0, clear: 'both' }} />` (Lifting last container up by 24px past floating nav).
 
 ---
 
