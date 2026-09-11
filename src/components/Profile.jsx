@@ -225,6 +225,8 @@ export default function Profile({
 
   // Saved main Profile scroll position when navigating to sub-pages
   const [savedMainScroll, setSavedMainScroll] = useState(0);
+  const [shoukaiTab, setShoukaiTab] = useState('pending'); // 'pending' | 'paid' | 'all'
+  const [selectedShoukaiApp, setSelectedShoukaiApp] = useState(null);
 
   const handleOpenSubPage = (page) => {
     const container = mainContainerRef.current || document.querySelector('.profile-container');
@@ -3824,22 +3826,128 @@ const getLicenseLabel = (type) => {
   if (activePage === 'my_shoukai') {
     if (userRole === 'company') {
       const shoukaiApps = applications.filter(a => a.company === profileData.fullName && a.shoukaiId);
+      const pendingApps = shoukaiApps.filter(a => !a.shoukaiPaid);
+      const paidApps = shoukaiApps.filter(a => a.shoukaiPaid);
+
+      const displayedApps = shoukaiTab === 'pending' ? pendingApps : shoukaiTab === 'paid' ? paidApps : shoukaiApps;
+
       return (
         <div className="profile-container sub-page-view fade-in">
           <div className="profile-sticky-back">
             <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
           </div>
+          
           <div className="sub-page-header" style={{ paddingTop: '56px' }}>
             <h2>
-              {t('shoukaiViaApps')}
+              {t('shoukaiViaApps', '紹介経由の応募案件')}
               <span className="section-header-count">({shoukaiApps.length})</span>
             </h2>
           </div>
+
+          {/* Sub-Section Filter Segmented Tabs */}
+          <div style={{ padding: '0 16px', marginTop: '12px', display: 'flex', gap: '8px' }}>
+            <button
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '12px',
+                fontSize: '12.5px',
+                fontWeight: '700',
+                border: 'none',
+                cursor: 'pointer',
+                background: shoukaiTab === 'pending' ? 'var(--primary, #0A84FF)' : 'var(--glass-bg, rgba(255,255,255,0.1))',
+                color: shoukaiTab === 'pending' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                boxShadow: shoukaiTab === 'pending' ? '0 3px 10px rgba(10,132,255,0.3)' : 'none',
+                transition: 'all 0.2s ease'
+              }}
+              onClick={() => setShoukaiTab('pending')}
+            >
+              <span>未払い</span>
+              <span style={{ 
+                background: shoukaiTab === 'pending' ? 'rgba(255,255,255,0.25)' : 'rgba(142,142,147,0.2)', 
+                padding: '2px 6px', 
+                borderRadius: '8px', 
+                fontSize: '11px' 
+              }}>
+                {pendingApps.length}
+              </span>
+            </button>
+
+            <button
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '12px',
+                fontSize: '12.5px',
+                fontWeight: '700',
+                border: 'none',
+                cursor: 'pointer',
+                background: shoukaiTab === 'paid' ? '#34C759' : 'var(--glass-bg, rgba(255,255,255,0.1))',
+                color: shoukaiTab === 'paid' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                boxShadow: shoukaiTab === 'paid' ? '0 3px 10px rgba(52,199,89,0.3)' : 'none',
+                transition: 'all 0.2s ease'
+              }}
+              onClick={() => setShoukaiTab('paid')}
+            >
+              <span>支払完了</span>
+              <span style={{ 
+                background: shoukaiTab === 'paid' ? 'rgba(255,255,255,0.25)' : 'rgba(142,142,147,0.2)', 
+                padding: '2px 6px', 
+                borderRadius: '8px', 
+                fontSize: '11px' 
+              }}>
+                {paidApps.length}
+              </span>
+            </button>
+
+            <button
+              style={{
+                padding: '8px 14px',
+                borderRadius: '12px',
+                fontSize: '12.5px',
+                fontWeight: '700',
+                border: 'none',
+                cursor: 'pointer',
+                background: shoukaiTab === 'all' ? 'var(--text-primary)' : 'var(--glass-bg, rgba(255,255,255,0.1))',
+                color: shoukaiTab === 'all' ? 'var(--bg-primary)' : 'var(--text-secondary, #8E8E93)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease'
+              }}
+              onClick={() => setShoukaiTab('all')}
+            >
+              <span>全件</span>
+              <span style={{ 
+                background: shoukaiTab === 'all' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.2)', 
+                padding: '2px 6px', 
+                borderRadius: '8px', 
+                fontSize: '11px' 
+              }}>
+                {shoukaiApps.length}
+              </span>
+            </button>
+          </div>
+
+          {/* Applications / Referrals List */}
           <div className="applications-list" style={{ padding: '16px' }}>
-            {shoukaiApps.length === 0 ? (
-              <p style={{ color: '#8E8E93', textAlign: 'center', marginTop: '20px' }}>{t('noShoukaiApps')}</p>
+            {displayedApps.length === 0 ? (
+              <div className="glass squircle" style={{ padding: '24px 16px', textAlign: 'center', margin: '12px 0' }}>
+                <p style={{ color: '#8E8E93', fontSize: '14px', margin: 0 }}>
+                  {shoukaiTab === 'pending' ? '未払いの紹介案件はありません' : shoukaiTab === 'paid' ? '支払完了した紹介履歴はありません' : t('noShoukaiApps')}
+                </p>
+              </div>
             ) : (
-              shoukaiApps.map(app => {
+              displayedApps.map(app => {
                 const localizedTitle = app.title.includes('Mahalliy yetkazib berish') || app.title.includes('Local Delivery')
                   ? 'ルート配送ドライバー (地場デリバリー)'
                   : app.title.includes('Xalqaro yuk tashish')
@@ -3847,8 +3955,13 @@ const getLicenseLabel = (type) => {
                   : app.title;
 
                 return (
-                  <div key={app.id} className="shoukai-app-card glass squircle" style={{ padding: '14px 16px', marginBottom: '12px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)' }}>
-                    {/* Header Row: Title & Reward Amount */}
+                  <div 
+                    key={app.id} 
+                    className="shoukai-app-card glass squircle" 
+                    style={{ padding: '14px 16px', marginBottom: '12px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)', cursor: 'pointer' }}
+                    onClick={() => setSelectedShoukaiApp(app)}
+                  >
+                    {/* Header Row: Title & Reward Fee */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', gap: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ 
@@ -3882,7 +3995,7 @@ const getLicenseLabel = (type) => {
                       </span>
                     </div>
 
-                    {/* Sectional Grid Blocks (2 Structured Sub-Panels) */}
+                    {/* Sectional Grid Blocks (2 Sub-Panels) */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
                       {/* Block 1: Referral Info */}
                       <div style={{ background: 'rgba(10, 132, 255, 0.06)', border: '1px solid rgba(10, 132, 255, 0.15)', borderRadius: '10px', padding: '8px 10px' }}>
@@ -3905,48 +4018,50 @@ const getLicenseLabel = (type) => {
                       </div>
                     </div>
 
-                    {/* Bottom Action / Paid Row */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                    {/* Bottom Action Row with Sub-page CTA indicator */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11.5px', color: '#0A84FF', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {t('viewDetails', '詳細・手続きを見る')} <ChevronRight size={14} />
+                      </span>
                       {!app.shoukaiPaid ? (
                         <button 
                           className="btn-primary squircle" 
                           style={{ 
-                            width: '100%',
-                            padding: '8px 14px', 
-                            fontSize: '13px', 
+                            padding: '6px 14px', 
+                            fontSize: '12.5px', 
                             fontWeight: '700',
                             background: 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)', 
                             color: '#FFFFFF',
                             border: 'none',
-                            borderRadius: '10px',
+                            borderRadius: '8px',
                             boxShadow: '0 3px 10px rgba(52, 199, 89, 0.3)',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
+                            gap: '5px',
                             cursor: 'pointer'
                           }}
-                          onClick={() => onShoukaiPaid && onShoukaiPaid(app.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onShoukaiPaid) onShoukaiPaid(app.id);
+                          }}
                         >
-                          <CreditCard size={15} />
+                          <CreditCard size={14} />
                           {t('makePayment', '支払いを行う')}
                         </button>
                       ) : (
                         <div style={{ 
-                          width: '100%',
                           display: 'flex', 
                           alignItems: 'center', 
-                          justifyContent: 'center',
-                          gap: '5px', 
+                          gap: '4px', 
                           color: '#34C759', 
                           fontWeight: '700', 
-                          fontSize: '12.5px', 
+                          fontSize: '12px', 
                           background: 'rgba(52, 199, 89, 0.1)', 
-                          padding: '6px 10px', 
-                          borderRadius: '8px',
+                          padding: '4px 8px', 
+                          borderRadius: '6px',
                           border: '1px solid rgba(52, 199, 89, 0.2)'
                         }}>
-                          <CheckCircle2 size={15} /> {t('paidStatus', '支払完了')}
+                          <CheckCircle2 size={14} /> {t('paidStatus', '支払完了')}
                         </div>
                       )}
                     </div>
@@ -3956,6 +4071,161 @@ const getLicenseLabel = (type) => {
             )}
           </div>
 
+          {/* Interactive Shoukai Application Detail Sub-View Modal Sheet */}
+          {selectedShoukaiApp && (
+            <div 
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0, 0, 0, 0.65)',
+                backdropFilter: 'blur(8px)',
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+                animation: 'fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+              }}
+              onClick={() => setSelectedShoukaiApp(null)}
+            >
+              <div 
+                className="glass squircle"
+                style={{
+                  width: '100%',
+                  maxWidth: '520px',
+                  maxHeight: '85vh',
+                  overflowY: 'auto',
+                  background: 'var(--bg-primary, #1c1c1e)',
+                  borderTopLeftRadius: '24px',
+                  borderTopRightRadius: '24px',
+                  padding: '20px 20px 32px 20px',
+                  boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
+                  border: '1px solid var(--glass-border)',
+                  animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Modal Drag handle & Header */}
+                <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '0 auto 16px auto' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>
+                    紹介案件の詳細手続き
+                  </h3>
+                  <button 
+                    style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#8E8E93', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    onClick={() => setSelectedShoukaiApp(null)}
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Sub-Section 1: 🏢 求人・案件情報 */}
+                <div className="glass squircle" style={{ padding: '14px', marginBottom: '12px', background: 'rgba(255,255,255,0.04)' }}>
+                  <div style={{ fontSize: '12px', color: '#8E8E93', fontWeight: '700', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Briefcase size={14} color="#0A84FF" /> 応募求人・報奨金
+                  </div>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700' }}>
+                    {selectedShoukaiApp.title.includes('Mahalliy') ? 'ルート配送ドライバー (地場デリバリー)' : selectedShoukaiApp.title}
+                  </h4>
+                  <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#8E8E93' }}>
+                    掲載企業: <strong>{selectedShoukaiApp.company}</strong>
+                  </p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(52, 199, 89, 0.12)', padding: '8px 12px', borderRadius: '10px', border: '1px solid rgba(52, 199, 89, 0.25)' }}>
+                    <span style={{ fontSize: '12.5px', color: '#34C759', fontWeight: '700' }}>紹介報奨金 (インセンティブ)</span>
+                    <span style={{ fontSize: '17px', fontWeight: '800', color: '#34C759' }}>{selectedShoukaiApp.shoukaiAmount || '¥10,000'}</span>
+                  </div>
+                </div>
+
+                {/* Sub-Section 2: 👤 応募者情報 */}
+                <div className="glass squircle" style={{ padding: '14px', marginBottom: '12px', background: 'rgba(255,255,255,0.04)' }}>
+                  <div style={{ fontSize: '12px', color: '#8E8E93', fontWeight: '700', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <User size={14} color="#FF9500" /> 応募者情報
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#8E8E93' }}>氏名:</span>
+                      <strong style={{ color: 'var(--text-primary)' }}>{selectedShoukaiApp.applicantInfo?.fullName || 'Farrux Alimov'}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#8E8E93' }}>連絡先:</span>
+                      <span style={{ color: '#0A84FF' }}>{selectedShoukaiApp.applicantInfo?.phone || '+81 90-8888-9999'}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#8E8E93' }}>応募日:</span>
+                      <span>{selectedShoukaiApp.appliedDate}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#8E8E93' }}>選考ステータス:</span>
+                      <span style={{ color: '#34C759', fontWeight: '700' }}>提出済み (選考中)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sub-Section 3: 🏷️ 紹介者メタ情報 */}
+                <div className="glass squircle" style={{ padding: '14px', marginBottom: '16px', background: 'rgba(255,255,255,0.04)' }}>
+                  <div style={{ fontSize: '12px', color: '#8E8E93', fontWeight: '700', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Tag size={14} color="#AF52DE" /> 紹介元ID & 規約
+                  </div>
+                  <div style={{ fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#8E8E93' }}>紹介者識別コード:</span>
+                    <strong style={{ color: '#0A84FF', fontFamily: 'monospace', fontSize: '14px' }}>{selectedShoukaiApp.shoukaiId}</strong>
+                  </div>
+                </div>
+
+                {/* Action CTA */}
+                {!selectedShoukaiApp.shoukaiPaid ? (
+                  <button 
+                    className="btn-primary squircle" 
+                    style={{ 
+                      width: '100%',
+                      padding: '12px 16px', 
+                      fontSize: '15px', 
+                      fontWeight: '800',
+                      background: 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)', 
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '14px',
+                      boxShadow: '0 4px 16px rgba(52, 199, 89, 0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      if (onShoukaiPaid) onShoukaiPaid(selectedShoukaiApp.id);
+                      setSelectedShoukaiApp(null);
+                    }}
+                  >
+                    <CreditCard size={18} />
+                    {t('makePayment', '支払いを行う')} ({selectedShoukaiApp.shoukaiAmount || '¥10,000'})
+                  </button>
+                ) : (
+                  <div style={{ 
+                    width: '100%',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    gap: '6px', 
+                    color: '#34C759', 
+                    fontWeight: '800', 
+                    fontSize: '15px', 
+                    background: 'rgba(52, 199, 89, 0.12)', 
+                    padding: '12px 16px', 
+                    borderRadius: '14px',
+                    border: '1px solid rgba(52, 199, 89, 0.3)'
+                  }}>
+                    <CheckCircle2 size={18} /> {t('paidStatus', '支払完了')}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 96px Dock Clearance Spacer */}
+          <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       );
     }
