@@ -3608,44 +3608,44 @@ const getLicenseLabel = (type) => {
                 : app.title;
 
               return (
-                <div key={app.id} className="application-card glass squircle" style={{ padding: '16px', marginBottom: '14px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)' }}>
+                <div key={app.id} className="application-card glass squircle" style={{ padding: '10px 14px', marginBottom: '12px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)' }}>
                   {/* Header Row */}
-                  <div className="app-card-header" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <img src={app.logo} alt={app.company} className="app-company-logo" style={{ width: '44px', height: '44px', borderRadius: '12px' }} />
+                  <div className="app-card-header" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '6px' }}>
+                    <img src={app.logo} alt={app.company} className="app-company-logo" style={{ width: '40px', height: '40px', borderRadius: '10px' }} />
                     <div className="app-card-info" style={{ flex: 1 }}>
-                      <h4 style={{ margin: '0 0 3px 0', fontSize: '15.5px', fontWeight: '700', letterSpacing: '-0.2px' }}>{appTitleJa}</h4>
-                      <p style={{ margin: 0, fontSize: '13px', color: '#8E8E93' }}>{app.company}</p>
-                      <span className="app-date" style={{ fontSize: '12px', color: '#8E8E93', marginTop: '2px', display: 'block' }}>応募日: {app.appliedDate}</span>
+                      <h4 style={{ margin: '0 0 2px 0', fontSize: '15px', fontWeight: '700', letterSpacing: '-0.2px' }}>{appTitleJa}</h4>
+                      <p style={{ margin: 0, fontSize: '12.5px', color: '#8E8E93' }}>{app.company}</p>
+                      <span className="app-date" style={{ fontSize: '11.5px', color: '#8E8E93', marginTop: '1px', display: 'block' }}>応募日: {app.appliedDate}</span>
                     </div>
                   </div>
 
                   {/* Shoukai Referral Banner */}
                   {userRole === 'company' && app.shoukaiId && (
-                    <div style={{ background: 'rgba(255, 149, 0, 0.08)', border: '1px solid rgba(255, 149, 0, 0.25)', padding: '10px 12px', borderRadius: '10px', margin: '12px 0', fontSize: '12.5px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FF9500', fontWeight: '700', marginBottom: '3px' }}>
-                        <Share2 size={15} />
+                    <div style={{ background: 'rgba(255, 149, 0, 0.08)', border: '1px solid rgba(255, 149, 0, 0.25)', padding: '8px 10px', borderRadius: '8px', margin: '6px 0', fontSize: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FF9500', fontWeight: '700', marginBottom: '2px' }}>
+                        <Share2 size={14} />
                         <span>この応募者は <strong>#{app.shoukaiId}</strong> 紹介者ID経由です!</span>
                       </div>
                       {app.shoukaiAmount && (
-                        <div style={{ color: '#8E8E93', fontSize: '12px' }}>
+                        <div style={{ color: '#8E8E93', fontSize: '11.5px' }}>
                           紹介報奨金: <strong style={{ color: '#34C759', fontWeight: '800' }}>{app.shoukaiAmount}</strong>
                         </div>
                       )}
                       {app.status === 'accepted' && (
-                        <div style={{ marginTop: '8px' }}>
+                        <div style={{ marginTop: '6px' }}>
                           {!app.shoukaiPaid ? (
                             <>
                               <button 
                                 className="demo-btn accepted" 
-                                style={{ width: '100%', marginBottom: '4px', padding: '8px 12px', fontSize: '12.5px', background: 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)', color: '#FFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700' }}
+                                style={{ width: '100%', marginBottom: '2px', padding: '6px 10px', fontSize: '12px', background: 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)', color: '#FFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700' }}
                                 onClick={() => onShoukaiPaid && onShoukaiPaid(app.id)}
                               >
                                 {t('payShoukai', '紹介料を支払う')} ({app.shoukaiAmount || '¥10,000'})
                               </button>
                             </>
                           ) : (
-                            <div className="shoukai-paid-badge" style={{ display: 'inline-flex', gap: '4px', color: '#34C759', fontWeight: '700', fontSize: '12px', background: 'rgba(52, 199, 89, 0.12)', padding: '4px 8px', borderRadius: '6px' }}>
-                              <CheckCircle2 size={15} /> {t('shoukaiPaidLabel', '紹介料支払完了')}
+                            <div className="shoukai-paid-badge" style={{ display: 'inline-flex', gap: '4px', color: '#34C759', fontWeight: '700', fontSize: '11.5px', background: 'rgba(52, 199, 89, 0.12)', padding: '3px 7px', borderRadius: '6px' }}>
+                              <CheckCircle2 size={14} /> {t('shoukaiPaidLabel', '紹介料支払完了')}
                             </div>
                           )}
                         </div>
@@ -3658,31 +3658,31 @@ const getLicenseLabel = (type) => {
                     <div className="driver-app-status-box glass squircle" style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
-                      gap: '12px', 
-                      padding: '12px 16px', 
-                      marginTop: '12px', 
+                      gap: '10px', 
+                      padding: '8px 12px', 
+                      marginTop: '6px', 
                       borderLeft: `4px solid ${STATUS_COLORS[app.status] || '#0A84FF'}`,
                       background: 'rgba(255, 255, 255, 0.02)',
                       boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)'
                     }}>
                       <div className="status-indicator-dot" style={{ 
-                        width: '10px', 
-                        height: '10px', 
+                        width: '8px', 
+                        height: '8px', 
                         borderRadius: '50%', 
                         background: STATUS_COLORS[app.status] || '#0A84FF',
-                        boxShadow: `0 0 10px ${STATUS_COLORS[app.status] || '#0A84FF'}`
+                        boxShadow: `0 0 8px ${STATUS_COLORS[app.status] || '#0A84FF'}`
                       }}></div>
                       <div style={{ flex: 1 }}>
-                        <span style={{ fontSize: '12px', color: '#8E8E93', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
+                        <span style={{ fontSize: '11px', color: '#8E8E93', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>
                           {t('applicationStatus')}
                         </span>
-                        <strong style={{ fontSize: '15px', color: STATUS_COLORS[app.status] || '#0A84FF', fontWeight: '600' }}>
+                        <strong style={{ fontSize: '14px', color: STATUS_COLORS[app.status] || '#0A84FF', fontWeight: '600' }}>
                           {t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`)}
                         </strong>
                       </div>
                     </div>
                   ) : (
-                    <div className="status-pipeline" style={{ margin: '12px 0 8px 0' }}>
+                    <div className="status-pipeline" style={{ margin: '6px 0 6px 0' }}>
                       {STATUS_PIPELINE.map(status => (
                         <div 
                           key={status} 
@@ -3704,42 +3704,42 @@ const getLicenseLabel = (type) => {
 
                   {/* Collapsible Candidate Resume */}
                   {userRole === 'company' && (
-                    <div style={{ width: '100%', marginBottom: '10px' }}>
+                    <div style={{ width: '100%', marginBottom: '6px' }}>
                       <button 
                         className="demo-btn reviewed" 
-                        style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px dashed rgba(10, 132, 255, 0.3)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '9px 12px', borderRadius: '10px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }}
+                        style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px dashed rgba(10, 132, 255, 0.3)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '7px 10px', borderRadius: '8px', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }}
                         onClick={() => setExpandedAppId(expandedAppId === app.id ? null : app.id)}
                       >
-                        <FileText size={15} />
+                        <FileText size={14} />
                         {expandedAppId === app.id ? '履歴書を閉じる ˄' : '履歴書を表示 ˅'}
                       </button>
                       
                       {expandedAppId === app.id && (
-                        <div className="applicant-resume-collapsible slide-down glass" style={{ padding: '14px', borderRadius: '12px', marginTop: '8px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(255,255,255,0.02)' }}>
-                          <h4 style={{ margin: '0 0 4px 0', fontSize: '14.5px', color: '#0A84FF', fontWeight: 'bold' }}>📄 応募者のWeb履歴書詳細</h4>
+                        <div className="applicant-resume-collapsible slide-down glass" style={{ padding: '10px 12px', borderRadius: '10px', marginTop: '6px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(255,255,255,0.02)' }}>
+                          <h4 style={{ margin: '0 0 2px 0', fontSize: '13.5px', color: '#0A84FF', fontWeight: 'bold' }}>📄 応募者のWeb履歴書詳細</h4>
                           
-                          <div className="resume-grid" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '5px' }}>
+                          <div className="resume-grid" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                               <span style={{ color: '#8E8E93' }}>氏名:</span>
                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.fullName || 'Farrux Alimov'}</strong>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '5px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                               <span style={{ color: '#8E8E93' }}>連絡先:</span>
                               <strong style={{ color: '#0A84FF' }}>{resumeInfo.phone || '+81 90-8888-9999'}</strong>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '5px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                               <span style={{ color: '#8E8E93' }}>メール:</span>
                               <span style={{ color: 'var(--text-main)' }}>{resumeInfo.email || 'farrux.alimov@gmail.com'}</span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '5px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                               <span style={{ color: '#8E8E93' }}>生年月日・出身:</span>
                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.birthDate || '1996-08-24'} ({resumeInfo.nationality || 'O\'zbekiston'})</strong>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', gap: '4px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '12.5px', gap: '3px' }}>
                               <span style={{ color: '#8E8E93' }}>保有資格・免許:</span>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                 {(resumeInfo.driverLicenses || ['oogata', 'kenin']).map(l => (
-                                  <span key={l} style={{ background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '2px 7px', borderRadius: '8px', fontSize: '11px', fontWeight: '600' }}>
+                                  <span key={l} style={{ background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '2px 6px', borderRadius: '6px', fontSize: '10.5px', fontWeight: '600' }}>
                                     {t(`lic_${l}`)}
                                   </span>
                                 ))}
@@ -3753,7 +3753,7 @@ const getLicenseLabel = (type) => {
 
                   {/* Company Recruitment Action Buttons */}
                   {userRole === 'company' && (
-                    <div className="demo-status-btns" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px' }}>
+                    <div className="demo-status-btns" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '6px' }}>
                       {/* Step 1: 審査完了にする */}
                       <button 
                         className={`demo-btn reviewed ${app.status === 'reviewed' ? 'active' : ''}`} 
@@ -3762,22 +3762,22 @@ const getLicenseLabel = (type) => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '6px',
-                          padding: '9px 10px',
-                          borderRadius: '10px',
-                          fontSize: '12.5px',
+                          gap: '4px',
+                          padding: '7px 8px',
+                          borderRadius: '8px',
+                          fontSize: '11.5px',
                           background: app.status === 'reviewed' ? '#0A84FF' : 'rgba(10, 132, 255, 0.08)', 
                           color: app.status === 'reviewed' ? '#FFF' : '#0A84FF',
                           border: '1px solid rgba(10, 132, 255, 0.25)',
                           cursor: app.status === 'reviewed' ? 'default' : 'pointer',
                           fontWeight: '700',
-                          transition: 'all 0.2s ease'
+                          transition: 'all 0.25s ease'
                         }} 
                         onClick={() => onChangeAppStatus(app.id, 'reviewed')}
                       >
-                        <FileCheck size={15} />
+                        <FileCheck size={14} />
                         <span>審査完了にする</span>
-                        {app.status === 'reviewed' && <CheckCircle2 size={13} style={{ marginLeft: 'auto' }} />}
+                        {app.status === 'reviewed' && <CheckCircle2 size={12} style={{ marginLeft: 'auto' }} />}
                       </button>
                       
                       {/* Step 2: 面接に招待する */}
@@ -3788,22 +3788,22 @@ const getLicenseLabel = (type) => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '6px',
-                          padding: '9px 10px',
-                          borderRadius: '10px',
-                          fontSize: '12.5px',
+                          gap: '4px',
+                          padding: '7px 8px',
+                          borderRadius: '8px',
+                          fontSize: '11.5px',
                           background: app.status === 'interview' ? '#AF52DE' : 'rgba(175, 82, 222, 0.08)', 
                           color: app.status === 'interview' ? '#FFF' : '#AF52DE',
                           border: '1px solid rgba(175, 82, 222, 0.25)',
                           cursor: app.status === 'interview' ? 'default' : 'pointer',
                           fontWeight: '700',
-                          transition: 'all 0.2s ease'
+                          transition: 'all 0.25s ease'
                         }} 
                         onClick={() => onChangeAppStatus(app.id, 'interview')}
                       >
-                        <Calendar size={15} />
+                        <Calendar size={14} />
                         <span>面接に招待する</span>
-                        {app.status === 'interview' && <CheckCircle2 size={13} style={{ marginLeft: 'auto' }} />}
+                        {app.status === 'interview' && <CheckCircle2 size={12} style={{ marginLeft: 'auto' }} />}
                       </button>
 
                       {/* Step 3: 採用する (Hire & Auto-Add to HR Employee List) */}
@@ -3814,16 +3814,16 @@ const getLicenseLabel = (type) => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '6px',
-                          padding: '9px 10px',
-                          borderRadius: '10px',
-                          fontSize: '12.5px',
+                          gap: '4px',
+                          padding: '7px 8px',
+                          borderRadius: '8px',
+                          fontSize: '11.5px',
                           background: app.status === 'accepted' ? '#34C759' : 'rgba(52, 199, 89, 0.08)', 
                           color: app.status === 'accepted' ? '#FFF' : '#34C759',
                           border: '1px solid rgba(52, 199, 89, 0.25)',
                           cursor: app.status === 'accepted' ? 'default' : 'pointer',
                           fontWeight: '700',
-                          transition: 'all 0.2s ease'
+                          transition: 'all 0.25s ease'
                         }} 
                         onClick={() => {
                           onChangeAppStatus(app.id, 'accepted');
@@ -3831,9 +3831,9 @@ const getLicenseLabel = (type) => {
                           alert(`🎉 ${candidateName} 氏の採用が決定しました！\nHR社員一覧（従業員管理）に自動登録されました。`);
                         }}
                       >
-                        <UserCheck size={15} />
+                        <UserCheck size={14} />
                         <span>{app.status === 'accepted' ? '採用決定済み' : '採用する'}</span>
-                        {app.status === 'accepted' && <CheckCircle2 size={13} style={{ marginLeft: 'auto' }} />}
+                        {app.status === 'accepted' && <CheckCircle2 size={12} style={{ marginLeft: 'auto' }} />}
                       </button>
 
                       {/* Step 4: 不採用にする */}
