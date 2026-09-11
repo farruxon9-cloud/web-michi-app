@@ -894,7 +894,7 @@ html.light-mode .contract-btn:active {
   padding: 0 14px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .application-card {

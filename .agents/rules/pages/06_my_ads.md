@@ -58,11 +58,25 @@ Ushbu qoida **Mening E'lonlarim (`マイ掲載一覧`)** sahifasi uchun barcha l
 - **4-Tier Distinct Address Field Separation**: Manzil elementlari aralashtirib biriktirilmaydi. 4 ta alohida maydonning har biriga strictly o'ziga tegishli hududiy bo'linma biriktirilishi SHART:
   1. `都道府県 *`: FAQAT Prefektura nomi (`千葉県` / `Chiba`).
   2. `市区町村 *`: FAQAT Shahar yoki Tuman nomi (`松戸市`).
-  3. `町名・丁目 *`: FAQAT Ko'cha, Daha yoki Mahalla nomi (`常盤平`).
-  4. `建物名・部屋番号`: Ixtiyoriy bino nomi va xonadon raqami.
-- **Zipcode API Response Mapping**: `lookupJapaneseZipcode` qaytaradigan obyekt atributlari (`prefJa`, `detailAddress`, `townAddress`) strictly `CompanyHome.jsx` state maydonlariga (`prefecture`, `detailAddress`, `townAddress`) 1-ga-1 to'g'ri o'zlashtirilishi SHART.
-- **Silent Unknown Zipcode Acceptance**: Agar poçta indeksi bazada yoki internet API larida topilmasa (noma'lum yoki yangi kiritilgan poçta indeksi bo'lsa), tizim 7 ta raqamli poçta indeksini (`100-0001`) indamay va toza qabul qiladi (forma bloklanmaydi, `errors.postalCode` tozalanadi). Shuning bilan birga foydalanuvchiga prefektura va shahar/tumanni ro'yxatdan o'zi tanlashi uchun muloyim maslahat ko'rsatiladi.
-- **Live Search & Custom City/Town Selection**: Shahar va tumanlar dropdowni (`CustomInlineDropdown`) 500+ Yaponiyaning barcha shaharlari (`市`), tumanlari (`区`), va shaharchalarini (`町`, `村`) ko'rsatadi, jonli qidiruv qutisi (`🔍 Qidirish / 検索...`) hamda `allowCustom={true}` orqali ixtiyoriy matn kiritish imkonini beradi.
-- **Zen-kaku Full-width Normalization**: Yapon tili klaviaturalaridagi to'liq enli raqamlar (`０-９`) strictly ASCII raqamlariga (`0-9`) avtomatik o'tkazilishi shart: `.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0))`.
+
+---
+
+## 🌐 9. International Recruitment Banner i18n Enforcement (Rule 71 Invariant)
+- **Japanese Banner Description**: `新規求人を追加` (Add New Job) shakli yuqorisidagi binafsharang banner matni strictly `t('recruitmentInternationalDesc', '海外からの候補者採用および特定技能ビザ支援用求人票フォーム。')` orqali yaponcha dinamik ko'rinadi.
+- **Forbidden**: Shakldagi bannerlarda hardcoded o'zbekcha yoki inglizcha matnlarni qoldirish taqiqlanadi.
+
+---
+
+## 📞 10. B2B Phone Call Action Button Invariant (Rule 73 Invariant)
+- **B2B Call Action Button Styling**: `CompanyHome.jsx` dagi boshqa kompaniyalarning e'lonlari hamda avtomaktab kurslarida `userRole === 'company'` uchun chiqariladigan **`[ 📞 電話する ]`** (B2B bevosita qo'ng'iroq) tugmasi rangi yashil bo'lmaydi, u strictly to'q slanes-kulrang (`#505759`) fon va oq matn (`#ffffff`) bilan `.job-card-btn btn-apply` o'lchamlariga 100% mos keladi.
+
+---
+
+## 📝 11. Xatoliklar va Learn Hujjatlashtiruvi (Page Mistakes & Learn Log)
+- **Xatolik**: `マイ掲載一覧` (`CompanyHome.jsx`) sahifasida logistika kompaniyasi vakili sifatida kirilganda boshqa kompaniyalarning e'lonlarida haydovchilarga mo'ljallangan ariza topshirish (`応募する`) tugmasi yoki mos kelmaydigan yashil rangli tugma ko'rinishi.
+- **Tuzatish & Learn**:
+  1. Kompaniya profilida boshqa kompaniyalarning e'lonlariga ariza berilmasligi sababli tugma funktsiyasi va yozuvi **`[ 📞 電話する ]`** (B2B bevosita telefon qilish) ga almashtirildi.
+  2. Tugma rangi yashil gradient o'rniga foydalanuvchi taqdim etgan namuna asosida to'q slanes-kulrang (`background: '#505759'`, `color: '#ffffff'`) qilib o'rnatildi.
+  3. Tugma o'lchamlari va flex taqsimoti (`.job-card-btn btn-apply`, `flex: 1`, `padding: 8px 12px`, `border-radius: 12px`) original holatda saqlandi va hech qanday balandlik yoki layout o'zgarishi yetkazilmadi.
 
 

@@ -44,3 +44,12 @@ Ushbu qoida loyihamizning **Vakansiyalar Ro'yxati (Jobs Feed)** sahifasi uchun b
 1. **No Mixed Languages**: Vacancy tags and salary terms must render strictly in active i18n locale without mixed parentheses.
 2. **No Truncated Descriptions**: `overflow-wrap: anywhere; word-break: break-word;` must be set on job detail preview.
 3. **No Unspaced Job List Ends**: NEVER leave `.jobs-list` without the explicit `92px` trailing clearance spacer in `DriverFeed.jsx`. Missing spacer causes `特定技能` (Tokutei Ginou) and other job feed cards to stick directly against `BottomNav` or get trapped behind floating search CTA buttons.
+
+---
+
+## 📝 6. Xatoliklar va Learn Hujjatlashtiruvi (Page Mistakes & Learn Log)
+- **Xatolik**: Ish qidiruv filtr darchasida (`DriverFeed.jsx`) shahar (`東京23区`), bekat va toifalarni tanlashda `onClick` hodisasi faqat kichik 20px to'rtburchak (`townwork-square-checkbox`) ustiga qo'yilgan edi. Natijada eski va kichik ekranli mobil qurilmalarda foydalanuvchilar to'rtburchakni aniq bosa olmay qiynalar edi.
+- **Tuzatish & Learn**:
+  1. Bosish (`onClick`) hodisasi to'g'ridan-to'g'ri o'rovchi `<label className="townwork-checkbox-label">` va `<div className="townwork-sub-checkbox-item">` elementlariga biriktirilib, **butun yozuv va qator bo'yicha bosish (Full-Row Touch Target)** ta'minlandi.
+  2. Kichik to'rtburchak elementida `pointer-events: none` bo'lib, `label` va yozuv matni (`<span>`) to'liq `flex: 1` va `user-select: none` bilan bosish oson va qulay qilindi.
+  3. Akordeonni ochish/yopish ko'rsatgichi (`ChevronUp`/`ChevronDown`) esa `e.stopPropagation()` bilan alohida ajratildi.

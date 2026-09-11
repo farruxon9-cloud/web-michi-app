@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload, Clock, Banknote, Share2, Briefcase, CheckCircle2, Globe } from 'lucide-react';
+import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload, Clock, Banknote, Share2, Briefcase, CheckCircle2, Globe, Phone } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import CustomMobilePickerModal from './CustomMobilePickerModal';
 import CustomInlineDropdown from './CustomInlineDropdown';
@@ -204,7 +204,7 @@ const parseAddress = (fullAddressInput = '') => {
   };
 };
 
-export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, schools, setSchools, profileData, jobToEdit, setJobToEdit, onFormToggle, onApply, onApplySchool, onShoukai, applications = [], schoolApplications = [] }) {
+export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, schools, setSchools, profileData, jobToEdit, setJobToEdit, onFormToggle, onApply, onApplySchool, onShoukai, applications = [], schoolApplications = [], userRole = 'company' }) {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'ja';
   
@@ -800,7 +800,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 {t('recruitmentInternational')}
               </h4>
               <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.85 }}>
-                Chet eldagi nomzodlarni jalb qilish uchun maxsus viza va yordam so'rovnomasi faol.
+                {t('recruitmentInternationalDesc', '海外からの候補者採用および特定技能ビザ支援用求人票フォーム。')}
               </p>
             </div>
           </div>
@@ -1838,6 +1838,18 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                       <Edit3 size={13} />
                       {t('editJob')}
                     </button>
+                  ) : userRole === 'company' ? (
+                    <button 
+                      className="job-card-btn btn-apply"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `tel:${job.phone || '03-1234-5678'}`;
+                      }}
+                      style={{ flex: 1, background: '#505759', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
+                    >
+                      <Phone size={13} />
+                      <span>{t('callCompany', '電話する')}</span>
+                    </button>
                   ) : (
                     <button 
                       className="job-card-btn btn-apply"
@@ -1949,6 +1961,18 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                         >
                           <Edit3 size={13} />
                           {t('editJob')}
+                        </button>
+                      ) : userRole === 'company' ? (
+                        <button 
+                          className="job-card-btn btn-apply"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.location.href = `tel:${school.phone || '03-1234-5678'}`;
+                          }}
+                          style={{ flex: 1, background: '#505759', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
+                        >
+                          <Phone size={13} />
+                          <span>{t('callCompany', '電話する')}</span>
                         </button>
                       ) : (
                         <button 

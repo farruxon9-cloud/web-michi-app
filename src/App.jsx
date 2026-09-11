@@ -547,6 +547,14 @@ function App() {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
+  const deleteNotification = (notifId) => {
+    setNotifications(prev => prev.filter(n => n.id !== notifId));
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
+
   // Academy applications
   const [schoolApplications, setSchoolApplications] = useState([]);
 
@@ -993,6 +1001,8 @@ function App() {
             notifications={notifications}
             onMarkRead={markNotificationRead}
             onMarkAllRead={markAllNotificationsRead}
+            onDeleteNotif={deleteNotification}
+            onClearAllNotifs={clearAllNotifications}
             unreadCount={unreadCount}
             darkMode={darkMode}
             setDarkMode={setDarkMode}

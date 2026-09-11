@@ -936,24 +936,26 @@ export default function DrivingAcademy({
                       return (
                         <div key={city.id} className="townwork-accordion-item">
                           <div className="townwork-accordion-header">
-                            <label className="townwork-checkbox-label">
-                              <div 
-                                className={`townwork-square-checkbox ${isCityChecked ? 'checked' : ''}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedCitiesList(prev => 
-                                    prev.includes(city.name) ? prev.filter(c => c !== city.name) : [...prev, city.name]
-                                  );
-                                }}
-                              >
+                            <label 
+                              className="townwork-checkbox-label"
+                              onClick={() => {
+                                setSelectedCitiesList(prev => 
+                                  prev.includes(city.name) ? prev.filter(c => c !== city.name) : [...prev, city.name]
+                                );
+                              }}
+                            >
+                              <div className={`townwork-square-checkbox ${isCityChecked ? 'checked' : ''}`}>
                                 {isCityChecked && <Check size={14} color="#FFF" />}
                               </div>
                               <span>{city.name}</span>
                             </label>
                             {hasWards && (
                               <div 
-                                onClick={() => setExpandedCities(prev => ({ ...prev, [city.id]: !prev[city.id] }))}
-                                style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedCities(prev => ({ ...prev, [city.id]: !prev[city.id] }));
+                                }}
+                                style={{ padding: '8px 12px', cursor: 'pointer', color: 'var(--text-secondary)' }}
                               >
                                 {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                               </div>
@@ -1054,26 +1056,28 @@ export default function DrivingAcademy({
                       return (
                         <div key={line.id} className="townwork-accordion-item">
                           <div className="townwork-accordion-header">
-                            <label className="townwork-checkbox-label">
-                              <div 
-                                className={`townwork-square-checkbox ${isLineSelected ? 'checked' : ''}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (isLineSelected) {
-                                    setSelectedStations(prev => prev.filter(st => !line.stations.includes(st)));
-                                  } else {
-                                    setSelectedStations(prev => Array.from(new Set([...prev, ...line.stations])));
-                                  }
-                                }}
-                              >
+                            <label 
+                              className="townwork-checkbox-label"
+                              onClick={() => {
+                                if (isLineSelected) {
+                                  setSelectedStations(prev => prev.filter(st => !line.stations.includes(st)));
+                                } else {
+                                  setSelectedStations(prev => Array.from(new Set([...prev, ...line.stations])));
+                                }
+                              }}
+                            >
+                              <div className={`townwork-square-checkbox ${isLineSelected ? 'checked' : ''}`}>
                                 {isLineSelected && <Check size={14} color="#FFF" />}
                               </div>
                               <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: line.color, boxShadow: `0 0 6px ${line.color}` }} />
                               <span>{line.name}</span>
                             </label>
                             <div 
-                              onClick={() => setExpandedLines(prev => ({ ...prev, [line.id]: !prev[line.id] }))}
-                              style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedLines(prev => ({ ...prev, [line.id]: !prev[line.id] }));
+                              }}
+                              style={{ padding: '8px 12px', cursor: 'pointer', color: 'var(--text-secondary)' }}
                             >
                               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                             </div>

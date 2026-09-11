@@ -925,6 +925,10 @@ html.dark-mode .townwork-tab-btn.active::after {
   color: var(--text-main);
   cursor: pointer;
   flex: 1;
+  padding: 6px 4px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .townwork-square-checkbox {
@@ -938,6 +942,7 @@ html.dark-mode .townwork-tab-btn.active::after {
   transition: all 0.2s;
   flex-shrink: 0;
   background: transparent;
+  pointer-events: none; /* Let parent label handle click event cleanly */
 }
 
 .townwork-square-checkbox.checked {
@@ -962,9 +967,12 @@ html.dark-mode .townwork-tab-btn.active::after {
   font-weight: 600;
   color: var(--text-main);
   cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
   transition: background 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .townwork-sub-checkbox-item:hover {

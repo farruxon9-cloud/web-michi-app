@@ -32,3 +32,10 @@ Ushbu qoida **Yapon Ish Qidiruv Filtr Darchasi (Townwork Filter Drawer)** uchun 
 
 ## 🚫 5. Forbidden Patterns
 1. **No Auto-Expanded Sections**: Filter drawer must never open with sections auto-expanded by default.
+2. **No Narrow Checkbox Click Targets**: Never restrict `onClick` handlers only to the small square checkbox (`townwork-square-checkbox`).
+
+---
+
+## 👆 6. Full-Row Clickable Checkbox Touch Target Invariant (Rule 74 Invariant)
+- **Entire Row Hit Area**: Filtr darchasidagi barcha shahar, tuman, bekat va toifa qatorlarida (`townwork-checkbox-label`, `townwork-sub-checkbox-item`) chertish (`onClick`) hodisasi FAQAT kichik to'rtburchakka emas, **butun yozuv va qator maydoniga** taalluqli bo'lishi SHART.
+- **Mobile Touch Accessibility**: Kichik to'rtburchak elementida `pointer-events: none` bo'lib, `label` yoki o'rovchi konteyner to'liq `flex: 1` va `user-select: none` bilan bosish oson va qulay bo'lishini ta'minlaydi. Akordeonni ochish/yopish ko'rsatkichi (`ChevronUp`/`ChevronDown`) esa `e.stopPropagation()` bilan alohida ajratilgan.

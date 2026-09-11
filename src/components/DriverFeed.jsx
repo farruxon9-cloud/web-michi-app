@@ -888,24 +888,26 @@ export default function DriverFeed({
                       return (
                         <div key={city.id} className="townwork-accordion-item">
                           <div className="townwork-accordion-header">
-                            <label className="townwork-checkbox-label">
-                              <div 
-                                className={`townwork-square-checkbox ${isCityChecked ? 'checked' : ''}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedCitiesList(prev => 
-                                    prev.includes(city.name) ? prev.filter(c => c !== city.name) : [...prev, city.name]
-                                  );
-                                }}
-                              >
+                            <label 
+                              className="townwork-checkbox-label"
+                              onClick={() => {
+                                setSelectedCitiesList(prev => 
+                                  prev.includes(city.name) ? prev.filter(c => c !== city.name) : [...prev, city.name]
+                                );
+                              }}
+                            >
+                              <div className={`townwork-square-checkbox ${isCityChecked ? 'checked' : ''}`}>
                                 {isCityChecked && <Check size={14} color="#FFF" />}
                               </div>
                               <span>{city.name}</span>
                             </label>
                             {hasWards && (
                               <div 
-                                onClick={() => setExpandedCities(prev => ({ ...prev, [city.id]: !prev[city.id] }))}
-                                style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedCities(prev => ({ ...prev, [city.id]: !prev[city.id] }));
+                                }}
+                                style={{ padding: '8px 12px', cursor: 'pointer', color: 'var(--text-secondary)' }}
                               >
                                 {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                               </div>
@@ -1004,26 +1006,28 @@ export default function DriverFeed({
                       return (
                         <div key={line.id} className="townwork-accordion-item">
                           <div className="townwork-accordion-header">
-                            <label className="townwork-checkbox-label">
-                              <div 
-                                className={`townwork-square-checkbox ${isLineSelected ? 'checked' : ''}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (isLineSelected) {
-                                    setSelectedStations(prev => prev.filter(st => !line.stations.includes(st)));
-                                  } else {
-                                    setSelectedStations(prev => Array.from(new Set([...prev, ...line.stations])));
-                                  }
-                                }}
-                              >
+                            <label 
+                              className="townwork-checkbox-label"
+                              onClick={() => {
+                                if (isLineSelected) {
+                                  setSelectedStations(prev => prev.filter(st => !line.stations.includes(st)));
+                                } else {
+                                  setSelectedStations(prev => Array.from(new Set([...prev, ...line.stations])));
+                                }
+                              }}
+                            >
+                              <div className={`townwork-square-checkbox ${isLineSelected ? 'checked' : ''}`}>
                                 {isLineSelected && <Check size={14} color="#FFF" />}
                               </div>
                               <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: line.color, boxShadow: `0 0 6px ${line.color}` }} />
                               <span>{line.name}</span>
                             </label>
                             <div 
-                              onClick={() => setExpandedLines(prev => ({ ...prev, [line.id]: !prev[line.id] }))}
-                              style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedLines(prev => ({ ...prev, [line.id]: !prev[line.id] }));
+                              }}
+                              style={{ padding: '8px 12px', cursor: 'pointer', color: 'var(--text-secondary)' }}
                             >
                               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                             </div>
@@ -1191,14 +1195,21 @@ export default function DriverFeed({
                   const isCatExpanded = !!expandedJobCats[cat.id];
                   return (
                     <div key={cat.id} className="townwork-accordion-item">
-                      <div className="townwork-accordion-header">
-                        <label className="townwork-checkbox-label">
+                      <div 
+                        className="townwork-accordion-header"
+                        onClick={() => {
+                          if (cat.subcategories && cat.subcategories.length > 0) {
+                            setExpandedJobCats(prev => ({ ...prev, [cat.id]: !prev[cat.id] }));
+                          }
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <label className="townwork-checkbox-label" style={{ cursor: 'pointer' }}>
                           <span>{cat.icon} {currentLang === 'uz' ? (cat.nameUz || cat.name) : cat.name}</span>
                         </label>
                         {cat.subcategories && cat.subcategories.length > 0 && (
                           <div 
-                            onClick={() => setExpandedJobCats(prev => ({ ...prev, [cat.id]: !prev[cat.id] }))}
-                            style={{ padding: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                            style={{ padding: '8px 12px', cursor: 'pointer', color: 'var(--text-secondary)' }}
                           >
                             {isCatExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                           </div>

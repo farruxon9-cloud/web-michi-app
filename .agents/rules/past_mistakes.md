@@ -423,20 +423,52 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
      - `96px (spacer balandligi) - 84px (BottomNav top edge) = 12px exact visual clearance gap`.
      - Ushbu formula barcha sub-sahifalardagi eng oxirgi konteyner (masalan, `会社情報` dagi `企業詳細・登録情報` kardi) pastki navigatsiya tugmalarining ustida roppa-rosa va parallel ravishda **12px toza vizual oraliq** qoldirib to'xtashini 100% kafolatlaydi.
 
+## 🚫 68. Candidate Funnel Pipeline Grid & Custom Clearance Spacer Rule
+* **Xatolik**: 
+  1. Ariza/Nomzod sub-sahifasida (`Profile.jsx` -> `applications` (`受信した応募`)) 5 ta bosqichli filtrlash tugmalarini bir qatorga joylashtirish tufayli tugmalarning ekrandan chiqib ketishi yoki matnlarning sig'may qolishi.
+  2. Nomzod kartochkasi ichidagi vertikal paddinglar, marginlar hamda pastki clearance spacer balandligini yetarlicha tushuntirmasdan yoki matematikasi ko'rsatilmasdan o'zgartirish.
+* **Yechim (MAJBURIY)**:
+  1. **2-Row Responsive Grid Funnel Filters**: Nomzod/Ariza filtrlash bosqichlari strictly 2 qatorli grid (`gridTemplateColumns: 'repeat(3, 1fr)'` top row: `新規応募`, `選考・面接`, `採用決定`; bottom row: `不採用`, `全件（すべて）`) ko'rinishida ixcham joylashishi va barcha ekran o'lchamlarida 100% to'liq va o'qishga qulay ko'rinishi SHART.
+  2. **Candidate Card Padding & Bottom Spacing**: Nomzod kartochkasi (`.application-card`) strictly `padding: 10px 14px; margin-bottom: 12px;` o'lchamlarda ixcham bo'lishi va tugmalar `gridTemplateColumns: '1fr 1fr'` gridida teng taqsimlanishi SHART.
+  3. **Strict Math Clearance Calculations**: Clearance spacer `72px` (yoki `84px` / `96px`) o'rnatilganda suzuvchi `BottomNav` (`height: 72px`, `bottom: 12px` -> top edge `84px`) bilan bo'lgan masofaning aniq matematikasi foydalanuvchiga tushuntirilishi va saqlanishi SHART.
 
+## 🚫 69. Universal 12px Inter-Container Gap Across All Sub-Pages Rule
+* **Xatolik**: Sub-sahifalarda (`applications`, `saved_items`, `my_shoukai`, `employees`, `notifications`) ro'yxat konteynerlarida CSS flex `gap` (masalan 16px) hamda inline `marginBottom` (12px) birgalikda qo'llanishi tufayli 1-konteyner va 2-konteyner orasidagi masofa 28px gacha kattalashib, ochiq bo'sh joy hosil bo'lishi.
+* **Yechim (MAJBURIY)**:
+  1. **Strict 12px Inter-Container Gap**: Barcha sub-sahifalardagi 1-konteyner va 2-konteyner (va barcha ketma-ket kartochkalar) o'rtasidagi masofa strictly **`12px`** bo'lishi SHART.
+  2. **No Double Spacing Overlap**: Ro'yxat o'rovchilarida CSS `gap: 12px` belgilanishi va individual kartochkalardan ziddiyatli qo'shimcha `marginBottom` va takroriy marginlar olib tashlanishi SHART.
+  3. **Universal Sub-Page Consistency**: Ushbu 12px inter-card gap qoidasi loyihadagi barcha sub-sahifalarda (`受信した応募`, `保存した求人`, `紹介履歴`, `従業員管理`, `通知一覧`) 100% bir xil va standart tarzda amal qiladi.
 
+## 🚫 70. Sub-Page Back Button, Header Title & Filter Container Spacing Invariant
+* **Xatolik**: Sub-sahifalarda (`sub-page-header`) `paddingTop: '46px'` yoki yetarsiz joy o'rnatilishi sababli ortga qaytish tugmasi ($\leftarrow$, top: 16px, height: 40px -> bottom edge: 56px) sarlavha matni ustiga minib qolishi (`overlap`) va ostidagi filtrlash konteyneriga yopishib turishi.
+* **Yechim (MAJBURIY)**:
+  1. **Strict Non-Overlapping Back Button Gap**: Barcha sub-sahifalar sarlavhasi o'rovchisida strictly `paddingTop: '61px'` va `paddingBottom: '5px'` o me'yori qo'llanishi SHART ($56\text{px} + 5\text{px} = 61\text{px}$). Natijada ortga qaytish tugmasi va sarlavha matni o'rtasida aniq **5 px toza oraliq** hosil bo'ladi va tugma sarlavhaga mutlaqo tegmaydi.
+  2. **Filter Container Top Margin**: Sub-sahifalar filtrlash trek paneli (`margin: '7px 16px 8px 16px'`) sarlavhadan pastga qo'shimcha **5 px** ochilib, toza va moslashuvchan ko'rinadi.
 
+## 🚫 71. Job Creation International Recruitment Banner Japanese i18n Enforcement
+* **Xatolik**: Yangi e'lon qo'shish formasi (`CompanyHome.jsx` -> `showAddForm` -> `新規求人を追加`) yuqorisidagi binafsharang banner `特定技能・特定活動・海外採用` sarlavhasi ostida o'zbekcha fallback matni (`Chet eldagi nomzodlarni jalb qilish...`) qolib ketganligi sababli yapon tilidagi interfeysda mantiqiy uzilish hosil bo'lishi.
+* **Yechim (MAJBURIY)**:
+  1. **Strict i18n Translation Binding**: Banner tavsif matni strictly `t('recruitmentInternationalDesc', '海外からの候補者採用および特定技能ビザ支援用求人票フォーム。')` orqali dinamik i18n kalitiga biriktirilishi SHART.
+  2. **No Hardcoded Non-Japanese Strings in Form Banners**: Kompaniya e'lon yaratish va tahrirlash shakllaridagi barcha bannerlar hamda tushuntirish yozuvlari Strictly yaponcha rasmiy matn ko'rinishida bo me'yori bo'yicha dinamik ravishda almashishi shart.
 
+## 🚫 72. Notifications Chronological Sorting, Categorization & Deletion Invariant
+* **Xatolik**: Bildirishnomalar sahifasida (`Profile.jsx` -> `notifications` (`通知`)) bildirishnomalar tartibsiz ko'rinishi, eng yangi xabarlar tepada turmasligi, turiga qarab filtrlash yetishmasligi hamda xabarlarni bittadan va to'liq o'chirish (`Clear All`) imkoniyatining yo'qligi.
+* **Yechim (MAJBURIY)**:
+  1. **Strict Chronological Order (Newest at Top, Oldest at Bottom)**: Ro'yxat strictly `[...filteredNotifs].sort((a, b) => Number(b.id) - Number(a.id))` bo'yicha saralanadi. Yangi bildirishnoma doim Ro'yxatning eng yuqori qismida (boshida) turadi, eski xabarlar esa pastga qarab joylashadi.
+  2. **Categorization Segmented Track Filter Bar**: Ro'yxat tepasida 4 qismli segmentli trek paneli (`すべて`, `未読`, `選考`, `報酬`) va live sanoq ko'rsatkichlari bo'lishi SHART.
+  3. **Single & Bulk Deletion**: Har bir xabarda bittadan o'chirish tugmasi (`Trash2`, `onDeleteNotif`) va sarlavhada barcha bildirishnomalarni tozalash (`すべて消去`, `onClearAllNotifs`) tugmasi bo'lishi SHART.
 
+## 🚫 73. Company Profile B2B Phone Call Action Button Invariant
+* **Xatolik**: Kompaniya profilida (`userRole === 'company'`) turib `マイ掲載一覧` (`CompanyHome.jsx`) sahifasida boshqa logistika kompaniyasining e me'lonlari ko'rilganda haydovchilarga mo'ljallangan yashil yoki boshqa rangli `応募する` tugmasi ko'rinishi.
+* **Yechim (MAJBURIY)**:
+  1. **Role-Aware B2B Action Button**: Boshqa kompaniyalar e'lonlarida (`!isMine`) foydalanuvchi roli kompaniya bo'lganda (`userRole === 'company'`) strictly **`[ 📞 電話する ]`** (Direct B2B Call) tugmasi ko'rinishi SHART.
+  2. **Dark Slate Grey Palette (#505759)**: Tugma rangi yashil bo'lmasligi, va foydalanuvchi taqdim etgan namunadagi kabi strictly to'q slanes-kulrang (`background: '#505759'`, `color: '#ffffff'`) bo'lishi SHART.
+  3. **Strict Button Dimension Geometry Preservation**: Tugma o'lchamlari, balandligi, chekka burchaklari va `flex: 1` taqsimoti Strictly asl original ko'rinishida saqlanadi (`className="job-card-btn btn-apply"`). Geometriya va o me'yoriy o'lchamlarga zarracha ham ziyon yetkazilmaydi.
+  4. **Driver Role Unchanged**: Haydovchilar uchun (`userRole === 'driver'`) `[ 応募する ]` tugmasi daxlsiz saqlanadi.
 
-
-
-
-
-
-
-
-
-
-
-
+## 🚫 74. Filter Drawer Full-Row Clickable Checkbox Touch Target Invariant
+* **Xatolik**: Filtr darchasida (`DriverFeed.jsx`, `DrivingAcademy.jsx`) shahar (`東京23区`), bekat va toifalarni tanlashda `onClick` hodisasining faqat kichik 20px to'rtburchak (`townwork-square-checkbox`) ustiga qo'yilganligi. Eski va kichik ekranli mobil qurilmalarda foydalanuvchilar to'rtburchakni aniq bosa olmay qiynalishi.
+* **Yechim (MAJBURIY)**:
+  1. **Full-Row Click Target**: Bosish (`onClick`) hodisasining to'g'ridan-to'g'ri o'rovchi `<label className="townwork-checkbox-label">` va `<div className="townwork-sub-checkbox-item">` elementlariga o'tkazilishi SHART.
+  2. **Entire Text & Label Hit Area**: Yozuv matni (`<span>`) yoki uning atrofidagi butun qator bosilganda ham katakcha zudlik bilan belgilanadi (`checked`).
+  3. **Pointer-Events & StopPropagation**: `.townwork-square-checkbox` ichida `pointer-events: none` qo'llanilib, akordeon pastga ochilish ko'rsatgichi (`ChevronUp`/`ChevronDown`) esa `e.stopPropagation()` bilan cheklanib alohida ishlaydi.

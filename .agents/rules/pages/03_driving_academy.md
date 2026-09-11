@@ -59,3 +59,17 @@ Ushbu qoida **Avtomaktablar (Driving Academy)** bo'limi uchun barcha layout va g
 5. **No Partial Filter Resets**: Never leave accordion sections open or active tabs un-reset when clicking `リセット`.
 6. **No Undefined Variable References in Active Chips**: Never reference singular or un-declared state variables (like `selectedCourse` or `onlyShoukai`) in active filter chips.
 
+---
+
+## 👆 7. Full-Row Clickable Checkbox Touch Target Invariant (Rule 74 Invariant)
+- **Entire Row Hit Area**: Avtomaktablar filtrida (`DrivingAcademy.jsx`) barcha shahar, tuman, bekat hamda litsenziya toifasi qatorlarida (`townwork-checkbox-label`, `townwork-sub-checkbox-item`) chertish (`onClick`) hodisasi FAQAT 20px to'rtburchakka emas, **butun yozuv va qator maydoniga** taalluqli bo'lishi SHART.
+- **Mobile Touch Accessibility**: Kichik to'rtburchak elementida `pointer-events: none` bo'lib, `label` yoki o'rovchi konteyner to'liq `flex: 1` va `user-select: none` bilan bosish oson va qulay bo'lishini ta'minlaydi. Akordeonni ochish/yopish ko'rsatkichi (`ChevronUp`/`ChevronDown`) esa `e.stopPropagation()` bilan alohida ajratilgan.
+
+---
+
+## 📝 8. Xatoliklar va Learn Hujjatlashtiruvi (Page Mistakes & Learn Log)
+- **Xatolik**: Avtomaktablar bo'limida (`DrivingAcademy.jsx`) filtr ochilganda shahar, tuman va metro staytsiyalarini tanlash uchun katakchalar (`townwork-square-checkbox`) faqat 20px kvadrat ustigagina bosganda javob bergan. Foydalanuvchilar yozuv matnini bosganda tanlov ishlamay xunuk taassurot qoldirgan.
+- **Tuzatish & Learn**:
+  1. `DrivingAcademy.jsx` sahifasida ham `townwork-checkbox-label` va `townwork-sub-checkbox-item` o'rovchilariga to'liq `onClick` biriktirilib, yozuv matnini va qatorni bosganda checkbox uzliksiz va zudlik bilan ishlaydigan qilindi.
+  2. Akordeon ochish/yopish tugmasiga `e.stopPropagation()` berildi. Togri va xatosiz ishlash avtomatik ravishda Vitest va layout invariantlar orqali tasdiqlandi.
+
