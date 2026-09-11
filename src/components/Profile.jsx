@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot, Navigation, Zap, Mic, Truck, RotateCcw, UserCheck, UserX, Car, FileCheck, Calendar, Award, GraduationCap, CreditCard } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot, Navigation, Zap, Mic, Truck, RotateCcw, UserCheck, UserX, Car, FileCheck, Calendar, Award, GraduationCap, CreditCard, Gift, Tag } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { MOCK_JOBS } from './DriverFeed';
 import { MOCK_SCHOOLS } from './DrivingAcademy';
@@ -3839,33 +3839,109 @@ const getLicenseLabel = (type) => {
             {shoukaiApps.length === 0 ? (
               <p style={{ color: '#8E8E93', textAlign: 'center', marginTop: '20px' }}>{t('noShoukaiApps')}</p>
             ) : (
-              shoukaiApps.map(app => (
-                <div key={app.id} className="glass squircle" style={{ padding: '16px', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{app.title}</h4>
-                      <p style={{ margin: 0, fontSize: '13px', color: '#8E8E93' }}>{t('referredById')} <span style={{color: '#0A84FF'}}>{app.shoukaiId}</span></p>
+              shoukaiApps.map(app => {
+                const localizedTitle = app.title.includes('Mahalliy yetkazib berish') || app.title.includes('Local Delivery')
+                  ? 'ルート配送ドライバー (地場デリバリー)'
+                  : app.title.includes('Xalqaro yuk tashish')
+                  ? '長距離トレーラードライバー (国際輸送)'
+                  : app.title;
+
+                return (
+                  <div key={app.id} className="shoukai-app-card glass squircle" style={{ padding: '18px', marginBottom: '14px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)' }}>
+                    {/* Top Row: Icon + Title + Referrer Tag & Fee Amount */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        <div style={{ 
+                          width: '42px', 
+                          height: '42px', 
+                          borderRadius: '12px', 
+                          background: 'linear-gradient(135deg, rgba(52, 199, 89, 0.18), rgba(48, 209, 88, 0.08))', 
+                          color: '#34C759', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          border: '1px solid rgba(52, 199, 89, 0.25)'
+                        }}>
+                          <Gift size={20} />
+                        </div>
+                        <div>
+                          <h4 style={{ margin: '0 0 6px 0', fontSize: '15.5px', fontWeight: '700', letterSpacing: '-0.3px', color: 'var(--text-primary)' }}>
+                            {localizedTitle}
+                          </h4>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '4px 9px', borderRadius: '8px', fontSize: '12px', fontWeight: '600' }}>
+                            <Tag size={12} />
+                            <span>{t('referredById', '紹介者 ID:')} <strong style={{ fontFamily: 'monospace', fontSize: '12.5px' }}>{app.shoukaiId}</strong></span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ 
+                        background: 'linear-gradient(135deg, rgba(52, 199, 89, 0.15), rgba(52, 199, 89, 0.05))', 
+                        border: '1px solid rgba(52, 199, 89, 0.3)', 
+                        color: '#34C759', 
+                        padding: '6px 14px', 
+                        borderRadius: '12px', 
+                        fontWeight: '800', 
+                        fontSize: '16px',
+                        letterSpacing: '-0.4px',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {app.shoukaiAmount || '¥10,000'}
+                      </div>
                     </div>
-                    <span className="shoukai-fee" style={{ fontWeight: 'bold', color: '#34C759' }}>{app.shoukaiAmount}</span>
+
+                    {/* Subtle Glass Divider */}
+                    <div style={{ height: '1px', background: 'var(--glass-border)', margin: '14px 0', opacity: 0.6 }} />
+
+                    {/* Bottom Row: Status + Action Payment Button */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', color: '#8E8E93', fontWeight: '500' }}>
+                        <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#0A84FF', display: 'inline-block' }} />
+                        <span>{t('application', '応募案件')}: <strong style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`, '提出済み')}</strong></span>
+                      </div>
+                      {!app.shoukaiPaid ? (
+                        <button 
+                          className="btn-primary squircle" 
+                          style={{ 
+                            padding: '8px 16px', 
+                            fontSize: '13px', 
+                            fontWeight: '700',
+                            background: 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)', 
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 14px rgba(52, 199, 89, 0.35)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onClick={() => onShoukaiPaid && onShoukaiPaid(app.id)}
+                        >
+                          <CreditCard size={15} />
+                          {t('makePayment', '支払いを行う')}
+                        </button>
+                      ) : (
+                        <span className="shoukai-paid-badge" style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '5px', 
+                          color: '#34C759', 
+                          fontWeight: '700', 
+                          fontSize: '13px', 
+                          background: 'rgba(52, 199, 89, 0.12)', 
+                          padding: '6px 12px', 
+                          borderRadius: '10px',
+                          border: '1px solid rgba(52, 199, 89, 0.25)'
+                        }}>
+                          <CheckCircle2 size={16} /> {t('paidStatus', '支払完了')}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', color: '#0A84FF' }}>{t('application')}: {t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`)}</span>
-                    {!app.shoukaiPaid ? (
-                      <button 
-                        className="btn-primary squircle" 
-                        style={{ padding: '6px 12px', fontSize: '12px', background: '#34C759' }}
-                        onClick={() => onShoukaiPaid && onShoukaiPaid(app.id)}
-                      >
-                        {t('makePayment')}
-                      </button>
-                    ) : (
-                      <span className="shoukai-paid-badge" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#34C759', fontWeight: 'bold', fontSize: '13px', background: 'rgba(52, 199, 89, 0.1)', padding: '4px 8px', borderRadius: '12px' }}>
-                        <CheckCircle2 size={16} /> {t('paidStatus')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 

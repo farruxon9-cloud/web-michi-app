@@ -33,7 +33,7 @@ const mockIncomingApplications = [
     id: 101,
     jobId: 1,
     company: 'Sagawa Express',
-    title: 'Mahalliy yetkazib berish (Local Delivery)',
+    title: 'ルート配送ドライバー (地場デリバリー)',
     logo: 'https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100',
     status: 'submitted',
     appliedDate: '2026-06-10',
