@@ -411,7 +411,7 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Strict 2-SubCard Structure for Company Profile**: Kompaniya ma'lumotlari strictly 2 ta alohida `.profile-subcard glass squircle` idishlariga guruhlanishi SHART:
      - **Card 1 (`基本情報`)**: Ism, Email, `事業種別` (badge-blue bilan), `担当者名`, `電話番号`.
      - **Card 2 (`企業詳細・登録情報`)**: `<Building2 size={18} />` ikonkali sarlavha, `住所`, `法人番号`, `企業のウェブサイト` (moviy link bilan), `設立年`, `従業員数`, `会社概要`.
-  2. **104px Trailing Clearance Spacer**: Barcha subcard-lar va profillar pastida strictly `<div style={{ height: '104px', minHeight: '104px', width: '100%', flexShrink: 0, clear: 'both' }} />` tozalovchi bo'shliq qo'yilishi SHART. Kontent pastki navigatsiyadan to'liq 100% balandda toza skroll bo'lishi ta'minlanadi.
+  2. **84px Trailing Clearance Spacer**: Barcha subcard-lar va profillar pastida strictly `<div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0, clear: 'both' }} />` tozalovchi bo'shliq qo'yilishi SHART. Kontent pastki navigatsiyadan to'liq 100% balandda toza skroll bo'lishi ta'minlanadi.
 
 
 

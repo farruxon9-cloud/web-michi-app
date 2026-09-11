@@ -8,7 +8,7 @@ Ushbu qoida **AI Assist Voice Showcase (`assist_showcase`)** sub-sahifasi uchun 
 - **Outer Viewport**: `.assist-showcase-container`
 - **Positioning**: `position: absolute; top: 0; left: 0; right: 0; bottom: 0;` (`bottom: 0` full-screen container).
 - **Scroll & Padding**: `overflow-y: auto; padding: 12px 14px 0px 14px; padding-bottom: 0px !important;`
-- **Trailing Dock Clearance Spacer**: `<div style={{ height: '104px', minHeight: '104px', width: '100%', flexShrink: 0, clear: 'both' }} />` (yielding exact 20px clean gap above 84px BottomNav).
+- **Trailing Dock Clearance Spacer**: `<div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0, clear: 'both' }} />` (matching exact 84px BottomNav dock height).
 
 ---
 
