@@ -498,12 +498,16 @@ function App() {
 
         // Auto-add to company HR employees if not already present
         setCompanyEmployees(prev => {
-          if (prev.some(emp => emp.michiId === profileData.userId && emp.role === targetApp.title)) {
+          const empName = targetApp.applicantInfo?.fullName || profileData.fullName;
+          const empPhone = targetApp.applicantInfo?.phone || profileData.phone || '+81 90-8888-9999';
+          const empRole = targetApp.title.includes('Mahalliy') ? 'ルート配送ドライバー (地場デリバリー)' : targetApp.title;
+          const empId = targetApp.shoukaiId || `EMP-${targetApp.id}`;
+          if (prev.some(emp => emp.name === empName && emp.role === empRole)) {
             return prev;
           }
           return [
             ...prev, 
-            { id: Date.now(), name: profileData.fullName, phone: profileData.phone || '+81 000-0000', role: targetApp.title, verified: true, michiId: profileData.userId }
+            { id: Date.now(), name: empName, phone: empPhone, role: empRole, verified: true, michiId: empId }
           ];
         });
       }

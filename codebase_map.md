@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **11/09/2026, 14:16:34**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **11/09/2026, 17:50:18**.
 
 ---
 
@@ -372,7 +372,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (6487 qator, 335164 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (6625 qator, 337766 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -1123,7 +1123,7 @@ graph TD
 | 46 | `companyEmployees` | `setCompanyEmployees` | `[]` | L417 | — |
 | 47 | `notifications` | `setNotifications` | `[]` | L420 | — |
 | 48 | `jobToEdit` | `setJobToEdit` | `null` | L423 | — |
-| 49 | `schoolApplications` | `setSchoolApplications` | `[]` | L547 | — |
+| 49 | `schoolApplications` | `setSchoolApplications` | `[]` | L551 | — |
 
 ### Prop-Drilling Zanjiri (App.jsx → Komponentlar)
 
@@ -1175,7 +1175,7 @@ graph LR
 
 > Ushbu bo'lim har bir i18n kalitining 3 tildagi tarjimasini va aynan qaysi komponentda ishlatilishini ko'rsatadi.
 
-**Jami ishlatilgan i18n kalitlar:** 623 ta, **16** ta komponentda tarqalgan
+**Jami ishlatilgan i18n kalitlar:** 610 ta, **16** ta komponentda tarqalgan
 
 ### 📄 AdminDashboard (9 ta kalit)
 
@@ -1196,11 +1196,11 @@ graph LR
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
 | `referralPrompt` | 紹介リンクからアクセスしましたか？その場合は、紹介 | Did you join via a referr | Havola orqali kirdingizmi | L445 |
-| `roleGuest` | ゲスト | Guest | Mehmon | L628 |
-| `completeResumeModalTitle` | 履歴書を完成させてください | Please Complete Your Resu | Rezyumeni to'ldiring | L1303 |
-| `completeResumeModalDesc` | この求人に応募するには履歴書の入力が必要です。 | Filling out your resume i | Ushbu vakansiyaga ariza t | L1306 |
-| `completeResumeBtn` | 履歴書を入力する | Fill Resume Now | Rezyumeni to'ldirish | L1329 |
-| `cancelEdit` | キャンセル | Cancel | Bekor qilish | L1346 |
+| `roleGuest` | ゲスト | Guest | Mehmon | L632 |
+| `completeResumeModalTitle` | 履歴書を完成させてください | Please Complete Your Resu | Rezyumeni to'ldiring | L1307 |
+| `completeResumeModalDesc` | この求人に応募するには履歴書の入力が必要です。 | Filling out your resume i | Ushbu vakansiyaga ariza t | L1310 |
+| `completeResumeBtn` | 履歴書を入力する | Fill Resume Now | Rezyumeni to'ldirish | L1333 |
+| `cancelEdit` | キャンセル | Cancel | Bekor qilish | L1350 |
 
 ### 📄 BottomNav (5 ta kalit)
 
@@ -1417,41 +1417,41 @@ graph LR
 | `sswLanguageReq` | 🇯🇵 日本語要件：JLPT N4またはJFT- | 🇯🇵 Japanese: JLPT N4 or | 🇯🇵 Yapon Tili: JLPT N4  | L258 |
 | ... | *+7 ta kalit* | | | |
 
-### 📄 Profile (188 ta kalit)
+### 📄 Profile (173 ta kalit)
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
-| `roleGuest` | ゲスト | Guest | Mehmon | L2167 |
-| `cancelEdit` | キャンセル | Cancel | Bekor qilish | L2812 |
-| `logout` | ログアウト | Logout | Tizimdan chiqish | L6435 |
-| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L2866 |
-| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L2867 |
-| `emailLabel` | メールアドレス | Email | Email | L3499 |
-| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L4299 |
-| `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L2765 |
-| `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3354 |
-| `viewDetails` | 詳細を見る | View Details | Batafsil ko'rish | L4056 |
-| `roleDriver` | ドライバー (求職者) | Driver (Job Seeker) | Haydovchi (Ish izlovchi) | L2164 |
-| `roleCompanyLabel` | 企業 | Company | Kompaniya | L2165 |
-| `roleSchool` | 自動車学校 | Driving School | AvtoMaktab | L2166 |
-| `currentAddressLabel` | 現住所 | My current residence | Hozirgi yashash joyim | L2206 |
-| `currentlyStudyingLabel` | 在学中 | Currently studying | Hozir ham o'qiyman | L2207 |
-| `notifications` | 通知 | Notifications | Bildirishnomalar | L2305 |
-| `markAllRead` | すべて既読にする | Mark all read | Hammasini o'qilgan deb be | L2310 |
-| `noNotifications` | 通知はまだありません | No notifications yet | Hali bildirishnomalar yo' | L2319 |
-| `acceptedNotifTitle` | 応募が採用されました！ | Application Accepted! | Ariza qabul qilindi! | L2336 |
-| `interviewNotifTitle` | 面接のご招待 | Interview Invitation | Suhbatga taklif | L2337 |
-| `reviewedNotifTitle` | 応募が確認されました | Application Reviewed | Ariza ko'rib chiqildi | L2338 |
-| `rejectedNotifTitle` | 応募が却下されました | Application Rejected | Ariza rad etildi | L2339 |
-| `shoukaiPaidNotif` | 紹介報酬が支払われました | Shoukai reward paid | Shoukai mukofoti to'landi | L2340 |
-| `newNotification` | 新着 | New | Yangi | L2343 |
-| `acceptedNotifMsg` | あなたの応募が採用されました： | Your application has been | Arizangiz qabul qilindi: | L2346 |
-| `interviewNotifMsg` | 面接にご招待されました： | You are invited for an in | Siz suhbatga taklif qilin | L2347 |
-| `reviewedNotifMsg` | あなたの応募が確認されました： | Your application was revi | Arizangiz ko'rib chiqildi | L2348 |
-| `rejectedNotifMsg` | あなたの応募が却下されました： | Your application was reje | Arizangiz rad etildi: | L2349 |
-| `shoukaiPaidMsg` | 紹介報酬が支払われました： | paid shoukai reward of | shoukai mukofoti to'landi | L2350 |
-| `employeeRequestMsg` | 従業員リクエストメッセージ | Employee Request Message | Xodim so'rov xabari | L2351 |
-| ... | *+158 ta kalit* | | | |
+| `roleGuest` | ゲスト | Guest | Mehmon | L2168 |
+| `cancelEdit` | キャンセル | Cancel | Bekor qilish | L2813 |
+| `logout` | ログアウト | Logout | Tizimdan chiqish | L6573 |
+| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L2867 |
+| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L2868 |
+| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L4437 |
+| `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L2766 |
+| `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3369 |
+| `viewDetails` | 詳細を見る | View Details | Batafsil ko'rish | L4194 |
+| `roleDriver` | ドライバー (求職者) | Driver (Job Seeker) | Haydovchi (Ish izlovchi) | L2165 |
+| `roleCompanyLabel` | 企業 | Company | Kompaniya | L2166 |
+| `roleSchool` | 自動車学校 | Driving School | AvtoMaktab | L2167 |
+| `currentAddressLabel` | 現住所 | My current residence | Hozirgi yashash joyim | L2207 |
+| `currentlyStudyingLabel` | 在学中 | Currently studying | Hozir ham o'qiyman | L2208 |
+| `notifications` | 通知 | Notifications | Bildirishnomalar | L2306 |
+| `markAllRead` | すべて既読にする | Mark all read | Hammasini o'qilgan deb be | L2311 |
+| `noNotifications` | 通知はまだありません | No notifications yet | Hali bildirishnomalar yo' | L2320 |
+| `acceptedNotifTitle` | 応募が採用されました！ | Application Accepted! | Ariza qabul qilindi! | L2337 |
+| `interviewNotifTitle` | 面接のご招待 | Interview Invitation | Suhbatga taklif | L2338 |
+| `reviewedNotifTitle` | 応募が確認されました | Application Reviewed | Ariza ko'rib chiqildi | L2339 |
+| `rejectedNotifTitle` | 応募が却下されました | Application Rejected | Ariza rad etildi | L2340 |
+| `shoukaiPaidNotif` | 紹介報酬が支払われました | Shoukai reward paid | Shoukai mukofoti to'landi | L2341 |
+| `newNotification` | 新着 | New | Yangi | L2344 |
+| `acceptedNotifMsg` | あなたの応募が採用されました： | Your application has been | Arizangiz qabul qilindi: | L2347 |
+| `interviewNotifMsg` | 面接にご招待されました： | You are invited for an in | Siz suhbatga taklif qilin | L2348 |
+| `reviewedNotifMsg` | あなたの応募が確認されました： | Your application was revi | Arizangiz ko'rib chiqildi | L2349 |
+| `rejectedNotifMsg` | あなたの応募が却下されました： | Your application was reje | Arizangiz rad etildi: | L2350 |
+| `shoukaiPaidMsg` | 紹介報酬が支払われました： | paid shoukai reward of | shoukai mukofoti to'landi | L2351 |
+| `employeeRequestMsg` | 従業員リクエストメッセージ | Employee Request Message | Xodim so'rov xabari | L2352 |
+| `employeeConfirmed` | 従業員として確認されました！ | Employment confirmed! | Xodimlik tasdiqlandi! | L2364 |
+| ... | *+143 ta kalit* | | | |
 
 ### 📄 ResumeBuilder (70 ta kalit)
 
@@ -1464,7 +1464,6 @@ graph LR
 | `livingAddressTitle` | 現住所履歴 | Living Address History | Yashash manzillari | L742 |
 | `educationTitle` | 学歴履歴 | Education History | Ta'lim ma'lumotlari | L784 |
 | `workExperience` | 職歴 | Work Experience | Ish tajribasi | L890 |
-| `fullNameLabel` | 氏名（漢字またはローマ字） | Full Name | Ism va familiya | L582 |
 | `company` | 企業 | Company | Kompaniya | L898 |
 | `pdfError` | PDFの作成中にエラーが発生しました | An error occurred while g | PDF yaratishda xatolik yu | L504 |
 | `popupBlocked` | ポップアップがブロックされました。ブラウザの設定か | Pop-up window was blocked | Pop-up oyna bloklandi. Br | L528 |
@@ -1472,6 +1471,7 @@ graph LR
 | `resumeBuilderTitle` | 履歴書作成ツール | Japanese Resume Builder | Yapon Rezyumesi Generator | L571 |
 | `personalInfo` | 個人情報 | Personal Information | Shaxsiy Ma'lumotlar | L577 |
 | `step1Desc` | 履歴書に必要な個人情報を入力してください。お名前の | Please fill in your perso | Rirekisho rezyumesi uchun | L578 |
+| `fullNameLabel` | 氏名（漢字またはローマ字） | Full Name | Ism va familiya | L582 |
 | `fullNameHint` | ローマ字（例: YAMADA TARO）または漢字 | Enter in English letters  | Yapon tilida to'ldirish u | L584 |
 | `katakanaNameLabel` | ふりがな（カタカナ） | Katakana Pronunciation | Katakanada yozilishi | L598 |
 | `furiganaHint` | お名前のカタカナ読みを入力してください（例: ヤマ | Enter your name pronuncia | Ismingizning yaponcha kat | L600 |
@@ -1571,7 +1571,7 @@ graph LR
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 30 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 6487 | 1x | 14 ta bug | App.jsx |
+| **Profile** | component | 6625 | 1x | 14 ta bug | App.jsx |
 | **VoiceAssistant** | component | 2505 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk

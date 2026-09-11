@@ -20,8 +20,8 @@ Ushbu qoida **Arizalar va Murojaatlar (`applications`)** sub-sahifasi uchun barc
   - `statusRejected`: Red badge (`不採用` / `Rad etildi`)
 - **Candidate Resume Modal / Inline Viewer**:
   - `viewResumeBtn` tugmasi orqali nomzodning to'liq ismi (`fullNameLabel`), telefoni, JLPT darajasi (`jlptVerified`), yashash manzillari tarixi va o'qish/ish tajribalari barcha 8 ta tilda vizualizatsiya qilinishi shart.
-- **HR Simulation Control Grid**:
-  - Kompaniya HR hodimi har bir nomzod arizasining holatini real-vaqtda o'zgartira oladi (`simulateInterview`, `simulateAccept`, `simulateReject`).
+- **Company Funnel Pipeline Segmented Track Bar**: `新規応募` (New Resumes), `選考・面接` (In Review/Interview), `採用決定` (Hired), `不採用` (Rejected), `全件` (All) segmented buttons with live count badges and glowing active dot indicators.
+- **Automatic HR Employee Sync**: Clicking `採用する` (`simulateAccept`) updates status to `accepted` AND automatically registers candidate into `companyEmployees` (HR Employee List) with role matching job title, instantly rendering in `employees` sub-page.
 - **Trailing Clearance Spacer**: `<div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />` MUST follow `.applications-list`. No matter how many application containers exist (1, 10, or 100), scrolling ALWAYS halts with exact **12px visual clearance gap (`96px - 84px = 12px`)** above `BottomNav` top edge (84px).
 
 ---

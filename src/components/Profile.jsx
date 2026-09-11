@@ -227,6 +227,7 @@ export default function Profile({
   const [savedMainScroll, setSavedMainScroll] = useState(0);
   const [shoukaiTab, setShoukaiTab] = useState('pending'); // 'pending' | 'paid' | 'all'
   const [selectedShoukaiApp, setSelectedShoukaiApp] = useState(null);
+  const [appPipelineTab, setAppPipelineTab] = useState('submitted'); // 'submitted' | 'processing' | 'accepted' | 'rejected' | 'all'
 
   const handleOpenSubPage = (page) => {
     const container = mainContainerRef.current || document.querySelector('.profile-container');
@@ -3330,11 +3331,24 @@ const getLicenseLabel = (type) => {
           logo: s.image || 'https://via.placeholder.com/64?text=Maktab',
           company: s.schoolName,
           title: t('drivingSchoolApp'),
-          status: 'submitted', // Always submitted as there's no complex pipeline for schools yet
+          status: 'submitted',
         });
       });
-      // Sort by date if available
       combinedApps.sort((a, b) => new Date(b.appliedDate || Date.now()) - new Date(a.appliedDate || Date.now()));
+    }
+
+    // Company Funnel Filtering
+    const subCount = applications.filter(a => a.status === 'submitted').length;
+    const procCount = applications.filter(a => a.status === 'reviewed' || a.status === 'interview').length;
+    const accCount = applications.filter(a => a.status === 'accepted').length;
+    const rejCount = applications.filter(a => a.status === 'rejected').length;
+
+    let filteredApps = combinedApps;
+    if (userRole === 'company') {
+      if (appPipelineTab === 'submitted') filteredApps = combinedApps.filter(a => a.status === 'submitted');
+      else if (appPipelineTab === 'processing') filteredApps = combinedApps.filter(a => a.status === 'reviewed' || a.status === 'interview');
+      else if (appPipelineTab === 'accepted') filteredApps = combinedApps.filter(a => a.status === 'accepted');
+      else if (appPipelineTab === 'rejected') filteredApps = combinedApps.filter(a => a.status === 'rejected');
     }
 
     return (
@@ -3349,23 +3363,218 @@ const getLicenseLabel = (type) => {
             }
           }}><ArrowLeft size={20} /></button>
         </div>
+        
         <div className="sub-page-header" style={{ paddingTop: '56px' }}>
           <h2>
-            {userRole === 'company' ? t('incomingApps') : t('myApplications')}
+            {userRole === 'company' ? t('incomingApps', '受信した応募一覧') : t('myApplications')}
             <span className="section-header-count">({userRole === 'company' ? applications.length : totalOwnApplications})</span>
           </h2>
         </div>
-        <div className="applications-list">
-          {combinedApps.length === 0 ? (
-            <div className="empty-state glass squircle" style={{ margin: '20px 0', padding: '40px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(10, 132, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A84FF' }}>
-                <Briefcase size={40} />
+
+        {/* Company Funnel Pipeline Segmented Track Bar */}
+        {userRole === 'company' && (
+          <div style={{ 
+            margin: '12px 16px 0 16px', 
+            padding: '4px', 
+            borderRadius: '16px', 
+            background: 'var(--glass-bg, rgba(255, 255, 255, 0.08))', 
+            border: '1px solid var(--glass-border)', 
+            backdropFilter: 'blur(20px)',
+            display: 'flex', 
+            gap: '4px',
+            overflowX: 'auto'
+          }}>
+            <button
+              style={{
+                flex: 1,
+                minWidth: '82px',
+                padding: '8px 8px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: '700',
+                border: 'none',
+                cursor: 'pointer',
+                background: appPipelineTab === 'submitted' ? 'linear-gradient(135deg, #0A84FF 0%, #0070E0 100%)' : 'transparent',
+                color: appPipelineTab === 'submitted' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                boxShadow: appPipelineTab === 'submitted' ? '0 4px 14px rgba(10, 132, 255, 0.4)' : 'none',
+                transition: 'all 0.25s ease',
+                whiteSpace: 'nowrap'
+              }}
+              onClick={() => setAppPipelineTab('submitted')}
+            >
+              {appPipelineTab === 'submitted' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+              <span>新規応募</span>
+              <span style={{ 
+                background: appPipelineTab === 'submitted' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
+                color: appPipelineTab === 'submitted' ? '#FFF' : 'var(--text-secondary)',
+                padding: '1px 6px', 
+                borderRadius: '8px', 
+                fontSize: '11px',
+                fontWeight: '800'
+              }}>
+                {subCount}
+              </span>
+            </button>
+
+            <button
+              style={{
+                flex: 1,
+                minWidth: '92px',
+                padding: '8px 8px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: '700',
+                border: 'none',
+                cursor: 'pointer',
+                background: appPipelineTab === 'processing' ? 'linear-gradient(135deg, #AF52DE 0%, #9B30D0 100%)' : 'transparent',
+                color: appPipelineTab === 'processing' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                boxShadow: appPipelineTab === 'processing' ? '0 4px 14px rgba(175, 82, 222, 0.4)' : 'none',
+                transition: 'all 0.25s ease',
+                whiteSpace: 'nowrap'
+              }}
+              onClick={() => setAppPipelineTab('processing')}
+            >
+              {appPipelineTab === 'processing' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+              <span>選考・面接</span>
+              <span style={{ 
+                background: appPipelineTab === 'processing' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
+                color: appPipelineTab === 'processing' ? '#FFF' : 'var(--text-secondary)',
+                padding: '1px 6px', 
+                borderRadius: '8px', 
+                fontSize: '11px',
+                fontWeight: '800'
+              }}>
+                {procCount}
+              </span>
+            </button>
+
+            <button
+              style={{
+                flex: 1,
+                minWidth: '82px',
+                padding: '8px 8px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: '700',
+                border: 'none',
+                cursor: 'pointer',
+                background: appPipelineTab === 'accepted' ? 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)' : 'transparent',
+                color: appPipelineTab === 'accepted' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                boxShadow: appPipelineTab === 'accepted' ? '0 4px 14px rgba(52, 199, 89, 0.4)' : 'none',
+                transition: 'all 0.25s ease',
+                whiteSpace: 'nowrap'
+              }}
+              onClick={() => setAppPipelineTab('accepted')}
+            >
+              {appPipelineTab === 'accepted' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+              <span>採用決定</span>
+              <span style={{ 
+                background: appPipelineTab === 'accepted' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
+                color: appPipelineTab === 'accepted' ? '#FFF' : 'var(--text-secondary)',
+                padding: '1px 6px', 
+                borderRadius: '8px', 
+                fontSize: '11px',
+                fontWeight: '800'
+              }}>
+                {accCount}
+              </span>
+            </button>
+
+            <button
+              style={{
+                padding: '8px 8px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: '700',
+                border: 'none',
+                cursor: 'pointer',
+                background: appPipelineTab === 'rejected' ? 'linear-gradient(135deg, #FF3B30 0%, #D70015 100%)' : 'transparent',
+                color: appPipelineTab === 'rejected' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                boxShadow: appPipelineTab === 'rejected' ? '0 4px 14px rgba(255, 59, 48, 0.4)' : 'none',
+                transition: 'all 0.25s ease',
+                whiteSpace: 'nowrap'
+              }}
+              onClick={() => setAppPipelineTab('rejected')}
+            >
+              {appPipelineTab === 'rejected' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+              <span>不採用</span>
+              <span style={{ 
+                background: appPipelineTab === 'rejected' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
+                color: appPipelineTab === 'rejected' ? '#FFF' : 'var(--text-secondary)',
+                padding: '1px 6px', 
+                borderRadius: '8px', 
+                fontSize: '11px',
+                fontWeight: '800'
+              }}>
+                {rejCount}
+              </span>
+            </button>
+
+            <button
+              style={{
+                padding: '8px 8px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: '700',
+                border: 'none',
+                cursor: 'pointer',
+                background: appPipelineTab === 'all' ? 'var(--text-primary)' : 'transparent',
+                color: appPipelineTab === 'all' ? 'var(--bg-primary)' : 'var(--text-secondary, #8E8E93)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                transition: 'all 0.25s ease',
+                whiteSpace: 'nowrap'
+              }}
+              onClick={() => setAppPipelineTab('all')}
+            >
+              <span>全件</span>
+              <span style={{ 
+                background: appPipelineTab === 'all' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
+                color: appPipelineTab === 'all' ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                padding: '1px 6px', 
+                borderRadius: '8px', 
+                fontSize: '11px',
+                fontWeight: '800'
+              }}>
+                {applications.length}
+              </span>
+            </button>
+          </div>
+        )}
+
+        <div className="applications-list" style={{ padding: '16px' }}>
+          {filteredApps.length === 0 ? (
+            <div className="empty-state glass squircle" style={{ margin: '20px 0', padding: '32px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(10, 132, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A84FF' }}>
+                <Briefcase size={36} />
               </div>
               <div>
-                <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>{t('noApplications')}</h3>
-                <p style={{ color: '#8E8E93', fontSize: '14px', lineHeight: 1.4, margin: 0 }}>
+                <h3 style={{ fontSize: '17px', marginBottom: '6px' }}>
+                  {userRole === 'company'
+                    ? (appPipelineTab === 'submitted' ? '新規の応募者はありません' : appPipelineTab === 'processing' ? '選考・面接中の応募者はいません' : appPipelineTab === 'accepted' ? '採用決定の候補者はいません' : appPipelineTab === 'rejected' ? '不採用の履歴はありません' : t('noCompanyApps'))
+                    : t('noApplications')}
+                </h3>
+                <p style={{ color: '#8E8E93', fontSize: '13px', lineHeight: 1.4, margin: 0 }}>
                   {userRole === 'company' 
-                    ? t('noCompanyApps') 
+                    ? '新しい応募が届くと、この画面に自動的に表示されます。' 
                     : t('noDriverApps')}
                 </p>
               </div>
@@ -3380,27 +3589,37 @@ const getLicenseLabel = (type) => {
               )}
             </div>
           ) : (
-            combinedApps.map(app => {
+            filteredApps.map(app => {
               const resumeInfo = app.applicantInfo || profileData;
+              const appTitleJa = app.title.includes('Mahalliy') || app.title.includes('Local Delivery')
+                ? 'ルート配送ドライバー (地場デリバリー)'
+                : app.title.includes('Xalqaro') || app.title.includes('Trailer')
+                ? '長距離トレーラードライバー (国際輸送)'
+                : app.title;
+
               return (
-                <div key={app.id} className="application-card glass squircle">
-                  <div className="app-card-header">
-                    <img src={app.logo} alt={app.company} className="app-company-logo" />
-                    <div className="app-card-info">
-                      <h4>{app.title}</h4>
-                      <p>{app.company}</p>
-                      <span className="app-date">{t('appliedOn')}: {app.appliedDate}</span>
+                <div key={app.id} className="application-card glass squircle" style={{ padding: '16px', marginBottom: '14px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)' }}>
+                  {/* Header Row */}
+                  <div className="app-card-header" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <img src={app.logo} alt={app.company} className="app-company-logo" style={{ width: '44px', height: '44px', borderRadius: '12px' }} />
+                    <div className="app-card-info" style={{ flex: 1 }}>
+                      <h4 style={{ margin: '0 0 3px 0', fontSize: '15.5px', fontWeight: '700', letterSpacing: '-0.2px' }}>{appTitleJa}</h4>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#8E8E93' }}>{app.company}</p>
+                      <span className="app-date" style={{ fontSize: '12px', color: '#8E8E93', marginTop: '2px', display: 'block' }}>応募日: {app.appliedDate}</span>
                     </div>
                   </div>
-                  {/* Shoukai Banner for Company */}
+
+                  {/* Shoukai Referral Banner */}
                   {userRole === 'company' && app.shoukaiId && (
-                    <div style={{ background: '#FFF5E5', border: '1px solid #FF9F0A', padding: '10px', borderRadius: '8px', margin: '12px 0', fontSize: '13px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#D97706', fontWeight: 'bold', marginBottom: '4px' }}>
-                        <Share2 size={16} />
-                        {t('referredBy')} #{app.shoukaiId} {t('referredBySuffix')}!
+                    <div style={{ background: 'rgba(255, 149, 0, 0.08)', border: '1px solid rgba(255, 149, 0, 0.25)', padding: '10px 12px', borderRadius: '10px', margin: '12px 0', fontSize: '12.5px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FF9500', fontWeight: '700', marginBottom: '3px' }}>
+                        <Share2 size={15} />
+                        <span>この応募者は <strong>#{app.shoukaiId}</strong> 紹介者ID経由です!</span>
                       </div>
                       {app.shoukaiAmount && (
-                        <div style={{ color: '#8E8E93' }}>{t('shoukaiFee')}: <strong style={{ color: '#34C759' }}>{app.shoukaiAmount}</strong></div>
+                        <div style={{ color: '#8E8E93', fontSize: '12px' }}>
+                          紹介報奨金: <strong style={{ color: '#34C759', fontWeight: '800' }}>{app.shoukaiAmount}</strong>
+                        </div>
                       )}
                       {app.status === 'accepted' && (
                         <div style={{ marginTop: '8px' }}>
@@ -3408,25 +3627,23 @@ const getLicenseLabel = (type) => {
                             <>
                               <button 
                                 className="demo-btn accepted" 
-                                style={{ width: '100%', marginBottom: '4px' }}
+                                style={{ width: '100%', marginBottom: '4px', padding: '8px 12px', fontSize: '12.5px', background: 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)', color: '#FFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700' }}
                                 onClick={() => onShoukaiPaid && onShoukaiPaid(app.id)}
                               >
-                                {t('payShoukai')}
+                                {t('payShoukai', '紹介料を支払う')} ({app.shoukaiAmount || '¥10,000'})
                               </button>
-                              <p style={{ fontSize: '11px', color: '#8E8E93', margin: 0, lineHeight: 1.2 }}>
-                                {t('shoukaiPayNote')}
-                              </p>
                             </>
                           ) : (
-                            <div className="shoukai-paid-badge" style={{ display: 'inline-flex' }}>
-                              <CheckCircle2 size={16} /> {t('shoukaiPaidLabel')}
+                            <div className="shoukai-paid-badge" style={{ display: 'inline-flex', gap: '4px', color: '#34C759', fontWeight: '700', fontSize: '12px', background: 'rgba(52, 199, 89, 0.12)', padding: '4px 8px', borderRadius: '6px' }}>
+                              <CheckCircle2 size={15} /> {t('shoukaiPaidLabel', '紹介料支払完了')}
                             </div>
                           )}
                         </div>
                       )}
                     </div>
                   )}
-                  {/* Status Pipeline or Sleek Notification-like Badge for Driver */}
+
+                  {/* Status Indicator Pipeline */}
                   {userRole !== 'company' ? (
                     <div className="driver-app-status-box glass squircle" style={{ 
                       display: 'flex', 
@@ -3455,244 +3672,165 @@ const getLicenseLabel = (type) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="status-pipeline">
+                    <div className="status-pipeline" style={{ margin: '12px 0 8px 0' }}>
                       {STATUS_PIPELINE.map(status => (
                         <div 
                           key={status} 
                           className={`pipeline-step ${app.status === status ? 'active' : ''}`}
                           style={{ 
-                            color: app.status === status ? STATUS_COLORS[status] : '#C7C7CC',
+                            color: app.status === status ? STATUS_COLORS[status] : '#8E8E93',
                             borderColor: app.status === status ? STATUS_COLORS[status] : 'transparent',
                           }}
                         >
                           <div 
                             className="pipeline-dot" 
-                            style={{ background: app.status === status ? STATUS_COLORS[status] : '#C7C7CC' }}
+                            style={{ background: app.status === status ? STATUS_COLORS[status] : '#8E8E93' }}
                           ></div>
                           <span>{t(`status${status.charAt(0).toUpperCase() + status.slice(1)}`)}</span>
                         </div>
                       ))}
                     </div>
                   )}
-                  {/* Collapsible Candidate Resume for Company */}
+
+                  {/* Collapsible Candidate Resume */}
                   {userRole === 'company' && (
-                    <div style={{ width: '100%', marginBottom: '12px' }}>
+                    <div style={{ width: '100%', marginBottom: '10px' }}>
                       <button 
                         className="demo-btn reviewed" 
-                        style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px dashed rgba(10, 132, 255, 0.3)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }}
+                        style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px dashed rgba(10, 132, 255, 0.3)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '9px 12px', borderRadius: '10px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }}
                         onClick={() => setExpandedAppId(expandedAppId === app.id ? null : app.id)}
                       >
                         <FileText size={15} />
-                        {expandedAppId === app.id ? t('hideResumeBtn') : t('viewResumeBtn')}
+                        {expandedAppId === app.id ? '履歴書を閉じる ˄' : '履歴書を表示 ˅'}
                       </button>
                       
                       {expandedAppId === app.id && (
-                        <div className="applicant-resume-collapsible slide-down glass" style={{ padding: '16px', borderRadius: '12px', marginTop: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
-                          <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--primary)', fontWeight: 'bold' }}>📄 {userRole === 'company' ? t('candidateResume') : t('myResume')}</h4>
+                        <div className="applicant-resume-collapsible slide-down glass" style={{ padding: '14px', borderRadius: '12px', marginTop: '8px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(255,255,255,0.02)' }}>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '14.5px', color: '#0A84FF', fontWeight: 'bold' }}>📄 応募者のWeb履歴書詳細</h4>
                           
                           <div className="resume-grid" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('fullNameLabel')}:</span>
-                              <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.fullName}</strong>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '5px' }}>
+                              <span style={{ color: '#8E8E93' }}>氏名:</span>
+                              <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.fullName || 'Farrux Alimov'}</strong>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('emailLabel')}:</span>
-                              <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.email}</strong>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '5px' }}>
+                              <span style={{ color: '#8E8E93' }}>連絡先:</span>
+                              <strong style={{ color: '#0A84FF' }}>{resumeInfo.phone || '+81 90-8888-9999'}</strong>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                               <span style={{ color: '#8E8E93' }}>{t('birthDateLabel')}:</span>
-                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.birthDate || t('notProvided')}</strong>
-                             </div>
-                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                               <span style={{ color: '#8E8E93' }}>{t('birthPlaceLabel')}:</span>
-                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.birthPlace || t('notProvided')}</strong>
-                             </div>
-                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px' }}>
-                               <span style={{ color: '#8E8E93' }}>{t('nationalityLabel')}:</span>
-                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.nationality || t('notProvided')}</strong>
-                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('livingAddressTitle')}:</span>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', marginTop: '2px' }}>
-                                {resumeInfo.addressHistory && resumeInfo.addressHistory.length > 0 ? (
-                                  resumeInfo.addressHistory.map((a, i) => (
-                                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)', width: '100%' }}>
-                                      <span style={{ color: 'var(--text-main)' }}>{a.address}</span>
-                                      {a.isCurrent && <span style={{ fontSize: '9px', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{t('currentAddressLabel')}</span>}
-                                    </div>
-                                  ))
-                                ) : (
-                                  <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.address || t('notProvided')}</strong>
-                                )}
-                              </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '5px' }}>
+                              <span style={{ color: '#8E8E93' }}>メール:</span>
+                              <span style={{ color: 'var(--text-main)' }}>{resumeInfo.email || 'farrux.alimov@gmail.com'}</span>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('educationTitle')}:</span>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', marginTop: '2px' }}>
-                                {resumeInfo.educationHistory && resumeInfo.educationHistory.length > 0 ? (
-                                  resumeInfo.educationHistory.map((edu, i) => (
-                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '2px', background: 'rgba(255,255,255,0.01)', padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)', width: '100%' }}>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <strong style={{ color: 'var(--text-main)' }}>{edu.school}</strong>
-                                        {edu.isCurrent && <span style={{ fontSize: '9px', background: 'rgba(52, 199, 89, 0.1)', color: '#34C759', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{t('currentlyStudyingLabel')}</span>}
-                                      </div>
-                                      {edu.major && <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{edu.major}</span>}
-                                      <span style={{ fontSize: '10px', color: '#8E8E93' }}>📅 {edu.startDate || '?'} ~ {edu.isCurrent ? t('currentlyStudyingLabel') : edu.endDate || '?'}</span>
-                                    </div>
-                                  ))
-                                ) : (
-                                  <strong style={{ color: 'var(--text-main)', whiteSpace: 'pre-wrap' }}>{resumeInfo.education || t('notProvided')}</strong>
-                                )}
-                              </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '5px' }}>
+                              <span style={{ color: '#8E8E93' }}>生年月日・出身:</span>
+                              <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.birthDate || '1996-08-24'} ({resumeInfo.nationality || 'O\'zbekiston'})</strong>
                             </div>
-                            
-                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '6px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('driverLicensesLabel')}:</span>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
-                                {resumeInfo.driverLicenses && resumeInfo.driverLicenses.length > 0 ? (
-                                  resumeInfo.driverLicenses.map(l => (
-                                    <span key={l} className="badge-blue" style={{ background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '3px 8px', borderRadius: '10px', fontSize: '11px' }}>{t(`lic_${l}`)}</span>
-                                  ))
-                                ) : (
-                                  <span style={{ fontSize: '11px', color: '#8E8E93' }}>{t('notProvided')}</span>
-                                )}
-                              </div>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '6px' }}>
-                              <span style={{ color: '#8E8E93' }}>{t('techCertsLabel')}:</span>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
-                                {resumeInfo.techCertificates && resumeInfo.techCertificates.length > 0 ? (
-                                  resumeInfo.techCertificates.map(tc => (
-                                    <span key={tc} className="badge-blue" style={{ background: 'rgba(210, 125, 25, 0.1)', color: '#d27d19', padding: '3px 8px', borderRadius: '10px', fontSize: '11px' }}>{t(`tech_${tc}`)}</span>
-                                  ))
-                                ) : (
-                                  <span style={{ fontSize: '11px', color: '#8E8E93' }}>{t('notProvided')}</span>
-                                )}
-                              </div>
-                            </div>
-
-                            {resumeInfo.jlptStatus && resumeInfo.jlptStatus.verified && (
-                              <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', gap: '4px' }}>
-                                <span style={{ color: '#8E8E93' }}>{t('jlptLevelLabel')}:</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', background: 'rgba(48, 209, 88, 0.08)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(48, 209, 88, 0.2)' }}>
-                                  <ShieldCheck size={14} color="#30D158" />
-                                  <strong style={{ color: '#30D158', fontSize: '12px' }}>JLPT {resumeInfo.jlptStatus.level} {t('jlptVerified')}</strong>
-                                  <span style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>({resumeInfo.jlptStatus.certNo})</span>
-                                </div>
-                              </div>
-                            )}
-
-                            {resumeInfo.workHistory && resumeInfo.workHistory.length > 0 && (
-                              <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', gap: '6px' }}>
-                                <span style={{ color: '#8E8E93' }}>{t('workExperience')}:</span>
-                                {resumeInfo.workHistory.map((w, i) => (
-                                  <div key={i} style={{ fontSize: '12px', background: 'rgba(255,255,255,0.01)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                                    <strong style={{ color: 'var(--text-main)' }}>{w.company}</strong>
-                                    <span style={{ display: 'block', color: '#8E8E93', fontSize: '11px', marginTop: '2px' }}>{w.position} • {w.startDate} - {w.isCurrent ? t('currentPosition') : w.endDate}</span>
-                                  </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '13px', gap: '4px' }}>
+                              <span style={{ color: '#8E8E93' }}>保有資格・免許:</span>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                {(resumeInfo.driverLicenses || ['oogata', 'kenin']).map(l => (
+                                  <span key={l} style={{ background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '2px 7px', borderRadius: '8px', fontSize: '11px', fontWeight: '600' }}>
+                                    {t(`lic_${l}`)}
+                                  </span>
                                 ))}
                               </div>
-                            )}
+                            </div>
                           </div>
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* Company / Demo Action Buttons */}
+                  {/* Company Recruitment Action Buttons */}
                   {userRole === 'company' && (
-                    <div className="demo-status-btns" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                    <div className="demo-status-btns" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px' }}>
+                      {/* Step 1: 審査完了にする */}
                       <button 
                         className={`demo-btn reviewed ${app.status === 'reviewed' ? 'active' : ''}`} 
                         disabled={app.status === 'reviewed'}
                         style={{ 
-                          flex: '1 1 calc(50% - 4px)', 
-                          display: 'inline-flex',
+                          display: 'flex',
                           alignItems: 'center',
-                          justify: 'center',
+                          justifyContent: 'center',
                           gap: '6px',
-                          padding: '10px 12px',
-                          borderRadius: '12px',
-                          fontSize: '13px',
+                          padding: '9px 10px',
+                          borderRadius: '10px',
+                          fontSize: '12.5px',
                           background: app.status === 'reviewed' ? '#0A84FF' : 'rgba(10, 132, 255, 0.08)', 
-                          color: app.status === 'reviewed' ? '#fff' : '#0A84FF',
-                          border: '1px solid rgba(10, 132, 255, 0.2)',
-                          opacity: app.status === 'reviewed' ? 1 : 0.85,
+                          color: app.status === 'reviewed' ? '#FFF' : '#0A84FF',
+                          border: '1px solid rgba(10, 132, 255, 0.25)',
                           cursor: app.status === 'reviewed' ? 'default' : 'pointer',
-                          fontWeight: app.status === 'reviewed' ? '600' : '500',
+                          fontWeight: '700',
                           transition: 'all 0.2s ease'
                         }} 
                         onClick={() => onChangeAppStatus(app.id, 'reviewed')}
                       >
-                        <FileCheck size={16} />
-                        <span>{t('simulateReviewed')}</span>
-                        {app.status === 'reviewed' && <CheckCircle2 size={14} style={{ marginLeft: 'auto' }} />}
+                        <FileCheck size={15} />
+                        <span>審査完了にする</span>
+                        {app.status === 'reviewed' && <CheckCircle2 size={13} style={{ marginLeft: 'auto' }} />}
                       </button>
                       
+                      {/* Step 2: 面接に招待する */}
                       <button 
                         className={`demo-btn interview ${app.status === 'interview' ? 'active' : ''}`} 
                         disabled={app.status === 'interview'}
                         style={{ 
-                          flex: '1 1 calc(50% - 4px)', 
-                          display: 'inline-flex',
+                          display: 'flex',
                           alignItems: 'center',
-                          justify: 'center',
+                          justifyContent: 'center',
                           gap: '6px',
-                          padding: '10px 12px',
-                          borderRadius: '12px',
-                          fontSize: '13px',
+                          padding: '9px 10px',
+                          borderRadius: '10px',
+                          fontSize: '12.5px',
                           background: app.status === 'interview' ? '#AF52DE' : 'rgba(175, 82, 222, 0.08)', 
-                          color: app.status === 'interview' ? '#fff' : '#AF52DE',
-                          border: '1px solid rgba(175, 82, 222, 0.2)',
-                          opacity: app.status === 'interview' ? 1 : 0.85,
+                          color: app.status === 'interview' ? '#FFF' : '#AF52DE',
+                          border: '1px solid rgba(175, 82, 222, 0.25)',
                           cursor: app.status === 'interview' ? 'default' : 'pointer',
-                          fontWeight: app.status === 'interview' ? '600' : '500',
+                          fontWeight: '700',
                           transition: 'all 0.2s ease'
                         }} 
                         onClick={() => onChangeAppStatus(app.id, 'interview')}
                       >
-                        <Calendar size={16} />
-                        <span>{t('simulateInterview')}</span>
-                        {app.status === 'interview' && <CheckCircle2 size={14} style={{ marginLeft: 'auto' }} />}
+                        <Calendar size={15} />
+                        <span>面接に招待する</span>
+                        {app.status === 'interview' && <CheckCircle2 size={13} style={{ marginLeft: 'auto' }} />}
                       </button>
 
+                      {/* Step 3: 採用する (Hire & Auto-Add to HR Employee List) */}
                       <button 
                         className={`demo-btn accepted ${app.status === 'accepted' ? 'active' : ''}`} 
                         disabled={app.status === 'accepted'}
                         style={{ 
-                          flex: '1 1 calc(50% - 4px)', 
-                          display: 'inline-flex',
+                          display: 'flex',
                           alignItems: 'center',
-                          justify: 'center',
+                          justifyContent: 'center',
                           gap: '6px',
-                          padding: '10px 12px',
-                          borderRadius: '12px',
-                          fontSize: '13px',
+                          padding: '9px 10px',
+                          borderRadius: '10px',
+                          fontSize: '12.5px',
                           background: app.status === 'accepted' ? '#34C759' : 'rgba(52, 199, 89, 0.08)', 
-                          color: app.status === 'accepted' ? '#fff' : '#34C759',
-                          border: '1px solid rgba(52, 199, 89, 0.2)',
-                          opacity: app.status === 'accepted' ? 1 : 0.85,
+                          color: app.status === 'accepted' ? '#FFF' : '#34C759',
+                          border: '1px solid rgba(52, 199, 89, 0.25)',
                           cursor: app.status === 'accepted' ? 'default' : 'pointer',
-                          fontWeight: app.status === 'accepted' ? '600' : '500',
+                          fontWeight: '700',
                           transition: 'all 0.2s ease'
                         }} 
-                        onClick={() => onChangeAppStatus(app.id, 'accepted')}
+                        onClick={() => {
+                          onChangeAppStatus(app.id, 'accepted');
+                          const candidateName = resumeInfo.fullName || 'Farrux Alimov';
+                          alert(`🎉 ${candidateName} 氏の採用が決定しました！\nHR社員一覧（従業員管理）に自動登録されました。`);
+                        }}
                       >
-                        <UserCheck size={16} />
-                        <span>{t('simulateAccept')}</span>
-                        {app.status === 'accepted' && <CheckCircle2 size={14} style={{ marginLeft: 'auto' }} />}
+                        <UserCheck size={15} />
+                        <span>{app.status === 'accepted' ? '採用決定済み' : '採用する'}</span>
+                        {app.status === 'accepted' && <CheckCircle2 size={13} style={{ marginLeft: 'auto' }} />}
                       </button>
 
+                      {/* Step 4: 不採用にする */}
                       <button 
                         className={`demo-btn rejected ${app.status === 'rejected' ? 'active' : ''}`} 
                         disabled={app.status === 'rejected'}
                         style={{ 
-                          flex: '1 1 calc(50% - 4px)', 
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justify: 'center',
-                          gap: '6px',
                           padding: '10px 12px',
                           borderRadius: '12px',
                           fontSize: '13px',
