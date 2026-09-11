@@ -357,8 +357,8 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
           </div>
         </div>
 
-        {/* 104px dock clearance spacer (yielding 20px clean visual gap above 84px BottomNav) */}
-        <div style={{ height: '104px', minHeight: '104px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 32px compact dock clearance spacer so content ends tightly above floating BottomNav without big empty gap */}
+        <div style={{ height: '32px', minHeight: '32px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     </div>
   );
