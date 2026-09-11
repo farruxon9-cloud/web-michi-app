@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **11/09/2026, 17:58:04**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **11/09/2026, 18:02:38**.
 
 ---
 
@@ -372,7 +372,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (6656 qator, 338952 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (6652 qator, 339845 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -1423,13 +1423,13 @@ graph LR
 |---|---|---|---|---|
 | `roleGuest` | ゲスト | Guest | Mehmon | L2168 |
 | `cancelEdit` | キャンセル | Cancel | Bekor qilish | L2813 |
-| `logout` | ログアウト | Logout | Tizimdan chiqish | L6604 |
+| `logout` | ログアウト | Logout | Tizimdan chiqish | L6600 |
 | `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L2867 |
 | `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L2868 |
-| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L4468 |
+| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L4464 |
 | `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L2766 |
 | `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3369 |
-| `viewDetails` | 詳細を見る | View Details | Batafsil ko'rish | L4225 |
+| `viewDetails` | 詳細を見る | View Details | Batafsil ko'rish | L4221 |
 | `roleDriver` | ドライバー (求職者) | Driver (Job Seeker) | Haydovchi (Ish izlovchi) | L2165 |
 | `roleCompanyLabel` | 企業 | Company | Kompaniya | L2166 |
 | `roleSchool` | 自動車学校 | Driving School | AvtoMaktab | L2167 |
@@ -1571,7 +1571,7 @@ graph LR
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 30 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 6656 | 1x | 14 ta bug | App.jsx |
+| **Profile** | component | 6652 | 1x | 14 ta bug | App.jsx |
 | **VoiceAssistant** | component | 2505 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
