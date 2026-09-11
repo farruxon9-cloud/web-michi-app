@@ -3608,9 +3608,9 @@ const getLicenseLabel = (type) => {
                 : app.title;
 
               return (
-                <div key={app.id} className="application-card glass squircle" style={{ padding: '8px 12px 4px 12px', marginBottom: '12px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)' }}>
+                <div key={app.id} className="application-card glass squircle" style={{ padding: '10px 14px', marginBottom: '12px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)' }}>
                   {/* Header Row */}
-                  <div className="app-card-header" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '4px' }}>
+                  <div className="app-card-header" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '6px' }}>
                     <img src={app.logo} alt={app.company} className="app-company-logo" style={{ width: '40px', height: '40px', borderRadius: '10px' }} />
                     <div className="app-card-info" style={{ flex: 1 }}>
                       <h4 style={{ margin: '0 0 2px 0', fontSize: '15px', fontWeight: '700', letterSpacing: '-0.2px' }}>{appTitleJa}</h4>
@@ -3621,7 +3621,7 @@ const getLicenseLabel = (type) => {
 
                   {/* Shoukai Referral Banner */}
                   {userRole === 'company' && app.shoukaiId && (
-                    <div style={{ background: 'rgba(255, 149, 0, 0.08)', border: '1px solid rgba(255, 149, 0, 0.25)', padding: '6px 8px', borderRadius: '8px', margin: '4px 0', fontSize: '12px' }}>
+                    <div style={{ background: 'rgba(255, 149, 0, 0.08)', border: '1px solid rgba(255, 149, 0, 0.25)', padding: '8px 10px', borderRadius: '8px', margin: '6px 0', fontSize: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FF9500', fontWeight: '700', marginBottom: '2px' }}>
                         <Share2 size={14} />
                         <span>この応募者は <strong>#{app.shoukaiId}</strong> 紹介者ID経由です!</span>
@@ -3632,19 +3632,19 @@ const getLicenseLabel = (type) => {
                         </div>
                       )}
                       {app.status === 'accepted' && (
-                        <div style={{ marginTop: '4px' }}>
+                        <div style={{ marginTop: '6px' }}>
                           {!app.shoukaiPaid ? (
                             <>
                               <button 
                                 className="demo-btn accepted" 
-                                style={{ width: '100%', marginBottom: '2px', padding: '5px 8px', fontSize: '11.5px', background: 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)', color: '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '700' }}
+                                style={{ width: '100%', marginBottom: '2px', padding: '6px 10px', fontSize: '12px', background: 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)', color: '#FFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700' }}
                                 onClick={() => onShoukaiPaid && onShoukaiPaid(app.id)}
                               >
                                 {t('payShoukai', '紹介料を支払う')} ({app.shoukaiAmount || '¥10,000'})
                               </button>
                             </>
                           ) : (
-                            <div className="shoukai-paid-badge" style={{ display: 'inline-flex', gap: '4px', color: '#34C759', fontWeight: '700', fontSize: '11.5px', background: 'rgba(52, 199, 89, 0.12)', padding: '2px 6px', borderRadius: '6px' }}>
+                            <div className="shoukai-paid-badge" style={{ display: 'inline-flex', gap: '4px', color: '#34C759', fontWeight: '700', fontSize: '11.5px', background: 'rgba(52, 199, 89, 0.12)', padding: '3px 7px', borderRadius: '6px' }}>
                               <CheckCircle2 size={14} /> {t('shoukaiPaidLabel', '紹介料支払完了')}
                             </div>
                           )}
@@ -3659,8 +3659,8 @@ const getLicenseLabel = (type) => {
                       display: 'flex', 
                       alignItems: 'center', 
                       gap: '10px', 
-                      padding: '6px 10px', 
-                      marginTop: '4px', 
+                      padding: '8px 12px', 
+                      marginTop: '6px', 
                       borderLeft: `4px solid ${STATUS_COLORS[app.status] || '#0A84FF'}`,
                       background: 'rgba(255, 255, 255, 0.02)',
                       boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)'
@@ -3682,7 +3682,7 @@ const getLicenseLabel = (type) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="status-pipeline" style={{ margin: '4px 0 4px 0' }}>
+                    <div className="status-pipeline" style={{ margin: '6px 0 6px 0' }}>
                       {STATUS_PIPELINE.map(status => (
                         <div 
                           key={status} 
@@ -3704,10 +3704,10 @@ const getLicenseLabel = (type) => {
 
                   {/* Collapsible Candidate Resume */}
                   {userRole === 'company' && (
-                    <div style={{ width: '100%', marginBottom: '4px' }}>
+                    <div style={{ width: '100%', marginBottom: '6px' }}>
                       <button 
                         className="demo-btn reviewed" 
-                        style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px dashed rgba(10, 132, 255, 0.3)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '6px 8px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.25s ease' }}
+                        style={{ background: 'rgba(10, 132, 255, 0.08)', color: '#0A84FF', border: '1px dashed rgba(10, 132, 255, 0.3)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '7px 10px', borderRadius: '8px', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }}
                         onClick={() => setExpandedAppId(expandedAppId === app.id ? null : app.id)}
                       >
                         <FileText size={14} />
@@ -3715,27 +3715,27 @@ const getLicenseLabel = (type) => {
                       </button>
                       
                       {expandedAppId === app.id && (
-                        <div className="applicant-resume-collapsible slide-down glass" style={{ padding: '8px 10px', borderRadius: '8px', marginTop: '4px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '6px', background: 'rgba(255,255,255,0.02)' }}>
-                          <h4 style={{ margin: '0 0 2px 0', fontSize: '13px', color: '#0A84FF', fontWeight: 'bold' }}>📄 応募者のWeb履歴書詳細</h4>
+                        <div className="applicant-resume-collapsible slide-down glass" style={{ padding: '10px 12px', borderRadius: '10px', marginTop: '6px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(255,255,255,0.02)' }}>
+                          <h4 style={{ margin: '0 0 2px 0', fontSize: '13.5px', color: '#0A84FF', fontWeight: 'bold' }}>📄 応募者のWeb履歴書詳細</h4>
                           
-                          <div className="resume-grid" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '3px' }}>
+                          <div className="resume-grid" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                               <span style={{ color: '#8E8E93' }}>氏名:</span>
                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.fullName || 'Farrux Alimov'}</strong>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '3px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                               <span style={{ color: '#8E8E93' }}>連絡先:</span>
                               <strong style={{ color: '#0A84FF' }}>{resumeInfo.phone || '+81 90-8888-9999'}</strong>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '3px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                               <span style={{ color: '#8E8E93' }}>メール:</span>
                               <span style={{ color: 'var(--text-main)' }}>{resumeInfo.email || 'farrux.alimov@gmail.com'}</span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '3px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                               <span style={{ color: '#8E8E93' }}>生年月日・出身:</span>
                               <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.birthDate || '1996-08-24'} ({resumeInfo.nationality || 'O\'zbekiston'})</strong>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '12px', gap: '3px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', fontSize: '12.5px', gap: '3px' }}>
                               <span style={{ color: '#8E8E93' }}>保有資格・免許:</span>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                 {(resumeInfo.driverLicenses || ['oogata', 'kenin']).map(l => (
@@ -3753,7 +3753,7 @@ const getLicenseLabel = (type) => {
 
                   {/* Company Recruitment Action Buttons */}
                   {userRole === 'company' && (
-                    <div className="demo-status-btns" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px', marginTop: '4px' }}>
+                    <div className="demo-status-btns" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '6px' }}>
                       {/* Step 1: 審査完了にする */}
                       <button 
                         className={`demo-btn reviewed ${app.status === 'reviewed' ? 'active' : ''}`} 
@@ -3841,13 +3841,9 @@ const getLicenseLabel = (type) => {
                         className={`demo-btn rejected ${app.status === 'rejected' ? 'active' : ''}`} 
                         disabled={app.status === 'rejected'}
                         style={{ 
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '4px',
-                          padding: '7px 8px',
-                          borderRadius: '8px',
-                          fontSize: '11.5px',
+                          padding: '10px 12px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
                           background: app.status === 'rejected' ? '#FF3B30' : 'rgba(255, 59, 48, 0.08)', 
                           color: app.status === 'rejected' ? '#fff' : '#FF3B30',
                           border: '1px solid rgba(255, 59, 48, 0.2)',
