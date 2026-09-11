@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **11/09/2026, 14:09:38**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **11/09/2026, 14:11:47**.
 
 ---
 
@@ -372,7 +372,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (6174 qator, 319841 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (6185 qator, 320219 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -1175,7 +1175,7 @@ graph LR
 
 > Ushbu bo'lim har bir i18n kalitining 3 tildagi tarjimasini va aynan qaysi komponentda ishlatilishini ko'rsatadi.
 
-**Jami ishlatilgan i18n kalitlar:** 624 ta, **16** ta komponentda tarqalgan
+**Jami ishlatilgan i18n kalitlar:** 623 ta, **16** ta komponentda tarqalgan
 
 ### 📄 AdminDashboard (9 ta kalit)
 
@@ -1417,17 +1417,17 @@ graph LR
 | `sswLanguageReq` | 🇯🇵 日本語要件：JLPT N4またはJFT- | 🇯🇵 Japanese: JLPT N4 or | 🇯🇵 Yapon Tili: JLPT N4  | L258 |
 | ... | *+7 ta kalit* | | | |
 
-### 📄 Profile (188 ta kalit)
+### 📄 Profile (187 ta kalit)
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
 | `roleGuest` | ゲスト | Guest | Mehmon | L2165 |
 | `cancelEdit` | キャンセル | Cancel | Bekor qilish | L2810 |
-| `logout` | ログアウト | Logout | Tizimdan chiqish | L6122 |
+| `logout` | ログアウト | Logout | Tizimdan chiqish | L6133 |
 | `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L2864 |
 | `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L2865 |
 | `emailLabel` | メールアドレス | Email | Email | L3497 |
-| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L3986 |
+| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L3997 |
 | `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L2763 |
 | `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3352 |
 | `roleDriver` | ドライバー (求職者) | Driver (Job Seeker) | Haydovchi (Ish izlovchi) | L2162 |
@@ -1451,7 +1451,7 @@ graph LR
 | `shoukaiPaidMsg` | 紹介報酬が支払われました： | paid shoukai reward of | shoukai mukofoti to'landi | L2348 |
 | `employeeRequestMsg` | 従業員リクエストメッセージ | Employee Request Message | Xodim so'rov xabari | L2349 |
 | `employeeConfirmed` | 従業員として確認されました！ | Employment confirmed! | Xodimlik tasdiqlandi! | L2361 |
-| ... | *+158 ta kalit* | | | |
+| ... | *+157 ta kalit* | | | |
 
 ### 📄 ResumeBuilder (70 ta kalit)
 
@@ -1571,7 +1571,7 @@ graph LR
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 30 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 6174 | 1x | 14 ta bug | App.jsx |
+| **Profile** | component | 6185 | 1x | 14 ta bug | App.jsx |
 | **VoiceAssistant** | component | 2505 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
