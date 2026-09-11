@@ -3371,208 +3371,202 @@ const getLicenseLabel = (type) => {
           </h2>
         </div>
 
-        {/* Company Funnel Pipeline Segmented Track Bar - Full-Bleed Floating Glass Chips */}
+        {/* Company Funnel Pipeline 2-Tier Responsive Grid Filter */}
         {userRole === 'company' && (
-          <div className="sub-page-tab-track" style={{ 
+          <div style={{ 
             position: 'relative',
             zIndex: 20,
-            margin: '4px 0 14px 0', 
-            padding: '6px 16px', 
-            display: 'flex', 
-            alignItems: 'center',
-            gap: '8px',
-            overflowX: 'auto',
-            scrollbarWidth: 'none',
-            WebkitOverflowScrolling: 'touch',
-            minHeight: '48px'
+            margin: '6px 16px 14px 16px', 
+            padding: '6px', 
+            borderRadius: '18px', 
+            background: 'var(--glass-bg, rgba(255, 255, 255, 0.10))', 
+            border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.18))', 
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px'
           }}>
-            <button
-              style={{
-                height: '38px',
-                padding: '0 14px',
-                borderRadius: '20px',
-                fontSize: '12.5px',
-                fontWeight: '700',
-                border: appPipelineTab === 'submitted' ? 'none' : '1px solid var(--glass-border, rgba(255, 255, 255, 0.18))',
-                cursor: 'pointer',
-                background: appPipelineTab === 'submitted' ? 'linear-gradient(135deg, #0A84FF 0%, #0070E0 100%)' : 'var(--glass-bg, rgba(255, 255, 255, 0.08))',
-                color: appPipelineTab === 'submitted' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                boxShadow: appPipelineTab === 'submitted' ? '0 4px 14px rgba(10, 132, 255, 0.4)' : 'none',
-                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-                backdropFilter: 'blur(16px)'
-              }}
-              onClick={() => setAppPipelineTab('submitted')}
-            >
-              {appPipelineTab === 'submitted' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FFF' }} />}
-              <span>新規応募</span>
-              <span style={{ 
-                background: appPipelineTab === 'submitted' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
-                color: appPipelineTab === 'submitted' ? '#FFF' : 'var(--text-secondary)',
-                padding: '2px 7px', 
-                borderRadius: '10px', 
-                fontSize: '11px',
-                fontWeight: '800'
-              }}>
-                {subCount}
-              </span>
-            </button>
+            {/* Top Row: Main 3 Pipeline Funnel Stages */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+              <button
+                style={{
+                  height: '36px',
+                  padding: '0 4px',
+                  borderRadius: '12px',
+                  fontSize: '11.5px',
+                  fontWeight: '700',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: appPipelineTab === 'submitted' ? 'linear-gradient(135deg, #0A84FF 0%, #0070E0 100%)' : 'transparent',
+                  color: appPipelineTab === 'submitted' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  boxShadow: appPipelineTab === 'submitted' ? '0 4px 14px rgba(10, 132, 255, 0.4)' : 'none',
+                  transition: 'all 0.25s ease',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => setAppPipelineTab('submitted')}
+              >
+                {appPipelineTab === 'submitted' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+                <span>新規応募</span>
+                <span style={{ 
+                  background: appPipelineTab === 'submitted' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
+                  color: appPipelineTab === 'submitted' ? '#FFF' : 'var(--text-secondary)',
+                  padding: '1px 6px', 
+                  borderRadius: '8px', 
+                  fontSize: '10.5px',
+                  fontWeight: '800'
+                }}>
+                  {subCount}
+                </span>
+              </button>
 
-            <button
-              style={{
-                height: '38px',
-                padding: '0 14px',
-                borderRadius: '20px',
-                fontSize: '12.5px',
-                fontWeight: '700',
-                border: appPipelineTab === 'processing' ? 'none' : '1px solid var(--glass-border, rgba(255, 255, 255, 0.18))',
-                cursor: 'pointer',
-                background: appPipelineTab === 'processing' ? 'linear-gradient(135deg, #AF52DE 0%, #9B30D0 100%)' : 'var(--glass-bg, rgba(255, 255, 255, 0.08))',
-                color: appPipelineTab === 'processing' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                boxShadow: appPipelineTab === 'processing' ? '0 4px 14px rgba(175, 82, 222, 0.4)' : 'none',
-                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-                backdropFilter: 'blur(16px)'
-              }}
-              onClick={() => setAppPipelineTab('processing')}
-            >
-              {appPipelineTab === 'processing' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FFF' }} />}
-              <span>選考・面接</span>
-              <span style={{ 
-                background: appPipelineTab === 'processing' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
-                color: appPipelineTab === 'processing' ? '#FFF' : 'var(--text-secondary)',
-                padding: '2px 7px', 
-                borderRadius: '10px', 
-                fontSize: '11px',
-                fontWeight: '800'
-              }}>
-                {procCount}
-              </span>
-            </button>
+              <button
+                style={{
+                  height: '36px',
+                  padding: '0 4px',
+                  borderRadius: '12px',
+                  fontSize: '11.5px',
+                  fontWeight: '700',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: appPipelineTab === 'processing' ? 'linear-gradient(135deg, #AF52DE 0%, #9B30D0 100%)' : 'transparent',
+                  color: appPipelineTab === 'processing' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  boxShadow: appPipelineTab === 'processing' ? '0 4px 14px rgba(175, 82, 222, 0.4)' : 'none',
+                  transition: 'all 0.25s ease',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => setAppPipelineTab('processing')}
+              >
+                {appPipelineTab === 'processing' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+                <span>選考・面接</span>
+                <span style={{ 
+                  background: appPipelineTab === 'processing' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
+                  color: appPipelineTab === 'processing' ? '#FFF' : 'var(--text-secondary)',
+                  padding: '1px 6px', 
+                  borderRadius: '8px', 
+                  fontSize: '10.5px',
+                  fontWeight: '800'
+                }}>
+                  {procCount}
+                </span>
+              </button>
 
-            <button
-              style={{
-                height: '38px',
-                padding: '0 14px',
-                borderRadius: '20px',
-                fontSize: '12.5px',
-                fontWeight: '700',
-                border: appPipelineTab === 'accepted' ? 'none' : '1px solid var(--glass-border, rgba(255, 255, 255, 0.18))',
-                cursor: 'pointer',
-                background: appPipelineTab === 'accepted' ? 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)' : 'var(--glass-bg, rgba(255, 255, 255, 0.08))',
-                color: appPipelineTab === 'accepted' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                boxShadow: appPipelineTab === 'accepted' ? '0 4px 14px rgba(52, 199, 89, 0.4)' : 'none',
-                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-                backdropFilter: 'blur(16px)'
-              }}
-              onClick={() => setAppPipelineTab('accepted')}
-            >
-              {appPipelineTab === 'accepted' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FFF' }} />}
-              <span>採用決定</span>
-              <span style={{ 
-                background: appPipelineTab === 'accepted' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
-                color: appPipelineTab === 'accepted' ? '#FFF' : 'var(--text-secondary)',
-                padding: '2px 7px', 
-                borderRadius: '10px', 
-                fontSize: '11px',
-                fontWeight: '800'
-              }}>
-                {accCount}
-              </span>
-            </button>
+              <button
+                style={{
+                  height: '36px',
+                  padding: '0 4px',
+                  borderRadius: '12px',
+                  fontSize: '11.5px',
+                  fontWeight: '700',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: appPipelineTab === 'accepted' ? 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)' : 'transparent',
+                  color: appPipelineTab === 'accepted' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  boxShadow: appPipelineTab === 'accepted' ? '0 4px 14px rgba(52, 199, 89, 0.4)' : 'none',
+                  transition: 'all 0.25s ease',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => setAppPipelineTab('accepted')}
+              >
+                {appPipelineTab === 'accepted' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+                <span>採用決定</span>
+                <span style={{ 
+                  background: appPipelineTab === 'accepted' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
+                  color: appPipelineTab === 'accepted' ? '#FFF' : 'var(--text-secondary)',
+                  padding: '1px 6px', 
+                  borderRadius: '8px', 
+                  fontSize: '10.5px',
+                  fontWeight: '800'
+                }}>
+                  {accCount}
+                </span>
+              </button>
+            </div>
 
-            <button
-              style={{
-                height: '38px',
-                padding: '0 14px',
-                borderRadius: '20px',
-                fontSize: '12.5px',
-                fontWeight: '700',
-                border: appPipelineTab === 'rejected' ? 'none' : '1px solid var(--glass-border, rgba(255, 255, 255, 0.18))',
-                cursor: 'pointer',
-                background: appPipelineTab === 'rejected' ? 'linear-gradient(135deg, #FF3B30 0%, #D70015 100%)' : 'var(--glass-bg, rgba(255, 255, 255, 0.08))',
-                color: appPipelineTab === 'rejected' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                boxShadow: appPipelineTab === 'rejected' ? '0 4px 14px rgba(255, 59, 48, 0.4)' : 'none',
-                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-                backdropFilter: 'blur(16px)'
-              }}
-              onClick={() => setAppPipelineTab('rejected')}
-            >
-              {appPipelineTab === 'rejected' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FFF' }} />}
-              <span>不採用</span>
-              <span style={{ 
-                background: appPipelineTab === 'rejected' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
-                color: appPipelineTab === 'rejected' ? '#FFF' : 'var(--text-secondary)',
-                padding: '2px 7px', 
-                borderRadius: '10px', 
-                fontSize: '11px',
-                fontWeight: '800'
-              }}>
-                {rejCount}
-              </span>
-            </button>
+            {/* Bottom Row: Secondary & All Filter */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+              <button
+                style={{
+                  height: '36px',
+                  padding: '0 8px',
+                  borderRadius: '12px',
+                  fontSize: '11.5px',
+                  fontWeight: '700',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: appPipelineTab === 'rejected' ? 'linear-gradient(135deg, #FF3B30 0%, #D70015 100%)' : 'transparent',
+                  color: appPipelineTab === 'rejected' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  boxShadow: appPipelineTab === 'rejected' ? '0 4px 14px rgba(255, 59, 48, 0.4)' : 'none',
+                  transition: 'all 0.25s ease',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => setAppPipelineTab('rejected')}
+              >
+                {appPipelineTab === 'rejected' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+                <span>不採用</span>
+                <span style={{ 
+                  background: appPipelineTab === 'rejected' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
+                  color: appPipelineTab === 'rejected' ? '#FFF' : 'var(--text-secondary)',
+                  padding: '1px 6px', 
+                  borderRadius: '8px', 
+                  fontSize: '10.5px',
+                  fontWeight: '800'
+                }}>
+                  {rejCount}
+                </span>
+              </button>
 
-            <button
-              style={{
-                height: '38px',
-                padding: '0 14px',
-                borderRadius: '20px',
-                fontSize: '12.5px',
-                fontWeight: '700',
-                border: appPipelineTab === 'all' ? 'none' : '1px solid var(--glass-border, rgba(255, 255, 255, 0.18))',
-                cursor: 'pointer',
-                background: appPipelineTab === 'all' ? 'linear-gradient(135deg, #0A84FF 0%, #5856D6 100%)' : 'var(--glass-bg, rgba(255, 255, 255, 0.08))',
-                color: appPipelineTab === 'all' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                boxShadow: appPipelineTab === 'all' ? '0 4px 14px rgba(10, 132, 255, 0.4)' : 'none',
-                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-                backdropFilter: 'blur(16px)'
-              }}
-              onClick={() => setAppPipelineTab('all')}
-            >
-              {appPipelineTab === 'all' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FFF' }} />}
-              <span>全件</span>
-              <span style={{ 
-                background: appPipelineTab === 'all' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
-                color: appPipelineTab === 'all' ? '#FFF' : 'var(--text-secondary)',
-                padding: '2px 7px', 
-                borderRadius: '10px', 
-                fontSize: '11px',
-                fontWeight: '800'
-              }}>
-                {applications.length}
-              </span>
-            </button>
-
-            {/* Right-edge Spacer to guarantee zero clipping of the last item */}
-            <div style={{ paddingRight: '12px', flexShrink: 0 }} />
+              <button
+                style={{
+                  height: '36px',
+                  padding: '0 8px',
+                  borderRadius: '12px',
+                  fontSize: '11.5px',
+                  fontWeight: '700',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: appPipelineTab === 'all' ? 'linear-gradient(135deg, #0A84FF 0%, #5856D6 100%)' : 'transparent',
+                  color: appPipelineTab === 'all' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  boxShadow: appPipelineTab === 'all' ? '0 4px 14px rgba(10, 132, 255, 0.4)' : 'none',
+                  transition: 'all 0.25s ease',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => setAppPipelineTab('all')}
+              >
+                {appPipelineTab === 'all' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+                <span>全件（すべて）</span>
+                <span style={{ 
+                  background: appPipelineTab === 'all' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
+                  color: appPipelineTab === 'all' ? '#FFF' : 'var(--text-secondary)',
+                  padding: '1px 6px', 
+                  borderRadius: '8px', 
+                  fontSize: '10.5px',
+                  fontWeight: '800'
+                }}>
+                  {applications.length}
+                </span>
+              </button>
+            </div>
           </div>
         )}
 
