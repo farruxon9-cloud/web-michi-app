@@ -1129,6 +1129,16 @@ html.light-mode .contract-btn:active {
   z-index: 10;
 }
 
+.sub-page-tab-track {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sub-page-tab-track::-webkit-scrollbar {
+  display: none;
+}
+
 .sub-page-header .icon-btn {
   position: relative;
   z-index: 20;

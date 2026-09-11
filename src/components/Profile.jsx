@@ -3373,22 +3373,29 @@ const getLicenseLabel = (type) => {
 
         {/* Company Funnel Pipeline Segmented Track Bar */}
         {userRole === 'company' && (
-          <div style={{ 
-            margin: '12px 16px 0 16px', 
+          <div className="sub-page-tab-track" style={{ 
+            position: 'relative',
+            zIndex: 20,
+            margin: '4px 16px 14px 16px', 
             padding: '4px', 
             borderRadius: '16px', 
-            background: 'var(--glass-bg, rgba(255, 255, 255, 0.08))', 
-            border: '1px solid var(--glass-border)', 
+            background: 'var(--glass-bg, rgba(255, 255, 255, 0.12))', 
+            border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.18))', 
             backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
             display: 'flex', 
+            alignItems: 'center',
             gap: '4px',
-            overflowX: 'auto'
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
+            minHeight: '44px'
           }}>
             <button
               style={{
                 flex: 1,
-                minWidth: '82px',
-                padding: '8px 8px',
+                minWidth: '80px',
+                height: '36px',
+                padding: '0 8px',
                 borderRadius: '12px',
                 fontSize: '12px',
                 fontWeight: '700',
@@ -3396,13 +3403,14 @@ const getLicenseLabel = (type) => {
                 cursor: 'pointer',
                 background: appPipelineTab === 'submitted' ? 'linear-gradient(135deg, #0A84FF 0%, #0070E0 100%)' : 'transparent',
                 color: appPipelineTab === 'submitted' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '4px',
                 boxShadow: appPipelineTab === 'submitted' ? '0 4px 14px rgba(10, 132, 255, 0.4)' : 'none',
                 transition: 'all 0.25s ease',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                flexShrink: 0
               }}
               onClick={() => setAppPipelineTab('submitted')}
             >
@@ -3423,8 +3431,9 @@ const getLicenseLabel = (type) => {
             <button
               style={{
                 flex: 1,
-                minWidth: '92px',
-                padding: '8px 8px',
+                minWidth: '90px',
+                height: '36px',
+                padding: '0 8px',
                 borderRadius: '12px',
                 fontSize: '12px',
                 fontWeight: '700',
@@ -3432,13 +3441,14 @@ const getLicenseLabel = (type) => {
                 cursor: 'pointer',
                 background: appPipelineTab === 'processing' ? 'linear-gradient(135deg, #AF52DE 0%, #9B30D0 100%)' : 'transparent',
                 color: appPipelineTab === 'processing' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '4px',
                 boxShadow: appPipelineTab === 'processing' ? '0 4px 14px rgba(175, 82, 222, 0.4)' : 'none',
                 transition: 'all 0.25s ease',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                flexShrink: 0
               }}
               onClick={() => setAppPipelineTab('processing')}
             >
@@ -3459,8 +3469,9 @@ const getLicenseLabel = (type) => {
             <button
               style={{
                 flex: 1,
-                minWidth: '82px',
-                padding: '8px 8px',
+                minWidth: '80px',
+                height: '36px',
+                padding: '0 8px',
                 borderRadius: '12px',
                 fontSize: '12px',
                 fontWeight: '700',
@@ -3468,13 +3479,14 @@ const getLicenseLabel = (type) => {
                 cursor: 'pointer',
                 background: appPipelineTab === 'accepted' ? 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)' : 'transparent',
                 color: appPipelineTab === 'accepted' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '4px',
                 boxShadow: appPipelineTab === 'accepted' ? '0 4px 14px rgba(52, 199, 89, 0.4)' : 'none',
                 transition: 'all 0.25s ease',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                flexShrink: 0
               }}
               onClick={() => setAppPipelineTab('accepted')}
             >
@@ -3494,7 +3506,10 @@ const getLicenseLabel = (type) => {
 
             <button
               style={{
-                padding: '8px 8px',
+                flex: 1,
+                minWidth: '76px',
+                height: '36px',
+                padding: '0 8px',
                 borderRadius: '12px',
                 fontSize: '12px',
                 fontWeight: '700',
@@ -3502,13 +3517,14 @@ const getLicenseLabel = (type) => {
                 cursor: 'pointer',
                 background: appPipelineTab === 'rejected' ? 'linear-gradient(135deg, #FF3B30 0%, #D70015 100%)' : 'transparent',
                 color: appPipelineTab === 'rejected' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '4px',
                 boxShadow: appPipelineTab === 'rejected' ? '0 4px 14px rgba(255, 59, 48, 0.4)' : 'none',
                 transition: 'all 0.25s ease',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                flexShrink: 0
               }}
               onClick={() => setAppPipelineTab('rejected')}
             >
@@ -3528,7 +3544,10 @@ const getLicenseLabel = (type) => {
 
             <button
               style={{
-                padding: '8px 8px',
+                flex: 1,
+                minWidth: '64px',
+                height: '36px',
+                padding: '0 8px',
                 borderRadius: '12px',
                 fontSize: '12px',
                 fontWeight: '700',
@@ -3536,12 +3555,13 @@ const getLicenseLabel = (type) => {
                 cursor: 'pointer',
                 background: appPipelineTab === 'all' ? 'var(--text-primary)' : 'transparent',
                 color: appPipelineTab === 'all' ? 'var(--bg-primary)' : 'var(--text-secondary, #8E8E93)',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '4px',
                 transition: 'all 0.25s ease',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                flexShrink: 0
               }}
               onClick={() => setAppPipelineTab('all')}
             >
@@ -3983,22 +4003,28 @@ const getLicenseLabel = (type) => {
           </div>
 
           {/* Sub-Section Filter Segmented Track Bar */}
-          <div style={{ 
-            margin: '12px 16px 0 16px', 
+          <div className="sub-page-tab-track" style={{ 
+            position: 'relative',
+            zIndex: 20,
+            margin: '4px 16px 14px 16px', 
             padding: '4px', 
             borderRadius: '16px', 
-            background: 'var(--glass-bg, rgba(255, 255, 255, 0.08))', 
-            border: '1px solid var(--glass-border)', 
+            background: 'var(--glass-bg, rgba(255, 255, 255, 0.12))', 
+            border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.18))', 
             backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
             display: 'flex', 
-            gap: '4px' 
+            alignItems: 'center',
+            gap: '4px',
+            minHeight: '44px'
           }}>
             <button
               style={{
                 flex: 1,
-                padding: '9px 12px',
+                height: '36px',
+                padding: '0 10px',
                 borderRadius: '12px',
-                fontSize: '13px',
+                fontSize: '12.5px',
                 fontWeight: '700',
                 border: 'none',
                 cursor: 'pointer',
@@ -4006,12 +4032,13 @@ const getLicenseLabel = (type) => {
                   ? 'linear-gradient(135deg, #0A84FF 0%, #0070E0 100%)' 
                   : 'transparent',
                 color: shoukaiTab === 'pending' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
                 boxShadow: shoukaiTab === 'pending' ? '0 4px 14px rgba(10, 132, 255, 0.4)' : 'none',
-                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                whiteSpace: 'nowrap'
               }}
               onClick={() => setShoukaiTab('pending')}
             >
@@ -4034,9 +4061,10 @@ const getLicenseLabel = (type) => {
             <button
               style={{
                 flex: 1,
-                padding: '9px 12px',
+                height: '36px',
+                padding: '0 10px',
                 borderRadius: '12px',
-                fontSize: '13px',
+                fontSize: '12.5px',
                 fontWeight: '700',
                 border: 'none',
                 cursor: 'pointer',
@@ -4044,12 +4072,13 @@ const getLicenseLabel = (type) => {
                   ? 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)' 
                   : 'transparent',
                 color: shoukaiTab === 'paid' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
                 boxShadow: shoukaiTab === 'paid' ? '0 4px 14px rgba(52, 199, 89, 0.4)' : 'none',
-                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                whiteSpace: 'nowrap'
               }}
               onClick={() => setShoukaiTab('paid')}
             >
@@ -4072,9 +4101,10 @@ const getLicenseLabel = (type) => {
             <button
               style={{
                 flex: 1,
-                padding: '9px 12px',
+                height: '36px',
+                padding: '0 10px',
                 borderRadius: '12px',
-                fontSize: '13px',
+                fontSize: '12.5px',
                 fontWeight: '700',
                 border: 'none',
                 cursor: 'pointer',
@@ -4082,12 +4112,13 @@ const getLicenseLabel = (type) => {
                   ? 'linear-gradient(135deg, #5E5CE6 0%, #4B4ACA 100%)' 
                   : 'transparent',
                 color: shoukaiTab === 'all' ? '#FFFFFF' : 'var(--text-secondary, #8E8E93)',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
                 boxShadow: shoukaiTab === 'all' ? '0 4px 14px rgba(94, 92, 230, 0.4)' : 'none',
-                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                whiteSpace: 'nowrap'
               }}
               onClick={() => setShoukaiTab('all')}
             >
