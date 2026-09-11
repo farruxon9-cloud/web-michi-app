@@ -3364,37 +3364,37 @@ const getLicenseLabel = (type) => {
           }}><ArrowLeft size={20} /></button>
         </div>
         
-        <div className="sub-page-header" style={{ paddingTop: '56px' }}>
+        <div className="sub-page-header" style={{ paddingTop: '46px', paddingBottom: '0px' }}>
           <h2>
             {userRole === 'company' ? t('incomingApps', '受信した応募一覧') : t('myApplications')}
             <span className="section-header-count">({userRole === 'company' ? applications.length : totalOwnApplications})</span>
           </h2>
         </div>
 
-        {/* Company Funnel Pipeline 2-Tier Responsive Grid Filter */}
+        {/* Company Funnel Pipeline 2-Tier Responsive Grid Filter - Compact */}
         {userRole === 'company' && (
           <div style={{ 
             position: 'relative',
             zIndex: 20,
-            margin: '6px 16px 14px 16px', 
-            padding: '6px', 
-            borderRadius: '18px', 
+            margin: '2px 16px 8px 16px', 
+            padding: '4px', 
+            borderRadius: '14px', 
             background: 'var(--glass-bg, rgba(255, 255, 255, 0.10))', 
             border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.18))', 
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             display: 'flex',
             flexDirection: 'column',
-            gap: '6px'
+            gap: '4px'
           }}>
             {/* Top Row: Main 3 Pipeline Funnel Stages */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' }}>
               <button
                 style={{
-                  height: '36px',
+                  height: '32px',
                   padding: '0 4px',
-                  borderRadius: '12px',
-                  fontSize: '11.5px',
+                  borderRadius: '10px',
+                  fontSize: '11px',
                   fontWeight: '700',
                   border: 'none',
                   cursor: 'pointer',
@@ -3404,20 +3404,20 @@ const getLicenseLabel = (type) => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '4px',
-                  boxShadow: appPipelineTab === 'submitted' ? '0 4px 14px rgba(10, 132, 255, 0.4)' : 'none',
+                  boxShadow: appPipelineTab === 'submitted' ? '0 4px 12px rgba(10, 132, 255, 0.35)' : 'none',
                   transition: 'all 0.25s ease',
                   whiteSpace: 'nowrap'
                 }}
                 onClick={() => setAppPipelineTab('submitted')}
               >
-                {appPipelineTab === 'submitted' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+                {appPipelineTab === 'submitted' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#FFF' }} />}
                 <span>新規応募</span>
                 <span style={{ 
                   background: appPipelineTab === 'submitted' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
                   color: appPipelineTab === 'submitted' ? '#FFF' : 'var(--text-secondary)',
-                  padding: '1px 6px', 
-                  borderRadius: '8px', 
-                  fontSize: '10.5px',
+                  padding: '1px 5px', 
+                  borderRadius: '7px', 
+                  fontSize: '10px',
                   fontWeight: '800'
                 }}>
                   {subCount}
@@ -3426,10 +3426,10 @@ const getLicenseLabel = (type) => {
 
               <button
                 style={{
-                  height: '36px',
+                  height: '32px',
                   padding: '0 4px',
-                  borderRadius: '12px',
-                  fontSize: '11.5px',
+                  borderRadius: '10px',
+                  fontSize: '11px',
                   fontWeight: '700',
                   border: 'none',
                   cursor: 'pointer',
@@ -3439,20 +3439,20 @@ const getLicenseLabel = (type) => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '4px',
-                  boxShadow: appPipelineTab === 'processing' ? '0 4px 14px rgba(175, 82, 222, 0.4)' : 'none',
+                  boxShadow: appPipelineTab === 'processing' ? '0 4px 12px rgba(175, 82, 222, 0.35)' : 'none',
                   transition: 'all 0.25s ease',
                   whiteSpace: 'nowrap'
                 }}
                 onClick={() => setAppPipelineTab('processing')}
               >
-                {appPipelineTab === 'processing' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+                {appPipelineTab === 'processing' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#FFF' }} />}
                 <span>選考・面接</span>
                 <span style={{ 
                   background: appPipelineTab === 'processing' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
                   color: appPipelineTab === 'processing' ? '#FFF' : 'var(--text-secondary)',
-                  padding: '1px 6px', 
-                  borderRadius: '8px', 
-                  fontSize: '10.5px',
+                  padding: '1px 5px', 
+                  borderRadius: '7px', 
+                  fontSize: '10px',
                   fontWeight: '800'
                 }}>
                   {procCount}
@@ -3461,10 +3461,10 @@ const getLicenseLabel = (type) => {
 
               <button
                 style={{
-                  height: '36px',
+                  height: '32px',
                   padding: '0 4px',
-                  borderRadius: '12px',
-                  fontSize: '11.5px',
+                  borderRadius: '10px',
+                  fontSize: '11px',
                   fontWeight: '700',
                   border: 'none',
                   cursor: 'pointer',
@@ -3474,20 +3474,20 @@ const getLicenseLabel = (type) => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '4px',
-                  boxShadow: appPipelineTab === 'accepted' ? '0 4px 14px rgba(52, 199, 89, 0.4)' : 'none',
+                  boxShadow: appPipelineTab === 'accepted' ? '0 4px 12px rgba(52, 199, 89, 0.35)' : 'none',
                   transition: 'all 0.25s ease',
                   whiteSpace: 'nowrap'
                 }}
                 onClick={() => setAppPipelineTab('accepted')}
               >
-                {appPipelineTab === 'accepted' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+                {appPipelineTab === 'accepted' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#FFF' }} />}
                 <span>採用決定</span>
                 <span style={{ 
                   background: appPipelineTab === 'accepted' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
                   color: appPipelineTab === 'accepted' ? '#FFF' : 'var(--text-secondary)',
-                  padding: '1px 6px', 
-                  borderRadius: '8px', 
-                  fontSize: '10.5px',
+                  padding: '1px 5px', 
+                  borderRadius: '7px', 
+                  fontSize: '10px',
                   fontWeight: '800'
                 }}>
                   {accCount}
@@ -3496,13 +3496,13 @@ const getLicenseLabel = (type) => {
             </div>
 
             {/* Bottom Row: Secondary & All Filter */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px' }}>
               <button
                 style={{
-                  height: '36px',
-                  padding: '0 8px',
-                  borderRadius: '12px',
-                  fontSize: '11.5px',
+                  height: '32px',
+                  padding: '0 6px',
+                  borderRadius: '10px',
+                  fontSize: '11px',
                   fontWeight: '700',
                   border: 'none',
                   cursor: 'pointer',
@@ -3512,20 +3512,20 @@ const getLicenseLabel = (type) => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '4px',
-                  boxShadow: appPipelineTab === 'rejected' ? '0 4px 14px rgba(255, 59, 48, 0.4)' : 'none',
+                  boxShadow: appPipelineTab === 'rejected' ? '0 4px 12px rgba(255, 59, 48, 0.35)' : 'none',
                   transition: 'all 0.25s ease',
                   whiteSpace: 'nowrap'
                 }}
                 onClick={() => setAppPipelineTab('rejected')}
               >
-                {appPipelineTab === 'rejected' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+                {appPipelineTab === 'rejected' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#FFF' }} />}
                 <span>不採用</span>
                 <span style={{ 
                   background: appPipelineTab === 'rejected' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
                   color: appPipelineTab === 'rejected' ? '#FFF' : 'var(--text-secondary)',
-                  padding: '1px 6px', 
-                  borderRadius: '8px', 
-                  fontSize: '10.5px',
+                  padding: '1px 5px', 
+                  borderRadius: '7px', 
+                  fontSize: '10px',
                   fontWeight: '800'
                 }}>
                   {rejCount}
@@ -3534,10 +3534,10 @@ const getLicenseLabel = (type) => {
 
               <button
                 style={{
-                  height: '36px',
-                  padding: '0 8px',
-                  borderRadius: '12px',
-                  fontSize: '11.5px',
+                  height: '32px',
+                  padding: '0 6px',
+                  borderRadius: '10px',
+                  fontSize: '11px',
                   fontWeight: '700',
                   border: 'none',
                   cursor: 'pointer',
@@ -3547,20 +3547,20 @@ const getLicenseLabel = (type) => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '4px',
-                  boxShadow: appPipelineTab === 'all' ? '0 4px 14px rgba(10, 132, 255, 0.4)' : 'none',
+                  boxShadow: appPipelineTab === 'all' ? '0 4px 12px rgba(10, 132, 255, 0.35)' : 'none',
                   transition: 'all 0.25s ease',
                   whiteSpace: 'nowrap'
                 }}
                 onClick={() => setAppPipelineTab('all')}
               >
-                {appPipelineTab === 'all' && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFF' }} />}
+                {appPipelineTab === 'all' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#FFF' }} />}
                 <span>全件（すべて）</span>
                 <span style={{ 
                   background: appPipelineTab === 'all' ? 'rgba(255,255,255,0.3)' : 'rgba(142,142,147,0.18)', 
                   color: appPipelineTab === 'all' ? '#FFF' : 'var(--text-secondary)',
-                  padding: '1px 6px', 
-                  borderRadius: '8px', 
-                  fontSize: '10.5px',
+                  padding: '1px 5px', 
+                  borderRadius: '7px', 
+                  fontSize: '10px',
                   fontWeight: '800'
                 }}>
                   {applications.length}
@@ -3570,7 +3570,7 @@ const getLicenseLabel = (type) => {
           </div>
         )}
 
-        <div className="applications-list" style={{ padding: '16px' }}>
+        <div className="applications-list" style={{ padding: '4px 16px 16px 16px' }}>
           {filteredApps.length === 0 ? (
             <div className="empty-state glass squircle" style={{ margin: '20px 0', padding: '32px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
               <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(10, 132, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A84FF' }}>
