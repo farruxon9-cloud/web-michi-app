@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **12/09/2026, 17:08:44**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **12/09/2026, 17:11:34**.
 
 ---
 
@@ -1193,7 +1193,7 @@ graph LR
 
 > Ushbu bo'lim har bir i18n kalitining 3 tildagi tarjimasini va aynan qaysi komponentda ishlatilishini ko'rsatadi.
 
-**Jami ishlatilgan i18n kalitlar:** 641 ta, **17** ta komponentda tarqalgan
+**Jami ishlatilgan i18n kalitlar:** 646 ta, **18** ta komponentda tarqalgan
 
 ### 📄 AdminDashboard (9 ta kalit)
 
@@ -1462,6 +1462,16 @@ graph LR
 | `sswRequirementsTitle` | 特定技能（SSW）試験・ビザ要件 | Tokutei Ginou (SSW) Visa  | Tokutei Ginou (SSW) Imtih | L253 |
 | `sswLanguageReq` | 🇯🇵 日本語要件：JLPT N4またはJFT- | 🇯🇵 Japanese: JLPT N4 or | 🇯🇵 Yapon Tili: JLPT N4  | L258 |
 | ... | *+7 ta kalit* | | | |
+
+### 📄 JobsMacOS (5 ta kalit)
+
+| i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
+|---|---|---|---|---|
+| `filterAllJobs` | — | — | — | L14 |
+| `filterTokuteiGinou` | — | — | — | L15 |
+| `filterFullTime` | — | — | — | L16 |
+| `filterHeavyTruck` | — | — | — | L17 |
+| `filterHighSalary` | — | — | — | L18 |
 
 ### 📄 Profile (179 ta kalit)
 
