@@ -702,6 +702,37 @@ export default function DriverFeed({
     return item.name;
   };
 
+  const getDurationLabel = (durId) => {
+    const item = JOB_FEATURES.duration?.options?.find(opt => opt.id === durId);
+    if (!item) return durId;
+    if (currentLang === 'uz') return item.nameUz || item.name;
+    if (currentLang === 'en') return item.nameEn || item.name;
+    return item.name;
+  };
+
+  const getTimeSlotLabel = (tsId) => {
+    const item = JOB_FEATURES.timeSlot?.options?.find(opt => opt.id === tsId);
+    if (!item) return tsId;
+    if (currentLang === 'uz') return item.nameUz || item.name;
+    if (currentLang === 'en') return item.nameEn || item.name;
+    return item.name;
+  };
+
+  const getFeatureLabel = (fId) => {
+    for (const groupKey of Object.keys(JOB_FEATURES)) {
+      const options = JOB_FEATURES[groupKey]?.options;
+      if (Array.isArray(options)) {
+        const item = options.find(opt => opt.id === fId);
+        if (item) {
+          if (currentLang === 'uz') return item.nameUz || item.name;
+          if (currentLang === 'en') return item.nameEn || item.name;
+          return item.name;
+        }
+      }
+    }
+    return fId;
+  };
+
   if (isFilterDrawerOpen) {
     return (
       <div className="feed-container fade-in hide-scrollbar" style={{ flex: 1, height: '100%', maxHeight: '100%', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '6px 14px 0 14px', boxSizing: 'border-box', position: 'relative' }}>

@@ -962,7 +962,11 @@ const translation = {
   "otpVerifiedSuccess": "認証が完了しました",
   "otpExpired": "認証コードの期限が切れています。再送信してください。",
   "otpMaxAttemptsExceeded": "試行回数が上限に達しました。新しいコードをリクエストしてください。",
-  "unlockSuccessAlert": "アカウントのロックが解除されました。"
+  "unlockSuccessAlert": "アカウントのロックが解除されました。",
+  "unlockViaEmail": "メールで即時解除",
+  "backToRoleSelect": "役割選択に戻る",
+  "invalidCode": "認証コードが正しくありません",
+  "lic_dainishu": "第二種運転免許"
 };
 
 export default { translation };

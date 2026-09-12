@@ -200,7 +200,7 @@ const translation = {
   "sendCodeBtn": "Kodni yuborish",
   "verifyCodeBtn": "Kodni tasdiqlash",
   "updateAndLoginBtn": "Parolni yangilash va Kirish",
-  "forgotPasswordBtn": "パスワードを忘れた場合",
+  "forgotPasswordBtn": "Parolni unutdingizmi?",
   "welcomeTitle": "Xush kelibsiz",
   "welcomeSubtitle": "Michi orqali o'z yo'lingizni toping.",
   "roleUser": "Foydalanuvchi",
@@ -920,7 +920,11 @@ const translation = {
   "otpVerifiedSuccess": "Tasdiqlash muvaffaqiyatli o'tdi",
   "otpExpired": "Kodning amal qilish muddati tugadi. Qayta yuboring.",
   "otpMaxAttemptsExceeded": "Urinishlar limiti tugadi. Yangi kod so'rang.",
-  "unlockSuccessAlert": "Hisobingiz blokdan chiqarildi."
+  "unlockSuccessAlert": "Hisobingiz blokdan chiqarildi.",
+  "unlockViaEmail": "Email orqali bir zumda tiklash",
+  "backToRoleSelect": "Ortga Qaytish",
+  "invalidCode": "Tasdiqlash kodi noto'g'ri!",
+  "lic_dainishu": "Ikkinchi toifa haydovchilik guvohnomasi"
 };
 
 export default { translation };

@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **12/09/2026, 08:59:26**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **12/09/2026, 16:12:43**.
 
 ---
 
@@ -207,7 +207,7 @@ graph TD
   - `../utils/haptics`
 
 ### 📦 [SkeletonCard](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.jsx)
-* **Fayl yo'li:** `src/components/DriverFeed.jsx` (2017 qator, 98135 bayt)
+* **Fayl yo'li:** `src/components/DriverFeed.jsx` (2048 qator, 99212 bayt)
 * **Komponent Stillari:** 🎨 [DriverFeed.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.css)
 * **Unit Testlari:** 🧪 [DriverFeed.test.jsx](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/DriverFeed.test.jsx)
 * **Qabul qiladigan parametrlari (Props):**
@@ -373,7 +373,7 @@ graph TD
   - `react`
 
 ### 📦 [Profile](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.jsx)
-* **Fayl yo'li:** `src/components/Profile.jsx` (6965 qator, 354329 bayt)
+* **Fayl yo'li:** `src/components/Profile.jsx` (7223 qator, 369565 bayt)
 * **Komponent Stillari:** 🎨 [Profile.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/Profile.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onLogout`
@@ -471,7 +471,7 @@ graph TD
   - `react-i18next`
 
 ### 📦 [RoleSelect](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/RoleSelect.jsx)
-* **Fayl yo'li:** `src/components/RoleSelect.jsx` (1404 qator, 66905 bayt)
+* **Fayl yo'li:** `src/components/RoleSelect.jsx` (1420 qator, 67523 bayt)
 * **Komponent Stillari:** 🎨 [RoleSelect.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/RoleSelect.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onSelectRole`
@@ -1034,7 +1034,7 @@ graph TD
 * **Yo'li:** `.agents/rules/pages/01_dashboard.md` (63 qator)
 
 ### 📜 [02_driver_feed.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/02_driver_feed.md)
-* **Yo'li:** `.agents/rules/pages/02_driver_feed.md` (56 qator)
+* **Yo'li:** `.agents/rules/pages/02_driver_feed.md` (60 qator)
 
 ### 📜 [03_driving_academy.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/03_driving_academy.md)
 * **Yo'li:** `.agents/rules/pages/03_driving_academy.md` (76 qator)
@@ -1067,10 +1067,10 @@ graph TD
 * **Yo'li:** `.agents/rules/pages/12_platform_about.md` (24 qator)
 
 ### 📜 [13_shoukai_referrals.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/13_shoukai_referrals.md)
-* **Yo'li:** `.agents/rules/pages/13_shoukai_referrals.md` (25 qator)
+* **Yo'li:** `.agents/rules/pages/13_shoukai_referrals.md` (30 qator)
 
 ### 📜 [14_employee_management.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/14_employee_management.md)
-* **Yo'li:** `.agents/rules/pages/14_employee_management.md` (22 qator)
+* **Yo'li:** `.agents/rules/pages/14_employee_management.md` (34 qator)
 
 ### 📜 [15_filter_drawer.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/pages/15_filter_drawer.md)
 * **Yo'li:** `.agents/rules/pages/15_filter_drawer.md` (42 qator)
@@ -1082,7 +1082,7 @@ graph TD
 * **Yo'li:** `.agents/rules/michi_ui_constraints.md` (69 qator)
 
 ### 📜 [past_mistakes.md](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/.agents/rules/past_mistakes.md)
-* **Yo'li:** `.agents/rules/past_mistakes.md` (475 qator)
+* **Yo'li:** `.agents/rules/past_mistakes.md` (510 qator)
 
 
 ---
@@ -1193,7 +1193,7 @@ graph LR
 
 > Ushbu bo'lim har bir i18n kalitining 3 tildagi tarjimasini va aynan qaysi komponentda ishlatilishini ko'rsatadi.
 
-**Jami ishlatilgan i18n kalitlar:** 628 ta, **16** ta komponentda tarqalgan
+**Jami ishlatilgan i18n kalitlar:** 627 ta, **16** ta komponentda tarqalgan
 
 ### 📄 AdminDashboard (9 ta kalit)
 
@@ -1316,36 +1316,36 @@ graph LR
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
-| `selectPrefecture` | 都道府県を選択 | Select Prefecture | Prefekturani tanlang | L1392 |
-| `perMonth` | 月額 | per month | oyiga | L1666 |
-| `shiftWork` | シフト制 | Shift System | Smena bo'yicha | L1685 |
-| `shoukaiAvailable` | 紹介金対象 | Referral Reward Available | Shoukai mavjud | L1996 |
-| `editJob` | 求人を編集 | Edit Job | E'lonni tahrirlash | L1722 |
-| `applyJob` | 応募する | Apply Now | Topshirish | L1777 |
-| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L1745 |
-| `searchPlaceholder` | 市区町村名や会社名で探す | Search by city or company | Shahar yoki kompaniya nom | L1420 |
-| `advancedFilters` | 詳細検索 | Advanced Search | Kengaytirilgan filtrlar | L757 |
-| `clearAll` | リセット | Reset | Tozalash | L776 |
-| `searchByCities` | 都道府県・市区町村から探す | Search by Prefecture & Ci | 都道府県・市区町村から探す | L806 |
-| `allPrefectures` | 全ての地域 | All Prefectures | Barcha hududlar | L854 |
-| `searchByStations` | 沿線・駅から探す | Search by Train Line & St | 沿線・駅から探す | L972 |
-| `searchByRadius` | 現在地からの距離 | Search by Current Locatio | 現在地からの距離 | L1091 |
-| `searchByJobCategory` | 職種から探す | Search by Job Category | Ish turi bo'yicha qidiruv | L1168 |
-| `searchByFeatures` | 特徴・条件から探す | Search by Features & Cond | Xususiyat va shartlar bo' | L1272 |
-| `searchCountBtn` | — | — | — | L1383 |
-| `jobMapTitle` | 求人マップ検索 | Interactive Job Map Searc | Interaktiv e'lonlar xarit | L1430 |
-| `allJobs` | すべて | All Jobs | Barcha e'lonlar | L1462 |
-| `tokuteiGinouSegment` | 特定技能 | Tokutei Ginou | Tokutei Ginou | L1468 |
-| `fullTime` | 正社員 | Full-Time | Doimiy ish (Seishain) | L1474 |
-| `partTime` | アルバイト・パート | Part-Time / Hourly | Soatbay / Part-time | L1480 |
-| `nearStationChip` | 駅から徒歩10分 | 10 min walk to station | Bekatgacha 10 min piyoda | L1582 |
-| `jobsCountResult` | — | — | — | L1595 |
-| `newest` | 新着順 | Newest | Yangi e'lonlar | L1597 |
-| `salary_high` | 給与が高い順 | Salary: High to Low | Maosh: Yuqoridan pastga | L1598 |
-| `salary_low` | 給与が低い順 | Salary: Low to High | Maosh: Pastdan yuqoriga | L1599 |
-| `noJobsFound` | 該当する求人が見つかりませんでした | No jobs found matching th | Mos e'lonlar topilmadi | L1614 |
-| `foreigners_visa` | 特定技能 • 国際採用 | Tokutei Ginou • Internati | Tokutei Ginou • Xalqaro I | L1640 |
-| `foreigners_visa_renew` | ビザ更新支援 | Visa Renewal Support | Vizani Uzaytirish Ko'magi | L1645 |
+| `selectPrefecture` | 都道府県を選択 | Select Prefecture | Prefekturani tanlang | L1423 |
+| `perMonth` | 月額 | per month | oyiga | L1697 |
+| `shiftWork` | シフト制 | Shift System | Smena bo'yicha | L1716 |
+| `shoukaiAvailable` | 紹介金対象 | Referral Reward Available | Shoukai mavjud | L2027 |
+| `editJob` | 求人を編集 | Edit Job | E'lonni tahrirlash | L1753 |
+| `applyJob` | 応募する | Apply Now | Topshirish | L1808 |
+| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L1776 |
+| `searchPlaceholder` | 市区町村名や会社名で探す | Search by city or company | Shahar yoki kompaniya nom | L1451 |
+| `advancedFilters` | 詳細検索 | Advanced Search | Kengaytirilgan filtrlar | L788 |
+| `clearAll` | リセット | Reset | Tozalash | L807 |
+| `searchByCities` | 都道府県・市区町村から探す | Search by Prefecture & Ci | 都道府県・市区町村から探す | L837 |
+| `allPrefectures` | 全ての地域 | All Prefectures | Barcha hududlar | L885 |
+| `searchByStations` | 沿線・駅から探す | Search by Train Line & St | 沿線・駅から探す | L1003 |
+| `searchByRadius` | 現在地からの距離 | Search by Current Locatio | 現在地からの距離 | L1122 |
+| `searchByJobCategory` | 職種から探す | Search by Job Category | Ish turi bo'yicha qidiruv | L1199 |
+| `searchByFeatures` | 特徴・条件から探す | Search by Features & Cond | Xususiyat va shartlar bo' | L1303 |
+| `searchCountBtn` | — | — | — | L1414 |
+| `jobMapTitle` | 求人マップ検索 | Interactive Job Map Searc | Interaktiv e'lonlar xarit | L1461 |
+| `allJobs` | すべて | All Jobs | Barcha e'lonlar | L1493 |
+| `tokuteiGinouSegment` | 特定技能 | Tokutei Ginou | Tokutei Ginou | L1499 |
+| `fullTime` | 正社員 | Full-Time | Doimiy ish (Seishain) | L1505 |
+| `partTime` | アルバイト・パート | Part-Time / Hourly | Soatbay / Part-time | L1511 |
+| `nearStationChip` | 駅から徒歩10分 | 10 min walk to station | Bekatgacha 10 min piyoda | L1613 |
+| `jobsCountResult` | — | — | — | L1626 |
+| `newest` | 新着順 | Newest | Yangi e'lonlar | L1628 |
+| `salary_high` | 給与が高い順 | Salary: High to Low | Maosh: Yuqoridan pastga | L1629 |
+| `salary_low` | 給与が低い順 | Salary: Low to High | Maosh: Pastdan yuqoriga | L1630 |
+| `noJobsFound` | 該当する求人が見つかりませんでした | No jobs found matching th | Mos e'lonlar topilmadi | L1645 |
+| `foreigners_visa` | 特定技能 • 国際採用 | Tokutei Ginou • Internati | Tokutei Ginou • Xalqaro I | L1671 |
+| `foreigners_visa_renew` | ビザ更新支援 | Visa Renewal Support | Vizani Uzaytirish Ko'magi | L1676 |
 | ... | *+7 ta kalit* | | | |
 
 ### 📄 DrivingAcademy (84 ta kalit)
@@ -1435,16 +1435,16 @@ graph LR
 | `sswLanguageReq` | 🇯🇵 日本語要件：JLPT N4またはJFT- | 🇯🇵 Japanese: JLPT N4 or | 🇯🇵 Yapon Tili: JLPT N4  | L258 |
 | ... | *+7 ta kalit* | | | |
 
-### 📄 Profile (180 ta kalit)
+### 📄 Profile (179 ta kalit)
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
 | `roleGuest` | ゲスト | Guest | Mehmon | L2169 |
 | `cancelEdit` | キャンセル | Cancel | Bekor qilish | L3132 |
-| `logout` | ログアウト | Logout | Tizimdan chiqish | L6913 |
+| `logout` | ログアウト | Logout | Tizimdan chiqish | L7171 |
 | `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L3186 |
 | `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L3187 |
-| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L4777 |
+| `shoukaiAvailableLabel` | 紹介金対象 | Referral Bonus | Shoukai bodi | L4786 |
 | `myAdsMenu` | マイ掲載一覧 | My Announcements | Mening e'lonlarim | L3084 |
 | `myApplications` | 応募履歴 | My Applications | Mening arizalarim | L3688 |
 | `viewDetails` | 詳細を見る | View Details | Batafsil ko'rish | L4534 |
@@ -1469,7 +1469,7 @@ graph LR
 | `shoukaiPaidNotif` | 紹介報酬が支払われました | Shoukai reward paid | Shoukai mukofoti to'landi | L2622 |
 | `newNotification` | 新着 | New | Yangi | L2626 |
 | `deleteNotif` | 削除 | Delete | O'chirish | L2646 |
-| ... | *+150 ta kalit* | | | |
+| ... | *+149 ta kalit* | | | |
 
 ### 📄 ResumeBuilder (70 ta kalit)
 
@@ -1511,36 +1511,36 @@ graph LR
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
-| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L1175 |
-| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L1176 |
-| `welcomeTitle` | ようこそ | Welcome | Xush kelibsiz | L1370 |
+| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L1191 |
+| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L1192 |
+| `welcomeTitle` | ようこそ | Welcome | Xush kelibsiz | L1386 |
 | `currentAddressLabel` | 現住所 | My current residence | Hozirgi yashash joyim | L232 |
 | `currentlyStudyingLabel` | 在学中 | Currently studying | Hozir ham o'qiyman | L233 |
-| `namePlaceholder` | 氏名 (ローマ字) ✱ | Full Name (Latin alphabet | Ism Familya (Lotin alifbo | L870 |
-| `companyTypeLabel` | 事業種別 | Business Type | Faoliyat turi | L1169 |
-| `typeTaxiCompany` | タクシー会社 | Taxi Company / Service | Taksi xizmati / Kompaniya | L1177 |
-| `typeBusCompany` | バス会社 | Bus Company / Service | Avtobus xizmati / Yo'nali | L1178 |
-| `typeSpecialMachinery` | 特殊車両・建設重機 | Special Machinery / Const | Maxsus texnika / Qurilish | L1179 |
-| `typeOther` | その他 | Other | Boshqa | L1180 |
-| `contactPersonPlaceholder` | 担当者名 | Contact Person Name | Mas'ul shaxs ismi | L1228 |
-| `companyPhonePlaceholder` | 電話番号 | Phone Number | Telefon raqam | L1237 |
-| `livingAddressTitle` | 現住所履歴 | Living Address History | Yashash manzillari | L906 |
-| `livingAddressPlaceholder` | 現住所を入力してください（都道府県、市区町村、番地 | Current address (Prefectu | Hozirgi manzilingiz (Pref | L924 |
-| `addAddressBtn` | 住所を追加 | Add Living Address | Yashash manzili qo'shish | L946 |
-| `educationTitle` | 学歴履歴 | Education History | Ta'lim ma'lumotlari | L952 |
-| `educationSchoolPlaceholder` | 学校名（高校・専門・大学など） | Educational institution n | O'quv muassasasi nomi | L970 |
-| `educationMajorPlaceholder` | 学部・学科・専攻 | Field of Study / Major | Yo'nalishi / Mutaxassisli | L979 |
-| `startDateLabel` | 入社日 | Start Date | Kirgan vaqti | L987 |
-| `endDateLabel` | 退社日 | End Date | Ketgan vaqti | L996 |
-| `addEducationBtn` | 学歴を追加 | Add School/College | O'qish joyi qo'shish | L1021 |
-| `driverLicensesLabel` | 運転免許証 | Driver Licenses | Haydovchilik guvohnomalar | L1029 |
-| `techCertsLabel` | 特殊技術・資格証明書 | Specialized Vehicles & Ce | Maxsus texnika va malaka  | L1049 |
-| `workExperience` | 職歴 | Work Experience | Ish tajribasi | L1072 |
-| `companyDetailsTitle` | 連絡先情報 | Contact Information | Bog'lanish Ma'lumotlari | L1225 |
-| `companyAddressPlaceholder` | 住所（都道府県、市区町村） | Address (Prefecture, City | Manzil (Prefektura, Shaha | L1186 |
-| `websitePlaceholder` | 企業のウェブサイト（任意） | Company Website (Optional | Kompaniya veb-sayti (ixti | L1206 |
-| `employeeCountPlaceholder` | 従業員数 | Number of Employees | Xodimlar soni | L1246 |
-| `companyDescPlaceholder` | 組織の簡単な説明（任意） | Brief description (Option | Tashkilot haqida qisqacha | L1254 |
+| `namePlaceholder` | 氏名 (ローマ字) ✱ | Full Name (Latin alphabet | Ism Familya (Lotin alifbo | L886 |
+| `companyTypeLabel` | 事業種別 | Business Type | Faoliyat turi | L1185 |
+| `typeTaxiCompany` | タクシー会社 | Taxi Company / Service | Taksi xizmati / Kompaniya | L1193 |
+| `typeBusCompany` | バス会社 | Bus Company / Service | Avtobus xizmati / Yo'nali | L1194 |
+| `typeSpecialMachinery` | 特殊車両・建設重機 | Special Machinery / Const | Maxsus texnika / Qurilish | L1195 |
+| `typeOther` | その他 | Other | Boshqa | L1196 |
+| `contactPersonPlaceholder` | 担当者名 | Contact Person Name | Mas'ul shaxs ismi | L1244 |
+| `companyPhonePlaceholder` | 電話番号 | Phone Number | Telefon raqam | L1253 |
+| `livingAddressTitle` | 現住所履歴 | Living Address History | Yashash manzillari | L922 |
+| `livingAddressPlaceholder` | 現住所を入力してください（都道府県、市区町村、番地 | Current address (Prefectu | Hozirgi manzilingiz (Pref | L940 |
+| `addAddressBtn` | 住所を追加 | Add Living Address | Yashash manzili qo'shish | L962 |
+| `educationTitle` | 学歴履歴 | Education History | Ta'lim ma'lumotlari | L968 |
+| `educationSchoolPlaceholder` | 学校名（高校・専門・大学など） | Educational institution n | O'quv muassasasi nomi | L986 |
+| `educationMajorPlaceholder` | 学部・学科・専攻 | Field of Study / Major | Yo'nalishi / Mutaxassisli | L995 |
+| `startDateLabel` | 入社日 | Start Date | Kirgan vaqti | L1003 |
+| `endDateLabel` | 退社日 | End Date | Ketgan vaqti | L1012 |
+| `addEducationBtn` | 学歴を追加 | Add School/College | O'qish joyi qo'shish | L1037 |
+| `driverLicensesLabel` | 運転免許証 | Driver Licenses | Haydovchilik guvohnomalar | L1045 |
+| `techCertsLabel` | 特殊技術・資格証明書 | Specialized Vehicles & Ce | Maxsus texnika va malaka  | L1065 |
+| `workExperience` | 職歴 | Work Experience | Ish tajribasi | L1088 |
+| `companyDetailsTitle` | 連絡先情報 | Contact Information | Bog'lanish Ma'lumotlari | L1241 |
+| `companyAddressPlaceholder` | 住所（都道府県、市区町村） | Address (Prefecture, City | Manzil (Prefektura, Shaha | L1202 |
+| `websitePlaceholder` | 企業のウェブサイト（任意） | Company Website (Optional | Kompaniya veb-sayti (ixti | L1222 |
+| `employeeCountPlaceholder` | 従業員数 | Number of Employees | Xodimlar soni | L1262 |
+| `companyDescPlaceholder` | 組織の簡単な説明（任意） | Brief description (Option | Tashkilot haqida qisqacha | L1270 |
 | ... | *+66 ta kalit* | | | |
 
 ### 📄 ServiceComingSoon (2 ta kalit)
@@ -1583,13 +1583,13 @@ graph LR
 | Fayl | Turi | Qatorlar | Ishlatilgan joylar | Bug tarixi | Importerlar |
 |---|---|---|---|---|---|
 | **VerifiedBadge** | component | 29 | 5x | 0 ta bug | CompanyHome.jsx, DriverFeed.jsx, DrivingAcademy.jsx, JobDetail.jsx, Profile.jsx |
-| **CompanyHome** | component | 2020 | 3x | 5 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
-| **DriverFeed** | component | 2017 | 3x | 10 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
-| **DrivingAcademy** | component | 1898 | 3x | 7 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
+| **CompanyHome** | component | 2020 | 3x | 6 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
+| **DriverFeed** | component | 2048 | 3x | 12 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
+| **DrivingAcademy** | component | 1898 | 3x | 8 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 32 ta bug | App.jsx |
 | **ErrorBoundary** | component | 78 | 1x | 3 ta bug | App.jsx |
-| **Profile** | component | 6965 | 1x | 17 ta bug | App.jsx |
+| **Profile** | component | 7223 | 1x | 19 ta bug | App.jsx |
 | **VoiceAssistant** | component | 2505 | 1x | 1 ta bug | App.jsx |
 
 ### 🟡 HIGH Risk
@@ -1607,7 +1607,7 @@ graph LR
 | **Dashboard** | component | 637 | 1x | 2 ta bug | App.jsx |
 | **JobDetail** | component | 406 | 1x | 2 ta bug | App.jsx |
 | **ResumeBuilder** | component | 1272 | 1x | 0 ta bug | Profile.jsx |
-| **RoleSelect** | component | 1404 | 1x | 0 ta bug | App.jsx |
+| **RoleSelect** | component | 1420 | 1x | 1 ta bug | App.jsx |
 
 ### 🟢 MEDIUM Risk
 

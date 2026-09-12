@@ -424,6 +424,21 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
       }
     };
 
+    const handleOtpPaste = (e) => {
+      e.preventDefault();
+      const pasted = e.clipboardData ? e.clipboardData.getData('text').trim() : '';
+      const digitsOnly = pasted.replace(/\D/g, '').slice(0, 6);
+      if (digitsOnly.length > 0) {
+        const newDigits = [...otpDigits];
+        for (let i = 0; i < 6; i++) {
+          newDigits[i] = digitsOnly[i] || '';
+        }
+        setOtpDigits(newDigits);
+        const focusIdx = Math.min(digitsOnly.length, 5);
+        otpInputRefs[focusIdx].current?.focus();
+      }
+    };
+
     return (
       <div className="role-container slide-up">
         <div className="auth-card glass squircle" style={{ textAlign: 'center', padding: '36px 20px', position: 'relative' }}>
@@ -448,6 +463,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
                   value={digit}
                   onChange={(e) => handleOtpChange(idx, e.target.value)}
                   onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                  onPaste={handleOtpPaste}
                   className="otp-digit-input"
                   style={{
                     width: '42px', height: '48px', borderRadius: '12px',
@@ -1312,7 +1328,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
                     <div className="strength-bar-track" style={{ height: '4px', background: 'var(--glass-border)', borderRadius: '2px', overflow: 'hidden', display: 'flex' }}>
                       <div className={`strength-bar-fill strength-${passwordStrength.label}`} style={{
                         height: '100%',
-                        width: passwordStrength.score === 1 ? '25%' : passwordStrength.score === 2 ? '50%' : passwordStrength.score === 3 ? '75%' : '100%',
+                        width: passwordStrength.score === 0 ? '15%' : passwordStrength.score === 1 ? '25%' : passwordStrength.score === 2 ? '50%' : passwordStrength.score === 3 ? '75%' : '100%',
                         background: passwordStrength.label === 'weak' ? '#FF3B30' : passwordStrength.label === 'fair' ? '#FF9500' : passwordStrength.label === 'good' ? '#FFD60A' : '#34C759',
                         transition: 'all 0.25s ease'
                       }} />

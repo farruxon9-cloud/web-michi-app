@@ -479,3 +479,31 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Progressive Exponential Lockout**: Noto'g'ri kirish urinishlari soni `authSecurityService.js` orqali nazorat qilinadi: 5 marta xatoda 15 min -> 2-darajada 60 min -> 3-darajada 24 soat -> 4-darajada Strictly Email Challenge unlock rejimiga o'tadi.
   2. **Anti-Bot Math CAPTCHA**: 3-noto'g'ri kiritishdan boshlab avtomatik matematik interfaol CAPTCHA paydo bo'ladi.
   3. **6-Digit OTP & Password Strength**: Ro'yxatdan o'tishda 6-xonali raqamli OTP grid va 60 soniyali resend taymeri, hamda parollarni kiritishda jonli `evaluatePasswordStrength` indikatori ko'rsatiladi.
+
+## 🚫 76. Foydalanuvchi (Haydovchi / Ish Qidiruvchi) Autentifikatsiya, 6-Digit OTP & Safe Touch-Target Standarti
+* **Qoida (Foydalanuvchilar Ulanishi)**:
+  1. **6-Digit OTP Box Grid & Clipboard Auto-Paste**: Haydovchilar va nomzodlar ro'yxatdan o'tishi va parolni tiklashida 6-xonali kiritish gridida oddiy raqam kiritish bilan birga, nusxalangan koddagi barcha raqamlarni bir vaqtda joylashtiruvchi `onPaste={handleOtpPaste}` moslashuvi majburiydir.
+  2. **Full-Row Touch Target Filter Convenience**: Haydovchilar uchun ish va avtomaktab filtrlari katakchalarida (`DriverFeed.jsx`, `DrivingAcademy.jsx`) har qanday tugma va yozuv butun satr bo'ylab bosilishi (`townwork-checkbox-label`), kichik ekranli mobil uskunalarda foydalanuvchilar qiyinchiliksiz filtrlarni tanlay olishi ta'minlanishi shart.
+  3. **Progressive Account Safeguard**: Noto'g'ri kirish urinishlaridan keyin hisob bloklanganda haydovchiga taymer va elektron pochta orqali bir zumda qayta kirish (`unlockViaEmail`) imkoniyati ko'rsatiladi.
+
+## 🚫 77. Kompaniya (Ish Beruvchi / Avtomaktab) B2B Xavfsizlik, Phone Call & Profile Invariantlari
+* **Qoida (Kompaniyalar va B2B Ulanishi)**:
+  1. **Corporate Identity & Account Lockout**: Kompaniya va avtomaktablar profili 5 ta noto'g'ri urinishdan so'ng korporativ pochtasini himoyalash uchun avtomatik exponential lockout (15m -> 1h -> 24h -> Strict Email Unlock) bilan muhofaza qilinadi.
+  2. **Direct B2B Phone Call Action Button**: Kompaniya profilida turib boshqa kompaniyalar e'lonlari ko'rilganda (`CompanyHome.jsx`) harakat tugmasi strictly **`[ 📞 電話する ]`** ko'rinishida va Slate Grey `#505759` fonida bo'lishi, tugma o'lcham va geometriya daxlsizligi 100% saqlanishi shart.
+  3. **Strict 2-SubCard Profile Grouping**: Kompaniya profil ma'lumotlari strictly `基本情報` hamda `企業詳細・登録情報` subcard idishlariga ajratilib, 96px trailing clearance spatseri bilan pastki navigatsiyadan yuqorida turishi ta'minlanadi.
+
+## 🚫 78. HR Filter Pills Japanese 1-Row Unbroken Capsule Invariant
+* **Xatolik**: `Profile.jsx` dagi 3 ta HR filtrlash tugmalarida (`すべての従業員`, `確認済み`, `承認待ち`) yaponcha matnlarning `whiteSpace: 'nowrap'` va `flexShrink: 0` yetishmasligi tufayli mobil ekranlarda ikkinchi qatorga bo'linib ketishi (`すべての従業` \n `員`, `確認済` \n `み`).
+* **Yechim (MAJBURIY)**:
+  1. **Strict Single-Line Unbroken Rendering**: Har bir filtrlash pill tugmasida va uning ichki `<span>` teglarida strictly `whiteSpace: 'nowrap'`, `flexShrink: 0`, hamda `lineHeight: '1.2'` qo'llanishi SHART.
+  2. **Lucide Vector Icons**: 3D OS emojilari o'rniga minimalistik Lucide vector ikonkalar (`<Users />`, `<CheckCircle2 />`, `<Clock />`) bilan har bir holat aniq ajratiladi.
+  3. **Apple Glass Capsule Styling**: Active tugmalarga yengil translucent glass fill (`rgba(10, 132, 255, 0.14)`, `rgba(48, 209, 88, 0.14)`, `rgba(255, 159, 10, 0.14)`) hamda iOS 18 neon glow soya (`box-shadow: 0 2px 10px ...`) beriladi.
+
+## 🚫 80. Active Filter Tag Label Helper Functions Invariant (DriverFeed & Feed Components)
+* **Xatolik**: Ishlar va avtomaktablar lentasida (`DriverFeed.jsx`) filtr teglari (active chips) ko'rsatilishida `getDurationLabel(dur)`, `getTimeSlotLabel(ts)`, hamda `getFeatureLabel(f)` kabi funksiyalar kodi e'lon qilinmay chaqirilishi natijasida brauzerda `ReferenceError: Can't find variable: getFeatureLabel` yuzaga kelishi.
+* **Yechim (MAJBURIY)**:
+  1. **Exhaustive Category Search Helpers**: Har bir filtr chipi e'lon qilingan taqdirda, u foydalanadigan barcha yordamchi teg funksiyalari (`getDurationLabel`, `getTimeSlotLabel`, `getFeatureLabel`) component ichida to'liq va xavfsiz e'lon qilinishi SHART.
+  2. **Multi-Language Resolution**: Har bir helper funksiya `JOB_FEATURES` bazasidagi tegishli o'zgaruvchilardan foydalanuvchining joriy tiliga (`uz`, `en`, `ja`) mos nomni qidirib topadi va zaxira (fallback) sifatida ID ning o'zini qaytaradi.
+  3. **Runtime Protection**: Active chip tugmalari bosilganda filter ro'yxatidan xavfsiz o'chirilishi (`filter(item => item !== id)`) va `ReferenceError` kelib chiqmasligi Vitest va health check orqali doimiy tekshiriladi.
+
+

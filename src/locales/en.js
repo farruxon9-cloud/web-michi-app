@@ -195,7 +195,7 @@ const translation = {
   "sendCodeBtn": "Send Code",
   "verifyCodeBtn": "Verify Code",
   "updateAndLoginBtn": "Update & Log In",
-  "forgotPasswordBtn": "パスワードを忘れた場合",
+  "forgotPasswordBtn": "Forgot Password?",
   "welcomeTitle": "Welcome",
   "welcomeSubtitle": "Find your path with Michi.",
   "roleUser": "User",
@@ -918,7 +918,11 @@ const translation = {
   "otpVerifiedSuccess": "Verification completed successfully",
   "otpExpired": "Verification code has expired. Please request a new one.",
   "otpMaxAttemptsExceeded": "Maximum attempts exceeded. Please request a new code.",
-  "unlockSuccessAlert": "Your account has been unlocked successfully."
+  "unlockSuccessAlert": "Your account has been unlocked successfully.",
+  "unlockViaEmail": "Instant Unlock via Email",
+  "backToRoleSelect": "Back to Role Selection",
+  "invalidCode": "Invalid verification code!",
+  "lic_dainishu": "Class 2 Commercial Driver's License"
 };
 
 export default { translation };

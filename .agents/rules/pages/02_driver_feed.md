@@ -48,8 +48,12 @@ Ushbu qoida loyihamizning **Vakansiyalar Ro'yxati (Jobs Feed)** sahifasi uchun b
 ---
 
 ## 📝 6. Xatoliklar va Learn Hujjatlashtiruvi (Page Mistakes & Learn Log)
-- **Xatolik**: Ish qidiruv filtr darchasida (`DriverFeed.jsx`) shahar (`東京23区`), bekat va toifalarni tanlashda `onClick` hodisasi faqat kichik 20px to'rtburchak (`townwork-square-checkbox`) ustiga qo'yilgan edi. Natijada eski va kichik ekranli mobil qurilmalarda foydalanuvchilar to'rtburchakni aniq bosa olmay qiynalar edi.
-- **Tuzatish & Learn**:
+- **Xatolik 1**: Ish qidiruv filtr darchasida (`DriverFeed.jsx`) shahar (`東京23区`), bekat va toifalarni tanlashda `onClick` hodisasi faqat kichik 20px to'rtburchak (`townwork-square-checkbox`) ustiga qo'yilgan edi. Natijada eski va kichik ekranli mobil qurilmalarda foydalanuvchilar to'rtburchakni aniq bosa olmay qiynalar edi.
+- **Tuzatish & Learn 1**:
   1. Bosish (`onClick`) hodisasi to'g'ridan-to'g'ri o'rovchi `<label className="townwork-checkbox-label">` va `<div className="townwork-sub-checkbox-item">` elementlariga biriktirilib, **butun yozuv va qator bo'yicha bosish (Full-Row Touch Target)** ta'minlandi.
   2. Kichik to'rtburchak elementida `pointer-events: none` bo'lib, `label` va yozuv matni (`<span>`) to'liq `flex: 1` va `user-select: none` bilan bosish oson va qulay qilindi.
   3. Akordeonni ochish/yopish ko'rsatgichi (`ChevronUp`/`ChevronDown`) esa `e.stopPropagation()` bilan alohida ajratildi.
+- **Xatolik 2**: Active filter tags (burchakdagi ko'rinib turuvchi faol filtrlar barida) `getDurationLabel(dur)`, `getTimeSlotLabel(ts)`, va `getFeatureLabel(f)` funksiyalari chaqirilgan, lekin ularning ta'rifi (definition) e'lon qilinmagani sababli brauzerda `ReferenceError: Can't find variable: getFeatureLabel` runtime qulash yuzaga kelgan edi.
+- **Tuzatish & Learn 2**:
+  1. `DriverFeed.jsx` da har bir aktiv teg tipi uchun ko'p tilli (`uz`, `en`, `ja`) va `JOB_FEATURES` bazasiga ulangan xavfsiz label helper funksiyalari (`getDurationLabel`, `getTimeSlotLabel`, `getFeatureLabel`) e'lon qilindi.
+  2. Qoidaviy tavsiya (Rule 80): har qanday feed yoki list komponentida active chip generator ishlatilsa, tegishli barcha helper label getter funksiyalari strictly o'sha komponent ichida mavjudligi oldindan tekshirilishi majburiy.
