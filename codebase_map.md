@@ -1,12 +1,12 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **12/09/2026, 16:12:43**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **12/09/2026, 17:06:59**.
 
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 175 ta
+* **Jami skanerlangan fayllar:** 179 ta
 * **React Komponentlari:** 26 ta
 * **Komponent Stillari (CSS):** 17 ta
 * **Geografiya va Ma'lumotlar Bazalari (data):** 14 ta
@@ -15,7 +15,7 @@
 * **Tashqi API va Xizmatlar (services):** 18 ta
 * **Avtomatizatsiya Skriptlari (scripts):** 15 ta
 * **Tizim va UI Qoidalari (.agents/rules):** 18 ta
-* **Boshqa asosiy fayllar (src/ root):** 14 ta
+* **Boshqa asosiy fayllar (src/ root):** 18 ta
 
 ---
 
@@ -1193,7 +1193,7 @@ graph LR
 
 > Ushbu bo'lim har bir i18n kalitining 3 tildagi tarjimasini va aynan qaysi komponentda ishlatilishini ko'rsatadi.
 
-**Jami ishlatilgan i18n kalitlar:** 627 ta, **16** ta komponentda tarqalgan
+**Jami ishlatilgan i18n kalitlar:** 641 ta, **17** ta komponentda tarqalgan
 
 ### 📄 AdminDashboard (9 ta kalit)
 
@@ -1383,6 +1383,34 @@ graph LR
 | `lic_junchugata` | 準中型自動車 | Semi-Medium Truck (Jun-Ch | Jun-Chugata yuk avtomobil | L686 |
 | `lic_futsunishu` | 普通二種 (タクシー) | Commercial Class 2 Taxi L | Taksi guvohnomasi (Futsu  | L687 |
 | ... | *+54 ta kalit* | | | |
+
+### 📄 HomeMacOS (23 ta kalit)
+
+| i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
+|---|---|---|---|---|
+| `heroSlide1Badge` | 🔥 ボーナス | 🔥 Bonus | 🔥 Bonus | L35 |
+| `heroSlide1Title` | 紹介ボーナスをゲット | Get Shoukai Bonus | Shoukai Pulini Oling | L36 |
+| `heroSlide1Desc` | 友達を仕事に紹介して、特別な紹介ボーナスを受け取り | Invite your friends to wo | Tanishlaringizni ishga ta | L37 |
+| `heroSlide2Badge` | ⏳ 近日公開 | ⏳ Coming Soon | ⏳ Tez kunda | L43 |
+| `heroSlide2Title` | 待ち時間なしのサービス | Queue-free Service | Navbatlarsiz Servis | L44 |
+| `heroSlide2Desc` | 事前にカーサービスを予約して支払いを済ませましょう | Book car services and pay | Avtoservislarga oldindan  | L45 |
+| `heroSlide3Badge` | 💼 求人 | 💼 Vacancies | 💼 Vakansiyalar | L51 |
+| `heroSlide3Title` | 理想の仕事 | Your Dream Job | Orzuingizdagi Ish | L52 |
+| `heroSlide3Desc` | 最新の高時給求人をいち早く見つけましょう。 | Be the first to find the  | Eng so'nggi va yuqori mao | L53 |
+| `viewDetailsBtn` | — | — | — | L164 |
+| `jobsSubtitle` | — | — | — | L196 |
+| `jobsTitle` | — | — | — | L197 |
+| `jobsDesc` | — | — | — | L198 |
+| `academySubtitle` | — | — | — | L213 |
+| `academyTitle` | Michi自動車学校 | Michi Driving Academy | Michi AvtoMaktab | L214 |
+| `academyDesc` | 日本で最も信頼される提携自動車学校 | Japan's most trusted part | Yaponiyadagi eng nufuzli  | L215 |
+| `servicesSubtitle` | — | — | — | L230 |
+| `servicesTitle` | — | — | — | L231 |
+| `servicesDesc` | — | — | — | L232 |
+| `jdmNavTitle` | — | — | — | L257 |
+| `jdmNavDesc` | — | — | — | L258 |
+| `assistTitle` | — | — | — | L281 |
+| `assistDesc` | — | — | — | L282 |
 
 ### 📄 JDMNavigation (1 ta kalit)
 
@@ -1596,9 +1624,9 @@ graph LR
 
 | Fayl | Turi | Qatorlar | Ishlatilgan joylar | Bug tarixi | Importerlar |
 |---|---|---|---|---|---|
+| **haptics** | util | 38 | 4x | 0 ta bug | BottomNav.jsx, Dashboard.jsx, JDMNavigation.jsx, HomeMacOS.jsx |
 | **CustomInlineDropdown** | component | 303 | 3x | 2 ta bug | CompanyHome.jsx, CustomInlineDropdown.test.jsx, DrivingAcademy.jsx |
 | **CustomMobilePickerModal** | component | 292 | 3x | 0 ta bug | CompanyHome.jsx, DriverFeed.jsx, DrivingAcademy.jsx |
-| **haptics** | util | 38 | 3x | 0 ta bug | BottomNav.jsx, Dashboard.jsx, JDMNavigation.jsx |
 | **imageCompressor** | util | 62 | 3x | 0 ta bug | CompanyHome.jsx, Profile.jsx, RoleSelect.jsx |
 | **actionRegistry** | service | 473 | 3x | 0 ta bug | VoiceAssistant.jsx, reasoningEngine.js, semanticRouter.js |
 | **vehicleApiService** | service | 250 | 3x | 0 ta bug | JapaneseVehiclePickerModal.jsx, LazyVehicleImage.jsx, Profile.jsx |
