@@ -1,12 +1,12 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **12/09/2026, 17:06:59**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **12/09/2026, 17:08:44**.
 
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 179 ta
+* **Jami skanerlangan fayllar:** 181 ta
 * **React Komponentlari:** 26 ta
 * **Komponent Stillari (CSS):** 17 ta
 * **Geografiya va Ma'lumotlar Bazalari (data):** 14 ta
@@ -15,7 +15,7 @@
 * **Tashqi API va Xizmatlar (services):** 18 ta
 * **Avtomatizatsiya Skriptlari (scripts):** 15 ta
 * **Tizim va UI Qoidalari (.agents/rules):** 18 ta
-* **Boshqa asosiy fayllar (src/ root):** 18 ta
+* **Boshqa asosiy fayllar (src/ root):** 20 ta
 
 ---
 
@@ -1611,8 +1611,8 @@ graph LR
 | Fayl | Turi | Qatorlar | Ishlatilgan joylar | Bug tarixi | Importerlar |
 |---|---|---|---|---|---|
 | **VerifiedBadge** | component | 29 | 5x | 0 ta bug | CompanyHome.jsx, DriverFeed.jsx, DrivingAcademy.jsx, JobDetail.jsx, Profile.jsx |
+| **DriverFeed** | component | 2048 | 4x | 12 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx, JobsMacOS.jsx |
 | **CompanyHome** | component | 2020 | 3x | 6 ta bug | App.jsx, CompanyHome.test.jsx, Profile.jsx |
-| **DriverFeed** | component | 2048 | 3x | 12 ta bug | App.jsx, DriverFeed.test.jsx, Profile.jsx |
 | **DrivingAcademy** | component | 1898 | 3x | 8 ta bug | App.jsx, DrivingAcademy.test.jsx, Profile.jsx |
 | **JDMNavigation** | component | 4708 | 3x | 1 ta bug | App.jsx, JDMNavigation.test.jsx, JDMNavigationSearch.test.jsx |
 | **BottomNav** | component | 173 | 1x | 32 ta bug | App.jsx |
