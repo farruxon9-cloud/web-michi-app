@@ -1,18 +1,18 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **12/09/2026, 08:42:29**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **12/09/2026, 08:59:26**.
 
 ---
 
 ## 📂 Loyiha Fayllari Statistikasi
-* **Jami skanerlangan fayllar:** 173 ta
+* **Jami skanerlangan fayllar:** 175 ta
 * **React Komponentlari:** 26 ta
 * **Komponent Stillari (CSS):** 17 ta
 * **Geografiya va Ma'lumotlar Bazalari (data):** 14 ta
-* **Unit Testlar (Vitest):** 33 ta
+* **Unit Testlar (Vitest):** 34 ta
 * **Yordamchi Funksiyalar (utils):** 19 ta
-* **Tashqi API va Xizmatlar (services):** 17 ta
+* **Tashqi API va Xizmatlar (services):** 18 ta
 * **Avtomatizatsiya Skriptlari (scripts):** 15 ta
 * **Tizim va UI Qoidalari (.agents/rules):** 18 ta
 * **Boshqa asosiy fayllar (src/ root):** 14 ta
@@ -471,7 +471,7 @@ graph TD
   - `react-i18next`
 
 ### 📦 [RoleSelect](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/RoleSelect.jsx)
-* **Fayl yo'li:** `src/components/RoleSelect.jsx` (1132 qator, 55242 bayt)
+* **Fayl yo'li:** `src/components/RoleSelect.jsx` (1404 qator, 66905 bayt)
 * **Komponent Stillari:** 🎨 [RoleSelect.css](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/RoleSelect.css)
 * **Qabul qiladigan parametrlari (Props):**
   - `onSelectRole`
@@ -482,6 +482,7 @@ graph TD
   - `react-i18next`
   - `lucide-react`
   - `../utils/imageCompressor`
+  - `../services/authSecurityService`
 
 ### 📦 [ServiceComingSoon](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/components/ServiceComingSoon.jsx)
 * **Fayl yo'li:** `src/components/ServiceComingSoon.jsx` (21 qator, 615 bayt)
@@ -858,6 +859,20 @@ graph TD
   - `actionRegistry()`
 * **Importlari:** *Yo'q*
 
+### 🔌 [authSecurityService.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/authSecurityService.js)
+* **Yo'li:** `src/services/authSecurityService.js` (275 qator, 8699 bayt)
+* **Eksport qilingan funksiyalari:**
+  - `getLockoutDurationMs()`
+  - `checkLockout()`
+  - `recordFailedAttempt()`
+  - `resetAttempts()`
+  - `generateOTP()`
+  - `verifyOTP()`
+  - `generateCaptcha()`
+  - `sanitizeInput()`
+  - `evaluatePasswordStrength()`
+* **Importlari:** *Yo'q*
+
 ### 🔌 [autonomousWebSearchEngine.js](file:///Users/kanoatovfarrux/.gemini/antigravity/scratch/michiappforjapan/src/services/autonomousWebSearchEngine.js)
 * **Yo'li:** `src/services/autonomousWebSearchEngine.js` (109 qator, 4690 bayt)
 * **Eksport qilingan funksiyalari:**
@@ -1178,7 +1193,7 @@ graph LR
 
 > Ushbu bo'lim har bir i18n kalitining 3 tildagi tarjimasini va aynan qaysi komponentda ishlatilishini ko'rsatadi.
 
-**Jami ishlatilgan i18n kalitlar:** 618 ta, **16** ta komponentda tarqalgan
+**Jami ishlatilgan i18n kalitlar:** 628 ta, **16** ta komponentda tarqalgan
 
 ### 📄 AdminDashboard (9 ta kalit)
 
@@ -1492,41 +1507,41 @@ graph LR
 | `nationalityPlaceholder` | 例：日本 | e.g., British | Masalan: O'zbekistonlik | L714 |
 | ... | *+40 ta kalit* | | | |
 
-### 📄 RoleSelect (86 ta kalit)
+### 📄 RoleSelect (96 ta kalit)
 
 | i18n Key | 🇯🇵 Yapon | 🇬🇧 English | 🇺🇿 O'zbek | Satr |
 |---|---|---|---|---|
-| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L920 |
-| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L921 |
-| `welcomeTitle` | ようこそ | Welcome | Xush kelibsiz | L1098 |
-| `currentAddressLabel` | 現住所 | My current residence | Hozirgi yashash joyim | L143 |
-| `currentlyStudyingLabel` | 在学中 | Currently studying | Hozir ham o'qiyman | L144 |
-| `namePlaceholder` | 氏名 (ローマ字) ✱ | Full Name (Latin alphabet | Ism Familya (Lotin alifbo | L615 |
-| `companyTypeLabel` | 事業種別 | Business Type | Faoliyat turi | L914 |
-| `typeTaxiCompany` | タクシー会社 | Taxi Company / Service | Taksi xizmati / Kompaniya | L922 |
-| `typeBusCompany` | バス会社 | Bus Company / Service | Avtobus xizmati / Yo'nali | L923 |
-| `typeSpecialMachinery` | 特殊車両・建設重機 | Special Machinery / Const | Maxsus texnika / Qurilish | L924 |
-| `typeOther` | その他 | Other | Boshqa | L925 |
-| `contactPersonPlaceholder` | 担当者名 | Contact Person Name | Mas'ul shaxs ismi | L973 |
-| `companyPhonePlaceholder` | 電話番号 | Phone Number | Telefon raqam | L982 |
-| `livingAddressTitle` | 現住所履歴 | Living Address History | Yashash manzillari | L651 |
-| `livingAddressPlaceholder` | 現住所を入力してください（都道府県、市区町村、番地 | Current address (Prefectu | Hozirgi manzilingiz (Pref | L669 |
-| `addAddressBtn` | 住所を追加 | Add Living Address | Yashash manzili qo'shish | L691 |
-| `educationTitle` | 学歴履歴 | Education History | Ta'lim ma'lumotlari | L697 |
-| `educationSchoolPlaceholder` | 学校名（高校・専門・大学など） | Educational institution n | O'quv muassasasi nomi | L715 |
-| `educationMajorPlaceholder` | 学部・学科・専攻 | Field of Study / Major | Yo'nalishi / Mutaxassisli | L724 |
-| `startDateLabel` | 入社日 | Start Date | Kirgan vaqti | L732 |
-| `endDateLabel` | 退社日 | End Date | Ketgan vaqti | L741 |
-| `addEducationBtn` | 学歴を追加 | Add School/College | O'qish joyi qo'shish | L766 |
-| `driverLicensesLabel` | 運転免許証 | Driver Licenses | Haydovchilik guvohnomalar | L774 |
-| `techCertsLabel` | 特殊技術・資格証明書 | Specialized Vehicles & Ce | Maxsus texnika va malaka  | L794 |
-| `workExperience` | 職歴 | Work Experience | Ish tajribasi | L817 |
-| `companyDetailsTitle` | 連絡先情報 | Contact Information | Bog'lanish Ma'lumotlari | L970 |
-| `companyAddressPlaceholder` | 住所（都道府県、市区町村） | Address (Prefecture, City | Manzil (Prefektura, Shaha | L931 |
-| `websitePlaceholder` | 企業のウェブサイト（任意） | Company Website (Optional | Kompaniya veb-sayti (ixti | L951 |
-| `employeeCountPlaceholder` | 従業員数 | Number of Employees | Xodimlar soni | L991 |
-| `companyDescPlaceholder` | 組織の簡単な説明（任意） | Brief description (Option | Tashkilot haqida qisqacha | L999 |
-| ... | *+56 ta kalit* | | | |
+| `typeLogistics` | 物流・運送 | Logistics / Transport | Logistika / Yuk tashish | L1175 |
+| `typeDrivingSchool` | 自動車学校 | Driving School | Avtomaktab | L1176 |
+| `welcomeTitle` | ようこそ | Welcome | Xush kelibsiz | L1370 |
+| `currentAddressLabel` | 現住所 | My current residence | Hozirgi yashash joyim | L232 |
+| `currentlyStudyingLabel` | 在学中 | Currently studying | Hozir ham o'qiyman | L233 |
+| `namePlaceholder` | 氏名 (ローマ字) ✱ | Full Name (Latin alphabet | Ism Familya (Lotin alifbo | L870 |
+| `companyTypeLabel` | 事業種別 | Business Type | Faoliyat turi | L1169 |
+| `typeTaxiCompany` | タクシー会社 | Taxi Company / Service | Taksi xizmati / Kompaniya | L1177 |
+| `typeBusCompany` | バス会社 | Bus Company / Service | Avtobus xizmati / Yo'nali | L1178 |
+| `typeSpecialMachinery` | 特殊車両・建設重機 | Special Machinery / Const | Maxsus texnika / Qurilish | L1179 |
+| `typeOther` | その他 | Other | Boshqa | L1180 |
+| `contactPersonPlaceholder` | 担当者名 | Contact Person Name | Mas'ul shaxs ismi | L1228 |
+| `companyPhonePlaceholder` | 電話番号 | Phone Number | Telefon raqam | L1237 |
+| `livingAddressTitle` | 現住所履歴 | Living Address History | Yashash manzillari | L906 |
+| `livingAddressPlaceholder` | 現住所を入力してください（都道府県、市区町村、番地 | Current address (Prefectu | Hozirgi manzilingiz (Pref | L924 |
+| `addAddressBtn` | 住所を追加 | Add Living Address | Yashash manzili qo'shish | L946 |
+| `educationTitle` | 学歴履歴 | Education History | Ta'lim ma'lumotlari | L952 |
+| `educationSchoolPlaceholder` | 学校名（高校・専門・大学など） | Educational institution n | O'quv muassasasi nomi | L970 |
+| `educationMajorPlaceholder` | 学部・学科・専攻 | Field of Study / Major | Yo'nalishi / Mutaxassisli | L979 |
+| `startDateLabel` | 入社日 | Start Date | Kirgan vaqti | L987 |
+| `endDateLabel` | 退社日 | End Date | Ketgan vaqti | L996 |
+| `addEducationBtn` | 学歴を追加 | Add School/College | O'qish joyi qo'shish | L1021 |
+| `driverLicensesLabel` | 運転免許証 | Driver Licenses | Haydovchilik guvohnomalar | L1029 |
+| `techCertsLabel` | 特殊技術・資格証明書 | Specialized Vehicles & Ce | Maxsus texnika va malaka  | L1049 |
+| `workExperience` | 職歴 | Work Experience | Ish tajribasi | L1072 |
+| `companyDetailsTitle` | 連絡先情報 | Contact Information | Bog'lanish Ma'lumotlari | L1225 |
+| `companyAddressPlaceholder` | 住所（都道府県、市区町村） | Address (Prefecture, City | Manzil (Prefektura, Shaha | L1186 |
+| `websitePlaceholder` | 企業のウェブサイト（任意） | Company Website (Optional | Kompaniya veb-sayti (ixti | L1206 |
+| `employeeCountPlaceholder` | 従業員数 | Number of Employees | Xodimlar soni | L1246 |
+| `companyDescPlaceholder` | 組織の簡単な説明（任意） | Brief description (Option | Tashkilot haqida qisqacha | L1254 |
+| ... | *+66 ta kalit* | | | |
 
 ### 📄 ServiceComingSoon (2 ta kalit)
 
@@ -1592,7 +1607,7 @@ graph LR
 | **Dashboard** | component | 637 | 1x | 2 ta bug | App.jsx |
 | **JobDetail** | component | 406 | 1x | 2 ta bug | App.jsx |
 | **ResumeBuilder** | component | 1272 | 1x | 0 ta bug | Profile.jsx |
-| **RoleSelect** | component | 1132 | 1x | 0 ta bug | App.jsx |
+| **RoleSelect** | component | 1404 | 1x | 0 ta bug | App.jsx |
 
 ### 🟢 MEDIUM Risk
 
@@ -1636,6 +1651,7 @@ graph LR
 | turnRadiusPhysics | util | 1x |
 | voiceGuidance | util | 1x |
 | voiceLexicon | util | 1x |
+| authSecurityService | service | 1x |
 | deepUISchemaIndex | service | 1x |
 | japaneseJLPTMasterEngine | service | 1x |
 | japaneseNewsService | service | 1x |
@@ -1666,6 +1682,6 @@ graph LR
 | 🔴 CRITICAL | 9 |
 | 🟡 HIGH | 12 |
 | 🟢 MEDIUM | 10 |
-| ⚪ LOW | 45 |
-| **JAMI** | **76** |
+| ⚪ LOW | 46 |
+| **JAMI** | **77** |
 

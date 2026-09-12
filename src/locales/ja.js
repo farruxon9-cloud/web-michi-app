@@ -941,7 +941,28 @@ const translation = {
   "step3": "ページを再読み込みするか、下のボタンを押してください。",
   "checkPermissionBtn": "権限を再確認",
   "userSaid": "あなた",
-  "aiThinking": "AIが回答を作成中..."
+  "aiThinking": "AIが回答を作成中...",
+  "loginAttemptsLeft": "パスワードが正しくありません。残り試行回数: {{count}}回",
+  "accountLockedTitle": "セキュリティのためアカウントが一時制限されています",
+  "accountLockedDesc": "連続失敗のためアカウント保護のためロックされています。メール認証コードで即時解除できます。",
+  "strictLockoutTitle": "アカウント保護モード",
+  "strictLockoutDesc": "不正アクセス防止のため試行が停止されました。登録メール宛てのコードでロックを解除できます。",
+  "otpTitle": "メール認証コード入力",
+  "otpSub": "ご登録いただいたメールアドレス宛に6桁の確認コードを送信しました。",
+  "otpResendTimer": "コード再送信まで {{seconds}} 秒",
+  "otpResendBtn": "コードを再送信",
+  "captchaTitle": "ロボット防止認証",
+  "captchaSub": "セキュリティのため、以下の計算結果を入力してください。",
+  "captchaVerifyBtn": "確認",
+  "captchaError": "計算結果が正しくありません。",
+  "passwordStrengthWeak": "弱 (8文字以上・英数字推奨)",
+  "passwordStrengthFair": "中",
+  "passwordStrengthGood": "良",
+  "passwordStrengthStrong": "強 (安全)",
+  "otpVerifiedSuccess": "認証が完了しました",
+  "otpExpired": "認証コードの期限が切れています。再送信してください。",
+  "otpMaxAttemptsExceeded": "試行回数が上限に達しました。新しいコードをリクエストしてください。",
+  "unlockSuccessAlert": "アカウントのロックが解除されました。"
 };
 
 export default { translation };

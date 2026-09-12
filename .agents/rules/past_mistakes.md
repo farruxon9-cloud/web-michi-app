@@ -471,4 +471,11 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **Full-Row Click Target**: Bosish (`onClick`) hodisasining to'g'ridan-to'g'ri o'rovchi `<label className="townwork-checkbox-label">` va `<div className="townwork-sub-checkbox-item">` elementlariga o'tkazilishi SHART.
   2. **Entire Text & Label Hit Area**: Yozuv matni (`<span>`) yoki uning atrofidagi butun qator bosilganda ham katakcha zudlik bilan belgilanadi (`checked`).
-  3. **Pointer-Events & StopPropagation**: `.townwork-square-checkbox` ichida `pointer-events: none` qo'llanilib, akordeon pastga ochilish ko'rsatgichi (`ChevronUp`/`ChevronDown`) esa `e.stopPropagation()` bilan cheklanib alohida ishlaydi.
+  3. **Pointer-Events & StopPropagation**: `.townwork-square-checkbox` ichida `pointer-events: none` qo'llanilib, akordeon pastga ochilish ko'rsatgichi (`ChevronUp`/`ChevronDown`) esa `e.stopPropagation()` bilan alohida ishlaydi.
+
+## 🚫 75. Auth Security Controller & Progressive Exponential Lockout Invariant
+* **Xatolik**: Autentifikatsiya modulida (`RoleSelect.jsx`) cheksiz noto'g'ri parol kiritish imkoniyati ochiq bo'lishi hamda sekin parollarni sinash hujumlariga (Slow Brute-Force / Credential Stuffing) qarshi avtomatlashtirilgan himoyaning yo'qligi.
+* **Yechim (MAJBURIY)**:
+  1. **Progressive Exponential Lockout**: Noto'g'ri kirish urinishlari soni `authSecurityService.js` orqali nazorat qilinadi: 5 marta xatoda 15 min -> 2-darajada 60 min -> 3-darajada 24 soat -> 4-darajada Strictly Email Challenge unlock rejimiga o'tadi.
+  2. **Anti-Bot Math CAPTCHA**: 3-noto'g'ri kiritishdan boshlab avtomatik matematik interfaol CAPTCHA paydo bo'ladi.
+  3. **6-Digit OTP & Password Strength**: Ro'yxatdan o'tishda 6-xonali raqamli OTP grid va 60 soniyali resend taymeri, hamda parollarni kiritishda jonli `evaluatePasswordStrength` indikatori ko'rsatiladi.

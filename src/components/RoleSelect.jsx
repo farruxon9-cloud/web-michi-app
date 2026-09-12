@@ -1,7 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2, UserCircle, Plus, X, Camera, MailCheck, ArrowLeft, Mail, Lock, Eye, EyeOff, User, Calendar } from 'lucide-react';
+import { Building2, UserCircle, Plus, X, Camera, MailCheck, ArrowLeft, Mail, Lock, Eye, EyeOff, User, Calendar, ShieldAlert, CheckCircle2, RefreshCw, KeyRound } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
+import {
+  checkLockout,
+  recordFailedAttempt,
+  resetAttempts,
+  generateOTP,
+  verifyOTP,
+  generateCaptcha,
+  sanitizeInput,
+  evaluatePasswordStrength
+} from '../services/authSecurityService';
 import './RoleSelect.css';
 
 
@@ -33,19 +43,25 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
   const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // ==========================================================================
-  // PAROLNI TIKLASH VA QAYTA TIZIMGA KIRISH SHARTLARI (PASSWORD RECOVERY & INSTANT LOGIN)
-  // [UZ] Foydalanuvchilar o'z parollarini unutganlarida, eski elektron pochtalari orqali
-  // o'z profillariga oson va yengil qayta kirishlarini ta'minlash uchun ushbu holat boshqaruvchilari qo'shildi.
-  // [JA] パスワード再設定及び即時ログイン管理用ステート：
-  // ユーザーがパスワードを忘れた場合、古いメールアドレスを使用してプロフィールに簡単にアクセスし、
-  // アプリの使用をシームレスに継続できるためのリカバリフローの状態管理変数群。
-  // ==========================================================================
-  const [forgotEmail, setForgotEmail] = useState(''); // [UZ] Parolni tiklash uchun kiritilgan eski email / [JA] パスワード再設定対象の登録済みメールアドレス
-  const [recoveryCode, setRecoveryCode] = useState(''); // [UZ] Elektron pochtaga yuborilgan tiklash kodi (Test uchun: 1234) / [JA] メール宛てに送出されたリカバリ用認証コード（テスト用: 1234）
-  const [newPassword, setNewPassword] = useState(''); // [UZ] Belgilanayotgan yangi kirish paroli / [JA] 設定される新しいログイン用パスワード
-  const [recoveryStep, setRecoveryStep] = useState('email'); // [UZ] Tiklash jarayoni bosqichi ('email' | 'code' | 'new_password') / [JA] リカバリフローの現在フェーズ
-  const [recoveryShowPassword, setRecoveryShowPassword] = useState(false); // [UZ] Yangi parolni ko'rsatish/yashirish to'g'risi / [JA] 新パスワード表示・非表示フラグ
+  // Security & Lockout Control States
+  const [lockoutState, setLockoutState] = useState({ isLocked: false, remainingMs: 0, level: 0, isStrictEmailLock: false });
+  const [captchaChallenge, setCaptchaChallenge] = useState(null);
+  const [userCaptchaAns, setUserCaptchaAns] = useState('');
+  const [captchaError, setCaptchaError] = useState(false);
+  const [loginErrorMessage, setLoginErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 6-Digit OTP UI States
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [otpTimer, setOtpTimer] = useState(60);
+  const otpInputRefs = [useRef(null), useRef(null), useRef(null), useRef(null), useRef(null), useRef(null)];
+
+  // Password Recovery
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [recoveryCode, setRecoveryCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [recoveryStep, setRecoveryStep] = useState('email');
+  const [recoveryShowPassword, setRecoveryShowPassword] = useState(false);
 
   // Verify Code
   const [verifyCode, setVerifyCode] = useState('');
@@ -58,6 +74,9 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
   const [password, setPassword] = useState('');
   const [avatar, setAvatar] = useState(null);
   const [gender, setGender] = useState('male');
+
+  // Live password strength
+  const passwordStrength = evaluatePasswordStrength(password);
 
   // User-specific Registration
   const [birthDate, setBirthDate] = useState('');
@@ -86,6 +105,33 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
   const [agreeAd, setAgreeAd] = useState(false);
   const allLegalAccepted = agreeLabor && agreeVisa && agreeAd;
 
+  // Lockout Countdown Timer
+  useEffect(() => {
+    let timer;
+    if (lockoutState.isLocked && lockoutState.remainingMs > 0) {
+      timer = setInterval(() => {
+        setLockoutState(prev => {
+          if (prev.remainingMs <= 1000) {
+            return { isLocked: false, remainingMs: 0, level: prev.level, isStrictEmailLock: false };
+          }
+          return { ...prev, remainingMs: prev.remainingMs - 1000 };
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [lockoutState.isLocked, lockoutState.remainingMs]);
+
+  // OTP Resend Timer
+  useEffect(() => {
+    let timer;
+    if (authStep === 'verify' && otpTimer > 0) {
+      timer = setInterval(() => {
+        setOtpTimer(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [authStep, otpTimer]);
+
   const handleRoleClick = (role) => {
     setSelectedRole(role);
     if (registerDirectly) {
@@ -97,30 +143,74 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-    const trimmedEmail = loginEmail.trim();
-    if (loginPassword === 'admin' && !trimmedEmail) {
-      onSelectRole('admin', { fullName: 'Admin' });
-    } else if (trimmedEmail === 'admin' && loginPassword === 'admin') {
-      const mockData = selectedRole === 'company' 
-        ? { fullName: 'Sagawa Express', companyType: 'logistics', email: 'admin@sagawa.jp' }
-        : { fullName: t('testDriverName', 'Test Haydovchi'), driverLicenses: ['oogata', 'kenin'], techCertificates: ['forklift'], email: 'admin@driver.jp' };
-      onSelectRole(selectedRole, mockData);
-    } else if (!trimmedEmail) {
-      alert(t('emailRequired', "Iltimos, elektron pochtangizni kiriting."));
-    } else {
-      alert(t('loginError', "Login yoki parol noto'g'ri kiritilgan."));
+    if (isSubmitting) return;
+    setLoginErrorMessage('');
+
+    const sanitizedEmail = sanitizeInput(loginEmail.trim());
+
+    // 1. Lockout check
+    const lockCheck = checkLockout(sanitizedEmail);
+    if (lockCheck.isLocked) {
+      setLockoutState(lockCheck);
+      return;
     }
+
+    // 2. Anti-Bot CAPTCHA check if active
+    if (captchaChallenge) {
+      if (parseInt(userCaptchaAns, 10) !== captchaChallenge.expectedAnswer) {
+        setCaptchaError(true);
+        setCaptchaChallenge(generateCaptcha());
+        setUserCaptchaAns('');
+        return;
+      }
+      setCaptchaChallenge(null);
+      setCaptchaError(false);
+    }
+
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setIsSubmitting(false);
+
+      if (loginPassword === 'admin' && (!sanitizedEmail || sanitizedEmail === 'admin')) {
+        resetAttempts(sanitizedEmail || 'admin');
+        const mockData = selectedRole === 'company' 
+          ? { fullName: 'Sagawa Express', companyType: 'logistics', email: 'admin@sagawa.jp' }
+          : { fullName: t('testDriverName', 'Test Haydovchi'), driverLicenses: ['oogata', 'kenin'], techCertificates: ['forklift'], email: 'admin@driver.jp' };
+        onSelectRole(selectedRole || 'driver', mockData);
+      } else if (!sanitizedEmail) {
+        setLoginErrorMessage(t('emailRequired', "Iltimos, elektron pochtangizni kiriting."));
+      } else {
+        // Record failed attempt for invalid login credentials
+        const failRes = recordFailedAttempt(sanitizedEmail);
+        if (failRes.isLocked) {
+          setLockoutState(checkLockout(sanitizedEmail));
+        } else {
+          if (failRes.requireCaptcha) {
+            setCaptchaChallenge(generateCaptcha());
+          }
+          setLoginErrorMessage(t('loginAttemptsLeft', { count: failRes.remainingAttempts }));
+        }
+      }
+    }, 300);
   };
 
   const handleRegisterSubmit = (e) => {
     e.preventDefault();
     if (!allLegalAccepted) return;
+    generateOTP(email);
+    setOtpTimer(60);
     setAuthStep('verify');
   };
 
   const handleVerifySubmit = (e) => {
     e.preventDefault();
-    if (verifyCode === '1234') {
+    const fullOtp = otpDigits.join('') || verifyCode;
+    const res = verifyOTP(email || forgotEmail || loginEmail, fullOtp);
+
+    if (res.isValid) {
+      resetAttempts(email || forgotEmail || loginEmail);
+      setLockoutState({ isLocked: false, remainingMs: 0, level: 0, isStrictEmailLock: false });
+      
       if (selectedRole === 'company') {
         onSelectRole(selectedRole, {
           fullName: fullName || 'Kompaniya',
@@ -139,12 +229,11 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
       } else {
         const filteredAddressHistory = addressHistory.filter(a => a.address);
         const filteredEducationHistory = educationHistory.filter(e => e.school || e.major);
-        // Fallback string values for backward compatibility
         const fallbackAddress = filteredAddressHistory.map(a => a.address + (a.isCurrent ? ` (${t('currentAddressLabel', 'Hozirgi')})` : '')).join(', ');
         const fallbackEducation = filteredEducationHistory.map(e => `${e.school}${e.major ? ` (${e.major})` : ''} • ${e.startDate || ''} ~ ${e.isCurrent ? t('currentlyStudyingLabel', 'O\'qiyotgan') : e.endDate || ''}`).join(', ');
 
-        onSelectRole(selectedRole, {
-          fullName,
+        onSelectRole(selectedRole || 'driver', {
+          fullName: fullName || 'Michi User',
           email,
           avatar,
           gender,
@@ -159,7 +248,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
         });
       }
     } else {
-      alert(t('verifyError', "Tasdiqlash kodi noto'g'ri!"));
+      alert(t(res.messageKey, "Tasdiqlash kodi noto'g'ri!"));
     }
   };
 
@@ -245,29 +334,153 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
     }));
   };
 
-  if (authStep === 'verify') {
+  if (lockoutState.isLocked) {
+    const remainingSecs = Math.ceil(lockoutState.remainingMs / 1000);
+    const mins = Math.floor(remainingSecs / 60);
+    const secs = remainingSecs % 60;
+    const formattedTimer = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
     return (
       <div className="role-container slide-up">
-        <div className="auth-card glass squircle" style={{ textAlign: 'center', padding: '40px 24px' }}>
+        <div className="auth-card glass squircle auth-lockout-card" style={{ textAlign: 'center', padding: '36px 24px' }}>
+          <div className="lockout-badge-icon" style={{
+            width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255, 59, 48, 0.12)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto',
+            boxShadow: '0 8px 24px rgba(255, 59, 48, 0.2)'
+          }}>
+            <ShieldAlert size={36} color="#FF3B30" />
+          </div>
+
+          <h2 style={{ fontSize: '20px', fontWeight: '800', margin: '0 0 8px 0', color: 'var(--text-main)' }}>
+            {lockoutState.isStrictEmailLock 
+              ? t('strictLockoutTitle', 'Hisob Himoya Rejimiga O\'tdi')
+              : t('accountLockedTitle', 'Hisob vaqtinchalik bloklandi')}
+          </h2>
+
+          <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', margin: '0 0 20px 0', lineHeight: '1.5' }}>
+            {lockoutState.isStrictEmailLock
+              ? t('strictLockoutDesc', 'Noma\'lum urinishlar sababli parol kiritish to\'xtatildi. Emailingizga yuborilgan kod orqali qayta tiklang.')
+              : t('accountLockedDesc', 'Ketma-ket xato kiritish sababli hisobingiz muhofaza qilindi.')}
+          </p>
+
+          {!lockoutState.isStrictEmailLock && (
+            <div className="lockout-countdown-box" style={{
+              background: 'rgba(255, 59, 48, 0.08)', borderRadius: '16px', border: '1px solid rgba(255, 59, 48, 0.2)',
+              padding: '16px', margin: '0 0 20px 0', display: 'flex', flexDirection: 'column', gap: '4px'
+            }}>
+              <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)' }}>Qayta urinishgacha:</span>
+              <span style={{ fontSize: '28px', fontWeight: '900', color: '#FF3B30', letterSpacing: '2px', fontFamily: 'monospace' }}>{formattedTimer}</span>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <button 
+              type="button" 
+              className="btn-primary" 
+              onClick={() => {
+                setAuthStep('forgot_password');
+                setRecoveryStep('email');
+                setForgotEmail(loginEmail);
+                generateOTP(loginEmail);
+              }}
+              style={{ width: '100%', background: 'linear-gradient(135deg, #0A84FF, #0056B3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            >
+              <KeyRound size={16} />
+              <span>{t('unlockViaEmail', 'Email Orqali Instant Unlock')}</span>
+            </button>
+
+            <button 
+              type="button" 
+              className="icon-btn glass" 
+              onClick={() => {
+                setLockoutState({ isLocked: false, remainingMs: 0, level: 0, isStrictEmailLock: false });
+                setAuthStep('role');
+              }}
+              style={{ width: '100%', borderRadius: '14px', fontSize: '13px', padding: '12px', cursor: 'pointer' }}
+            >
+              {t('backToRoleSelect', 'Ortga Qaytish')}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (authStep === 'verify') {
+    const handleOtpChange = (index, value) => {
+      if (!/^\d*$/.test(value)) return;
+      const newDigits = [...otpDigits];
+      newDigits[index] = value.substring(value.length - 1);
+      setOtpDigits(newDigits);
+
+      if (value && index < 5) {
+        otpInputRefs[index + 1].current?.focus();
+      }
+    };
+
+    const handleOtpKeyDown = (index, e) => {
+      if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+        otpInputRefs[index - 1].current?.focus();
+      }
+    };
+
+    return (
+      <div className="role-container slide-up">
+        <div className="auth-card glass squircle" style={{ textAlign: 'center', padding: '36px 20px', position: 'relative' }}>
           <button className="icon-btn glass" onClick={() => setAuthStep('register')} style={{ position: 'absolute', top: 20, left: 20 }}>
             <ArrowLeft size={20} />
           </button>
-          <MailCheck size={48} color="#0A84FF" style={{ margin: '20px auto' }} />
-          <h2 style={{ marginBottom: '10px' }}>{t('emailVerification', 'Email tasdiqlash')}</h2>
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
-            {t('emailVerifyDesc', 'Iltimos, emailingizga yuborilgan 4 xonali kodni kiriting. (Test uchun: 1234)')}
+          <MailCheck size={44} color="#0A84FF" style={{ margin: '16px auto 12px auto' }} />
+          <h2 style={{ marginBottom: '8px', fontSize: '20px', fontWeight: '800' }}>{t('otpTitle', 'Email Tasdiqlash Kodi')}</h2>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+            {t('otpSub', 'Elektron pochtangizga 6-xonali tasdiqlash kodi yuborildi. (Test: 1234 yoki 123456)')}
           </p>
+
           <form onSubmit={handleVerifySubmit}>
-            <input 
-              type="number" 
-              placeholder="1234" 
-              className="auth-input" 
-              style={{ textAlign: 'center', fontSize: '24px', letterSpacing: '8px' }}
-              value={verifyCode}
-              onChange={(e) => setVerifyCode(e.target.value)}
-              required
-            />
-            <button type="submit" className="btn-primary" style={{ marginTop: '20px', width: '100%' }}>
+            <div className="otp-digit-grid" style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px' }}>
+              {otpDigits.map((digit, idx) => (
+                <input
+                  key={idx}
+                  ref={otpInputRefs[idx]}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleOtpChange(idx, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                  className="otp-digit-input"
+                  style={{
+                    width: '42px', height: '48px', borderRadius: '12px',
+                    border: digit ? '2px solid #0A84FF' : '1px solid var(--glass-border)',
+                    background: 'var(--card-bg)', color: 'var(--text-main)',
+                    textAlign: 'center', fontSize: '20px', fontWeight: '800',
+                    outline: 'none', transition: 'all 0.15s ease'
+                  }}
+                />
+              ))}
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              {otpTimer > 0 ? (
+                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  {t('otpResendTimer', { seconds: otpTimer })}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    generateOTP(email || forgotEmail || loginEmail);
+                    setOtpTimer(60);
+                  }}
+                  style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', fontSize: '12.5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <RefreshCw size={12} />
+                  <span>{t('otpResendBtn', 'Qayta kod yuborish')}</span>
+                </button>
+              )}
+            </div>
+
+            <button type="submit" className="btn-primary" style={{ width: '100%' }}>
               {t('verifyAndLogin', 'Tasdiqlash va Kirish')}
             </button>
           </form>
@@ -503,6 +716,48 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
                   <div className="premium-input-border"></div>
                 </div>
               </div>
+
+              {/* Warning Alert Banner */}
+              {loginErrorMessage && (
+                <div style={{
+                  background: 'rgba(255, 59, 48, 0.08)', border: '1px solid rgba(255, 59, 48, 0.25)',
+                  borderRadius: '12px', padding: '10px 12px', color: '#FF3B30', fontSize: '12.5px',
+                  fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'
+                }}>
+                  <ShieldAlert size={16} style={{ flexShrink: 0 }} />
+                  <span>{loginErrorMessage}</span>
+                </div>
+              )}
+
+              {/* Anti-Bot Math CAPTCHA Challenge */}
+              {captchaChallenge && (
+                <div className="captcha-challenge-box" style={{
+                  background: 'rgba(255, 149, 0, 0.08)', borderRadius: '14px', border: '1px solid rgba(255, 149, 0, 0.3)',
+                  padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px'
+                }}>
+                  <span style={{ fontSize: '12px', fontWeight: '800', color: '#FF9500', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ShieldAlert size={14} />
+                    <span>{t('captchaTitle', 'Robot Himoyasi (CAPTCHA)')}</span>
+                  </span>
+                  <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
+                    {captchaChallenge.question}
+                  </span>
+                  <input 
+                    type="number" 
+                    className="auth-input" 
+                    placeholder="Javob"
+                    value={userCaptchaAns}
+                    onChange={(e) => setUserCaptchaAns(e.target.value)}
+                    style={{ fontSize: '16px', textAlign: 'center', padding: '8px', borderRadius: '10px' }}
+                    required
+                  />
+                  {captchaError && (
+                    <span style={{ fontSize: '11px', color: '#FF3B30', fontWeight: '700' }}>
+                      {t('captchaError', 'Javob noto\'g\'ri kiritildi.')}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Forgot Password trigger */}
               <button 
@@ -1050,6 +1305,23 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
                   </button>
                   <div className="premium-input-border"></div>
                 </div>
+                
+                {/* Live Password Strength Meter */}
+                {password && (
+                  <div className="password-strength-container" style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div className="strength-bar-track" style={{ height: '4px', background: 'var(--glass-border)', borderRadius: '2px', overflow: 'hidden', display: 'flex' }}>
+                      <div className={`strength-bar-fill strength-${passwordStrength.label}`} style={{
+                        height: '100%',
+                        width: passwordStrength.score === 1 ? '25%' : passwordStrength.score === 2 ? '50%' : passwordStrength.score === 3 ? '75%' : '100%',
+                        background: passwordStrength.label === 'weak' ? '#FF3B30' : passwordStrength.label === 'fair' ? '#FF9500' : passwordStrength.label === 'good' ? '#FFD60A' : '#34C759',
+                        transition: 'all 0.25s ease'
+                      }} />
+                    </div>
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: passwordStrength.label === 'weak' ? '#FF3B30' : passwordStrength.label === 'fair' ? '#FF9500' : passwordStrength.label === 'good' ? '#FFD60A' : '#34C759' }}>
+                      {t(`passwordStrength${passwordStrength.label.charAt(0).toUpperCase() + passwordStrength.label.slice(1)}`)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 

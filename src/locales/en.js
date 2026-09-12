@@ -897,7 +897,28 @@ const translation = {
   "vehicleCatalogTitle": "Vehicle Catalog",
   "vehicleCatalogSub": "12,340+ Global Brands & Real HD Photo Integration",
   "noVehiclesFound": "No vehicles found for this filter.",
-  "closeBtn": "Close"
+  "closeBtn": "Close",
+  "loginAttemptsLeft": "Incorrect password. Remaining attempts: {{count}}",
+  "accountLockedTitle": "Account Temporarily Locked for Security",
+  "accountLockedDesc": "Your account has been protected due to multiple failed login attempts. You can unlock it immediately using an email verification code.",
+  "strictLockoutTitle": "Account Protection Mode Activated",
+  "strictLockoutDesc": "Password attempts have been suspended due to suspicious activity. Reset via the code sent to your registered email.",
+  "otpTitle": "Email Verification Code",
+  "otpSub": "We sent a 6-digit verification code to your email address.",
+  "otpResendTimer": "Resend code in {{seconds}}s",
+  "otpResendBtn": "Resend Code",
+  "captchaTitle": "Anti-Bot Verification",
+  "captchaSub": "For security, please solve the math problem below:",
+  "captchaVerifyBtn": "Verify",
+  "captchaError": "Calculation answer is incorrect.",
+  "passwordStrengthWeak": "Weak (Min 8 chars, letters & numbers recommended)",
+  "passwordStrengthFair": "Fair",
+  "passwordStrengthGood": "Good",
+  "passwordStrengthStrong": "Strong (Secure Password)",
+  "otpVerifiedSuccess": "Verification completed successfully",
+  "otpExpired": "Verification code has expired. Please request a new one.",
+  "otpMaxAttemptsExceeded": "Maximum attempts exceeded. Please request a new code.",
+  "unlockSuccessAlert": "Your account has been unlocked successfully."
 };
 
 export default { translation };

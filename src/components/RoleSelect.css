@@ -685,4 +685,20 @@ html.dark-mode .premium-input-wrapper:focus-within {
   transform: scale(0.96);
 }
 
+/* Security Lockout & OTP Custom Styles */
+.auth-lockout-card {
+  border: 1px solid rgba(255, 59, 48, 0.3) !important;
+  box-shadow: 0 24px 60px rgba(255, 59, 48, 0.12) !important;
+}
+
+.otp-digit-input:focus {
+  border-color: #0A84FF !important;
+  box-shadow: 0 0 12px rgba(10, 132, 255, 0.35);
+  transform: scale(1.05);
+}
+
+.captcha-challenge-box {
+  animation: fadeIn 0.25s ease;
+}
+
 

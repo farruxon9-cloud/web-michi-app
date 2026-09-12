@@ -899,7 +899,28 @@ const translation = {
   "vehicleCatalogTitle": "Avtomobil Katalogi",
   "vehicleCatalogSub": "12,340+ Global Brendlar & Real HD Foto Integratsiya",
   "noVehiclesFound": "Ushbu filtr boʻyicha avtomobil topilmadi.",
-  "closeBtn": "Yopish"
+  "closeBtn": "Yopish",
+  "loginAttemptsLeft": "Noto'g'ri parol. Qolgan urinishlar: {{count}} marta",
+  "accountLockedTitle": "Xavfsizlik sababli hisob vaqtinchalik bloklandi",
+  "accountLockedDesc": "Ketma-ket xato kiritish sababli hisobingiz muhofaza qilindi. Email tasdiqlash kodi orqali zudlik bilan ochishingiz mumkin.",
+  "strictLockoutTitle": "Hisob Himoya Rejimiga O'tdi",
+  "strictLockoutDesc": "Noma'lum urinishlar sababli parol kiritish to'xtatildi. Emailingizga yuborilgan kod orqali qayta tiklang.",
+  "otpTitle": "Email Tasdiqlash Kodi",
+  "otpSub": "Elektron pochtangizga 6-xonali tasdiqlash kodi yuborildi.",
+  "otpResendTimer": "Qayta kod yuborish: {{seconds}}s",
+  "otpResendBtn": "Qayta kod yuborish",
+  "captchaTitle": "Robot Himoyasi (CAPTCHA)",
+  "captchaSub": "Xavfsizlik uchun quyidagi matematik misolni yeching:",
+  "captchaVerifyBtn": "Tasdiqlash",
+  "captchaError": "Javob noto'g'ri kiritildi.",
+  "passwordStrengthWeak": "Kuchsiz (Kamida 8 belgi va harf+raqam)",
+  "passwordStrengthFair": "O'rtacha",
+  "passwordStrengthGood": "Yaxshi",
+  "passwordStrengthStrong": "Mustahkam parol",
+  "otpVerifiedSuccess": "Tasdiqlash muvaffaqiyatli o'tdi",
+  "otpExpired": "Kodning amal qilish muddati tugadi. Qayta yuboring.",
+  "otpMaxAttemptsExceeded": "Urinishlar limiti tugadi. Yangi kod so'rang.",
+  "unlockSuccessAlert": "Hisobingiz blokdan chiqarildi."
 };
 
 export default { translation };
