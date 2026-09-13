@@ -1,7 +1,7 @@
 # Michi Ilovasi: Loyiha Arxitekturasi va Mundarija Xaritasi (Codebase Map)
 
 > [!NOTE]
-> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **12/09/2026, 17:11:34**.
+> Ushbu xarita loyihadagi barcha komponentlar bog'liqligi, ma'lumotlar bazalari, utilitlar va skriptlarni avtomatik skanerlash orqali yaratilgan. Oxirgi yangilangan vaqti: **13/09/2026, 20:13:32**.
 
 ---
 
