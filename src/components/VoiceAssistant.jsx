@@ -837,7 +837,7 @@ export default function VoiceAssistant({
         localStreamRef.current = null;
       }
 
-      if (e.error === 'no-speech') {
+      if (e.error === 'no-speech' || e.error === 'aborted' || e.error === 'network') {
         setStatus('idle');
         if (isVoiceStandbyRef.current) scheduleRelisten();
         return;
