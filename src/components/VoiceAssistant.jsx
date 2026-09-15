@@ -35,9 +35,9 @@ export default function VoiceAssistant({
   setApplications, toggleDarkMode
 }) {
   const { t, i18n } = useTranslation();
-  const defaultKey = localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
+  const defaultKey = localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyBUp5xqI4BYR2o3S-X_nP4RU0EDP2Mqaqk';
   const [apiKey, setApiKey] = useState(defaultKey);
-  const [showKeyInput, setShowKeyInput] = useState(!defaultKey);
+  const [showKeyInput, setShowKeyInput] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [micPermission, setMicPermission] = useState('prompt'); // 'prompt' | 'granted' | 'denied'
   const [status, setStatus] = useState('idle'); // 'idle' | 'listening' | 'thinking' | 'speaking' | 'error'
@@ -394,17 +394,15 @@ export default function VoiceAssistant({
     setAiResponseText('');
   };
 
-  // Schedule a delayed re-listen for continuous standby mode
   const scheduleRelisten = () => {
-    if (!isActiveRef.current) return;
     if (relistenTimeoutRef.current) {
       clearTimeout(relistenTimeoutRef.current);
     }
     relistenTimeoutRef.current = setTimeout(() => {
-      if (isActiveRef.current && isVoiceStandbyRef.current && isOnline && apiKey && !showKeyInput) {
-        startListeningSequence();
+      if (isActiveRef.current || isVoiceStandbyRef.current) {
+        startLocalSpeechRecognition();
       }
-    }, 1200); // 1.2s pause before re-listening
+    }, 500);
   };
 
   const saveApiKey = (e) => {
