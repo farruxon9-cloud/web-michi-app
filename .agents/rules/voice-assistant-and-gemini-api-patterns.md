@@ -33,8 +33,12 @@
 ## 7. Pure Global Conversational AI System Prompting
 - Voice AI system prompts MUST NOT inject local application domain limitations, local job/school navigation commands, or app management scopes unless explicitly requested by the user.
 - Position the assistant as a universal, 100% pure conversational AI with global knowledge across all domains.
-- Enforce `command: "NONE"` by default for all conversational turns.
 
 ## 8. Open-Meteo Real-Time Weather Grounding
 - For real-time environmental queries (weather forecast, current temperature, rain conditions), fetch live JSON data from zero-cost APIs like Open-Meteo (`https://api.open-meteo.com/v1/forecast`) prior to invoking Gemini API.
 - Inject the parsed live weather data directly into Gemini's system prompt context (`weatherContext`) so the model provides 100% accurate, live weather forecasts.
+
+## 9. Strict Zero-Platform-Control Invariant
+- Voice AI assistants operating in conversational mode MUST NOT execute any UI commands, screen filtering, or platform navigation actions.
+- Enforce `command: "NONE"` strictly 100% of the time in prompt structure and payload handlers.
+- The AI must answer user queries directly in spoken text using global knowledge and external API data without triggering UI state changes or filtering app screens.
