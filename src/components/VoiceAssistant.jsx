@@ -2435,49 +2435,58 @@ Return ONLY the raw JSON object, no markdown wrappers.
         </div>
       )}
 
-      {/* Chat History Modal Overlay */}
+      {/* Clean White Mobile Bottom Sheet - Chat History */}
       {showHistoryModal && (
-        <div className="voice-setup-overlay" onClick={() => setShowHistoryModal(false)}>
-          <div className="voice-setup-modal animate-slide-in" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', maxHeight: '80vh', overflowY: 'auto' }}>
-            <button className="voice-close-btn" onClick={() => setShowHistoryModal(false)}>
-              <X size={16} />
-            </button>
-            <div className="voice-modal-content">
-              <div className="voice-modal-header" style={{ marginBottom: '14px' }}>
-                <div className="ai-logo-gradient">📜</div>
-                <h2>{speechLang === 'ja' ? 'AI 会話履歴' : speechLang === 'uz' ? 'Muloqotlar Tarixi' : 'AI Chat History'}</h2>
-                <span className="ai-beta-tag">{chatHistoryList.length} {speechLang === 'uz' ? 'suhbatlar' : 'conversations'}</span>
+        <div className="voice-history-sheet-overlay" onClick={() => setShowHistoryModal(false)}>
+          <div className="voice-history-sheet-modal animate-slide-up" onClick={(e) => e.stopPropagation()}>
+            <div className="voice-sheet-handle"></div>
+            
+            <div className="voice-sheet-header">
+              <div className="voice-sheet-title-box">
+                <div className="voice-sheet-icon">📜</div>
+                <div>
+                  <h2 className="voice-sheet-title">{speechLang === 'ja' ? '会話履歴' : speechLang === 'uz' ? 'Muloqotlar Tarixi' : 'Chat History'}</h2>
+                  <p className="voice-sheet-subtitle">{chatHistoryList.length} {speechLang === 'uz' ? 'ta suhbat saqlangan' : 'conversations saved'}</p>
+                </div>
               </div>
+              <button className="voice-sheet-close-btn" onClick={() => setShowHistoryModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
 
+            <div className="voice-sheet-body">
               {chatHistoryList.length === 0 ? (
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', padding: '20px 0' }}>
-                  {speechLang === 'ja' ? '履歴はありません。' : speechLang === 'uz' ? 'Hozircha saqlangan suhbatlar yo\'q.' : 'No chat history found.'}
-                </p>
+                <div className="voice-history-empty">
+                  <div className="empty-chat-icon">💬</div>
+                  <p>{speechLang === 'ja' ? '会話履歴はありません' : speechLang === 'uz' ? 'Hozircha saqlangan suhbatlar tarixi bo\'sh' : 'No chat history found'}</p>
+                </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', textAlign: 'left' }}>
+                <div className="voice-history-list">
                   {chatHistoryList.map((item) => (
-                    <div key={item.id} style={{ background: 'rgba(118, 118, 128, 0.08)', borderRadius: '14px', padding: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#FF9500' }}>🙋‍♂️ {item.timestamp}</span>
-                        <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{item.command}</span>
+                    <div key={item.id} className="voice-history-card">
+                      <div className="history-card-header">
+                        <span className="user-question-badge">🙋‍♂️ {speechLang === 'uz' ? 'Savolingiz' : 'Question'}</span>
+                        <span className="history-time-stamp">{item.timestamp}</span>
                       </div>
-                      <p style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-main)', margin: '0 0 6px 0' }}>{item.question}</p>
-                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, paddingLeft: '8px', borderLeft: '2px solid #5E5CE6', lineHeight: '1.4' }}>🤖 {item.answer}</p>
+                      <p className="history-question-text">{item.question}</p>
+                      
+                      <div className="history-answer-box">
+                        <span className="ai-answer-badge">🤖 Michi AI</span>
+                        <p className="history-answer-text">{item.answer}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
-
-              {chatHistoryList.length > 0 && (
-                <button 
-                  onClick={clearChatHistory} 
-                  className="voice-retry-btn" 
-                  style={{ marginTop: '16px', background: 'rgba(255, 59, 48, 0.12)', color: '#FF3B30', width: '100%', justifyContent: 'center' }}
-                >
-                  <Trash2 size={14} /> {speechLang === 'ja' ? '全履歴を消去' : speechLang === 'uz' ? 'Barcha tarixni tozalash' : 'Clear All History'}
-                </button>
-              )}
             </div>
+
+            {chatHistoryList.length > 0 && (
+              <div className="voice-sheet-footer">
+                <button onClick={clearChatHistory} className="voice-clear-history-btn">
+                  <Trash2 size={16} /> {speechLang === 'ja' ? '全履歴を消去' : speechLang === 'uz' ? 'Barcha tarixni tozalash' : 'Clear All History'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

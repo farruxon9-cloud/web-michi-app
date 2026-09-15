@@ -1319,3 +1319,254 @@ html.dark-mode .voice-ambient-glow-container {
 .standby-checkbox:checked + .standby-switch-slider:before {
   transform: translateX(16px);
 }
+
+/* ====== 3. CLEAN WHITE MOBILE BOTTOM SHEET (CHAT HISTORY) ====== */
+.voice-history-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 100000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.voice-history-sheet-modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  background: #FFFFFF;
+  border-radius: 24px 24px 0 0;
+  padding: 12px 18px 24px 18px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+html.dark-mode .voice-history-sheet-modal {
+  background: #1C1C1E;
+  color: #FFFFFF;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.voice-sheet-handle {
+  width: 36px;
+  height: 5px;
+  background: #E2E8F0;
+  border-radius: 3px;
+  margin: 0 auto 12px auto;
+}
+
+html.dark-mode .voice-sheet-handle {
+  background: #3A3A3C;
+}
+
+.voice-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #F1F5F9;
+  margin-bottom: 14px;
+}
+
+html.dark-mode .voice-sheet-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.voice-sheet-title-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.voice-sheet-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.voice-sheet-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 2px 0;
+}
+
+html.dark-mode .voice-sheet-title {
+  color: #FFFFFF;
+}
+
+.voice-sheet-subtitle {
+  font-size: 11px;
+  color: #64748B;
+  margin: 0;
+}
+
+.voice-sheet-close-btn {
+  background: #F1F5F9;
+  border: none;
+  color: #64748B;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+html.dark-mode .voice-sheet-close-btn {
+  background: #2C2C2E;
+  color: #A0A0A5;
+}
+
+.voice-sheet-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.voice-history-empty {
+  text-align: center;
+  padding: 40px 16px;
+}
+
+.empty-chat-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.voice-history-empty p {
+  font-size: 13px;
+  color: #94A3B8;
+  margin: 0;
+}
+
+.voice-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.voice-history-card {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 14px;
+  text-align: left;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+html.dark-mode .voice-history-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.history-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.user-question-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #D97706;
+}
+
+.history-time-stamp {
+  font-size: 10px;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.history-question-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
+html.dark-mode .history-question-text {
+  color: #F1F5F9;
+}
+
+.history-answer-box {
+  background: #FFFFFF;
+  border-left: 3px solid #6366F1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+html.dark-mode .history-answer-box {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ai-answer-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6366F1;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.history-answer-text {
+  font-size: 12.5px;
+  color: #334155;
+  margin: 0;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+html.dark-mode .history-answer-text {
+  color: #CBD5E1;
+}
+
+.voice-sheet-footer {
+  padding-top: 14px;
+  margin-top: 10px;
+  border-top: 1px solid #F1F5F9;
+}
+
+html.dark-mode .voice-sheet-footer {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.voice-clear-history-btn {
+  width: 100%;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #EF4444;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.voice-clear-history-btn:active {
+  transform: scale(0.98);
+  background: #FEE2E2;
+}
+
+html.dark-mode .voice-clear-history-btn {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+}
