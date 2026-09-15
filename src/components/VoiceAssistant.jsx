@@ -1358,6 +1358,8 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
       setStatus('error');
       setErrorMessage(errText);
+      setShowPill(true);
+      setIsFadeOut(false);
       
       // Persist error event into chat history
       try {
@@ -1373,7 +1375,18 @@ Return ONLY the raw JSON object, no markdown wrappers.
         localStorage.setItem('michi_chat_history', JSON.stringify(savedHistory.slice(-100)));
       } catch(e){}
 
-      speakResponse(errText, userLang);
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+      if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+
+      dismissTimerRef.current = setTimeout(() => {
+        setIsFadeOut(true);
+        pillTimeoutRef.current = setTimeout(() => {
+          setShowPill(false);
+          setIsFadeOut(false);
+          setErrorMessage('');
+          if (isActiveRef.current) setStatus('idle');
+        }, 500);
+      }, 5000);
     }
   };
 
@@ -1813,13 +1826,24 @@ Return ONLY the raw JSON object, no markdown wrappers.
         localStorage.setItem('michi_chat_history', JSON.stringify(savedHistory.slice(-100)));
       } catch(e){}
 
-      speakResponse(errorText, 'ja', () => {
-        if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+      setShowPill(true);
+      setIsFadeOut(false);
+
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+      if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+
+      dismissTimerRef.current = setTimeout(() => {
+        setIsFadeOut(true);
         pillTimeoutRef.current = setTimeout(() => {
           setShowPill(false);
-          if (isVoiceStandbyRef.current) scheduleRelisten();
-        }, 4000);
-      });
+          setIsFadeOut(false);
+          setErrorMessage('');
+          if (isActiveRef.current) {
+            setStatus('idle');
+            if (isVoiceStandbyRef.current) scheduleRelisten();
+          }
+        }, 500);
+      }, 5000);
     }
   };
 
