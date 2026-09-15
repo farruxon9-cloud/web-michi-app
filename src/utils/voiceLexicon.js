@@ -431,17 +431,7 @@ export const matchLexiconCommand = async (text, userLang = 'uz') => {
     return { command: 'GET_DATE', response: dateResp, language: targetLang };
   }
 
-  // Next news bulletin request (Fetches live RSS feeds in real-time)
-  if (/(keyingi xabar|keyingi yangilik|keyingisi|boshqa xabar|boshqa yangilik|次ニュース|次のニュース|つぎのニュース|他のニュース|つぎニュース|next news|another news|next article)/i.test(cleanText)) {
-    const newsBulletin = await japaneseNewsService.getLiveOrNextNewsBulletin(targetLang);
-    return { command: 'NEXT_NEWS', response: newsBulletin, language: targetLang };
-  }
-
-  // Today / Latest news request (Fetches live RSS feeds in real-time)
-  if (/(ニュース|今日のニュース|ニュースを教えて|最新ニュース|ニュースを聞かせて|yangilik|yangiliklar|xabar|xabarlar|bugungi yangiliklar|news|read news|latest news)/i.test(cleanText)) {
-    const newsBulletin = await japaneseNewsService.getLiveOrTodayNewsBulletin(targetLang);
-    return { command: 'READ_NEWS', response: newsBulletin, language: targetLang };
-  }
+  // Pass news and general queries directly to Gemini Cloud AI
 
   // Special Language Switch Interceptions
   if (/(yaponchaga|日本語に|japanese)/i.test(cleanText)) {

@@ -729,9 +729,12 @@ export default function VoiceAssistant({
         } catch(e){}
         localStreamRef.current = null;
       }
-      if (statusRef.current === 'listening' && !gotResult) {
-        setStatus('idle');
-        if (isVoiceStandbyRef.current) scheduleRelisten();
+      if (isActiveRef.current || isVoiceStandbyRef.current) {
+        setTimeout(() => {
+          if (isActiveRef.current || isVoiceStandbyRef.current) {
+            startLocalSpeechRecognition();
+          }
+        }, 300);
       }
     };
 
