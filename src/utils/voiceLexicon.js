@@ -59,13 +59,13 @@ export const VOICE_LEXICON = [
   {
     command: 'NAVIGATE_TO_ACADEMY',
     patterns: {
-      uz: ['maktab', 'avtomaktab', 'avto maktab', 'haydovchilik maktabi', 'kurslar', 'prava kurslari', 'prava', 'guvohnoma', 'academy', 'school', 'driving school', 'avtomaktabga o\'tish', 'avtomaktabga otish', 'avtomaktablar', 'avtomaktabni och', 'maktabni och', 'maktablar', 'avtomaktablar sahifasi', 'avtomaktab sahifasi', 'o\'quv markazi', 'oquv markazi', 'maktabga o\'tish'],
-      ja: ['免許', '教習所', '学校', '自動車学校', 'アカデミー', 'ドライビングスクール', '教習所画面', '教習所を開いて', '自動車学校を開いて', '学ぶ', '教習所一覧', '学校一覧'],
-      en: ['academy', 'driving school', 'license school', 'courses', 'open academy', 'school page', 'driving academy', 'show schools']
+      uz: ['avtomaktab', 'avto maktab', 'haydovchilik maktabi', 'prava kurslari', 'prava maktabi', 'avtomaktablar', 'avtomaktabni och', 'avtomaktablar sahifasi', 'avtomaktab sahifasi', 'driving school'],
+      ja: ['教習所', '自動車学校', '自動車教習所', 'ドライビングスクール', '教習所画面', '教習所を開いて', '自動車学校を開いて', '教習所一覧'],
+      en: ['driving school', 'license school', 'driving academy', 'open driving school']
     },
     responses: {
       uz: "Xo'p, avtomaktablar sahifasiga o'tkazaman!",
-      ja: "はい、自動車学校のページに移動いたします！",
+      ja: "はい、自動車教習所のページに移動いたします！",
       en: "Sure, opening driving schools page!"
     }
   },
