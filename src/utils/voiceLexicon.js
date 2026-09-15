@@ -396,6 +396,15 @@ export const matchLexiconCommand = async (text, userLang = 'uz') => {
 
   const targetLang = userLang.startsWith('uz') ? 'uz' : userLang.startsWith('ja') ? 'ja' : 'en';
 
+  // INFORMATIONAL INTENT GUARD: If sentence contains question, search, recommendation or inquiry keywords,
+  // skip all local UI shortcuts to delegate query to Gemini Cloud AI!
+  const isQuestionOrQuery = /(bormi|qaysi|qanday|necha|haqida|tavsiya|qidirayabman|qidiryapman|qancha|nima|qayerda|bor\?|yordam|ro'yxati|aytib ber|tahlil|ko'p oylik|oylik|haq to'lanadi|sharoit|yashash|visa|vizalar|ありますか|ですか|教えて|どんな|おすすめ|探しています|いくら|どこ|what|where|how|which|is there|are there|tell me|recommend|search|find)/i.test(cleanText);
+
+  if (isQuestionOrQuery) {
+    console.log(`[LexiconGuard] Query "${cleanText}" detected as Informational Question. Delegating directly to Gemini Cloud AI.`);
+    return null;
+  }
+
   // 0. HIGH PRIORITY: Time, Date & News Interceptions (0ms Local Real-time & Internet News)
   if (/(今何時|何時ですか|いまなんじ|時間を教えて|現在時刻|soat nech|vaqt nech|what time is it|current time)/i.test(cleanText)) {
     const now = new Date();
