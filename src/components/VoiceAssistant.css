@@ -455,20 +455,20 @@ html.dark-mode .voice-ambient-glow-container {
 }
 
 .voice-ambient-glow-container.listening::before {
-  animation: glow-breathe 1.2s infinite ease-in-out;
+  animation: glow-breathe 3.5s infinite ease-in-out;
 }
 
 .voice-ambient-glow-container.thinking::before {
-  animation: glow-breathe 1.8s infinite ease-in-out;
+  animation: glow-breathe 4s infinite ease-in-out;
 }
 
 .voice-ambient-glow-container.speaking::before {
-  animation: glow-breathe 0.8s infinite ease-in-out;
+  animation: glow-breathe 3.5s infinite ease-in-out;
 }
 
 @keyframes glow-breathe {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
-  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.85; }
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+  50% { transform: translate(-50%, -50%) scale(1.04); opacity: 0.6; }
 }
 
 .voice-ambient-info {
@@ -528,8 +528,8 @@ html.dark-mode .voice-ambient-glow-container {
   border-radius: 50%;
   background: radial-gradient(circle, #5E5CE6 0%, #AF52DE 40%, #00F0FF 70%, rgba(94, 92, 230, 0) 100%);
   filter: blur(8px);
-  opacity: 0.8;
-  animation: orb-glow-pulse 2s infinite ease-in-out;
+  opacity: 0.5;
+  animation: orb-glow-pulse 4s infinite ease-in-out;
 }
 
 .ai-liquid-orb-glow-canvas {
@@ -541,7 +541,7 @@ html.dark-mode .voice-ambient-glow-container {
   pointer-events: none;
   z-index: 1;
   filter: blur(3px);
-  opacity: 0.9;
+  opacity: 0.8;
 }
 
 .ai-liquid-orb-core {
@@ -557,40 +557,40 @@ html.dark-mode .voice-ambient-glow-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: liquid-morph 4s infinite linear, orb-rotate 8s infinite linear;
+  animation: liquid-morph 5s infinite linear, orb-rotate 12s infinite linear;
   will-change: border-radius, transform;
 }
 
-/* Status-specific animation characteristics */
+/* Status-specific animation characteristics - SLOW, CALM, SILKY BREATHING */
 .listening .ai-liquid-orb-core {
-  animation: liquid-morph 2s infinite linear, orb-rotate 4s infinite linear, listening-pulse 1s infinite ease-in-out;
+  animation: liquid-morph 5s infinite linear, orb-rotate 10s infinite linear, listening-pulse 3.5s infinite ease-in-out;
 }
 
 .listening .ai-liquid-orb-glow {
-  animation: orb-glow-pulse 1.2s infinite ease-in-out;
+  animation: orb-glow-pulse 3.5s infinite ease-in-out;
 }
 
 .thinking .ai-liquid-orb-core {
-  animation: liquid-morph 3s infinite linear, orb-rotate 6s infinite linear, thinking-pulse 1.5s infinite ease-in-out;
+  animation: liquid-morph 6s infinite linear, orb-rotate 12s infinite linear, thinking-pulse 4s infinite ease-in-out;
 }
 
 .thinking .ai-liquid-orb-glow {
-  animation: orb-glow-pulse 1.8s infinite ease-in-out;
+  animation: orb-glow-pulse 4s infinite ease-in-out;
 }
 
 .speaking .ai-liquid-orb-core {
-  animation: liquid-morph 2.5s infinite linear, orb-rotate 5s infinite linear, speaking-pulse 0.8s infinite ease-in-out;
+  animation: liquid-morph 5s infinite linear, orb-rotate 10s infinite linear, speaking-pulse 3.5s infinite ease-in-out;
 }
 
 .speaking .ai-liquid-orb-glow {
-  animation: orb-glow-pulse 0.8s infinite ease-in-out;
+  animation: orb-glow-pulse 3.5s infinite ease-in-out;
 }
 
 /* Keyframes */
 @keyframes liquid-morph {
   0% { border-radius: 42% 56% 72% 28% / 45% 65% 35% 55%; }
-  33% { border-radius: 70% 30% 52% 48% / 60% 40% 60% 40%; }
-  66% { border-radius: 30% 70% 40% 60% / 40% 60% 30% 70%; }
+  33% { border-radius: 60% 40% 52% 48% / 55% 45% 55% 45%; }
+  66% { border-radius: 40% 60% 45% 55% / 45% 55% 40% 60%; }
   100% { border-radius: 42% 56% 72% 28% / 45% 65% 35% 55%; }
 }
 
@@ -600,23 +600,23 @@ html.dark-mode .voice-ambient-glow-container {
 }
 
 @keyframes orb-glow-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.7; }
-  50% { transform: scale(1.25); opacity: 0.95; }
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.06); opacity: 0.65; }
 }
 
 @keyframes listening-pulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.12); }
+  50% { transform: scale(1.03); }
 }
 
 @keyframes thinking-pulse {
   0%, 100% { transform: scale(1); opacity: 0.85; }
-  50% { transform: scale(1.06); opacity: 1; }
+  50% { transform: scale(1.03); opacity: 1; }
 }
 
 @keyframes speaking-pulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.18); }
+  50% { transform: scale(1.04); }
 }
 
 
