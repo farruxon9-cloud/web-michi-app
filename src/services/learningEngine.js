@@ -122,6 +122,21 @@ class LearningEngine {
       console.warn('[LearningEngine] Failed to restore learning data:', e);
     }
   }
+
+  /**
+   * Record system-level error learning to persistent memory
+   */
+  recordSystemLearning(ruleName, description) {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      const existing = JSON.parse(localStorage.getItem('michi_ai_system_learnings') || '[]');
+      existing.push({ ruleName, description, timestamp: Date.now() });
+      localStorage.setItem('michi_ai_system_learnings', JSON.stringify(existing.slice(-50)));
+      console.log(`[LearningEngine] System learning recorded: ${ruleName}`);
+    } catch (e) {
+      console.warn('[LearningEngine] Failed to save system learning:', e);
+    }
+  }
 }
 
 export const learningEngine = new LearningEngine();
