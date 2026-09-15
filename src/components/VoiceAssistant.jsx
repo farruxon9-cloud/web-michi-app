@@ -12,11 +12,11 @@ import { autonomousWebSearchEngine } from '../services/autonomousWebSearchEngine
 import { multiAiMeshEngine } from '../services/multiAiMeshEngine';
 
 export function calculateReadingDuration(text, lang = 'uz') {
-  if (!text) return 4000;
+  if (!text) return 7000;
   const isJa = (lang || 'uz').toLowerCase().startsWith('ja');
-  const msPerChar = isJa ? 90 : 55;
-  const calculated = Math.round(text.length * msPerChar + 2500);
-  return Math.min(14000, Math.max(3500, calculated));
+  const msPerChar = isJa ? 120 : 75;
+  const calculated = Math.round(text.length * msPerChar + 4000);
+  return Math.min(22000, Math.max(7500, calculated));
 }
 
 export default function VoiceAssistant({ 
@@ -1826,7 +1826,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
   // Handle successful Gemini JSON parsing and routing
   const handleGeminiSuccess = (aiResult, userText) => {
-    setStatus('idle');
+    setStatus('speaking'); // Separate response display from listening phase
     const detectedLang = aiResult.language || speechLangRef.current || 'ja';
     const rawResp = aiResult.response || aiResult.text || userText;
     const politeResponse = japaneseLanguageEngine.formatPoliteResponse(rawResp, detectedLang);
@@ -1840,6 +1840,19 @@ Return ONLY the raw JSON object, no markdown wrappers.
     if (userText && aiResult.command) {
       learningEngine.recordFeedback(userText, aiResult.command, true);
     }
+
+    // Persist to local chat memory storage
+    try {
+      const savedHistory = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
+      savedHistory.push({
+        id: Date.now(),
+        question: userText,
+        answer: politeResponse,
+        command: aiResult.command || 'NONE',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      localStorage.setItem('michi_chat_history', JSON.stringify(savedHistory.slice(-100)));
+    } catch(e){}
 
     // Store interaction in conversation history
     setConversationHistory(prev => [
@@ -2289,16 +2302,16 @@ Return ONLY the raw JSON object, no markdown wrappers.
           
           <div className="speech-bubble-content">
             {transcript && (
-              <div className="bubble-row user-row">
+              <div className="bubble-row user-row" style={{ background: 'rgba(255, 149, 0, 0.08)', padding: '6px 10px', borderRadius: '12px', borderLeft: '3px solid #FF9500' }}>
                 <span className="bubble-dot user-dot"></span>
-                <p className="bubble-text"><strong>{t('userSaid', 'Siz')}:</strong> {transcript}</p>
+                <p className="bubble-text"><strong>🙋‍♂️ {t('userSaid', 'Savolingiz')}:</strong> {transcript}</p>
               </div>
             )}
             
             {aiResponseText && (
-              <div className="bubble-row ai-row">
+              <div className="bubble-row ai-row" style={{ background: 'rgba(94, 92, 230, 0.08)', padding: '8px 10px', borderRadius: '12px', borderLeft: '3px solid #5E5CE6', marginTop: '4px' }}>
                 <span className="bubble-dot ai-dot"></span>
-                <p className="bubble-text ja-text"><strong>AI:</strong> {aiResponseText}</p>
+                <p className="bubble-text ja-text"><strong>🤖 Michi AI:</strong> {aiResponseText}</p>
               </div>
             )}
 
