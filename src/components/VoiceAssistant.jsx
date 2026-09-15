@@ -476,155 +476,9 @@ export default function VoiceAssistant({
   // 3. Azure Neural TTS (if VITE_AZURE_TTS_KEY is configured)
   // 4. Standard Browser Web Speech Synthesis (100% free and offline fallback)
   const speakResponse = async (text, lang = 'ja', onEndCallback) => {
-    if (!isActiveRef.current) return;
-    setStatus('speaking');
-
-    // Cancel any previous buffer audio source immediately
-    if (activeAudioSourceRef.current) {
-      try {
-        if (typeof activeAudioSourceRef.current.stop === 'function') {
-          activeAudioSourceRef.current.stop();
-        } else if (typeof activeAudioSourceRef.current.pause === 'function') {
-          activeAudioSourceRef.current.pause();
-        }
-      } catch(e){}
-    }
-
-    // A. Check Local Audio Cache for instant playback to save traffic and eliminate latency
-    const normalizedText = text.trim().toLowerCase();
-    const cachedAudioPath = LOCAL_AUDIO_CACHE[normalizedText];
-    if (cachedAudioPath) {
-      try {
-        console.log(`Cascading TTS: Local cache hit for "${normalizedText}". Loading instantly...`);
-        const response = await fetch(cachedAudioPath);
-        if (response.ok) {
-          const arrayBuffer = await response.arrayBuffer();
-          await playWebAudio(arrayBuffer, onEndCallback);
-          return; // Instant playback successful!
-        }
-        console.warn("Local cache file not found in public assets. Cascading to Cloud TTS...");
-      } catch (e) {
-        console.warn("Local cache playback failed. Cascading to Cloud TTS:", e);
-      }
-    }
-
-    const langMap = { 'ja': 'ja-JP', 'uz': 'uz-UZ', 'en': 'en-US' };
-    const targetLang = langMap[lang] || 'ja-JP';
-
-    // 1. Try ElevenLabs
-    const elevenKey = localStorage.getItem('michi_elevenlabs_api_key') || import.meta.env.VITE_ELEVENLABS_API_KEY || '';
-    const elevenVoiceId = localStorage.getItem('michi_elevenlabs_voice_id') || '21m00Tcm4TlvDq8ikWAM';
-    if (elevenKey) {
-      try {
-        console.log("Cascading TTS: Trying ElevenLabs...");
-        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'xi-api-key': elevenKey },
-          body: JSON.stringify({
-            text: text,
-            model_id: 'eleven_multilingual_v2',
-            voice_settings: { stability: 0.5, similarity_boost: 0.75 }
-          })
-        });
-        if (response.ok) {
-          const arrayBuffer = await response.arrayBuffer();
-          await playWebAudio(arrayBuffer, onEndCallback);
-          return;
-        }
-        console.warn("ElevenLabs TTS failed or rate-limited. Cascading to Google Cloud TTS...");
-      } catch (e) {
-        console.warn("ElevenLabs error:", e);
-      }
-    }
-
-    // 2. Try Google Cloud Wavenet TTS (uses same universal Gemini Key!)
-    const currentApiKey = apiKeyRef.current;
-    if (currentApiKey) {
-      try {
-        console.log("Cascading TTS: Trying Google Cloud TTS...");
-        const googleVoiceMap = {
-          'ja-JP': 'ja-JP-Wavenet-A',
-          'uz-UZ': 'uz-UZ-Wavenet-A',
-          'en-US': 'en-US-Wavenet-C'
-        };
-        const voiceName = googleVoiceMap[targetLang] || 'ja-JP-Wavenet-A';
-
-        const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${currentApiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            input: { text },
-            voice: { languageCode: targetLang, name: voiceName },
-            audioConfig: { audioEncoding: 'MP3' }
-          })
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.audioContent) {
-            const arrayBuffer = base64ToArrayBuffer(data.audioContent);
-            await playWebAudio(arrayBuffer, onEndCallback);
-            return;
-          }
-        }
-        console.warn("Google Cloud TTS failed or rate-limited. Cascading to Microsoft Azure TTS...");
-      } catch (e) {
-        console.warn("Google Cloud TTS error:", e);
-      }
-    }
-
-    // 3. Try Microsoft Azure TTS (if VITE_AZURE_TTS_KEY is set)
-    const azureKey = localStorage.getItem('michi_azure_tts_key') || import.meta.env.VITE_AZURE_TTS_KEY || '';
-    const azureRegion = localStorage.getItem('michi_azure_tts_region') || import.meta.env.VITE_AZURE_TTS_REGION || 'eastus';
-    if (azureKey) {
-      try {
-        console.log("Cascading TTS: Trying Azure TTS...");
-        const azureVoiceMap = {
-          'ja-JP': 'ja-JP-NanamiNeural',
-          'uz-UZ': 'uz-UZ-MadinaNeural',
-          'en-US': 'en-US-JennyNeural'
-        };
-        const voiceName = azureVoiceMap[targetLang] || 'ja-JP-NanamiNeural';
-
-        const response = await fetch(`https://${azureRegion}.tts.speech.microsoft.com/cognitiveservices/v1`, {
-          method: 'POST',
-          headers: {
-            'Ocp-Apim-Subscription-Key': azureKey,
-            'Content-Type': 'application/ssml+xml',
-            'X-Microsoft-OutputFormat': 'audio-16khz-128kbitrate-mono-mp3',
-            'User-Agent': 'MichiApp'
-          },
-          body: `<speak version='1.0' xml:lang='${targetLang}'><voice xml:lang='${targetLang}' xml:gender='Female' name='${voiceName}'>${text}</voice></speak>`
-        });
-        if (response.ok) {
-          const arrayBuffer = await response.arrayBuffer();
-          await playWebAudio(arrayBuffer, onEndCallback);
-          return;
-        }
-        console.warn("Azure TTS failed. Cascading to native device synthesis...");
-      } catch (e) {
-        console.warn("Azure TTS error:", e);
-      }
-    }
-
-    // 4. Default Offline Engine: localTTS with emotion modulation & text preprocessing
-    console.log("Cascading TTS: Playing via localTTS engine...");
-    const emotion = voiceQuality.detectEmotion(text);
-    const speechParams = voiceQuality.getSpeechParams(emotion);
-
-    localTTS.speak(text, {
-      lang,
-      pitch: speechParams.pitch,
-      rate: speechParams.rate,
-      onEnd: () => {
-        setStatus('idle');
-        if (onEndCallback) onEndCallback();
-      },
-      onError: () => {
-        setStatus('idle');
-        if (onEndCallback) onEndCallback();
-      }
-    });
+    // SILENT VISUAL MODE: Do NOT synthesize audio. Purely display visual text cards!
+    setStatus('idle');
+    if (onEndCallback) onEndCallback();
   };
 
   // Helper to decode and play audio buffer with Web Audio API
@@ -684,6 +538,24 @@ export default function VoiceAssistant({
   }, []);
 
   const interceptLocalCommand = async (text) => {
+    const lowerText = (text || '').trim().toLowerCase();
+    if (lowerText.includes('今の時間') || lowerText.includes('現在時刻') || lowerText.includes('何時') || lowerText.includes('soat necha') || lowerText.includes('hozirgi vaqt') || lowerText.includes('what time is it')) {
+      const now = new Date();
+      const currentLang = speechLangRef.current || 'uz';
+      const timeStr = now.toLocaleTimeString(currentLang.startsWith('ja') ? 'ja-JP' : currentLang.startsWith('uz') ? 'uz-UZ' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = now.toLocaleDateString(currentLang.startsWith('ja') ? 'ja-JP' : currentLang.startsWith('uz') ? 'uz-UZ' : 'en-US');
+      const timeResp = currentLang.startsWith('ja')
+        ? `かしこまりました。現在の時刻は ${timeStr}（${dateStr}）でございます。`
+        : currentLang.startsWith('uz')
+        ? `Hozirgi vaqt: ${timeStr} (${dateStr}).`
+        : `Current time is ${timeStr} (${dateStr}).`;
+      return {
+        command: 'NONE',
+        response: timeResp,
+        parameters: {}
+      };
+    }
+
     // 1. Exact / Levenshtein lexicon match
     const lexiconMatch = await matchLexiconCommand(text, speechLangRef.current || 'uz');
     if (lexiconMatch) {
