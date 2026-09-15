@@ -149,7 +149,7 @@ Guidelines:
     for (const key of this.geminiKeys) {
       if (!key) continue;
       try {
-        const models = ['gemini-3.6-flash', 'gemini-1.5-pro'];
+        const models = ['gemini-3.1-flash-lite', 'gemini-flash-lite-latest', 'gemini-3-flash-preview', 'gemini-2.5-pro'];
         for (const model of models) {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
           const res = await fetch(url, {

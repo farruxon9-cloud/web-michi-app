@@ -1126,10 +1126,10 @@ export default function VoiceAssistant({
     }
 
     const modelsToTry = [
-      'gemini-3.6-flash',
-      'gemini-2.5-flash',
-      'gemini-1.5-flash',
-      'gemini-1.5-pro'
+      'gemini-3.1-flash-lite',
+      'gemini-flash-lite-latest',
+      'gemini-3-flash-preview',
+      'gemini-2.5-pro'
     ];
 
     let lastError = null;
