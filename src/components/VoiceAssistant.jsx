@@ -549,41 +549,9 @@ export default function VoiceAssistant({
 
 
   const interceptLocalCommand = async (text) => {
-    const lowerText = (text || '').trim().toLowerCase();
-    if (lowerText.includes('今の時間') || lowerText.includes('現在時刻') || lowerText.includes('何時') || lowerText.includes('soat necha') || lowerText.includes('hozirgi vaqt') || lowerText.includes('what time is it')) {
-      const now = new Date();
-      const currentLang = speechLangRef.current || 'uz';
-      const timeStr = now.toLocaleTimeString(currentLang.startsWith('ja') ? 'ja-JP' : currentLang.startsWith('uz') ? 'uz-UZ' : 'en-US', { hour: '2-digit', minute: '2-digit' });
-      const dateStr = now.toLocaleDateString(currentLang.startsWith('ja') ? 'ja-JP' : currentLang.startsWith('uz') ? 'uz-UZ' : 'en-US');
-      const timeResp = currentLang.startsWith('ja')
-        ? `かしこまりました。現在の時刻は ${timeStr}（${dateStr}）でございます。`
-        : currentLang.startsWith('uz')
-        ? `Hozirgi vaqt: ${timeStr} (${dateStr}).`
-        : `Current time is ${timeStr} (${dateStr}).`;
-      return {
-        command: 'NONE',
-        response: timeResp,
-        parameters: {}
-      };
-    }
-
-    // 1. Check exact lexicon match, but ONLY keep strict UI navigation/toggle commands locally
-    const lexiconMatch = await matchLexiconCommand(text, speechLangRef.current || 'uz');
-    if (lexiconMatch) {
-      const strictUiActions = [
-        'TOGGLE_THEME', 'MUSIC_PLAY', 'MUSIC_PAUSE', 'MUSIC_NEXT', 'MUSIC_PREV',
-        'NAVIGATE_TO_HOME', 'NAVIGATE_TO_JOBS', 'NAVIGATE_TO_ACADEMY',
-        'NAVIGATE_TO_PROFILE', 'NAVIGATE_TO_NOTIFICATIONS', 'NAVIGATE_TO_SETTINGS',
-        'CHANGE_LANGUAGE', 'GO_BACK'
-      ];
-      if (strictUiActions.includes(lexiconMatch.command)) {
-        console.log(`[LexiconRouter] Matched strict UI command "${lexiconMatch.command}"`);
-        return lexiconMatch;
-      }
-    }
-
-    // All questions, news, advice, and conversation pass directly to Gemini AI!
-    console.log(`[LocalInterceptor] Passing query "${text}" directly to Gemini Cloud AI...`);
+    // 100% PURE GEMINI AI MODE: All local UI command shortcuts and page switches are completely disabled.
+    // Every query is routed directly to Gemini Cloud AI for full conversational reasoning.
+    console.log(`[PureGeminiMode] Bypassing local shortcuts for query "${text}". Routing 100% to Gemini Cloud AI.`);
     return null;
   };
 
@@ -1149,7 +1117,7 @@ export default function VoiceAssistant({
     }
   };
 
-  // Fetch from Gemini API using 1 configured API Key (Gemini 2.0 Flash)
+  // Fetch from Gemini API using resilient multi-model fallback pool
   const fetchGeminiWithPool = async (contents, systemPrompt, screenContext, dataContext) => {
     const activeKey = apiKeyRef.current || localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
 
@@ -1157,30 +1125,48 @@ export default function VoiceAssistant({
       throw new Error('No API key configured');
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${activeKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents,
-          systemInstruction: {
-            parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
-          },
-          generationConfig: { responseMimeType: "application/json" }
-        })
-      }
-    );
+    const modelsToTry = [
+      'gemini-3.6-flash',
+      'gemini-2.5-flash',
+      'gemini-1.5-flash',
+      'gemini-1.5-pro'
+    ];
 
-    if (!response.ok) {
-      const errBody = await response.text();
-      if (errBody.includes('API_KEY_INVALID')) {
-        throw new Error('invalid_key');
+    let lastError = null;
+
+    for (const modelName of modelsToTry) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${activeKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents,
+              systemInstruction: {
+                parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
+              },
+              generationConfig: { responseMimeType: "application/json" }
+            })
+          }
+        );
+
+        if (response.ok) {
+          const resData = await response.json();
+          if (resData?.candidates?.[0]?.content?.parts?.[0]?.text) {
+            return resData;
+          }
+        }
+
+        const errText = await response.text();
+        console.warn(`[GeminiPool] Model ${modelName} returned status ${response.status}:`, errText);
+        lastError = errText;
+      } catch (e) {
+        lastError = e;
       }
-      throw new Error('api_failed');
     }
 
-    return await response.json();
+    throw new Error(typeof lastError === 'string' && lastError.includes('API_KEY_INVALID') ? 'invalid_key' : 'api_failed');
   };
 
   // Helper to strip markdown formatting wrappers from Gemini JSON responses
@@ -1291,9 +1277,10 @@ Your task: analyze the user's message and return a JSON object:
 
 CRITICAL FOR CONVERSATION UX:
 1. Always populate "userTranscription" with the exact query text: "${text}".
-2. For UI action commands (any command other than "NONE"), keep the "response" very short and concise (under 2 sentences). For general questions, information queries, or casual conversations (where command is "NONE"), provide a rich, complete, highly informative, and helpful response (can be longer, up to 1-2 paragraphs) in a natural conversational tone.
-3. If user writes in Uzbek, respond in Uzbek. If Japanese, respond in Japanese. Same for English.
-4. You have access to real-time APP DATA. Answer user questions about jobs, schools, user applications, and profile details using the provided context.
+2. MODE: 100% PURE CONVERSATIONAL AI MODE. Always set "command": "NONE". DO NOT attempt to trigger local UI page switches or navigations.
+3. Provide a rich, complete, highly informative, and helpful response directly answering the user's question, statement, or inquiry in a warm, polite, and natural conversational tone.
+4. If user writes in Uzbek, respond in Uzbek. If Japanese, respond in Japanese. Same for English.
+5. You have access to real-time APP DATA. Answer user questions about jobs, schools, user applications, and profile details using the provided context.
 
 COMMAND RULES:
 - NAVIGATE_TO_HOME: home, dashboard, main page
@@ -1362,22 +1349,35 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
     } catch (error) {
       if (!isActiveRef.current) return;
-      console.warn('Gemini API fetch fallback handling:', error);
+      console.warn('Gemini API fetch error:', error);
       
       const userLang = speechLangRef.current || 'uz';
       const isJa = userLang.startsWith('ja');
       const isUz = userLang.startsWith('uz');
-      const fallbackText = isJa
-        ? `ご質問を承りました。「${text}」についてお調べしております。`
+      const errText = isJa
+        ? `申し訳ありません。AI応答を取得できませんでした。もう一度お試しください。`
         : isUz
-        ? `Savolingiz qabul qilindi: "${text}". Sizga yordam berishdan mamnunman.`
-        : `Received query: "${text}". Happy to assist.`;
+        ? `Kechirasiz, AI javobini olishda xatolik yuz berdi. Qayta urinib ko'ring.`
+        : `Sorry, failed to get AI response. Please try again.`;
 
-      handleGeminiSuccess({
-        command: 'NONE',
-        response: fallbackText,
-        language: userLang
-      }, text);
+      setStatus('error');
+      setErrorMessage(errText);
+      
+      // Persist error event into chat history
+      try {
+        const savedHistory = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
+        savedHistory.push({
+          id: Date.now(),
+          question: text,
+          answer: errText,
+          isError: true,
+          command: 'ERROR',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+        localStorage.setItem('michi_chat_history', JSON.stringify(savedHistory.slice(-100)));
+      } catch(e){}
+
+      speakResponse(errText, userLang);
     }
   };
 
