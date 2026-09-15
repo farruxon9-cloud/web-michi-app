@@ -505,5 +505,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Exhaustive Category Search Helpers**: Har bir filtr chipi e'lon qilingan taqdirda, u foydalanadigan barcha yordamchi teg funksiyalari (`getDurationLabel`, `getTimeSlotLabel`, `getFeatureLabel`) component ichida to'liq va xavfsiz e'lon qilinishi SHART.
   2. **Multi-Language Resolution**: Har bir helper funksiya `JOB_FEATURES` bazasidagi tegishli o'zgaruvchilardan foydalanuvchining joriy tiliga (`uz`, `en`, `ja`) mos nomni qidirib topadi va zaxira (fallback) sifatida ID ning o'zini qaytaradi.
   3. **Runtime Protection**: Active chip tugmalari bosilganda filter ro'yxatidan xavfsiz o'chirilishi (`filter(item => item !== id)`) va `ReferenceError` kelib chiqmasligi Vitest va health check orqali doimiy tekshiriladi.
+## 🚫 81. JavaScript "NONE" String Truthiness Trap
+* **Xatolik**: JavaScript'da bo'sh bo'lmagan `"NONE"` matni har doim `truthy` hisoblanadi. Shuning uchun `if (aiResult.command)` sharti `command: "NONE"` holatida ham `true` qaytarib, har bir suhbat turnida `executeVoiceCommand("NONE")` hamda `learningEngine.recordFeedback(userText, "NONE", true)` ishga tushib ketishi.
+* **Yechim (MAJBURIY)**:
+  1. **Strict Non-NONE Check**: Har doim `command && command !== 'NONE'` shartini qo'llash shart: `if (aiResult.command && aiResult.command !== 'NONE')`.
+  2. **Clean Feedback Logging**: `learningEngine` xotirasiga keraksiz `"NONE"` yozuvlari tushishining oldi olinadi.
 
-
+## 🚫 82. Multiline Template String Backtick Syntax Errors
+* **Xatolik**: Template literal (`` ` ``) ichida yopuvchi backtick qolib ketishi natijasida keyingi barcha JavaScript kodlar matn sifatida talqin qilinadi va Vite/Rolldown build bosqichida `Expected a semicolon or an implicit semicolon after a statement` kabi chalkash sintaksis xatolari yuzaga keladi.
+* **Yechim (MAJBURIY)**:
+  1. **Closing Backtick Verification**: Ko'p qatorli string va system promptlarni tahrirlashda har bir template literal yopilganligini qat'iy tekshirish.
+  2. **Build Verification**: Har bir o'zgartirishdan so'ng `npm run build` o'tkazib sintaksis yaxlitligini tasdiqlash.

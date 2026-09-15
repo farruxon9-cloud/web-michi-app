@@ -10,3 +10,18 @@
 
 3. **Substantive Answer Enforcement**:
    - Require Gemini AI to deliver complete, informative, polite, and domain-rich answers across all questions without falling back to generic acknowledgment strings.
+
+4. **Strict "NONE" Command Filtering**:
+   - In JavaScript, the non-empty string `"NONE"` is **truthy**.
+   - Always check `command && command !== 'NONE'` before invoking `executeVoiceCommand()` or recording entries in `learningEngine.recordFeedback()`.
+   - Never pass `"NONE"` to command execution handlers.
+
+5. **Dynamic Response Length Guidelines**:
+   - `maxOutputTokens` must be set to at least `800` for conversational models.
+   - Enforce explicit response scaling in system prompts:
+     - Simple questions (greetings, time/date): 1-2 sentences.
+     - Medium questions (weather, simple facts): 3-5 sentences.
+     - Complex topics (history, science, education, job guides): 5-10 structured sentences.
+
+6. **Context-Enriched Universal Search**:
+   - Dynamically inject background web search (DuckDuckGo/Wikipedia) and live weather (Open-Meteo) context into Gemini system prompts for question queries without altering `"command": "NONE"`.
