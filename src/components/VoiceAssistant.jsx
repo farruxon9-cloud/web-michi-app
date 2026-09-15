@@ -809,16 +809,23 @@ export default function VoiceAssistant({
         localStreamRef.current = null;
       }
 
-      // MVP 1.0 Mode: Display transcription text, take no action, auto-clear after 2.5s and continue listening
-      console.log(`MVP 1.0 Speech input recognized: "${text}". Displaying transcript, taking no action, and auto-clearing after 2.5s...`);
-      setStatus('idle');
-      if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-      pillTimeoutRef.current = setTimeout(() => {
-        setTranscript('');
-        if (isActiveRef.current) {
-          startLocalSpeechRecognition();
-        }
-      }, 2500);
+      // Check if we are currently filling the voice resume questionnaire
+      if (isFillingResumeRef.current) {
+        console.log(`Voice resume questionnaire flow intercept: "${text}" (step: ${resumeStepRef.current})`);
+        processResumeFlow(text);
+        return;
+      }
+
+      // 1. First check: Intercept local commands immediately (0-token, 0ms latency)
+      const localResult = await interceptLocalCommand(text);
+      if (localResult) {
+        console.log(`Local NLP matched command: ${localResult.command}`);
+        handleGeminiSuccess(localResult, text);
+      } else {
+        // 2. Second check: Delegate complex/conversational queries to Gemini Cloud & MultiAiMesh
+        console.log("No local command matched. Delegating query to Gemini Cloud / AI Mesh...");
+        processTextWithGemini(text, { skipLocalCheck: true });
+      }
     };
 
     recognition.onerror = (e) => {
