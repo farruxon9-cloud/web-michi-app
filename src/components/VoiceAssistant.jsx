@@ -54,6 +54,25 @@ export default function VoiceAssistant({
   const [resumeStep, setResumeStep] = useState('idle');
   const [tempResumeData, setTempResumeData] = useState({});
   const [speechLang, setSpeechLang] = useState(localStorage.getItem('michi_speech_lang') || i18n.language || 'uz');
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [chatHistoryList, setChatHistoryList] = useState([]);
+
+  const openHistoryModal = () => {
+    try {
+      const history = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
+      setChatHistoryList(history.reverse());
+    } catch(e) {
+      setChatHistoryList([]);
+    }
+    setShowHistoryModal(true);
+  };
+
+  const clearChatHistory = () => {
+    localStorage.removeItem('michi_chat_history');
+    localStorage.removeItem('michi_ai_memory_cache');
+    setChatHistoryList([]);
+    setConversationHistory([]);
+  };
 
   const speechLangRef = useRef(speechLang);
   speechLangRef.current = speechLang;
@@ -2340,19 +2359,38 @@ Return ONLY the raw JSON object, no markdown wrappers.
             </button>
 
             <button 
+              className="voice-history-btn"
+              onClick={openHistoryModal}
+              style={{
+                background: 'rgba(94, 92, 230, 0.12)',
+                border: '1px solid rgba(94, 92, 230, 0.25)',
+                color: 'var(--primary)',
+                fontSize: '11px',
+                fontWeight: '600',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              📜 {speechLang === 'ja' ? '会話履歴' : speechLang === 'uz' ? 'Tarix' : 'History'}
+            </button>
+
+            <button 
               className="voice-cache-clear-btn" 
               onClick={() => {
-                localStorage.removeItem('michi_ai_memory_cache');
-                setConversationHistory([]);
+                clearChatHistory();
                 const msg = speechLang.startsWith('ja') 
                   ? "【AIキャッシュ消去】会話メモリを全消去いたしました。"
                   : speechLang.startsWith('uz')
-                  ? "AI kesh bazasi muvaffaqiyatli tozalandi!"
-                  : "AI memory cache cleared successfully!";
+                  ? "AI kesh va muloqotlar tarixi tozaladi!"
+                  : "AI memory cache and history cleared!";
                 setAiResponseText(msg);
                 speakResponse(msg, speechLang);
               }}
-              title={speechLang === 'ja' ? 'AIキャッシュ消去' : speechLang === 'uz' ? 'AI kesh bazasini tozalash' : 'Clear AI Cache'}
+              title={speechLang === 'ja' ? 'AIキャッシュ消去' : speechLang === 'uz' ? 'AI keshini tozalash' : 'Clear AI Cache'}
               style={{
                 background: 'rgba(239, 68, 68, 0.15)',
                 border: '1px solid rgba(239, 68, 68, 0.3)',
@@ -2366,12 +2404,59 @@ Return ONLY the raw JSON object, no markdown wrappers.
                 gap: '4px'
               }}
             >
-              <Trash2 size={10} /> {speechLang === 'ja' ? 'キャッシュ消去' : speechLang === 'uz' ? 'Keshni tozalash' : 'Clear Cache'}
+              <Trash2 size={10} /> {speechLang === 'ja' ? '消去' : speechLang === 'uz' ? 'Tozalash' : 'Clear'}
             </button>
             
             <button className="voice-bubble-close-btn" onClick={() => setShowPill(false)}>
               <X size={12} />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Chat History Modal Overlay */}
+      {showHistoryModal && (
+        <div className="voice-setup-overlay" onClick={() => setShowHistoryModal(false)}>
+          <div className="voice-setup-modal animate-slide-in" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', maxHeight: '80vh', overflowY: 'auto' }}>
+            <button className="voice-close-btn" onClick={() => setShowHistoryModal(false)}>
+              <X size={16} />
+            </button>
+            <div className="voice-modal-content">
+              <div className="voice-modal-header" style={{ marginBottom: '14px' }}>
+                <div className="ai-logo-gradient">📜</div>
+                <h2>{speechLang === 'ja' ? 'AI 会話履歴' : speechLang === 'uz' ? 'Muloqotlar Tarixi' : 'AI Chat History'}</h2>
+                <span className="ai-beta-tag">{chatHistoryList.length} {speechLang === 'uz' ? 'suhbatlar' : 'conversations'}</span>
+              </div>
+
+              {chatHistoryList.length === 0 ? (
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', padding: '20px 0' }}>
+                  {speechLang === 'ja' ? '履歴はありません。' : speechLang === 'uz' ? 'Hozircha saqlangan suhbatlar yo\'q.' : 'No chat history found.'}
+                </p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', textAlign: 'left' }}>
+                  {chatHistoryList.map((item) => (
+                    <div key={item.id} style={{ background: 'rgba(118, 118, 128, 0.08)', borderRadius: '14px', padding: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#FF9500' }}>🙋‍♂️ {item.timestamp}</span>
+                        <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{item.command}</span>
+                      </div>
+                      <p style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-main)', margin: '0 0 6px 0' }}>{item.question}</p>
+                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, paddingLeft: '8px', borderLeft: '2px solid #5E5CE6', lineHeight: '1.4' }}>🤖 {item.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {chatHistoryList.length > 0 && (
+                <button 
+                  onClick={clearChatHistory} 
+                  className="voice-retry-btn" 
+                  style={{ marginTop: '16px', background: 'rgba(255, 59, 48, 0.12)', color: '#FF3B30', width: '100%', justifyContent: 'center' }}
+                >
+                  <Trash2 size={14} /> {speechLang === 'ja' ? '全履歴を消去' : speechLang === 'uz' ? 'Barcha tarixni tozalash' : 'Clear All History'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
