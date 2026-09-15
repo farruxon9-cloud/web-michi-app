@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mic, MicOff, WifiOff, Lock, X, Sparkles, Key, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
+import { Mic, MicOff, WifiOff, Lock, X, Sparkles, Key, AlertTriangle, RefreshCw, Trash2, User, Bot } from 'lucide-react';
 import './VoiceAssistant.css';
 import { matchLexiconCommand } from '../utils/voiceLexicon';
 import { actionRegistry } from '../services/actionRegistry';
@@ -1183,61 +1183,24 @@ export default function VoiceAssistant({
     return clean.trim();
   };
 
-  // Generates compact, optimized data context to save tokens and speed up API responses
+  // Generates ultra-fast, lightweight data context to minimize latency (<1.0s)
   const generateDataContext = () => {
-    const compactJobs = (jobs || []).slice(0, 12).map(job => ({
-      id: job.id,
-      title: job.title,
-      company: job.company,
-      loc: job.location,
-      sal: job.salary,
-      lic: job.licenseRequired || job.license || [],
-      pref: job.prefecture,
-      benefits: job.benefits || []
-    }));
-
-    const compactSchools = (schools || []).slice(0, 8).map(school => ({
-      id: school.id,
-      name: school.name,
-      loc: school.location,
-      langs: school.languages || school.langs || [],
-      price: school.price
-    }));
-
-    const viewingContext = `
-CURRENT USER VIEWING CONTEXT:
-- Currently viewing job detail: ${selectedJob ? `Yes, viewing job details: ${JSON.stringify(selectedJob)}` : 'No'}
-- Currently viewing driving academy detail: ${selectedSchool ? `Yes, viewing school details: ${JSON.stringify(selectedSchool)}` : 'No'}
-`;
-
     return `
 CURRENT USER PROFILE:
-- Name: ${profileData?.fullName || 'Unknown'}
-- Selected Role: ${userRole || 'driver'}
-- Nationality: ${profileData?.nationality || 'Unknown'}
+- Name: ${profileData?.fullName || 'User'}
+- Role: ${userRole || 'driver'}
 - Driver Licenses: ${JSON.stringify(profileData?.driverLicenses || [])}
-- Technical Certificates: ${JSON.stringify(profileData?.techCertificates || [])}
-
-CURRENT USER JOB APPLICATIONS:
-${JSON.stringify((applications || []).map(app => ({
-  company: app.company,
-  jobTitle: app.title,
-  status: app.status
-})))}
-
-AVAILABLE DRIVER JOBS IN APP (COMPACT METADATA):
-${JSON.stringify(compactJobs)}
-
-AVAILABLE DRIVING ACADEMIES IN APP (COMPACT METADATA):
-${JSON.stringify(compactSchools)}
-
-${viewingContext}
 `;
   };
 
   const processTextWithGemini = async (text) => {
     if (!isActiveRef.current) return;
+    
+    // Clear previous turn responses immediately to prevent ghost text flash
+    setAiResponseText('');
+    setErrorMessage('');
     setStatus('thinking');
+    setShowPill(true);
 
     // Fast-path: Check local intent interceptor first to save API tokens and get 0ms response time
     const localResult = await interceptLocalCommand(text);
@@ -2356,31 +2319,59 @@ Return ONLY the raw JSON object, no markdown wrappers.
           )}
           
           <div className="speech-bubble-content">
+            {/* Top Section: User Transcribed Question */}
             {transcript && (
-              <div className="bubble-row user-row" style={{ background: 'rgba(255, 149, 0, 0.08)', padding: '6px 10px', borderRadius: '12px', borderLeft: '3px solid #FF9500' }}>
-                <span className="bubble-dot user-dot"></span>
-                <p className="bubble-text"><strong>🙋‍♂️ {t('userSaid', 'Savolingiz')}:</strong> {transcript}</p>
+              <div className="voice-card-section user-section">
+                <div className="card-badge-row">
+                  <div className="avatar-badge user-avatar-badge">
+                    <User size={13} className="badge-svg-icon" />
+                    <span>{speechLang === 'uz' ? 'Savolingiz' : speechLang === 'ja' ? 'ご質問' : 'Your Query'}</span>
+                  </div>
+                  <span className="card-timestamp">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <p className="user-transcription-text">{transcript}</p>
               </div>
             )}
             
-            {aiResponseText && (
-              <div className="bubble-row ai-row" style={{ background: 'rgba(94, 92, 230, 0.08)', padding: '8px 10px', borderRadius: '12px', borderLeft: '3px solid #5E5CE6', marginTop: '4px' }}>
-                <span className="bubble-dot ai-dot"></span>
-                <p className="bubble-text ja-text"><strong>🤖 Michi AI:</strong> {aiResponseText}</p>
+            {/* Middle Section: Thinking Pulse Indicator (only when thinking and no response yet) */}
+            {status === 'thinking' && !aiResponseText && !errorMessage && (
+              <div className="voice-card-section thinking-section">
+                <div className="card-badge-row">
+                  <div className="avatar-badge ai-avatar-badge thinking-glow">
+                    <Sparkles size={13} className="badge-svg-icon spin-sparkle" />
+                    <span>{speechLang === 'uz' ? 'Michi AI fikrlamoqda...' : speechLang === 'ja' ? '思考中...' : 'Thinking...'}</span>
+                  </div>
+                </div>
+                <div className="thinking-dots-wave">
+                  <span className="pulse-dot"></span>
+                  <span className="pulse-dot"></span>
+                  <span className="pulse-dot"></span>
+                </div>
               </div>
             )}
 
-            {status === 'thinking' && !aiResponseText && (
-              <div className="bubble-row thinking-row">
-                <span className="bubble-dot thinking-dot"></span>
-                <p className="bubble-text italic">{t('aiThinking', 'AI fikrlamoqda...')}</p>
+            {/* Bottom Section: AI Response Card (only when response is ready) */}
+            {aiResponseText && (
+              <div className="voice-card-section ai-section">
+                <div className="card-badge-row">
+                  <div className="avatar-badge ai-avatar-badge">
+                    <Bot size={14} className="badge-svg-icon" />
+                    <span>Michi AI</span>
+                  </div>
+                </div>
+                <p className="ai-response-text">{aiResponseText}</p>
               </div>
             )}
 
             {errorMessage && (
-              <div className="bubble-row error-row">
-                <span className="bubble-dot error-dot"></span>
-                <p className="bubble-text error-text">{errorMessage}</p>
+              <div className="voice-card-section error-section">
+                <div className="card-badge-row">
+                  <div className="avatar-badge error-avatar-badge">
+                    <AlertTriangle size={13} className="badge-svg-icon" />
+                    <span>{speechLang === 'uz' ? 'Xatolik' : 'Error'}</span>
+                  </div>
+                </div>
+                <p className="error-response-text">{errorMessage}</p>
               </div>
             )}
           </div>

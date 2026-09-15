@@ -1598,3 +1598,175 @@ html.dark-mode .history-answer-box.error-answer-box {
 .ai-answer-badge.error-ai-badge {
   color: #DC2626;
 }
+
+/* ==========================================================================
+   Sleek Minimalist Speech Bubble Cards & Professional Badges
+   ========================================================================== */
+
+.voice-card-section {
+  padding: 10px 14px;
+  border-radius: 14px;
+  margin-bottom: 8px;
+  transition: all 0.25s ease-in-out;
+}
+
+.voice-card-section:last-child {
+  margin-bottom: 0;
+}
+
+.user-section {
+  background: rgba(255, 149, 0, 0.07);
+  border-left: 3.5px solid #FF9500;
+}
+
+html.dark-mode .user-section {
+  background: rgba(255, 149, 0, 0.12);
+}
+
+.ai-section {
+  background: rgba(94, 92, 230, 0.08);
+  border-left: 3.5px solid #5E5CE6;
+  box-shadow: 0 4px 14px rgba(94, 92, 230, 0.06);
+}
+
+html.dark-mode .ai-section {
+  background: rgba(94, 92, 230, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.thinking-section {
+  background: rgba(94, 92, 230, 0.05);
+  border-left: 3.5px solid #A259FF;
+  padding: 10px 14px;
+}
+
+.error-section {
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 3.5px solid #EF4444;
+}
+
+/* Badges */
+.card-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.avatar-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
+}
+
+.user-avatar-badge {
+  background: linear-gradient(135deg, #FF9500, #FF6B00);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(255, 149, 0, 0.25);
+}
+
+.ai-avatar-badge {
+  background: linear-gradient(135deg, #5E5CE6, #7D7AFF);
+  color: #FFFFFF;
+  box-shadow: 0 2px 10px rgba(94, 92, 230, 0.3);
+}
+
+.error-avatar-badge {
+  background: linear-gradient(135deg, #EF4444, #DC2626);
+  color: #FFFFFF;
+}
+
+.thinking-glow {
+  animation: pulseGlow 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+
+.badge-svg-icon {
+  flex-shrink: 0;
+}
+
+.spin-sparkle {
+  animation: spinSlow 3s linear infinite;
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.card-timestamp {
+  font-size: 10px;
+  font-weight: 500;
+  color: #8E8E93;
+}
+
+/* Text Typography */
+.user-transcription-text {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1C1C1E;
+  line-height: 1.45;
+  margin: 0;
+}
+
+html.dark-mode .user-transcription-text {
+  color: #F2F2F7;
+}
+
+.ai-response-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1C1C1E;
+  line-height: 1.55;
+  margin: 0;
+}
+
+html.dark-mode .ai-response-text {
+  color: #FFFFFF;
+}
+
+.error-response-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #EF4444;
+  margin: 0;
+}
+
+/* Thinking Wave Loader */
+.thinking-dots-wave {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 2px 0;
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #5E5CE6;
+  animation: wavePulse 1.4s infinite ease-in-out;
+}
+
+.pulse-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.pulse-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes wavePulse {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
+  30% { transform: translateY(-4px); opacity: 1; scale: 1.2; }
+}
