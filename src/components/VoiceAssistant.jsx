@@ -592,28 +592,7 @@ export default function VoiceAssistant({
       recognitionRef.current = null;
     }
 
-    // Expose mic stream and analyser node for real-time visualizer canvas waves
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        localStreamRef.current = stream;
-        setMicPermission('granted');
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        audioContextRef.current = audioCtx;
-        const source = audioCtx.createMediaStreamSource(stream);
-        const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 256;
-        source.connect(analyser);
-        analyserRef.current = analyser;
-      } catch (e) {
-        console.warn("Failed to create visualizer analyser for local recognition:", e);
-        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
-          setMicPermission('denied');
-          setStatus('idle');
-          return;
-        }
-      }
-    }
+
 
     setStatus('listening');
     setHasStarted(true);
