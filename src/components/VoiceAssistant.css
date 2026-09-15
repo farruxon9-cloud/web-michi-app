@@ -278,6 +278,25 @@ html.dark-mode .voice-robot-speech-bubble {
   pointer-events: none;
 }
 
+/* Animated Reading Timer Progress Bar */
+.speech-bubble-timer-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  width: 100%;
+  transform-origin: left center;
+  animation: timer-shrink var(--timer-duration, 5000ms) linear forwards;
+}
+
+@keyframes timer-shrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
 html.dark-mode .speech-bubble-pointer {
   background: rgba(28, 28, 30, 0.82);
   border-color: rgba(255, 255, 255, 0.08);

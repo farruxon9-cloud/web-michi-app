@@ -15,6 +15,14 @@ import { japaneseLanguageEngine } from '../services/japaneseLanguageEngine';
 import { autonomousWebSearchEngine } from '../services/autonomousWebSearchEngine';
 import { multiAiMeshEngine } from '../services/multiAiMeshEngine';
 
+export function calculateReadingDuration(text, lang = 'uz') {
+  if (!text) return 4000;
+  const isJa = (lang || 'uz').toLowerCase().startsWith('ja');
+  const msPerChar = isJa ? 90 : 55;
+  const calculated = Math.round(text.length * msPerChar + 2500);
+  return Math.min(14000, Math.max(3500, calculated));
+}
+
 export default function VoiceAssistant({ 
   isActive, onClose, onStartVoice, isVoiceStandby, setIsVoiceStandby, 
   setActiveTab, musicPlayer, onStatusChange, activeTab,
@@ -42,6 +50,7 @@ export default function VoiceAssistant({
   const [aiResponseText, setAiResponseText] = useState('');
   const [inputKeyTemp, setInputKeyTemp] = useState('');
   const [showPill, setShowPill] = useState(false);
+  const [timerDuration, setTimerDuration] = useState(5000);
   const [hasStarted, setHasStarted] = useState(false);
   const [conversationHistory, setConversationHistory] = useState([]); // Array of { role, parts }
   const [textInput, setTextInput] = useState('');
@@ -1959,9 +1968,13 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
   // Handle successful Gemini JSON parsing and routing
   const handleGeminiSuccess = (aiResult, userText) => {
-    const detectedLang = aiResult.language || 'ja';
+    const detectedLang = aiResult.language || speechLangRef.current || 'ja';
     const politeResponse = japaneseLanguageEngine.formatPoliteResponse(aiResult.response, detectedLang);
     setAiResponseText(politeResponse);
+    setShowPill(true);
+
+    const readDuration = calculateReadingDuration(politeResponse, detectedLang);
+    setTimerDuration(readDuration);
 
     // Record positive feedback in local learning engine
     if (userText && aiResult.command) {
@@ -1984,45 +1997,28 @@ Return ONLY the raw JSON object, no markdown wrappers.
       'NAVIGATE_TO_EMPLOYEES', 'NAVIGATE_TO_PERSONAL_INFO', 'SELECT_JOB_BY_NAME'
     ].includes(aiResult.command);
 
-    if (!isDelayedCommand) {
+    if (!isDelayedCommand && aiResult.command) {
       // Execute the command immediately for instant UX feedback (e.g. music play/pause)
       executeVoiceCommand(aiResult.command, aiResult);
     }
 
+    // Dynamic Visual Auto-Dismiss & Audio Speech Cascade
     speakResponse(politeResponse, detectedLang, () => {
       if (isDelayedCommand) {
-        // Wait 400ms after speaking finishes before executing navigation
         setTimeout(() => {
           executeVoiceCommand(aiResult.command, aiResult);
-          // Always maintain continuous speech listening loop after navigation (except OPEN_RESUME which starts its own prompt loop)
-          if (aiResult.command !== 'OPEN_RESUME') {
-            setTimeout(() => {
-              if (isActiveRef.current && statusRef.current !== 'listening' && statusRef.current !== 'speaking') {
-                setStatus('idle');
-                startLocalSpeechRecognition();
-              }
-            }, 300);
-          }
-        }, 400);
-      } else {
-        // Continuous Conversational Dialogue Loop:
-        // Re-open microphone automatically so user can keep asking subsequent questions endlessly
-        if (isActiveRef.current) {
-          setTimeout(() => {
-            if (isActiveRef.current && statusRef.current !== 'listening') {
-              setStatus('idle');
-              startLocalSpeechRecognition();
-            }
-          }, 300);
-        }
+        }, 300);
       }
-      
-      if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-      pillTimeoutRef.current = setTimeout(() => {
-        if (!isActiveRef.current) setShowPill(false);
-        if (isVoiceStandbyRef.current && !isActiveRef.current) scheduleRelisten();
-      }, isDelayedCommand ? 1200 : 3500);
     });
+
+    if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+    pillTimeoutRef.current = setTimeout(() => {
+      setShowPill(false);
+      if (isActiveRef.current) {
+        setStatus('idle');
+        startLocalSpeechRecognition();
+      }
+    }, readDuration);
   };
 
   // Execute UI commands in React using refs to avoid stale closures
@@ -2423,6 +2419,13 @@ Return ONLY the raw JSON object, no markdown wrappers.
       {showPill && (
         <div className="voice-robot-speech-bubble animate-slide-in">
           <div className="speech-bubble-pointer"></div>
+          {aiResponseText && (
+            <div 
+              className="speech-bubble-timer-bar" 
+              key={aiResponseText} 
+              style={{ '--timer-duration': `${timerDuration}ms` }} 
+            />
+          )}
           
           <div className="speech-bubble-content">
             {transcript && (

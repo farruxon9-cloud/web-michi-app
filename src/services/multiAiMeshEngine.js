@@ -31,52 +31,59 @@ class MultiAiMeshEngine {
    * @param {string} lang - 'ja' | 'uz' | 'en'
    * @returns {Promise<{ text: string, provider: string }>}
    */
+  /**
+   * Execute multi-tier cascading AI query processing
+   * @param {string} prompt 
+   * @param {string} lang - 'ja' | 'uz' | 'en'
+   * @returns {Promise<{ text: string, provider: string }>}
+   */
   async processCascadingQuery(prompt, lang = 'ja') {
     const cleanLang = (lang || 'ja').substring(0, 2).toLowerCase();
     console.log(`[MultiAiMesh] ⚡ Processing cascading AI query: "${prompt}" [${cleanLang}]`);
 
-    // Tier 1: Try Autonomous Free Web Search first
+    // Tier 1: Try Gemini Pool first (highest intelligence and speed)
     try {
-      const webResult = await autonomousWebSearchEngine.searchWebFreeSources(prompt, cleanLang);
-      if (webResult.success && webResult.answer && webResult.answer.length > 50) {
-        console.log(`[MultiAiMesh] ✅ Tier 1 (Free Web Scraper) succeeded via ${webResult.source}`);
-        return { text: webResult.answer, provider: `Free Web (${webResult.source})` };
-      }
-    } catch (e) {
-      console.warn('[MultiAiMesh] Tier 1 Free Web Scraper failed:', e.message);
-    }
-
-    // Tier 2: Try Free DeepSeek V3 / R1 Open API Endpoint
-    try {
-      console.log('[MultiAiMesh] 🚀 Cascading to Tier 2: DeepSeek-V3 / DeepSeek-R1 Free Open API...');
-      const deepseekResponse = await this.fetchDeepSeekOpenApi(prompt, cleanLang);
-      if (deepseekResponse) {
-        console.log('[MultiAiMesh] ✅ Tier 2 (DeepSeek-V3 Open API) succeeded!');
-        return { text: deepseekResponse, provider: 'DeepSeek-V3 AI' };
-      }
-    } catch (e) {
-      console.warn('[MultiAiMesh] Tier 2 DeepSeek Open API failed:', e.message);
-    }
-
-    // Tier 3: Try Free Gemini Flash Multi-Key Pool
-    try {
-      console.log('[MultiAiMesh] 🌟 Cascading to Tier 3: Gemini Free Flash Pool...');
+      console.log('[MultiAiMesh] 🌟 Tier 1: Executing Gemini Flash Pool query...');
       const geminiResponse = await this.fetchGeminiPool(prompt, cleanLang);
       if (geminiResponse) {
-        console.log('[MultiAiMesh] ✅ Tier 3 (Gemini Free Flash Pool) succeeded!');
-        return { text: geminiResponse, provider: 'Gemini Flash AI' };
+        console.log('[MultiAiMesh] ✅ Tier 1 (Gemini Flash Pool) succeeded!');
+        return { text: geminiResponse, provider: 'Gemini AI' };
       }
     } catch (e) {
-      console.warn('[MultiAiMesh] Tier 3 Gemini Free Pool failed:', e.message);
+      console.warn('[MultiAiMesh] Tier 1 Gemini Free Pool failed:', e.message);
     }
 
-    // Fallback: Japanese Language Engine Intelligent Synthesis
+    // Tier 2: Try Autonomous Free Web Search (for live facts, weather, news)
+    try {
+      console.log('[MultiAiMesh] 🌐 Tier 2: Executing Autonomous Free Web Search...');
+      const webResult = await autonomousWebSearchEngine.searchWebFreeSources(prompt, cleanLang);
+      if (webResult.success && webResult.answer && webResult.answer.length > 30) {
+        console.log(`[MultiAiMesh] ✅ Tier 2 (Free Web Scraper) succeeded via ${webResult.source}`);
+        return { text: webResult.answer, provider: `Live Web (${webResult.source})` };
+      }
+    } catch (e) {
+      console.warn('[MultiAiMesh] Tier 2 Free Web Scraper failed:', e.message);
+    }
+
+    // Tier 3: Try Free DeepSeek V3 / R1 Open API Endpoint
+    try {
+      console.log('[MultiAiMesh] 🚀 Tier 3: DeepSeek Open API...');
+      const deepseekResponse = await this.fetchDeepSeekOpenApi(prompt, cleanLang);
+      if (deepseekResponse) {
+        console.log('[MultiAiMesh] ✅ Tier 3 (DeepSeek Open API) succeeded!');
+        return { text: deepseekResponse, provider: 'DeepSeek AI' };
+      }
+    } catch (e) {
+      console.warn('[MultiAiMesh] Tier 3 DeepSeek Open API failed:', e.message);
+    }
+
+    // Fallback: Local Synthesis
     console.log('[MultiAiMesh] 🛡️ All external providers exhausted. Utilizing Local Intelligent Engine...');
     const localSynthesized = cleanLang === 'ja'
-      ? japaneseLanguageEngine.formatPoliteResponse("ご質問を受け付けいたしました。かしこまりました、詳しくお調べしてご案内申し上げます。", 'ja')
+      ? "申し訳ございません。ネットワーク接続をお確かめの上、もう一度お試しください。"
       : cleanLang === 'uz'
-      ? "Savolingizni qabul qildim. Ushbu ma'lumot bo'yicha sizga mamnuniyat bilan yordam beraman."
-      : "I have received your inquiry. It is my pleasure to assist you.";
+      ? "Kechirasiz, tarmoq ulanishini tekshirib, savolni qaytadan berib ko'ring."
+      : "Apologies, please check your network connection and try asking again.";
 
     return { text: localSynthesized, provider: 'Michi Local Engine' };
   }
@@ -85,7 +92,7 @@ class MultiAiMeshEngine {
    * Fetch from Free DeepSeek-V3 / R1 Open API Endpoint
    */
   async fetchDeepSeekOpenApi(prompt, lang) {
-    const systemPrompt = `You are Michi AI, a polite, respectful voice assistant. Respond in clear, helpful, highly respectful ${lang === 'ja' ? 'Japanese (Keigo)' : lang === 'uz' ? 'Uzbek' : 'English'}. Keep response concise under 3 sentences for voice reading.`;
+    const systemPrompt = `You are Michi AI, a world-class intelligent visual assistant for Japan residents and drivers. Answer directly, logically, accurately, and beautifully in ${lang === 'ja' ? 'Japanese' : lang === 'uz' ? 'Uzbek' : 'English'}. Use clean formatting and bullet points where helpful.`;
 
     const endpoints = [
       'https://api.deepseek.com/v1/chat/completions',
@@ -94,6 +101,7 @@ class MultiAiMeshEngine {
 
     for (const endpoint of endpoints) {
       for (const apiKey of this.deepseekKeys) {
+        if (!apiKey || apiKey.includes('fallback')) continue;
         try {
           const res = await fetch(endpoint, {
             method: 'POST',
@@ -107,9 +115,9 @@ class MultiAiMeshEngine {
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: prompt }
               ],
-              max_tokens: 200
+              max_tokens: 500
             }),
-            signal: AbortSignal.timeout(4000)
+            signal: AbortSignal.timeout(6000)
           });
 
           if (res.ok) {
@@ -131,25 +139,38 @@ class MultiAiMeshEngine {
   async fetchGeminiPool(prompt, lang) {
     if (this.geminiKeys.length === 0) return null;
 
-    const systemPrompt = `You are Michi AI. Respond in polite ${lang === 'ja' ? 'Japanese Keigo' : lang === 'uz' ? 'Uzbek' : 'English'}. Keep under 3 sentences.`;
+    const systemPrompt = `You are Michi AI — the ultra-intelligent personal visual assistant for Japan residents, foreign workers, and drivers.
+Your goal is to answer ANY question logically, accurately, and comprehensively in ${lang === 'ja' ? 'Japanese' : lang === 'uz' ? 'Uzbek' : 'English'}.
+Guidelines:
+- Provide clear, direct, and well-structured answers using bullet points, emojis, and bold terms where appropriate.
+- For questions about Japan (visas, jobs, driving licenses, salary calculations, weather, life), give specific, expert advice.
+- Keep responses readable within 3-6 lines for visual display cards.`;
 
     for (const key of this.geminiKeys) {
+      if (!key) continue;
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents: [{ role: 'user', parts: [{ text: prompt }] }]
-          }),
-          signal: AbortSignal.timeout(4000)
-        });
+        const models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+        for (const model of models) {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemPrompt }] },
+              contents: [{ role: 'user', parts: [{ text: prompt }] }],
+              generationConfig: {
+                maxOutputTokens: 600,
+                temperature: 0.7
+              }
+            }),
+            signal: AbortSignal.timeout(7000)
+          });
 
-        if (res.ok) {
-          const data = await res.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) return text.trim();
+          if (res.ok) {
+            const data = await res.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) return text.trim();
+          }
         }
       } catch (e) {
         // Continue to next key
