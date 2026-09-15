@@ -118,12 +118,28 @@ Qo'shimcha savollaringiz bo'lsa, mamnuniyat bilan javob beraman.`;
 
       if (q.includes('tashkent') || q.includes('toshkent') || q.includes('タシケント')) {
         lat = 41.2995; lon = 69.2401; cityName = 'Tashkent';
+      } else if (q.includes('samarkand') || q.includes('samarqand') || q.includes('サマルカンド')) {
+        lat = 39.6542; lon = 66.9597; cityName = 'Samarkand';
+      } else if (q.includes('bukhara') || q.includes('buxoro') || q.includes('ブハラ')) {
+        lat = 39.7747; lon = 64.4286; cityName = 'Bukhara';
       } else if (q.includes('osaka') || q.includes('大阪')) {
         lat = 34.6937; lon = 135.5023; cityName = 'Osaka';
       } else if (q.includes('kyoto') || q.includes('京都')) {
         lat = 35.0116; lon = 135.7681; cityName = 'Kyoto';
       } else if (q.includes('fukuoka') || q.includes('福岡')) {
         lat = 33.5904; lon = 130.4017; cityName = 'Fukuoka';
+      } else if (q.includes('nagoya') || q.includes('名古屋')) {
+        lat = 35.1815; lon = 136.9066; cityName = 'Nagoya';
+      } else if (q.includes('sapporo') || q.includes('札幌')) {
+        lat = 43.0618; lon = 141.3545; cityName = 'Sapporo';
+      } else if (q.includes('yokohama') || q.includes('横浜')) {
+        lat = 35.4437; lon = 139.6380; cityName = 'Yokohama';
+      } else if (q.includes('kobe') || q.includes('神戸')) {
+        lat = 34.6901; lon = 135.1955; cityName = 'Kobe';
+      } else if (q.includes('hiroshima') || q.includes('広島')) {
+        lat = 34.3853; lon = 132.4553; cityName = 'Hiroshima';
+      } else if (q.includes('sendai') || q.includes('仙台')) {
+        lat = 38.2682; lon = 140.8694; cityName = 'Sendai';
       }
 
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`;
