@@ -579,11 +579,13 @@ export default function VoiceAssistant({
 
 
 
-    setStatus('listening');
+    // Preserve active transcript and speech bubble while AI is thinking or speaking
+    if (statusRef.current !== 'thinking' && statusRef.current !== 'speaking') {
+      setTranscript('');
+      setAiResponseText('');
+      setShowPill(false);
+    }
     setHasStarted(true);
-    setTranscript('');
-    setAiResponseText('');
-    setShowPill(false);
     isListeningRef.current = true;
 
     const recognition = new SpeechRecognition();
@@ -600,7 +602,9 @@ export default function VoiceAssistant({
 
     recognition.onstart = () => {
       isListeningRef.current = true;
-      setStatus('listening');
+      if (statusRef.current !== 'thinking' && statusRef.current !== 'speaking') {
+        setStatus('listening');
+      }
     };
 
     recognition.onresult = async (event) => {
@@ -650,22 +654,9 @@ export default function VoiceAssistant({
           recognition.stop();
         } catch (e) {}
 
-        // Check if we are currently filling the voice resume questionnaire
-        if (isFillingResumeRef.current) {
-          processResumeFlow(text);
-          return;
-        }
-
-        // 1. First check: Intercept local commands immediately
-        const localResult = await interceptLocalCommand(text);
-        if (localResult) {
-          console.log(`Local NLP matched command: ${localResult.command}`);
-          handleGeminiSuccess(localResult, text);
-        } else {
-          // 2. Second check: Delegate to Gemini Cloud AI
-          console.log("Delegating query to Gemini Cloud AI...");
-          processTextWithGemini(text, { skipLocalCheck: true });
-        }
+        // Direct 1-step Cloud AI call to eliminate latency and avoid duplicate intercept delays
+        console.log("Delegating query directly to Gemini Cloud AI...");
+        processTextWithGemini(text);
       }
     };
 
