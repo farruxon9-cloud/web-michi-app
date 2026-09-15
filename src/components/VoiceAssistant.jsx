@@ -1116,64 +1116,38 @@ export default function VoiceAssistant({
     }
   };
 
-  // Fetch from Gemini API utilizing a pool of keys to balance load and prevent rate limit (429) errors
-  const fetchGeminiWithPool = async (contents, systemPrompt, screenContext, dataContext, attempt = 1) => {
-    const localKey = localStorage.getItem('michi_gemini_api_key');
-    const pool = [
-      import.meta.env.VITE_GEMINI_API_KEY,
-      import.meta.env.VITE_GEMINI_API_KEY_2,
-      import.meta.env.VITE_GEMINI_API_KEY_3,
-      import.meta.env.VITE_GEMINI_API_KEY_4,
-      import.meta.env.VITE_GEMINI_API_KEY_5
-    ].filter(Boolean);
+  // Fetch from Gemini API using 1 configured API Key (Gemini 2.0 Flash)
+  const fetchGeminiWithPool = async (contents, systemPrompt, screenContext, dataContext) => {
+    const activeKey = apiKeyRef.current || localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
 
-    let selectedKey = '';
-    if (localKey) {
-      selectedKey = localKey;
-    } else if (pool.length > 0) {
-      const index = (Math.floor(Math.random() * pool.length) + attempt - 1) % pool.length;
-      selectedKey = pool[index];
-    } else {
+    if (!activeKey) {
       throw new Error('No API key configured');
     }
 
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${selectedKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents,
-            systemInstruction: {
-              parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
-            },
-            generationConfig: { responseMimeType: "application/json" }
-          })
-        }
-      );
-
-      if (response.status === 429 && !localKey && pool.length > 1 && attempt < pool.length) {
-        console.warn(`Gemini API Key pool index rate-limited (429). Retrying with key attempt ${attempt + 1}...`);
-        return await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext, attempt + 1);
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${activeKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents,
+          systemInstruction: {
+            parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
+          },
+          generationConfig: { responseMimeType: "application/json" }
+        })
       }
+    );
 
-      if (!response.ok) {
-        const errBody = await response.text();
-        if (errBody.includes('API_KEY_INVALID')) {
-          throw new Error('invalid_key');
-        }
-        throw new Error('api_failed');
+    if (!response.ok) {
+      const errBody = await response.text();
+      if (errBody.includes('API_KEY_INVALID')) {
+        throw new Error('invalid_key');
       }
-
-      return await response.json();
-    } catch (err) {
-      if (!localKey && pool.length > 1 && attempt < pool.length) {
-        console.warn(`Gemini fetch error. Retrying with key attempt ${attempt + 1}...`, err);
-        return await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext, attempt + 1);
-      }
-      throw err;
+      throw new Error('api_failed');
     }
+
+    return await response.json();
   };
 
   // Helper to strip markdown formatting wrappers from Gemini JSON responses
