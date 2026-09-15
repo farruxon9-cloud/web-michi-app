@@ -57,6 +57,13 @@ export default function VoiceAssistant({
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [chatHistoryList, setChatHistoryList] = useState([]);
 
+  // Typewriter streaming and dynamic fade-out state
+  const [displayedAiText, setDisplayedAiText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [isFadeOut, setIsFadeOut] = useState(false);
+  const typewriterIntervalRef = useRef(null);
+  const dismissTimerRef = useRef(null);
+
   const openHistoryModal = () => {
     try {
       const history = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
@@ -1824,9 +1831,50 @@ Return ONLY the raw JSON object, no markdown wrappers.
     const politeResponse = japaneseLanguageEngine.formatPoliteResponse(rawResp, detectedLang);
     setAiResponseText(politeResponse);
     setShowPill(true);
+    setIsFadeOut(false);
 
+    // Calculate dynamic reading duration based on character count for human reading pace
     const readDuration = calculateReadingDuration(politeResponse, detectedLang);
     setTimerDuration(readDuration);
+
+    // Clear any previous typewriter interval and dismiss timer
+    if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
+    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+    if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+
+    // 1. Typewriter Streaming Effect (character by character for smooth natural reading)
+    setDisplayedAiText('');
+    setIsTyping(true);
+    let charIndex = 0;
+    const stepChunk = 2; // 2 characters per step for smooth fast writing
+    
+    typewriterIntervalRef.current = setInterval(() => {
+      charIndex += stepChunk;
+      if (charIndex >= politeResponse.length) {
+        setDisplayedAiText(politeResponse);
+        setIsTyping(false);
+        if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
+        typewriterIntervalRef.current = null;
+
+        // 2. Schedule Dynamic Auto-Dismiss (fades out after calculated reading duration)
+        dismissTimerRef.current = setTimeout(() => {
+          setIsFadeOut(true);
+          pillTimeoutRef.current = setTimeout(() => {
+            setShowPill(false);
+            setIsFadeOut(false);
+            setDisplayedAiText('');
+            setAiResponseText('');
+            if (isActiveRef.current) {
+              setStatus('idle');
+              startLocalSpeechRecognition();
+            }
+          }, 500); // 500ms fade-out transition duration
+        }, readDuration);
+
+      } else {
+        setDisplayedAiText(politeResponse.slice(0, charIndex));
+      }
+    }, 30);
 
     // Record positive feedback in local learning engine
     if (userText && aiResult.command) {
@@ -1867,7 +1915,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
       executeVoiceCommand(aiResult.command, aiResult);
     }
 
-    // Dynamic Visual Auto-Dismiss & Audio Speech Cascade
+    // Speech synthesis cascade
     speakResponse(politeResponse, detectedLang, () => {
       if (isDelayedCommand) {
         setTimeout(() => {
@@ -1875,15 +1923,6 @@ Return ONLY the raw JSON object, no markdown wrappers.
         }, 300);
       }
     });
-
-    if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-    pillTimeoutRef.current = setTimeout(() => {
-      setShowPill(false);
-      if (isActiveRef.current) {
-        setStatus('idle');
-        startLocalSpeechRecognition();
-      }
-    }, readDuration);
   };
 
   // Execute UI commands in React using refs to avoid stale closures
@@ -2303,7 +2342,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
     <>
       {/* Robot Speech Bubble - floats near the top right below the header robot */}
       {showPill && (
-        <div className="voice-robot-speech-bubble animate-slide-in">
+        <div className={`voice-robot-speech-bubble animate-slide-in ${isFadeOut ? 'fade-out' : ''}`}>
           <div className="speech-bubble-pointer"></div>
           {aiResponseText && (
             <div 
@@ -2354,7 +2393,10 @@ Return ONLY the raw JSON object, no markdown wrappers.
                     <span>Michi AI</span>
                   </div>
                 </div>
-                <p className="ai-response-text">{aiResponseText}</p>
+                <p className="ai-response-text">
+                  {displayedAiText || aiResponseText}
+                  {isTyping && <span className="typewriter-cursor">|</span>}
+                </p>
               </div>
             )}
 
