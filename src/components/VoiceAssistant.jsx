@@ -1257,6 +1257,12 @@ STRICT RESPONSE RULES:
    - You NEVER execute UI commands, screen filtering, or platform navigation.
    - ALWAYS set "command": "NONE".
 
+3. DYNAMIC RESPONSE LENGTH & CONCISE QUALITY:
+   - Simple questions (greetings, date/time): 1-2 concise, polite sentences.
+   - Medium questions (weather forecast, simple facts): 3-5 informative sentences.
+   - Complex questions (jobs, education, history, science, region guides, complex topics): 5-10 detailed, structured, comprehensive sentences.
+   - Always meaningful, clear, and rich — never include useless fluff or redundant filler words.
+
 Your task: analyze the user's message and return a JSON object:
 {
   "userTranscription": "${text}",
@@ -1695,6 +1701,12 @@ STRICT RESPONSE RULES:
    - Answer ANY user question directly with rich, accurate, detailed, and comprehensive text explanations.
    - You NEVER execute UI commands, screen filtering, or platform navigation.
    - ALWAYS set "command": "NONE".
+
+3. DYNAMIC RESPONSE LENGTH & CONCISE QUALITY:
+   - Simple questions (greetings, date/time): 1-2 concise, polite sentences.
+   - Medium questions (weather forecast, simple facts): 3-5 informative sentences.
+   - Complex questions (jobs, education, history, science, region guides, complex topics): 5-10 detailed, structured, comprehensive sentences.
+   - Always meaningful, clear, and rich — never include useless fluff or redundant filler words.
 
 Your task: analyze the user's speech and return a JSON object:
 {
