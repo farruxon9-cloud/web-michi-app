@@ -29,3 +29,12 @@
 
 ## 6. Smooth CSS Fade-Out Transition
 - When auto-dismiss triggers, apply a 500ms CSS `.fade-out` class transition (`opacity: 0; transform: translateY(-8px)`) before setting `setShowPill(false)` to prevent abrupt visual pops.
+
+## 7. Pure Global Conversational AI System Prompting
+- Voice AI system prompts MUST NOT inject local application domain limitations, local job/school navigation commands, or app management scopes unless explicitly requested by the user.
+- Position the assistant as a universal, 100% pure conversational AI with global knowledge across all domains.
+- Enforce `command: "NONE"` by default for all conversational turns.
+
+## 8. Open-Meteo Real-Time Weather Grounding
+- For real-time environmental queries (weather forecast, current temperature, rain conditions), fetch live JSON data from zero-cost APIs like Open-Meteo (`https://api.open-meteo.com/v1/forecast`) prior to invoking Gemini API.
+- Inject the parsed live weather data directly into Gemini's system prompt context (`weatherContext`) so the model provides 100% accurate, live weather forecasts.
