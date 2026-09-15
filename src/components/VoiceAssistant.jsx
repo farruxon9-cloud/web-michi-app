@@ -1108,19 +1108,16 @@ export default function VoiceAssistant({
   };
 
   // Fetch from Gemini API using resilient multi-model fallback pool
-  const fetchGeminiWithPool = async (contents, systemPrompt, screenContext, dataContext) => {
+  const fetchGeminiWithPool = async (contents, systemPrompt, screenContext, dataContext, isAudio = false) => {
     const activeKey = apiKeyRef.current || localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
 
     if (!activeKey) {
       throw new Error('No API key configured');
     }
 
-    const modelsToTry = [
-      'gemini-2.0-flash-lite',
-      'gemini-2.0-flash',
-      'gemini-1.5-flash-8b',
-      'gemini-1.5-flash'
-    ];
+    const modelsToTry = isAudio
+      ? ['gemini-2.0-flash', 'gemini-1.5-flash']
+      : ['gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-flash'];
 
     let lastError = null;
 
@@ -1182,6 +1179,50 @@ export default function VoiceAssistant({
       clean = clean.slice(0, -3);
     }
     return clean.trim();
+  };
+
+  // Bulletproof JSON parser that gracefully handles markdown, unescaped quotes, and raw text
+  const safeJsonParse = (rawText, fallbackText = '') => {
+    if (!rawText || typeof rawText !== 'string') {
+      return { command: 'NONE', response: fallbackText || '申し訳ありません。', language: 'ja' };
+    }
+
+    const clean = cleanJsonText(rawText);
+    try {
+      const parsed = JSON.parse(clean);
+      if (parsed && typeof parsed === 'object') {
+        return {
+          userTranscription: parsed.userTranscription || parsed.transcription || '',
+          command: 'NONE',
+          response: parsed.response || parsed.text || parsed.answer || clean,
+          language: parsed.language || 'ja'
+        };
+      }
+    } catch (e) {
+      console.warn('[VoiceAssistant] Direct JSON parse failed, attempting regex/fallback recovery:', e.message);
+      
+      const responseMatch = clean.match(/"response"\s*:\s*"((?:[^"\\]|\\.)*)"/s) || clean.match(/"response"\s*:\s*`([^`]*)`/s);
+      const textMatch = clean.match(/"userTranscription"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
+      const langMatch = clean.match(/"language"\s*:\s*"([^"]+)"/s);
+
+      if (responseMatch && responseMatch[1]) {
+        return {
+          userTranscription: textMatch ? textMatch[1] : '',
+          command: 'NONE',
+          response: responseMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"'),
+          language: langMatch ? langMatch[1] : 'ja'
+        };
+      }
+
+      return {
+        userTranscription: '',
+        command: 'NONE',
+        response: clean.replace(/^```json\s*/i, '').replace(/```$/i, '').trim(),
+        language: 'ja'
+      };
+    }
+
+    return { command: 'NONE', response: clean, language: 'ja' };
   };
 
   // Generates ultra-fast, lightweight data context to minimize latency (<1.0s)
@@ -1298,18 +1339,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
       if (!isActiveRef.current) return;
 
       const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      let aiResult = null;
-      try {
-        const cleanJson = cleanJsonText(rawText);
-        aiResult = JSON.parse(cleanJson);
-      } catch (parseErr) {
-        console.log("Gemini returned text response:", rawText);
-        aiResult = {
-          command: 'NONE',
-          response: rawText || text,
-          language: speechLangRef.current || 'uz'
-        };
-      }
+      const aiResult = safeJsonParse(rawText, text);
 
       handleGeminiSuccess(aiResult, text);
 
@@ -1743,13 +1773,12 @@ Return ONLY the raw JSON object, no markdown wrappers.
     ];
 
     try {
-      const data = await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext);
+      const data = await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext, true);
 
       if (!isActiveRef.current) return;
 
       const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      const cleanJson = cleanJsonText(rawText);
-      const aiResult = JSON.parse(cleanJson);
+      const aiResult = safeJsonParse(rawText, '音声の解析に成功しました。');
 
       const finalTranscription = aiResult.userTranscription || '';
 
