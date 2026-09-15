@@ -57,6 +57,7 @@ export default function VoiceAssistant({
 
   const speechLangRef = useRef(speechLang);
   speechLangRef.current = speechLang;
+  const isListeningRef = useRef(false);
 
   const cycleSpeechLanguage = (e) => {
     if (e) e.stopPropagation();
@@ -571,12 +572,24 @@ export default function VoiceAssistant({
 
   // Local-First Speech-to-Text Recognition for instant local matching and online fallback
   const startLocalSpeechRecognition = async () => {
+    if (isListeningRef.current) {
+      console.log("[SpeechSTT] Recognition already listening, skipping duplicate start.");
+      return;
+    }
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setStatus('error');
       setErrorMessage(t('offlineSpeechNotSupported', "Qurilmada ovoz tanish imkoniyati yo'q."));
       setShowPill(true);
       return;
+    }
+
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (e) {}
+      recognitionRef.current = null;
     }
 
     // Expose mic stream and analyser node for real-time visualizer canvas waves
@@ -607,6 +620,7 @@ export default function VoiceAssistant({
     setTranscript('');
     setAiResponseText('');
     setShowPill(false);
+    isListeningRef.current = true;
 
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
@@ -619,8 +633,14 @@ export default function VoiceAssistant({
 
     let gotResult = false;
 
+    recognition.onstart = () => {
+      isListeningRef.current = true;
+      setStatus('listening');
+    };
+
     recognition.onresult = async (event) => {
       gotResult = true;
+      isListeningRef.current = false;
       const rawText = event.results[0][0].transcript;
       const text = localSTT.cleanTranscription(rawText, currentLang);
       console.log(`STT raw: "${rawText}" -> cleaned: "${text}"`);
@@ -677,6 +697,7 @@ export default function VoiceAssistant({
     };
 
     recognition.onerror = (e) => {
+      isListeningRef.current = false;
       console.error("Speech Recognition error:", e);
       if (localStreamRef.current) {
         try {
@@ -699,6 +720,8 @@ export default function VoiceAssistant({
     };
 
     recognition.onend = () => {
+      isListeningRef.current = false;
+      recognitionRef.current = null;
       if (localStreamRef.current && !gotResult) {
         try {
           localStreamRef.current.getTracks().forEach(track => track.stop());
@@ -710,11 +733,16 @@ export default function VoiceAssistant({
           if (isActiveRef.current || isVoiceStandbyRef.current) {
             startLocalSpeechRecognition();
           }
-        }, 300);
+        }, 250);
       }
     };
 
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (e) {
+      console.warn("recognition.start exception:", e);
+      isListeningRef.current = false;
+    }
   };
 
     // 100% Offline-First Instant NLP Field Extractor for Resume Builder
@@ -1379,7 +1407,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
         volume = sum / bufferLength;
       } else {
         // Soft pulsing fallback in case no mic/speaker stream is active
-        volume = 30 + Math.sin(phase * 4) * 8;
+        volume = 20 + Math.sin(phase * 0.8) * 5;
       }
 
       const amplitude = Math.max(0.1, Math.min(1.3, volume / 70));
@@ -1394,7 +1422,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
         'rgba(16, 185, 129, 0.35)'  // Green
       ];
 
-      phase += 0.08;
+      phase += 0.03;
       ctx.globalCompositeOperation = 'screen';
 
       for (let w = 0; w < 3; w++) {
