@@ -1204,13 +1204,8 @@ CURRENT USER PROFILE:
     setStatus('thinking');
     setShowPill(true);
 
-    // Fast-path: Check local intent interceptor first to save API tokens and get 0ms response time
-    const localResult = await interceptLocalCommand(text);
-    if (localResult) {
-      console.log(`Hybrid routing: Intercepted local command "${localResult.command}" for text "${text}"`);
-      handleGeminiSuccess(localResult, text);
-      return;
-    }
+    // 100% Direct Gemini Routing: Every single query goes directly to Gemini API
+    // No local interception bypasses Gemini
 
     const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
     const dataContext = generateDataContext();
