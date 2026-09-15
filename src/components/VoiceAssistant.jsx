@@ -1744,22 +1744,11 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
       if (!isActiveRef.current) return;
 
-      const rawText = data.candidates[0].content.parts[0].text;
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       const cleanJson = cleanJsonText(rawText);
       const aiResult = JSON.parse(cleanJson);
 
-      // Fail-safe: Override command using local NLP parser if transcription matches local patterns
       const finalTranscription = aiResult.userTranscription || '';
-      if (finalTranscription) {
-        const localOverride = await interceptLocalCommand(finalTranscription);
-        if (localOverride) {
-          console.log(`Local fail-safe override: Changing command "${aiResult.command}" to "${localOverride.command}" for transcription "${finalTranscription}"`);
-          aiResult.command = localOverride.command;
-          if (localOverride.response) {
-            aiResult.response = localOverride.response;
-          }
-        }
-      }
 
       // Update transcription in UI
       setTranscript(finalTranscription);
@@ -1856,7 +1845,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
     }, 30);
 
     // Record positive feedback in local learning engine
-    if (userText && aiResult.command) {
+    if (userText && aiResult.command && aiResult.command !== 'NONE') {
       learningEngine.recordFeedback(userText, aiResult.command, true);
     }
 
@@ -1889,7 +1878,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
       'NAVIGATE_TO_EMPLOYEES', 'NAVIGATE_TO_PERSONAL_INFO', 'SELECT_JOB_BY_NAME'
     ].includes(aiResult.command);
 
-    if (!isDelayedCommand && aiResult.command) {
+    if (!isDelayedCommand && aiResult.command && aiResult.command !== 'NONE') {
       // Execute the command immediately for instant UX feedback (e.g. music play/pause)
       executeVoiceCommand(aiResult.command, aiResult);
     }
