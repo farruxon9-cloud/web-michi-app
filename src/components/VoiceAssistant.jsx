@@ -556,40 +556,23 @@ export default function VoiceAssistant({
       };
     }
 
-    // 1. Exact / Levenshtein lexicon match
+    // 1. Check exact lexicon match, but ONLY keep strict UI navigation/toggle commands locally
     const lexiconMatch = await matchLexiconCommand(text, speechLangRef.current || 'uz');
     if (lexiconMatch) {
-      console.log(`[LexiconRouter] Matched local command "${lexiconMatch.command}"`);
-      return lexiconMatch;
-    }
-    // 2. Logical Reasoning Engine: Multi-step Goal & Constraint Decomposition
-    const goalSteps = reasoningEngine.decomposeGoal(text);
-    if (goalSteps.length > 0) {
-      console.log(`[ReasoningEngine] Decomposed goal into ${goalSteps.length} steps:`, goalSteps);
-      const primaryStep = goalSteps[0];
-      const responseText = actionRegistry.getResponse(primaryStep.action, speechLangRef.current || 'uz') || "Kerakli shartlar bo'yicha filter o'rnatmoqdaman.";
-      return {
-        command: primaryStep.action,
-        response: responseText,
-        parameters: primaryStep.params || {}
-      };
-    }
-
-    // 3. High-speed Semantic Vector Router match
-    const semanticMatch = semanticRouter.classify(text);
-    if (semanticMatch) {
-      console.log(`[SemanticRouter] Matched intent "${semanticMatch.command}" (Confidence: ${semanticMatch.confidence})`);
-      let responseText = actionRegistry.getResponse(semanticMatch.command, speechLangRef.current || 'uz') || "Tushundim.";
-      if ((speechLangRef.current || 'uz').startsWith('ja')) {
-        responseText = japaneseLanguageEngine.applyKeigoPoliteness(responseText, 'ja');
+      const strictUiActions = [
+        'TOGGLE_THEME', 'MUSIC_PLAY', 'MUSIC_PAUSE', 'MUSIC_NEXT', 'MUSIC_PREV',
+        'NAVIGATE_TO_HOME', 'NAVIGATE_TO_JOBS', 'NAVIGATE_TO_ACADEMY',
+        'NAVIGATE_TO_PROFILE', 'NAVIGATE_TO_NOTIFICATIONS', 'NAVIGATE_TO_SETTINGS',
+        'CHANGE_LANGUAGE', 'GO_BACK'
+      ];
+      if (strictUiActions.includes(lexiconMatch.command)) {
+        console.log(`[LexiconRouter] Matched strict UI command "${lexiconMatch.command}"`);
+        return lexiconMatch;
       }
-      return {
-        command: semanticMatch.command,
-        response: responseText,
-        parameters: {}
-      };
     }
 
+    // All questions, news, advice, and conversation pass directly to Gemini AI!
+    console.log(`[LocalInterceptor] Passing query "${text}" directly to Gemini Cloud AI...`);
     return null;
   };
 
