@@ -1570,3 +1570,31 @@ html.dark-mode .voice-clear-history-btn {
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.3);
 }
+
+/* Error Item Styling in Chat History */
+.voice-history-card.history-card-error {
+  background: #FFF5F5;
+  border-color: #FECACA;
+}
+
+html.dark-mode .voice-history-card.history-card-error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.user-question-badge.error-badge {
+  color: #DC2626;
+}
+
+.history-answer-box.error-answer-box {
+  background: #FEF2F2;
+  border-left-color: #EF4444;
+}
+
+html.dark-mode .history-answer-box.error-answer-box {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.ai-answer-badge.error-ai-badge {
+  color: #DC2626;
+}

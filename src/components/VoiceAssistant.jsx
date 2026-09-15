@@ -1833,6 +1833,21 @@ Return ONLY the raw JSON object, no markdown wrappers.
         : t('aiError', 'リクエストを処理できませんでした。');
 
       setErrorMessage(errorText);
+
+      // Save error into persistent local chat history
+      try {
+        const savedHistory = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
+        savedHistory.push({
+          id: Date.now(),
+          question: transcript || (speechLangRef.current === 'ja' ? '音声リクエスト' : 'Ovozli so\'rov'),
+          answer: errorText,
+          isError: true,
+          command: 'ERROR',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+        localStorage.setItem('michi_chat_history', JSON.stringify(savedHistory.slice(-100)));
+      } catch(e){}
+
       speakResponse(errorText, 'ja', () => {
         if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
         pillTimeoutRef.current = setTimeout(() => {
@@ -2463,15 +2478,19 @@ Return ONLY the raw JSON object, no markdown wrappers.
               ) : (
                 <div className="voice-history-list">
                   {chatHistoryList.map((item) => (
-                    <div key={item.id} className="voice-history-card">
+                    <div key={item.id} className={`voice-history-card ${item.isError ? 'history-card-error' : ''}`}>
                       <div className="history-card-header">
-                        <span className="user-question-badge">🙋‍♂️ {speechLang === 'uz' ? 'Savolingiz' : 'Question'}</span>
+                        <span className={`user-question-badge ${item.isError ? 'error-badge' : ''}`}>
+                          {item.isError ? '⚠️ ' + (speechLang === 'uz' ? 'Xatolik' : 'Error') : '🙋‍♂️ ' + (speechLang === 'uz' ? 'Savolingiz' : 'Question')}
+                        </span>
                         <span className="history-time-stamp">{item.timestamp}</span>
                       </div>
                       <p className="history-question-text">{item.question}</p>
                       
-                      <div className="history-answer-box">
-                        <span className="ai-answer-badge">🤖 Michi AI</span>
+                      <div className={`history-answer-box ${item.isError ? 'error-answer-box' : ''}`}>
+                        <span className={`ai-answer-badge ${item.isError ? 'error-ai-badge' : ''}`}>
+                          {item.isError ? '🚨 ' + (speechLang === 'uz' ? 'Tizim Xabari' : 'System Log') : '🤖 Michi AI'}
+                        </span>
                         <p className="history-answer-text">{item.answer}</p>
                       </div>
                     </div>
