@@ -2214,12 +2214,33 @@ Return ONLY the raw JSON object, no markdown wrappers.
           </button>
           
           <div className="voice-modal-content">
-            <div className="voice-modal-header">
-              <div className="ai-logo-gradient">
-                <Sparkles size={20} color="#FFF" />
+            <div className="voice-modal-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="ai-logo-gradient">
+                  <Sparkles size={20} color="#FFF" />
+                </div>
+                <h2>Michi Voice AI</h2>
+                <span className="ai-beta-tag">3.6 FLASH</span>
               </div>
-              <h2>Michi Voice AI</h2>
-              <span className="ai-beta-tag">SETUP</span>
+
+              <button 
+                onClick={openHistoryModal}
+                style={{
+                  background: 'rgba(94, 92, 230, 0.15)',
+                  border: '1px solid rgba(94, 92, 230, 0.3)',
+                  color: 'var(--primary)',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  padding: '5px 12px',
+                  borderRadius: '16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
+              >
+                📜 {speechLang === 'ja' ? '会話履歴' : speechLang === 'uz' ? 'Tarix' : 'History'}
+              </button>
             </div>
 
             {showKeyInput && (
