@@ -16,3 +16,16 @@
 - For sub-second (<1.0s) real-time voice responses using Gemini API:
   - Set `maxOutputTokens: 250` and `temperature: 0.3` in `generationConfig`.
   - Keep system prompt structured with concise JSON rules.
+
+## 4. Typewriter Streaming Text Animation
+- AI voice responses displayed inside floating speech bubbles or notification cards MUST stream character-by-character (or in 2-3 character steps every 25-30ms) rather than appearing as an instantaneous block of text.
+- Include a blinking vertical cursor element (`<span className="typewriter-cursor">|</span>`) while typing is active (`isTyping: true`).
+
+## 5. Character-Length Dynamic Auto-Dismiss Formula
+- Speech bubble auto-dismiss timers MUST calculate display duration dynamically based on output character length to accommodate human reading speeds for both short and long responses:
+  $$\text{DisplayDurationMs} = \text{Math.max}(4500, \text{Math.min}(16000, \text{charCount} \times 120 + 2500))$$
+- Short responses (~15 chars) remain visible for ~5 seconds.
+- Long responses (100+ chars) remain visible for up to 16 seconds.
+
+## 6. Smooth CSS Fade-Out Transition
+- When auto-dismiss triggers, apply a 500ms CSS `.fade-out` class transition (`opacity: 0; transform: translateY(-8px)`) before setting `setShowPill(false)` to prevent abrupt visual pops.
