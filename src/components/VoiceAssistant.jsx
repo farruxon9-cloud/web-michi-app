@@ -1116,10 +1116,10 @@ export default function VoiceAssistant({
     }
 
     const modelsToTry = [
+      'gemini-2.0-flash-lite',
       'gemini-2.0-flash',
-      'gemini-1.5-flash',
       'gemini-1.5-flash-8b',
-      'gemini-flash-lite-latest'
+      'gemini-1.5-flash'
     ];
 
     let lastError = null;
@@ -1216,18 +1216,35 @@ CURRENT USER PROFILE:
 - City: ${liveWeather.cityName}
 - Current Weather: ${liveWeather.weatherText} (${liveWeather.currentTemp}°C)
 - Today Max/Min: ${liveWeather.todayMax}°C / ${liveWeather.todayMin}°C
-- Tomorrow Forecast: ${liveWeather.tomorrowText}, Max ${liveWeather.tomorrowMax}°C, Min ${liveWeather.tomorrowMin}°C
-You MUST use this real-time live weather data to give a 100% accurate, precise, and polite weather forecast for the user's requested location.`;
+- Tomorrow Forecast: ${liveWeather.tomorrowText}, Max ${liveWeather.tomorrowMax}°C, Min ${liveWeather.tomorrowMin}°C`;
         }
       } catch (wErr) {
         console.warn('Weather fetch error:', wErr);
       }
     }
 
+    // Check if user query triggers background internet search
+    let webSearchContext = '';
+    const isQuestionQuery = /nima|kim|qanday|qachon|qaerda|qayerda|haqida|何|どう|誰|いつ|どこ|なぜ|what|who|how|when|where|why/i.test(text);
+    if (isQuestionQuery && !isWeatherQuery) {
+      try {
+        const searchRes = await Promise.race([
+          autonomousWebSearchEngine.searchWebFreeSources(text, speechLangRef.current || 'ja'),
+          new Promise(res => setTimeout(() => res({ success: false }), 3500))
+        ]);
+        if (searchRes.success && searchRes.answer) {
+          webSearchContext = "\nREAL-TIME INTERNET WEB SEARCH CONTEXT (Source: " + searchRes.source + "):\n" + searchRes.answer + "\nSynthesize and use this fresh web search data to enrich your response.";
+        }
+      } catch (sErr) {
+        console.warn('Web search fetch error:', sErr);
+      }
+    }
+
     const systemPrompt = `
-You are "Michi AI" — a universal AI knowledge search engine with comprehensive global intelligence across all domains (weather, news, science, history, technology, daily life, culture, education, business, Japan, Uzbekistan, global topics).
+You are "Michi AI" - a universal AI knowledge search engine with comprehensive global intelligence across all domains (weather, news, science, history, technology, daily life, culture, education, business, Japan, Uzbekistan, global topics).
 ${localTimeContext}
 ${weatherContext}
+${webSearchContext}
 
 STRICT RESPONSE RULES:
 1. UNIVERSAL COMPREHENSION & RESPECTFUL ETIQUETTE:
@@ -1662,7 +1679,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
     const localTimeContext = `\nCurrent local date and time: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}, ${now.toLocaleTimeString('en-US', { hour12: false })}. You MUST use this local date and time context to answer questions about the current day, date, year, month, or time in the user's language.`;
 
     const systemPrompt = `
-You are "Michi AI" — a universal AI search and knowledge engine with access to comprehensive global information across all fields (weather, news, science, history, technology, daily life, culture, education, business, Japan, Uzbekistan, etc.).
+You are "Michi AI" - a universal AI search and knowledge engine with access to comprehensive global information across all fields (weather, news, science, history, technology, daily life, culture, education, business, Japan, Uzbekistan, etc.).
 ${localTimeContext}
 
 The user is speaking to you directly via recorded audio. You must listen to the audio data, transcribe it with high fidelity, and return a JSON structure answering their question.

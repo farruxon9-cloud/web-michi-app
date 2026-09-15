@@ -122,24 +122,50 @@ Qo'shimcha savollaringiz bo'lsa, mamnuniyat bilan javob beraman.`;
         lat = 39.6542; lon = 66.9597; cityName = 'Samarkand';
       } else if (q.includes('bukhara') || q.includes('buxoro') || q.includes('ブハラ')) {
         lat = 39.7747; lon = 64.4286; cityName = 'Bukhara';
+      } else if (q.includes('fergana') || q.includes('farg\'ona') || q.includes('フェルガナ')) {
+        lat = 40.3842; lon = 71.7843; cityName = 'Fergana';
+      } else if (q.includes('namangan') || q.includes('ナマンガン')) {
+        lat = 40.9983; lon = 71.6726; cityName = 'Namangan';
+      } else if (q.includes('andijan') || q.includes('andijon') || q.includes('アンディジャン')) {
+        lat = 40.7821; lon = 72.3442; cityName = 'Andijan';
       } else if (q.includes('osaka') || q.includes('大阪')) {
         lat = 34.6937; lon = 135.5023; cityName = 'Osaka';
       } else if (q.includes('kyoto') || q.includes('京都')) {
         lat = 35.0116; lon = 135.7681; cityName = 'Kyoto';
       } else if (q.includes('fukuoka') || q.includes('福岡')) {
         lat = 33.5904; lon = 130.4017; cityName = 'Fukuoka';
-      } else if (q.includes('nagoya') || q.includes('名古屋')) {
-        lat = 35.1815; lon = 136.9066; cityName = 'Nagoya';
-      } else if (q.includes('sapporo') || q.includes('札幌')) {
-        lat = 43.0618; lon = 141.3545; cityName = 'Sapporo';
-      } else if (q.includes('yokohama') || q.includes('横浜')) {
-        lat = 35.4437; lon = 139.6380; cityName = 'Yokohama';
-      } else if (q.includes('kobe') || q.includes('神戸')) {
-        lat = 34.6901; lon = 135.1955; cityName = 'Kobe';
+      } else if (q.includes('nagoya') || q.includes('名古屋') || q.includes('aichi') || q.includes('愛知')) {
+        lat = 35.1815; lon = 136.9066; cityName = 'Nagoya (Aichi)';
+      } else if (q.includes('sapporo') || q.includes('札幌') || q.includes('hokkaido') || q.includes('北海道')) {
+        lat = 43.0618; lon = 141.3545; cityName = 'Sapporo (Hokkaido)';
+      } else if (q.includes('yokohama') || q.includes('横浜') || q.includes('kanagawa') || q.includes('神奈川')) {
+        lat = 35.4437; lon = 139.6380; cityName = 'Yokohama (Kanagawa)';
+      } else if (q.includes('kobe') || q.includes('神戸') || q.includes('hyogo') || q.includes('兵庫')) {
+        lat = 34.6901; lon = 135.1955; cityName = 'Kobe (Hyogo)';
       } else if (q.includes('hiroshima') || q.includes('広島')) {
         lat = 34.3853; lon = 132.4553; cityName = 'Hiroshima';
-      } else if (q.includes('sendai') || q.includes('仙台')) {
-        lat = 38.2682; lon = 140.8694; cityName = 'Sendai';
+      } else if (q.includes('sendai') || q.includes('仙台') || q.includes('miyagi') || q.includes('宮城')) {
+        lat = 38.2682; lon = 140.8694; cityName = 'Sendai (Miyagi)';
+      } else if (q.includes('chiba') || q.includes('千葉')) {
+        lat = 35.6074; lon = 140.1065; cityName = 'Chiba';
+      } else if (q.includes('saitama') || q.includes('埼玉')) {
+        lat = 35.8617; lon = 139.6455; cityName = 'Saitama';
+      } else if (q.includes('shizuoka') || q.includes('静岡')) {
+        lat = 34.9756; lon = 138.3828; cityName = 'Shizuoka';
+      } else if (q.includes('niigata') || q.includes('新潟')) {
+        lat = 37.9162; lon = 139.0364; cityName = 'Niigata';
+      } else if (q.includes('nagano') || q.includes('長野')) {
+        lat = 36.6485; lon = 138.1942; cityName = 'Nagano';
+      } else if (q.includes('kanazawa') || q.includes('金沢') || q.includes('ishikawa') || q.includes('石川')) {
+        lat = 36.5613; lon = 136.6562; cityName = 'Kanazawa (Ishikawa)';
+      } else if (q.includes('okayama') || q.includes('岡山')) {
+        lat = 34.6551; lon = 133.9195; cityName = 'Okayama';
+      } else if (q.includes('kumamoto') || q.includes('熊本')) {
+        lat = 32.7898; lon = 130.7417; cityName = 'Kumamoto';
+      } else if (q.includes('kagoshima') || q.includes('鹿児島')) {
+        lat = 31.5966; lon = 130.5571; cityName = 'Kagoshima';
+      } else if (q.includes('naha') || q.includes('那覇') || q.includes('okinawa') || q.includes('沖縄')) {
+        lat = 26.2124; lon = 127.6809; cityName = 'Naha (Okinawa)';
       }
 
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`;
