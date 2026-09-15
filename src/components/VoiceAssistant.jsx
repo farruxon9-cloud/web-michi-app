@@ -1140,7 +1140,14 @@ export default function VoiceAssistant({
                 responseMimeType: "application/json",
                 maxOutputTokens: 800,
                 temperature: 0.3
-              }
+              },
+              safetySettings: [
+                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" }
+              ]
             })
           }
         );
@@ -1225,7 +1232,7 @@ CURRENT USER PROFILE:
 
     // Check if user query triggers background internet search
     let webSearchContext = '';
-    const isQuestionQuery = /nima|kim|qanday|qachon|qaerda|qayerda|haqida|何|どう|誰|いつ|どこ|なぜ|what|who|how|when|where|why/i.test(text);
+    const isQuestionQuery = /nima|kim|qanday|qachon|qaerda|qayerda|haqida|何|どう|誰|いつ|どこ|なぜ|戦争|ニュース|政治|経済|社会|what|who|how|when|where|why|war|news|politic|economy/i.test(text);
     if (isQuestionQuery && !isWeatherQuery) {
       try {
         const searchRes = await Promise.race([
