@@ -605,10 +605,11 @@ export default function VoiceAssistant({
     const currentLang = speechLangRef.current || 'uz';
     const langCodeMap = { 'uz': 'uz-UZ', 'ja': 'ja-JP', 'en': 'en-US' };
     recognition.lang = langCodeMap[currentLang.substring(0, 2).toLowerCase()] || 'ja-JP';
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.continuous = true;
+    recognition.interimResults = true;
 
     let gotResult = false;
+    let finalProcessedText = '';
 
     recognition.onstart = () => {
       isListeningRef.current = true;
@@ -616,60 +617,68 @@ export default function VoiceAssistant({
     };
 
     recognition.onresult = async (event) => {
-      gotResult = true;
-      isListeningRef.current = false;
-      const rawText = event.results[0][0].transcript;
-      const text = localSTT.cleanTranscription(rawText, currentLang);
-      console.log(`STT raw: "${rawText}" -> cleaned: "${text}"`);
+      let interimTranscript = '';
+      let currentFinal = '';
 
-      // Standby background mode wake word filtering to avoid false positives from background noise
-      if (!isActiveRef.current) {
-        const lowerText = text.toLowerCase();
-        const hasWakeWord = /(michi|miki|miti|hey michi|ミチ|みち)/i.test(lowerText);
-        if (!hasWakeWord) {
-          console.log(`Standby background listening ignored text without wake word: "${text}"`);
-          setStatus('idle');
-          if (localStreamRef.current) {
-            try {
-              localStreamRef.current.getTracks().forEach(track => track.stop());
-            } catch(e){}
-            localStreamRef.current = null;
-          }
-          if (isVoiceStandbyRef.current) {
-            scheduleRelisten();
-          }
-          return;
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          currentFinal += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
         }
       }
 
-      setTranscript(text);
-      setShowPill(true);
-      setStatus('thinking');
+      const activeSpeechText = currentFinal || interimTranscript;
+      if (activeSpeechText.trim()) {
+        const cleanedLive = localSTT.cleanTranscription(activeSpeechText, currentLang);
+        setTranscript(cleanedLive);
+        setShowPill(true);
+      }
 
-      // Stop mic stream tracks to release microphone resource instantly
-      if (localStreamRef.current) {
+      if (currentFinal.trim() && currentFinal !== finalProcessedText) {
+        finalProcessedText = currentFinal;
+        gotResult = true;
+        isListeningRef.current = false;
+
+        const text = localSTT.cleanTranscription(currentFinal, currentLang);
+        console.log(`STT Final raw: "${currentFinal}" -> cleaned: "${text}"`);
+
+        // Standby background mode wake word filtering
+        if (!isActiveRef.current) {
+          const lowerText = text.toLowerCase();
+          const hasWakeWord = /(michi|miki|miti|hey michi|ミチ|みち)/i.test(lowerText);
+          if (!hasWakeWord) {
+            console.log(`Standby background listening ignored text without wake word: "${text}"`);
+            setStatus('idle');
+            if (isVoiceStandbyRef.current) {
+              scheduleRelisten();
+            }
+            return;
+          }
+        }
+
+        setStatus('thinking');
+
         try {
-          localStreamRef.current.getTracks().forEach(track => track.stop());
-        } catch(e){}
-        localStreamRef.current = null;
-      }
+          recognition.stop();
+        } catch (e) {}
 
-      // Check if we are currently filling the voice resume questionnaire
-      if (isFillingResumeRef.current) {
-        console.log(`Voice resume questionnaire flow intercept: "${text}" (step: ${resumeStepRef.current})`);
-        processResumeFlow(text);
-        return;
-      }
+        // Check if we are currently filling the voice resume questionnaire
+        if (isFillingResumeRef.current) {
+          processResumeFlow(text);
+          return;
+        }
 
-      // 1. First check: Intercept local commands immediately (0-token, 0ms latency)
-      const localResult = await interceptLocalCommand(text);
-      if (localResult) {
-        console.log(`Local NLP matched command: ${localResult.command}`);
-        handleGeminiSuccess(localResult, text);
-      } else {
-        // 2. Second check: Delegate complex/conversational queries to Gemini Cloud & MultiAiMesh
-        console.log("No local command matched. Delegating query to Gemini Cloud / AI Mesh...");
-        processTextWithGemini(text, { skipLocalCheck: true });
+        // 1. First check: Intercept local commands immediately
+        const localResult = await interceptLocalCommand(text);
+        if (localResult) {
+          console.log(`Local NLP matched command: ${localResult.command}`);
+          handleGeminiSuccess(localResult, text);
+        } else {
+          // 2. Second check: Delegate to Gemini Cloud AI
+          console.log("Delegating query to Gemini Cloud AI...");
+          processTextWithGemini(text, { skipLocalCheck: true });
+        }
       }
     };
 
