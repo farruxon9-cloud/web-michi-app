@@ -1117,8 +1117,8 @@ export default function VoiceAssistant({
     }
 
     const modelsToTry = [
-      'gemini-3.1-flash-lite',
       'gemini-flash-lite-latest',
+      'gemini-3.1-flash-lite',
       'gemini-3-flash-preview',
       'gemini-2.5-pro'
     ];
@@ -1137,7 +1137,11 @@ export default function VoiceAssistant({
               systemInstruction: {
                 parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
               },
-              generationConfig: { responseMimeType: "application/json" }
+              generationConfig: { 
+                responseMimeType: "application/json",
+                maxOutputTokens: 250,
+                temperature: 0.3
+              }
             })
           }
         );
