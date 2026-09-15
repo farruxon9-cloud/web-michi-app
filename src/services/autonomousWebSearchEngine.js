@@ -2,8 +2,8 @@
  * 🌐 Michi AI — Autonomous Free Web Search & Real-Time Synthesis Engine
  * 
  * Enables zero-cost, autonomous background searching across free internet sources
- * (Wikipedia, Yahoo Japan, DuckDuckGo Instant Answers, Public Feeds, Gov Portals)
- * to answer ANY arbitrary user question in real-time.
+ * (Wikipedia Search, DuckDuckGo, Yahoo Japan, Open-Meteo Geocoding & Weather)
+ * to answer ANY arbitrary user question with high precision in real-time.
  */
 
 class AutonomousWebSearchEngine {
@@ -21,7 +21,7 @@ class AutonomousWebSearchEngine {
     const cleanQuery = query.trim();
     const cleanLang = (lang || 'ja').substring(0, 2).toLowerCase();
 
-    console.log(`[AutonomousWebSearch] 🔍 Searching background free sources for: "${cleanQuery}" [${cleanLang}]`);
+    console.log(`[AutonomousWebSearch] 🔍 Audited background free search for: "${cleanQuery}" [${cleanLang}]`);
 
     // 1. Try DuckDuckGo Instant Answer API (Free, no API key needed)
     try {
@@ -29,8 +29,12 @@ class AutonomousWebSearchEngine {
       const response = await fetch(ddgUrl, { signal: AbortSignal.timeout(3500) });
       if (response.ok) {
         const data = await response.json();
-        if (data.AbstractText) {
-          const synthesized = this.formatSynthesizedAnswer(data.AbstractText, cleanLang, data.Heading);
+        let snippet = data.AbstractText;
+        if (!snippet && data.RelatedTopics && data.RelatedTopics.length > 0) {
+          snippet = data.RelatedTopics[0]?.Text || data.RelatedTopics[0]?.Topics?.[0]?.Text || '';
+        }
+        if (snippet) {
+          const synthesized = this.formatSynthesizedAnswer(snippet, cleanLang, data.Heading || cleanQuery);
           return { success: true, answer: synthesized, source: 'DuckDuckGo Instant Answer' };
         }
       }
@@ -38,15 +42,29 @@ class AutonomousWebSearchEngine {
       console.warn('[AutonomousWebSearch] DuckDuckGo fetch skipped:', e.message);
     }
 
-    // 2. Try Wikipedia Open API (Free, Multi-lingual: ja / uz / en)
+    // 2. Try Wikipedia Opensearch + Summary API (Multi-lingual: ja / uz / en)
     try {
       const wikiLang = cleanLang === 'ja' ? 'ja' : cleanLang === 'uz' ? 'uz' : 'en';
-      const wikiUrl = `https://${wikiLang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanQuery)}`;
-      const response = await fetch(wikiUrl, { signal: AbortSignal.timeout(3500) });
+      
+      // Step A: Opensearch to find exact article title match
+      const searchUrl = `https://${wikiLang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(cleanQuery)}&limit=1&namespace=0&format=json&origin=*`;
+      const searchRes = await fetch(searchUrl, { signal: AbortSignal.timeout(3000) });
+      let matchedTitle = cleanQuery;
+      
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        if (searchData?.[1]?.[0]) {
+          matchedTitle = searchData[1][0];
+        }
+      }
+
+      // Step B: Fetch page summary for matched article
+      const wikiUrl = `https://${wikiLang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(matchedTitle)}`;
+      const response = await fetch(wikiUrl, { signal: AbortSignal.timeout(3000) });
       if (response.ok) {
         const data = await response.json();
         if (data.extract) {
-          const synthesized = this.formatSynthesizedAnswer(data.extract, cleanLang, data.title);
+          const synthesized = this.formatSynthesizedAnswer(data.extract, cleanLang, data.title || matchedTitle);
           return { success: true, answer: synthesized, source: `Wikipedia (${wikiLang.toUpperCase()})` };
         }
       }
@@ -54,7 +72,7 @@ class AutonomousWebSearchEngine {
       console.warn('[AutonomousWebSearch] Wikipedia fetch skipped:', e.message);
     }
 
-    // 3. Try Yahoo Japan Public Search Scraper via free CORS proxy
+    // 3. Try Yahoo Japan Public Search Scraper via free CORS proxy for Japanese queries
     if (cleanLang === 'ja' || cleanQuery.match(/[\u3040-\u30ff\u4e00-\u9faf]/)) {
       try {
         const yahooUrl = `https://search.yahoo.co.jp/search?p=${encodeURIComponent(cleanQuery)}`;
@@ -62,7 +80,6 @@ class AutonomousWebSearchEngine {
         const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(4000) });
         if (response.ok) {
           const html = await response.text();
-          // Extract search snippet text from HTML
           const matches = [...html.matchAll(/<span class="sw-Card__description[^"]*">(.*?)<\/span>/g)].map(m => m[1].replace(/<[^>]+>/g, '').trim());
           if (matches.length > 0) {
             const topSnippets = matches.slice(0, 2).join(' ');
@@ -86,7 +103,7 @@ class AutonomousWebSearchEngine {
    */
   formatSynthesizedAnswer(rawText, lang = 'ja', topic = '') {
     const clean = rawText.replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim();
-    const truncated = clean.length > 250 ? clean.substring(0, 250) + '...' : clean;
+    const truncated = clean.length > 300 ? clean.substring(0, 300) + '...' : clean;
 
     if (lang === 'ja') {
       return `【インターネット検索結果】「${topic || 'ご質問'}」についてウェブから最新情報をお調べいたしました。
@@ -105,67 +122,73 @@ Qo'shimcha savollaringiz bo'lsa, mamnuniyat bilan javob beraman.`;
   }
 
   /**
-   * Fetch 100% free real-time weather from Open-Meteo API for Tokyo/Tashkent/Global cities
+   * Fetch 100% free real-time weather with dynamic geocoding for ANY city in the world
    * @param {string} query 
    * @param {string} lang 
    */
   async fetchLiveWeather(query = '', lang = 'ja') {
     try {
-      const q = (query || '').toLowerCase();
+      const q = (query || '').toLowerCase().trim();
       let lat = 35.6762; // Tokyo default
       let lon = 139.6503;
       let cityName = 'Tokyo';
+      let foundCity = false;
 
-      if (q.includes('tashkent') || q.includes('toshkent') || q.includes('タシケント')) {
-        lat = 41.2995; lon = 69.2401; cityName = 'Tashkent';
-      } else if (q.includes('samarkand') || q.includes('samarqand') || q.includes('サマルカンド')) {
-        lat = 39.6542; lon = 66.9597; cityName = 'Samarkand';
-      } else if (q.includes('bukhara') || q.includes('buxoro') || q.includes('ブハラ')) {
-        lat = 39.7747; lon = 64.4286; cityName = 'Bukhara';
-      } else if (q.includes('fergana') || q.includes('farg\'ona') || q.includes('フェルガナ')) {
-        lat = 40.3842; lon = 71.7843; cityName = 'Fergana';
-      } else if (q.includes('namangan') || q.includes('ナマンガン')) {
-        lat = 40.9983; lon = 71.6726; cityName = 'Namangan';
-      } else if (q.includes('andijan') || q.includes('andijon') || q.includes('アンディジャン')) {
-        lat = 40.7821; lon = 72.3442; cityName = 'Andijan';
-      } else if (q.includes('osaka') || q.includes('大阪')) {
-        lat = 34.6937; lon = 135.5023; cityName = 'Osaka';
-      } else if (q.includes('kyoto') || q.includes('京都')) {
-        lat = 35.0116; lon = 135.7681; cityName = 'Kyoto';
-      } else if (q.includes('fukuoka') || q.includes('福岡')) {
-        lat = 33.5904; lon = 130.4017; cityName = 'Fukuoka';
-      } else if (q.includes('nagoya') || q.includes('名古屋') || q.includes('aichi') || q.includes('愛知')) {
-        lat = 35.1815; lon = 136.9066; cityName = 'Nagoya (Aichi)';
-      } else if (q.includes('sapporo') || q.includes('札幌') || q.includes('hokkaido') || q.includes('北海道')) {
-        lat = 43.0618; lon = 141.3545; cityName = 'Sapporo (Hokkaido)';
-      } else if (q.includes('yokohama') || q.includes('横浜') || q.includes('kanagawa') || q.includes('神奈川')) {
-        lat = 35.4437; lon = 139.6380; cityName = 'Yokohama (Kanagawa)';
-      } else if (q.includes('kobe') || q.includes('神戸') || q.includes('hyogo') || q.includes('兵庫')) {
-        lat = 34.6901; lon = 135.1955; cityName = 'Kobe (Hyogo)';
-      } else if (q.includes('hiroshima') || q.includes('広島')) {
-        lat = 34.3853; lon = 132.4553; cityName = 'Hiroshima';
-      } else if (q.includes('sendai') || q.includes('仙台') || q.includes('miyagi') || q.includes('宮城')) {
-        lat = 38.2682; lon = 140.8694; cityName = 'Sendai (Miyagi)';
-      } else if (q.includes('chiba') || q.includes('千葉')) {
-        lat = 35.6074; lon = 140.1065; cityName = 'Chiba';
-      } else if (q.includes('saitama') || q.includes('埼玉')) {
-        lat = 35.8617; lon = 139.6455; cityName = 'Saitama';
-      } else if (q.includes('shizuoka') || q.includes('静岡')) {
-        lat = 34.9756; lon = 138.3828; cityName = 'Shizuoka';
-      } else if (q.includes('niigata') || q.includes('新潟')) {
-        lat = 37.9162; lon = 139.0364; cityName = 'Niigata';
-      } else if (q.includes('nagano') || q.includes('長野')) {
-        lat = 36.6485; lon = 138.1942; cityName = 'Nagano';
-      } else if (q.includes('kanazawa') || q.includes('金沢') || q.includes('ishikawa') || q.includes('石川')) {
-        lat = 36.5613; lon = 136.6562; cityName = 'Kanazawa (Ishikawa)';
-      } else if (q.includes('okayama') || q.includes('岡山')) {
-        lat = 34.6551; lon = 133.9195; cityName = 'Okayama';
-      } else if (q.includes('kumamoto') || q.includes('熊本')) {
-        lat = 32.7898; lon = 130.7417; cityName = 'Kumamoto';
-      } else if (q.includes('kagoshima') || q.includes('鹿児島')) {
-        lat = 31.5966; lon = 130.5571; cityName = 'Kagoshima';
-      } else if (q.includes('naha') || q.includes('那覇') || q.includes('okinawa') || q.includes('沖縄')) {
-        lat = 26.2124; lon = 127.6809; cityName = 'Naha (Okinawa)';
+      // Dictionary lookup for fast match
+      const cityDict = [
+        { keys: ['tashkent', 'toshkent', 'タシケント'], lat: 41.2995, lon: 69.2401, name: 'Tashkent' },
+        { keys: ['samarkand', 'samarqand', 'サマルカンド'], lat: 39.6542, lon: 66.9597, name: 'Samarkand' },
+        { keys: ['bukhara', 'buxoro', 'ブハラ'], lat: 39.7747, lon: 64.4286, name: 'Bukhara' },
+        { keys: ['fergana', "farg'ona", 'フェルガナ'], lat: 40.3842, lon: 71.7843, name: 'Fergana' },
+        { keys: ['namangan', 'ナマンガン'], lat: 40.9983, lon: 71.6726, name: 'Namangan' },
+        { keys: ['andijan', 'andijon', 'アンディジャン'], lat: 40.7821, lon: 72.3442, name: 'Andijan' },
+        { keys: ['osaka', '大阪'], lat: 34.6937, lon: 135.5023, name: 'Osaka' },
+        { keys: ['kyoto', '京都'], lat: 35.0116, lon: 135.7681, name: 'Kyoto' },
+        { keys: ['fukuoka', '福岡'], lat: 33.5904, lon: 130.4017, name: 'Fukuoka' },
+        { keys: ['nagoya', '名古屋', 'aichi', '愛知'], lat: 35.1815, lon: 136.9066, name: 'Nagoya (Aichi)' },
+        { keys: ['sapporo', '札幌', 'hokkaido', '北海道'], lat: 43.0618, lon: 141.3545, name: 'Sapporo (Hokkaido)' },
+        { keys: ['yokohama', '横浜', 'kanagawa', '神奈川'], lat: 35.4437, lon: 139.6380, name: 'Yokohama (Kanagawa)' },
+        { keys: ['kobe', '神戸', 'hyogo', '兵庫'], lat: 34.6901, lon: 135.1955, name: 'Kobe (Hyogo)' },
+        { keys: ['hiroshima', '広島'], lat: 34.3853, lon: 132.4553, name: 'Hiroshima' },
+        { keys: ['sendai', '仙台', 'miyagi', '宮城'], lat: 38.2682, lon: 140.8694, name: 'Sendai (Miyagi)' },
+        { keys: ['chiba', '千葉'], lat: 35.6074, lon: 140.1065, name: 'Chiba' },
+        { keys: ['saitama', '埼玉'], lat: 35.8617, lon: 139.6455, name: 'Saitama' },
+        { keys: ['shizuoka', '静岡'], lat: 34.9756, lon: 138.3828, name: 'Shizuoka' },
+        { keys: ['niigata', '新潟'], lat: 37.9162, lon: 139.0364, name: 'Niigata' },
+        { keys: ['nagano', '長野'], lat: 36.6485, lon: 138.1942, name: 'Nagano' },
+        { keys: ['kanazawa', '金沢', 'ishikawa', '石川'], lat: 36.5613, lon: 136.6562, name: 'Kanazawa (Ishikawa)' },
+        { keys: ['okayama', '岡山'], lat: 34.6551, lon: 133.9195, name: 'Okayama' },
+        { keys: ['kumamoto', '熊本'], lat: 32.7898, lon: 130.7417, name: 'Kumamoto' },
+        { keys: ['kagoshima', '鹿児島'], lat: 31.5966, lon: 130.5571, name: 'Kagoshima' },
+        { keys: ['naha', '那覇', 'okinawa', '沖縄'], lat: 26.2124, lon: 127.6809, name: 'Naha (Okinawa)' }
+      ];
+
+      for (const entry of cityDict) {
+        if (entry.keys.some(k => q.includes(k))) {
+          lat = entry.lat;
+          lon = entry.lon;
+          cityName = entry.name;
+          foundCity = true;
+          break;
+        }
+      }
+
+      // Dynamic Geocoding fallback if city not in dictionary
+      if (!foundCity && q.length > 2) {
+        try {
+          const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en`;
+          const geoRes = await fetch(geoUrl, { signal: AbortSignal.timeout(3000) });
+          if (geoRes.ok) {
+            const geoData = await geoRes.json();
+            if (geoData?.results?.[0]) {
+              lat = geoData.results[0].latitude;
+              lon = geoData.results[0].longitude;
+              cityName = geoData.results[0].name;
+            }
+          }
+        } catch (gErr) {
+          console.warn('[AutonomousWebSearch] Geocoding API skipped:', gErr.message);
+        }
       }
 
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`;
@@ -175,12 +198,18 @@ Qo'shimcha savollaringiz bo'lsa, mamnuniyat bilan javob beraman.`;
         const current = data.current_weather;
         const daily = data.daily;
         
+        // Exact WMO Weather Code interpretation
         const interpretCode = (code) => {
-          if (code === 0) return { ja: '晴れ（快晴）', uz: 'Ochiq quruq havo', en: 'Clear sky' };
-          if (code <= 3) return { ja: 'くもり時々晴れ', uz: 'Biroz bulutli havo', en: 'Partly cloudy' };
-          if (code <= 67) return { ja: '雨', uz: 'Yomg\'ir', en: 'Rain' };
-          if (code <= 77) return { ja: '雪', uz: 'Qor', en: 'Snow' };
-          return { ja: '雷雨・荒天', uz: 'Momaqaldiroqli havo', en: 'Thunderstorm' };
+          if (code === 0) return { ja: '晴れ（快晴）', uz: 'Musaffo ochiq havo', en: 'Clear sky' };
+          if (code <= 3) return { ja: '晴れ時々くもり', uz: 'Biroz bulutli havo', en: 'Partly cloudy' };
+          if (code === 45 || code === 48) return { ja: '霧（濃霧）', uz: 'Tumanli havo', en: 'Foggy' };
+          if (code >= 51 && code <= 55) return { ja: '小雨・霧雨', uz: 'Yengil yomg\'ir (shivalama)', en: 'Light drizzle' };
+          if (code >= 61 && code <= 65) return { ja: '雨', uz: 'Yomg\'ir', en: 'Rain' };
+          if (code >= 71 && code <= 77) return { ja: '雪・降雪', uz: 'Qor yog\'ishi', en: 'Snowfall' };
+          if (code >= 80 && code <= 82) return { ja: 'にわか雨', uz: 'Jala yomg\'ir', en: 'Rain showers' };
+          if (code >= 85 && code <= 86) return { ja: 'にわか雪', uz: 'Qor bo\'roni', en: 'Snow showers' };
+          if (code >= 95) return { ja: '雷雨・荒天', uz: 'Momaqaldiroqli havo', en: 'Thunderstorm' };
+          return { ja: 'くもり', uz: 'Bulutli havo', en: 'Cloudy' };
         };
 
         const cleanLang = (lang || 'ja').substring(0, 2);
