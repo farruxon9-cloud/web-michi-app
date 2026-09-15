@@ -1,5 +1,4 @@
-// src/utils/voiceLexicon.js
-import { japaneseNewsService } from '../services/japaneseNewsService.js';
+
 
 // Levenshtein Distance algorithm to calculate string similarity percentage
 export const getSimilarity = (str1, str2) => {

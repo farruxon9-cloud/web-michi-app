@@ -4,13 +4,9 @@ import { Mic, MicOff, WifiOff, Lock, X, Sparkles, Key, AlertTriangle, RefreshCw,
 import './VoiceAssistant.css';
 import { matchLexiconCommand } from '../utils/voiceLexicon';
 import { actionRegistry } from '../services/actionRegistry';
-import { semanticRouter } from '../services/semanticRouter';
-import { localTTS } from '../services/localTTS';
 import { localSTT } from '../services/localSTT';
-import { voiceQuality } from '../services/voiceQuality';
 import { learningEngine } from '../services/learningEngine';
 import { screenStructureIndex } from '../services/screenStructureIndex';
-import { reasoningEngine } from '../services/reasoningEngine';
 import { japaneseLanguageEngine } from '../services/japaneseLanguageEngine';
 import { autonomousWebSearchEngine } from '../services/autonomousWebSearchEngine';
 import { multiAiMeshEngine } from '../services/multiAiMeshEngine';
@@ -532,10 +528,7 @@ export default function VoiceAssistant({
     return screenStructureIndex.getRichScreenContext(tab, subPage, lang);
   };
 
-  // Initialize semantic router vectors on component mount
-  useEffect(() => {
-    semanticRouter.initialize();
-  }, []);
+
 
   const interceptLocalCommand = async (text) => {
     const lowerText = (text || '').trim().toLowerCase();
