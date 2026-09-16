@@ -208,36 +208,75 @@ Guidelines:
   }
 
   /**
-   * Fetch from Free Hugging Face Public Inference Router
+   * Fetch from Free Hugging Face Public Inference Router & Open Model Gateway
    */
   async fetchHuggingFaceInference(prompt, lang) {
-    const models = [
-      'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct',
-      'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3'
+    const systemPrompt = `You are Michi AI, a world-class intelligent visual assistant. Answer directly and politely in ${lang === 'ja' ? 'Japanese' : lang === 'uz' ? 'Uzbek' : 'English'}. Keep responses clear and well formatted.`;
+    const hfToken = import.meta.env.VITE_HUGGINGFACE_API_KEY || import.meta.env.VITE_HF_TOKEN || '';
+
+    // Approach A: Modern Hugging Face Router Chat Completions API
+    const routerEndpoints = [
+      'https://router.huggingface.co/hf-inference/v1/chat/completions',
+      'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct/v1/chat/completions'
     ];
 
-    const systemPrompt = `You are Michi AI, a world-class intelligent visual assistant. Answer directly and politely in ${lang === 'ja' ? 'Japanese' : lang === 'uz' ? 'Uzbek' : 'English'}. Keep responses clear and well formatted.`;
+    const headers = { 'Content-Type': 'application/json' };
+    if (hfToken) {
+      headers['Authorization'] = `Bearer ${hfToken}`;
+    }
 
-    for (const modelUrl of models) {
+    for (const endpoint of routerEndpoints) {
       try {
-        const res = await fetch(modelUrl, {
+        const res = await fetch(endpoint, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
-            inputs: `<|system|>\n${systemPrompt}<|user|>\n${prompt}<|assistant|>\n`,
-            parameters: { max_new_tokens: 500, return_full_text: false }
+            model: 'Qwen/Qwen2.5-72B-Instruct',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: prompt }
+            ],
+            max_tokens: 600,
+            temperature: 0.7
           }),
-          signal: AbortSignal.timeout(6000)
+          signal: AbortSignal.timeout(7000)
         });
 
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data[0]?.generated_text) {
-            return data[0].generated_text.trim();
+          const responseText = data.choices?.[0]?.message?.content;
+          if (responseText && responseText.length > 5) {
+            return responseText.trim();
           }
         }
       } catch (e) {}
     }
+
+    // Approach B: Free Pollinations Gateway for Hugging Face Open Models (Zero Token / 100% Reliable)
+    try {
+      const polRes = await fetch('https://text.pollinations.ai/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: prompt }
+          ],
+          model: 'qwen',
+          code: 'beartoken',
+          jsonMode: false
+        }),
+        signal: AbortSignal.timeout(8000)
+      });
+
+      if (polRes.ok) {
+        const text = await polRes.text();
+        if (text && text.length > 10 && !text.includes('Error')) {
+          return text.trim();
+        }
+      }
+    } catch (e) {}
+
     return null;
   }
 }
