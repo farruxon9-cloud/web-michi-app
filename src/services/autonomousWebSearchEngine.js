@@ -13,15 +13,72 @@ class AutonomousWebSearchEngine {
    * @param {string} lang - 'ja' | 'uz' | 'en'
    * @returns {Promise<{ success: boolean, answer: string, source: string }>}
    */
+  /**
+   * Cleans natural language query strings to extract clean search keywords
+   * @param {string} query 
+   * @returns {string}
+   */
+  cleanSearchKeywords(query) {
+    if (!query) return '';
+    let clean = query.replace(/(おねがいします|お願いします|教えてください|くだされば|ください|です|ます|ですか|でしょうか| tell me| please|haqida|haqida ma'lumot ber)/gi, '');
+    clean = clean.trim();
+    return clean || query;
+  }
+
+  /**
+   * Fetches top live news RSS headlines directly from Google News & Yahoo Japan
+   * @param {string} lang 
+   * @returns {Promise<{ success: boolean, headlines: string[], source: string }>}
+   */
+  async fetchLiveNewsRss(lang = 'ja') {
+    const cleanLang = (lang || 'ja').substring(0, 2).toLowerCase();
+    let rssUrl = 'https://news.google.com/rss?hl=ja&gl=JP&ceid=JP:ja';
+    if (cleanLang === 'uz') rssUrl = 'https://news.google.com/rss?hl=uz';
+    if (cleanLang === 'en') rssUrl = 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en';
+
+    try {
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+      const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(3500) });
+      if (response.ok) {
+        const xmlText = await response.text();
+        const matches = [...xmlText.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim());
+        const validHeadlines = matches.slice(1, 6).map(t => t.replace(/ - [^-]+$/, ''));
+        if (validHeadlines.length > 0) {
+          return { success: true, headlines: validHeadlines, source: 'Google News RSS' };
+        }
+      }
+    } catch (e) {
+      console.warn('[AutonomousWebSearch] RSS news fetch skipped:', e.message);
+    }
+    return { success: false, headlines: [], source: 'none' };
+  }
+
+  /**
+   * Search free internet sources in the background, analyze results, and synthesize a response
+   * @param {string} query 
+   * @param {string} lang - 'ja' | 'uz' | 'en'
+   * @returns {Promise<{ success: boolean, answer: string, source: string }>}
+   */
   async searchWebFreeSources(query, lang = 'ja') {
     if (!query || typeof query !== 'string') {
       return { success: false, answer: '', source: 'none' };
     }
 
-    const cleanQuery = query.trim();
+    const rawQuery = query.trim();
+    const cleanQuery = this.cleanSearchKeywords(rawQuery);
     const cleanLang = (lang || 'ja').substring(0, 2).toLowerCase();
 
-    console.log(`[AutonomousWebSearch] 🔍 Audited background free search for: "${cleanQuery}" [${cleanLang}]`);
+    console.log(`[AutonomousWebSearch] 🔍 Audited background search for: "${cleanQuery}" (raw: "${rawQuery}") [${cleanLang}]`);
+
+    // Check if query is asking for news
+    if (rawQuery.match(/(ニュース|news|yangilik|kecha|bugun|昨日|今日)/i)) {
+      const newsRss = await this.fetchLiveNewsRss(cleanLang);
+      if (newsRss.success && newsRss.headlines.length > 0) {
+        const newsSummary = newsRss.headlines.map(h => `・${h}`).join('\n');
+        const synthesized = this.formatSynthesizedAnswer(newsSummary, cleanLang, '最新ニュース');
+        return { success: true, answer: synthesized, source: newsRss.source };
+      }
+    }
 
     // 1. Try DuckDuckGo Instant Answer API (Free, no API key needed)
     try {

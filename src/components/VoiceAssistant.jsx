@@ -1277,6 +1277,35 @@ CURRENT USER PROFILE:
       return;
     }
 
+    // Try Hugging Face Space Central AI Brain API if configured
+    const hfBrainUrl = import.meta.env.VITE_HF_BRAIN_URL || '';
+    if (hfBrainUrl) {
+      try {
+        console.log('[VoiceAssistant] 🧠 Contacting Hugging Face Space AI Brain:', hfBrainUrl);
+        const hfRes = await fetch(hfBrainUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: text, language: userLang }),
+          signal: AbortSignal.timeout(4000)
+        });
+        if (hfRes.ok) {
+          const hfData = await hfRes.json();
+          if (hfData && hfData.response) {
+            console.log('[VoiceAssistant] 🧠 HF Space Brain returned response:', hfData.intent_detected);
+            handleGeminiSuccess({
+              userTranscription: text,
+              command: 'NONE',
+              response: hfData.response,
+              language: userLang
+            }, text);
+            return;
+          }
+        }
+      } catch (hfErr) {
+        console.warn('[VoiceAssistant] HF Space Brain timeout/error, using client Gemini pool:', hfErr.message);
+      }
+    }
+
     const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
     const dataContext = generateDataContext();
 
