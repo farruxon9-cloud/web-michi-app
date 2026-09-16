@@ -1185,21 +1185,21 @@ export default function VoiceAssistant({
     throw new Error(typeof lastError === 'string' && lastError.includes('API_KEY_INVALID') ? 'invalid_key' : 'api_failed');
   };
 
-  // Helper to strip markdown formatting wrappers from Gemini JSON responses
+  // Helper to strip markdown formatting wrappers and extract JSON objects from Gemini responses
   const cleanJsonText = (rawText) => {
+    if (!rawText || typeof rawText !== 'string') return '';
     let clean = rawText.trim();
-    if (clean.startsWith('```json')) {
-      clean = clean.substring(7);
-    } else if (clean.startsWith('```')) {
-      clean = clean.substring(3);
-    }
-    if (clean.endsWith('```')) {
-      clean = clean.slice(0, -3);
+    clean = clean.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+
+    // Extract JSON object if prepended or appended with conversational text (e.g. "かしこまりました。{...}")
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return jsonMatch[0].trim();
     }
     return clean.trim();
   };
 
-  // Bulletproof JSON parser that gracefully handles markdown, unescaped quotes, and raw text
+  // Bulletproof JSON parser that gracefully handles markdown, unescaped quotes, raw text, and embedded JSON
   const safeJsonParse = (rawText, fallbackText = '') => {
     if (!rawText || typeof rawText !== 'string') {
       return { command: 'NONE', response: fallbackText || '申し訳ありません。', language: 'ja' };
@@ -1212,14 +1212,16 @@ export default function VoiceAssistant({
         return {
           userTranscription: parsed.userTranscription || parsed.transcription || '',
           command: 'NONE',
-          response: parsed.response || parsed.text || parsed.answer || clean,
+          response: japaneseLanguageEngine.stripRawJsonSyntax(parsed.response || parsed.text || parsed.answer || clean),
           language: parsed.language || 'ja'
         };
       }
     } catch (e) {
       console.warn('[VoiceAssistant] Direct JSON parse failed, attempting regex/fallback recovery:', e.message);
       
-      const responseMatch = clean.match(/"response"\s*:\s*"((?:[^"\\]|\\.)*)"/s) || clean.match(/"response"\s*:\s*`([^`]*)`/s);
+      const responseMatch = clean.match(/"response"\s*:\s*"((?:[^"\\]|\\.)*)"/s) 
+                         || clean.match(/"response"\s*:\s*`([^`]*)`/s)
+                         || rawText.match(/"response"\s*:\s*"([\s\S]*?)"(?=\s*,\s*"|\s*\}|$)/);
       const textMatch = clean.match(/"userTranscription"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
       const langMatch = clean.match(/"language"\s*:\s*"([^"]+)"/s);
 
@@ -1227,7 +1229,7 @@ export default function VoiceAssistant({
         return {
           userTranscription: textMatch ? textMatch[1] : '',
           command: 'NONE',
-          response: responseMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"'),
+          response: japaneseLanguageEngine.stripRawJsonSyntax(responseMatch[1]),
           language: langMatch ? langMatch[1] : 'ja'
         };
       }
@@ -1235,12 +1237,12 @@ export default function VoiceAssistant({
       return {
         userTranscription: '',
         command: 'NONE',
-        response: clean.replace(/^```json\s*/i, '').replace(/```$/i, '').trim(),
+        response: japaneseLanguageEngine.stripRawJsonSyntax(rawText),
         language: 'ja'
       };
     }
 
-    return { command: 'NONE', response: clean, language: 'ja' };
+    return { command: 'NONE', response: japaneseLanguageEngine.stripRawJsonSyntax(rawText), language: 'ja' };
   };
 
   // Generates ultra-fast, lightweight data context to minimize latency (<1.0s)

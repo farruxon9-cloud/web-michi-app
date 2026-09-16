@@ -70,16 +70,57 @@ class JapaneseLanguageEngine {
   }
 
   /**
+   * Strip raw JSON artifacts ({ "userTranscription": ..., "command": ..., "response": ... }) if present
+   */
+  stripRawJsonSyntax(text) {
+    if (!text || typeof text !== 'string') return '';
+    let str = text.trim();
+
+    if (str.includes('"response"') || str.includes('"command"') || str.includes('"userTranscription"')) {
+      const jsonMatch = str.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed && (parsed.response || parsed.text || parsed.answer)) {
+            str = parsed.response || parsed.text || parsed.answer;
+          }
+        } catch (e) {
+          const respRegexMatch = str.match(/"response"\s*:\s*"([\s\S]*?)"(?=\s*,\s*"|\s*\}|$)/) 
+                              || str.match(/"response"\s*:\s*"([\s\S]*)"/)
+                              || str.match(/"response"\s*:\s*`([\s\S]*?)`/);
+          if (respRegexMatch && respRegexMatch[1]) {
+            str = respRegexMatch[1];
+          }
+        }
+      }
+    }
+
+    str = str
+      .replace(/^\{?\s*"userTranscription"\s*:\s*"[^"]*",?\s*/gi, '')
+      .replace(/"command"\s*:\s*"[^"]*",?\s*/gi, '')
+      .replace(/"response"\s*:\s*"/gi, '')
+      .replace(/"\s*,\s*"language"\s*:\s*"[^"]*"\s*\}?$/gi, '')
+      .replace(/\\n/g, '\n')
+      .replace(/\\"/g, '"')
+      .replace(/^[\s"{}]+/g, '')
+      .replace(/[\s"}]+$/g, '')
+      .trim();
+
+    return str;
+  }
+
+  /**
    * Format response text with strict, warm, and clear politeness etiquette across all languages.
    * @param {string} text 
    * @param {string} lang 
    */
   formatPoliteResponse(text, lang = 'ja') {
     if (!text || typeof text !== 'string') return '';
+    const cleanText = this.stripRawJsonSyntax(text);
     const cleanLang = (lang || 'ja').substring(0, 2).toLowerCase();
 
     if (cleanLang === 'ja') {
-      return jlptN1LanguageEngine.elevateToN1MasterKeigo(text);
+      return jlptN1LanguageEngine.elevateToN1MasterKeigo(cleanText);
     }
 
     if (cleanLang === 'uz') {
