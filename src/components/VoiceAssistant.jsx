@@ -12,11 +12,11 @@ import { autonomousWebSearchEngine } from '../services/autonomousWebSearchEngine
 import { multiAiMeshEngine } from '../services/multiAiMeshEngine';
 
 export function calculateReadingDuration(text, lang = 'uz') {
-  if (!text) return 7000;
+  if (!text) return 5000;
   const isJa = (lang || 'uz').toLowerCase().startsWith('ja');
-  const msPerChar = isJa ? 120 : 75;
-  const calculated = Math.round(text.length * msPerChar + 4000);
-  return Math.min(22000, Math.max(7500, calculated));
+  const msPerChar = isJa ? 65 : 45;
+  const calculated = Math.round(text.length * msPerChar + 3500);
+  return Math.min(12000, Math.max(5000, calculated));
 }
 
 export default function VoiceAssistant({ 
@@ -418,6 +418,18 @@ export default function VoiceAssistant({
     setErrorMessage('');
     setTranscript('');
     setAiResponseText('');
+  };
+
+  const closePill = () => {
+    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+    if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+    if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
+    setShowPill(false);
+    setIsFadeOut(false);
+    setDisplayedAiText('');
+    setAiResponseText('');
+    setErrorMessage('');
+    setStatus('idle');
   };
 
   const scheduleRelisten = () => {
@@ -1115,9 +1127,14 @@ export default function VoiceAssistant({
       throw new Error('No API key configured');
     }
 
-    const modelsToTry = isAudio
-      ? ['gemini-2.0-flash', 'gemini-1.5-flash']
-      : ['gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-flash'];
+    const modelsToTry = [
+      'gemini-3.6-flash',
+      'gemini-3.5-flash',
+      'gemini-3.5-flash-lite',
+      'gemini-3.7-flash',
+      'gemini-flash-latest',
+      'gemini-flash-lite-latest'
+    ];
 
     let lastError = null;
 
@@ -1345,9 +1362,24 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
     } catch (error) {
       if (!isActiveRef.current) return;
-      console.warn('Gemini API fetch error:', error);
+      console.warn('Primary Gemini API pool failed, attempting MultiAiMesh fallback:', error);
       
       const userLang = speechLangRef.current || 'uz';
+      try {
+        const meshResult = await multiAiMeshEngine.processCascadingQuery(text, userLang);
+        if (meshResult && meshResult.text) {
+          handleGeminiSuccess({
+            userTranscription: text,
+            command: 'NONE',
+            response: meshResult.text,
+            language: userLang
+          }, text);
+          return;
+        }
+      } catch (meshErr) {
+        console.warn('MultiAiMesh fallback also failed:', meshErr);
+      }
+
       const isJa = userLang.startsWith('ja');
       const isUz = userLang.startsWith('uz');
       const errText = isJa
@@ -1360,6 +1392,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
       setErrorMessage(errText);
       setShowPill(true);
       setIsFadeOut(false);
+      setTimerDuration(6000);
       
       // Persist error event into chat history
       try {
@@ -1381,12 +1414,11 @@ Return ONLY the raw JSON object, no markdown wrappers.
       dismissTimerRef.current = setTimeout(() => {
         setIsFadeOut(true);
         pillTimeoutRef.current = setTimeout(() => {
-          setShowPill(false);
-          setIsFadeOut(false);
-          setErrorMessage('');
-          if (isActiveRef.current) setStatus('idle');
+          closePill();
         }, 500);
-      }, 5000);
+      }, 6000);
+
+      speakResponse(errText, userLang);
     }
   };
 
@@ -1826,24 +1858,22 @@ Return ONLY the raw JSON object, no markdown wrappers.
         localStorage.setItem('michi_chat_history', JSON.stringify(savedHistory.slice(-100)));
       } catch(e){}
 
-      setShowPill(true);
-      setIsFadeOut(false);
-
       if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
       if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+
+      setTimerDuration(6000);
+      setShowPill(true);
+      setIsFadeOut(false);
 
       dismissTimerRef.current = setTimeout(() => {
         setIsFadeOut(true);
         pillTimeoutRef.current = setTimeout(() => {
-          setShowPill(false);
-          setIsFadeOut(false);
-          setErrorMessage('');
-          if (isActiveRef.current) {
-            setStatus('idle');
-            if (isVoiceStandbyRef.current) scheduleRelisten();
-          }
+          closePill();
+          if (isVoiceStandbyRef.current) scheduleRelisten();
         }, 500);
-      }, 5000);
+      }, 6000);
+
+      speakResponse(errorText, 'ja');
     }
   };
 
@@ -2368,10 +2398,10 @@ Return ONLY the raw JSON object, no markdown wrappers.
       {showPill && (
         <div className={`voice-robot-speech-bubble animate-slide-in ${isFadeOut ? 'fade-out' : ''}`}>
           <div className="speech-bubble-pointer"></div>
-          {aiResponseText && (
+          {(aiResponseText || errorMessage) && (
             <div 
               className="speech-bubble-timer-bar" 
-              key={aiResponseText} 
+              key={aiResponseText || errorMessage} 
               style={{ '--timer-duration': `${timerDuration}ms` }} 
             />
           )}
@@ -2495,7 +2525,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
               <Trash2 size={10} /> {speechLang === 'ja' ? '消去' : speechLang === 'uz' ? 'Tozalash' : 'Clear'}
             </button>
             
-            <button className="voice-bubble-close-btn" onClick={() => setShowPill(false)}>
+            <button className="voice-bubble-close-btn" onClick={closePill}>
               <X size={12} />
             </button>
           </div>
