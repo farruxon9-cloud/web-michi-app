@@ -10,6 +10,7 @@ import { screenStructureIndex } from '../services/screenStructureIndex';
 import { japaneseLanguageEngine } from '../services/japaneseLanguageEngine';
 import { autonomousWebSearchEngine } from '../services/autonomousWebSearchEngine';
 import { multiAiMeshEngine } from '../services/multiAiMeshEngine';
+import { michiCacheEngine } from '../services/michiCacheEngine';
 
 export function calculateReadingDuration(text, lang = 'uz') {
   if (!text) return 5000;
@@ -1261,8 +1262,18 @@ CURRENT USER PROFILE:
     setStatus('thinking');
     setShowPill(true);
 
-    // 100% Direct Gemini Routing: Every single query goes directly to Gemini API
-    // No local interception bypasses Gemini
+    const userLang = speechLangRef.current || 'ja';
+    const cachedHit = michiCacheEngine.get(text, userLang);
+    if (cachedHit && cachedHit.text) {
+      console.log('[VoiceAssistant] ⚡ Instant 0ms cache response served for:', text);
+      handleGeminiSuccess({
+        userTranscription: text,
+        command: 'NONE',
+        response: cachedHit.text,
+        language: userLang
+      }, text);
+      return;
+    }
 
     const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
     const dataContext = generateDataContext();
@@ -1886,6 +1897,9 @@ Return ONLY the raw JSON object, no markdown wrappers.
     setAiResponseText(politeResponse);
     setShowPill(true);
     setIsFadeOut(false);
+
+    // Save into 0ms instant local cache
+    michiCacheEngine.set(userText, politeResponse, detectedLang);
 
     // Calculate dynamic reading duration based on character count for human reading pace
     const readDuration = calculateReadingDuration(politeResponse, detectedLang);

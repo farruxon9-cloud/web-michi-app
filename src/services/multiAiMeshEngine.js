@@ -10,11 +10,16 @@
 
 import { autonomousWebSearchEngine } from './autonomousWebSearchEngine.js';
 import { japaneseLanguageEngine } from './japaneseLanguageEngine.js';
+import { michiCacheEngine } from './michiCacheEngine.js';
 
 class MultiAiMeshEngine {
   constructor() {
     this.geminiKeys = [
       import.meta.env.VITE_GEMINI_API_KEY,
+      import.meta.env.VITE_GEMINI_API_KEY_2,
+      import.meta.env.VITE_GEMINI_API_KEY_3,
+      import.meta.env.VITE_GEMINI_API_KEY_4,
+      import.meta.env.VITE_GEMINI_API_KEY_5,
       localStorage.getItem('michi_gemini_api_key')
     ].filter(Boolean);
 
@@ -31,15 +36,15 @@ class MultiAiMeshEngine {
    * @param {string} lang - 'ja' | 'uz' | 'en'
    * @returns {Promise<{ text: string, provider: string }>}
    */
-  /**
-   * Execute multi-tier cascading AI query processing
-   * @param {string} prompt 
-   * @param {string} lang - 'ja' | 'uz' | 'en'
-   * @returns {Promise<{ text: string, provider: string }>}
-   */
   async processCascadingQuery(prompt, lang = 'ja') {
     const cleanLang = (lang || 'ja').substring(0, 2).toLowerCase();
     console.log(`[MultiAiMesh] ⚡ Processing cascading AI query: "${prompt}" [${cleanLang}]`);
+
+    // Tier 0: Instant 0ms Client Cache Hit
+    const cachedHit = michiCacheEngine.get(prompt, cleanLang);
+    if (cachedHit) {
+      return cachedHit;
+    }
 
     // Tier 1: Try Gemini Pool first (highest intelligence and speed)
     try {
@@ -47,18 +52,20 @@ class MultiAiMeshEngine {
       const geminiResponse = await this.fetchGeminiPool(prompt, cleanLang);
       if (geminiResponse) {
         console.log('[MultiAiMesh] ✅ Tier 1 (Gemini Flash Pool) succeeded!');
+        michiCacheEngine.set(prompt, geminiResponse, cleanLang);
         return { text: geminiResponse, provider: 'Gemini AI' };
       }
     } catch (e) {
       console.warn('[MultiAiMesh] Tier 1 Gemini Free Pool failed:', e.message);
     }
 
-    // Tier 2: Try Autonomous Free Web Search (for live facts, weather, news)
+    // Tier 2: Try Autonomous Free Web Search (for live facts, weather, news, lifestyle)
     try {
       console.log('[MultiAiMesh] 🌐 Tier 2: Executing Autonomous Free Web Search...');
       const webResult = await autonomousWebSearchEngine.searchWebFreeSources(prompt, cleanLang);
       if (webResult.success && webResult.answer && webResult.answer.length > 30) {
         console.log(`[MultiAiMesh] ✅ Tier 2 (Free Web Scraper) succeeded via ${webResult.source}`);
+        michiCacheEngine.set(prompt, webResult.answer, cleanLang);
         return { text: webResult.answer, provider: `Live Web (${webResult.source})` };
       }
     } catch (e) {
@@ -71,10 +78,24 @@ class MultiAiMeshEngine {
       const deepseekResponse = await this.fetchDeepSeekOpenApi(prompt, cleanLang);
       if (deepseekResponse) {
         console.log('[MultiAiMesh] ✅ Tier 3 (DeepSeek Open API) succeeded!');
+        michiCacheEngine.set(prompt, deepseekResponse, cleanLang);
         return { text: deepseekResponse, provider: 'DeepSeek AI' };
       }
     } catch (e) {
       console.warn('[MultiAiMesh] Tier 3 DeepSeek Open API failed:', e.message);
+    }
+
+    // Tier 4: Hugging Face Public Inference API (Qwen 2.5 72B / Mistral Free Endpoint)
+    try {
+      console.log('[MultiAiMesh] 🤗 Tier 4: Hugging Face Free Inference API...');
+      const hfResponse = await this.fetchHuggingFaceInference(prompt, cleanLang);
+      if (hfResponse) {
+        console.log('[MultiAiMesh] ✅ Tier 4 (Hugging Face API) succeeded!');
+        michiCacheEngine.set(prompt, hfResponse, cleanLang);
+        return { text: hfResponse, provider: 'Hugging Face Open LLM' };
+      }
+    } catch (e) {
+      console.warn('[MultiAiMesh] Tier 4 Hugging Face API failed:', e.message);
     }
 
     // Fallback: Local Synthesis
@@ -182,6 +203,40 @@ Guidelines:
       } catch (e) {
         // Continue to next key
       }
+    }
+    return null;
+  }
+
+  /**
+   * Fetch from Free Hugging Face Public Inference Router
+   */
+  async fetchHuggingFaceInference(prompt, lang) {
+    const models = [
+      'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct',
+      'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3'
+    ];
+
+    const systemPrompt = `You are Michi AI, a world-class intelligent visual assistant. Answer directly and politely in ${lang === 'ja' ? 'Japanese' : lang === 'uz' ? 'Uzbek' : 'English'}. Keep responses clear and well formatted.`;
+
+    for (const modelUrl of models) {
+      try {
+        const res = await fetch(modelUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            inputs: `<|system|>\n${systemPrompt}<|user|>\n${prompt}<|assistant|>\n`,
+            parameters: { max_new_tokens: 500, return_full_text: false }
+          }),
+          signal: AbortSignal.timeout(6000)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data[0]?.generated_text) {
+            return data[0].generated_text.trim();
+          }
+        }
+      } catch (e) {}
     }
     return null;
   }
