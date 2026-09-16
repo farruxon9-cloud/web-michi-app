@@ -16,3 +16,11 @@
 ## 3. Mobile Display & Reading UX
 - **Responsive Max Height**: Speech bubble card constrained to `max-height: 55vh` with `-webkit-overflow-scrolling: touch`.
 - **Scroll & Auto-Dismiss Pause**: If user touches or scrolls the long text card, automatically pause the auto-dismiss timer so text does not disappear while reading.
+
+## 4. Parallel Pre-Warming & Fan-Out Execution
+- **Instant Pre-Warm**: Upon assistant activation (mic click), issue background connection pre-warming to HF Space Brain & API endpoints.
+- **Concurrent Fan-Out**: Use `Promise.allSettled()` to fetch RSS, weather, and AI synthesis in parallel rather than sequentially for up to 50% faster response times.
+
+## 5. Universal Intent Routing & Open-Domain Fallback
+- **8 Domain Taxonomy**: Support News, Weather, Japan Life/Work, Science/Tech, Culture/History, Business/Finance, Health, and Lifestyle.
+- **Uncategorized Query Fallback**: Non-API queries MUST route seamlessly to Gemini's Open-Domain Knowledge Base. Never drop or reject open-ended user inquiries.
