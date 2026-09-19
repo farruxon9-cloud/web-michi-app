@@ -548,5 +548,10 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. **Isbotlangan Ishchi Tarmoqda Qolish**: Barcha kodlar va o'zgarishlar strictly faqat foydalanuvchi bilan ishlanayotgan joriy tarmoqda (`start-1.0a1`) lokal saqlanadi va commit qilinadi.
   3. **Ruxsat So'rash va Kutilish**: Har qanday merge operatsiyasi uchun foydalanuvchining alohida va explicit ko'rsatmasi kutiladi.
 
+## 🚫 90. Undefined Handler References on Component Refactoring (ReferenceError Prevention)
+* **Xatolik**: Kodni refaktiv qilish yoki eski modallarni/funksiyalarni o'chirish jarayonida (masalan `showHistoryModal` va `openHistoryModal` o'chirilganda), JSX tugmalarda ularga bo'lgan `onClick={openHistoryModal}` murojaatlarini tozalashni unutib qoldirish. Natijada ushbu element render bo'lishi bilan JavaScript `ReferenceError: openHistoryModal is not defined` beradi va React `ErrorBoundary` qopqoni ishga tushib butun ilovani qulatadi.
+* **Yechim**: Har safar funksiya yoki state o'chirilganda, butun loyiha bo'ylab `grep_search` orqali shu o'zgaruvchi/funksiya nomini qidirib topish va barcha JSX event handlerlarni to'liq yangilash (`onClick={() => setIsSideDrawerOpen(true)}`). Har bir o'zgarishdan so'ng `npx vite build` va runtime test o'tkazilishi majburiy.
+
+
 
 
