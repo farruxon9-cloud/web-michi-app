@@ -1,5 +1,4 @@
-import React from 'react';
-import { Sparkles, Trash2, X, Bot, ArrowLeft, History } from 'lucide-react';
+import { Sparkles, Trash2, X, Bot, ArrowLeft } from 'lucide-react';
 import MichiQuickChips from './MichiQuickChips';
 import MichiActivationCard from './MichiActivationCard';
 import MichiDictationInput from './MichiDictationInput';
@@ -61,13 +60,6 @@ export default function MichiSideDrawer({
           </div>
 
           <div className="voice-drawer-header-actions">
-            <button 
-              className="voice-drawer-action-btn history" 
-              onClick={onOpenHistory}
-              title="Tarix"
-            >
-              <History size={16} />
-            </button>
             <button 
               className="voice-drawer-action-btn danger" 
               onClick={onClearHistory}

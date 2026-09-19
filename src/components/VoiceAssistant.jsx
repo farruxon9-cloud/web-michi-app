@@ -90,15 +90,6 @@ export default function VoiceAssistant({
   const typewriterIntervalRef = useRef(null);
   const dismissTimerRef = useRef(null);
 
-  const openHistoryModal = async () => {
-    try {
-      const list = await michiLocalStorageEngine.getAllConversations();
-      setChatHistoryList(list || []);
-    } catch(e) {
-      setChatHistoryList([]);
-    }
-    setShowHistoryModal(true);
-  };
 
   const clearChatHistory = async () => {
     await michiLocalStorageEngine.clearAllDeviceData();
@@ -2633,82 +2624,6 @@ Return ONLY the raw JSON object, no markdown wrappers.
         </div>
       )}
 
-      {/* Clean White Mobile Bottom Sheet - Chat History */}
-      {showHistoryModal && (
-        <div className="voice-history-sheet-overlay" onClick={() => setShowHistoryModal(false)}>
-          <div className="voice-history-sheet-modal animate-slide-up" onClick={(e) => e.stopPropagation()}>
-            <div className="voice-sheet-handle"></div>
-            
-            <div className="voice-sheet-header">
-              <div className="voice-sheet-title-box">
-                <div className="voice-sheet-icon">📜</div>
-                <div>
-                  <h2 className="voice-sheet-title">{speechLang === 'ja' ? '会話履歴' : speechLang === 'uz' ? 'Muloqotlar Tarixi' : 'Chat History'}</h2>
-                  <p className="voice-sheet-subtitle">{chatHistoryList.length} {speechLang === 'uz' ? 'ta suhbat saqlangan' : 'conversations saved'}</p>
-                </div>
-              </div>
-              <button className="voice-sheet-close-btn" onClick={() => setShowHistoryModal(false)}>
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="voice-sheet-body">
-              {chatHistoryList.length === 0 ? (
-                <div className="voice-history-empty">
-                  <div className="empty-chat-icon">💬</div>
-                  <p>{speechLang === 'ja' ? '会話履歴はありません' : speechLang === 'uz' ? 'Hozircha saqlangan suhbatlar tarixi bo\'sh' : 'No chat history found'}</p>
-                </div>
-              ) : (
-                <div className="voice-history-list">
-                  {chatHistoryList.map((item) => (
-                    <div key={item.id} className={`voice-history-card ${item.isError ? 'history-card-error' : ''}`}>
-                      <div className="history-card-header">
-                        <span className={`user-question-badge ${item.isError ? 'error-badge' : ''}`}>
-                          {item.isError ? '⚠️ ' + (speechLang === 'uz' ? 'Xatolik' : 'Error') : '🙋‍♂️ ' + (speechLang === 'uz' ? 'Savolingiz' : 'Question')}
-                        </span>
-                        <span className="history-time-stamp">{item.timestamp}</span>
-                      </div>
-                      <p className="history-question-text">{item.question}</p>
-                      
-                      <div className={`history-answer-box ${item.isError ? 'error-answer-box' : ''}`}>
-                        <span className={`ai-answer-badge ${item.isError ? 'error-ai-badge' : ''}`}>
-                          {item.isError ? '🚨 ' + (speechLang === 'uz' ? 'Tizim Xabari' : 'System Log') : '🤖 Michi AI'}
-                        </span>
-                        <p className="history-answer-text">{item.answer}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="voice-sheet-footer" style={{ display: 'flex', gap: '8px', justifyContent: 'space-between', marginTop: '10px' }}>
-              <button 
-                onClick={() => michiLocalStorageEngine.exportConversationsToFile()} 
-                className="voice-export-history-btn"
-                style={{
-                  flex: 1,
-                  background: 'rgba(59, 130, 246, 0.12)',
-                  border: '1px solid rgba(59, 130, 246, 0.25)',
-                  color: '#3b82f6',
-                  borderRadius: '12px',
-                  padding: '8px 12px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                📥 {speechLang === 'ja' ? '履歴を出力 (JSON)' : speechLang === 'uz' ? 'Tarixni Yuklab Olish' : 'Export History'}
-              </button>
-              
-              <button onClick={clearChatHistory} className="voice-clear-history-btn" style={{ flex: 1 }}>
-                <Trash2 size={14} /> {speechLang === 'ja' ? '全履歴を消去' : speechLang === 'uz' ? 'Barcha tarixni tozalash' : 'Clear All History'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Non-Intrusive Floating AI Side Drawer Trigger (Always Visible) */}
       <MichiDrawerTrigger 
         isOpen={isSideDrawerOpen}
@@ -2749,7 +2664,6 @@ Return ONLY the raw JSON object, no markdown wrappers.
             startLocalSpeechRecognition();
           }
         }}
-        onOpenHistory={openHistoryModal}
         onClearHistory={() => {
           clearChatHistory();
           setChatHistoryList([]);
