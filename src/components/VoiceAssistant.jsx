@@ -1445,18 +1445,21 @@ Return ONLY the raw JSON object, no markdown wrappers.
     try {
       const coreAnswer = await askMichiCore(text, (chunkText) => {
         if (!isActiveRef.current) return;
+        setErrorMessage(''); // Clear error message as soon as streaming chunk arrives
         setStatus('speaking'); // Hide "思考中..." indicator as soon as first chunk arrives
         setAiResponseText(chunkText);
         setDisplayedAiText(chunkText);
       });
       if (!isActiveRef.current) return;
 
-      if (coreAnswer && coreAnswer.trim().length > 0) {
-        michiCacheEngine.set(text, coreAnswer, userLang);
+      const activeAns = coreAnswer || aiResponseTextRef.current;
+      if (activeAns && activeAns.trim().length > 0) {
+        setErrorMessage('');
+        michiCacheEngine.set(text, activeAns, userLang);
         handleGeminiSuccess({
           userTranscription: text,
           command: 'NONE',
-          response: coreAnswer,
+          response: activeAns,
           language: userLang
         }, text);
         return;
@@ -1464,6 +1467,21 @@ Return ONLY the raw JSON object, no markdown wrappers.
     } catch (error) {
       if (!isActiveRef.current) return;
       console.error("[Michi Core Error]:", error);
+
+      // If stream chunks were already received in aiResponseTextRef, treat as success!
+      if (aiResponseTextRef.current && aiResponseTextRef.current.trim().length > 0) {
+        const streamAns = aiResponseTextRef.current.trim();
+        setErrorMessage('');
+        setStatus('speaking');
+        michiCacheEngine.set(text, streamAns, userLang);
+        handleGeminiSuccess({
+          userTranscription: text,
+          command: 'NONE',
+          response: streamAns,
+          language: userLang
+        }, text);
+        return;
+      }
     }
 
     const isJa = userLang.startsWith('ja');

@@ -36,7 +36,13 @@ export async function askMichiCore(userMessage, onChunkUpdate = null) {
 
   const fetchPromise = (async () => {
     try {
-      const client = await Client.connect("FarruxKanoatov/michiai");
+      let client;
+      try {
+        client = await Client.connect("https://farruxkanoatov-michiai.hf.space");
+      } catch (connErr) {
+        console.warn("[Michi Core] Direct URL connect failed, falling back to Space name:", connErr);
+        client = await Client.connect("FarruxKanoatov/michiai");
+      }
       const app = await client.submit("/stream_michi_core", {
         message: userMessage,
       });
