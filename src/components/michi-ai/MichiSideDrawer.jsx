@@ -126,7 +126,7 @@ export default function MichiSideDrawer({
               ))}
 
               {/* Active Live Query Flow */}
-              {transcript && (
+              {transcript && !chatHistoryList.some(item => item.question === transcript) && (
                 <div className="drawer-msg user-msg live">
                   <span className="msg-author">{speechLang === 'ja' ? 'あなた' : 'Siz'}</span>
                   <p className="msg-text">{transcript}</p>
@@ -142,7 +142,7 @@ export default function MichiSideDrawer({
                 </div>
               )}
 
-              {aiResponseText && (
+              {aiResponseText && !chatHistoryList.some(item => item.answer === aiResponseText) && (
                 <div className="drawer-msg ai-msg live">
                   <div className="msg-header-row">
                     <span className="msg-author">🤖 Michi AI</span>

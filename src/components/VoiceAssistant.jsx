@@ -84,6 +84,26 @@ export default function VoiceAssistant({
   const dismissTimerRef = useRef(null);
 
 
+  const reloadChatHistory = async () => {
+    try {
+      const saved = await michiLocalStorageEngine.getAllConversations();
+      const list = Array.isArray(saved) ? [...saved].reverse() : [];
+      setChatHistoryList(list);
+    } catch(e) {
+      console.warn("Failed to load chat history:", e);
+    }
+  };
+
+  useEffect(() => {
+    reloadChatHistory();
+  }, []);
+
+  useEffect(() => {
+    if (isSideDrawerOpen) {
+      reloadChatHistory();
+    }
+  }, [isSideDrawerOpen]);
+
   const clearChatHistory = async () => {
     await michiLocalStorageEngine.clearAllDeviceData();
     michiCacheEngine.clear();
@@ -2050,7 +2070,11 @@ Return ONLY the raw JSON object, no markdown wrappers.
       question: userText,
       answer: politeResponse,
       language: detectedLang
-    });
+    }).then(newEntry => {
+      if (newEntry) {
+        setChatHistoryList(prev => [...prev, newEntry]);
+      }
+    }).catch(e => console.warn("Failed to save chat item:", e));
 
     // Store interaction in conversation history
     setConversationHistory(prev => [
