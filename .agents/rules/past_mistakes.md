@@ -531,9 +531,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. Hugging Face Space Gradio API ga so'rov yuborilganda `{ prompt, language }` formatida yuborilishi natijasida Gradio 4/5 422 Unprocessable Entity berishi.
   2. ZeroGPU space-larida `@spaces.GPU` va `import spaces` bo'lmaganda `Runtime error: No @spaces.GPU function detected during startup` bilan container to'xtab qolishi.
 * **Yechim (MAJBURIY)**:
-  1. **Gradio API Payload**: Gradio endpointlariga `{ data: [prompt, language] }` formatida payload yuborish va qaytgan `data[0]` qiymatini xavfsiz JSON parse qilish.
-  2. **ZeroGPU Safety**: ZeroGPU apparatida ishlovchi funksiyalar tepasiga `@spaces.GPU` dekoratorini qo'shish.
-  3. **24/7 Keep-Alive**: Client-side `pingHfBrainSpace()` (10 min) + UptimeRobot HTTP monitor (5 min) orqali serverni doimiy uyg'oq ushlash.
+## 🚫 87. Modern Vector SVG Icon Standard for Active Filter Chips & Reset Buttons
+* **Xatolik**: Active filter chip-lar (`📍 東京23区 (x)`, `💼`, `🚗`, `🚃`) hamda reset tugmalari (`🔄 リセット`) ichida oddiy matnli emojilardan (`📍`, `💼`, `⭐`, `🎯`, `🚶`) foydalanish. Bu turli qurilmalarda va operatsion tizimlarda emoji rasmlari har xil va xunuk/eski uslubda aks etishiga olib keladi.
+* **Yechim (MAJBURIY)**:
+  1. **Pure Lucide Vector SVG Icons**: Barcha filtr tugmalari va chip-larda matnli emojilar o'rniga faqat Lucide vector SVG ikonkalari (`<MapPin size={13} className="chip-svg-icon" />`, `<Briefcase size={13} />`, `<Train size={13} />`, `<RotateCcw size={13} className="reset-spin-icon" />`) ishlatilishi SHART.
+  2. **Interactive Hover Micro-Animations**:
+     - Chip hover qilinganda vector ikonka `transform: scale(1.15)` bilan silliq kattalashadi.
+     - Reset (`リセット`) tugmasi hover qilinganda `RotateCcw` ikonkasi `transform: rotate(-180deg)` bilan 360°/180° silliq aylanadi (`transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)`).
+  3. **Apple Glass Capsule Styling**: Active tugmalarga shaffof shisha kapsula dizayni va `backdrop-filter: blur(12px)` beriladi.
 
 
 

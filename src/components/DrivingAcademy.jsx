@@ -39,7 +39,7 @@ import {
   Info, ArrowLeft, Phone, Mail, MapPin, Share2, CheckCircle2, Bookmark, Search, 
   Banknote, Edit3, SlidersHorizontal, X, ChevronDown, ChevronUp, RotateCcw,
   Car, GraduationCap, Sparkles, Globe, Truck, Bus, CreditCard, ShieldCheck, 
-  Clock, Gift, Users, Award, Shield, Check, Layers, Building2, Train
+  Clock, Gift, Users, Award, Shield, Check, Layers, Building2, Train, Target, Star, FileText, Navigation
 } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
 import CustomMobilePickerModal from './CustomMobilePickerModal';
@@ -1630,12 +1630,12 @@ export default function DrivingAcademy({
                 selectedCourses.length <= 2 ? (
                   selectedCourses.map(course => (
                     <span key={course} className="active-chip" onClick={() => setSelectedCourses(prev => prev.filter(c => c !== course))}>
-                      🚗 {getCourseLabel(course)} <span className="active-chip-close"><X size={11} /></span>
+                      <Car size={13} className="chip-svg-icon" /> {getCourseLabel(course)} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedCourses([])} title={selectedCourses.map(getCourseLabel).join(', ')}>
-                    🚗 {getCourseLabel(selectedCourses[0])} <span className="active-chip-count">外{selectedCourses.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                    <Car size={13} className="chip-svg-icon" /> {getCourseLabel(selectedCourses[0])} <span className="active-chip-count">外{selectedCourses.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1643,12 +1643,12 @@ export default function DrivingAcademy({
                 selectedStyles.length <= 2 ? (
                   selectedStyles.map(style => (
                     <span key={style} className="active-chip" onClick={() => setSelectedStyles(prev => prev.filter(s => s !== style))}>
-                      🏫 {getStyleLabel(style)} <span className="active-chip-close"><X size={11} /></span>
+                      <GraduationCap size={13} className="chip-svg-icon" /> {getStyleLabel(style)} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedStyles([])} title={selectedStyles.map(getStyleLabel).join(', ')}>
-                    🏫 {getStyleLabel(selectedStyles[0])} <span className="active-chip-count">外{selectedStyles.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                    <GraduationCap size={13} className="chip-svg-icon" /> {getStyleLabel(selectedStyles[0])} <span className="active-chip-count">外{selectedStyles.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1656,12 +1656,12 @@ export default function DrivingAcademy({
                 selectedFeatures.length <= 2 ? (
                   selectedFeatures.map(feat => (
                     <span key={feat} className="active-chip" onClick={() => setSelectedFeatures(prev => prev.filter(f => f !== feat))}>
-                      ✨ {getAcademyFeatureLabel(feat)} <span className="active-chip-close"><X size={11} /></span>
+                      <Sparkles size={13} className="chip-svg-icon" /> {getAcademyFeatureLabel(feat)} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedFeatures([])} title={selectedFeatures.map(getAcademyFeatureLabel).join(', ')}>
-                    ✨ {getAcademyFeatureLabel(selectedFeatures[0])} <span className="active-chip-count">外{selectedFeatures.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                    <Sparkles size={13} className="chip-svg-icon" /> {getAcademyFeatureLabel(selectedFeatures[0])} <span className="active-chip-count">外{selectedFeatures.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1669,12 +1669,12 @@ export default function DrivingAcademy({
                 selectedStations.length <= 2 ? (
                   selectedStations.map(st => (
                     <span key={st} className="active-chip" onClick={() => setSelectedStations(prev => prev.filter(s => s !== st))}>
-                      🚃 {st} <span className="active-chip-close"><X size={11} /></span>
+                      <Train size={13} className="chip-svg-icon" /> {st} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedStations([])} title={selectedStations.join(', ')}>
-                    🚃 {selectedStations[0]} <span className="active-chip-count">外{selectedStations.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                    <Train size={13} className="chip-svg-icon" /> {selectedStations[0]} <span className="active-chip-count">外{selectedStations.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1682,39 +1682,39 @@ export default function DrivingAcademy({
                 selectedCitiesList.length <= 2 ? (
                   selectedCitiesList.map(c => (
                     <span key={c} className="active-chip" onClick={() => setSelectedCitiesList(prev => prev.filter(x => x !== c))}>
-                      📍 {c} <span className="active-chip-close"><X size={11} /></span>
+                      <MapPin size={13} className="chip-svg-icon" /> {c} <span className="active-chip-close"><X size={11} /></span>
                     </span>
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedCitiesList([])} title={selectedCitiesList.join(', ')}>
-                    📍 {selectedCitiesList[0]} <span className="active-chip-count">外{selectedCitiesList.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                    <MapPin size={13} className="chip-svg-icon" /> {selectedCitiesList[0]} <span className="active-chip-count">外{selectedCitiesList.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               ) : (
                 selectedPrefecture !== 'all' && (
                   <span className="active-chip" onClick={() => setSelectedPrefecture('all')}>
-                    📍 {selectedPrefecture} <span className="active-chip-close"><X size={11} /></span>
+                    <MapPin size={13} className="chip-svg-icon" /> {selectedPrefecture} <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
               {selectedLang !== 'all' && (
                 <span className="active-chip" onClick={() => setSelectedLang('all')}>
-                  🗣️ {getAcademyLangLabel(selectedLang)} <span className="active-chip-close"><X size={11} /></span>
+                  <Globe size={13} className="chip-svg-icon" /> {getAcademyLangLabel(selectedLang)} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
               {selectedPriceRange !== 'all' && (
                 <span className="active-chip" onClick={() => setSelectedPriceRange('all')}>
-                  💰 {getAcademyPriceLabel(selectedPriceRange)} <span className="active-chip-close"><X size={11} /></span>
+                  <Banknote size={13} className="chip-svg-icon" /> {getAcademyPriceLabel(selectedPriceRange)} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
               {searchQuery && searchQuery.length > 0 && (
                 <span className="active-chip" onClick={() => setSearchQuery && setSearchQuery('')}>
-                  🔍 {searchQuery} <span className="active-chip-close"><X size={11} /></span>
+                  <Search size={13} className="chip-svg-icon" /> {searchQuery} <span className="active-chip-close"><X size={11} /></span>
                 </span>
               )}
             </div>
-            <button type="button" className="clear-all-chip sticky-reset-btn" onClick={resetFilters}>
-              <RotateCcw size={12} />
+            <button type="button" className="clear-all-chip sticky-reset-btn" onClick={resetFilters} title={t('clearAll', 'リセット')}>
+              <RotateCcw size={13} className="reset-spin-icon" />
               <span>{t('clearAll', 'リセット')}</span>
             </button>
           </div>

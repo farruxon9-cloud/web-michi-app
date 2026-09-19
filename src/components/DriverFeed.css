@@ -1191,6 +1191,31 @@ html.dark-mode .townwork-tab-btn.active::after {
   box-shadow: -10px 0 16px var(--card-bg, #ffffff), 0 3px 10px rgba(255, 59, 48, 0.08);
 }
 
+.chip-svg-icon {
+  flex-shrink: 0;
+  stroke-width: 2.2px;
+  color: #0066CC;
+  transition: transform 0.2s ease;
+}
+
+html.dark-mode .chip-svg-icon {
+  color: #409CFF;
+}
+
+.active-chip:hover .chip-svg-icon {
+  transform: scale(1.15);
+}
+
+.reset-spin-icon {
+  flex-shrink: 0;
+  stroke-width: 2.2px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sticky-reset-btn:hover .reset-spin-icon {
+  transform: rotate(-180deg);
+}
+
 .clear-all-chip:hover, .sticky-reset-btn:hover {
   background: linear-gradient(135deg, rgba(255, 59, 48, 0.2) 0%, rgba(255, 59, 48, 0.1) 100%);
   border-color: rgba(255, 59, 48, 0.45);
