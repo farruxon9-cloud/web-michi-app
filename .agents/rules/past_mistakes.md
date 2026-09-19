@@ -552,6 +552,11 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**: Kodni refaktiv qilish yoki eski modallarni/funksiyalarni o'chirish jarayonida (masalan `showHistoryModal` va `openHistoryModal` o'chirilganda), JSX tugmalarda ularga bo'lgan `onClick={openHistoryModal}` murojaatlarini tozalashni unutib qoldirish. Natijada ushbu element render bo'lishi bilan JavaScript `ReferenceError: openHistoryModal is not defined` beradi va React `ErrorBoundary` qopqoni ishga tushib butun ilovani qulatadi.
 * **Yechim**: Har safar funksiya yoki state o'chirilganda, butun loyiha bo'ylab `grep_search` orqali shu o'zgaruvchi/funksiya nomini qidirib topish va barcha JSX event handlerlarni to'liq yangilash (`onClick={() => setIsSideDrawerOpen(true)}`). Har bir o'zgarishdan so'ng `npx vite build` va runtime test o'tkazilishi majburiy.
 
+## 🚫 91. AI Chat History State Synchronization & Persistent Local Storage Invariant
+* **Xatolik**: AI javoblari qurilmada (`michiLocalStorageEngine`) saqlangani bilan React state'i (`chatHistoryList`) vaqtida yangilanmasligi yoki mount bo'lganda yuklanmasligi. Natijada chat yon paneli (`MichiSideDrawer.jsx`) ochilganda o'tgan savol-javoblar ko'rinmay yo'qolib qolishi.
+* **Yechim**: `VoiceAssistant.jsx` mount bo'lganda va `isSideDrawerOpen` o'zgarganda `reloadChatHistory()` orqali tarix majburiy yuklanadi va har bir yangi javob kelganda `setChatHistoryList(prev => [...prev, newEntry])` orqali state zudlik bilan sinxronlashtiriladi.
+
+
 
 
 
