@@ -541,7 +541,12 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. **Gradio `client.submit` Jonli Striming**: Bloklovchi `predict` o'rniga Gradio `client.submit("/stream_michi_core", { message: userMessage })` orqali matn `for await (const msg of app)` oqimi bilan darhol olinadi.
   3. **Instant First Chunk Indicator Dismissal**: Birinchi matn bo'lagi (chunk) kelishi bilanoq `setStatus('speaking')` bajarilib, `"思考中..."` (thinking...) indikatori darhol yo'qoladi va matn real vaqtda ekranda paydo bo'ladi.
   4. **45 Soniyalik Qat'iy Taymaut**: 45000ms taymaut beriladi.
-  5. **Log Shartnomasi**: So'rovda `console.log("[Michi Core Request]:", userMessage)`, xatolikda `console.error("[Michi Core Error]:", err)` chiqarilishi majburiydir.
+## 🚫 89. Git Branch Merge Permission Invariant (Explicit User Permission Required)
+* **Xatolik**: Foydalanuvchi so'ramagan taqdirda ham o'zbilarmonlik bilan ishchi tarmoqni (`start-1.0a1`) asosiy tarmoqqa (`start-1.0a`) avtomatik `git merge` qilish.
+* **Yechim (MAJBURIY)**:
+  1. **Nol Avto-Merge (Zero Auto-Merge)**: Foydalanuvchi o'zi aniq va oshkora "merge qil" yoki "start-1.0a ga qo'shib qo'y" deb aytmaguncha, QAT'IYAN avtomatik `git merge` bajarilmaydi.
+  2. **Isbotlangan Ishchi Tarmoqda Qolish**: Barcha kodlar va o'zgarishlar strictly faqat foydalanuvchi bilan ishlanayotgan joriy tarmoqda (`start-1.0a1`) lokal saqlanadi va commit qilinadi.
+  3. **Ruxsat So'rash va Kutilish**: Har qanday merge operatsiyasi uchun foydalanuvchining alohida va explicit ko'rsatmasi kutiladi.
 
 
 
