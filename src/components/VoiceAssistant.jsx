@@ -59,7 +59,6 @@ export default function VoiceAssistant({
   const [resumeStep, setResumeStep] = useState('idle');
   const [tempResumeData, setTempResumeData] = useState({});
   const [speechLang, setSpeechLang] = useState(localStorage.getItem('michi_speech_lang') || i18n.language || 'uz');
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [chatHistoryList, setChatHistoryList] = useState([]);
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const [drawerInput, setDrawerInput] = useState('');
@@ -2375,7 +2374,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
               </div>
 
               <button 
-                onClick={openHistoryModal}
+                onClick={() => setIsSideDrawerOpen(true)}
                 style={{
                   background: 'rgba(94, 92, 230, 0.15)',
                   border: '1px solid rgba(94, 92, 230, 0.3)',
@@ -2564,7 +2563,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
             <button 
               className="voice-history-btn"
-              onClick={openHistoryModal}
+              onClick={() => setIsSideDrawerOpen(true)}
               style={{
                 background: 'rgba(94, 92, 230, 0.12)',
                 border: '1px solid rgba(94, 92, 230, 0.25)',
