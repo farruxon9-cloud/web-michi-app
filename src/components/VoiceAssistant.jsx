@@ -2693,11 +2693,16 @@ Return ONLY the raw JSON object, no markdown wrappers.
         onQuickChipClick={handleQuickChipClick}
         onActivateAI={() => {
           unlockMobileAudio();
+          if (setIsVoiceStandby) setIsVoiceStandby(true);
           if (onStartVoice) onStartVoice();
+          setTimeout(() => {
+            startLocalSpeechRecognition();
+          }, 100);
         }}
         onMicToggle={() => {
           if (!isActive) {
             unlockMobileAudio();
+            if (setIsVoiceStandby) setIsVoiceStandby(true);
             if (onStartVoice) onStartVoice();
           }
           if (status === 'listening') {
