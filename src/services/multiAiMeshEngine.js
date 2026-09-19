@@ -20,14 +20,32 @@ class MultiAiMeshEngine {
       import.meta.env.VITE_GEMINI_API_KEY_3,
       import.meta.env.VITE_GEMINI_API_KEY_4,
       import.meta.env.VITE_GEMINI_API_KEY_5,
-      localStorage.getItem('michi_gemini_api_key')
+      typeof localStorage !== 'undefined' ? localStorage.getItem('michi_gemini_api_key') : null
     ].filter(Boolean);
 
     this.deepseekKeys = [
       import.meta.env.VITE_DEEPSEEK_API_KEY,
-      localStorage.getItem('michi_deepseek_api_key'),
-      'sk-free-openrouter-deepseek-fallback'
+      typeof localStorage !== 'undefined' ? localStorage.getItem('michi_deepseek_api_key') : null
     ].filter(Boolean);
+
+    // Auto Keep-Alive Pinger for Hugging Face Space (wakes server up on launch & keeps active)
+    this.pingHfBrainSpace();
+    if (typeof window !== 'undefined') {
+      setInterval(() => this.pingHfBrainSpace(), 10 * 60 * 1000); // Ping every 10 mins
+    }
+  }
+
+  pingHfBrainSpace() {
+    const hfBrainUrl = import.meta.env.VITE_HF_BRAIN_URL || '';
+    if (!hfBrainUrl) return;
+    try {
+      fetch(hfBrainUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: 'ping', language: 'ja' }),
+        signal: AbortSignal.timeout(4000)
+      }).catch(() => {});
+    } catch (e) {}
   }
 
   /**
@@ -36,7 +54,7 @@ class MultiAiMeshEngine {
    * @param {string} lang - 'ja' | 'uz' | 'en'
    * @returns {Promise<{ text: string, provider: string }>}
    */
-  async processCascadingQuery(prompt, lang = 'ja') {
+  async processCascadingQuery(prompt, lang = 'ja', signal = null) {
     const cleanLang = (lang || 'ja').substring(0, 2).toLowerCase();
     console.log(`[MultiAiMesh] ⚡ Processing cascading AI query: "${prompt}" [${cleanLang}]`);
 
@@ -46,10 +64,23 @@ class MultiAiMeshEngine {
       return cachedHit;
     }
 
+    // Tier 0.5: Zero-Budget Instant Pollinations GET Fallback
+    try {
+      console.log('[MultiAiMesh] ⚡ Tier 0.5: Executing Pollinations GET proxy...');
+      const pollRes = await this.fetchPollinationsGet(prompt, cleanLang);
+      if (pollRes) {
+        console.log('[MultiAiMesh] ✅ Tier 0.5 (Pollinations GET) succeeded!');
+        michiCacheEngine.set(prompt, pollRes, cleanLang);
+        return { text: pollRes, provider: 'Pollinations AI' };
+      }
+    } catch (e) {
+      console.warn('[MultiAiMesh] Tier 0.5 Pollinations GET failed:', e.message);
+    }
+
     // Tier 1: Try Gemini Pool first (highest intelligence and speed)
     try {
       console.log('[MultiAiMesh] 🌟 Tier 1: Executing Gemini Flash Pool query...');
-      const geminiResponse = await this.fetchGeminiPool(prompt, cleanLang);
+      const geminiResponse = await this.fetchGeminiPool(prompt, cleanLang, signal);
       if (geminiResponse) {
         console.log('[MultiAiMesh] ✅ Tier 1 (Gemini Flash Pool) succeeded!');
         michiCacheEngine.set(prompt, geminiResponse, cleanLang);
@@ -122,7 +153,7 @@ class MultiAiMeshEngine {
 
     for (const endpoint of endpoints) {
       for (const apiKey of this.deepseekKeys) {
-        if (!apiKey || apiKey.includes('fallback')) continue;
+        if (!apiKey) continue;
         try {
           const res = await fetch(endpoint, {
             method: 'POST',
@@ -138,7 +169,7 @@ class MultiAiMeshEngine {
               ],
               max_tokens: 500
             }),
-            signal: AbortSignal.timeout(6000)
+            signal: AbortSignal.timeout(8000)
           });
 
           if (res.ok) {
@@ -157,7 +188,7 @@ class MultiAiMeshEngine {
   /**
    * Fetch from Free Gemini Multi-Key Rotation Pool
    */
-  async fetchGeminiPool(prompt, lang) {
+  async fetchGeminiPool(prompt, lang, customSignal) {
     if (this.geminiKeys.length === 0) return null;
 
     const systemPrompt = `You are Michi AI — the ultra-intelligent personal visual assistant for Japan residents, foreign workers, and drivers.
@@ -171,15 +202,18 @@ Guidelines:
       if (!key) continue;
       try {
         const models = [
-          'gemini-3.6-flash',
-          'gemini-3.5-flash',
-          'gemini-3.5-flash-lite',
-          'gemini-3.7-flash',
-          'gemini-flash-latest',
-          'gemini-flash-lite-latest'
+          'gemini-2.0-flash',
+          'gemini-1.5-flash',
+          'gemini-1.5-flash-8b',
+          'gemini-1.5-pro'
         ];
         for (const model of models) {
+          if (customSignal && customSignal.aborted) return null;
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+          const signal = customSignal 
+            ? AbortSignal.any([customSignal, AbortSignal.timeout(8000)]) 
+            : AbortSignal.timeout(8000);
+
           const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -191,7 +225,7 @@ Guidelines:
                 temperature: 0.7
               }
             }),
-            signal: AbortSignal.timeout(7000)
+            signal
           });
 
           if (res.ok) {
@@ -239,7 +273,7 @@ Guidelines:
             max_tokens: 600,
             temperature: 0.7
           }),
-          signal: AbortSignal.timeout(7000)
+          signal: AbortSignal.timeout(35000)
         });
 
         if (res.ok) {
@@ -277,6 +311,28 @@ Guidelines:
       }
     } catch (e) {}
 
+    return null;
+  }
+
+  /**
+   * Zero-budget Pollinations GET endpoint (No API Key required)
+   */
+  async fetchPollinationsGet(prompt, lang) {
+    try {
+      const sys = encodeURIComponent(`You are Michi AI, a helpful intelligent assistant. Answer directly and politely in ${lang === 'uz' ? 'Uzbek' : lang === 'ja' ? 'Japanese' : 'English'}.`);
+      const q = encodeURIComponent(prompt);
+      const res = await fetch(`https://text.pollinations.ai/${q}?system=${sys}`, {
+        signal: AbortSignal.timeout(8000)
+      });
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.trim().length > 5 && !text.toLowerCase().includes('rate limit') && !text.toLowerCase().includes('budget')) {
+          return text.trim();
+        }
+      }
+    } catch (e) {
+      console.warn('[MultiAiMesh] fetchPollinationsGet failed:', e.message);
+    }
     return null;
   }
 }

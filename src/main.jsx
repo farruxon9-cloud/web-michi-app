@@ -54,10 +54,14 @@ if (typeof window !== 'undefined') {
   };
 
   window.addEventListener('error', (event) => {
+    const msg = String(event.message || '');
+    if (msg.includes('send was called before connect') || msg.includes('ResizeObserver')) return;
     showVisualError(`Runtime error: ${event.message} at ${event.filename}:${event.lineno}`);
   });
   window.addEventListener('unhandledrejection', (event) => {
-    showVisualError(`Promise rejection: ${event.reason}`);
+    const reasonStr = String(event.reason?.message || event.reason || '');
+    if (reasonStr.includes('send was called before connect') || reasonStr.includes('ResizeObserver')) return;
+    showVisualError(`Promise rejection: ${reasonStr}`);
   });
 }
 

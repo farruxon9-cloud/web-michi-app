@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mic, MicOff, WifiOff, Lock, X, Sparkles, Key, AlertTriangle, RefreshCw, Trash2, User, Bot } from 'lucide-react';
+import { Mic, MicOff, WifiOff, Lock, X, Sparkles, Key, AlertTriangle, RefreshCw, Trash2, User, Bot, Car, Compass, SunMedium, Send, Power, Volume2 } from 'lucide-react';
 import './VoiceAssistant.css';
 import { matchLexiconCommand } from '../utils/voiceLexicon';
 import { actionRegistry } from '../services/actionRegistry';
@@ -11,13 +11,40 @@ import { japaneseLanguageEngine } from '../services/japaneseLanguageEngine';
 import { autonomousWebSearchEngine } from '../services/autonomousWebSearchEngine';
 import { multiAiMeshEngine } from '../services/multiAiMeshEngine';
 import { michiCacheEngine } from '../services/michiCacheEngine';
+import { michiLocalStorageEngine } from '../services/michiLocalStorageEngine';
+import { Client } from "@gradio/client";
+import MichiDrawerTrigger from './michi-ai/MichiDrawerTrigger';
+import MichiSideDrawer from './michi-ai/MichiSideDrawer';
 
 export function calculateReadingDuration(text, lang = 'uz') {
-  if (!text) return 5000;
+  if (!text) return 12000;
   const isJa = (lang || 'uz').toLowerCase().startsWith('ja');
-  const msPerChar = isJa ? 65 : 45;
-  const calculated = Math.round(text.length * msPerChar + 3500);
-  return Math.min(12000, Math.max(5000, calculated));
+  const msPerChar = isJa ? 85 : 65;
+  const calculated = Math.round(text.length * msPerChar + 6000);
+  return Math.min(30000, Math.max(12000, calculated));
+}
+
+// Singleton @gradio/client connection instance (connects once outside component)
+let hfClientInstance = null;
+let hfClientConnectingPromise = null;
+
+async function getHfClient() {
+  if (hfClientInstance) return hfClientInstance;
+  if (!hfClientConnectingPromise) {
+    console.log('[VoiceAssistant] 🧠 Initializing singleton @gradio/client connection to FarruxKanoatov/michiai...');
+    hfClientConnectingPromise = Client.connect("FarruxKanoatov/michiai")
+      .then(client => {
+        hfClientInstance = client;
+        hfClientConnectingPromise = null;
+        return client;
+      })
+      .catch(err => {
+        console.warn('[VoiceAssistant] Singleton Client.connect error:', err.message);
+        hfClientConnectingPromise = null;
+        return null;
+      });
+  }
+  return hfClientConnectingPromise;
 }
 
 export default function VoiceAssistant({ 
@@ -57,6 +84,27 @@ export default function VoiceAssistant({
   const [speechLang, setSpeechLang] = useState(localStorage.getItem('michi_speech_lang') || i18n.language || 'uz');
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [chatHistoryList, setChatHistoryList] = useState([]);
+  const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
+  const [drawerInput, setDrawerInput] = useState('');
+
+  // Auto-open side drawer when AI is activated via header robot or nav button
+  useEffect(() => {
+    if (isActive) {
+      setIsSideDrawerOpen(true);
+    }
+  }, [isActive]);
+
+  const handleSendDrawerText = (e) => {
+    if (e) e.preventDefault();
+    if (!drawerInput.trim()) return;
+    const text = drawerInput.trim();
+    setDrawerInput('');
+    processTextWithGemini(text);
+  };
+
+  const handleQuickChipClick = (queryText) => {
+    processTextWithGemini(queryText);
+  };
 
   // Typewriter streaming and dynamic fade-out state
   const [displayedAiText, setDisplayedAiText] = useState('');
@@ -65,19 +113,19 @@ export default function VoiceAssistant({
   const typewriterIntervalRef = useRef(null);
   const dismissTimerRef = useRef(null);
 
-  const openHistoryModal = () => {
+  const openHistoryModal = async () => {
     try {
-      const history = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
-      setChatHistoryList(history.reverse());
+      const list = await michiLocalStorageEngine.getAllConversations();
+      setChatHistoryList(list || []);
     } catch(e) {
       setChatHistoryList([]);
     }
     setShowHistoryModal(true);
   };
 
-  const clearChatHistory = () => {
-    localStorage.removeItem('michi_chat_history');
-    localStorage.removeItem('michi_ai_memory_cache');
+  const clearChatHistory = async () => {
+    await michiLocalStorageEngine.clearAllDeviceData();
+    michiCacheEngine.clear();
     setChatHistoryList([]);
     setConversationHistory([]);
   };
@@ -118,6 +166,43 @@ export default function VoiceAssistant({
   const canvasRef = useRef(null);
   const analyserRef = useRef(null);
   const localStreamRef = useRef(null);
+  const speechContentRef = useRef(null);
+
+  // Unlock iOS WebKit AudioContext and SpeechSynthesis on initial user gesture
+  const unlockMobileAudio = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+          audioContextRef.current.resume().catch(() => {});
+        } else if (!audioContextRef.current) {
+          const dummyCtx = new AudioCtx();
+          dummyCtx.resume().then(() => dummyCtx.close()).catch(() => {});
+        }
+      }
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        const dummyUtterance = new SpeechSynthesisUtterance('');
+        dummyUtterance.volume = 0;
+        window.speechSynthesis.speak(dummyUtterance);
+      }
+    } catch (e) {
+      console.warn('[MobileAudioUnlock] iOS audio unlock silent warning:', e);
+    }
+  };
+
+  // Auto-scroll chat window to bottom when new messages/responses arrive (scoped to container to prevent body jump)
+  useEffect(() => {
+    if (speechContentRef.current) {
+      speechContentRef.current.scrollTop = speechContentRef.current.scrollHeight;
+    }
+    if (chatEndRef.current && typeof chatEndRef.current.scrollIntoView === 'function') {
+      try {
+        chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      } catch (e) {
+        chatEndRef.current.scrollIntoView(false);
+      }
+    }
+  }, [displayedAiText, status, aiResponseText, transcript, conversationHistory, chatHistoryList]);
 
   const [elevenKeyTemp, setElevenKeyTemp] = useState(localStorage.getItem('michi_elevenlabs_api_key') || '');
 
@@ -171,6 +256,9 @@ export default function VoiceAssistant({
 
   const statusRef = useRef(status);
   statusRef.current = status;
+
+  const aiResponseTextRef = useRef(aiResponseText);
+  aiResponseTextRef.current = aiResponseText;
 
   const apiKeyRef = useRef(apiKey);
   apiKeyRef.current = apiKey;
@@ -503,15 +591,8 @@ export default function VoiceAssistant({
     "テーマを切り替えます。": "/audio/theme_change_ja.mp3"
   };
 
-  // Speaks response text back to the driver using a cascading fallback hierarchy:
-  // 0. Local Cached Audio (if response is a standard static UI phrase)
-  // 1. ElevenLabs Neural Voice (if VITE_ELEVENLABS_API_KEY is configured and quota permits)
-  // 2. Google Cloud Wavenet TTS (utilizes the universal Gemini API key, offers 1M chars/month free)
-  // 3. Azure Neural TTS (if VITE_AZURE_TTS_KEY is configured)
-  // 4. Standard Browser Web Speech Synthesis (100% free and offline fallback)
   const speakResponse = async (text, lang = 'ja', onEndCallback) => {
-    // SILENT VISUAL MODE: Do NOT synthesize audio. Purely display visual text cards!
-    setStatus('idle');
+    // SILENT VISUAL MODE: Purely display visual text cards, preserve status until reading duration finishes
     if (onEndCallback) onEndCallback();
   };
 
@@ -566,7 +647,6 @@ export default function VoiceAssistant({
     return screenStructureIndex.getRichScreenContext(tab, subPage, lang);
   };
 
-
   // Local-First Speech-to-Text Recognition for instant local matching and online fallback
   const startLocalSpeechRecognition = async () => {
     if (isListeningRef.current) {
@@ -589,15 +669,14 @@ export default function VoiceAssistant({
       recognitionRef.current = null;
     }
 
-
-
-    // Preserve active transcript and speech bubble while AI is thinking or speaking
-    if (statusRef.current !== 'thinking' && statusRef.current !== 'speaking') {
+    // Preserve active transcript and speech bubble while AI is thinking, speaking, or displaying active answer card
+    if (statusRef.current !== 'thinking' && statusRef.current !== 'speaking' && !aiResponseTextRef.current) {
       setTranscript('');
       setAiResponseText('');
       setShowPill(false);
     }
     setHasStarted(true);
+    isListeningRef.current = true;
     isListeningRef.current = true;
 
     const recognition = new SpeechRecognition();
@@ -635,6 +714,7 @@ export default function VoiceAssistant({
       if (activeSpeechText.trim()) {
         const cleanedLive = localSTT.cleanTranscription(activeSpeechText, currentLang);
         setTranscript(cleanedLive);
+        setDrawerInput(cleanedLive);
         setShowPill(true);
       }
 
@@ -1109,9 +1189,20 @@ export default function VoiceAssistant({
     if (!textInput.trim()) return;
     const userText = textInput.trim();
     setTextInput('');
+    unlockMobileAudio();
+
+    // Cancel any running auto-dismiss timers and typewriter intervals immediately
+    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+    if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+    if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
 
     setTranscript(userText);
     setStatus('thinking');
+    setShowPill(true);
+    setIsFadeOut(false);
+    setDisplayedAiText('');
+    setAiResponseText('');
+    setErrorMessage('');
     
     if (isFillingResume) {
       processResumeFlow(userText);
@@ -1129,12 +1220,11 @@ export default function VoiceAssistant({
     }
 
     const modelsToTry = [
-      'gemini-3.6-flash',
-      'gemini-3.5-flash',
-      'gemini-3.5-flash-lite',
-      'gemini-3.7-flash',
-      'gemini-flash-latest',
-      'gemini-flash-lite-latest'
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-pro',
+      'gemini-1.5-flash',
+      'gemini-flash-latest'
     ];
 
     let lastError = null;
@@ -1163,7 +1253,8 @@ export default function VoiceAssistant({
                 { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
                 { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" }
               ]
-            })
+            }),
+            signal: AbortSignal.timeout(9000)
           }
         );
 
@@ -1258,13 +1349,22 @@ CURRENT USER PROFILE:
   const processTextWithGemini = async (text) => {
     if (!isActiveRef.current) return;
     
-    // Clear previous turn responses immediately to prevent ghost text flash
+    // Cancel any running auto-dismiss timers and typewriter intervals immediately
+    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+    if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+    if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
+
+    setTranscript(text);
+    setDisplayedAiText('');
     setAiResponseText('');
     setErrorMessage('');
     setStatus('thinking');
     setShowPill(true);
+    setIsFadeOut(false);
 
     const userLang = speechLangRef.current || 'ja';
+
+    // Tier 0: Instant 0ms cache check
     const cachedHit = michiCacheEngine.get(text, userLang);
     if (cachedHit && cachedHit.text) {
       console.log('[VoiceAssistant] ⚡ Instant 0ms cache response served for:', text);
@@ -1277,33 +1377,27 @@ CURRENT USER PROFILE:
       return;
     }
 
-    // Try Hugging Face Space Central AI Brain API if configured
-    const hfBrainUrl = import.meta.env.VITE_HF_BRAIN_URL || '';
-    if (hfBrainUrl) {
-      try {
-        console.log('[VoiceAssistant] 🧠 Contacting Hugging Face Space AI Brain:', hfBrainUrl);
-        const hfRes = await fetch(hfBrainUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: text, language: userLang }),
-          signal: AbortSignal.timeout(4000)
-        });
-        if (hfRes.ok) {
-          const hfData = await hfRes.json();
-          if (hfData && hfData.response) {
-            console.log('[VoiceAssistant] 🧠 HF Space Brain returned response:', hfData.intent_detected);
-            handleGeminiSuccess({
-              userTranscription: text,
-              command: 'NONE',
-              response: hfData.response,
-              language: userLang
-            }, text);
-            return;
-          }
-        }
-      } catch (hfErr) {
-        console.warn('[VoiceAssistant] HF Space Brain timeout/error, using client Gemini pool:', hfErr.message);
-      }
+    // Fast Instant Intent Greetings (0ms response)
+    const lowerText = text.trim().toLowerCase();
+    const isUzGreeting = /^(salom|assalomu\s*alaykum|salomalaykum|hayrli\s*kun)$/i.test(lowerText);
+    const isJaGreeting = /^(こんにちは|おはよう|こんばんは|はじめまして)$/i.test(lowerText);
+    const isEnGreeting = /^(hello|hi|good\s*morning|good\s*afternoon)$/i.test(lowerText);
+
+    if (isUzGreeting || isJaGreeting || isEnGreeting) {
+      const instantGreeting = isUzGreeting
+        ? "Assalomu alaykum! Men Michi AI yordamchisiman. Sizga qanday yordam bera olaman?"
+        : isJaGreeting
+        ? "こんにちは！Michi AIアシスタントです。本日はどのようなご用件でしょうか？"
+        : "Hello! I am Michi AI assistant. How may I help you today?";
+
+      michiCacheEngine.set(text, instantGreeting, userLang);
+      handleGeminiSuccess({
+        userTranscription: text,
+        command: 'NONE',
+        response: instantGreeting,
+        language: userLang
+      }, text);
+      return;
     }
 
     const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
@@ -1312,7 +1406,6 @@ CURRENT USER PROFILE:
     const now = new Date();
     const localTimeContext = `\nCurrent local date and time: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}, ${now.toLocaleTimeString('en-US', { hour12: false })}. You MUST use this local date and time context to answer questions about the current day, date, year, month, or time in the user's language.`;
 
-    // Check if the user query is asking for live weather forecast
     let weatherContext = '';
     const isWeatherQuery = /天気|気象|雨|気温|weather|forecast|ob[- ]?havo|yomg'ir|harorat/i.test(text);
     if (isWeatherQuery) {
@@ -1330,14 +1423,13 @@ CURRENT USER PROFILE:
       }
     }
 
-    // Check if user query triggers background internet search
     let webSearchContext = '';
     const isQuestionQuery = /nima|kim|qanday|qachon|qaerda|qayerda|haqida|何|どう|誰|いつ|どこ|なぜ|戦争|ニュース|政治|経済|社会|what|who|how|when|where|why|war|news|politic|economy/i.test(text);
     if (isQuestionQuery && !isWeatherQuery) {
       try {
         const searchRes = await Promise.race([
           autonomousWebSearchEngine.searchWebFreeSources(text, speechLangRef.current || 'ja'),
-          new Promise(res => setTimeout(() => res({ success: false }), 3500))
+          new Promise(res => setTimeout(() => res({ success: false }), 2000))
         ]);
         if (searchRes.success && searchRes.answer) {
           webSearchContext = "\nREAL-TIME INTERNET WEB SEARCH CONTEXT (Source: " + searchRes.source + "):\n" + searchRes.answer + "\nSynthesize and use this fresh web search data to enrich your response.";
@@ -1368,7 +1460,6 @@ STRICT RESPONSE RULES:
    - Simple questions (greetings, date/time): 1-2 concise, polite sentences.
    - Medium questions (weather forecast, simple facts): 3-5 informative sentences.
    - Complex questions (jobs, education, history, science, region guides, complex topics): 5-10 detailed, structured, comprehensive sentences.
-   - Always meaningful, clear, and rich — never include useless fluff or redundant filler words.
 
 Your task: analyze the user's message and return a JSON object:
 {
@@ -1386,82 +1477,161 @@ Return ONLY the raw JSON object, no markdown wrappers.
       ...recentHistory,
       {
         role: 'user',
-        parts: [
-          { text: text }
-        ]
+        parts: [{ text: text }]
       }
     ];
 
-    try {
-      const data = await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext);
-
-      if (!isActiveRef.current) return;
-
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      const aiResult = safeJsonParse(rawText, text);
-
-      handleGeminiSuccess(aiResult, text);
-
-    } catch (error) {
-      if (!isActiveRef.current) return;
-      console.warn('Primary Gemini API pool failed, attempting MultiAiMesh fallback:', error);
-      
-      const userLang = speechLangRef.current || 'uz';
+    // LAUNCH HIGH-SPEED PARALLEL RACE (HF Space Singleton + Gemini Edge Pool)
+    const hfPromise = (async () => {
       try {
-        const meshResult = await multiAiMeshEngine.processCascadingQuery(text, userLang);
-        if (meshResult && meshResult.text) {
-          handleGeminiSuccess({
-            userTranscription: text,
-            command: 'NONE',
-            response: meshResult.text,
-            language: userLang
-          }, text);
-          return;
+        const client = await getHfClient();
+        if (!client) return null;
+
+        const result = await client.predict("/stream_michi_core", {
+          message: text
+        });
+
+        let finalAnswer = "";
+        const raw = result?.data?.[0] || result?.data;
+
+        if (typeof raw === "string") {
+          finalAnswer = raw;
+        } else if (Array.isArray(raw)) {
+          const last = raw[raw.length - 1];
+          if (typeof last === "string") finalAnswer = last;
+          else if (Array.isArray(last)) finalAnswer = last[1];
+          else if (last && typeof last === "object") finalAnswer = last.content || last.text || "";
+        } else if (raw && typeof raw === "object") {
+          finalAnswer = raw.content || raw.text || "";
         }
-      } catch (meshErr) {
-        console.warn('MultiAiMesh fallback also failed:', meshErr);
+
+        if (finalAnswer && typeof finalAnswer === "string" && finalAnswer.trim().length > 0) {
+          const cleanAnswer = finalAnswer.replace(/---\s*\n\s*\*\*【確認済み参照ソース】[\s\S]*$/gi, '').trim();
+          const isErrorStr = /tayyorlanmoqda|FALLBACK_LOCAL|ネットワーク接続をお確かめの上|failed to get ai response/i.test(cleanAnswer);
+          if (!isErrorStr && cleanAnswer.length > 0) {
+            console.log('[VoiceAssistant] ⚡ Primary HF Space Brain (/stream_michi_core) WON the parallel race!');
+            return { response: cleanAnswer, source: "HF Space (/stream_michi_core)" };
+          }
+        }
+      } catch (hfErr) {
+        console.warn('[VoiceAssistant] Singleton @gradio/client error:', hfErr.message);
+      }
+      return null;
+    })();
+
+    const geminiPromise = (async () => {
+      try {
+        console.log('[VoiceAssistant] ⚡ Launching Gemini Edge Pool query in parallel...');
+        const data = await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext);
+        const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const aiResult = safeJsonParse(rawText, text);
+        if (aiResult && aiResult.response) {
+          console.log('[VoiceAssistant] ⚡ Gemini Pool WON the parallel race!');
+          return { response: aiResult.response, source: 'Gemini Pool' };
+        }
+      } catch (e) {
+        console.warn('[VoiceAssistant] Gemini Pool error:', e);
+      }
+      return null;
+    })();
+
+    const pollinationsPromise = (async () => {
+      try {
+        console.log('[VoiceAssistant] ⚡ Launching Pollinations Free GET query in parallel...');
+        const sys = encodeURIComponent(`You are Michi AI, a helpful assistant. Answer in ${userLang === 'uz' ? 'Uzbek' : userLang === 'ja' ? 'Japanese' : 'English'}.`);
+        const q = encodeURIComponent(text);
+        const res = await fetch(`https://text.pollinations.ai/${q}?system=${sys}`, {
+          signal: AbortSignal.timeout(6000)
+        });
+        if (res.ok) {
+          const rawText = await res.text();
+          if (rawText && rawText.trim().length > 5 && !rawText.toLowerCase().includes('budget')) {
+            console.log('[VoiceAssistant] ⚡ Pollinations GET WON the parallel race!');
+            return { response: rawText.trim(), source: 'Pollinations GET' };
+          }
+        }
+      } catch (e) {
+        console.warn('[VoiceAssistant] Pollinations GET error:', e);
+      }
+      return null;
+    })();
+
+    try {
+      const winningResult = await Promise.race([
+        hfPromise.then(res => res ? res : new Promise(() => {})),
+        geminiPromise.then(res => res ? res : new Promise(() => {})),
+        pollinationsPromise.then(res => res ? res : new Promise(() => {})),
+        new Promise(resolve => setTimeout(() => resolve(null), 35000))
+      ]);
+
+      if (!isActiveRef.current) return;
+
+      if (winningResult && winningResult.response) {
+        michiCacheEngine.set(text, winningResult.response, userLang);
+        handleGeminiSuccess({
+          userTranscription: text,
+          command: 'NONE',
+          response: winningResult.response,
+          language: userLang
+        }, text);
+        return;
       }
 
-      const isJa = userLang.startsWith('ja');
-      const isUz = userLang.startsWith('uz');
-      const errText = isJa
-        ? `申し訳ありません。AI応答を取得できませんでした。もう一度お試しください。`
-        : isUz
-        ? `Kechirasiz, AI javobini olishda xatolik yuz berdi. Qayta urinib ko'ring.`
-        : `Sorry, failed to get AI response. Please try again.`;
-
-      setStatus('error');
-      setErrorMessage(errText);
-      setShowPill(true);
-      setIsFadeOut(false);
-      setTimerDuration(6000);
-      
-      // Persist error event into chat history
-      try {
-        const savedHistory = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
-        savedHistory.push({
-          id: Date.now(),
-          question: text,
-          answer: errText,
-          isError: true,
-          command: 'ERROR',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-        localStorage.setItem('michi_chat_history', JSON.stringify(savedHistory.slice(-100)));
-      } catch(e){}
-
-      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
-      if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-
-      dismissTimerRef.current = setTimeout(() => {
-        setIsFadeOut(true);
-        pillTimeoutRef.current = setTimeout(() => {
-          closePill();
-        }, 500);
-      }, 6000);
-
-      speakResponse(errText, userLang);
+      console.warn('Parallel race returned empty/timed out, attempting MultiAiMesh fallback...');
+      const meshResult = await multiAiMeshEngine.processCascadingQuery(text, userLang);
+      if (meshResult && meshResult.text) {
+        handleGeminiSuccess({
+          userTranscription: text,
+          command: 'NONE',
+          response: meshResult.text,
+          language: userLang
+        }, text);
+        return;
+      }
+    } catch (error) {
+      if (!isActiveRef.current) return;
+      console.warn('Process text error:', error);
     }
+
+    const isJa = userLang.startsWith('ja');
+    const isUz = userLang.startsWith('uz');
+    const errText = isJa
+      ? `申し訳ありません。AI応答を取得できませんでした。もう一度お試しください。`
+      : isUz
+      ? `Kechirasiz, AI javobini olishda xatolik yuz berdi. Qayta urinib ko'ring.`
+      : `Sorry, failed to get AI response. Please try again.`;
+
+    setStatus('error');
+    setErrorMessage(errText);
+    setShowPill(true);
+    setIsFadeOut(false);
+    setTimerDuration(6000);
+    
+    // Persist error event into chat history
+    try {
+      const savedHistory = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
+      savedHistory.push({
+        id: Date.now(),
+        question: text,
+        answer: errText,
+        isError: true,
+        command: 'ERROR',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      localStorage.setItem('michi_chat_history', JSON.stringify(savedHistory.slice(-100)));
+    } catch(e){}
+
+    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+    if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+
+    dismissTimerRef.current = setTimeout(() => {
+      setIsFadeOut(true);
+      pillTimeoutRef.current = setTimeout(() => {
+        closePill();
+      }, 500);
+    }, 6000);
+
+    speakResponse(errText, userLang);
   };
 
   // Real-time canvas visualizer loop for Siri-style glowing liquid orb
@@ -1653,6 +1823,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
   // Web Audio VAD & MediaRecorder based recording
   const startAudioRecording = async () => {
+    unlockMobileAudio();
     let hasSpoken = false;
     try {
       // 1. Request microphone permissions
@@ -1924,7 +2095,10 @@ Return ONLY the raw JSON object, no markdown wrappers.
     setStatus('speaking'); // Separate response display from listening phase
     const detectedLang = aiResult.language || speechLangRef.current || 'ja';
     const rawResp = aiResult.response || aiResult.text || userText;
-    const politeResponse = japaneseLanguageEngine.formatPoliteResponse(rawResp, detectedLang);
+    const cleanRawResp = typeof rawResp === 'string'
+      ? rawResp.replace(/---\s*\n\s*\*\*【確認済み参照ソース】[\s\S]*$/gi, '').trim()
+      : rawResp;
+    const politeResponse = japaneseLanguageEngine.formatPoliteResponse(cleanRawResp, detectedLang);
     setAiResponseText(politeResponse);
     setShowPill(true);
     setIsFadeOut(false);
@@ -1980,18 +2154,12 @@ Return ONLY the raw JSON object, no markdown wrappers.
       learningEngine.recordFeedback(userText, aiResult.command, true);
     }
 
-    // Persist to local chat memory storage
-    try {
-      const savedHistory = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
-      savedHistory.push({
-        id: Date.now(),
-        question: userText,
-        answer: politeResponse,
-        command: aiResult.command || 'NONE',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
-      localStorage.setItem('michi_chat_history', JSON.stringify(savedHistory.slice(-100)));
-    } catch(e){}
+    // Persist to device local storage (IndexedDB / LocalStorage) for 100% privacy
+    michiLocalStorageEngine.saveConversation({
+      question: userText,
+      answer: politeResponse,
+      language: detectedLang
+    });
 
     // Store interaction in conversation history
     setConversationHistory(prev => [
@@ -2313,10 +2481,8 @@ Return ONLY the raw JSON object, no markdown wrappers.
     }
   };
 
-  if (!isActive) return null;
-
-  // Render setup/error modals if API key or mic permission is missing
-  if (showKeyInput || micPermission === 'denied') {
+  // Render setup/error modals if active and API key or mic permission is missing
+  if (isActive && (showKeyInput || micPermission === 'denied')) {
     return (
       <div className="voice-setup-overlay animate-fade-in">
         <div className="voice-setup-modal glass squircle">
@@ -2451,7 +2617,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
             />
           )}
           
-          <div className="speech-bubble-content">
+          <div className="speech-bubble-content" ref={speechContentRef}>
             {/* Top Section: User Transcribed Question */}
             {transcript && (
               <div className="voice-card-section user-section">
@@ -2510,6 +2676,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
                 <p className="error-response-text">{errorMessage}</p>
               </div>
             )}
+            <div ref={chatEndRef} />
           </div>
           
           <div className="bubble-footer-actions">
@@ -2626,16 +2793,82 @@ Return ONLY the raw JSON object, no markdown wrappers.
               )}
             </div>
 
-            {chatHistoryList.length > 0 && (
-              <div className="voice-sheet-footer">
-                <button onClick={clearChatHistory} className="voice-clear-history-btn">
-                  <Trash2 size={16} /> {speechLang === 'ja' ? '全履歴を消去' : speechLang === 'uz' ? 'Barcha tarixni tozalash' : 'Clear All History'}
-                </button>
-              </div>
-            )}
+            <div className="voice-sheet-footer" style={{ display: 'flex', gap: '8px', justifyContent: 'space-between', marginTop: '10px' }}>
+              <button 
+                onClick={() => michiLocalStorageEngine.exportConversationsToFile()} 
+                className="voice-export-history-btn"
+                style={{
+                  flex: 1,
+                  background: 'rgba(59, 130, 246, 0.12)',
+                  border: '1px solid rgba(59, 130, 246, 0.25)',
+                  color: '#3b82f6',
+                  borderRadius: '12px',
+                  padding: '8px 12px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                📥 {speechLang === 'ja' ? '履歴を出力 (JSON)' : speechLang === 'uz' ? 'Tarixni Yuklab Olish' : 'Export History'}
+              </button>
+              
+              <button onClick={clearChatHistory} className="voice-clear-history-btn" style={{ flex: 1 }}>
+                <Trash2 size={14} /> {speechLang === 'ja' ? '全履歴を消去' : speechLang === 'uz' ? 'Barcha tarixni tozalash' : 'Clear All History'}
+              </button>
+            </div>
           </div>
         </div>
       )}
+
+      {/* Non-Intrusive Floating AI Side Drawer Trigger (Always Visible) */}
+      <MichiDrawerTrigger 
+        isOpen={isSideDrawerOpen}
+        onToggle={() => setIsSideDrawerOpen(prev => !prev)} 
+        chatCount={chatHistoryList.length} 
+        speechLang={speechLang} 
+      />
+
+      {/* Slide-out Translucent Glass Side Drawer Panel */}
+      <MichiSideDrawer
+        isOpen={isSideDrawerOpen}
+        onClose={() => setIsSideDrawerOpen(false)}
+        isActive={isActive}
+        status={status}
+        speechLang={speechLang}
+        chatHistoryList={chatHistoryList}
+        transcript={transcript}
+        aiResponseText={aiResponseText}
+        displayedAiText={displayedAiText}
+        drawerInput={drawerInput}
+        setDrawerInput={setDrawerInput}
+        onSendText={handleSendDrawerText}
+        onQuickChipClick={handleQuickChipClick}
+        onActivateAI={() => {
+          unlockMobileAudio();
+          if (onStartVoice) onStartVoice();
+        }}
+        onMicToggle={() => {
+          if (!isActive) {
+            unlockMobileAudio();
+            if (onStartVoice) onStartVoice();
+          }
+          if (status === 'listening') {
+            try { recognitionRef.current?.stop(); } catch(e){}
+            setStatus('idle');
+          } else {
+            unlockMobileAudio();
+            startLocalSpeechRecognition();
+          }
+        }}
+        onOpenHistory={openHistoryModal}
+        onClearHistory={() => {
+          clearChatHistory();
+          setChatHistoryList([]);
+        }}
+        onSpeakResponse={(text, lang) => speakResponse(text, lang)}
+        speechContentRef={speechContentRef}
+        chatEndRef={chatEndRef}
+      />
     </>
   );
 }

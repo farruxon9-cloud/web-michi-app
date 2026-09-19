@@ -505,14 +505,35 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Exhaustive Category Search Helpers**: Har bir filtr chipi e'lon qilingan taqdirda, u foydalanadigan barcha yordamchi teg funksiyalari (`getDurationLabel`, `getTimeSlotLabel`, `getFeatureLabel`) component ichida to'liq va xavfsiz e'lon qilinishi SHART.
   2. **Multi-Language Resolution**: Har bir helper funksiya `JOB_FEATURES` bazasidagi tegishli o'zgaruvchilardan foydalanuvchining joriy tiliga (`uz`, `en`, `ja`) mos nomni qidirib topadi va zaxira (fallback) sifatida ID ning o'zini qaytaradi.
   3. **Runtime Protection**: Active chip tugmalari bosilganda filter ro'yxatidan xavfsiz o'chirilishi (`filter(item => item !== id)`) va `ReferenceError` kelib chiqmasligi Vitest va health check orqali doimiy tekshiriladi.
-## 🚫 81. JavaScript "NONE" String Truthiness Trap
-* **Xatolik**: JavaScript'da bo'sh bo'lmagan `"NONE"` matni har doim `truthy` hisoblanadi. Shuning uchun `if (aiResult.command)` sharti `command: "NONE"` holatida ham `true` qaytarib, har bir suhbat turnida `executeVoiceCommand("NONE")` hamda `learningEngine.recordFeedback(userText, "NONE", true)` ishga tushib ketishi.
+## 🚫 83. Zero JSON Leakage & Pure Natural Text Output Invariant
+* **Xatolik**: Gemini javobida raw JSON belgilari (`{ "command": "NONE", "response": "..." }`) yoki ````json wrappers ... ```` qolib ketganda ekranda texnik JSON strukturasi ko'rinib qolishi.
 * **Yechim (MAJBURIY)**:
-  1. **Strict Non-NONE Check**: Har doim `command && command !== 'NONE'` shartini qo'llash shart: `if (aiResult.command && aiResult.command !== 'NONE')`.
-  2. **Clean Feedback Logging**: `learningEngine` xotirasiga keraksiz `"NONE"` yozuvlari tushishining oldi olinadi.
+  1. **`japaneseLanguageEngine.stripRawJsonSyntax`**: Har qanday AI javobini ekranda ko'rsatishdan oldin JSON belgilaridan tozalash.
+  2. **Clean Typewriter Output**: Foydalanuvchiga faqat toza, odobli, professional insoniy matn ko'rinadi.
 
-## 🚫 82. Multiline Template String Backtick Syntax Errors
-* **Xatolik**: Template literal (`` ` ``) ichida yopuvchi backtick qolib ketishi natijasida keyingi barcha JavaScript kodlar matn sifatida talqin qilinadi va Vite/Rolldown build bosqichida `Expected a semicolon or an implicit semicolon after a statement` kabi chalkash sintaksis xatolari yuzaga keladi.
+## 🚫 84. Real-Time Live Web Search & RSS News Grounding Invariant
+* **Xatolik**: Foydalanuvchi "Kechagi eng yaxshi yangiliklar", "Bugungi ob-havo", "Yaponiya valyuta kursi" kabi jonli voqealar yoki sana bilan bog'liq savollar berganda:
+  1. Gemini stasionar bilimlarga ega bo'lgani uchun va Google Search grounding yo'qligida, u real vaqt ma'lumotlarini bilmaydi va foydalanuvchining o'z savolini takrorlab qo'yadi (`かしこまりました。昨日の1番良いニュースはおねがいします`).
+  2. Qidiruv tizimi (`autonomousWebSearchEngine`) `"昨日の1番良いニュースはおねがいします"` kabi natural yaponcha iborani DuckDuckGo/Wikipedia'ga aynan yuborganda 0 ta natija oladi (chunki Vikipediyada bunday maqola nomi yo'q).
 * **Yechim (MAJBURIY)**:
-  1. **Closing Backtick Verification**: Ko'p qatorli string va system promptlarni tahrirlashda har bir template literal yopilganligini qat'iy tekshirish.
-  2. **Build Verification**: Har bir o'zgartirishdan so'ng `npm run build` o'tkazib sintaksis yaxlitligini tasdiqlash.
+  1. **Live Free RSS Feeds Integration**: Yangiliklar (`ニュース`, `news`, `yangiliklar`) so'ralganda **Google News RSS** (`https://news.google.com/rss?hl=ja&gl=JP`), **Yahoo Japan RSS**, va **NHK News RSS** orqali haqiqiy bugungi/kechagi TOP-5 sarlavha va yangiliklarni 100-200ms da olib kelish va Gemini kontekstiga kiritish (`webSearchContext`).
+  2. **Natural Query Keyword Extraction**: Natural yapon/o'zbek iboralardan qidiruv kalit so'zlarini ajratib olish (masalan `"昨日のニュース"` -> `"日本 ニュース トップ"`).
+  3. **Updated Model Names & Real-Time Context**: Model nomlarini `gemini-3.6-flash`, `gemini-flash-lite-latest` va `gemini-3.5-flash-lite` ga yangilash, hamda Gemini'ga "Agar kontekstda real yangiliklar berilgan bo'lsa, ulardan javob tuz, javob berolmasang manbalarga yo'naltir, hech qachon savolni qaytarma" deb uqtirish.
+
+## 🚫 85. Non-Existent NPM Package Dependency Versions Invariant (`package.json`)
+* **Xatolik**: `package.json` faylida NPM registridagi mavjud bo'lmagan yoki kelajakdagi versiyalarni (masalan, `@capacitor/core: ^8.4.1`, `i18next: ^26.2.0`, `vite: ^8.3.0`) ko'rsatish. Bu `npm install` vaqtida NPM registrida paketlar topilmay buzilgan TAR fayllar yuklanishiga, unpacking xatolariga va `vite` executable yo'qolib dev server ishlamay qolishiga olib keladi.
+* **Yechim (MAJBURIY)**:
+  1. **NPM Registry Verification**: `package.json` dagi barcha dependency va devDependency versiyalarini real vaqtda NPM registrida mavjud bo'lgan eng so'nggi barqaror versiyalar (`npm view <package> version`) bilan sinxronlashtirish.
+  2. **Clean Reinstall Strategy**: Versiyalar tuzatilgandan so'ng, `rm -rf node_modules package-lock.json` bajarilib, `npm install` noldan qayta ishga tushiriladi.
+
+## 🚫 86. Hugging Face Space Brain & Gradio API Payload Invariant
+* **Xatolik**: 
+  1. Hugging Face Space Gradio API ga so'rov yuborilganda `{ prompt, language }` formatida yuborilishi natijasida Gradio 4/5 422 Unprocessable Entity berishi.
+  2. ZeroGPU space-larida `@spaces.GPU` va `import spaces` bo'lmaganda `Runtime error: No @spaces.GPU function detected during startup` bilan container to'xtab qolishi.
+* **Yechim (MAJBURIY)**:
+  1. **Gradio API Payload**: Gradio endpointlariga `{ data: [prompt, language] }` formatida payload yuborish va qaytgan `data[0]` qiymatini xavfsiz JSON parse qilish.
+  2. **ZeroGPU Safety**: ZeroGPU apparatida ishlovchi funksiyalar tepasiga `@spaces.GPU` dekoratorini qo'shish.
+  3. **24/7 Keep-Alive**: Client-side `pingHfBrainSpace()` (10 min) + UptimeRobot HTTP monitor (5 min) orqali serverni doimiy uyg'oq ushlash.
+
+
+

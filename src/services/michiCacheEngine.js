@@ -103,6 +103,23 @@ class MichiCacheEngine {
       }
     } catch (e) {}
   }
+
+  /**
+   * Clear all cached query-response pairs from local memory
+   */
+  clear() {
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith(this.cacheKeyPrefix) || k.includes('michi_ai_cache'))) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+      console.log('[MichiCache] 🧹 All query cache entries cleared');
+    } catch (e) {}
+  }
 }
 
 export const michiCacheEngine = new MichiCacheEngine();
