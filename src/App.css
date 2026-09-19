@@ -5,8 +5,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: #0B0C10 !important;
-  background-image: none !important;
 }
 
 .global-header {
@@ -16,22 +14,30 @@
   height: 56px;
   padding: 0 20px;
   box-sizing: border-box;
-  background: #0B0C10 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: var(--bg-color);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
   position: relative;
   z-index: 300;
   flex-shrink: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  .global-header {
-    background: #0B0C10 !important;
-    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
-  }
+html.dark-mode .app-layout {
+  background-color: #0B0C10 !important;
 }
+
 html.dark-mode .global-header {
   background: #0B0C10 !important;
   border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light-mode) .app-layout {
+    background-color: #0B0C10 !important;
+  }
+  :root:not(.light-mode) .global-header {
+    background: #0B0C10 !important;
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  }
 }
 
 .user-profile-corner {
@@ -88,8 +94,16 @@ html.dark-mode .global-header {
   position: relative;
   display: flex;
   flex-direction: column;
+}
+
+html.dark-mode .main-content {
   background-color: #0B0C10 !important;
-  background-image: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light-mode) .main-content {
+    background-color: #0B0C10 !important;
+  }
 }
 
 /* ============================================

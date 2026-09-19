@@ -1,8 +1,8 @@
 /* Custom variables for dashboard elements to ensure highly visible borders and rich contrast */
 :root {
-  --dash-card-bg: #13151B;
-  --dash-card-border: rgba(255, 255, 255, 0.08);
-  --dash-card-shadow: none;
+  --dash-card-bg: rgba(255, 255, 255, 0.65);
+  --dash-card-border: rgba(0, 0, 0, 0.08);
+  --dash-card-shadow: 0 6px 20px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,9 +20,9 @@ html.dark-mode {
 }
 
 html.light-mode {
-  --dash-card-bg: #13151B;
-  --dash-card-border: rgba(255, 255, 255, 0.08);
-  --dash-card-shadow: none;
+  --dash-card-bg: rgba(255, 255, 255, 0.65);
+  --dash-card-border: rgba(0, 0, 0, 0.08);
+  --dash-card-shadow: 0 6px 20px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .dashboard-container {
@@ -33,8 +33,7 @@ html.light-mode {
   bottom: 0;
   padding: 14px;
   padding-bottom: 96px;
-  background: #0B0C10 !important;
-  background-image: none !important;
+  background-color: transparent;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -42,6 +41,16 @@ html.light-mode {
   box-sizing: border-box !important;
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
+}
+
+html.dark-mode .dashboard-container {
+  background: #0B0C10 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light-mode) .dashboard-container {
+    background: #0B0C10 !important;
+  }
 }
 
 .dashboard-container::-webkit-scrollbar {
@@ -83,12 +92,12 @@ html.light-mode {
 
 /* Individual Premium Card */
 .dash-hero-card {
-  background: #13151B !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: var(--dash-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--dash-card-border);
   border-radius: 24px;
-  box-shadow: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), var(--dash-card-shadow);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -102,8 +111,8 @@ html.light-mode {
 
 .dash-hero-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  box-shadow: none !important;
+  border-color: rgba(94, 92, 230, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), var(--dash-card-shadow);
 }
 
 .dash-hero-content {
@@ -199,8 +208,6 @@ html.light-mode {
   padding: 0 4px;
   flex-shrink: 0;
   width: 100%;
-  background: transparent !important;
-  box-shadow: none !important;
 }
 
 .calendar-day {
@@ -212,11 +219,11 @@ html.light-mode {
   min-width: 0;
   height: 70px;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  background: #13151B !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
+  border: 1px solid var(--dash-card-border);
+  background: var(--dash-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--dash-card-shadow);
   gap: 4px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -224,8 +231,8 @@ html.light-mode {
 
 .calendar-day:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  box-shadow: none !important;
+  border-color: rgba(94, 92, 230, 0.3);
+  box-shadow: var(--dash-card-shadow);
 }
 
 .calendar-day:active {
@@ -233,10 +240,10 @@ html.light-mode {
 }
 
 .calendar-day.active {
-  background: #FFFFFF !important;
-  color: #0B0C10 !important;
-  border-color: #FFFFFF !important;
-  box-shadow: none !important;
+  background: var(--text-main);
+  color: var(--bg-color);
+  border-color: var(--text-main);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
 }
 
 .day-name {
@@ -248,7 +255,7 @@ html.light-mode {
 }
 
 .calendar-day.active .day-name {
-  color: #0B0C10 !important;
+  color: inherit;
   opacity: 0.7;
 }
 
@@ -260,7 +267,7 @@ html.light-mode {
 }
 
 .calendar-day.active .day-num {
-  color: #0B0C10 !important;
+  color: inherit;
 }
 
 /* Greeting Header */
@@ -315,16 +322,16 @@ html.light-mode {
 }
 
 .time-pill {
-  background: #13151B !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: none !important;
+  background: var(--dash-card-bg);
+  border: 1px solid var(--dash-card-border);
+  box-shadow: var(--dash-card-shadow);
   padding: 8px 16px;
   border-radius: 24px;
   font-size: 15px;
   font-weight: 800;
   color: var(--text-main);
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   letter-spacing: 0.05em;
   font-variant-numeric: tabular-nums;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -332,7 +339,7 @@ html.light-mode {
 
 .time-pill:hover {
   transform: translateY(-1px);
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(94, 92, 230, 0.2);
 }
 
 /* Bento Icons Row */
@@ -356,19 +363,14 @@ html.light-mode {
   min-height: 115px;
   height: auto;
   cursor: pointer;
-  background: #13151B !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  box-shadow: var(--dash-card-shadow);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
 }
 
 .bento-icon-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  box-shadow: none !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
 }
 
 .bento-icon-card:active {
@@ -376,17 +378,15 @@ html.light-mode {
 }
 
 .dark-card {
-  background: #13151B !important;
+  background: #2D2A26;
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .light-card {
-  background: #13151B !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: var(--dash-card-bg);
+  border: 1px solid var(--dash-card-border);
   color: var(--text-main);
-  box-shadow: none !important;
 }
 
 .bento-icon-wrap {
@@ -400,8 +400,8 @@ html.light-mode {
 }
 
 .light-card .bento-icon-wrap {
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: none;
+  background: var(--bg-color);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
 }
 
 .bento-text-wrap h4 {
@@ -419,10 +419,8 @@ html.light-mode {
 
 /* Action Card */
 .bento-action-card {
-  background: #13151B !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  background: var(--dash-card-bg);
+  border: 1px solid var(--dash-card-border);
   border-radius: 24px;
   padding: 20px;
   display: flex;
@@ -430,14 +428,14 @@ html.light-mode {
   align-items: center;
   cursor: pointer;
   flex-shrink: 0;
-  box-shadow: none !important;
+  box-shadow: var(--dash-card-shadow);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bento-action-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  box-shadow: none !important;
+  border-color: rgba(94, 92, 230, 0.25);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
 }
 
 .bento-action-card:active {
@@ -558,11 +556,11 @@ html.dark-mode .dark-card {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  background: #13151B !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
+  border: 1px solid var(--dash-card-border);
+  background: var(--dash-card-bg);
+  box-shadow: var(--dash-card-shadow);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -872,11 +870,11 @@ html.dark-mode .player-timeline {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  background: #13151B !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--dash-card-border);
+  background: var(--dash-card-bg);
+  box-shadow: var(--dash-card-shadow);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 24px;
   cursor: pointer;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1188,13 +1186,48 @@ html.dark-mode .ios-switch.checked {
   box-shadow: 0 1.5px 4px rgba(0,0,0,0.25);
 }
 
-/* Organic Suyuq Jelly Blob Visualizer Disabled */
-.music-jelly-blob,
-.mini-blob-layer,
-.music-mini-jelly,
-.glow-effect,
-.ambient-light {
-  display: none !important;
+/* Organic Suyuq Jelly Blob Visualizer (Premium Floating Fluid in Background) */
+.music-jelly-blob {
+  position: absolute;
+  right: -25px;
+  bottom: -25px;
+  width: 140px;
+  height: 140px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.8;
+  filter: blur(2px);
+  transition: all 0.5s ease-in-out;
+}
+
+.music-jelly-blob .blob-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: screen;
+  transition: all 0.5s ease-in-out;
+}
+
+/* Layer 1 - Indigo/purple base */
+.music-jelly-blob .blob-1 {
+  background: radial-gradient(circle, rgba(94, 92, 230, 0.75) 0%, rgba(94, 92, 230, 0) 70%);
+  animation: jelly-morph 9s infinite linear, jelly-rotate 14s infinite linear;
+}
+
+/* Layer 2 - Pink/magenta offset */
+.music-jelly-blob .blob-2 {
+  background: radial-gradient(circle, rgba(255, 55, 95, 0.6) 0%, rgba(255, 55, 95, 0) 70%);
+  animation: jelly-morph 7s infinite linear alternate, jelly-rotate 17s infinite linear reverse;
+  transform-origin: 45% 48%;
+}
+
+/* Layer 3 - Blue bright core */
+.music-jelly-blob .blob-3 {
+  background: radial-gradient(circle, rgba(10, 132, 255, 0.65) 0%, rgba(10, 132, 255, 0) 60%);
+  animation: jelly-morph 11s infinite linear, jelly-rotate 9s infinite linear;
+  scale: 0.8;
 }
 
 /* My Posted Ads dashboard shortcut card */
@@ -1203,19 +1236,17 @@ html.dark-mode .ios-switch.checked {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  background: #13151B !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
+  border: 1px solid var(--dash-card-border);
+  background: var(--dash-card-bg);
+  box-shadow: var(--dash-card-shadow);
   min-height: 156px;
   cursor: pointer;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .bento-my-ads-card:hover {
   transform: translateY(-2px);
-  box-shadow: none !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: var(--dash-card-shadow);
+  border-color: rgba(255, 159, 10, 0.4);
 }
 .bento-my-ads-card:active {
   transform: scale(0.97);
@@ -1268,7 +1299,7 @@ html.dark-mode .ios-switch.checked {
 }
 
 .bento-my-ads-card.bento-my-apps-card:hover {
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(10, 132, 255, 0.4);
 }
 .bento-my-ads-card .my-apps-icon {
   width: 48px;
@@ -1283,23 +1314,101 @@ html.dark-mode .ios-switch.checked {
   margin-bottom: 6px;
 }
 
-/* Premium Bento Spotlight & Border Hover Effects */
+/* Premium Bento Spotlight & Glow Hover Effects */
 .bento-icon-card:hover,
 .bento-action-card:hover,
 .bento-music-card:hover,
 .bento-my-ads-card:hover,
 .bento-ai-card:hover {
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  box-shadow: none !important;
-  transform: translateY(-2px) !important;
+  border-color: var(--primary);
+  box-shadow: 0 12px 30px rgba(90, 85, 234, 0.08);
+  transform: translateY(-3px) scale(1.01);
 }
 
-.dark-mode .bento-icon-card:hover,
-.dark-mode .bento-action-card:hover,
-.dark-mode .bento-music-card:hover,
-.dark-mode .bento-my-ads-card:hover,
-.dark-mode .bento-ai-card:hover {
+/* ====== DARK MODE OLED MATTE BLACK OVERRIDES ====== */
+html.dark-mode .dash-hero-card,
+html.dark-mode .calendar-day,
+html.dark-mode .time-pill,
+html.dark-mode .bento-icon-card,
+html.dark-mode .dark-card,
+html.dark-mode .light-card,
+html.dark-mode .bento-action-card,
+html.dark-mode .bento-music-card,
+html.dark-mode .bento-ai-card,
+html.dark-mode .bento-my-ads-card {
+  background: #13151B !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.dark-mode .calendar-day.active {
+  background: #FFFFFF !important;
+  color: #0B0C10 !important;
+  border-color: #FFFFFF !important;
+}
+
+html.dark-mode .bento-icon-card:hover,
+html.dark-mode .bento-action-card:hover,
+html.dark-mode .bento-music-card:hover,
+html.dark-mode .bento-my-ads-card:hover,
+html.dark-mode .bento-ai-card:hover,
+html.dark-mode .dash-hero-card:hover,
+html.dark-mode .calendar-day:hover {
   border-color: rgba(255, 255, 255, 0.2) !important;
   box-shadow: none !important;
+}
+
+html.dark-mode .music-jelly-blob,
+html.dark-mode .mini-blob-layer,
+html.dark-mode .music-mini-jelly,
+html.dark-mode .glow-effect,
+html.dark-mode .ambient-light {
+  display: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light-mode) .dash-hero-card,
+  :root:not(.light-mode) .calendar-day,
+  :root:not(.light-mode) .time-pill,
+  :root:not(.light-mode) .bento-icon-card,
+  :root:not(.light-mode) .dark-card,
+  :root:not(.light-mode) .light-card,
+  :root:not(.light-mode) .bento-action-card,
+  :root:not(.light-mode) .bento-music-card,
+  :root:not(.light-mode) .bento-ai-card,
+  :root:not(.light-mode) .bento-my-ads-card {
+    background: #13151B !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  :root:not(.light-mode) .calendar-day.active {
+    background: #FFFFFF !important;
+    color: #0B0C10 !important;
+    border-color: #FFFFFF !important;
+  }
+
+  :root:not(.light-mode) .bento-icon-card:hover,
+  :root:not(.light-mode) .bento-action-card:hover,
+  :root:not(.light-mode) .bento-music-card:hover,
+  :root:not(.light-mode) .bento-my-ads-card:hover,
+  :root:not(.light-mode) .bento-ai-card:hover,
+  :root:not(.light-mode) .dash-hero-card:hover,
+  :root:not(.light-mode) .calendar-day:hover {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: none !important;
+  }
+
+  :root:not(.light-mode) .music-jelly-blob,
+  :root:not(.light-mode) .mini-blob-layer,
+  :root:not(.light-mode) .music-mini-jelly,
+  :root:not(.light-mode) .glow-effect,
+  :root:not(.light-mode) .ambient-light {
+    display: none !important;
+  }
 }
 
