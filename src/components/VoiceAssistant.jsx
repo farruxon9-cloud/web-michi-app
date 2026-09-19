@@ -1459,7 +1459,12 @@ Return ONLY the raw JSON object, no markdown wrappers.
     ];
 
     try {
-      const coreAnswer = await askMichiCore(text);
+      const coreAnswer = await askMichiCore(text, (chunkText) => {
+        if (!isActiveRef.current) return;
+        setStatus('speaking'); // Hide "思考中..." indicator as soon as first chunk arrives
+        setAiResponseText(chunkText);
+        setDisplayedAiText(chunkText);
+      });
       if (!isActiveRef.current) return;
 
       if (coreAnswer && coreAnswer.trim().length > 0) {

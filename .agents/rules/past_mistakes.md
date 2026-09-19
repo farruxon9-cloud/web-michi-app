@@ -532,13 +532,16 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. ZeroGPU space-larida `@spaces.GPU` va `import spaces` bo'lmaganda `Runtime error: No @spaces.GPU function detected during startup` bilan container to'xtab qolishi.
 * **Yechim (MAJBURIY)**:
 ## 🚫 87. Modern Vector SVG Icon Standard for Active Filter Chips & Reset Buttons
-## 🚫 88. Single Independent Hugging Face Service Invariant (`huggingFaceService.js`)
-* **Xatolik**: Loyihadagi AI Ovozli va Chat komponentlarida (`VoiceAssistant.jsx`, `Michi AI Hub`) tarqoq API chaqiruvlari, 8 soniyalik qisqa taymautlar yoki erta uzilib qoluvchi 8s fallback poygalarini ishlatish. Bu Qwen-2.5-72B tahliliy va chuqur javoblarini erta kesib qo'yishga olib keladi.
+## 🚫 88. Single Independent Hugging Face Service & Gradio Streaming Invariant (`huggingFaceService.js`)
+* **Xatolik**: 
+  1. Loyihadagi AI Ovozli va Chat komponentlarida (`VoiceAssistant.jsx`, `Michi AI Hub`) bloklovchi `client.predict` chaqiruvidan foydalanish tufayli javob to'liq tugaguncha foydalanuvchi bir necha soniya kutib qolishi.
+  2. Tarqoq API chaqiruvlari yoki 8s fallback poygalarini ishlatish.
 * **Yechim (MAJBURIY)**:
-  1. **Yagona Daxlsiz Servis (`src/services/huggingFaceService.js`)**: Barcha AI Core chat so'rovlari faqat `huggingFaceService.js` moduli ichidagi `askMichiCore(userMessage)` funksiyasidan o'tishi SHART.
-  2. **45 Soniyalik Qat'iy Taymaut**: `Client.connect("FarruxKanoatov/michiai")` va `/stream_michi_core` endpointiga 45000ms taymaut beriladi.
-  3. **Universal Sanitization**: `sanitizeMichiResponse(text)` orqali JSON reasoning, `<think>` teglari, xitoycha manba linklari to tozalanadi.
-  4. **Log Shartnomasi**: So'rovda `console.log("[Michi Core Request]:", userMessage)`, xatolikda `console.error("[Michi Core Error]:", err)` konsolga chiqarilishi majburiydir.
+  1. **Yagona Daxlsiz Servis (`src/services/huggingFaceService.js`)**: Barcha AI Core chat so'rovlari faqat `huggingFaceService.js` moduli ichidagi `askMichiCore(userMessage, onChunkUpdate)` funksiyasidan o'tishi SHART.
+  2. **Gradio `client.submit` Jonli Striming**: Bloklovchi `predict` o'rniga Gradio `client.submit("/stream_michi_core", { message: userMessage })` orqali matn `for await (const msg of app)` oqimi bilan darhol olinadi.
+  3. **Instant First Chunk Indicator Dismissal**: Birinchi matn bo'lagi (chunk) kelishi bilanoq `setStatus('speaking')` bajarilib, `"思考中..."` (thinking...) indikatori darhol yo'qoladi va matn real vaqtda ekranda paydo bo'ladi.
+  4. **45 Soniyalik Qat'iy Taymaut**: 45000ms taymaut beriladi.
+  5. **Log Shartnomasi**: So'rovda `console.log("[Michi Core Request]:", userMessage)`, xatolikda `console.error("[Michi Core Error]:", err)` chiqarilishi majburiydir.
 
 
 

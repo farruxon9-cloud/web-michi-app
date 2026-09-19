@@ -1,7 +1,7 @@
 import { Client } from "@gradio/client";
 
 // Javobni axlatlardan (JSON reasoning, xitoycha linklar, think teglari) tozalovchi universal filtr
-function sanitizeMichiResponse(text) {
+export function sanitizeMichiResponse(text) {
   if (!text || typeof text !== 'string') return '';
   let clean = text;
 
@@ -28,8 +28,8 @@ function sanitizeMichiResponse(text) {
   return clean;
 }
 
-// Hugging Face Space bilan to'g'ridan-to'g'ri aloqa funksiyasi
-export async function askMichiCore(userMessage) {
+// Hugging Face Space bilan to'g'ridan-to'g'ri va real vaqtda striming aloqa funksiyasi
+export async function askMichiCore(userMessage, onChunkUpdate = null) {
   const TIMEOUT_MS = 45000; // Qwen-2.5-72B tahliliy javoblari uchun 45 soniya qat'iy vaqt
 
   console.log("[Michi Core Request]:", userMessage);
@@ -37,18 +37,26 @@ export async function askMichiCore(userMessage) {
   const fetchPromise = (async () => {
     try {
       const client = await Client.connect("FarruxKanoatov/michiai");
-      const result = await client.predict("/stream_michi_core", {
+      const app = await client.submit("/stream_michi_core", {
         message: userMessage,
       });
 
-      let rawData = "";
-      if (result && result.data) {
-        rawData = Array.isArray(result.data) ? result.data[0] : result.data;
-      } else {
-        rawData = String(result || "");
+      let finalResultText = "";
+
+      for await (const msg of app) {
+        if (msg && msg.data) {
+          const chunkText = Array.isArray(msg.data) ? msg.data[0] : msg.data;
+          const cleanChunk = sanitizeMichiResponse(chunkText);
+          if (cleanChunk) {
+            finalResultText = cleanChunk;
+            if (typeof onChunkUpdate === 'function') {
+              onChunkUpdate(cleanChunk);
+            }
+          }
+        }
       }
 
-      const cleanResult = sanitizeMichiResponse(rawData);
+      const cleanResult = sanitizeMichiResponse(finalResultText);
       if (!cleanResult) {
         throw new Error("Bo'sh javob qaytdi");
       }
