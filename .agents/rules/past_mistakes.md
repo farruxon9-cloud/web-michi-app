@@ -568,6 +568,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**: Aura animatsiyasida 0-soniyadan boshlab keskin ko'rsatish (`opacity: 0.75`), chaqnash yoki tez kengayish portlashi (`scale(1.65)`) ishlatilishi.
 * **Yechim**: Har qanday chaqnash va portlashlar to'liq o'chiriladi: `gentle-aura-dissolve` animatsiyasi `opacity: 0` dan mayin boshlanib (`scale(0.98)`), 5.2s davomida juda sekin `scale(1.26)` gacha tebranib, `blur(8px)` va zero-opacity ko'rinishida orqa fonga sezilarsiz singib/yo'qolib ketadi.
 
+## 🚫 95. AI Activation Card Trigger & Quick Chips Multi-Language Prompt Alignment Invariant
+* **Xatolik**: 
+  1. `MichiActivationCard` tugmasi bosilganda `setIsVoiceStandby(true)` chaqirilmasligi tufayli darcha yopilmay yoki ovoz tanish (STT) boshlanmay qolishi.
+  2. `MichiQuickChips` sarlavhalari hamda so'rov matnlari yagona tilda qattiq yozilib, tanlangan tilga (`i18n.language` / `speechLang`) mos kelmasligi.
+* **Yechim**: `MichiActivationCard` dagi butun karta va tugmaga `onActivate` o'rnatilib, `setIsVoiceStandby(true)` va `startLocalSpeechRecognition()` ishga tushiriladi. `MichiQuickChips` sarlavhalari hamda prompt so'rovlari strictly tanlangan tilga (`ja`, `uz`, `en`, `ru`, `zh`) dinamik moslashtiriladi.
+
+
 
 
 
