@@ -64,12 +64,6 @@ export default function VoiceAssistant({
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const [drawerInput, setDrawerInput] = useState('');
 
-  // Auto-open side drawer when AI is activated via header robot or nav button
-  useEffect(() => {
-    if (isActive) {
-      setIsSideDrawerOpen(true);
-    }
-  }, [isActive]);
 
   const handleSendDrawerText = (e) => {
     if (e) e.preventDefault();
