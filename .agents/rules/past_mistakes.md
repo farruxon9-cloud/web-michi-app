@@ -532,13 +532,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. ZeroGPU space-larida `@spaces.GPU` va `import spaces` bo'lmaganda `Runtime error: No @spaces.GPU function detected during startup` bilan container to'xtab qolishi.
 * **Yechim (MAJBURIY)**:
 ## 🚫 87. Modern Vector SVG Icon Standard for Active Filter Chips & Reset Buttons
-* **Xatolik**: Active filter chip-lar (`📍 東京23区 (x)`, `💼`, `🚗`, `🚃`) hamda reset tugmalari (`🔄 リセット`) ichida oddiy matnli emojilardan (`📍`, `💼`, `⭐`, `🎯`, `🚶`) foydalanish. Bu turli qurilmalarda va operatsion tizimlarda emoji rasmlari har xil va xunuk/eski uslubda aks etishiga olib keladi.
+## 🚫 88. Single Independent Hugging Face Service Invariant (`huggingFaceService.js`)
+* **Xatolik**: Loyihadagi AI Ovozli va Chat komponentlarida (`VoiceAssistant.jsx`, `Michi AI Hub`) tarqoq API chaqiruvlari, 8 soniyalik qisqa taymautlar yoki erta uzilib qoluvchi 8s fallback poygalarini ishlatish. Bu Qwen-2.5-72B tahliliy va chuqur javoblarini erta kesib qo'yishga olib keladi.
 * **Yechim (MAJBURIY)**:
-  1. **Pure Lucide Vector SVG Icons**: Barcha filtr tugmalari va chip-larda matnli emojilar o'rniga faqat Lucide vector SVG ikonkalari (`<MapPin size={13} className="chip-svg-icon" />`, `<Briefcase size={13} />`, `<Train size={13} />`, `<RotateCcw size={13} className="reset-spin-icon" />`) ishlatilishi SHART.
-  2. **Interactive Hover Micro-Animations**:
-     - Chip hover qilinganda vector ikonka `transform: scale(1.15)` bilan silliq kattalashadi.
-     - Reset (`リセット`) tugmasi hover qilinganda `RotateCcw` ikonkasi `transform: rotate(-180deg)` bilan 360°/180° silliq aylanadi (`transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)`).
-  3. **Apple Glass Capsule Styling**: Active tugmalarga shaffof shisha kapsula dizayni va `backdrop-filter: blur(12px)` beriladi.
+  1. **Yagona Daxlsiz Servis (`src/services/huggingFaceService.js`)**: Barcha AI Core chat so'rovlari faqat `huggingFaceService.js` moduli ichidagi `askMichiCore(userMessage)` funksiyasidan o'tishi SHART.
+  2. **45 Soniyalik Qat'iy Taymaut**: `Client.connect("FarruxKanoatov/michiai")` va `/stream_michi_core` endpointiga 45000ms taymaut beriladi.
+  3. **Universal Sanitization**: `sanitizeMichiResponse(text)` orqali JSON reasoning, `<think>` teglari, xitoycha manba linklari to tozalanadi.
+  4. **Log Shartnomasi**: So'rovda `console.log("[Michi Core Request]:", userMessage)`, xatolikda `console.error("[Michi Core Error]:", err)` konsolga chiqarilishi majburiydir.
 
 
 

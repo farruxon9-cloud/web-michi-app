@@ -12,7 +12,7 @@ import { autonomousWebSearchEngine } from '../services/autonomousWebSearchEngine
 import { multiAiMeshEngine } from '../services/multiAiMeshEngine';
 import { michiCacheEngine } from '../services/michiCacheEngine';
 import { michiLocalStorageEngine } from '../services/michiLocalStorageEngine';
-import { Client } from "@gradio/client";
+import { askMichiCore } from '../services/huggingFaceService';
 import MichiDrawerTrigger from './michi-ai/MichiDrawerTrigger';
 import MichiSideDrawer from './michi-ai/MichiSideDrawer';
 
@@ -22,29 +22,6 @@ export function calculateReadingDuration(text, lang = 'uz') {
   const msPerChar = isJa ? 85 : 65;
   const calculated = Math.round(text.length * msPerChar + 6000);
   return Math.min(30000, Math.max(12000, calculated));
-}
-
-// Singleton @gradio/client connection instance (connects once outside component)
-let hfClientInstance = null;
-let hfClientConnectingPromise = null;
-
-async function getHfClient() {
-  if (hfClientInstance) return hfClientInstance;
-  if (!hfClientConnectingPromise) {
-    console.log('[VoiceAssistant] 🧠 Initializing singleton @gradio/client connection to FarruxKanoatov/michiai...');
-    hfClientConnectingPromise = Client.connect("FarruxKanoatov/michiai")
-      .then(client => {
-        hfClientInstance = client;
-        hfClientConnectingPromise = null;
-        return client;
-      })
-      .catch(err => {
-        console.warn('[VoiceAssistant] Singleton Client.connect error:', err.message);
-        hfClientConnectingPromise = null;
-        return null;
-      });
-  }
-  return hfClientConnectingPromise;
 }
 
 export default function VoiceAssistant({ 
@@ -1481,116 +1458,23 @@ Return ONLY the raw JSON object, no markdown wrappers.
       }
     ];
 
-    // LAUNCH HIGH-SPEED PARALLEL RACE (HF Space Singleton + Gemini Edge Pool)
-    const hfPromise = (async () => {
-      try {
-        const client = await getHfClient();
-        if (!client) return null;
-
-        const result = await client.predict("/stream_michi_core", {
-          message: text
-        });
-
-        let finalAnswer = "";
-        const raw = result?.data?.[0] || result?.data;
-
-        if (typeof raw === "string") {
-          finalAnswer = raw;
-        } else if (Array.isArray(raw)) {
-          const last = raw[raw.length - 1];
-          if (typeof last === "string") finalAnswer = last;
-          else if (Array.isArray(last)) finalAnswer = last[1];
-          else if (last && typeof last === "object") finalAnswer = last.content || last.text || "";
-        } else if (raw && typeof raw === "object") {
-          finalAnswer = raw.content || raw.text || "";
-        }
-
-        if (finalAnswer && typeof finalAnswer === "string" && finalAnswer.trim().length > 0) {
-          const cleanAnswer = finalAnswer.replace(/---\s*\n\s*\*\*【確認済み参照ソース】[\s\S]*$/gi, '').trim();
-          const isErrorStr = /tayyorlanmoqda|FALLBACK_LOCAL|ネットワーク接続をお確かめの上|failed to get ai response/i.test(cleanAnswer);
-          if (!isErrorStr && cleanAnswer.length > 0) {
-            console.log('[VoiceAssistant] ⚡ Primary HF Space Brain (/stream_michi_core) WON the parallel race!');
-            return { response: cleanAnswer, source: "HF Space (/stream_michi_core)" };
-          }
-        }
-      } catch (hfErr) {
-        console.warn('[VoiceAssistant] Singleton @gradio/client error:', hfErr.message);
-      }
-      return null;
-    })();
-
-    const geminiPromise = (async () => {
-      try {
-        console.log('[VoiceAssistant] ⚡ Launching Gemini Edge Pool query in parallel...');
-        const data = await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext);
-        const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const aiResult = safeJsonParse(rawText, text);
-        if (aiResult && aiResult.response) {
-          console.log('[VoiceAssistant] ⚡ Gemini Pool WON the parallel race!');
-          return { response: aiResult.response, source: 'Gemini Pool' };
-        }
-      } catch (e) {
-        console.warn('[VoiceAssistant] Gemini Pool error:', e);
-      }
-      return null;
-    })();
-
-    const pollinationsPromise = (async () => {
-      try {
-        console.log('[VoiceAssistant] ⚡ Launching Pollinations Free GET query in parallel...');
-        const sys = encodeURIComponent(`You are Michi AI, a helpful assistant. Answer in ${userLang === 'uz' ? 'Uzbek' : userLang === 'ja' ? 'Japanese' : 'English'}.`);
-        const q = encodeURIComponent(text);
-        const res = await fetch(`https://text.pollinations.ai/${q}?system=${sys}`, {
-          signal: AbortSignal.timeout(6000)
-        });
-        if (res.ok) {
-          const rawText = await res.text();
-          if (rawText && rawText.trim().length > 5 && !rawText.toLowerCase().includes('budget')) {
-            console.log('[VoiceAssistant] ⚡ Pollinations GET WON the parallel race!');
-            return { response: rawText.trim(), source: 'Pollinations GET' };
-          }
-        }
-      } catch (e) {
-        console.warn('[VoiceAssistant] Pollinations GET error:', e);
-      }
-      return null;
-    })();
-
     try {
-      const winningResult = await Promise.race([
-        hfPromise.then(res => res ? res : new Promise(() => {})),
-        geminiPromise.then(res => res ? res : new Promise(() => {})),
-        pollinationsPromise.then(res => res ? res : new Promise(() => {})),
-        new Promise(resolve => setTimeout(() => resolve(null), 35000))
-      ]);
-
+      const coreAnswer = await askMichiCore(text);
       if (!isActiveRef.current) return;
 
-      if (winningResult && winningResult.response) {
-        michiCacheEngine.set(text, winningResult.response, userLang);
+      if (coreAnswer && coreAnswer.trim().length > 0) {
+        michiCacheEngine.set(text, coreAnswer, userLang);
         handleGeminiSuccess({
           userTranscription: text,
           command: 'NONE',
-          response: winningResult.response,
-          language: userLang
-        }, text);
-        return;
-      }
-
-      console.warn('Parallel race returned empty/timed out, attempting MultiAiMesh fallback...');
-      const meshResult = await multiAiMeshEngine.processCascadingQuery(text, userLang);
-      if (meshResult && meshResult.text) {
-        handleGeminiSuccess({
-          userTranscription: text,
-          command: 'NONE',
-          response: meshResult.text,
+          response: coreAnswer,
           language: userLang
         }, text);
         return;
       }
     } catch (error) {
       if (!isActiveRef.current) return;
-      console.warn('Process text error:', error);
+      console.error("[Michi Core Error]:", error);
     }
 
     const isJa = userLang.startsWith('ja');
