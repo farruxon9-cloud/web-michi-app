@@ -63,27 +63,27 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light-mode) {
-    --bg-color: #050510;
-    --card-bg: rgba(20, 20, 26, 0.45);
-    --glass-bg: rgba(20, 20, 26, 0.4);
-    --glass-border: rgba(255, 255, 255, 0.06);
+    --bg-color: #0B0C10;
+    --card-bg: #13151B;
+    --glass-bg: #13151B;
+    --glass-border: rgba(255, 255, 255, 0.08);
     --text-main: #FFFFFF;
     --text-secondary: #A1A1AA;
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.45);
+    --shadow-sm: none;
+    --shadow-md: none;
   }
 }
 
 /* Class-based dark mode toggle */
 html.dark-mode {
-  --bg-color: #050510;
-  --card-bg: rgba(20, 20, 26, 0.45);
-  --glass-bg: rgba(20, 20, 26, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.06);
+  --bg-color: #0B0C10;
+  --card-bg: #13151B;
+  --glass-bg: #13151B;
+  --glass-border: rgba(255, 255, 255, 0.08);
   --text-main: #FFFFFF;
   --text-secondary: #A1A1AA;
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.45);
+  --shadow-sm: none;
+  --shadow-md: none;
 }
 
 html.light-mode {
@@ -179,58 +179,12 @@ body {
   }
 }
 
-/* Glassmorphism background blobs */
-.glass-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.6;
-  mix-blend-mode: multiply;
-  animation: blob-float 15s infinite alternate ease-in-out;
-}
-
-@keyframes blob-float {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0, 0) scale(1); }
-}
-
-@media (prefers-color-scheme: dark) {
-  .glass-blob {
-    opacity: 0.25;
-    mix-blend-mode: screen;
-  }
-}
-
-.blob-1 {
-  width: 350px;
-  height: 350px;
-  background: #e0f2fe;
-  top: -50px;
-  left: -50px;
-}
-
-.blob-2 {
-  width: 400px;
-  height: 400px;
-  background: #e0e7ff;
-  bottom: 0px;
-  right: -50px;
-  animation-duration: 18s;
-  animation-delay: -2s;
-}
-
+/* Background blobs disabled to enforce clean OLED Matte Black UI */
+.glass-blob,
+.blob-1,
+.blob-2,
 .blob-3 {
-  width: 300px;
-  height: 300px;
-  background: #f3e8ff;
-  top: 30%;
-  left: 20%;
-  animation-duration: 20s;
-  animation-delay: -5s;
+  display: none !important;
 }
 
 /* Logo specific styles */

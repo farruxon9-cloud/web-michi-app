@@ -1,28 +1,28 @@
 /* Custom variables for dashboard elements to ensure highly visible borders and rich contrast */
 :root {
-  --dash-card-bg: rgba(255, 255, 255, 0.65); /* More opaque white in light mode for better contrast */
-  --dash-card-border: rgba(0, 0, 0, 0.08); /* Sophisticated neutral dark border in light mode */
-  --dash-card-shadow: 0 6px 20px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --dash-card-bg: #13151B;
+  --dash-card-border: rgba(255, 255, 255, 0.08);
+  --dash-card-shadow: none;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light-mode) {
-    --dash-card-bg: rgba(28, 28, 30, 0.7); /* Premium iOS Elevate dark card */
-    --dash-card-border: rgba(255, 255, 255, 0.1); /* Clean visible light border in dark mode */
-    --dash-card-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    --dash-card-bg: #13151B;
+    --dash-card-border: rgba(255, 255, 255, 0.08);
+    --dash-card-shadow: none;
   }
 }
 
 html.dark-mode {
-  --dash-card-bg: rgba(28, 28, 30, 0.7);
-  --dash-card-border: rgba(255, 255, 255, 0.1);
-  --dash-card-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  --dash-card-bg: #13151B;
+  --dash-card-border: rgba(255, 255, 255, 0.08);
+  --dash-card-shadow: none;
 }
 
 html.light-mode {
-  --dash-card-bg: rgba(255, 255, 255, 0.65);
-  --dash-card-border: rgba(0, 0, 0, 0.08);
-  --dash-card-shadow: 0 6px 20px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --dash-card-bg: #13151B;
+  --dash-card-border: rgba(255, 255, 255, 0.08);
+  --dash-card-shadow: none;
 }
 
 .dashboard-container {
@@ -33,7 +33,8 @@ html.light-mode {
   bottom: 0;
   padding: 14px;
   padding-bottom: 96px;
-  background-color: transparent;
+  background: #0B0C10 !important;
+  background-image: none !important;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -82,12 +83,12 @@ html.light-mode {
 
 /* Individual Premium Card */
 .dash-hero-card {
-  background: var(--dash-card-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--dash-card-border);
+  background: #13151B !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 24px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), var(--dash-card-shadow);
+  box-shadow: none !important;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -101,8 +102,8 @@ html.light-mode {
 
 .dash-hero-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(94, 92, 230, 0.25);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), var(--dash-card-shadow);
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
 }
 
 .dash-hero-content {
@@ -194,10 +195,12 @@ html.light-mode {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 6px; /* Fixed premium gap spacing */
-  padding: 0 4px; /* Perfectly aligns with the left and right card edges of the hero carousel */
+  gap: 6px;
+  padding: 0 4px;
   flex-shrink: 0;
   width: 100%;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .calendar-day {
@@ -205,23 +208,24 @@ html.light-mode {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 1; /* Automatically stretch to fill the horizontal space */
+  flex: 1;
   min-width: 0;
-  height: 70px; /* Taller height for a more clear and premium presentation */
-  border-radius: 16px; /* More rounded premium corners */
-  border: 1px solid var(--dash-card-border);
-  background: var(--dash-card-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  gap: 4px; /* Better internal vertical spacing */
+  height: 70px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: #13151B !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  gap: 4px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .calendar-day:hover {
   transform: translateY(-2px);
-  border-color: rgba(94, 92, 230, 0.3); /* Premium Indigo highlight on hover */
-  box-shadow: var(--dash-card-shadow);
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
 }
 
 .calendar-day:active {
@@ -229,10 +233,10 @@ html.light-mode {
 }
 
 .calendar-day.active {
-  background: var(--text-main);
-  color: var(--bg-color); /* Correctly uses global background color for contrast */
-  border-color: var(--text-main);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  background: #FFFFFF !important;
+  color: #0B0C10 !important;
+  border-color: #FFFFFF !important;
+  box-shadow: none !important;
 }
 
 .day-name {
@@ -244,19 +248,19 @@ html.light-mode {
 }
 
 .calendar-day.active .day-name {
-  color: inherit;
-  opacity: 0.7; /* Semi-transparent color that inherits the active dark/light text color */
+  color: #0B0C10 !important;
+  opacity: 0.7;
 }
 
 .day-num {
-  font-size: 19px; /* Slightly larger, bold and clear */
+  font-size: 19px;
   font-weight: 800;
   color: var(--text-main);
   transition: color 0.25s ease;
 }
 
 .calendar-day.active .day-num {
-  color: inherit;
+  color: #0B0C10 !important;
 }
 
 /* Greeting Header */
@@ -311,16 +315,16 @@ html.light-mode {
 }
 
 .time-pill {
-  background: var(--dash-card-bg);
-  border: 1px solid var(--dash-card-border);
-  box-shadow: var(--dash-card-shadow);
+  background: #13151B !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
   padding: 8px 16px;
   border-radius: 24px;
   font-size: 15px;
   font-weight: 800;
   color: var(--text-main);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   letter-spacing: 0.05em;
   font-variant-numeric: tabular-nums;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -328,7 +332,7 @@ html.light-mode {
 
 .time-pill:hover {
   transform: translateY(-1px);
-  border-color: rgba(94, 92, 230, 0.2);
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Bento Icons Row */
@@ -347,19 +351,24 @@ html.light-mode {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 14px 12px; /* Reduced padding */
-  border-radius: 20px; /* Slightly tighter border radius */
-  min-height: 115px; /* Set min-height instead of fixed height for full word-wrapping safety */
+  padding: 14px 12px;
+  border-radius: 20px;
+  min-height: 115px;
   height: auto;
   cursor: pointer;
-  box-shadow: var(--dash-card-shadow);
+  background: #13151B !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
 }
 
 .bento-icon-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
 }
 
 .bento-icon-card:active {
@@ -367,15 +376,17 @@ html.light-mode {
 }
 
 .dark-card {
-  background: #2D2A26; /* Dark brown/black like BON */
+  background: #13151B !important;
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.08); /* Sophisticated subtle border to separate dark cards */
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
 }
 
 .light-card {
-  background: var(--dash-card-bg);
-  border: 1px solid var(--dash-card-border);
+  background: #13151B !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: var(--text-main);
+  box-shadow: none !important;
 }
 
 .bento-icon-wrap {
@@ -389,8 +400,8 @@ html.light-mode {
 }
 
 .light-card .bento-icon-wrap {
-  background: var(--bg-color); /* Corrected background variable to ensure it has valid values */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
 }
 
 .bento-text-wrap h4 {
@@ -408,8 +419,10 @@ html.light-mode {
 
 /* Action Card */
 .bento-action-card {
-  background: var(--dash-card-bg);
-  border: 1px solid var(--dash-card-border);
+  background: #13151B !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-radius: 24px;
   padding: 20px;
   display: flex;
@@ -417,14 +430,14 @@ html.light-mode {
   align-items: center;
   cursor: pointer;
   flex-shrink: 0;
-  box-shadow: var(--dash-card-shadow);
+  box-shadow: none !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bento-action-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(94, 92, 230, 0.25);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
 }
 
 .bento-action-card:active {
@@ -545,8 +558,11 @@ html.dark-mode .dark-card {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border: 1px solid var(--dash-card-border);
-  background: var(--dash-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: #13151B !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -856,9 +872,11 @@ html.dark-mode .player-timeline {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid var(--dash-card-border);
-  background: var(--dash-card-bg);
-  box-shadow: var(--dash-card-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: #13151B !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-radius: 24px;
   cursor: pointer;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1170,69 +1188,14 @@ html.dark-mode .ios-switch.checked {
   box-shadow: 0 1.5px 4px rgba(0,0,0,0.25);
 }
 
-/* Organic Suyuq Jelly Blob Visualizer (Premium Floating Fluid in Background) */
-.music-jelly-blob {
-  position: absolute;
-  right: -25px;
-  bottom: -25px;
-  width: 140px;
-  height: 140px;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.8;
-  filter: blur(2px);
-  transition: all 0.5s ease-in-out;
+/* Organic Suyuq Jelly Blob Visualizer Disabled */
+.music-jelly-blob,
+.mini-blob-layer,
+.music-mini-jelly,
+.glow-effect,
+.ambient-light {
+  display: none !important;
 }
-
-.music-jelly-blob .blob-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  mix-blend-mode: screen;
-  transition: all 0.5s ease-in-out;
-}
-
-/* Layer 1 - Indigo/purple base */
-.music-jelly-blob .blob-1 {
-  background: radial-gradient(circle, rgba(94, 92, 230, 0.75) 0%, rgba(94, 92, 230, 0) 70%);
-  animation: jelly-morph 9s infinite linear, jelly-rotate 14s infinite linear;
-}
-
-/* Layer 2 - Pink/magenta offset */
-.music-jelly-blob .blob-2 {
-  background: radial-gradient(circle, rgba(255, 55, 95, 0.6) 0%, rgba(255, 55, 95, 0) 70%);
-  animation: jelly-morph 7s infinite linear alternate, jelly-rotate 17s infinite linear reverse;
-  transform-origin: 45% 48%;
-}
-
-/* Layer 3 - Blue bright core */
-.music-jelly-blob .blob-3 {
-  background: radial-gradient(circle, rgba(10, 132, 255, 0.65) 0%, rgba(10, 132, 255, 0) 60%);
-  animation: jelly-morph 11s infinite linear, jelly-rotate 9s infinite linear;
-  scale: 0.8;
-}
-
-.music-jelly-blob.animating {
-  animation: jelly-pulse 2.2s infinite ease-in-out;
-  filter: blur(0px); /* Sharper fluid matrix on play */
-  opacity: 0.95;
-}
-
-.music-jelly-blob.animating .blob-1 {
-  animation: jelly-morph 4s infinite linear, jelly-rotate 6s infinite linear;
-}
-
-.music-jelly-blob.animating .blob-2 {
-  animation: jelly-morph 3s infinite linear alternate, jelly-rotate 8s infinite linear reverse;
-}
-
-.music-jelly-blob.animating .blob-3 {
-  animation: jelly-morph 5s infinite linear, jelly-rotate 4s infinite linear;
-  scale: 0.9;
-}
-
 
 /* My Posted Ads dashboard shortcut card */
 .bento-my-ads-card {
@@ -1240,16 +1203,19 @@ html.dark-mode .ios-switch.checked {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border: 1px solid var(--dash-card-border);
-  background: var(--dash-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: #13151B !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
   min-height: 156px;
   cursor: pointer;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .bento-my-ads-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--dash-card-shadow);
-  border-color: rgba(255, 159, 10, 0.4);
+  box-shadow: none !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 .bento-my-ads-card:active {
   transform: scale(0.97);
@@ -1302,7 +1268,7 @@ html.dark-mode .ios-switch.checked {
 }
 
 .bento-my-ads-card.bento-my-apps-card:hover {
-  border-color: rgba(10, 132, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 .bento-my-ads-card .my-apps-icon {
   width: 48px;
@@ -1317,15 +1283,15 @@ html.dark-mode .ios-switch.checked {
   margin-bottom: 6px;
 }
 
-/* Premium Bento Spotlight & Glow Hover Effects */
+/* Premium Bento Spotlight & Border Hover Effects */
 .bento-icon-card:hover,
 .bento-action-card:hover,
 .bento-music-card:hover,
 .bento-my-ads-card:hover,
 .bento-ai-card:hover {
-  border-color: var(--primary) !important;
-  box-shadow: 0 12px 30px rgba(90, 85, 234, 0.08), inset 0 0 1px 1px var(--primary-light-border) !important;
-  transform: translateY(-3px) scale(1.01) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
+  transform: translateY(-2px) !important;
 }
 
 .dark-mode .bento-icon-card:hover,
@@ -1333,7 +1299,7 @@ html.dark-mode .ios-switch.checked {
 .dark-mode .bento-music-card:hover,
 .dark-mode .bento-my-ads-card:hover,
 .dark-mode .bento-ai-card:hover {
-  border-color: var(--primary) !important;
-  box-shadow: 0 12px 30px rgba(90, 85, 234, 0.2), inset 0 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
 }
 

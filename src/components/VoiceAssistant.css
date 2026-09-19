@@ -487,33 +487,9 @@ html.dark-mode .voice-ambient-glow-container {
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
 
-/* Background glowing blur behind visualizer */
+/* Background glowing blur disabled for pure OLED Matte Black theme */
 .voice-ambient-glow-container::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 280px;
-  height: 70px;
-  border-radius: 20px;
-  filter: blur(25px);
-  opacity: 0.65;
-  z-index: -1;
-  transition: all 0.5s ease;
-  background: radial-gradient(circle, rgba(94, 92, 230, 0.75) 0%, rgba(175, 82, 222, 0.35) 50%, rgba(94, 92, 230, 0) 80%);
-}
-
-.voice-ambient-glow-container.listening::before {
-  animation: glow-breathe 3.5s infinite ease-in-out;
-}
-
-.voice-ambient-glow-container.thinking::before {
-  animation: glow-breathe 4s infinite ease-in-out;
-}
-
-.voice-ambient-glow-container.speaking::before {
-  animation: glow-breathe 3.5s infinite ease-in-out;
+  display: none !important;
 }
 
 @keyframes glow-breathe {
