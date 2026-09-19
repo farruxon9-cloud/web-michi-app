@@ -66,3 +66,7 @@
 18. **Sticky Back Button Bounded Scroll Container Invariant (Rule 18)**:
     - Sticky ortga qaytish tugmasi (`position: sticky; top: 16px; z-index: 300`) joylashgan ota-konteyner HECH QACHON `height: 100%` yoki `max-height: 100%` bilan cheklanmasligi shart (agarda ichki scroll emas, tashqi `.sub-page-view` scroll qilinsa).
     - Agarda ota-konteyner `height: 100%` ga ega bo'lsa, `height: auto; maxHeight: none; overflow-y: visible;` inline-style override qo'llanib, ota-konteyner balandligi forma kontentining to'liq balandligiga mos ravishda tabiiy ravishda cho'zilishi kafolatlanishi shart.
+19. **Theme-Scoped Visual Refinements Invariant (Rule 19)**:
+    - **Dark Mode Scoping**: When implementing OLED matte black styling (`#0B0C10` containers, `#13151B` cards) or hiding glowing background blobs/haze, ALWAYS scope the CSS overrides strictly under `html.dark-mode` and `@media (prefers-color-scheme: dark) :root:not(.light-mode)`.
+    - **Light Mode Preservation**: Light mode (`html.light-mode`) default variables (`--bg-color: #e5eafc` / `#f5f7fa`, `--card-bg: rgba(255, 255, 255, 0.65)`), backdrop blur filters (`backdrop-filter: blur(20px)`), card shadows, and ambient background blobs (`.glass-blob`, `.music-jelly-blob`) MUST remain untouched and fully functional unless the user explicitly requests modifying Light Mode as well.
+
