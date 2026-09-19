@@ -2026,39 +2026,48 @@ Return ONLY the raw JSON object, no markdown wrappers.
     if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
     if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
 
-    // 1. Typewriter Streaming Effect (character by character for smooth natural reading)
-    setDisplayedAiText('');
-    setIsTyping(true);
-    let charIndex = 0;
-    const stepChunk = 2; // 2 characters per step for smooth fast writing
-    
-    typewriterIntervalRef.current = setInterval(() => {
-      charIndex += stepChunk;
-      if (charIndex >= politeResponse.length) {
-        setDisplayedAiText(politeResponse);
-        setIsTyping(false);
-        if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
-        typewriterIntervalRef.current = null;
+    // 1. Typewriter Streaming Effect vs Live Streamed Response
+    const scheduleAutoDismiss = () => {
+      dismissTimerRef.current = setTimeout(() => {
+        setIsFadeOut(true);
+        pillTimeoutRef.current = setTimeout(() => {
+          setShowPill(false);
+          setIsFadeOut(false);
+          setDisplayedAiText('');
+          setAiResponseText('');
+          if (isActiveRef.current) {
+            setStatus('idle');
+            startLocalSpeechRecognition();
+          }
+        }, 500); // 500ms fade-out transition duration
+      }, readDuration);
+    };
 
-        // 2. Schedule Dynamic Auto-Dismiss (fades out after calculated reading duration)
-        dismissTimerRef.current = setTimeout(() => {
-          setIsFadeOut(true);
-          pillTimeoutRef.current = setTimeout(() => {
-            setShowPill(false);
-            setIsFadeOut(false);
-            setDisplayedAiText('');
-            setAiResponseText('');
-            if (isActiveRef.current) {
-              setStatus('idle');
-              startLocalSpeechRecognition();
-            }
-          }, 500); // 500ms fade-out transition duration
-        }, readDuration);
-
-      } else {
-        setDisplayedAiText(politeResponse.slice(0, charIndex));
-      }
-    }, 30);
+    if (displayedAiText && displayedAiText.length > 5) {
+      // Text was already streamed live chunk-by-chunk: finalize text smoothly without restarting from 0!
+      setDisplayedAiText(politeResponse);
+      setIsTyping(false);
+      scheduleAutoDismiss();
+    } else {
+      // Instant cache hit or non-streamed response: use smooth typewriter effect
+      setDisplayedAiText('');
+      setIsTyping(true);
+      let charIndex = 0;
+      const stepChunk = 2; // 2 characters per step for smooth fast writing
+      
+      typewriterIntervalRef.current = setInterval(() => {
+        charIndex += stepChunk;
+        if (charIndex >= politeResponse.length) {
+          setDisplayedAiText(politeResponse);
+          setIsTyping(false);
+          if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
+          typewriterIntervalRef.current = null;
+          scheduleAutoDismiss();
+        } else {
+          setDisplayedAiText(politeResponse.slice(0, charIndex));
+        }
+      }, 30);
+    }
 
     // Record positive feedback in local learning engine
     if (userText && aiResult.command && aiResult.command !== 'NONE') {
