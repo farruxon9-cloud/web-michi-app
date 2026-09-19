@@ -16,7 +16,7 @@ import { askMichiCore } from '../services/huggingFaceService';
 import MichiDrawerTrigger from './michi-ai/MichiDrawerTrigger';
 import MichiSideDrawer from './michi-ai/MichiSideDrawer';
 
-export function calculateReadingDuration(text, lang = 'uz') {
+function calculateReadingDuration(text, lang = 'uz') {
   if (!text) return 12000;
   const isJa = (lang || 'uz').toLowerCase().startsWith('ja');
   const msPerChar = isJa ? 85 : 65;
