@@ -556,6 +556,11 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**: AI javoblari qurilmada (`michiLocalStorageEngine`) saqlangani bilan React state'i (`chatHistoryList`) vaqtida yangilanmasligi yoki mount bo'lganda yuklanmasligi. Natijada chat yon paneli (`MichiSideDrawer.jsx`) ochilganda o'tgan savol-javoblar ko'rinmay yo'qolib qolishi.
 * **Yechim**: `VoiceAssistant.jsx` mount bo'lganda va `isSideDrawerOpen` o'zgarganda `reloadChatHistory()` orqali tarix majburiy yuklanadi va har bir yangi javob kelganda `setChatHistoryList(prev => [...prev, newEntry])` orqali state zudlik bilan sinxronlashtiriladi.
 
+## 🚫 92. Live Stream Typewriter Reset Prevention Invariant
+* **Xatolik**: Hugging Face-dan kelayotgan jonli striming (`askMichiCore`) vaqtida matn ekranda real vaqtda yozilib bo'linganidan so'ng, `handleGeminiSuccess` chaqirilganda `setDisplayedAiText('')` bajarilib, tayper mashinkasi animationsi matnni 0-simvoldan boshlab QAYTADAN boshidan yozib chiqishi.
+* **Yechim**: `VoiceAssistant.jsx` faylidagi `handleGeminiSuccess` ichida agar matn allaqachon jonli striming orqali ekranga chiqarilgan bo'lsa (`displayedAiText.length > 5`), `setDisplayedAiText('')` va tayper mashinkasi taymerini 0 dan qayta ishga tushirish taqiqlanadi — matn silliq yakunlanib taymer o'rnatiladi.
+
+
 
 
 
