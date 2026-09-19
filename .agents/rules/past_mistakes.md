@@ -560,6 +560,11 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**: Hugging Face-dan kelayotgan jonli striming (`askMichiCore`) vaqtida matn ekranda real vaqtda yozilib bo'linganidan so'ng, `handleGeminiSuccess` chaqirilganda `setDisplayedAiText('')` bajarilib, tayper mashinkasi animationsi matnni 0-simvoldan boshlab QAYTADAN boshidan yozib chiqishi.
 * **Yechim**: `VoiceAssistant.jsx` faylidagi `handleGeminiSuccess` ichida agar matn allaqachon jonli striming orqali ekranga chiqarilgan bo'lsa (`displayedAiText.length > 5`), `setDisplayedAiText('')` va tayper mashinkasi taymerini 0 dan qayta ishga tushirish taqiqlanadi — matn silliq yakunlanib taymer o'rnatiladi.
 
+## 🚫 93. Robot Avatar Expanding Dissolving Aura Waves Invariant
+* **Xatolik**: Robotcha AI faol holatdaligida tashqi halqaning urib/impuls berib turuvchi (`pulse-glow-ring`) rasm kabi ko'rinishi.
+* **Yechim**: `RobotAvatar.jsx` va `RobotAvatar.css` da `wave-1` va `wave-2` (1.6s offset) ikkita bosqichli, 3.2s `cubic-bezier` ostida tashqariga kengayib va mayin erib/tarqalib ketuvchi halo nur toshqini (`aura-expand-dissolve`: `scale(0.95) -> scale(1.65)`, `opacity 0.75 -> 0`, `filter: blur(0.5px) -> blur(5px)`) o'rnatiladi.
+
+
 
 
 
