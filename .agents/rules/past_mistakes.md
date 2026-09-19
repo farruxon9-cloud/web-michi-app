@@ -564,6 +564,11 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**: Robotcha AI faol holatdaligida tashqi halqaning urib/impuls berib turuvchi (`pulse-glow-ring`) rasm kabi ko'rinishi.
 * **Yechim**: `RobotAvatar.jsx` va `RobotAvatar.css` da `wave-1` va `wave-2` (1.6s offset) ikkita bosqichli, 3.2s `cubic-bezier` ostida tashqariga kengayib va mayin erib/tarqalib ketuvchi halo nur toshqini (`aura-expand-dissolve`: `scale(0.95) -> scale(1.65)`, `opacity 0.75 -> 0`, `filter: blur(0.5px) -> blur(5px)`) o'rnatiladi.
 
+## 🚫 94. Zero-Flash Feather-Soft Ambient Aura Undulation Invariant
+* **Xatolik**: Aura animatsiyasida 0-soniyadan boshlab keskin ko'rsatish (`opacity: 0.75`), chaqnash yoki tez kengayish portlashi (`scale(1.65)`) ishlatilishi.
+* **Yechim**: Har qanday chaqnash va portlashlar to'liq o'chiriladi: `gentle-aura-dissolve` animatsiyasi `opacity: 0` dan mayin boshlanib (`scale(0.98)`), 5.2s davomida juda sekin `scale(1.26)` gacha tebranib, `blur(8px)` va zero-opacity ko'rinishida orqa fonga sezilarsiz singib/yo'qolib ketadi.
+
+
 
 
 
