@@ -568,11 +568,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**: Aura animatsiyasida 0-soniyadan boshlab keskin ko'rsatish (`opacity: 0.75`), chaqnash yoki tez kengayish portlashi (`scale(1.65)`) ishlatilishi.
 * **Yechim**: Har qanday chaqnash va portlashlar to'liq o'chiriladi: `gentle-aura-dissolve` animatsiyasi `opacity: 0` dan mayin boshlanib (`scale(0.98)`), 5.2s davomida juda sekin `scale(1.26)` gacha tebranib, `blur(8px)` va zero-opacity ko'rinishida orqa fonga sezilarsiz singib/yo'qolib ketadi.
 
-## 🚫 95. AI Activation Card Trigger & Quick Chips Multi-Language Prompt Alignment Invariant
+## 🚫 96. Continuous Forward-Dissolving Aura Wave & Stationary Eye Blink Invariant (`RobotAvatar.css`)
 * **Xatolik**: 
-  1. `MichiActivationCard` tugmasi bosilganda `setIsVoiceStandby(true)` chaqirilmasligi tufayli darcha yopilmay yoki ovoz tanish (STT) boshlanmay qolishi.
-  2. `MichiQuickChips` sarlavhalari hamda so'rov matnlari yagona tilda qattiq yozilib, tanlangan tilga (`i18n.language` / `speechLang`) mos kelmasligi.
-* **Yechim**: `MichiActivationCard` dagi butun karta va tugmaga `onActivate` o'rnatilib, `setIsVoiceStandby(true)` va `startLocalSpeechRecognition()` ishga tushiriladi. `MichiQuickChips` sarlavhalari hamda prompt so'rovlari strictly tanlangan tilga (`ja`, `uz`, `en`, `ru`, `zh`) dinamik moslashtiriladi.
+  1. AI robotcha ko'zlari z-o'qi bo'yicha kichiklashib/kattalashib depth-sinking ko'rinishida ichga kirib-chiqishi (foydalanuvchiga qo'rqinchli ko'rinishi).
+  2. Aura to'lqinining ortiga qaytishi, pastga tushishi yoki tarqoq zarrachalar (`sur-particle`) ekranda ortiqcha vizual shovqin paydo qilishi.
+* **Yechim (MAJBURIY)**:
+  1. **Stationary Eye Blink with Natural 2D Motion**: Ko'zlar hech qachon `scale < 1.0` ga tushirilmaydi (depth-sinking taqiqlanadi). Ko'zlar o'z o'rnida turib natural miltillaydi (`eye-blink`), hamda faqat 2D yuzasida sekin va mayin `eye-breath-gentle`, `eye-gaze-think`, va `eye-gaze-speak` mikro-surilishlariga ega bo'ladi.
+  2. **Continuous Forward-Dissolving Wave (`gentle-forward-breath`)**: Zarrachalar olib tashlanib, 3 bosqichli uzluksiz to'lqin oqimi o'rnatiladi. Har bir to'lqin strictly oldinga qarab kengayadi (`scale(0.96) -> scale(1.15)`) va tashqarida sekin erib yo'qoladi (`opacity: 0`). Hech qachon ortga qaytish yoki pastga tushish harakati berilmaydi.
+
 
 
 

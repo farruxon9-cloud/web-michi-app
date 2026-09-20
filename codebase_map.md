@@ -94,7 +94,7 @@ src/
 │   ├── ResumeBuilder.jsx / .css   # Interactive Resume Generator (Rirekisho / Shokumukirekisho)
 │   ├── CompanyHome.jsx            # My Posted Ads & Employer HR Management Portal
 │   ├── VoiceAssistant.jsx / .css  # Master AI Orchestrator connecting STT, HF Stream & Speech
-│   ├── RobotAvatar.jsx / .css     # 5.2s Soft Gentle Undulating Robot Avatar with Ambient Glow
+│   ├── RobotAvatar.jsx / .css     # 3.8s Continuous Forward Breathing Robot Avatar with Dissolving Glow & 2D Natural Eye Motion
 │   ├── BottomNav.jsx / .css       # Floating Glassmorphic Dock Navigation Bar (5 Main Tabs)
 │   ├── AssistHeroShowcase.jsx     # Platform Vision & AI Assist Showcase View
 │   ├── AdminDashboard.jsx         # System Admin Panel & Metrics
