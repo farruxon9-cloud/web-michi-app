@@ -42,11 +42,12 @@ export default function RobotAvatar({ isVoiceActive, voiceStatus = 'idle', onCli
         </div>
       </div>
       
-      {/* Outer soft expanding & dissolving aura waves */}
+      {/* Outer smooth expanding & dissolving wave ripples */}
       {isVoiceActive && (
         <div className="robot-aura-wrapper">
           <span className={`robot-aura-wave wave-1 ${voiceStatus}`}></span>
           <span className={`robot-aura-wave wave-2 ${voiceStatus}`}></span>
+          <span className={`robot-aura-wave wave-3 ${voiceStatus}`}></span>
         </div>
       )}
     </button>
