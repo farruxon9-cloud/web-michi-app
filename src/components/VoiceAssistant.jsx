@@ -2699,18 +2699,23 @@ Return ONLY the raw JSON object, no markdown wrappers.
             startLocalSpeechRecognition();
           }, 100);
         }}
+        onDeactivateAI={() => {
+          stopAllVoiceActivities();
+          if (setIsVoiceStandby) setIsVoiceStandby(false);
+          if (onClose) onClose();
+        }}
         onMicToggle={() => {
           if (!isActive) {
             unlockMobileAudio();
             if (setIsVoiceStandby) setIsVoiceStandby(true);
             if (onStartVoice) onStartVoice();
-          }
-          if (status === 'listening') {
-            try { recognitionRef.current?.stop(); } catch(e){}
-            setStatus('idle');
+            setTimeout(() => {
+              startLocalSpeechRecognition();
+            }, 100);
           } else {
-            unlockMobileAudio();
-            startLocalSpeechRecognition();
+            stopAllVoiceActivities();
+            if (setIsVoiceStandby) setIsVoiceStandby(false);
+            if (onClose) onClose();
           }
         }}
         onClearHistory={() => {

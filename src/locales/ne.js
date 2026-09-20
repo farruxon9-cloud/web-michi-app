@@ -864,7 +864,12 @@ const translation = {
   "statusThinking": "सोच्दैछ...",
   "statusSpeaking": "बोल्दैछ...",
   "statusReady": "तयार",
-  "clearHistoryBtn": "इतिहास मेटाउनुहोस्"
+  "clearHistoryBtn": "इतिहास मेटाउनुहोस्",
+  "activateAiTitle": "AI सक्रिय गर्नुहोस्",
+  "deactivateAiTitle": "AI निष्क्रिय गर्नुहोस्",
+  "activateAiPlaceholder": "AI सक्रिय गर्न माइक थिच्नुहोस्...",
+  "listeningPlaceholder": "सुन्दैछ... अहिले बोल्नुहोस्",
+  "askInputPlaceholder": "Michi AI लाई सन्देश टाइप गर्नुहोस्..."
 };
 
 export default { translation };

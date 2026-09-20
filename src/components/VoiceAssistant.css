@@ -2339,27 +2339,54 @@ html.dark-mode .activation-text h4 {
   transform: scale(0.96);
 }
 
-/* Mic Dictation Button in Input Bar */
+/* Mic Dictation Button in Input Bar (Clean Solid Distinction - No Blinking Animations) */
 .voice-drawer-mic-btn {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: 1px solid rgba(94, 92, 230, 0.3);
-  background: rgba(94, 92, 230, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 
-.voice-drawer-mic-btn:hover {
-  background: rgba(94, 92, 230, 0.2);
+/* OFF State (AI is deactivated) */
+.voice-drawer-mic-btn.off {
+  background: rgba(142, 142, 147, 0.12);
+  border: 1px solid rgba(142, 142, 147, 0.3);
+}
+html.dark-mode .voice-drawer-mic-btn.off {
+  background: rgba(142, 142, 147, 0.18);
+  border-color: rgba(142, 142, 147, 0.35);
+}
+.voice-drawer-mic-btn.off:hover {
+  background: rgba(94, 92, 230, 0.15);
+  border-color: rgba(94, 92, 230, 0.4);
 }
 
+/* ON State (AI is active) */
+.voice-drawer-mic-btn.on {
+  background: rgba(94, 92, 230, 0.14);
+  border: 1.5px solid rgba(94, 92, 230, 0.5);
+  box-shadow: 0 2px 8px rgba(94, 92, 230, 0.15);
+}
+html.dark-mode .voice-drawer-mic-btn.on {
+  background: rgba(94, 92, 230, 0.22);
+  border-color: rgba(94, 92, 230, 0.6);
+}
+.voice-drawer-mic-btn.on:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* LISTENING State (Actively recording speech - Solid indigo fill, NO pulsing/blinking) */
 .voice-drawer-mic-btn.listening {
-  background: rgba(255, 59, 48, 0.15);
-  border-color: rgba(255, 59, 48, 0.4);
-  animation: wavePulse 1.2s infinite ease-in-out;
+  background: linear-gradient(135deg, #5E5CE6, #0A84FF);
+  border: 1.5px solid #5E5CE6;
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.35);
+}
+.voice-drawer-mic-btn.listening:hover {
+  transform: scale(1.04);
 }

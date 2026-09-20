@@ -974,7 +974,12 @@ const translation = {
   "statusThinking": "思考中...",
   "statusSpeaking": "応答中...",
   "statusReady": "準備完了",
-  "clearHistoryBtn": "履歴を消去"
+  "clearHistoryBtn": "履歴を消去",
+  "activateAiTitle": "AIを有効化",
+  "deactivateAiTitle": "AIを無効化",
+  "activateAiPlaceholder": "AIを有効化してください...",
+  "listeningPlaceholder": "音声を聞き取り中...",
+  "askInputPlaceholder": "Michi AI に質問を入力..."
 };
 
 export default { translation };

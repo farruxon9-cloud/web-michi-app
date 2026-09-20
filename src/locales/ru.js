@@ -887,7 +887,12 @@ const translation = {
   "statusThinking": "Думает...",
   "statusSpeaking": "Говорит...",
   "statusReady": "Готов",
-  "clearHistoryBtn": "Очистить историю"
+  "clearHistoryBtn": "Очистить историю",
+  "activateAiTitle": "Включить ИИ",
+  "deactivateAiTitle": "Выключить ИИ",
+  "activateAiPlaceholder": "Нажмите микрофон для включения ИИ...",
+  "listeningPlaceholder": "Слушаю... говорите",
+  "askInputPlaceholder": "Введите вопрос для Michi AI..."
 };
 
 export default { translation };

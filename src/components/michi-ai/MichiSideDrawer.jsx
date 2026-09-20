@@ -20,6 +20,7 @@ export default function MichiSideDrawer({
   onSendText,
   onQuickChipClick,
   onActivateAI,
+  onDeactivateAI,
   onMicToggle,
   onOpenHistory,
   onClearHistory,
@@ -220,6 +221,8 @@ export default function MichiSideDrawer({
           setDrawerInput={setDrawerInput}
           onSubmit={onSendText}
           onMicToggle={onMicToggle}
+          onActivateAI={onActivateAI}
+          onDeactivateAI={onDeactivateAI}
           speechLang={speechLang}
         />
       </aside>

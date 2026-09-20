@@ -930,7 +930,12 @@ const translation = {
   "statusThinking": "Thinking...",
   "statusSpeaking": "Speaking...",
   "statusReady": "Ready",
-  "clearHistoryBtn": "Clear history"
+  "clearHistoryBtn": "Clear history",
+  "activateAiTitle": "Activate AI",
+  "deactivateAiTitle": "Deactivate AI",
+  "activateAiPlaceholder": "Tap mic to activate AI...",
+  "listeningPlaceholder": "Listening... speak now",
+  "askInputPlaceholder": "Type a message to Michi AI..."
 };
 
 export default { translation };

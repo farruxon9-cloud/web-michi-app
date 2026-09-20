@@ -932,7 +932,12 @@ const translation = {
   "statusThinking": "Fikrlamoqda...",
   "statusSpeaking": "Gapirmoqda...",
   "statusReady": "Tayyor",
-  "clearHistoryBtn": "Tarixni tozalash"
+  "clearHistoryBtn": "Tarixni tozalash",
+  "activateAiTitle": "AI-ni yoqish",
+  "deactivateAiTitle": "AI-ni o'chirish",
+  "activateAiPlaceholder": "AIni yoqish uchun bosing...",
+  "listeningPlaceholder": "Gapiring, eshitilmoqda...",
+  "askInputPlaceholder": "Savolingizni yozing..."
 };
 
 export default { translation };

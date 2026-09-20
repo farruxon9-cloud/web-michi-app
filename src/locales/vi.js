@@ -864,7 +864,12 @@ const translation = {
   "statusThinking": "Đang suy nghĩ...",
   "statusSpeaking": "Đang nói...",
   "statusReady": "Sẵn sàng",
-  "clearHistoryBtn": "Xóa lịch sử"
+  "clearHistoryBtn": "Xóa lịch sử",
+  "activateAiTitle": "Kích hoạt AI",
+  "deactivateAiTitle": "Tắt AI",
+  "activateAiPlaceholder": "Nhấn micro để kích hoạt AI...",
+  "listeningPlaceholder": "Đang lắng nghe... hãy nói",
+  "askInputPlaceholder": "Nhập câu hỏi cho Michi AI..."
 };
 
 export default { translation };

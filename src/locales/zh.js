@@ -864,7 +864,12 @@ const translation = {
   "statusThinking": "思考中...",
   "statusSpeaking": "说话中...",
   "statusReady": "就绪",
-  "clearHistoryBtn": "清除历史"
+  "clearHistoryBtn": "清除历史",
+  "activateAiTitle": "启用 AI",
+  "deactivateAiTitle": "停用 AI",
+  "activateAiPlaceholder": "点击麦克风启用 AI...",
+  "listeningPlaceholder": "正在倾听... 请说话",
+  "askInputPlaceholder": "输入 Michi AI 的问题..."
 };
 
 export default { translation };
