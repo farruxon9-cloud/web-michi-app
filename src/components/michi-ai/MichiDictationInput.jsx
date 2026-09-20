@@ -27,6 +27,12 @@ export default function MichiDictationInput({
     }
   };
 
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    if (!isActive || !drawerInput.trim()) return;
+    if (onSubmit) onSubmit(e);
+  };
+
   const getMicClass = () => {
     if (!isActive) return 'off';
     if (status === 'listening') return 'listening';
@@ -40,7 +46,7 @@ export default function MichiDictationInput({
   };
 
   return (
-    <form className="voice-drawer-input-form" onSubmit={onSubmit}>
+    <form className="voice-drawer-input-form" onSubmit={handleFormSubmit}>
       <button 
         type="button" 
         className={`voice-drawer-mic-btn ${getMicClass()}`}
@@ -59,6 +65,7 @@ export default function MichiDictationInput({
 
       <input 
         type="text" 
+        disabled={!isActive}
         placeholder={
           !isActive 
             ? t('activateAiPlaceholder')
@@ -74,7 +81,7 @@ export default function MichiDictationInput({
       <button 
         type="submit" 
         className="voice-drawer-send-btn" 
-        disabled={!drawerInput.trim()}
+        disabled={!isActive || !drawerInput.trim()}
       >
         <Send size={15} color="#FFF" />
       </button>

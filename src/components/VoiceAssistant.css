@@ -2256,6 +2256,17 @@ html.dark-mode .voice-drawer-input {
   border-color: #5E5CE6;
 }
 
+.voice-drawer-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: rgba(142, 142, 147, 0.08);
+}
+
+html.dark-mode .voice-drawer-input:disabled {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
 .voice-drawer-send-btn {
   width: 38px;
   height: 38px;

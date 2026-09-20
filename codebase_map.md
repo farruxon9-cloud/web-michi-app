@@ -165,6 +165,6 @@ src/
 3. **Stream Memory Preservation**: Streaming live AI text never resets typewriter progress from character 0 when new chunk streams arrive.
 4. **Chat History Sync**: Q&A messages are automatically synchronized between React state and `michiLocalStorageEngine` for persistent drawer display.
 5. **Design Standard Invariant (Rule 5 & Rule 17)**: No raw text emojis in UI controls. `MichiSideDrawer` uses Lucide vector icons (`Bot`, `Copy`, `Check`, `Volume2`) and 7-language localized strings (`copyBtn`, `copiedBtn`, `speakBtn`, `youLabel`, `statusThinking`, `statusSpeaking`, `statusReady`, `clearHistoryBtn`) for interactive multi-language copy feedback.
-6. **Microphone Activation & State Indicator Invariant**: `MichiDictationInput` microphone button maintains clean, solid, non-pulsating visual states: muted `MicOff` icon for OFF state (clicking turns AI ON), indigo tinted `Mic` icon for active ON state (clicking turns AI OFF), and solid gradient `Mic` icon for active speech recording.
+6. **Microphone Activation & Input Lock Invariant**: `MichiDictationInput` microphone button maintains clean, solid, non-pulsating visual states: muted `MicOff` icon for OFF state (clicking turns AI ON), indigo tinted `Mic` icon for active ON state (clicking turns AI OFF), and solid gradient `Mic` icon for active speech recording. When AI is OFF (`!isActive`), both the text input field (`disabled={!isActive}`) and send button (`disabled={!isActive}`) are completely disabled with `not-allowed` cursor styling.
 
 
