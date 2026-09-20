@@ -308,13 +308,13 @@ html.dark-mode .robot-head-screen {
   transform: translateY(1px);
 }
 
-/* Outer soft expanding & dissolving aura waves (Ultra-compact near-head halo) */
+/* Outer soft breathing aura glow waves (Continuous forward flow & dissolution) */
 .robot-aura-wrapper {
   position: absolute;
-  top: -1.5px;
-  left: -1.5px;
-  right: -1.5px;
-  bottom: -1.5px;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
   border-radius: 10px;
   pointer-events: none;
   z-index: 0;
@@ -328,8 +328,8 @@ html.dark-mode .robot-head-screen {
   inset: 0;
   border-radius: 10px;
   border: 1px solid rgba(94, 92, 230, 0.35);
-  box-shadow: 0 0 5px rgba(94, 92, 230, 0.2);
-  background: radial-gradient(circle, rgba(94, 92, 230, 0.08) 0%, rgba(94, 92, 230, 0) 70%);
+  box-shadow: 0 0 6px rgba(94, 92, 230, 0.2);
+  background: radial-gradient(circle, rgba(94, 92, 230, 0.1) 0%, rgba(94, 92, 230, 0) 70%);
   opacity: 0;
   pointer-events: none;
   transform-origin: center center;
@@ -337,19 +337,19 @@ html.dark-mode .robot-head-screen {
   will-change: transform, opacity;
 }
 
-/* Staggered smooth gentle wave undulation (Compact distance expansion) */
+/* Staggered smooth forward breathing wave flow */
 .robot-aura-wave.wave-1 {
-  animation: gentle-aura-dissolve 3.6s infinite cubic-bezier(0.25, 1, 0.5, 1);
+  animation: gentle-forward-breath 3.8s infinite cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .robot-aura-wave.wave-2 {
-  animation: gentle-aura-dissolve 3.6s infinite cubic-bezier(0.25, 1, 0.5, 1);
-  animation-delay: 1.2s;
+  animation: gentle-forward-breath 3.8s infinite cubic-bezier(0.25, 1, 0.5, 1);
+  animation-delay: 1.26s;
 }
 
 .robot-aura-wave.wave-3 {
-  animation: gentle-aura-dissolve 3.6s infinite cubic-bezier(0.25, 1, 0.5, 1);
-  animation-delay: 2.4s;
+  animation: gentle-forward-breath 3.8s infinite cubic-bezier(0.25, 1, 0.5, 1);
+  animation-delay: 2.52s;
 }
 
 /* Mode-specific glowing tints */
@@ -359,177 +359,41 @@ html.dark-mode .robot-head-screen {
 }
 
 .robot-aura-wave.listening {
-  border-color: rgba(94, 92, 230, 0.45);
-  box-shadow: 0 0 6px rgba(94, 92, 230, 0.25);
-  background: radial-gradient(circle, rgba(94, 92, 230, 0.12) 0%, rgba(94, 92, 230, 0) 70%);
+  border-color: rgba(94, 92, 230, 0.5);
+  box-shadow: 0 0 8px rgba(94, 92, 230, 0.3);
+  background: radial-gradient(circle, rgba(94, 92, 230, 0.14) 0%, rgba(94, 92, 230, 0) 70%);
 }
 
 .robot-aura-wave.thinking {
-  border-color: rgba(0, 243, 255, 0.45);
-  box-shadow: 0 0 6px rgba(0, 243, 255, 0.25);
-  background: radial-gradient(circle, rgba(0, 243, 255, 0.12) 0%, rgba(0, 243, 255, 0) 70%);
+  border-color: rgba(0, 243, 255, 0.5);
+  box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
+  background: radial-gradient(circle, rgba(0, 243, 255, 0.14) 0%, rgba(0, 243, 255, 0) 70%);
 }
 
 .robot-aura-wave.speaking {
-  border-color: rgba(94, 92, 230, 0.45);
-  box-shadow: 0 0 6px rgba(94, 92, 230, 0.25);
-  background: radial-gradient(circle, rgba(94, 92, 230, 0.12) 0%, rgba(94, 92, 230, 0) 70%);
+  border-color: rgba(94, 92, 230, 0.5);
+  box-shadow: 0 0 8px rgba(94, 92, 230, 0.3);
+  background: radial-gradient(circle, rgba(94, 92, 230, 0.14) 0%, rgba(94, 92, 230, 0) 70%);
 }
 
-@keyframes gentle-aura-dissolve {
+/* Continuous forward flow: scale strictly expands (0.96 -> 1.15), dissolves outward softly */
+@keyframes gentle-forward-breath {
   0% {
-    transform: scale(0.97);
+    transform: scale(0.96);
     opacity: 0;
-    filter: blur(0.5px);
+    filter: blur(0.4px);
   }
-  30% {
-    opacity: 0.45;
+  25% {
+    opacity: 0.55;
     filter: blur(0.8px);
   }
-  75% {
-    opacity: 0.15;
+  70% {
+    opacity: 0.2;
     filter: blur(2px);
   }
   100% {
-    transform: scale(1.10);
+    transform: scale(1.15);
     opacity: 0;
-    filter: blur(2.5px);
-  }
-}
-
-/* Ambient soft "Sur" shimmering light scatter (Micro-particles floating near head) */
-.robot-sur-scatter {
-  position: absolute;
-  inset: -3px;
-  pointer-events: none;
-  z-index: 1;
-  overflow: visible;
-}
-
-.sur-particle {
-  position: absolute;
-  width: 2.5px;
-  height: 2.5px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(147, 112, 219, 0.95) 0%, rgba(94, 92, 230, 0.4) 60%, transparent 100%);
-  box-shadow: 0 0 4px rgba(147, 112, 219, 0.7);
-  opacity: 0;
-  will-change: transform, opacity;
-  filter: blur(0.2px);
-}
-
-/* Position particles at head corners */
-.sur-particle.p-top-left {
-  top: 1px;
-  left: 2px;
-  animation: sur-float-tl 4.8s infinite cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sur-particle.p-top-right {
-  top: 0px;
-  right: 2px;
-  animation: sur-float-tr 5.4s infinite cubic-bezier(0.4, 0, 0.2, 1);
-  animation-delay: 1.2s;
-}
-
-.sur-particle.p-bottom-left {
-  bottom: 1px;
-  left: 1px;
-  animation: sur-float-bl 5.0s infinite cubic-bezier(0.4, 0, 0.2, 1);
-  animation-delay: 2.1s;
-}
-
-.sur-particle.p-bottom-right {
-  bottom: 0px;
-  right: 1px;
-  animation: sur-float-br 4.6s infinite cubic-bezier(0.4, 0, 0.2, 1);
-  animation-delay: 0.8s;
-}
-
-/* Color tints for mode status */
-.sur-particle.thinking {
-  background: radial-gradient(circle, rgba(0, 243, 255, 0.95) 0%, rgba(0, 195, 255, 0.4) 60%, transparent 100%);
-  box-shadow: 0 0 5px rgba(0, 243, 255, 0.8);
-}
-
-.sur-particle.speaking {
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.95) 0%, rgba(94, 92, 230, 0.5) 60%, transparent 100%);
-  box-shadow: 0 0 5px rgba(168, 85, 247, 0.8);
-}
-
-/* Micro floating & gentle dissolution (Short distance: ~3.5px max offset) */
-@keyframes sur-float-tl {
-  0% {
-    transform: translate(0, 0) scale(0.6);
-    opacity: 0;
-  }
-  35% {
-    opacity: 0.65;
-    transform: translate(-2px, -2px) scale(1.1);
-  }
-  75% {
-    opacity: 0.25;
-    transform: translate(-3px, -3px) scale(0.85);
-  }
-  100% {
-    transform: translate(-3.8px, -3.8px) scale(0.5);
-    opacity: 0;
-  }
-}
-
-@keyframes sur-float-tr {
-  0% {
-    transform: translate(0, 0) scale(0.6);
-    opacity: 0;
-  }
-  35% {
-    opacity: 0.65;
-    transform: translate(2px, -2px) scale(1.1);
-  }
-  75% {
-    opacity: 0.25;
-    transform: translate(3px, -3px) scale(0.85);
-  }
-  100% {
-    transform: translate(3.8px, -3.8px) scale(0.5);
-    opacity: 0;
-  }
-}
-
-@keyframes sur-float-bl {
-  0% {
-    transform: translate(0, 0) scale(0.6);
-    opacity: 0;
-  }
-  35% {
-    opacity: 0.65;
-    transform: translate(-2px, 2px) scale(1.1);
-  }
-  75% {
-    opacity: 0.25;
-    transform: translate(-3px, 3px) scale(0.85);
-  }
-  100% {
-    transform: translate(-3.8px, 3.8px) scale(0.5);
-    opacity: 0;
-  }
-}
-
-@keyframes sur-float-br {
-  0% {
-    transform: translate(0, 0) scale(0.6);
-    opacity: 0;
-  }
-  35% {
-    opacity: 0.65;
-    transform: translate(2px, 2px) scale(1.1);
-  }
-  75% {
-    opacity: 0.25;
-    transform: translate(3px, 3px) scale(0.85);
-  }
-  100% {
-    transform: translate(3.8px, 3.8px) scale(0.5);
-    opacity: 0;
+    filter: blur(2.8px);
   }
 }
