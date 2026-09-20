@@ -69,4 +69,12 @@
 19. **Theme-Scoped Visual Refinements Invariant (Rule 19)**:
     - **Dark Mode Scoping**: When implementing OLED matte black styling (`#0B0C10` containers, `#13151B` cards) or hiding glowing background blobs/haze, ALWAYS scope the CSS overrides strictly under `html.dark-mode` and `@media (prefers-color-scheme: dark) :root:not(.light-mode)`.
     - **Light Mode Preservation**: Light mode (`html.light-mode`) default variables (`--bg-color: #e5eafc` / `#f5f7fa`, `--card-bg: rgba(255, 255, 255, 0.65)`), backdrop blur filters (`backdrop-filter: blur(20px)`), card shadows, and ambient background blobs (`.glass-blob`, `.music-jelly-blob`) MUST remain untouched and fully functional unless the user explicitly requests modifying Light Mode as well.
+20. **Granular Modular Architecture & Living Codebase Map Invariant (Rule 20)**:
+    - **Granular Single-Responsibility Decoupling**: Every UI component, widget, sub-drawer, modal, button handler, AI module, and utility MUST be split into standalone, single-responsibility modular files (under `src/components/<feature>/`, `src/services/`, `src/utils/`, etc.). Avoid monolithic multi-purpose files; keep components focused so changes only target isolated modules.
+    - **Living Codebase Architecture Map Protocol**: Whenever a new file, component, hook, service, or dictionary is created or restructured, the developer/agent MUST immediately update [codebase_map.md](file:///Users/kanoatovfarrux/michiappforjapan/codebase_map.md) in the workspace root, documenting:
+      1. File path and component name.
+      2. Exact purpose and responsibilities.
+      3. Key props, inputs, and state dependencies.
+      4. Placement within the visual Mermaid architecture diagram.
+
 
