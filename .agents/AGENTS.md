@@ -73,3 +73,8 @@ These rules govern the behavior, quality controls, and coding style of all AI ag
 - **O'chiq Holatda Blokirovka:** AI yordamchisi o'chiq/deaktivatsiyalangan holatda bo'lsa (`!isActive`), barcha tegishli matn kiritish maydonlari (`disabled={!isActive}`) va yuborish tugmalari (`disabled={!isActive}`) to'liq bloklanishi SHART.
 - **Visual va Cursor Styling:** Bloklangan maydonlar xiralashtirilgan ko'rinishga (`opacity: 0.55`) va `not-allowed` kursor atributiga ega bo'lishi hamda AI ni yoqishga chorlovchi placeholder matnini ko'rsatishi lozim.
 
+## 🔒 16. Suriladigan UI Vidjetlar va Xotira Standarti (Draggable UI & Persistence Rule)
+- **Touch & Mouse Support:** Suzuvchi UI tugmalari (masalan, Michi AI Hub trigger) suriladigan qilib tuzilganda Touch va Mouse hodisalari parallel ravishda boshqarilishi SHART.
+- **Gesture & Touch Action Safety:** Surish davomida orqa fondagi sahifa skroll bo'lib ketmasligi uchun CSS-da `touch-action: none` ishlatilishi hamda oddiy bosish (click) va surish (drag) harakatlarini ajratuvchi chegara (`delta > 4px`) bo'lishi lozim.
+- **Chegaralar va Persistence:** Suriladigan element ekrandagi vizual sarlavha va pastki navigatsiya doirasida (`minY`/`maxY`) chegaralanishi hamda foydalanuvchi joylashtirgan koordinata `localStorage` xotirasiga saqlanishi SHART.
+
