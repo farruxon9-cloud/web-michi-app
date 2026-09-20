@@ -44,8 +44,9 @@ These rules govern the behavior, quality controls, and coding style of all AI ag
 
 ## 🌐 10. Multi-Language Adaptability & i18n Rule
 - **Matnlarni qattiq kodlash taqiqlanadi:** Ilovadagi barcha yangi UI matnlari, tugmalar nomlari, placeholderlar, xabarnomalar va modal oynalardagi yozuvlar qattiq kodlanishi (hardcode) taqiqlanadi.
-- **i18n Integratsiyasi:** Har qanday yangi matnli kalit `src/i18n.js` faylining barcha tillar boʻlimiga (`uz`, `ja`, `en`) mos tarjimalari bilan birga qoʻshilishi shart.
+- **i18n Integratsiyasi:** Har qanday yangi matnli kalit `src/locales/` katalogidagi barcha **7 ta faol til** (`uz`, `ja`, `en`, `ru`, `vi`, `zh`, `ne`) fayllariga bir xil kalit nomi bilan qoʻshilishi shart.
 - **Dinamik Muloqot:** Komponentlarda matnlarni chiqarish uchun `useTranslation` hookidan foydalanish va `t('key')` orqali dinamik render qilish lozim.
+- **UI Vektor Ikonkalar va Feedback:** Tugma va boshqaruv elementlarida matnli emojilardan emas, balki Lucide vektor ikonkalaridan va har bir tilga mos keluvchi dinamik hover/tooltip matnlaridan foydalanish lozim.
 
 ## 🔒 11. Raqamli Da'vo Tekshiruvi (Numeric Claims Verification)
 - **Raqamli da'vo taqiqi:** Agar rejada "X ta element yaratish" deyilgan bo'lsa, yaratilgan elementlar sonini ALBATTA skript orqali hisoblash va rejadagi son bilan taqqoslash **SHART**. Da'vo qilish (masalan "500+ model tayyor") faqat skript natijasida haqiqatan shu raqam tasdiqlangandan keyin ruxsat etiladi.
