@@ -48,6 +48,14 @@ export default function RobotAvatar({ isVoiceActive, voiceStatus = 'idle', onCli
           <span className={`robot-aura-wave wave-1 ${voiceStatus}`}></span>
           <span className={`robot-aura-wave wave-2 ${voiceStatus}`}></span>
           <span className={`robot-aura-wave wave-3 ${voiceStatus}`}></span>
+          
+          {/* Mayin Sur (ambient shimmering light mist particles) */}
+          <div className="robot-sur-scatter">
+            <span className={`sur-particle p-top-left ${voiceStatus}`}></span>
+            <span className={`sur-particle p-top-right ${voiceStatus}`}></span>
+            <span className={`sur-particle p-bottom-left ${voiceStatus}`}></span>
+            <span className={`sur-particle p-bottom-right ${voiceStatus}`}></span>
+          </div>
         </div>
       )}
     </button>
