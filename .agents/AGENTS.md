@@ -69,3 +69,7 @@ These rules govern the behavior, quality controls, and coding style of all AI ag
 - **Keyingi bosqichga o'tish sharti:** Oldingi bosqichning **BARCHA** mezonlari tekshiruv skripti orqali tasdiqlanmagunicha keyingi bosqichni BOSHLAMASLIK. Mezon buzilgan holda keyingi bosqichga o'tish TAQIQLANADI.
 - **25 ta qoida:** Bitta operatsiyada 25 dan ortiq element (model, yozuv, komponent) yaratmaslik. Har 25 tadan keyin audit skriptini ishga tushirish va natijani ko'rsatish kerak.
 
+## 🔒 15. AI Moduli O'chiqligida Input Blokirovkasi (Strict Input Locking Rule)
+- **O'chiq Holatda Blokirovka:** AI yordamchisi o'chiq/deaktivatsiyalangan holatda bo'lsa (`!isActive`), barcha tegishli matn kiritish maydonlari (`disabled={!isActive}`) va yuborish tugmalari (`disabled={!isActive}`) to'liq bloklanishi SHART.
+- **Visual va Cursor Styling:** Bloklangan maydonlar xiralashtirilgan ko'rinishga (`opacity: 0.55`) va `not-allowed` kursor atributiga ega bo'lishi hamda AI ni yoqishga chorlovchi placeholder matnini ko'rsatishi lozim.
+
