@@ -282,14 +282,14 @@ html.dark-mode .robot-head-screen {
   transform: translateY(1px);
 }
 
-/* Outer soft expanding & dissolving aura waves */
+/* Outer soft expanding & dissolving aura waves (Ultra-compact near-head halo) */
 .robot-aura-wrapper {
   position: absolute;
-  top: -6px;
-  left: -6px;
-  right: -6px;
-  bottom: -6px;
-  border-radius: 14px;
+  top: -1.5px;
+  left: -1.5px;
+  right: -1.5px;
+  bottom: -1.5px;
+  border-radius: 10px;
   pointer-events: none;
   z-index: 0;
   display: flex;
@@ -300,18 +300,18 @@ html.dark-mode .robot-head-screen {
 .robot-aura-wave {
   position: absolute;
   inset: 0;
-  border-radius: 14px;
-  border: 1.5px solid rgba(94, 92, 230, 0.45);
-  box-shadow: 0 0 12px rgba(94, 92, 230, 0.35);
-  background: radial-gradient(circle, rgba(94, 92, 230, 0.15) 0%, rgba(94, 92, 230, 0) 75%);
+  border-radius: 10px;
+  border: 1px solid rgba(94, 92, 230, 0.35);
+  box-shadow: 0 0 5px rgba(94, 92, 230, 0.2);
+  background: radial-gradient(circle, rgba(94, 92, 230, 0.08) 0%, rgba(94, 92, 230, 0) 70%);
   opacity: 0;
   pointer-events: none;
   transform-origin: center center;
-  filter: blur(1.5px);
+  filter: blur(0.8px);
   will-change: transform, opacity;
 }
 
-/* Staggered smooth gentle wave undulation (Zero flash / zero explosion) */
+/* Staggered smooth gentle wave undulation (Compact distance expansion) */
 .robot-aura-wave.wave-1 {
   animation: gentle-aura-dissolve 3.6s infinite cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -328,45 +328,45 @@ html.dark-mode .robot-head-screen {
 
 /* Mode-specific glowing tints */
 .robot-aura-wave.idle {
-  border-color: rgba(94, 92, 230, 0.45);
-  box-shadow: 0 0 10px rgba(94, 92, 230, 0.3);
+  border-color: rgba(94, 92, 230, 0.28);
+  box-shadow: 0 0 4px rgba(94, 92, 230, 0.15);
 }
 
 .robot-aura-wave.listening {
-  border-color: rgba(94, 92, 230, 0.65);
-  box-shadow: 0 0 14px rgba(94, 92, 230, 0.45);
-  background: radial-gradient(circle, rgba(94, 92, 230, 0.2) 0%, rgba(94, 92, 230, 0) 75%);
+  border-color: rgba(94, 92, 230, 0.45);
+  box-shadow: 0 0 6px rgba(94, 92, 230, 0.25);
+  background: radial-gradient(circle, rgba(94, 92, 230, 0.12) 0%, rgba(94, 92, 230, 0) 70%);
 }
 
 .robot-aura-wave.thinking {
-  border-color: rgba(0, 243, 255, 0.65);
-  box-shadow: 0 0 14px rgba(0, 243, 255, 0.45);
-  background: radial-gradient(circle, rgba(0, 243, 255, 0.2) 0%, rgba(0, 243, 255, 0) 75%);
+  border-color: rgba(0, 243, 255, 0.45);
+  box-shadow: 0 0 6px rgba(0, 243, 255, 0.25);
+  background: radial-gradient(circle, rgba(0, 243, 255, 0.12) 0%, rgba(0, 243, 255, 0) 70%);
 }
 
 .robot-aura-wave.speaking {
-  border-color: rgba(94, 92, 230, 0.65);
-  box-shadow: 0 0 14px rgba(94, 92, 230, 0.45);
-  background: radial-gradient(circle, rgba(94, 92, 230, 0.2) 0%, rgba(94, 92, 230, 0) 75%);
+  border-color: rgba(94, 92, 230, 0.45);
+  box-shadow: 0 0 6px rgba(94, 92, 230, 0.25);
+  background: radial-gradient(circle, rgba(94, 92, 230, 0.12) 0%, rgba(94, 92, 230, 0) 70%);
 }
 
 @keyframes gentle-aura-dissolve {
   0% {
-    transform: scale(0.92);
+    transform: scale(0.97);
     opacity: 0;
-    filter: blur(1px);
+    filter: blur(0.5px);
   }
-  25% {
-    opacity: 0.72;
-    filter: blur(2px);
+  30% {
+    opacity: 0.45;
+    filter: blur(0.8px);
   }
   75% {
-    opacity: 0.3;
-    filter: blur(5px);
+    opacity: 0.15;
+    filter: blur(2px);
   }
   100% {
-    transform: scale(1.65);
+    transform: scale(1.10);
     opacity: 0;
-    filter: blur(7px);
+    filter: blur(2.5px);
   }
 }
