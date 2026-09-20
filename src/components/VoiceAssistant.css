@@ -1883,7 +1883,6 @@ html.dark-mode .ai-response-text {
   position: fixed;
   right: 0;
   top: 42%;
-  transform: translateY(-50%);
   z-index: 9999999;
   width: 44px;
   height: 52px;
@@ -1899,13 +1898,20 @@ html.dark-mode .ai-response-text {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  cursor: pointer;
+  cursor: grab;
   padding: 6px;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: box-shadow 0.25s ease;
+}
+
+.voice-side-drawer-trigger:active {
+  cursor: grabbing;
 }
 
 .voice-side-drawer-trigger:hover {
-  transform: translateY(-50%) translateX(-6px);
+  transform: translateX(-4px);
   box-shadow: -8px 10px 36px rgba(94, 92, 230, 0.85);
 }
 
