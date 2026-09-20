@@ -126,12 +126,12 @@ html.dark-mode .robot-head-screen {
   transition: all 0.3s ease;
 }
 
-.robot-avatar-container.listening .robot-eyes-row {
-  animation: eye-breath 1.8s infinite ease-in-out;
-}
-
-.robot-avatar-container.thinking .robot-eyes-row {
-  animation: eye-think 1.2s infinite ease-in-out;
+/* Keep eyes row completely stationary without shifting, scaling or moving */
+.robot-avatar-container.listening .robot-eyes-row,
+.robot-avatar-container.thinking .robot-eyes-row,
+.robot-avatar-container.speaking .robot-eyes-row {
+  animation: none !important;
+  transform: none !important;
 }
 
 /* Glowing Brand Indigo Violet eyes - Always blinking across all states */
