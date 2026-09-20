@@ -40,7 +40,7 @@ export default function VoiceAssistant({
   setApplications, toggleDarkMode
 }) {
   const { t, i18n } = useTranslation();
-  const defaultKey = localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyBUp5xqI4BYR2o3S-X_nP4RU0EDP2Mqaqk';
+  const defaultKey = localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
   const [apiKey, setApiKey] = useState(defaultKey);
   const [showKeyInput, setShowKeyInput] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
