@@ -123,9 +123,18 @@ html.dark-mode .robot-head-screen {
   align-items: center;
   height: 10px;
   position: relative;
+  transition: all 0.3s ease;
 }
 
-/* Glowing Brand Indigo Violet eyes (extremely cute on white screen) - Always blinking */
+.robot-avatar-container.listening .robot-eyes-row {
+  animation: eye-breath 1.8s infinite ease-in-out;
+}
+
+.robot-avatar-container.thinking .robot-eyes-row {
+  animation: eye-think 1.2s infinite ease-in-out;
+}
+
+/* Glowing Brand Indigo Violet eyes - Always blinking across all states */
 .robot-eye {
   width: 3.8px;
   height: 5.5px;
@@ -135,9 +144,9 @@ html.dark-mode .robot-head-screen {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.4, 1);
-  box-shadow: 0 0 3px rgba(94, 92, 230, 0.6);
-  animation: eye-blink 3.5s infinite;
+  transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  box-shadow: 0 0 4px rgba(94, 92, 230, 0.6);
+  animation: eye-blink 3.2s infinite ease-in-out !important;
 }
 
 /* Inactive Standby state - eyes open but slightly dimmer and passive */
@@ -147,48 +156,44 @@ html.dark-mode .robot-head-screen {
 }
 
 @keyframes eye-blink {
-  0%, 84%, 100% {
+  0%, 82%, 100% {
     transform: scaleY(1);
   }
-  92% {
-    transform: scaleY(0.15);
+  90% {
+    transform: scaleY(0.12);
   }
 }
 
-/* Colors & animations for active modes - Always blinking */
+/* Colors for active modes */
 .robot-avatar-container.listening .robot-eye {
   background: #5E5CE6;
   opacity: 1;
-  box-shadow: 0 0 5px rgba(94, 92, 230, 0.8);
-  animation: eye-blink 3.5s infinite, eye-breath 1.8s infinite ease-in-out;
+  box-shadow: 0 0 6px rgba(94, 92, 230, 0.85);
 }
 
 .robot-avatar-container.thinking .robot-eye {
   background: #00F3FF; /* cyan for thinking */
   opacity: 1;
-  box-shadow: 0 0 5px rgba(0, 243, 255, 0.8);
-  animation: eye-blink 3.5s infinite, eye-think 1.2s infinite ease-in-out;
+  box-shadow: 0 0 6px rgba(0, 243, 255, 0.85);
 }
 
 .robot-avatar-container.speaking .robot-eye {
   background: #5E5CE6;
   opacity: 1;
-  box-shadow: 0 0 5px rgba(94, 92, 230, 0.8);
-  animation: eye-blink 3.5s infinite;
+  box-shadow: 0 0 6px rgba(94, 92, 230, 0.85);
 }
 
 .robot-avatar-container.error .robot-eye {
   background: #FF3B30; /* red for error */
   opacity: 1;
-  box-shadow: 0 0 3px rgba(255, 59, 48, 0.6);
+  box-shadow: 0 0 4px rgba(255, 59, 48, 0.7);
   height: 3.5px; /* small confused eyes */
   border-radius: 50%;
-  animation: eye-blink 3.5s infinite;
 }
 
 @keyframes eye-breath {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.08); opacity: 0.85; }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
 }
 
 @keyframes eye-think {
