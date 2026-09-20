@@ -126,12 +126,17 @@ html.dark-mode .robot-head-screen {
   transition: all 0.3s ease;
 }
 
-/* Keep eyes row completely stationary without shifting, scaling or moving */
-.robot-avatar-container.listening .robot-eyes-row,
-.robot-avatar-container.thinking .robot-eyes-row,
+/* Active state natural human-like eye row animations (No depth sinking/receding) */
+.robot-avatar-container.listening .robot-eyes-row {
+  animation: eye-breath-gentle 4.5s infinite ease-in-out;
+}
+
+.robot-avatar-container.thinking .robot-eyes-row {
+  animation: eye-gaze-think 5.2s infinite ease-in-out;
+}
+
 .robot-avatar-container.speaking .robot-eyes-row {
-  animation: none !important;
-  transform: none !important;
+  animation: eye-gaze-speak 3.8s infinite ease-in-out;
 }
 
 /* Glowing Brand Indigo Violet eyes - Always blinking across all states */
@@ -146,7 +151,7 @@ html.dark-mode .robot-head-screen {
   justify-content: center;
   transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
   box-shadow: 0 0 4px rgba(94, 92, 230, 0.6);
-  animation: eye-blink 3.2s infinite ease-in-out !important;
+  animation: eye-blink 3.4s infinite ease-in-out;
 }
 
 /* Inactive Standby state - eyes open but slightly dimmer and passive */
@@ -191,14 +196,35 @@ html.dark-mode .robot-head-screen {
   border-radius: 50%;
 }
 
-@keyframes eye-breath {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); }
+/* Human-like natural subtle eye movement & breathing (No depth sinking) */
+@keyframes eye-breath-gentle {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.05) translateY(-0.5px);
+  }
 }
 
-@keyframes eye-think {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-1.5px); }
+@keyframes eye-gaze-think {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-1.2px) scale(1.02);
+  }
+  70% {
+    transform: translateY(-0.6px) translateX(0.6px) scale(1.02);
+  }
+}
+
+@keyframes eye-gaze-speak {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-0.8px) scale(1.04);
+  }
 }
 
 /* Mouth Row (Bottom) */
