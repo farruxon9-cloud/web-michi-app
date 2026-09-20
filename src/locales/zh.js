@@ -856,7 +856,15 @@ const translation = {
   "customBonusPlaceholder": "输入其他特权...",
   "searchByCities": "按都道府县・市区町村搜索",
   "searchByStations": "按沿线・车站搜索",
-  "searchByRadius": "按距当前位置距离搜索"
+  "searchByRadius": "按距当前位置距离搜索",
+  "copyBtn": "复制",
+  "copiedBtn": "已复制！",
+  "speakBtn": "朗读",
+  "youLabel": "您",
+  "statusThinking": "思考中...",
+  "statusSpeaking": "说话中...",
+  "statusReady": "就绪",
+  "clearHistoryBtn": "清除历史"
 };
 
 export default { translation };

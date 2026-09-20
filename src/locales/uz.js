@@ -924,7 +924,15 @@ const translation = {
   "unlockViaEmail": "Email orqali bir zumda tiklash",
   "backToRoleSelect": "Ortga Qaytish",
   "invalidCode": "Tasdiqlash kodi noto'g'ri!",
-  "lic_dainishu": "Ikkinchi toifa haydovchilik guvohnomasi"
+  "lic_dainishu": "Ikkinchi toifa haydovchilik guvohnomasi",
+  "copyBtn": "Nusxalash",
+  "copiedBtn": "Nusxalandi!",
+  "speakBtn": "Ovozda eshitish",
+  "youLabel": "Siz",
+  "statusThinking": "Fikrlamoqda...",
+  "statusSpeaking": "Gapirmoqda...",
+  "statusReady": "Tayyor",
+  "clearHistoryBtn": "Tarixni tozalash"
 };
 
 export default { translation };

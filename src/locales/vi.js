@@ -856,7 +856,15 @@ const translation = {
   "customBonusPlaceholder": "Nhập ưu đãi khác...",
   "searchByCities": "Tìm kiếm theo Tỉnh & Thành phố",
   "searchByStations": "Tìm kiếm theo Tuyến đường & Nhà ga",
-  "searchByRadius": "Tìm kiếm theo Khoảng cách vị trí"
+  "searchByRadius": "Tìm kiếm theo Khoảng cách vị trí",
+  "copyBtn": "Sao chép",
+  "copiedBtn": "Đã sao chép!",
+  "speakBtn": "Đọc thành tiếng",
+  "youLabel": "Bạn",
+  "statusThinking": "Đang suy nghĩ...",
+  "statusSpeaking": "Đang nói...",
+  "statusReady": "Sẵn sàng",
+  "clearHistoryBtn": "Xóa lịch sử"
 };
 
 export default { translation };

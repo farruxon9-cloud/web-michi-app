@@ -1,4 +1,6 @@
-import { Sparkles, Trash2, X, Bot, ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
+import { Sparkles, Trash2, X, Bot, ArrowLeft, Copy, Check, Volume2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import MichiQuickChips from './MichiQuickChips';
 import MichiActivationCard from './MichiActivationCard';
 import MichiDictationInput from './MichiDictationInput';
@@ -25,7 +27,19 @@ export default function MichiSideDrawer({
   speechContentRef,
   chatEndRef
 }) {
+  const { t } = useTranslation();
+  const [copiedId, setCopiedId] = useState(null);
+
   if (!isOpen) return null;
+
+  const handleCopy = (text, idKey) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedId(idKey);
+    setTimeout(() => {
+      setCopiedId(null);
+    }, 2000);
+  };
 
   return (
     <div className="voice-side-drawer-overlay" onClick={onClose}>
@@ -37,7 +51,7 @@ export default function MichiSideDrawer({
               className="voice-drawer-back-btn" 
               onClick={onClose}
               aria-label="Back to main app"
-              title="Orqaga"
+              title={t('back')}
             >
               <ArrowLeft size={18} />
             </button>
@@ -50,10 +64,10 @@ export default function MichiSideDrawer({
                 <span className={`voice-drawer-status-dot ${status}`}></span>
                 <span className="voice-drawer-status-text">
                   {status === 'thinking' 
-                    ? (speechLang === 'ja' ? '思考中...' : 'Fikrlamoqda...') 
+                    ? t('statusThinking') 
                     : status === 'speaking' 
-                    ? (speechLang === 'ja' ? '応答中...' : 'Gapirmoqda...') 
-                    : (speechLang === 'ja' ? '準備完了' : 'Tayyor')}
+                    ? t('statusSpeaking') 
+                    : t('statusReady')}
                 </span>
               </div>
             </div>
@@ -63,7 +77,7 @@ export default function MichiSideDrawer({
             <button 
               className="voice-drawer-action-btn danger" 
               onClick={onClearHistory}
-              title="Tozalash"
+              title={t('clearHistoryBtn')}
             >
               <Trash2 size={14} />
             </button>
@@ -101,41 +115,65 @@ export default function MichiSideDrawer({
             </div>
           ) : (
             <div className="voice-drawer-msg-list">
-              {chatHistoryList.map((item, idx) => (
-                <div key={item.id || idx} className="drawer-msg-group">
-                  {item.question && (
-                    <div className="drawer-msg user-msg">
-                      <span className="msg-author">{speechLang === 'ja' ? 'あなた' : 'Siz'}</span>
-                      <p className="msg-text">{item.question}</p>
-                      <span className="msg-time">{item.timestamp}</span>
-                    </div>
-                  )}
-                  {item.answer && (
-                    <div className={`drawer-msg ai-msg ${item.isError ? 'error' : ''}`}>
-                      <div className="msg-header-row">
-                        <span className="msg-author">🤖 Michi AI</span>
-                        <div className="msg-actions">
-                          <button onClick={() => navigator.clipboard.writeText(item.answer)} title="Nusxalash">📋</button>
-                          <button onClick={() => onSpeakResponse(item.answer, speechLang)} title="Ovozda eshitish">🔊</button>
-                        </div>
+              {chatHistoryList.map((item, idx) => {
+                const itemKey = item.id || idx;
+                const isCopied = copiedId === itemKey;
+                return (
+                  <div key={itemKey} className="drawer-msg-group">
+                    {item.question && (
+                      <div className="drawer-msg user-msg">
+                        <span className="msg-author">{t('youLabel')}</span>
+                        <p className="msg-text">{item.question}</p>
+                        <span className="msg-time">{item.timestamp}</span>
                       </div>
-                      <p className="msg-text">{item.answer}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    )}
+                    {item.answer && (
+                      <div className={`drawer-msg ai-msg ${item.isError ? 'error' : ''}`}>
+                        <div className="msg-header-row">
+                          <span className="msg-author flex items-center gap-1.5">
+                            <Bot size={14} style={{ color: '#5e5ce6', display: 'inline' }} />
+                            <span>Michi AI</span>
+                          </span>
+                          <div className="msg-actions">
+                            <button 
+                              onClick={() => handleCopy(item.answer, itemKey)} 
+                              title={isCopied ? t('copiedBtn') : t('copyBtn')}
+                              aria-label={isCopied ? t('copiedBtn') : t('copyBtn')}
+                            >
+                              {isCopied ? <Check size={14} color="#34c759" /> : <Copy size={14} />}
+                            </button>
+                            <button 
+                              onClick={() => onSpeakResponse(item.answer, speechLang)} 
+                              title={t('speakBtn')}
+                              aria-label={t('speakBtn')}
+                            >
+                              <Volume2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                        <p className="msg-text">{item.answer}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
 
               {/* Active Live Query Flow */}
               {transcript && !chatHistoryList.some(item => item.question === transcript) && (
                 <div className="drawer-msg user-msg live">
-                  <span className="msg-author">{speechLang === 'ja' ? 'あなた' : 'Siz'}</span>
+                  <span className="msg-author">{t('youLabel')}</span>
                   <p className="msg-text">{transcript}</p>
                 </div>
               )}
 
               {status === 'thinking' && !aiResponseText && (
                 <div className="drawer-msg ai-msg thinking">
-                  <span className="msg-author">🤖 Michi AI</span>
+                  <div className="msg-header-row">
+                    <span className="msg-author flex items-center gap-1.5">
+                      <Bot size={14} style={{ color: '#5e5ce6', display: 'inline' }} />
+                      <span>Michi AI</span>
+                    </span>
+                  </div>
                   <p className="msg-text thinking-dots">
                     <span>.</span><span>.</span><span>.</span>
                   </p>
@@ -145,10 +183,25 @@ export default function MichiSideDrawer({
               {aiResponseText && !chatHistoryList.some(item => item.answer === aiResponseText) && (
                 <div className="drawer-msg ai-msg live">
                   <div className="msg-header-row">
-                    <span className="msg-author">🤖 Michi AI</span>
+                    <span className="msg-author flex items-center gap-1.5">
+                      <Bot size={14} style={{ color: '#5e5ce6', display: 'inline' }} />
+                      <span>Michi AI</span>
+                    </span>
                     <div className="msg-actions">
-                      <button onClick={() => navigator.clipboard.writeText(aiResponseText)} title="Nusxalash">📋</button>
-                      <button onClick={() => onSpeakResponse(aiResponseText, speechLang)} title="Ovozda eshitish">🔊</button>
+                      <button 
+                        onClick={() => handleCopy(aiResponseText, 'live-ai')} 
+                        title={copiedId === 'live-ai' ? t('copiedBtn') : t('copyBtn')}
+                        aria-label={copiedId === 'live-ai' ? t('copiedBtn') : t('copyBtn')}
+                      >
+                        {copiedId === 'live-ai' ? <Check size={14} color="#34c759" /> : <Copy size={14} />}
+                      </button>
+                      <button 
+                        onClick={() => onSpeakResponse(aiResponseText, speechLang)} 
+                        title={t('speakBtn')}
+                        aria-label={t('speakBtn')}
+                      >
+                        <Volume2 size={14} />
+                      </button>
                     </div>
                   </div>
                   <p className="msg-text">{displayedAiText || aiResponseText}</p>

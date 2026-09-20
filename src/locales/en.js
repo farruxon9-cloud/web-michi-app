@@ -922,7 +922,15 @@ const translation = {
   "unlockViaEmail": "Instant Unlock via Email",
   "backToRoleSelect": "Back to Role Selection",
   "invalidCode": "Invalid verification code!",
-  "lic_dainishu": "Class 2 Commercial Driver's License"
+  "lic_dainishu": "Class 2 Commercial Driver's License",
+  "copyBtn": "Copy",
+  "copiedBtn": "Copied!",
+  "speakBtn": "Read aloud",
+  "youLabel": "You",
+  "statusThinking": "Thinking...",
+  "statusSpeaking": "Speaking...",
+  "statusReady": "Ready",
+  "clearHistoryBtn": "Clear history"
 };
 
 export default { translation };

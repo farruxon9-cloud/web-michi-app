@@ -966,7 +966,15 @@ const translation = {
   "unlockViaEmail": "メールで即時解除",
   "backToRoleSelect": "役割選択に戻る",
   "invalidCode": "認証コードが正しくありません",
-  "lic_dainishu": "第二種運転免許"
+  "lic_dainishu": "第二種運転免許",
+  "copyBtn": "コピー",
+  "copiedBtn": "コピーしました！",
+  "speakBtn": "音声で聴く",
+  "youLabel": "あなた",
+  "statusThinking": "思考中...",
+  "statusSpeaking": "応答中...",
+  "statusReady": "準備完了",
+  "clearHistoryBtn": "履歴を消去"
 };
 
 export default { translation };

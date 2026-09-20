@@ -879,7 +879,15 @@ const translation = {
   "lang_uz": "Узбекский (UZ)",
   "lang_jp": "Японский (JP)",
   "lang_en": "Английский (EN)",
-  "lang_ru": "Русский (RU)"
+  "lang_ru": "Русский (RU)",
+  "copyBtn": "Копировать",
+  "copiedBtn": "Скопировано!",
+  "speakBtn": "Озвучить",
+  "youLabel": "Вы",
+  "statusThinking": "Думает...",
+  "statusSpeaking": "Говорит...",
+  "statusReady": "Готов",
+  "clearHistoryBtn": "Очистить историю"
 };
 
 export default { translation };

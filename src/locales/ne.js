@@ -856,7 +856,15 @@ const translation = {
   "customBonusPlaceholder": "अन्य सुविधाहरू प्रविष्ट गर्नुहोस्...",
   "searchByCities": "प्रान्त र शहर अनुसार खोज्नुहोस्",
   "searchByStations": "रेल लाइन र स्टेशन अनुसार खोज्नुहोस्",
-  "searchByRadius": "वर्तमान स्थान दूरी अनुसार खोज्नुहोस्"
+  "searchByRadius": "वर्तमान स्थान दूरी अनुसार खोज्नुहोस्",
+  "copyBtn": "प्रतिलिपि गर्नुहोस्",
+  "copiedBtn": "प्रतिलिपि गरियो!",
+  "speakBtn": "ठूलो स्वरले पढ्नुहोस्",
+  "youLabel": "तपाईं",
+  "statusThinking": "सोच्दैछ...",
+  "statusSpeaking": "बोल्दैछ...",
+  "statusReady": "तयार",
+  "clearHistoryBtn": "इतिहास मेटाउनुहोस्"
 };
 
 export default { translation };
