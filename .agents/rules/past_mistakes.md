@@ -572,9 +572,15 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**: 
   1. AI robotcha ko'zlari z-o'qi bo'yicha kichiklashib/kattalashib depth-sinking ko'rinishida ichga kirib-chiqishi (foydalanuvchiga qo'rqinchli ko'rinishi).
   2. Aura to'lqinining ortiga qaytishi, pastga tushishi yoki tarqoq zarrachalar (`sur-particle`) ekranda ortiqcha vizual shovqin paydo qilishi.
+## 🚫 97. Zero Hardcoded API Keys & Strictly Tracked `.gitignore` Environment Invariant
+* **Xatolik**: 
+  1. API kalitlarini (`VITE_GEMINI_API_KEY`) to'g'ridan-to'g'ri JSX/JS kodlar ichiga (masalan, `VoiceAssistant.jsx`) zaxira string sifatida hardcoded yozib qo'yish.
+  2. `.env` faylini `.gitignore` ga qo'shmasdan git kuzatuvida qoldirish natijasida maxfiy API kalitlarning GitHub ga ochiq yuklanishi.
 * **Yechim (MAJBURIY)**:
-  1. **Stationary Eye Blink with Natural 2D Motion**: Ko'zlar hech qachon `scale < 1.0` ga tushirilmaydi (depth-sinking taqiqlanadi). Ko'zlar o'z o'rnida turib natural miltillaydi (`eye-blink`), hamda faqat 2D yuzasida sekin va mayin `eye-breath-gentle`, `eye-gaze-think`, va `eye-gaze-speak` mikro-surilishlariga ega bo'ladi.
-  2. **Continuous Forward-Dissolving Wave (`gentle-forward-breath`)**: Zarrachalar olib tashlanib, 3 bosqichli uzluksiz to'lqin oqimi o'rnatiladi. Har bir to'lqin strictly oldinga qarab kengayadi (`scale(0.96) -> scale(1.15)`) va tashqarida sekin erib yo'qoladi (`opacity: 0`). Hech qachon ortga qaytish yoki pastga tushish harakati berilmaydi.
+  1. **Strict `.gitignore` Exclusion**: `.env`, `.env.local`, `.env.development`, `.env.production`, `.env.staging` hamda `*.env` fayllari strictly `.gitignore` ichida bo'lishi va `git rm --cached .env` orqali git indeksidan butunlay chiqarilishi SHART.
+  2. **Safe Template Representation**: Ommaviy git ombori uchun faqat maxfiylikdan xoli `.env.example` shabloni taqdim etiladi.
+  3. **Zero Hardcoded Key Strings**: Barcha JS/JSX fayllarda `import.meta.env.VITE_GEMINI_API_KEY || ''` ko'rinishida bo'sh zaxira string ishlatiladi, kodda hech qanday ochiq API kalit yozilishi mumkin emas.
+
 
 
 
