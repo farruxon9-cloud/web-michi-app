@@ -155,7 +155,7 @@ html.dark-mode .robot-head-screen {
   }
 }
 
-/* Colors for active modes */
+/* Colors & animations for active modes - Always blinking */
 .robot-avatar-container.listening .robot-eye {
   background: #5E5CE6;
   opacity: 1;
@@ -167,13 +167,14 @@ html.dark-mode .robot-head-screen {
   background: #00F3FF; /* cyan for thinking */
   opacity: 1;
   box-shadow: 0 0 5px rgba(0, 243, 255, 0.8);
-  animation: eye-think 1.2s infinite ease-in-out;
+  animation: eye-blink 3.5s infinite, eye-think 1.2s infinite ease-in-out;
 }
 
 .robot-avatar-container.speaking .robot-eye {
   background: #5E5CE6;
   opacity: 1;
   box-shadow: 0 0 5px rgba(94, 92, 230, 0.8);
+  animation: eye-blink 3.5s infinite;
 }
 
 .robot-avatar-container.error .robot-eye {
@@ -182,6 +183,7 @@ html.dark-mode .robot-head-screen {
   box-shadow: 0 0 3px rgba(255, 59, 48, 0.6);
   height: 3.5px; /* small confused eyes */
   border-radius: 50%;
+  animation: eye-blink 3.5s infinite;
 }
 
 @keyframes eye-breath {
