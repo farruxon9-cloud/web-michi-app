@@ -581,6 +581,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. **Safe Template Representation**: Ommaviy git ombori uchun faqat maxfiylikdan xoli `.env.example` shabloni taqdim etiladi.
   3. **Zero Hardcoded Key Strings**: Barcha JS/JSX fayllarda `import.meta.env.VITE_GEMINI_API_KEY || ''` ko'rinishida bo'sh zaxira string ishlatiladi, kodda hech qanday ochiq API kalit yozilishi mumkin emas.
 
+## 🚫 98. Anonymous Demo Simulation Personal Data Invariant
+* **Xatolik**: 
+  1. `App.jsx` hamda boshqa demo ma'lumotlar funksiyalarida (masalan, `handleShoukai`) shaxsiy ism-sharif (`Farrux Alimov`), Shaxsiy email (`farrux.alimov@gmail.com`) kabi real foydalanuvchi ma'lumotlarini hardcoded yozib qo'yish.
+* **Yechim (MAJBURIY)**:
+  1. **Strict Personal Data Anonymization**: Barcha demo va simulyatsiya ma'lumotlarida real ism-sharif hamda shaxsiy email o'rniga anonim i18n qiymatlar (`t('simulatedFriend', 'Anonim Do\'st')`, `demo@michi-app.com`) qo'llanilishi SHART.
+  2. **Zero Hardcoded Personal Identifiers**: Kod bazasida real foydalanuvchilarning ism va elektron pochta manzillari bo'lishi taqiqlanadi.
+
+
 
 
 
