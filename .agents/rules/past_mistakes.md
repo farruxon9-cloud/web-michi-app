@@ -629,6 +629,12 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Timing-Safe Comparison**: OTP va token solishtirishlarida vaqt o'lchash hujumlarini oldini olish uchun `timingSafeEqual()` funksiyasi ishlatilishi SHART.
   2. **Exponential Lockout & NIST Evaluation**: 5 -> 15min -> 60min -> 24h eksponensial bloklash va NIST SP 800-63B asosidagi parol baholash tizimi strictly qo'llanilishi shart.
 
+## 🚫 105. Supabase PostgreSQL Schema & Index Invariant (`supabase/schema.sql`)
+* **Xatolik**: 
+  1. Backend migratsiyasi uchun zarur bo'lgan `profiles` va `auth_attempts` jadvallari hamda indeksi loyiha omborida saqlanmasligi, bu backend tarqatilishida ma'lumotlar sxemasini izdan chiqarishi mumkin.
+* **Yechim (MAJBURIY)**:
+  1. **Strict Versioned SQL Migration**: Barcha PostgreSQL sxemalari, cheklovlar (`CHECK (role IN ...)`), `UUID` va `INET` turlari hamda `idx_auth_attempts_email` indekslari strictly `supabase/schema.sql` faylida saqlanishi SHART.
+
 
 
 
