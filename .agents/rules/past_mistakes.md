@@ -595,6 +595,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Automatic Production Log Stripping**: `vite.config.js` da build parametrlarida `terserOptions.compress.drop_console: true` va `drop_debugger: true` sozlangan bo'lishi SHART.
   2. **Safe Logger Wrapper**: Har qanday maxsus loglar uchun `src/utils/logger.js` modulidagi `logger.log()` funksiyasidan foydalanilishi shart.
 
+## 🚫 100. Voice Assistant State Separation Invariant (`isVoiceStandby` vs `isVoiceActive`)
+* **Xatolik**: 
+  1. `isVoiceStandby` va `isVoiceActive` state'larini bir vaqtda `localStorage` dagi bitta kalitdan o'qib e'lon qilish, bu ikkala state har doim bir xil va ziddiyatli bo'lib qolishiga olib kelgan.
+* **Yechim (MAJBURIY)**:
+  1. **Strict State Separation**: `isVoiceStandby` faqat foydalanuvchi afzalligi sifatida `localStorage` dan o'qiladi (`true`/`false`), `isVoiceActive` esa har doim `false` bilan boshlanadi (overlay dastlab yopiq).
+  2. **Active vs Standby**: `isVoiceStandby` = assistent kutish rejimida, `isVoiceActive` = assistent vizual overlay'i hozir ekranda ochiq.
+
 
 
 
