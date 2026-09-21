@@ -408,18 +408,7 @@ function App() {
     // so the user can test the registration flow on every reload.
   }, [userRole, profileData]);
 
-  // Re-apply if a guest registers/logs in
-  useEffect(() => {
-    if (userRole === 'driver' && pendingApply) {
-      if (pendingApply.type === 'job') {
-        handleApplyJob(pendingApply.item);
-      } else if (pendingApply.type === 'school') {
-        handleApplySchool(pendingApply.item);
-      }
-      setPendingApply(null);
-      setAuthInitialStep('role');
-    }
-  }, [userRole, pendingApply]);
+
 
   // Control audio playback
   useEffect(() => {
@@ -460,8 +449,24 @@ function App() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const isProfileComplete = useCallback(() => {
+    // If it's the admin test profile, it's always complete (bypass check)
+    if (profileData && (profileData.email === 'admin@driver.jp' || profileData.email === 'admin@sagawa.jp')) {
+      return true;
+    }
+    
+    // Required fields: fullName, birthDate, phone, address (or addressHistory), education (or educationHistory)
+    const hasFullName = !!(profileData.fullName && profileData.fullName.trim() !== '' && profileData.fullName !== 'Mehmon');
+    const hasBirthDate = !!profileData.birthDate;
+    const hasPhone = !!(profileData.phone && profileData.phone.trim() !== '');
+    const hasAddress = !!((profileData.address && profileData.address.trim() !== '') || (profileData.addressHistory && profileData.addressHistory.length > 0));
+    const hasEducation = !!((profileData.education && profileData.education.trim() !== '') || (profileData.educationHistory && profileData.educationHistory.length > 0));
+    
+    return !!(hasFullName && hasBirthDate && hasPhone && hasAddress && hasEducation);
+  }, [profileData]);
+
   // Apply for a job
-  const handleApplyJob = async (job) => {
+  const handleApplyJob = useCallback(async (job) => {
     if (userRole === 'guest') {
       setPendingApply({ type: 'job', item: job });
       setAuthInitialStep('register');
@@ -494,7 +499,7 @@ function App() {
       applicantInfo: { ...profileData }
     };
     setApplications(prev => [...prev, newApp]);
-  };
+  }, [userRole, applications, profileData, isProfileComplete]);
 
   // Simulate status change (for demo - single-click idempotent)
   const handleChangeAppStatus = (appId, newStatus) => {
@@ -594,7 +599,7 @@ function App() {
   // Academy applications
   const [schoolApplications, setSchoolApplications] = useState([]);
 
-  const handleApplySchool = async (school) => {
+  const handleApplySchool = useCallback(async (school) => {
     if (userRole === 'guest') {
       setPendingApply({ type: 'school', item: school });
       setAuthInitialStep('register');
@@ -624,7 +629,20 @@ function App() {
       applicantInfo: { ...profileData }
     };
     setSchoolApplications(prev => [...prev, newApp]);
-  };
+  }, [userRole, schoolApplications, profileData, isProfileComplete]);
+
+  // Re-apply if a guest registers/logs in
+  useEffect(() => {
+    if (userRole === 'driver' && pendingApply) {
+      if (pendingApply.type === 'job') {
+        handleApplyJob(pendingApply.item);
+      } else if (pendingApply.type === 'school') {
+        handleApplySchool(pendingApply.item);
+      }
+      setPendingApply(null);
+      setAuthInitialStep('role');
+    }
+  }, [userRole, pendingApply, handleApplyJob, handleApplySchool]);
 
   const handleShoukaiPaid = (appId) => {
     let isJob = applications.some(a => a.id === appId);
@@ -698,21 +716,7 @@ function App() {
     setAuthInitialStep('register');
   };
 
-  const isProfileComplete = () => {
-    // If it's the admin test profile, it's always complete (bypass check)
-    if (profileData && (profileData.email === 'admin@driver.jp' || profileData.email === 'admin@sagawa.jp')) {
-      return true;
-    }
-    
-    // Required fields: fullName, birthDate, phone, address (or addressHistory), education (or educationHistory)
-    const hasFullName = !!(profileData.fullName && profileData.fullName.trim() !== '' && profileData.fullName !== 'Mehmon');
-    const hasBirthDate = !!profileData.birthDate;
-    const hasPhone = !!(profileData.phone && profileData.phone.trim() !== '');
-    const hasAddress = !!((profileData.address && profileData.address.trim() !== '') || (profileData.addressHistory && profileData.addressHistory.length > 0));
-    const hasEducation = !!((profileData.education && profileData.education.trim() !== '') || (profileData.educationHistory && profileData.educationHistory.length > 0));
-    
-    return !!(hasFullName && hasBirthDate && hasPhone && hasAddress && hasEducation);
-  };
+
 
   // ==========================================
   // VIRAL SHOUKAI REFERRAL ALGORITHM & GROW LOOP
