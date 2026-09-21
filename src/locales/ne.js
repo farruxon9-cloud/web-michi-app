@@ -869,7 +869,11 @@ const translation = {
   "deactivateAiTitle": "AI निष्क्रिय गर्नुहोस्",
   "activateAiPlaceholder": "AI सक्रिय गर्न माइक थिच्नुहोस्...",
   "listeningPlaceholder": "सुन्दैछ... अहिले बोल्नुहोस्",
-  "askInputPlaceholder": "Michi AI लाई सन्देश टाइप गर्नुहोस्..."
+  "askInputPlaceholder": "Michi AI लाई सन्देश टाइप गर्नुहोस्...",
+  "referralModalTitle": "सिफारिस (紹介)",
+  "referralModalDesc": "यदि कसैले तपाईंलाई यो विज्ञापन सिफारिस गरेको छ भने, उनीहरूको Michi ID प्रविष्ट गर्नुहोस्।",
+  "referralPlaceholder": "जस्तै: #Michi-A1B2 (ऐच्छिक)",
+  "referralOptional": "* ID प्रविष्ट नगरीकन पनि आवेदन दिन सकिन्छ"
 };
 
 export default { translation };

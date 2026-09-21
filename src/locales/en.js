@@ -935,7 +935,11 @@ const translation = {
   "deactivateAiTitle": "Deactivate AI",
   "activateAiPlaceholder": "Tap mic to activate AI...",
   "listeningPlaceholder": "Listening... speak now",
-  "askInputPlaceholder": "Type a message to Michi AI..."
+  "askInputPlaceholder": "Type a message to Michi AI...",
+  "referralModalTitle": "Referral (紹介)",
+  "referralModalDesc": "If someone referred you to this posting, please enter their Michi ID.",
+  "referralPlaceholder": "e.g. #Michi-A1B2 (optional)",
+  "referralOptional": "* You can apply even without entering an ID"
 };
 
 export default { translation };

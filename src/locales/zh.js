@@ -869,7 +869,11 @@ const translation = {
   "deactivateAiTitle": "停用 AI",
   "activateAiPlaceholder": "点击麦克风启用 AI...",
   "listeningPlaceholder": "正在倾听... 请说话",
-  "askInputPlaceholder": "输入 Michi AI 的问题..."
+  "askInputPlaceholder": "输入 Michi AI 的问题...",
+  "referralModalTitle": "推荐人 (紹介)",
+  "referralModalDesc": "如果是朋友推荐您申请此职位，请输入其 Michi ID。",
+  "referralPlaceholder": "例如: #Michi-A1B2 (可选)",
+  "referralOptional": "* 即使不输入ID也可以提交申请"
 };
 
 export default { translation };

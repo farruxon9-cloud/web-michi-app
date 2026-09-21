@@ -869,7 +869,11 @@ const translation = {
   "deactivateAiTitle": "Tắt AI",
   "activateAiPlaceholder": "Nhấn micro để kích hoạt AI...",
   "listeningPlaceholder": "Đang lắng nghe... hãy nói",
-  "askInputPlaceholder": "Nhập câu hỏi cho Michi AI..."
+  "askInputPlaceholder": "Nhập câu hỏi cho Michi AI...",
+  "referralModalTitle": "Giới thiệu (紹介)",
+  "referralModalDesc": "Nếu ai đó đã giới thiệu bạn bài đăng này, vui lòng nhập Michi ID của họ.",
+  "referralPlaceholder": "Ví dụ: #Michi-A1B2 (không bắt buộc)",
+  "referralOptional": "* Bạn vẫn có thể nộp đơn mà không cần nhập ID"
 };
 
 export default { translation };

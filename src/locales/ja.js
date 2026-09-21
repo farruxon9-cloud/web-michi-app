@@ -979,7 +979,11 @@ const translation = {
   "deactivateAiTitle": "AIを無効化",
   "activateAiPlaceholder": "AIを有効化してください...",
   "listeningPlaceholder": "音声を聞き取り中...",
-  "askInputPlaceholder": "Michi AI に質問を入力..."
+  "askInputPlaceholder": "Michi AI に質問を入力...",
+  "referralModalTitle": "紹介 (Shoukai)",
+  "referralModalDesc": "この求人を紹介してくれた方がいる場合は、その方のMichi IDを入力してください。",
+  "referralPlaceholder": "例: #Michi-A1B2 (任意)",
+  "referralOptional": "※ IDを入力しなくても応募可能です"
 };
 
 export default { translation };

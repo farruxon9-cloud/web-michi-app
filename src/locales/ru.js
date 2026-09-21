@@ -892,7 +892,11 @@ const translation = {
   "deactivateAiTitle": "Выключить ИИ",
   "activateAiPlaceholder": "Нажмите микрофон для включения ИИ...",
   "listeningPlaceholder": "Слушаю... говорите",
-  "askInputPlaceholder": "Введите вопрос для Michi AI..."
+  "askInputPlaceholder": "Введите вопрос для Michi AI...",
+  "referralModalTitle": "Реферальный код (紹介)",
+  "referralModalDesc": "Если вас направил друг, введите его Michi ID.",
+  "referralPlaceholder": "Например: #Michi-A1B2 (необязательно)",
+  "referralOptional": "* Вы можете подать заявку и без ввода ID"
 };
 
 export default { translation };

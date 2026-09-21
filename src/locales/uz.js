@@ -937,7 +937,11 @@ const translation = {
   "deactivateAiTitle": "AI-ni o'chirish",
   "activateAiPlaceholder": "AIni yoqish uchun bosing...",
   "listeningPlaceholder": "Gapiring, eshitilmoqda...",
-  "askInputPlaceholder": "Savolingizni yozing..."
+  "askInputPlaceholder": "Savolingizni yozing...",
+  "referralModalTitle": "Shoukai (紹介)",
+  "referralModalDesc": "Agar kimdir sizi bu e'lon orqali yuborgan bo'lsa, ularning Michi ID raqamini kiriting.",
+  "referralPlaceholder": "Masalan: #Michi-A1B2 (ixtiyoriy)",
+  "referralOptional": "* ID kiritmasangiz ham ariza yuborishingiz mumkin"
 };
 
 export default { translation };
