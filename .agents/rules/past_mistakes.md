@@ -602,6 +602,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Strict State Separation**: `isVoiceStandby` faqat foydalanuvchi afzalligi sifatida `localStorage` dan o'qiladi (`true`/`false`), `isVoiceActive` esa har doim `false` bilan boshlanadi (overlay dastlab yopiq).
   2. **Active vs Standby**: `isVoiceStandby` = assistent kutish rejimida, `isVoiceActive` = assistent vizual overlay'i hozir ekranda ochiq.
 
+## 🚫 101. React useCallback & useEffect Dependency Integrity Invariant
+* **Xatolik**: 
+  1. `useEffect` hooklari ichida ishlatiladigan yordamchi funksiyalarni (`handleApplyJob`, `handleApplySchool`) dependency array ro'yxatiga qo'shmaslik hamda ushbu funksiyalarni `useCallback` ga o'ramaslik. Bu render davomida staleness yoki cheksiz qayta yuklanish xatolarini keltirib chiqarishi mumkin.
+* **Yechim (MAJBURIY)**:
+  1. **Strict useCallback Wrapping**: `useEffect` ichida chaqiriladigan yoki bola komponentlarga prop sifatida uzatiladigan barcha handler funksiyalar strictly `useCallback` bilan o'ralishi va to'liq dependency array bilan ta'minlanishi SHART.
+  2. **Complete Dependency Array**: `useEffect` dependency array arrayiga u chaqiradigan barcha `useCallback` handlerlar kiritilishi shart.
+
 
 
 
