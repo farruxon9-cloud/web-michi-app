@@ -588,6 +588,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Strict Personal Data Anonymization**: Barcha demo va simulyatsiya ma'lumotlarida real ism-sharif hamda shaxsiy email o'rniga anonim i18n qiymatlar (`t('simulatedFriend', 'Anonim Do\'st')`, `demo@michi-app.com`) qo'llanilishi SHART.
   2. **Zero Hardcoded Personal Identifiers**: Kod bazasida real foydalanuvchilarning ism va elektron pochta manzillari bo'lishi taqiqlanadi.
 
+## 🚫 99. Production Build Console Log Stripping & Safe Logger Utility Invariant
+* **Xatolik**: 
+  1. Ishlab chiqarish (production) buildlarida `console.log()` chaqiruvlarining ochiq qolib ketishi, bu mobil qurilma xotirasini band qiladi hamda ichki tizim ma'lumotlarini oshkor etishi mumkin.
+* **Yechim (MAJBURIY)**:
+  1. **Automatic Production Log Stripping**: `vite.config.js` da build parametrlarida `terserOptions.compress.drop_console: true` va `drop_debugger: true` sozlangan bo'lishi SHART.
+  2. **Safe Logger Wrapper**: Har qanday maxsus loglar uchun `src/utils/logger.js` modulidagi `logger.log()` funksiyasidan foydalanilishi shart.
+
 
 
 
