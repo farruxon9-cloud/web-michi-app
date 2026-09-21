@@ -635,6 +635,12 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **Strict Versioned SQL Migration**: Barcha PostgreSQL sxemalari, cheklovlar (`CHECK (role IN ...)`), `UUID` va `INET` turlari hamda `idx_auth_attempts_email` indekslari strictly `supabase/schema.sql` faylida saqlanishi SHART.
 
+## 🚫 106. N8N Workflow Automation & JSON Blueprint Invariant (`n8n/`)
+* **Xatolik**: 
+  1. N8N webhook va ish oqimi sozlamalarini (auth monitoring, OTP email yuborish, Shoukai tasdiqlash) faqat ogizaki reja shaklida qoldirib, kod omborida deklarativ versiyalanmagan JSON formatida saqlamaslik.
+* **Yechim (MAJBURIY)**:
+  1. **Declarative Workflow Blueprints**: Barcha N8N avtomatlashtirish ish oqimlari strictly `n8n/` papkasi ostida `workflow_1_auth_monitoring.json`, `workflow_2_otp_email.json`, `workflow_3_shoukai_verification.json` ko'rinishida versiyalanib va import uchun tayyor holatda saqlanishi SHART.
+
 
 
 
