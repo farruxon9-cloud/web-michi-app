@@ -20,6 +20,7 @@ import JDMNavigation from './components/JDMNavigation';
 import AssistHeroShowcase from './components/AssistHeroShowcase';
 import ErrorBoundary from './components/ErrorBoundary';
 import ReferralModal from './components/ReferralModal';
+import { getPermanentUserId } from './utils/userIdManager';
 
 
 const TRACKS = [
@@ -352,7 +353,7 @@ function App() {
 
   // Profile Data
   const [profileData, setProfileData] = useState({
-    userId: '#Michi-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+    userId: getPermanentUserId(),
     fullName: 'Mehmon',
     birthDate: '',
     licenseType: 'Oogata',
