@@ -19,6 +19,7 @@ import RobotAvatar from './components/RobotAvatar';
 import JDMNavigation from './components/JDMNavigation';
 import AssistHeroShowcase from './components/AssistHeroShowcase';
 import ErrorBoundary from './components/ErrorBoundary';
+import ReferralModal from './components/ReferralModal';
 
 
 const TRACKS = [
@@ -208,6 +209,20 @@ function App() {
   const [pendingApply, setPendingApply] = useState(null);
   const [authInitialStep, setAuthInitialStep] = useState('role');
   const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
+
+  // Referral Modal State
+  const [referralModal, setReferralModal] = useState({
+    isOpen: false,
+    item: null,
+    type: null,
+    resolve: null
+  });
+
+  const openReferralModal = (item, type) => {
+    return new Promise((resolve) => {
+      setReferralModal({ isOpen: true, item, type, resolve });
+    });
+  };
 
   // Music Player states
   const [isPlaying, setIsPlaying] = useState(false);
@@ -425,7 +440,7 @@ function App() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   // Apply for a job
-  const handleApplyJob = (job) => {
+  const handleApplyJob = async (job) => {
     if (userRole === 'guest') {
       setPendingApply({ type: 'job', item: job });
       setAuthInitialStep('register');
@@ -442,7 +457,7 @@ function App() {
     const exists = applications.find(a => a.jobId === job.id && !a.isSimulatedReferral);
     if (exists) return;
 
-    const refId = prompt(t('referralPrompt', "Havola orqali kirdingizmi? Unday bo'lsa tavsiya qilgan odamning ID raqamini kiriting (Simulyatsiya uchun):\nMasalan: #Michi-A1B2"));
+    const refId = await openReferralModal(job, 'job');
 
     const newApp = {
       id: Date.now(),
@@ -558,7 +573,7 @@ function App() {
   // Academy applications
   const [schoolApplications, setSchoolApplications] = useState([]);
 
-  const handleApplySchool = (school) => {
+  const handleApplySchool = async (school) => {
     if (userRole === 'guest') {
       setPendingApply({ type: 'school', item: school });
       setAuthInitialStep('register');
@@ -575,7 +590,7 @@ function App() {
     const exists = schoolApplications.find(a => a.schoolId === school.id && !a.isSimulatedReferral);
     if (exists) return;
 
-    const refId = prompt(t('referralPrompt', "Havola orqali kirdingizmi? Unday bo'lsa tavsiya qilgan odamning ID raqamini kiriting (Simulyatsiya uchun):\nMasalan: #Michi-A1B2"));
+    const refId = await openReferralModal(school, 'school');
 
     const newApp = {
       id: Date.now(),
@@ -1363,6 +1378,19 @@ function App() {
           </div>
         </div>
       )}
+      {/* Referral Modal */}
+      <ReferralModal
+        isOpen={referralModal.isOpen}
+        jobTitle={referralModal.item?.title || referralModal.item?.name || referralModal.item?.schoolName}
+        onConfirm={(refId) => {
+          referralModal.resolve?.(refId);
+          setReferralModal({ isOpen: false, item: null, type: null, resolve: null });
+        }}
+        onCancel={() => {
+          referralModal.resolve?.(null);
+          setReferralModal({ isOpen: false, item: null, type: null, resolve: null });
+        }}
+      />
       </div>
     </ErrorBoundary>
   );
