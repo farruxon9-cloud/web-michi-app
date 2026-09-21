@@ -43,15 +43,15 @@ const mockIncomingApplications = [
     shoukaiAmount: '¥10,000',
     shoukaiPaid: false,
     applicantInfo: {
-      fullName: 'Farrux Alimov',
-      email: 'farrux.alimov@gmail.com',
-      birthDate: '1996-08-24',
-      birthPlace: 'Toshkent',
-      nationality: 'O\'zbekiston',
+      fullName: t('simulatedFriend', 'Anonim Do\'st'),
+      email: 'demo@michi-app.com',
+      birthDate: '1995-01-01',
+      birthPlace: t('japan', 'Yaponiya'),
+      nationality: t('mixed', 'Xorijiy'),
       gender: 'male',
-      phone: '+81 90-8888-9999',
-      postalCode: '160-0022',
-      address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1',
+      phone: '+81 00-0000-0000',
+      postalCode: '000-0000',
+      address: t('demoAddress', 'Tokyo, Shinjuku-ku'),
       addressHistory: [
         { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
         { address: 'Chiba, Matsudo 2-12', isCurrent: false }
@@ -751,15 +751,15 @@ function App() {
           friendName: 'Do\'stingiz (Simulyatsiya)',
           isSimulatedReferral: true, // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
           applicantInfo: {
-            fullName: 'Farrux Alimov',
-            email: 'farrux.alimov@gmail.com',
-            birthDate: '1996-08-24',
-            birthPlace: 'Toshkent',
-            nationality: 'O\'zbekiston',
+            fullName: t('simulatedFriend', 'Anonim Do\'st'),
+            email: 'demo@michi-app.com',
+            birthDate: '1995-01-01',
+            birthPlace: t('japan', 'Yaponiya'),
+            nationality: t('mixed', 'Xorijiy'),
             gender: 'male',
-            phone: '+81 90-8888-9999',
-            postalCode: '160-0022',
-            address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1',
+            phone: '+81 00-0000-0000',
+            postalCode: '000-0000',
+            address: t('demoAddress', 'Tokyo, Shinjuku-ku'),
             addressHistory: [
               { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
               { address: 'Chiba, Matsudo 2-12', isCurrent: false }
@@ -793,15 +793,15 @@ function App() {
           friendName: 'Do\'stingiz (Simulyatsiya)',
           isSimulatedReferral: true, // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
           applicantInfo: {
-            fullName: 'Farrux Alimov',
-            email: 'farrux.alimov@gmail.com',
-            birthDate: '1996-08-24',
-            birthPlace: 'Toshkent',
-            nationality: 'O\'zbekiston',
+            fullName: t('simulatedFriend', 'Anonim Do\'st'),
+            email: 'demo@michi-app.com',
+            birthDate: '1995-01-01',
+            birthPlace: t('japan', 'Yaponiya'),
+            nationality: t('mixed', 'Xorijiy'),
             gender: 'male',
-            phone: '+81 90-8888-9999',
-            postalCode: '160-0022',
-            address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1',
+            phone: '+81 00-0000-0000',
+            postalCode: '000-0000',
+            address: t('demoAddress', 'Tokyo, Shinjuku-ku'),
             addressHistory: [
               { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
               { address: 'Chiba, Matsudo 2-12', isCurrent: false }
