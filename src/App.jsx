@@ -21,6 +21,8 @@ import AssistHeroShowcase from './components/AssistHeroShowcase';
 import ErrorBoundary from './components/ErrorBoundary';
 import ReferralModal from './components/ReferralModal';
 import { getPermanentUserId } from './utils/userIdManager';
+import { AppProvider } from './context/AppContext';
+
 
 
 const TRACKS = [
@@ -1080,7 +1082,29 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="app-layout">
+      <AppProvider value={{
+        // Foydalanuvchi
+        userRole, setUserRole,
+        profileData, handleUpdateProfile,
+        
+        // Ilova holati
+        darkMode, setDarkMode,
+        activeTab, setActiveTab,
+        
+        // Bildirishnomalar
+        notifications, unreadCount,
+        markNotificationRead, markAllNotificationsRead,
+        
+        // Ma'lumotlar
+        jobs, setJobs,
+        schools, setSchools,
+        applications, setApplications,
+        
+        // Funksiyalar
+        handleApplyJob, handleApplySchool,
+        handleShoukai, handleToggleSave,
+      }}>
+        <div className="app-layout">
       <div className="glass-blob blob-1"></div>
       <div className="glass-blob blob-2"></div>
       <div className="glass-blob blob-3"></div>
@@ -1417,6 +1441,7 @@ function App() {
         }}
       />
       </div>
+      </AppProvider>
     </ErrorBoundary>
   );
 }
