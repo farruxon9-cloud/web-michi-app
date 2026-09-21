@@ -615,6 +615,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **Modular Directory Structure**: Barcha profil sub-sahifalari strictly `src/components/profile/` papkasi ichida alohida ixcham komponentlarga (`ProfileMain.jsx`, `ResumeBuilder.jsx`, `Settings.jsx`, `Notifications.jsx`, `MyAds.jsx`, `SavedItems.jsx`, `ShoukaiReferrals.jsx`, `Applications.jsx`, `EmployeeManagement.jsx`) bo'linadi va `index.js` orqali toza eksport qilinadi.
 
+## 🚫 103. Application Context Architecture & Prop Drilling Reduction Invariant (`src/context/AppContext.js`)
+* **Xatolik**: 
+  1. Yirik komponentlarga (masalan, `VoiceAssistant.jsx`) 30+ ortiqcha proplarni zanjir bo'yicha uzatish (prop drilling), bu har bir yangi xususiyat qo'shilganda arxitektura chigaliga olib keladi.
+* **Yechim (MAJBURIY)**:
+  1. **Strict Context API Pattern**: Global va ko'p ishlatiladigan holatlar (`userRole`, `profileData`, `darkMode`, `notifications`, `applications`) strictly `src/context/AppContext.js` ichidagi `AppProvider` va `useAppContext()` yordamida uzatiladi.
+  2. **Safe Provider Bounds**: `useAppContext()` Provider tashqarisida chaqirilganda tushunarli va xavfsiz xatolik xabari berishi shart.
+
 
 
 
