@@ -1,0 +1,105 @@
+{
+  "name": "Michi OTP Email Verification Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "auth/send-otp",
+        "options": {}
+      },
+      "name": "Webhook: /auth/send-otp",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const otp = Math.floor(100000 + Math.random() * 900000).toString();\nreturn [{ json: { email: items[0].json.body.email, otp, expiresAt: new Date(Date.now() + 10*60*1000).toISOString() } }];"
+      },
+      "name": "Generate 6-digit OTP",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [320, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO otps (email, otp_code, expires_at) VALUES ($1, $2, $3);"
+      },
+      "name": "Supabase: Store OTP Code",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [540, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-reply@michi-app.com",
+        "toEmail": "={{ $json.email }}",
+        "subject": "🔑 Michi App — Tasdiqlash Kodi (OTP)",
+        "html": "<h3>Michi App Tasdiqlash Kodi</h3><p>Sizning tasdiqlash kodingiz: <b>{{ $json.otp }}</b></p><p>Ushbu kod 10 daqiqa davomida amal qiladi.</p>"
+      },
+      "name": "SendGrid / Gmail: Send OTP Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        },
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"OTP email sent successfully\"\n}"
+      },
+      "name": "Response: { success: true }",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [980, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: /auth/send-otp": {
+      "main": [
+        [
+          {
+            "node": "Generate 6-digit OTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate 6-digit OTP": {
+      "main": [
+        [
+          {
+            "node": "Supabase: Store OTP Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: Store OTP Code": {
+      "main": [
+        [
+          {
+            "node": "SendGrid / Gmail: Send OTP Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendGrid / Gmail: Send OTP Email": {
+      "main": [
+        [
+          {
+            "node": "Response: { success: true }",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

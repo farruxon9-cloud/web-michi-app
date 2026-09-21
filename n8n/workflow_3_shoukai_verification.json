@@ -1,0 +1,121 @@
+{
+  "name": "Michi Shoukai Verification & Push Notification Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "shoukai/verify",
+        "options": {}
+      },
+      "name": "Webhook: /shoukai/verify",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM applications WHERE id = $1 AND shoukai_id = $2;"
+      },
+      "name": "Supabase: Verify Referral",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [320, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.paymentVerified }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "IF: Payment Verified",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [540, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE applications SET shoukai_paid = true WHERE id = $1 RETURNING *;"
+      },
+      "name": "Supabase: Set shoukaiPaid = true",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [760, 200]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "https://fcm.googleapis.com/fcm/send",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "to",
+              "value": "={{ $json.referrerFcmToken }}"
+            },
+            {
+              "name": "notification",
+              "value": "{\"title\":\"🎁 Shoukai Bonus Tasdiqlandi!\",\"body\":\"Sizning taklif mukofotingiz muvaffaqiyatli hisobingizga o'tkazildi.\"}"
+            }
+          ]
+        }
+      },
+      "name": "FCM: Push Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [980, 200]
+    }
+  ],
+  "connections": {
+    "Webhook: /shoukai/verify": {
+      "main": [
+        [
+          {
+            "node": "Supabase: Verify Referral",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: Verify Referral": {
+      "main": [
+        [
+          {
+            "node": "IF: Payment Verified",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Payment Verified": {
+      "main": [
+        [
+          {
+            "node": "Supabase: Set shoukaiPaid = true",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: Set shoukaiPaid = true": {
+      "main": [
+        [
+          {
+            "node": "FCM: Push Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
