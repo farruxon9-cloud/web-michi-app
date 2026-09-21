@@ -609,6 +609,12 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Strict useCallback Wrapping**: `useEffect` ichida chaqiriladigan yoki bola komponentlarga prop sifatida uzatiladigan barcha handler funksiyalar strictly `useCallback` bilan o'ralishi va to'liq dependency array bilan ta'minlanishi SHART.
   2. **Complete Dependency Array**: `useEffect` dependency array arrayiga u chaqiradigan barcha `useCallback` handlerlar kiritilishi shart.
 
+## 🚫 102. Profile Component Modular Architecture Invariant (`src/components/profile/`)
+* **Xatolik**: 
+  1. `Profile.jsx` faylining 7,000+ qatorli ulkan monolit ko'rinishda qolib ketishi, bu diskriminatsiyani qiyinlashtiradi va kodni saqlash hamda test qilishni izdan chiqaradi.
+* **Yechim (MAJBURIY)**:
+  1. **Modular Directory Structure**: Barcha profil sub-sahifalari strictly `src/components/profile/` papkasi ichida alohida ixcham komponentlarga (`ProfileMain.jsx`, `ResumeBuilder.jsx`, `Settings.jsx`, `Notifications.jsx`, `MyAds.jsx`, `SavedItems.jsx`, `ShoukaiReferrals.jsx`, `Applications.jsx`, `EmployeeManagement.jsx`) bo'linadi va `index.js` orqali toza eksport qilinadi.
+
 
 
 
