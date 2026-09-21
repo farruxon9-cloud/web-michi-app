@@ -147,16 +147,32 @@ function App() {
   const [showAssistHeroShowcase, setShowAssistHeroShowcase] = useState(false);
   const [hasOpenedJDM, setHasOpenedJDM] = useState(false);
 
+  /**
+   * Ovoz holatlari:
+   * 
+   * isVoiceStandby — Ovoz assistenti "kutish" rejimida.
+   *   true  → Mikrofon ikonkasi faol (highlight), bosishga tayyor
+   *   false → Ovoz assistenti o'chirilgan
+   * 
+   * isVoiceActive — Ovoz assistenti hozir ochiq va ishlayapti.
+   *   true  → VoiceAssistant overlay ko'rinmoqda
+   *   false → Overlay yashirilgan
+   * 
+   * Farq: Standby = tayyor tur, Active = hozir ishlayapti
+   */
+
+  // Standby: localStorage'dan o'qiladi (ixtiyoriy funksiya)
   const [isVoiceStandby, setIsVoiceStandby] = useState(() => {
     const saved = localStorage.getItem('michi_voice_standby');
-    return saved === 'true';
+    return saved === 'true'; // Foydalanuvchi yoqib ketganmi?
   });
-  const [isVoiceActive, setIsVoiceActive] = useState(() => {
-    const saved = localStorage.getItem('michi_voice_standby');
-    return saved === 'true';
-  });
+
+  // Active: har doim false boshlanadi (overlay yopiq bo'ladi)
+  // ← Bu erda localStorage ishlatilmaydi!
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState('idle');
 
+  // Standby o'zgarganda localStorage'ga yozamiz
   useEffect(() => {
     localStorage.setItem('michi_voice_standby', isVoiceStandby);
   }, [isVoiceStandby]);
@@ -167,18 +183,22 @@ function App() {
     }
   }, [showJDMNavigation]);
 
+  // Ovozni yoqish — overlay ochiladi + standby faollashadi
   const handleVoiceActivate = () => {
-    setIsVoiceActive(true);
-    if (!isVoiceStandby) {
-      setIsVoiceStandby(true);
-    }
+    setIsVoiceStandby(true);  // Standby rejimga qo'yamiz
+    setIsVoiceActive(true);   // Overlay ochiladi
   };
 
+  // Ovozni o'chirish/yoqish toggle
   const handleVoiceToggle = () => {
-    if (isVoiceStandby) {
-      setIsVoiceStandby(false);
+    if (isVoiceActive) {
+      // Hozir ochiq → yopamiz
       setIsVoiceActive(false);
+    } else if (isVoiceStandby) {
+      // Standby'da → ochiladi
+      setIsVoiceActive(true);
     } else {
+      // Ikkalasi ham o'chiq → standby + active qilamiz
       setIsVoiceStandby(true);
       setIsVoiceActive(true);
     }
