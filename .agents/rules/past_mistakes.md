@@ -622,6 +622,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Strict Context API Pattern**: Global va ko'p ishlatiladigan holatlar (`userRole`, `profileData`, `darkMode`, `notifications`, `applications`) strictly `src/context/AppContext.js` ichidagi `AppProvider` va `useAppContext()` yordamida uzatiladi.
   2. **Safe Provider Bounds**: `useAppContext()` Provider tashqarisida chaqirilganda tushunarli va xavfsiz xatolik xabari berishi shart.
 
+## 🚫 104. OWASP & NIST Standard Auth Security Invariant (`src/services/authSecurityService.js`)
+* **Xatolik**: 
+  1. Parol va OTP tekshiruvida oddiy `===` operatori ishlatilishi (timing attack xavfi), oddiy statik lockout muddati va zaif parol baholash mezonlari.
+* **Yechim (MAJBURIY)**:
+  1. **Timing-Safe Comparison**: OTP va token solishtirishlarida vaqt o'lchash hujumlarini oldini olish uchun `timingSafeEqual()` funksiyasi ishlatilishi SHART.
+  2. **Exponential Lockout & NIST Evaluation**: 5 -> 15min -> 60min -> 24h eksponensial bloklash va NIST SP 800-63B asosidagi parol baholash tizimi strictly qo'llanilishi shart.
+
 
 
 
