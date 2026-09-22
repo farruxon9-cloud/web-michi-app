@@ -45,15 +45,15 @@ const mockIncomingApplications = [
     shoukaiAmount: '¥10,000',
     shoukaiPaid: false,
     applicantInfo: {
-      fullName: t('simulatedFriend', 'Anonim Do\'st'),
+      fullName: 'Anonim Do\'st',
       email: 'demo@michi-app.com',
       birthDate: '1995-01-01',
-      birthPlace: t('japan', 'Yaponiya'),
-      nationality: t('mixed', 'Xorijiy'),
+      birthPlace: 'Yaponiya',
+      nationality: 'Xorijiy',
       gender: 'male',
       phone: '+81 00-0000-0000',
       postalCode: '000-0000',
-      address: t('demoAddress', 'Tokyo, Shinjuku-ku'),
+      address: 'Tokyo, Shinjuku-ku',
       addressHistory: [
         { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
         { address: 'Chiba, Matsudo 2-12', isCurrent: false }
