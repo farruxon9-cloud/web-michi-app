@@ -663,6 +663,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. **Conditional Trigger Rendering**: Suzuvchi AI tugmasi strictly `{(isVoiceStandby || isVoiceActive) && <MichiDrawerTrigger />}` sharti ostida render qilinishi va AI o'chirilganda ekrandan to'liq yo'qolishi SHART.
   3. **Multi-Entry Deactivation Controls**: AI Hub side-drawer sarlavhasida (`MichiSideDrawer.jsx`) har doim qizil `Power` o'chirish tugmasi hamda header `RobotAvatar` elementida `isVoiceActive || isVoiceStandby` birlashgan holat barcha 8 ta tillarda xatosiz aks ettirilishi majburiydir.
 
+## 🚫 110. Ubiquitous Floating AI Hub Trigger Visibility Invariant (`MichiDrawerTrigger` Permanent Accessibility)
+* **Xatolik**: 
+  1. Foydalanuvchiga har doim AI Hub chat darchasi va o'tgan suhbatlar tarixini ko'rish yoki yangi savollar berish imkoniyatini beruvchi suzuvchi `MichiDrawerTrigger` tugmasini AI o'chirilganda shartli ravishda yashirib qo'yish.
+* **Yechim (MAJBURIY)**:
+  1. **Permanent UI Access Point**: `MichiDrawerTrigger` suzuvchi tugmasi har doim va har qanday holatda ekranda muallaq holda (`VoiceAssistant.jsx` ichida shartsiz) render qilinishi SHART.
+  2. **Drawer Open & Dictation Isolation**: Suzuvchi tugmani bosganda chat tarixi va AI Hub paneli ochiladi, panel ichida esa AI statusi va o'chirish/yoqish tugmalari (`Power`) orqali ovozli/matnli AI rejimini boshqarish imkoniyati saqlanadi.
+
 
 
 

@@ -2662,15 +2662,13 @@ Return ONLY the raw JSON object, no markdown wrappers.
         </div>
       )}
 
-      {/* Non-Intrusive Floating AI Side Drawer Trigger (Only Visible when AI is Standby or Active) */}
-      {(isVoiceStandby || isActive) && (
-        <MichiDrawerTrigger 
-          isOpen={isSideDrawerOpen}
-          onToggle={() => setIsSideDrawerOpen(prev => !prev)} 
-          chatCount={chatHistoryList.length} 
-          speechLang={speechLang} 
-        />
-      )}
+      {/* Non-Intrusive Floating AI Side Drawer Trigger (Always Visible for AI Hub Chat Access) */}
+      <MichiDrawerTrigger 
+        isOpen={isSideDrawerOpen}
+        onToggle={() => setIsSideDrawerOpen(prev => !prev)} 
+        chatCount={chatHistoryList.length} 
+        speechLang={speechLang} 
+      />
 
       {/* Slide-out Translucent Glass Side Drawer Panel */}
       <MichiSideDrawer
