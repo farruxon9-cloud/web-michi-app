@@ -670,6 +670,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Permanent UI Access Point**: `MichiDrawerTrigger` suzuvchi tugmasi har doim va har qanday holatda ekranda muallaq holda (`VoiceAssistant.jsx` ichida shartsiz) render qilinishi SHART.
   2. **Drawer Open & Dictation Isolation**: Suzuvchi tugmani bosganda chat tarixi va AI Hub paneli ochiladi, panel ichida esa AI statusi va o'chirish/yoqish tugmalari (`Power`) orqali ovozli/matnli AI rejimini boshqarish imkoniyati saqlanadi.
 
+## 🚫 111. Single-Pass Live Stream & Zero Typewriter Re-execution Invariant (`aiResponseTextRef` & `displayedAiTextRef` Sync)
+* **Xatolik**: 
+  1. Hugging Face va AI Core striming orqali real vaqtda kelgan matnni `handleGeminiSuccess` yakuniy bosqichida oddiy closure `displayedAiText` state'i bo'sh deb noto'g'ri baholanishi oqibatida, 0-belgidan boshlab qaytadan typewriter intervali bilan 2-marta sun'iy yozib chiqish bugi.
+* **Yechim (MAJBURIY)**:
+  1. **Ref-Based Stream Detection**: Striming tugagach `handleGeminiSuccess` ichida strictly `(aiResponseTextRef.current && aiResponseTextRef.current.trim().length > 5) || (displayedAiTextRef.current && displayedAiTextRef.current.trim().length > 5)` sharti bilan jonli matn oqimi olingani tekshirilishi SHART.
+  2. **Single-Pass Finalization**: Agar matn jonli striming orqali kelgan bo'lsa, typewriter effekti strictly o'tkazib yuboriladi (`setDisplayedAiText(politeResponse)`, `setIsTyping(false)`) va matn qayta boshidan 0-belgidan yozilmaydi.
+
+
 
 
 

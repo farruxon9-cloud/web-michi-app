@@ -241,6 +241,9 @@ export default function VoiceAssistant({
   const aiResponseTextRef = useRef(aiResponseText);
   aiResponseTextRef.current = aiResponseText;
 
+  const displayedAiTextRef = useRef(displayedAiText);
+  displayedAiTextRef.current = displayedAiText;
+
   const apiKeyRef = useRef(apiKey);
   apiKeyRef.current = apiKey;
 
@@ -2037,7 +2040,10 @@ Return ONLY the raw JSON object, no markdown wrappers.
       }, readDuration);
     };
 
-    if (displayedAiText && displayedAiText.length > 5) {
+    const hasAlreadyStreamed = (aiResponseTextRef.current && aiResponseTextRef.current.trim().length > 5) || 
+                               (displayedAiTextRef.current && displayedAiTextRef.current.trim().length > 5);
+
+    if (hasAlreadyStreamed) {
       // Text was already streamed live chunk-by-chunk: finalize text smoothly without restarting from 0!
       setDisplayedAiText(politeResponse);
       setIsTyping(false);
