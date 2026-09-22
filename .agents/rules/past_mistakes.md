@@ -648,6 +648,12 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Automatic Server Run**: Foydalanuvchi "boshlaymizmi?" deb so'rashi bilan harbitta marta avval dev server holatini tekshirib, agar o'chiq bo'lsa `npx vite --host 127.0.0.1` buyrug'i bilan background daemon qilib ishga tushirish SHART.
   2. **Immediate Link Presentation**: Har safar javob matnida `http://127.0.0.1:5173/` va boshqa barcha havolalarni birinchi bo'lib taqdim etish majburiydir.
 
+## 🚫 108. Component Scope i18n Translation Invariant (`t()` Top-Level Avoidance)
+* **Xatolik**: 
+  1. `App.jsx` yoki boshqa fayllarning eng yuqori modul darajasida (`App` komponent funksiyasidan tashqarida) `const mockData = [{ fullName: t('key') }]` ko'rinishida `t()` funksiyasini chaqirish. Bu brauzer komponentni render qilishdan oldin module loading bosqichida `ReferenceError: Can't find variable: t` berib, foydalanuvchi brauzerida oq bo'sh ekran (blank white screen of death) chiqaradi.
+* **Yechim (MAJBURIY)**:
+  1. **Strict Component Scope**: `t(...)` chaqiruvlari FAQAT va FAQAT React komponenti tanasi ichida (ya'ni `const { t } = useTranslation()` e'lon qilingan joydan pastda) ishlatilishi SHART. Modul darajasidagi konstantalarda strictly oddiy string fallbacks qo'llanilishi majburiydir.
+
 
 
 
