@@ -641,6 +641,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **Declarative Workflow Blueprints**: Barcha N8N avtomatlashtirish ish oqimlari strictly `n8n/` papkasi ostida `workflow_1_auth_monitoring.json`, `workflow_2_otp_email.json`, `workflow_3_shoukai_verification.json` ko'rinishida versiyalanib va import uchun tayyor holatda saqlanishi SHART.
 
+## 🚫 107. Mandatory Dev Server Launch & Link Dispatch Invariant on 'boshlaymizmi?' Trigger
+* **Xatolik**: 
+  1. Foydalanuvchi "boshlaymizmi?" yoki seansni boshlash so'rovini berganda, mahalliy serverni (`npm run dev` / `npx vite --host 127.0.0.1` background daemon) avtomatik ishga tushirmaslik hamda barcha faol havolalarni (`http://127.0.0.1:5173/`, GitHub Pages, va GitHub Repo) bir marta ham o'tkazib yubormasdan zudlik bilan taqdim etmaslik.
+* **Yechim (MAJBURIY)**:
+  1. **Automatic Server Run**: Foydalanuvchi "boshlaymizmi?" deb so'rashi bilan harbitta marta avval dev server holatini tekshirib, agar o'chiq bo'lsa `npx vite --host 127.0.0.1` buyrug'i bilan background daemon qilib ishga tushirish SHART.
+  2. **Immediate Link Presentation**: Har safar javob matnida `http://127.0.0.1:5173/` va boshqa barcha havolalarni birinchi bo'lib taqdim etish majburiydir.
+
 
 
 
