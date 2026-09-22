@@ -1504,13 +1504,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
       }
     }
 
-    const isJa = userLang.startsWith('ja');
-    const isUz = userLang.startsWith('uz');
-    const errText = isJa
-      ? `申し訳ありません。AI応答を取得できませんでした。もう一度お試しください。`
-      : isUz
-      ? `Kechirasiz, AI javobini olishda xatolik yuz berdi. Qayta urinib ko'ring.`
-      : `Sorry, failed to get AI response. Please try again.`;
+    const errText = "サーバーとの通信が一時的に途絶えました。もう一度お試しください。";
 
     setStatus('error');
     setErrorMessage(errText);
@@ -2668,13 +2662,15 @@ Return ONLY the raw JSON object, no markdown wrappers.
         </div>
       )}
 
-      {/* Non-Intrusive Floating AI Side Drawer Trigger (Always Visible) */}
-      <MichiDrawerTrigger 
-        isOpen={isSideDrawerOpen}
-        onToggle={() => setIsSideDrawerOpen(prev => !prev)} 
-        chatCount={chatHistoryList.length} 
-        speechLang={speechLang} 
-      />
+      {/* Non-Intrusive Floating AI Side Drawer Trigger (Only Visible when AI is Standby or Active) */}
+      {(isVoiceStandby || isActive) && (
+        <MichiDrawerTrigger 
+          isOpen={isSideDrawerOpen}
+          onToggle={() => setIsSideDrawerOpen(prev => !prev)} 
+          chatCount={chatHistoryList.length} 
+          speechLang={speechLang} 
+        />
+      )}
 
       {/* Slide-out Translucent Glass Side Drawer Panel */}
       <MichiSideDrawer
@@ -2701,6 +2697,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
         }}
         onDeactivateAI={() => {
           stopAllVoiceActivities();
+          setIsSideDrawerOpen(false);
           if (setIsVoiceStandby) setIsVoiceStandby(false);
           if (onClose) onClose();
         }}

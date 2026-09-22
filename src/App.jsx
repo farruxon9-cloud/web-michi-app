@@ -163,14 +163,14 @@ function App() {
    * Farq: Standby = tayyor tur, Active = hozir ishlayapti
    */
 
-  // Standby: localStorage'dan o'qiladi (ixtiyoriy funksiya)
+  // Standby: localStorage'dan o'qiladi (default true)
   const [isVoiceStandby, setIsVoiceStandby] = useState(() => {
     const saved = localStorage.getItem('michi_voice_standby');
-    return saved === 'true'; // Foydalanuvchi yoqib ketganmi?
+    if (saved === null) return true;
+    return saved === 'true';
   });
 
   // Active: har doim false boshlanadi (overlay yopiq bo'ladi)
-  // ← Bu erda localStorage ishlatilmaydi!
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState('idle');
 
@@ -191,16 +191,14 @@ function App() {
     setIsVoiceActive(true);   // Overlay ochiladi
   };
 
-  // Ovozni o'chirish/yoqish toggle
+  // Ovozni o'chirish/yoqish toggle (to'liq o'chirish/yoqish)
   const handleVoiceToggle = () => {
-    if (isVoiceActive) {
-      // Hozir ochiq → yopamiz
+    if (isVoiceActive || isVoiceStandby) {
+      // Hozir faol yoki standby → to'liq o'chiramiz
       setIsVoiceActive(false);
-    } else if (isVoiceStandby) {
-      // Standby'da → ochiladi
-      setIsVoiceActive(true);
+      setIsVoiceStandby(false);
     } else {
-      // Ikkalasi ham o'chiq → standby + active qilamiz
+      // O'chiq → standby + active qilamiz
       setIsVoiceStandby(true);
       setIsVoiceActive(true);
     }
@@ -1153,8 +1151,8 @@ function App() {
         {/* Right Side: Standalone Robot Avatar (Separated AI widget) */}
         <div className="header-robot-right">
           <RobotAvatar 
-            isVoiceActive={isVoiceActive} 
-            voiceStatus={voiceStatus} 
+            isVoiceActive={isVoiceActive || isVoiceStandby} 
+            voiceStatus={isVoiceActive ? voiceStatus : 'idle'} 
             onClick={handleVoiceToggle} 
           />
         </div>

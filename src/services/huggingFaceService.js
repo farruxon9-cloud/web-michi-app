@@ -69,17 +69,18 @@ export async function askMichiCore(userMessage, onChunkUpdate = null) {
       return cleanResult;
     } catch (err) {
       console.error("[Michi Core Error]:", err);
-      throw err;
+      throw new Error("サーバーとの通信が一時的に途絶えました。もう一度お試しください。");
     }
   })();
 
   const timeoutPromise = new Promise((_, reject) =>
     setTimeout(() => {
-      const err = new Error("Hugging Face javob berish taymauti (45s) tugadi");
-      console.error("[Michi Core Error]:", err);
+      const err = new Error("サーバーとの通信が一時的に途絶えました。もう一度お試しください。");
+      console.error("[Michi Core Timeout]:", err);
       reject(err);
     }, TIMEOUT_MS)
   );
 
   return Promise.race([fetchPromise, timeoutPromise]);
 }
+

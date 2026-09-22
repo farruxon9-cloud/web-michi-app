@@ -129,13 +129,9 @@ class MultiAiMeshEngine {
       console.warn('[MultiAiMesh] Tier 4 Hugging Face API failed:', e.message);
     }
 
-    // Fallback: Local Synthesis
-    console.log('[MultiAiMesh] 🛡️ All external providers exhausted. Utilizing Local Intelligent Engine...');
-    const localSynthesized = cleanLang === 'ja'
-      ? "申し訳ございません。ネットワーク接続をお確かめの上、もう一度お試しください。"
-      : cleanLang === 'uz'
-      ? "Kechirasiz, tarmoq ulanishini tekshirib, savolni qaytadan berib ko'ring."
-      : "Apologies, please check your network connection and try asking again.";
+    // Fallback: Connection Interrupted State
+    console.log('[MultiAiMesh] 🛡️ All external providers exhausted. Returning connection interruption message...');
+    const localSynthesized = "サーバーとの通信が一時的に途絶えました。もう一度お試しください。";
 
     return { text: localSynthesized, provider: 'Michi Local Engine' };
   }

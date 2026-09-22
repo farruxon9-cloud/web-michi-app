@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, Trash2, X, Bot, ArrowLeft, Copy, Check, Volume2 } from 'lucide-react';
+import { Sparkles, Trash2, X, Bot, ArrowLeft, Copy, Check, Volume2, Power } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import MichiQuickChips from './MichiQuickChips';
 import MichiActivationCard from './MichiActivationCard';
@@ -75,6 +75,17 @@ export default function MichiSideDrawer({
           </div>
 
           <div className="voice-drawer-header-actions">
+            {onDeactivateAI && (
+              <button 
+                className="voice-drawer-action-btn power-off" 
+                onClick={onDeactivateAI}
+                title={speechLang === 'ja' ? 'AIをオフにする' : speechLang === 'uz' ? "AI ni o'chirish" : 'Turn Off AI'}
+                aria-label="Turn Off AI"
+                style={{ color: '#FF3B30', background: 'rgba(255, 59, 48, 0.12)' }}
+              >
+                <Power size={14} />
+              </button>
+            )}
             <button 
               className="voice-drawer-action-btn danger" 
               onClick={onClearHistory}
@@ -153,6 +164,11 @@ export default function MichiSideDrawer({
                           </div>
                         </div>
                         <p className="msg-text">{item.answer}</p>
+                        {!item.isError && (
+                          <p className="michi-disclaimer-text" style={{ fontSize: '11px', color: '#8E8E93', marginTop: '6px', lineHeight: '1.4' }}>
+                            ※ Michi AIはAI技術を活用しているため、誤った情報を生成する可能性があります。重要な決定や専門的な手続きの際は公式情報をご確認ください。
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -206,11 +222,21 @@ export default function MichiSideDrawer({
                     </div>
                   </div>
                   <p className="msg-text">{displayedAiText || aiResponseText}</p>
+                  <p className="michi-disclaimer-text" style={{ fontSize: '11px', color: '#8E8E93', marginTop: '6px', lineHeight: '1.4' }}>
+                    ※ Michi AIはAI技術を活用しているため、誤った情報を生成する可能性があります。重要な決定や専門的な手続きの際は公式情報をご確認ください。
+                  </p>
                 </div>
               )}
               <div ref={chatEndRef} />
             </div>
           )}
+        </div>
+
+        {/* Global Footer Disclaimer */}
+        <div style={{ padding: '4px 16px 8px', textAlign: 'center' }}>
+          <p style={{ fontSize: '11px', color: '#8E8E93', margin: 0, lineHeight: '1.4' }}>
+            ※ Michi AIはAI技術を活用しているため、誤った情報を生成する可能性があります。重要な決定や専門的な手続きの際は公式情報をご確認ください。
+          </p>
         </div>
 
         {/* Input Bar */}

@@ -654,6 +654,15 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **Strict Component Scope**: `t(...)` chaqiruvlari FAQAT va FAQAT React komponenti tanasi ichida (ya'ni `const { t } = useTranslation()` e'lon qilingan joydan pastda) ishlatilishi SHART. Modul darajasidagi konstantalarda strictly oddiy string fallbacks qo'llanilishi majburiydir.
 
+## 🚫 109. Dual-State AI Assistant Deactivation & UI Trigger Visibility Synchronization Invariant (`isVoiceActive` & `isVoiceStandby` State Alignment)
+* **Xatolik**: 
+  1. AI Assistentni o'chirish tugmasi bosilganda faqat overlay holati (`isVoiceActive(false)`) yopilib, background standby rejimi (`isVoiceStandby(true)`) faol qolib ketishi. Oqibatda ekrandagi suzuvchi AI Hub tugmasi (`MichiDrawerTrigger`) va headerdagi robot indikator o'chmay, foydalanuvchiga AIni o'chirish imkoniyati ishlamayotgandek tuyulishi.
+  2. Floating AI trigger tugmasi (`MichiDrawerTrigger`) shartsiz render qilinib, AI o'chirilganda ham ekrandan yo'qolmasligi.
+* **Yechim (MAJBURIY)**:
+  1. **Dual State Synchronized Deactivation**: AI toggle yoki o'chirish tugmasi (`handleVoiceToggle` / `onDeactivateAI`) bosilganda strictly ikkala state ham (`setIsVoiceActive(false)` VA `setIsVoiceStandby(false)`) bir vaqtda so'ndirilishi va `localStorage.setItem('michi_voice_standby', 'false')` ga yozilishi SHART.
+  2. **Conditional Trigger Rendering**: Suzuvchi AI tugmasi strictly `{(isVoiceStandby || isVoiceActive) && <MichiDrawerTrigger />}` sharti ostida render qilinishi va AI o'chirilganda ekrandan to'liq yo'qolishi SHART.
+  3. **Multi-Entry Deactivation Controls**: AI Hub side-drawer sarlavhasida (`MichiSideDrawer.jsx`) har doim qizil `Power` o'chirish tugmasi hamda header `RobotAvatar` elementida `isVoiceActive || isVoiceStandby` birlashgan holat barcha 8 ta tillarda xatosiz aks ettirilishi majburiydir.
+
 
 
 
