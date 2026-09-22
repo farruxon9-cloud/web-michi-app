@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import { Sun, Moon, FileText, Bell } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Splash from './components/Splash';
