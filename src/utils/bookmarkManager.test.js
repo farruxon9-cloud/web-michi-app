@@ -11,7 +11,11 @@ const localStorageMock = (() => {
     removeItem: (key) => { delete store[key]; }
   };
 })();
-globalThis.localStorage = localStorageMock;
+Object.defineProperty(globalThis, 'localStorage', {
+  value: localStorageMock,
+  writable: true,
+  configurable: true
+});
 
 describe('Bookmark Manager Tests', () => {
   beforeEach(() => {

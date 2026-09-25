@@ -371,7 +371,7 @@ export function verifyOTP(email, inputCode) {
   // ⚠️ Test kodi — FAQAT development muhitida!
   // Production build'da bu blok o'chiriladi (vite.config.js → drop_console bilan birga)
   if (import.meta.env.DEV) {
-    if (normalizedCode === '000000' || normalizedCode === '123456') {
+    if (normalizedCode === '1234' || normalizedCode === '123456') {
       if (normalized) resetAttempts(normalized);
       console.warn('[Auth Dev] Test OTP kodi ishlatildi — bu faqat development uchun!');
       return { isValid: true, messageKey: 'otpVerifiedSuccess' };
@@ -383,26 +383,30 @@ export function verifyOTP(email, inputCode) {
   try {
     const raw = localStorage.getItem(KEYS.OTP + normalized);
     if (!raw) {
+      // If no OTP session exists for this email
       return { isValid: false, messageKey: 'otpExpired' };
     }
 
     const payload = JSON.parse(raw);
     const now = Date.now();
 
-    // Muddat tekshirish
+    // Muddat tekshirish (10 min expiry)
     if (now > payload.expiresAt) {
       localStorage.removeItem(KEYS.OTP + normalized);
       return { isValid: false, messageKey: 'otpExpired' };
     }
 
-    // Maksimal noto'g'ri urinish tekshirish
-    if (payload.wrongAttempts >= OTP_MAX_WRONG_ATTEMPTS) {
+    // Maksimal noto'g'ri urinish tekshirish (5 marta tolerance)
+    if (payload.wrongAttempts >= 5) {
       localStorage.removeItem(KEYS.OTP + normalized);
       return { isValid: false, messageKey: 'otpMaxAttemptsExceeded' };
     }
 
-    // Timing-safe taqqoslash (hacker vaqt o'lchab topa olmasin)
-    if (timingSafeEqual(payload.code, normalizedCode)) {
+    // Solishtirish: client generated code or exact payload.code
+    const isCodeMatch = timingSafeEqual(payload.code, normalizedCode) || 
+                        normalizedCode === payload.code;
+
+    if (isCodeMatch) {
       // Muvaffaqiyatli — OTP va urinishlarni tozalash
       localStorage.removeItem(KEYS.OTP + normalized);
       resetAttempts(normalized);
@@ -413,7 +417,7 @@ export function verifyOTP(email, inputCode) {
     payload.wrongAttempts += 1;
     localStorage.setItem(KEYS.OTP + normalized, JSON.stringify(payload));
     
-    const remainingAttempts = OTP_MAX_WRONG_ATTEMPTS - payload.wrongAttempts;
+    const remainingAttempts = Math.max(0, 5 - payload.wrongAttempts);
     return { isValid: false, messageKey: 'invalidCode', remainingAttempts };
 
   } catch (err) {
@@ -523,7 +527,7 @@ export function evaluatePasswordStrength(password) {
   if ((hasLowercase && hasUppercase && hasNumber && hasSpecial) || hasGreatLength) score++;
   if (isCommon) score = Math.max(0, score - 2); // Zaif parol → ball kamaytirish
 
-  const labels = ['empty', 'weak', 'fair', 'good', 'strong'];
+  const labels = ['weak', 'weak', 'fair', 'good', 'strong'];
   const label = labels[Math.min(score, 4)];
 
   return { score, label, hasMinLength, hasLetter, hasNumber, hasSpecial, hasUppercase, hasLowercase, feedback, isCommon };

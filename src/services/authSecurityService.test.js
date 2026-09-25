@@ -92,7 +92,11 @@ describe('authSecurityService', () => {
     it('should generate valid math captcha challenge', () => {
       const captcha = generateCaptcha();
       expect(captcha.question).toContain('?');
-      expect(captcha.num1 + captcha.num2).toBe(captcha.expectedAnswer);
+      if (captcha.op === '+') {
+        expect(captcha.num1 + captcha.num2).toBe(captcha.expectedAnswer);
+      } else {
+        expect(captcha.num1 - captcha.num2).toBe(captcha.expectedAnswer);
+      }
     });
   });
 });

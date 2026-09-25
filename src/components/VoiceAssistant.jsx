@@ -190,6 +190,9 @@ export default function VoiceAssistant({
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
 
+  const isChatActiveRef = useRef(false);
+  isChatActiveRef.current = isActive || isSideDrawerOpen;
+
   const isVoiceStandbyRef = useRef(isVoiceStandby);
   isVoiceStandbyRef.current = isVoiceStandby;
 
@@ -1205,9 +1208,9 @@ export default function VoiceAssistant({
 
     const modelsToTry = [
       'gemini-2.5-flash',
-      'gemini-2.0-flash',
-      'gemini-1.5-pro',
-      'gemini-1.5-flash',
+      'gemini-2.0-flash-exp',
+      'gemini-1.5-flash-latest',
+      'gemini-1.5-pro-latest',
       'gemini-flash-latest'
     ];
 
@@ -1331,7 +1334,7 @@ CURRENT USER PROFILE:
   };
 
   const processTextWithGemini = async (text) => {
-    if (!isActiveRef.current) return;
+    if (!isChatActiveRef.current) return;
     
     // Cancel any running auto-dismiss timers and typewriter intervals immediately
     if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
@@ -1467,13 +1470,12 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
     try {
       const coreAnswer = await askMichiCore(text, (chunkText) => {
-        if (!isActiveRef.current) return;
         setErrorMessage(''); // Clear error message as soon as streaming chunk arrives
         setStatus('speaking'); // Hide "思考中..." indicator as soon as first chunk arrives
         setAiResponseText(chunkText);
         setDisplayedAiText(chunkText);
       });
-      if (!isActiveRef.current) return;
+      if (!isChatActiveRef.current) return;
 
       const activeAns = coreAnswer || aiResponseTextRef.current;
       if (activeAns && activeAns.trim().length > 0) {
@@ -1488,8 +1490,8 @@ Return ONLY the raw JSON object, no markdown wrappers.
         return;
       }
     } catch (error) {
-      if (!isActiveRef.current) return;
-      console.error("[Michi Core Error]:", error);
+      if (!isChatActiveRef.current) return;
+      console.warn("[Michi Core Error / ZeroGPU Limit]:", error?.message || error);
 
       // If stream chunks were already received in aiResponseTextRef, treat as success!
       if (aiResponseTextRef.current && aiResponseTextRef.current.trim().length > 0) {
@@ -1505,6 +1507,33 @@ Return ONLY the raw JSON object, no markdown wrappers.
         }, text);
         return;
       }
+
+      // Tier 2 Fallback: Multi-AI Mesh Engine & Gemini Pool (Zero-Downtime Resilience)
+      try {
+        console.log("[VoiceAssistant] 🚀 Falling back to Multi-AI Mesh Engine for:", text);
+        const meshResult = await multiAiMeshEngine.processCascadingQuery(text, userLang);
+        if (meshResult && meshResult.text && !meshResult.text.includes('一時的に途絶えました')) {
+          setErrorMessage('');
+          handleGeminiSuccess({
+            userTranscription: text,
+            command: 'NONE',
+            response: meshResult.text,
+            language: userLang
+          }, text);
+          return;
+        }
+
+        const geminiResData = await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext);
+        const rawText = geminiResData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const parsed = safeJsonParse(rawText, text);
+        if (parsed && (parsed.response || parsed.text)) {
+          setErrorMessage('');
+          handleGeminiSuccess(parsed, text);
+          return;
+        }
+      } catch (geminiErr) {
+        console.warn("[VoiceAssistant] Mesh Fallback Error:", geminiErr);
+      }
     }
 
     const errText = "サーバーとの通信が一時的に途絶えました。もう一度お試しください。";
@@ -1515,18 +1544,20 @@ Return ONLY the raw JSON object, no markdown wrappers.
     setIsFadeOut(false);
     setTimerDuration(6000);
     
-    // Persist error event into chat history
+    // Persist error event into chat history and React state
     try {
-      const savedHistory = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
-      savedHistory.push({
+      const errorEntry = {
         id: Date.now(),
         question: text,
         answer: errText,
         isError: true,
         command: 'ERROR',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
+      };
+      const savedHistory = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
+      savedHistory.push(errorEntry);
       localStorage.setItem('michi_chat_history', JSON.stringify(savedHistory.slice(-100)));
+      setChatHistoryList(prev => [...prev, errorEntry]);
     } catch(e){}
 
     if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);

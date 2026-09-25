@@ -171,11 +171,17 @@ When integrating or updating Hugging Face Space AI Brain endpoints in Michi App:
 - **Drawer Activation Lock**: If AI is off (`!isActive`), display an in-drawer "⚡ Michi AI-ni Yoqish" activation card inside the chat panel.
 - **Gesture Unlock Execution**: Clicking the activation button executes `unlockMobileAudio()` and `onStartVoice()` synchronously to unblock iOS Safari & Android WebKit audio context and enable STT/TTS capabilities.
 
-### 17. Live Real-Time Speech-to-Text Dictation into Input Form
-- **Live Text Population**: Inside Web Speech STT `onresult` handlers, populate live dictation transcript into text input state (`setDrawerInput(cleanedLive)`) alongside `setTranscript(cleanedLive)` so user spoken words stream into the text box in real-time before query dispatch.
+### 19. Chat-Only Mode Independence & Reactive Error State Propagation
+- **Dual Activation Ref**: Always evaluate AI data flow readiness against `isChatActiveRef` (`isActive || isSideDrawerOpen`). Never block text submission based solely on `isVoiceActive`.
+- **Unblocked Streaming Callbacks**: Never wrap live streaming chunk handlers (`onChunkUpdate`) in state guards that abort chunks if UI focus shifts during stream reception.
+- **Synchronized Error State**: Whenever an error occurs in the AI generation pipeline, persist the error object to both local storage AND React state (`setChatHistoryList`) so the error message renders reliably in the chat UI.
+- **Input Independence**: Text inputs (`MichiDictationInput`) and submit buttons must remain functional unconditionally whenever the drawer panel is open.
 
-### 18. Lucide-React SVG Iconography Invariants
-- **Icon Standard**: Replace raw emoji tags in quick action chips and action buttons with dedicated `lucide-react` SVG components (`Car`, `Compass`, `SunMedium`, `Mic`, `Send`, `Power`) for a consistent, premium aesthetic.
+### 20. Hugging Face Space Cold Start Auto-Retry & 45s Generation Timeout
+- **45s Generation Timeout**: Configure network fetch timeouts to 45 seconds (`45000ms`) to accommodate heavy Qwen-2.5-72B reasoning and autonomous web crawling.
+- **Cold Start Auto-Retry**: Always wrap `Client.connect` / `client.submit` calls in a 2-attempt loop (`maxAttempts = 2`) with a 1.5-second backoff delay between attempts to seamlessly wake up sleeping HF Space containers without exposing errors to the user.
+
+
 
 
 

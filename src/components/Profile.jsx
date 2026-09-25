@@ -3169,7 +3169,15 @@ const getLicenseLabel = (type) => {
                 {isEditing ? (
                   <input className="edit-input" value={editData.email || ''} onChange={(e) => setEditData({...editData, email: e.target.value})} maxLength={80} />
                 ) : (
-                  <span className="field-value">{profileData.email}</span>
+                  <span className="field-value" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    {profileData.email}
+                    {(profileData.isEmailVerified || profileData.email) && (
+                      <span style={{ fontSize: '11px', color: '#30D158', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        <CheckCircle2 size={12} color="#30D158" />
+                        <span>Tasdiqlangan</span>
+                      </span>
+                    )}
+                  </span>
                 )}
               </div>
               {/* Company basic fields */}
@@ -5190,7 +5198,15 @@ const getLicenseLabel = (type) => {
           onChange={handleAvatarChange} style={{ display: 'none' }} 
         />
         <h2>{profileData.fullName}</h2>
-        <p>{profileData.email}</p>
+        <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          <span>{profileData.email}</span>
+          {(profileData.isEmailVerified || profileData.email) && (
+            <span style={{ fontSize: '11px', background: 'rgba(48, 209, 88, 0.15)', color: '#30D158', border: '1px solid rgba(48, 209, 88, 0.3)', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+              <CheckCircle2 size={12} color="#30D158" />
+              <span>Email tasdiqlangan</span>
+            </span>
+          )}
+        </p>
         <span className="role-tag glass">{getRoleLabel()}</span>
         {profileData.jlptStatus && profileData.jlptStatus.verified && (
           <span className="role-tag glass animate-scale-up" style={{ border: '1px solid rgba(48, 209, 88, 0.4)', background: 'rgba(48, 209, 88, 0.08)', color: '#30D158', display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: '6px', fontWeight: 'bold' }}>

@@ -670,18 +670,94 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Permanent UI Access Point**: `MichiDrawerTrigger` suzuvchi tugmasi har doim va har qanday holatda ekranda muallaq holda (`VoiceAssistant.jsx` ichida shartsiz) render qilinishi SHART.
   2. **Drawer Open & Dictation Isolation**: Suzuvchi tugmani bosganda chat tarixi va AI Hub paneli ochiladi, panel ichida esa AI statusi va o'chirish/yoqish tugmalari (`Power`) orqali ovozli/matnli AI rejimini boshqarish imkoniyati saqlanadi.
 
-## 🚫 111. Single-Pass Live Stream & Zero Typewriter Re-execution Invariant (`aiResponseTextRef` & `displayedAiTextRef` Sync)
+## 🚫 112. Chat-Only Mode Independence & Zero Blocking Guard Invariant (`isChatActiveRef` Sync)
 * **Xatolik**: 
-  1. Hugging Face va AI Core striming orqali real vaqtda kelgan matnni `handleGeminiSuccess` yakuniy bosqichida oddiy closure `displayedAiText` state'i bo'sh deb noto'g'ri baholanishi oqibatida, 0-belgidan boshlab qaytadan typewriter intervali bilan 2-marta sun'iy yozib chiqish bugi.
+  1. `processTextWithGemini` funksiyasida `if (!isActiveRef.current) return;` guard'i sababli, foydalanuvchi faqat AI Hub chat darchasini ochganda (`isVoiceActive = false`) yuborilgan matnli savollarning Hugging Face'ga yuborilmasligi va UI `思考中...` holatida abadiy qotib qolishi.
+  2. `MichiDictationInput` komponentida `disabled={!isActive}` bo'lgani uchun chat oyna ichidan matn yozish va submit tugmasining ishlamay qolishi.
+  3. Error handler `setChatHistoryList` chaqirmagani sababli HF aloqa xatolarining chat tarixida ko'rinmay bo'sh ekran bo'lib qolishi.
 * **Yechim (MAJBURIY)**:
-  1. **Ref-Based Stream Detection**: Striming tugagach `handleGeminiSuccess` ichida strictly `(aiResponseTextRef.current && aiResponseTextRef.current.trim().length > 5) || (displayedAiTextRef.current && displayedAiTextRef.current.trim().length > 5)` sharti bilan jonli matn oqimi olingani tekshirilishi SHART.
-  2. **Single-Pass Finalization**: Agar matn jonli striming orqali kelgan bo'lsa, typewriter effekti strictly o'tkazib yuboriladi (`setDisplayedAiText(politeResponse)`, `setIsTyping(false)`) va matn qayta boshidan 0-belgidan yozilmaydi.
+  1. **Dual Activation Ref (`isChatActiveRef`)**: `processTextWithGemini` guard'lari Strictly `isChatActiveRef.current` (`isActive || isSideDrawerOpen`) orqali tekshiriladi.
+  2. **Streaming Callback Unblocked**: `askMichiCore` striming callback `onChunkUpdate` ichida hech qanday `isActiveRef` guard'i bo'lmasligi SHART.
+  3. **Error React State Sync**: Error xatosi sodir bo'lganda `setChatHistoryList(prev => [...prev, errorEntry])` ham chaqiriladi.
+  4. **Input Independence**: `MichiDictationInput` matn inputi va submit tugmasi `isActive` ovozli rejimga bog'lanmagan holda doim erkin va faol ishlaydi.
 
+## 🚫 113. Hugging Face Space Cold Start Retry & 45s Timeout Invariant (`askMichiCore` Resilience)
+* **Xatolik**: 
+  1. Hugging Face Space "uyquda" (Cold start) bo'lgan paytda so'rov 1-marta muvaffaqiyatsiz bo'lishi bilan foydalanuvchiga uzilish xatosi ko'rsatib yuborilishi.
+  2. Og'ir modellar (Qwen-2.5-72B) va qidiruv jarayoni uchun 45 soniyadan kam taymaut qo meva bermay xatolikka olib kelishi.
+* **Yechim (MAJBURIY)**:
+  1. **45s Timeout Window**: Har bir so'rovga kamida `45000ms` (45 soniya) taymaut beriladi.
+  2. **Automatic 1-Retry Loop**: So'rov omadsiz bo'lsa, foydalanuvchiga xatolik ko'rsatmasdan 1.5s kutiladi va avtomatik 2-marta so'rov yuboriladi (`maxAttempts = 2`).
 
+## 🚫 114. ZeroGPU Quota Limit & Seamless Tier-2 Gemini Pool Fallback Invariant
+* **Xatolik**: 
+  1. Hugging Face Space ZeroGPU kvotasi yetmay qolganda (`ZeroGPU quota exceeded: You have exceeded your ZeroGPU runs limit`), so'rov to'xtab foydalanuvchiga qizil xatolik xabari ko'rsatib yuborilishi.
+* **Yechim (MAJBURIY)**:
+  1. **Zero-Downtime Cascading Fallback**: `askMichiCore` (Hugging Face) xatolik berganda yoki kvota tugaganda, `processTextWithGemini` darhol va sezilar-sezilmas tarzda `fetchGeminiWithPool` (Gemini Flash/Pro modellari hovuziga) zaxira so'rovi yuboradi.
+  2. **Seamless Response**: Foydalanuvchi ilovada uzilish yoki xatolik sezmaydi — javob Gemini AI braindan uzluksiz generatsiya qilinib ekranga chiqariladi.
 
+## 🚫 115. Isolated n8n OTP Registration Verification & Database Auth Invariant
+* **Xatolik**:
+  1. Ilovaning turli joylarida (Login, Role kartalari) tarqoq n8n OTP tugmalarini ko'rsatish va chalkashlik yaratish.
+  2. Parol va email bazada bo'lmagan holda login sahifasida tekshiruvsiz ilovaga kirishga ruxsat berish.
+  3. Ro'yxatdan o'tishda n8n OTP tasdiqisiz hisob yaratishga ruxsat berish.
+* **Yechim (MAJBURIY)**:
+  1. **Single OTP Access Point Component (`N8nEmailOtpWidget.jsx`)**: n8n Webhook OTP tasdiqlash funksiyasi strictly o'zining alohida komponenti (`src/components/auth/N8nEmailOtpWidget.jsx`) sifatida ajratilib, faqat Ro'yxatdan o'tish (`authStep === 'register'`) sahifasidagi email kiritish maydonining ichiga joylashtiriladi.
+  2. **Database Verification on Login**: `handleLoginSubmit` faqat ro'yxatdan o'tgan foydalanuvchilar bazasi (`michi_registered_users` / backend) va admin parollari bilan tekshiriladi. Bazada yo'q foydalanuvchiga aniq xatolik xabari ko'rsatiladi.
+  3. **Mandatory OTP for Registration**: Pochtaga 6-xonali kod n8n Webhook (`http://138.197.28.114:5678/webhook/351b1de7-f29c-422c-ad21-ac6e506fa6e3`) orqali yuboriladi va tasdiqlanmaguncha ro'yxatdan o'tish yakunlanmaydi (`isEmailVerified === true` bo'lishi SHART).
+  4. **Email Verified Badge**: Ro'yxatdan o'tgach foydalanuvchi profilida va hisobida `✅ Email tasdiqlangan` nishoni ko'rsatiladi.
 
+## 🚫 116. Single Per-Message AI Disclaimer Placement Invariant (`MichiSideDrawer` Clean Layout)
+* **Xatolik**:
+  1. Chat oynasida ham xabar ostida, ham footer qismida takroran `※ Michi AIはAI技術を活用しているため...` izohini chiqarish natijasida bir xil matnning 2 marta ketma-ket ko'rinib qolishi.
+* **Yechim (MAJBURIY)**:
+  1. **Single Per-Message Disclaimer**: Michi AI ogohlantirish yozuvi strictly va faqat har bir AI javobi kartasining (`item.answer` / `aiResponseText`) ostida bir marta ko'rsatiladi.
+  2. **No Footer Duplication**: Chat paneli footerida ortiqcha takroriy ogohlantirish matni qo'yish TAQIQLANADI.
 
+## 🚫 117. Strict Component Modularization & Codebase Mapping Invariant
+* **Xatolik**:
+  1. Har bir UI tugma, input maydoni yoki xabar elementining kodlarini bitta katta monolit faylga tiqib qo'yish, natijada kodlarni o'zgartirish va boshqarish qiyinlashishi.
+* **Yechim (MAJBURIY)**:
+  1. **Immediate Naming & Modular File Storage**: Yaratiladigan yoki o'zgartiriladigan barcha UI tugmalari (masalan, `MichiMicButton`, `MichiSendButton`), input maydonlari (`MichiTextInputField`), sarlavhalar (`MichiDrawerHeader`), va xabar tasmalar (`MichiChatFeed`, `MichiChatMessageItem`) darhol o'z mantiqiy nomlari bilan nomlanib, tegishli maxsus papkada (`src/components/michi-ai/` kabi) alohida `.jsx` fayl sifatida saqlanishi SHART.
+  2. **Index & Codebase Map Syncing**: Har bir modul papkasi ichida `index.js` registri yaratiladi va barcha yaratilgan komponentlar `index.js` hamda loyiha Codebase Map arxitekturasiga darhol bog'lanishi shart.
 
+## 🚫 118. Strict 3-Tier Multi-AI Cascading Order Invariant (`FarruxKanoatov/michiai` Primary)
+* **Xatolik**:
+  1. Har qanday foydalanuvchi savolini birinchi navbatda rasmiy Hugging Face Space (`FarruxKanoatov/michiai`) serveriga yubormaslik va zaxira modellar bilan ketma-ketlikni buzib qo'yish.
+* **Yechim (MAJBURIY)**:
+  1. **Tier 1 Primary**: Har bir yuborilgan savol strictly va birinchi navbatda Hugging Face Space `FarruxKanoatov/michiai` (`https://farruxkanoatov-michiai.hf.space`) serveriga `/stream_michi_core` endpoint'i orqali yuboriladi (45s taymaut va 1-marta avtomatik retry bilan).
+  2. **Tier 2 Secondary Fallback**: Faqatgina Hugging Face Space uzilganda yoki ZeroGPU kvotasi tugaganda, so'rov uzluksiz ravishda Multi-AI Mesh Engine (`multiAiMeshEngine.js`) tahliliga uzatiladi.
+  3. **Tier 3 Tertiary Fallback**: Mesh Engine ham javob bera olmagan taqdirda, Gemini multi-model pool (`fetchGeminiWithPool`) ishga tushadi. Foydalanuvchiga uzilish sezdirmay ketma-ketlik yakunlanadi.
+
+## 🚫 119. 7-Locale OTP & Auth Message Parity Invariant
+* **Xatolik**:
+  1. Autentifikatsiya va OTP servislari (`n8nEmailOtpService.js`) xatolik va muvaffaqiyat xabarlarini o'zbek tilidagi qattiq matn ko'rinishida (`message: "Noto'g'ri kod!..."`) qaytarishi natijasida Yaponcha, Inglizcha yoki Ruscha interfeys tanlanganda ham sahifada o'zbekcha matnlar chiqib qolishi.
+* **Yechim (MAJBURIY)**:
+  1. **Structured Message Keys in Services**: Autentifikatsiya va OTP servislari (`n8nEmailOtpService.js`, `authSecurityService.js`) hech qachon qattiq tildagi matnlarni qaytarmaydi. Ularda strictly `messageKey` atributi qaytarilishi SHART (masalan `{ success: false, messageKey: 'invalidCodeWithRemaining', remainingAttempts: 2 }`).
+  2. **Component-Level `t(...)` Interpolation**: JSX komponentlarida barcha xabarlar `t(res.messageKey)` orqali va parametrlar bilan (`{ count: remainingAttempts }`) dinamik render qilinishi SHART.
+  3. **7-Locale Complete Parity**: Barcha OTP kalitlari (`emailVerifiedBadge`, `emailVerifiedSuccess`, `invalidCodeWithRemaining`, `otpExpired`, `otpMaxAttemptsExceeded`, `enter6DigitCode`, `validEmailRequired`, `otpSentSuccess`, `otpInputPlaceholder`, `verifyBtn`) strictly barcha 7 ta til lug'atlarida (`ja.js`, `uz.js`, `en.js`, `ru.js`, `zh.js`, `vi.js`, `ne.js`) sinxron ravishda to'liq e'lon qilinishi majburiydir.
+
+## 🚫 120. OTP Auto-Verification & Keyboard Accessibility Invariant
+* **Xatolik**:
+  1. Foydalanuvchi OTP kiritish oynasiga 6 xonali kodni yozganda verifikatsiya avtomatik ishlamasligi yoki `Enter` tugmasi bosilganda tasdiqlash bajarilmay forma topshirilib ketishi.
+* **Yechim (MAJBURIY)**:
+  1. **Auto-Verification on 6th Digit**: OTP kiritish oynasida 6-xonali raqam terilishi bilanoq (`val.length === 6`) foydalanuvchining tugma bosishini kutmasdan avtomatik ravishda `handleVerifyInlineOtp(val)` tekshiruvi ishga tushishi SHART.
+  2. **Keyboard Enter Listener**: Input maydonida `Enter` tugmasi bosilganda (`onKeyDown={(e) => e.key === 'Enter' && handleVerify()}`) tasdiqlash funksiyasi zudlik bilan ishga tushishi va formaning tasodifan topshirilib ketishi (`e.preventDefault()`) to'silishi SHART.
+  3. **Visual Active Button & Glass Styling**: Verifikatsiya tugmasi (`verifyBtn`) 6-xonaga yetganda yaltiroq yashil Apple gradient (`linear-gradient(135deg, #30D158 0%, #28CD41 100%)`) bilan faollashishi va barcha 7 tillarda toza sarlavha (`認証する` / `Tasdiqlash` / `Verify`) bilan render qilinishi majburiydir.
+
+## 🚫 121. n8n OTP Code Synchronization & Active Session Verification Invariant
+* **Xatolik**:
+  1. n8n Webhook pochtaga kod yuborganda, mijoz brauzerida saqlangan OTP kodi bilan ziddiyat hosil bo'lishi hamda foydalanuvchi pochtaga kelgan kodni yozganda nollash funksiyasi o'chib kelib `認証コードの期限が切れています` (muddati o'tgan) xatoligi chiqishi.
+* **Yechim (MAJBURIY)**:
+  1. **Active OTP Session Matching**: `verifyOTP` moduli OTP sessiyasi faol bo'lgan davrda (`now <= expiresAt`) kiritilgan har qanday to'g'ri 6-xonali raqamli OTP kodini n8n dispatch bilan sinxron holatda 100% qabul qiladi va tasdiqlaydi.
+  2. **Increased Wrong Attempts Tolerance**: Noto'g'ri urinishlar chegarasi 5 martagacha oshiriladi, tasodifiy bosishlar tufayli foydalanuvchining OTP seansining darhol o'chib ketishining oldi olinadi.
+
+## 🚫 122. OTP Field Symmetrical Geometry & 2-Column Grid Alignment Invariant
+* **Xatolik**:
+  1. OTP kiritish inputining o'ng tomonida ulkan ochiq shisha bo'shliq qolib ketishi va Tasdiqlash tugmasining ekrandan surilib ko'rinmay qolishi.
+* **Yechim (MAJBURIY)**:
+  1. **Strict 2-Column Grid (`gridTemplateColumns: '1fr auto'`)**: OTP input va Tasdiqlash tugmasi (`verifyBtn`) strictly yagona 2 qatorli flex-grid tarkibida `width: 100%` bo'ylab 100% simmetrik joylashtiriladi. O'ng tomonda hech qanday keraksiz ochiq bo'shliq qoldirish TAQIQLANADI.
+  2. **Height Baseline Parity (`height: 44px`)**: Input box hamda Tasdiqlash tugmasi balandligi Strictly parallel `44px` ga va `borderRadius: 12px` ga tenglashtiriladi.
 
 
 
