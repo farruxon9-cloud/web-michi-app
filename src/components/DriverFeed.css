@@ -1509,3 +1509,14 @@ html.dark-mode .chip-svg-icon {
   min-height: 156px;
 }
 
+/* ====== DESKTOP 768PX+ COMPACT CONTAINER BOUNDS ====== */
+@media (min-width: 768px) {
+  .feed-container,
+  .feed-header {
+    max-width: 820px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
