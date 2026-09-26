@@ -74,6 +74,8 @@ export default function ReferralModal({ isOpen, onConfirm, onCancel, jobTitle })
     >
       {/* Modal oynasi */}
       <div
+        role="dialog"
+        aria-modal="true"
         className="glass squircle"
         style={{
           maxWidth: '360px',

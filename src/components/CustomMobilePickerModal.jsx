@@ -67,10 +67,12 @@ export default function CustomMobilePickerModal({
       }}
     >
       <div 
+        role="dialog"
+        aria-modal="true"
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%',
-          maxWidth: '430px',
+          maxWidth: '500px',
           maxHeight: '80vh',
           background: 'var(--card-bg, #FFFFFF)',
           borderTopLeftRadius: '24px',

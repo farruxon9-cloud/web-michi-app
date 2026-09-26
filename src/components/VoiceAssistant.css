@@ -2407,3 +2407,22 @@ html.dark-mode .voice-drawer-mic-btn.on {
 .voice-drawer-mic-btn.listening:hover {
   transform: scale(1.04);
 }
+
+/* ====== DESKTOP 1200PX+ ULTRA WIDE MEDIA BREAKPOINT ====== */
+@media (min-width: 1200px) {
+  .voice-assistant-overlay {
+    max-width: 1000px;
+    margin: 0 auto;
+    border-radius: 28px;
+  }
+
+  .voice-chat-feed {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .voice-input-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+}

@@ -212,12 +212,12 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
 
   return (
     <div className="email-otp-modal-overlay" onClick={onClose}>
-      <div className="email-otp-modal-container animate-slide-up" onClick={(e) => e.stopPropagation()}>
+      <div role="dialog" aria-modal="true" className="email-otp-modal-container animate-slide-up" onClick={(e) => e.stopPropagation()}>
         {/* Header Bar */}
         <div className="email-otp-modal-header">
           <div className="header-brand-box">
             <div className="brand-logo-glow">
-              <Sparkles size={18} color="#FFF" />
+              <Sparkles size={18} color="#FFF" aria-hidden="true" />
             </div>
             <div>
               <h3 className="brand-title">Michi Auth</h3>
@@ -232,7 +232,7 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
           </div>
 
           <button className="modal-close-btn" onClick={onClose} aria-label="Close">
-            <X size={18} />
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
 

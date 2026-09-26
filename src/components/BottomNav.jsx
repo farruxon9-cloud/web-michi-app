@@ -158,7 +158,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
             }}
           >
             <div className={`nav-icon-wrap ${item.isSpecial ? 'special-icon-wrap' : ''}`}>
-              <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+              <Icon size={24} strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
               {showBadge && (
                 <span className="nav-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
               )}
