@@ -759,6 +759,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Strict Compact Max-Width (`max-width: 820px`)**: Barcha sahifalar hamda asosiy layout konteynerlari `@media (min-width: 768px)` desktop va noutbuk ekranlarida strictly `max-width: 820px; margin: 0 auto;` o'lchamiga va ekranning o'rtasiga mukammal tekislanadi.
   2. **Zero Horizontal Stretching**: Bento gridlar, e'lon kartochkalari, qidiruv paneli, va tafsilot bloklari keraksiz yon tomonga cho'zilmasdan, strictly compact `820px` konteyner ichida zich, mukammal va vizual tarzda ko'rkam bo'lishi shart.
 
+## 🚫 124. Bottom Dock Navigation Zero-Gap & Content Clearance Invariant
+* **Xatolik**:
+  1. Pastki menyuga (`.bottom-nav`) `position: sticky; margin-top: auto;` atributlari berilganda, u DOM hujjat oqimida o'ziga joy ajratib, sahifa oxirida ulkan xunuk va keraksiz sun'iy ochiq bo'shliq (gap) paydo qilishi va layoutni buzib yuborishi.
+* **Yechim (MAJBURIY)**:
+  1. **Absolute Floating Overlay Dock**: Pastki navigatsiya menyusi (`.bottom-nav`) strictly layout ustida suzib turuvchi **`position: absolute; bottom: 12px; z-index: 400;`** atributi bilan qotiriladi. U hech qachon DOM flex-oqimiga ta'sir o'tkazib sun'iy ochiq bo'shliq hosil qilmasligi SHART.
+  2. **Immutable Bottom Clearance Padding (`padding-bottom: 96px`)**: Barcha scroll bo'ladigan sahifa konteynerlari (`.feed-container`, `.dashboard-container`, `.profile-container`, `.academy-container`, `.job-detail-container`) strictly pastdan **`padding-bottom: 96px`** zaxira masofasini saqlaydi. Natijada eng so'nggi kartochka pastgacha scroll qilinganda dok menyuning tepasida 12px silliq va o'zgarmas masofa bilan toza turadi.
+
+
 
 
 
