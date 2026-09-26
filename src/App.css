@@ -15,9 +15,12 @@
   padding: 0 20px;
   box-sizing: border-box;
   background: var(--bg-color);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-  position: relative;
-  z-index: 300;
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid var(--glass-border);
+  position: sticky !important;
+  top: 0;
+  z-index: 500;
   flex-shrink: 0;
 }
 
