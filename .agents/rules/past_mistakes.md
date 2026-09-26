@@ -752,12 +752,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Active OTP Session Matching**: `verifyOTP` moduli OTP sessiyasi faol bo'lgan davrda (`now <= expiresAt`) kiritilgan har qanday to'g'ri 6-xonali raqamli OTP kodini n8n dispatch bilan sinxron holatda 100% qabul qiladi va tasdiqlaydi.
   2. **Increased Wrong Attempts Tolerance**: Noto'g'ri urinishlar chegarasi 5 martagacha oshiriladi, tasodifiy bosishlar tufayli foydalanuvchining OTP seansining darhol o'chib ketishining oldi olinadi.
 
-## 🚫 122. OTP Field Symmetrical Geometry & 2-Column Grid Alignment Invariant
+## 🚫 123. Desktop Responsive Layout Compact Max-Width Container Invariant
 * **Xatolik**:
-  1. OTP kiritish inputining o'ng tomonida ulkan ochiq shisha bo'shliq qolib ketishi va Tasdiqlash tugmasining ekrandan surilib ko'rinmay qolishi.
+  1. Desktop hamda noutbuk ekranlarida ilova konteynerlari (`#root`, `.app-layout`, `.dashboard-container`, `.feed-container`, `.job-detail-container`, `.profile-container`, `.academy-container`) o'ta keng (1200px va undan ortiq) yon tomonga cho'zilib ketishi natijasida Bento kartochkalar va e'lonlar siyrak hamda inglizcha/o'zbekcha/yaponcha matnlar cho'zilib unchalik kelishmagan ko'rinish berishi.
 * **Yechim (MAJBURIY)**:
-  1. **Strict 2-Column Grid (`gridTemplateColumns: '1fr auto'`)**: OTP input va Tasdiqlash tugmasi (`verifyBtn`) strictly yagona 2 qatorli flex-grid tarkibida `width: 100%` bo'ylab 100% simmetrik joylashtiriladi. O'ng tomonda hech qanday keraksiz ochiq bo'shliq qoldirish TAQIQLANADI.
-  2. **Height Baseline Parity (`height: 44px`)**: Input box hamda Tasdiqlash tugmasi balandligi Strictly parallel `44px` ga va `borderRadius: 12px` ga tenglashtiriladi.
+  1. **Strict Compact Max-Width (`max-width: 820px`)**: Barcha sahifalar hamda asosiy layout konteynerlari `@media (min-width: 768px)` desktop va noutbuk ekranlarida strictly `max-width: 820px; margin: 0 auto;` o'lchamiga va ekranning o'rtasiga mukammal tekislanadi.
+  2. **Zero Horizontal Stretching**: Bento gridlar, e'lon kartochkalari, qidiruv paneli, va tafsilot bloklari keraksiz yon tomonga cho'zilmasdan, strictly compact `820px` konteyner ichida zich, mukammal va vizual tarzda ko'rkam bo'lishi shart.
+
 
 
 
