@@ -3638,8 +3638,8 @@ const getLicenseLabel = (type) => {
                 </div>
               )}
         </div>
-        {/* 96px dock clearance spacer yielding exact 12px visual gap above 84px BottomNav top edge */}
-        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 12px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
