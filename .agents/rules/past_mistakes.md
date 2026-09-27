@@ -794,7 +794,12 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **Top-Scroll on Sub-Page Open**: Sub-sahifaga kirilganda (`handleOpenSubPage`) `.main-content`, `.profile-container` hamda `window` skroll pozitsiyasi darhol majburiy `0` ga (`scrollTop = 0`) o'tkaziladi.
   2. **Saved Click Position Restoration**: Sub-sahifa menyusi bosilgan lahzada `.main-content` yoki `window.scrollY` o'lchovlaridan foydalanib exact piksel `savedMainScroll` saqlanadi va ortga qaytishda (`handleBackToMain`) 100% aniqlikda o'sha joyga qaytariladi.
-  3. **Standardized Back Handler**: Barcha sub-sahifa ortga qaytish tugmalari strictly `handleBackToMain` funksiyasidan foydalanishi SHART.
+## 🚫 131. All Profile Sub-Pages Exact 12px Clearance Spacer Invariant
+* **Xatolik**:
+  1. `Profile.jsx` ning `applications` (受信した応募), `my_shoukai` (紹介経由の応募), `employees` (従業員 HR), `notifications` (通知), `settings` (設定), `saved_items` (保存した求人), `myAds` (E'lon berish), `personalInfo` (`会社情報`) kabi sub-sahifalarida eski `96px` spacer div saqlanib qolishi oqibatida pastki menyu ustida keraksiz ulkan bo'shliq hosil bo'lishi.
+* **Yechim (MAJBURIY)**:
+  1. **Universal Sub-Page 12px Spacer**: Barcha profil sub-sahifalarida trailing spacer div balandligi strictly **`12px`** (`<div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />`) bo'lishi SHART.
+  2. **Exact 12px Visual Gap**: Barcha sub-sahifalarning oxirgi konteyneri suzib turuvchi `BottomNav` panelidan roppa-rosa 12 px vizual masofada scroll bo'lmasdan toza to'xtaydi.
 
 
 
