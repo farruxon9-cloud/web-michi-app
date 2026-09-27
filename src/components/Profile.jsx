@@ -230,16 +230,18 @@ export default function Profile({
   const [notifTab, setNotifTab] = useState('all'); // 'all' | 'unread' | 'interview' | 'shoukai' | 'all'
 
   const handleOpenSubPage = (page) => {
-    const container = document.querySelector('.main-content') || mainContainerRef.current || document.querySelector('.profile-container');
-    if (container) {
-      setSavedMainScroll(container.scrollTop);
-    }
+    const mainContent = document.querySelector('.main-content');
+    const profileContainer = mainContainerRef.current || document.querySelector('.profile-container');
+    const currentScroll = (mainContent && mainContent.scrollTop > 0)
+      ? mainContent.scrollTop
+      : ((profileContainer && profileContainer.scrollTop > 0) ? profileContainer.scrollTop : (window.scrollY || 0));
+
+    setSavedMainScroll(currentScroll);
     setActivePage(page);
     
     // Force immediate scroll to top on opening sub-page
     const resetScroll = () => {
       if (typeof window !== 'undefined') window.scrollTo(0, 0);
-      const mainContent = document.querySelector('.main-content');
       if (mainContent) mainContent.scrollTop = 0;
       const containers = document.querySelectorAll('.profile-container');
       containers.forEach(c => { c.scrollTop = 0; });
@@ -253,6 +255,8 @@ export default function Profile({
   };
 
   const handleBackToMain = () => {
+    if (typeof setIsEditing === 'function') setIsEditing(false);
+    if (typeof setIsEditingVehicle === 'function') setIsEditingVehicle(false);
     setActivePage('main');
   };
 
@@ -264,15 +268,18 @@ export default function Profile({
     if (activePage === 'main') {
       if (savedMainScroll > 0) {
         let attempts = 0;
-        const maxAttempts = 15;
+        const maxAttempts = 20;
         const restoreScroll = () => {
-          const container = document.querySelector('.main-content') || mainContainerRef.current || document.querySelector('.profile-container');
-          if (container) {
-            container.scrollTop = savedMainScroll;
-            if (container.scrollTop < savedMainScroll && attempts < maxAttempts) {
-              attempts++;
-              setTimeout(restoreScroll, 30);
-            }
+          const mainContent = document.querySelector('.main-content');
+          const profileContainer = mainContainerRef.current || document.querySelector('.profile-container');
+          
+          if (mainContent) mainContent.scrollTop = savedMainScroll;
+          if (profileContainer) profileContainer.scrollTop = savedMainScroll;
+          if (typeof window !== 'undefined') window.scrollTo(0, savedMainScroll);
+
+          attempts++;
+          if (attempts < maxAttempts) {
+            setTimeout(restoreScroll, 30);
           }
         };
 
@@ -2851,7 +2858,7 @@ const getLicenseLabel = (type) => {
     return (
       <div className="profile-container sub-page-view fade-in">
         <div className="profile-sticky-back">
-          <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+          <button className="icon-btn glass" onClick={handleBackToMain}><ArrowLeft size={20} /></button>
         </div>
         <div className="about-glow-container about-page-wrapper" style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px 14px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           
@@ -3142,7 +3149,7 @@ const getLicenseLabel = (type) => {
     return (
       <div className="profile-container sub-page-view fade-in">
         <div className="profile-sticky-back">
-          <button className="icon-btn glass" onClick={() => { setActivePage('main'); setIsEditing(false); }}>
+          <button className="icon-btn glass" onClick={handleBackToMain}>
             <ArrowLeft size={20} />
           </button>
         </div>
@@ -4245,7 +4252,7 @@ const getLicenseLabel = (type) => {
       <div className="profile-container sub-page-view fade-in">
         <div className="profile-sticky-back">
           {/* Ortga qaytish: Profil bosh sahifasiga ('main') qaytaradi */}
-          <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+          <button className="icon-btn glass" onClick={handleBackToMain}><ArrowLeft size={20} /></button>
         </div>
         <div className="sub-page-header" style={{ paddingTop: '61px', paddingBottom: '5px' }}>
           <h2>
@@ -4337,7 +4344,7 @@ const getLicenseLabel = (type) => {
       return (
         <div className="profile-container sub-page-view fade-in">
           <div className="profile-sticky-back">
-            <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+            <button className="icon-btn glass" onClick={handleBackToMain}><ArrowLeft size={20} /></button>
           </div>
           
           <div className="sub-page-header" style={{ paddingTop: '61px', paddingBottom: '5px' }}>
@@ -4792,7 +4799,7 @@ const getLicenseLabel = (type) => {
     return (
       <div className="profile-container sub-page-view fade-in">
         <div className="profile-sticky-back">
-          <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+          <button className="icon-btn glass" onClick={handleBackToMain}><ArrowLeft size={20} /></button>
         </div>
         <div className="sub-page-header" style={{ paddingTop: '61px', paddingBottom: '5px' }}>
           <h2>
@@ -4869,7 +4876,7 @@ const getLicenseLabel = (type) => {
     return (
       <div className="profile-container sub-page-view fade-in">
         <div className="profile-sticky-back">
-          <button className="icon-btn glass" onClick={() => setActivePage('main')}><ArrowLeft size={20} /></button>
+          <button className="icon-btn glass" onClick={handleBackToMain}><ArrowLeft size={20} /></button>
         </div>
         <div className="sub-page-header" style={{ paddingTop: '61px', paddingBottom: '5px' }}>
           <h2>
