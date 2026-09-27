@@ -83,6 +83,9 @@
 23. **Selective Page Clearance Spacer Invariant (Rule 23)**:
     - Feeds, Academy, Dashboard, and CompanyHome MUST use an exact 8px trailing clearance spacer (`<div style={{ height: '8px', minHeight: '8px' }} />`).
     - Profile Main and all Profile sub-pages MUST retain an exact 12px trailing clearance spacer (`<div style={{ height: '12px', minHeight: '12px' }} />`).
+24. **Floating Search CTA Button Squircle & Minimalist Glow Invariant (Rule 24)**:
+    - Floating search CTA buttons (`.townwork-btn-search-cta`) MUST use `border-radius: 20px` to match container squircle aesthetics, `box-shadow: 0 4px 16px rgba(10, 132, 255, 0.2)` for a subtle minimalist glow, and strict 1:1 vertical margin alignment (`left: 14px; width: calc(100% - 28px)` / desktop `.floating-search-cta-dock` `max-width: 792px`).
+
 
 
 

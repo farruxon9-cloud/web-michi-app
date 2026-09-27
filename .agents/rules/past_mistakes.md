@@ -779,12 +779,14 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **Capacitor Prefs Permission Grant**: Zarurat tug'ilganda `/Users/kanoatovfarrux/Library/Preferences/capacitor` katalogiga `mkdir -p` hamda `chmod -R 755` buyrug'i orqali yozish/o'qish huquqlari beriladi va `npx cap sync` buyrug'i unsandboxed mode (BypassSandbox) orqali toza va to'liq bajarilishi ta'minlanadi.
 
-## 🚫 127. Desktop Container Centering Without Stray TranslateX Invariant
+## 🚫 128. Floating Search CTA Button Squircle & Minimalist Glow Invariant
 * **Xatolik**:
-  1. Desktop media so'rovlarida (`@media (min-width: 768px)`) `.dashboard-container`, `.profile-container`, `.academy-container` hamda `.job-detail-container` kabi sahifalarda `position: absolute` bo'lmagan holatda `left: 50% !important; transform: translateX(-50%) !important;` berilishi oqibatida butun sahifa va menyu 50% ga chap tomonga surilib (og'ib) ketishi.
+  1. Filtr oynalaridagi suzib turuvchi qidiruv tugmasiga (`.townwork-btn-search-cta`) o'ta o'tkir/rigid pill burchaklar berilishi, yon marjinlari boshqa kartochkalar bilan tekislanmasligi hamda o'ta to'yingan ulkan ko'k nurlanish (heavy glare box-shadow) ko'rinib turishi.
 * **Yechim (MAJBURIY)**:
-  1. **Pure Margin Centering (`margin: 0 auto !important; width: 100% !important`)**: Barcha sahifa konteynerlarining desktop chegara klasslarida `left: 50%` hamda `transform: translateX(-50%)` **UMUMAN ISHLATILMASLIGI SHART**.
-  2. **Standard Bounds**: Centering Strictly `max-width: 820px !important; margin: 0 auto !important; width: 100% !important; box-sizing: border-box !important;` orqali markazlashtiriladi.
+  1. **Container-Matching Squircle (`border-radius: 20px`)**: Floating search CTA tugmalari strictly barcha boshqa kartochkalar kabi **`border-radius: 20px`** squircle atributiga ega bo'lishi SHART.
+  2. **Minimalist Subtle Glow (`box-shadow: 0 4px 16px rgba(10, 132, 255, 0.2)`)**: Og'ir va ko'zga tashlanadigan nurlanishlar o'rniga minimalistik va mayin iOS shisha osti soyasi hamda `border: 1px solid rgba(255, 255, 255, 0.25)` ishlatiladi.
+  3. **1:1 Margin Alignment (`left: 14px; width: calc(100% - 28px)`)**: Yon marjinlar strictly `left: var(--screen-margin-x, 14px)` va `width: var(--card-width-full, calc(100% - 28px))` bilan barcha kartochkalar bilan 1:1 yagona tik chiziqda tekislanadi. Desktopda `@media (min-width: 768px)` `.floating-search-cta-dock` strictly `max-width: 792px; left: 50%; transform: translateX(-50%)` orqali markazda ushlab turiladi.
+
 
 
 
