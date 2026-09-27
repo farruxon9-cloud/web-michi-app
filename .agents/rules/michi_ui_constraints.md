@@ -90,7 +90,7 @@
 27. **Floating BottomNav Layer & Clearance Spacer Standards (Rule 27)**:
     - `.main-content` MUST be `position: absolute; top: 56px; bottom: 0; left: 0; right: 0;` so page content scrolls dynamically underneath floating BottomNav.
     - `.bottom-nav-dock` MUST be `position: absolute; bottom: 0; left: 0; right: 0; width: 100%; pointer-events: none;` ensuring `.bottom-nav` (`width: calc(100% - 28px)`) lines up 1:1 in a straight vertical line with cards above.
-    - Clearance spacers from screen bottom MUST be set to **`92px`** on main feeds (`DriverFeed`, `DrivingAcademy`, `Dashboard`, `CompanyHome`) and **`96px`** on My Page / Profile (`Profile.jsx` main and all sub-pages).
+    - Clearance spacers from screen bottom MUST be set to **`92px`** on main feeds (`DriverFeed`, `DrivingAcademy`, `Dashboard`, `CompanyHome`), **`96px`** on My Page / Profile (`Profile.jsx` main and all sub-pages), and **`162px`** on Filter Drawers (`DriverFeed`, `DrivingAcademy`).
 
 
 
