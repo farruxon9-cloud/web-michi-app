@@ -1385,28 +1385,42 @@ export default function DriverFeed({
         {/* Learned Rule Invariant: 160px Clearance Spacer so filter content scrolls past floating CTA button (148px dock top + 12px gap = 160px) */}
         <div style={{ height: '160px', minHeight: '160px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
-        {/* Pinned Search CTA Button Dock — floating exactly 12px above BottomNav */}
-        <div style={{
-          position: 'fixed',
-          bottom: '96px',
-          left: 'var(--screen-margin-x, 14px)',
-          width: 'var(--card-width-full, calc(100% - 28px))',
-          zIndex: 250,
-          pointerEvents: 'none',
-          display: 'flex',
-          justifyContent: 'center'
-        }}>
+        {/* Pinned Search CTA Button Dock — aligned 1:1 on single vertical margin line */}
+        <div 
+          className="floating-search-cta-dock"
+          style={{
+            position: 'fixed',
+            bottom: '96px',
+            left: 'var(--screen-margin-x, 14px)',
+            width: 'var(--card-width-full, calc(100% - 28px))',
+            maxWidth: '792px',
+            zIndex: 250,
+            pointerEvents: 'none',
+            display: 'flex',
+            justifyContent: 'center'
+          }}
+        >
           <button 
             type="button" 
             className="townwork-btn-search-cta" 
             onClick={() => setIsFilterDrawerOpen(false)}
             style={{
               pointerEvents: 'auto',
-              width: '100%', height: '52px', fontSize: '16px', fontWeight: '800',
-              borderRadius: '26px', background: 'linear-gradient(135deg, #0A84FF 0%, #5E5CE6 100%)',
-              color: '#FFFFFF', boxShadow: '0 10px 28px rgba(10, 132, 255, 0.45)',
-              border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: '8px', cursor: 'pointer', transition: 'all 0.15s ease',
+              width: '100%',
+              height: '52px',
+              fontSize: '16px',
+              fontWeight: '800',
+              borderRadius: '20px',
+              background: 'linear-gradient(135deg, #0A84FF 0%, #5E5CE6 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 16px rgba(10, 132, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
               flexShrink: 0
             }}
           >
