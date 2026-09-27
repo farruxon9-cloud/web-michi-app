@@ -810,7 +810,11 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**:
   1. AI Hub overlay (`.voice-side-drawer-overlay`) uchun `rgba(0,0,0,0.5)` qora backdrop ishlatilishi oqibatida desktop versiyada sahifaning yon tomonlari qorong'u bo'lib, begona pop-up modaldek ajralib qolishi.
 * **Yechim (MAJBURIY)**:
-  1. **Seamless Background Matching**: `.voice-side-drawer-overlay` va `.voice-side-drawer-panel` foni strictly **`var(--bg-color)`** (qorong'u rejimda `#0B0C10`) qilib belgilanadi hamda border/shadow bekor qilinadi. Natijada AI Hub sahifasi boshqa standart sahifalar bilan 100% tabiiy va bir xil ko'rinadi.
+## 🚫 135. Nested Component Duplicate Clearance Spacer Prevention (Job Posting myAds Invariant)
+* **Xatolik**:
+  1. `Profile.jsx` dagi `myAds` bo'limi ichida ichma-ich `<CompanyHome />` komponenti chaqirilgani va `CompanyHome` o'z ichida `92px` spacerga ega bo'lgani holda, `Profile.jsx` da ham takroriy `96px` spacer qo'yilishi natijasida 188px ulkan bo'shliq hosil bo'lishi.
+* **Yechim (MAJBURIY)**:
+  1. **Nested Component Spacer Deduplication**: Ichma-ich boshqa komponentni o'rab oluvchi konteynerlarda takroriy spacer qo'yilmaydi. `Profile.jsx` ning `myAds` bo'limi spaceri strictly **`12px`** (`<div style={{ height: '12px', minHeight: '12px' }} />`) qilib (84px ayirib) belgilanadi.
 
 
 

@@ -95,6 +95,8 @@
     - The floating AI Hub trigger (`.voice-side-drawer-trigger`) MUST dock on the right boundary wall of the 820px container on desktop using `@media (min-width: 768px) { right: calc(50% - 410px); }` and `right: 0` on mobile.
 29. **AI Hub Native Background Color Matching (Rule 29)**:
     - `.voice-side-drawer-overlay` and `.voice-side-drawer-panel` MUST use `background: var(--bg-color, #e5eafc)` (and `#0B0C10` in dark mode) so the AI Hub view matches all regular app pages natively without dark black side backdrops.
+30. **Nested Component Spacer Deduplication (Rule 30)**:
+    - Containers wrapping nested components that already define their own clearance spacer (such as `Profile.jsx`'s `myAds` rendering `CompanyHome`) MUST use a reduced **`12px` spacer** to avoid double-spacer stacking.
 
 
 
