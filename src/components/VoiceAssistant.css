@@ -1903,7 +1903,13 @@ html.dark-mode .ai-response-text {
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
-  transition: box-shadow 0.25s ease;
+  transition: box-shadow 0.25s ease, right 0.25s ease;
+}
+
+@media (min-width: 768px) {
+  .voice-side-drawer-trigger {
+    right: calc(50% - 410px);
+  }
 }
 
 .voice-side-drawer-trigger:active {
