@@ -1,0 +1,1550 @@
+/* Custom variables for dashboard elements to ensure highly visible borders and rich contrast */
+:root {
+  --dash-card-bg: rgba(255, 255, 255, 0.65);
+  --dash-card-border: rgba(0, 0, 0, 0.08);
+  --dash-card-shadow: 0 6px 20px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light-mode) {
+    --dash-card-bg: #13151B;
+    --dash-card-border: rgba(255, 255, 255, 0.08);
+    --dash-card-shadow: none;
+  }
+}
+
+html.dark-mode {
+  --dash-card-bg: #13151B;
+  --dash-card-border: rgba(255, 255, 255, 0.08);
+  --dash-card-shadow: none;
+}
+
+html.light-mode {
+  --dash-card-bg: rgba(255, 255, 255, 0.65);
+  --dash-card-border: rgba(0, 0, 0, 0.08);
+  --dash-card-shadow: 0 6px 20px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.dashboard-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 14px;
+  padding-bottom: 96px;
+  background-color: transparent;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html.dark-mode .dashboard-container {
+  background: #0B0C10 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light-mode) .dashboard-container {
+    background: #0B0C10 !important;
+  }
+}
+
+.dashboard-container::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  display: none !important;
+  background: transparent !important;
+}
+
+.dashboard-container > * + * {
+  margin-top: 12px;
+}
+
+/* Carousel Container */
+.dash-hero-carousel-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  padding-bottom: 16px; /* Reduced space for dots to tighten layout */
+  flex-shrink: 0;
+}
+
+/* Slider Track */
+.dash-hero-slider {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
+}
+
+/* Slide Wrapper */
+.dash-hero-slide-wrapper {
+  flex: 0 0 100%; /* Take exactly 100% of parent width */
+  min-width: 100%;
+  padding: 0 4px; /* Slight gap between cards so borders are visible */
+  box-sizing: border-box;
+}
+
+/* Individual Premium Card */
+.dash-hero-card {
+  background: var(--dash-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--dash-card-border);
+  border-radius: 24px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), var(--dash-card-shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  height: 160px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dash-hero-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(94, 92, 230, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), var(--dash-card-shadow);
+}
+
+.dash-hero-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+}
+
+/* 3D Icon styling */
+.dash-hero-icon-3d {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15));
+  transform: rotate(-10deg);
+  margin-left: 12px;
+  z-index: 1;
+  opacity: 0.9;
+}
+
+.dash-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.dash-hero-title {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-main);
+  margin: 0 0 6px 0;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-hero-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+  max-width: 90%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dash-hero-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: var(--z-content);
+}
+
+.dash-hero-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.dash-hero-dots .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dash-card-border);
+}
+
+.dash-hero-dots .dot.active {
+  background: var(--text-main);
+  width: 12px;
+  border-radius: 6px;
+}
+
+/* Calendar Row */
+.calendar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  height: 70px;
+  border-radius: 16px;
+  border: 1px solid var(--dash-card-border);
+  background: var(--dash-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--dash-card-shadow);
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.calendar-day:hover {
+  transform: translateY(-2px);
+  border-color: rgba(94, 92, 230, 0.3);
+  box-shadow: var(--dash-card-shadow);
+}
+
+.calendar-day:active {
+  transform: scale(0.95);
+}
+
+.calendar-day.active {
+  background: var(--text-main);
+  color: var(--bg-color);
+  border-color: var(--text-main);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.day-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  transition: color 0.25s ease, opacity 0.25s ease;
+}
+
+.calendar-day.active .day-name {
+  color: inherit;
+  opacity: 0.7;
+}
+
+.day-num {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text-main);
+  transition: color 0.25s ease;
+}
+
+.calendar-day.active .day-num {
+  color: inherit;
+}
+
+/* Greeting Header */
+.dash-greeting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0; 
+  padding: 0 4px;
+}
+
+.greeting-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.greeting-line {
+  flex: 1;
+  height: 1px;
+  border-bottom: 1px dashed var(--text-secondary);
+  opacity: 0.25;
+}
+
+.greeting-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.greeting-icon {
+  font-size: 26px;
+  animation: wave 2.5s infinite;
+  transform-origin: 70% 70%;
+}
+
+@keyframes wave {
+  0% { transform: rotate( 0.0deg) }
+  10% { transform: rotate(14.0deg) }
+  20% { transform: rotate(-8.0deg) }
+  30% { transform: rotate(14.0deg) }
+  40% { transform: rotate(-4.0deg) }
+  50% { transform: rotate(10.0deg) }
+  60% { transform: rotate( 0.0deg) }
+  100% { transform: rotate( 0.0deg) }
+}
+
+.time-pill {
+  background: var(--dash-card-bg);
+  border: 1px solid var(--dash-card-border);
+  box-shadow: var(--dash-card-shadow);
+  padding: 8px 16px;
+  border-radius: 24px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.time-pill:hover {
+  transform: translateY(-1px);
+  border-color: rgba(94, 92, 230, 0.2);
+}
+
+/* Bento Icons Row */
+.bento-icons-row {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bento-icon-card {
+  flex: 1 1 0px;
+  min-width: 0;
+  width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px 12px;
+  border-radius: 20px;
+  min-height: 115px;
+  height: auto;
+  cursor: pointer;
+  box-shadow: var(--dash-card-shadow);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.bento-icon-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.bento-icon-card:active {
+  transform: scale(0.96);
+}
+
+.dark-card {
+  background: #2D2A26;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.light-card {
+  background: var(--dash-card-bg);
+  border: 1px solid var(--dash-card-border);
+  color: var(--text-main);
+}
+
+.bento-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.light-card .bento-icon-wrap {
+  background: var(--bg-color);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.bento-text-wrap h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.bento-text-wrap p {
+  margin: 0;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* Action Card */
+.bento-action-card {
+  background: var(--dash-card-bg);
+  border: 1px solid var(--dash-card-border);
+  border-radius: 24px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: var(--dash-card-shadow);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bento-action-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(94, 92, 230, 0.25);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.bento-action-card:active {
+  transform: scale(0.97);
+}
+
+/* Ultra-premium minimalist international card - standard bento styles inherited */
+.bento-international-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.bento-action-card:hover .bento-international-card-icon {
+  background: var(--primary);
+  color: #FFF;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.25);
+}
+
+/* Premium live dot animation */
+.premium-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #30D158;
+  display: inline-flex;
+  position: relative;
+  box-shadow: 0 0 8px #30D158;
+  align-items: center;
+  justify-content: center;
+}
+
+.premium-live-dot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid #30D158;
+  animation: livePulse 2s infinite ease-out;
+  opacity: 0;
+}
+
+@keyframes livePulse {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+
+
+.action-card-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.action-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(10, 132, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 800;
+  word-break: break-word; /* Clean wrapping for very long full names */
+}
+
+.action-info p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.action-card-right {
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.arrow-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dark-mode .dark-card,
+html.dark-mode .dark-card {
+  background: #1C1C1E;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ====== PREMIUM MINIMALIST MUSIC PLAYER ====== */
+.bento-music-card {
+  padding: 16px 20px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--dash-card-border);
+  background: var(--dash-card-bg);
+  box-shadow: var(--dash-card-shadow);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.music-player-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.music-player-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.music-gradient-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), #AF52DE);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.25);
+  transition: all 0.5s ease;
+  position: relative;
+}
+
+/* Glowing pulse animation when playing */
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 4px 12px rgba(94, 92, 230, 0.25);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(175, 82, 222, 0.5);
+  }
+  100% {
+    box-shadow: 0 4px 12px rgba(94, 92, 230, 0.25);
+  }
+}
+
+.music-gradient-icon.playing-pulse {
+  animation: pulse-glow 2.5s infinite ease-in-out;
+}
+
+.music-track-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.music-sub-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+}
+
+.music-track-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 2px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-control-btn {
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.player-control-btn:active {
+  transform: scale(0.92);
+}
+
+.btn-play-pause {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.3);
+}
+
+.btn-skip {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(118, 118, 128, 0.08);
+  color: var(--text-main);
+  border: 1px solid rgba(118, 118, 128, 0.05);
+}
+
+html.dark-mode .btn-skip {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Volume Control */
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+}
+
+.btn-vol {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+}
+
+.volume-slider {
+  width: 60px;
+  height: 3px;
+  border-radius: 1.5px;
+  appearance: none;
+  background: rgba(118, 118, 128, 0.25);
+  outline: none;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.volume-control:hover .volume-slider,
+.volume-slider:active {
+  opacity: 1;
+}
+
+html.dark-mode .volume-slider {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: none;
+  cursor: pointer;
+}
+
+.music-player-bottom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* Mini Organic Jelly Blob Visualizer */
+.music-mini-jelly {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  flex-shrink: 0;
+  opacity: 0.95;
+  margin-right: 4px;
+}
+
+.mini-blob-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: screen;
+}
+
+.mini-blob-1 {
+  background: radial-gradient(circle at 40% 40%, rgba(94, 92, 230, 0.9) 0%, rgba(94, 92, 230, 0) 75%);
+  animation: jelly-morph 6s infinite linear, jelly-rotate 9s infinite linear;
+}
+
+.mini-blob-2 {
+  background: radial-gradient(circle at 60% 60%, rgba(255, 55, 95, 0.8) 0%, rgba(255, 55, 95, 0) 75%);
+  animation: jelly-morph 4s infinite linear alternate, jelly-rotate 11s infinite linear reverse;
+}
+
+.music-mini-jelly.animating {
+  animation: jelly-pulse 1.8s infinite ease-in-out;
+}
+
+.music-mini-jelly.animating .mini-blob-1 {
+  animation: jelly-morph 3s infinite linear, jelly-rotate 4s infinite linear;
+  scale: 1.15;
+}
+
+.music-mini-jelly.animating .mini-blob-2 {
+  animation: jelly-morph 2s infinite linear alternate, jelly-rotate 5s infinite linear reverse;
+}
+
+/* Global Keyframes for Jelly Blob Morphing */
+@keyframes jelly-morph {
+  0% {
+    border-radius: 42% 56% 72% 28% / 45% 65% 35% 55%;
+  }
+  33% {
+    border-radius: 70% 30% 52% 48% / 60% 40% 60% 40%;
+  }
+  66% {
+    border-radius: 30% 70% 40% 60% / 40% 60% 30% 70%;
+  }
+  100% {
+    border-radius: 42% 56% 72% 28% / 45% 65% 35% 55%;
+  }
+}
+
+@keyframes jelly-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes jelly-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Timeline Wrapper & Slider */
+.player-timeline-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.player-time-text {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-family: monospace;
+  width: 26px;
+  text-align: center;
+}
+
+.player-timeline {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  appearance: none;
+  background: rgba(118, 118, 128, 0.15);
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+html.dark-mode .player-timeline {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.player-timeline::-webkit-slider-thumb {
+  appearance: none;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  transition: width 0.15s ease, height 0.15s ease;
+}
+
+.bento-music-card:hover .player-timeline::-webkit-slider-thumb,
+.player-timeline:active::-webkit-slider-thumb {
+  width: 10px;
+  height: 10px;
+}
+
+/* ====== PREMIUM BENTO AI CARD ====== */
+.bento-ai-card {
+  padding: 16px 20px;
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--dash-card-border);
+  background: var(--dash-card-bg);
+  box-shadow: var(--dash-card-shadow);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bento-ai-card:hover {
+    transform: translateY(-2.5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    border-color: rgba(94, 92, 230, 0.2);
+  }
+}
+
+.bento-ai-card:active {
+  transform: scale(0.98);
+}
+
+.ai-card-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ai-gradient-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #a133ff, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(161, 51, 255, 0.35);
+  transition: all 0.5s ease;
+}
+
+.ai-card-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ai-card-badge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--primary);
+  letter-spacing: 0.8px;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.ai-badge-text {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ai-card-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.ai-card-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 2px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 95%;
+}
+
+.ai-card-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+/* Subtle visualizer inside card */
+.ai-card-visualizer {
+  display: flex;
+  align-items: flex-end;
+  gap: 2.5px;
+  height: 14px;
+  width: 18px;
+  flex-shrink: 0;
+}
+
+.ai-bar {
+  width: 2.5px;
+  height: 20%;
+  background: var(--primary);
+  border-radius: 1px;
+  opacity: 0.5;
+}
+
+
+.ai-bar-1 { animation-delay: 0.1s; }
+.ai-bar-2 { animation-delay: 0.3s; }
+.ai-bar-3 { animation-delay: 0.2s; }
+.ai-bar-4 { animation-delay: 0.4s; }
+
+@keyframes ai-bar-bounce {
+  0%, 100% { height: 20%; }
+  50% { height: 100%; }
+}
+
+/* iOS-Style Premium Toggle Switch (Slide Switch) */
+.ios-switch {
+  position: relative;
+  width: 51px;
+  height: 31px;
+  background-color: rgba(120, 120, 128, 0.16); /* Off state track */
+  border-radius: 16px;
+  transition: background-color 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: inline-block;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 0.5px solid rgba(0, 0, 0, 0.04);
+}
+
+.ios-switch-thumb {
+  position: absolute;
+  top: 1.5px;
+  left: 1.5px;
+  width: 27px;
+  height: 27px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), width 0.25s ease;
+  will-change: transform, width;
+}
+
+/* Micro-interaction: stretch thumb slightly on click press */
+.ios-switch:active .ios-switch-thumb {
+  width: 31px;
+}
+
+.ios-switch.checked:active .ios-switch-thumb {
+  width: 31px;
+  transform: translateX(16px); /* keeps stretch aligned within the track boundaries */
+}
+
+/* Checked (On) State */
+.ios-switch.checked {
+  background-color: #30D158; /* iOS green */
+  border-color: #30D158;
+}
+
+.ios-switch.checked .ios-switch-thumb {
+  transform: translateX(20px);
+}
+
+/* Dark Mode Adjustments */
+html.dark-mode .ios-switch {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: transparent;
+}
+
+html.dark-mode .ios-switch.checked {
+  background-color: #30D158;
+}
+
+/* Bento AI Card active state */
+.bento-ai-card.active {
+  border-color: rgba(48, 209, 88, 0.3);
+  box-shadow: var(--dash-card-shadow), 0 0 8px rgba(48, 209, 88, 0.12);
+}
+
+.bento-ai-card.active .ai-gradient-icon {
+  background: linear-gradient(135deg, #30D158, #34C759);
+  box-shadow: 0 4px 12px rgba(48, 209, 88, 0.3);
+}
+
+
+.bento-ai-card.active .ai-card-badge {
+  color: #30D158;
+}
+
+/* Active Visualizer animation in the card */
+.ai-bar.active,
+.ai-bar.animating {
+  background: #30D158;
+  opacity: 1;
+  animation: ai-bar-bounce 0.6s infinite ease-in-out;
+}
+
+
+/* Double column row for Company homepage layout */
+.bento-double-cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* Compact music card overrides */
+.bento-music-card.compact-music-card {
+  margin-top: 0;
+  min-height: 156px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 16px !important; /* Clean symmetric padding */
+  position: relative;
+  overflow: hidden;
+}
+
+.bento-music-card.compact-music-card .compact-music-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  z-index: 2;
+  position: relative;
+}
+.bento-music-card.compact-music-card .music-player-top {
+  display: none !important;
+}
+.music-track-title-container {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+}
+.bento-music-card.compact-music-card .music-track-title.compact-title {
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-block;
+  white-space: nowrap;
+  line-height: 1.3;
+  margin-top: 2px;
+  animation: marquee-scroll 8s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes marquee-scroll {
+  0%, 15% { transform: translateX(0); }
+  85%, 100% { transform: translateX(min(0px, calc(-100% + 95px))); }
+}
+.bento-music-card.compact-music-card .compact-controls-volume {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+.bento-music-card.compact-music-card .music-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center; /* Centered controls */
+  width: 100%;
+}
+.bento-music-card.compact-music-card .btn-play-pause {
+  width: 48px !important;
+  height: 48px !important;
+}
+.bento-music-card.compact-music-card .btn-skip {
+  width: 40px !important;
+  height: 40px !important;
+}
+.bento-music-card.compact-music-card .compact-volume-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Edge-to-edge layout */
+  gap: 8px;
+  width: 100%;
+  margin-top: 6px;
+  padding: 0 4px; /* Space from compact card side walls */
+}
+.bento-music-card.compact-music-card .compact-slider {
+  flex: 1; /* Stretch to fill available width */
+  height: 3px; /* Thinner */
+  border-radius: 1.5px;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  opacity: 1 !important;
+  transition: opacity 0.2s ease;
+}
+.bento-music-card.compact-music-card .compact-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  box-shadow: 0 1.5px 4px rgba(0,0,0,0.25);
+}
+.bento-music-card.compact-music-card .compact-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1.5px 4px rgba(0,0,0,0.25);
+}
+
+/* Organic Suyuq Jelly Blob Visualizer (Premium Floating Fluid in Background) */
+.music-jelly-blob {
+  position: absolute;
+  right: -25px;
+  bottom: -25px;
+  width: 140px;
+  height: 140px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.8;
+  filter: blur(2px);
+  transition: all 0.5s ease-in-out;
+}
+
+.music-jelly-blob .blob-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: screen;
+  transition: all 0.5s ease-in-out;
+}
+
+/* Layer 1 - Indigo/purple base */
+.music-jelly-blob .blob-1 {
+  background: radial-gradient(circle, rgba(94, 92, 230, 0.75) 0%, rgba(94, 92, 230, 0) 70%);
+  animation: jelly-morph 9s infinite linear, jelly-rotate 14s infinite linear;
+}
+
+/* Layer 2 - Pink/magenta offset */
+.music-jelly-blob .blob-2 {
+  background: radial-gradient(circle, rgba(255, 55, 95, 0.6) 0%, rgba(255, 55, 95, 0) 70%);
+  animation: jelly-morph 7s infinite linear alternate, jelly-rotate 17s infinite linear reverse;
+  transform-origin: 45% 48%;
+}
+
+/* Layer 3 - Blue bright core */
+.music-jelly-blob .blob-3 {
+  background: radial-gradient(circle, rgba(10, 132, 255, 0.65) 0%, rgba(10, 132, 255, 0) 60%);
+  animation: jelly-morph 11s infinite linear, jelly-rotate 9s infinite linear;
+  scale: 0.8;
+}
+
+/* My Posted Ads dashboard shortcut card */
+.bento-my-ads-card {
+  padding: 12px 14px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid var(--dash-card-border);
+  background: var(--dash-card-bg);
+  box-shadow: var(--dash-card-shadow);
+  min-height: 156px;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bento-my-ads-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--dash-card-shadow);
+  border-color: rgba(255, 159, 10, 0.4);
+}
+.bento-my-ads-card:active {
+  transform: scale(0.97);
+}
+.bento-my-ads-card .my-ads-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #FF9F0A, #FF3B30);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(255, 159, 10, 0.3);
+  margin-bottom: 6px;
+}
+.bento-my-ads-card .my-ads-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.bento-my-ads-card .my-ads-sub {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.bento-my-ads-card .my-ads-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bento-my-ads-card .my-ads-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  margin-top: 4px;
+  opacity: 0.8;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bento-my-ads-card.bento-my-apps-card:hover {
+  border-color: rgba(10, 132, 255, 0.4);
+}
+.bento-my-ads-card .my-apps-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0A84FF, #5E5CE6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(10, 132, 255, 0.35);
+  margin-bottom: 6px;
+}
+
+/* Premium Bento Spotlight & Glow Hover Effects */
+.bento-icon-card:hover,
+.bento-action-card:hover,
+.bento-music-card:hover,
+.bento-my-ads-card:hover,
+.bento-ai-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 12px 30px rgba(90, 85, 234, 0.08);
+  transform: translateY(-3px) scale(1.01);
+}
+
+/* ====== DARK MODE OLED MATTE BLACK OVERRIDES ====== */
+html.dark-mode .dash-hero-card,
+html.dark-mode .calendar-day,
+html.dark-mode .time-pill,
+html.dark-mode .bento-icon-card,
+html.dark-mode .dark-card,
+html.dark-mode .light-card,
+html.dark-mode .bento-action-card,
+html.dark-mode .bento-music-card,
+html.dark-mode .bento-ai-card,
+html.dark-mode .bento-my-ads-card {
+  background: #13151B !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.dark-mode .calendar-day.active {
+  background: #FFFFFF !important;
+  color: #0B0C10 !important;
+  border-color: #FFFFFF !important;
+}
+
+html.dark-mode .bento-icon-card:hover,
+html.dark-mode .bento-action-card:hover,
+html.dark-mode .bento-music-card:hover,
+html.dark-mode .bento-my-ads-card:hover,
+html.dark-mode .bento-ai-card:hover,
+html.dark-mode .dash-hero-card:hover,
+html.dark-mode .calendar-day:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
+}
+
+html.dark-mode .music-jelly-blob,
+html.dark-mode .mini-blob-layer,
+html.dark-mode .music-mini-jelly,
+html.dark-mode .glow-effect,
+html.dark-mode .ambient-light {
+  display: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light-mode) .dash-hero-card,
+  :root:not(.light-mode) .calendar-day,
+  :root:not(.light-mode) .time-pill,
+  :root:not(.light-mode) .bento-icon-card,
+  :root:not(.light-mode) .dark-card,
+  :root:not(.light-mode) .light-card,
+  :root:not(.light-mode) .bento-action-card,
+  :root:not(.light-mode) .bento-music-card,
+  :root:not(.light-mode) .bento-ai-card,
+  :root:not(.light-mode) .bento-my-ads-card {
+    background: #13151B !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  :root:not(.light-mode) .calendar-day.active {
+    background: #FFFFFF !important;
+    color: #0B0C10 !important;
+    border-color: #FFFFFF !important;
+  }
+
+  :root:not(.light-mode) .bento-icon-card:hover,
+  :root:not(.light-mode) .bento-action-card:hover,
+  :root:not(.light-mode) .bento-music-card:hover,
+  :root:not(.light-mode) .bento-my-ads-card:hover,
+  :root:not(.light-mode) .bento-ai-card:hover,
+  :root:not(.light-mode) .dash-hero-card:hover,
+  :root:not(.light-mode) .calendar-day:hover {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: none !important;
+  }
+
+  :root:not(.light-mode) .music-jelly-blob,
+  :root:not(.light-mode) .mini-blob-layer,
+  :root:not(.light-mode) .music-mini-jelly,
+  :root:not(.light-mode) .glow-effect,
+  :root:not(.light-mode) .ambient-light {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   🖥️ 📑 RESPONSIVE MEDIA QUERIES FOR DASHBOARD (Task 3.1)
+   ========================================================================== */
+
+@media (min-width: 768px) {
+  /* 3.1.6 Scroll container responsive */
+  .dashboard-container {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    padding: 24px 0 60px;
+    overflow-y: visible;
+    min-height: calc(100vh - 80px);
+    width: 100% !important;
+  }
+
+  .dashboard-container > * + * {
+    margin-top: 20px;
+  }
+
+  /* 3.1.1 Hero Banner — desktop width & height */
+  .dash-hero-card {
+    height: 200px;
+    padding: 28px 36px;
+    border-radius: 28px;
+  }
+
+  .dash-hero-title {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .dash-hero-sub {
+    font-size: 15px;
+    max-width: 550px;
+  }
+
+  .dash-hero-icon-3d svg {
+    width: 72px;
+    height: 72px;
+  }
+
+  /* 3.1.2 Calendar & Stats row grid */
+  .calendar-row {
+    gap: 12px;
+  }
+
+  .calendar-day {
+    height: 80px;
+    border-radius: 18px;
+  }
+
+  .day-num {
+    font-size: 22px;
+  }
+
+  .greeting-title {
+    font-size: 28px;
+  }
+
+  /* 3.1.3 Quick Actions (Bento Icons Row) — 4-column horizontal grid */
+  .bento-icons-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .bento-icon-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
+    min-height: 135px;
+    padding: 18px 16px;
+    border-radius: 22px;
+  }
+
+  .bento-icon-wrap {
+    width: 48px;
+    height: 48px;
+  }
+
+  .bento-text-wrap h4 {
+    font-size: 16px;
+  }
+
+  .bento-text-wrap p {
+    font-size: 12px;
+  }
+
+  /* 3.1.4 JDM Navigation banner — desktop variant */
+  .bento-jdm-card {
+    padding: 16px 24px !important;
+    border-radius: 24px !important;
+    margin-top: 16px !important;
+  }
+
+  .bento-jdm-card h3 {
+    font-size: 16px !important;
+  }
+
+  .bento-jdm-card p {
+    font-size: 12px !important;
+  }
+
+  /* 3.1.5 Music Player — desktop responsiveness */
+  .bento-music-card {
+    padding: 24px;
+    border-radius: 24px;
+  }
+
+  .compact-music-card {
+    padding: 20px 24px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .dash-hero-card {
+    height: 220px;
+    padding: 32px 44px;
+  }
+
+  .dash-hero-title {
+    font-size: 32px;
+  }
+
+  .bento-icons-row {
+    gap: 20px;
+  }
+
+  .calendar-day {
+    height: 86px;
+  }
+}
+

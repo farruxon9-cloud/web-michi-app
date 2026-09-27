@@ -1,0 +1,1790 @@
+/* ============================================================
+   DriverFeed.css — Goo-net uslubida gorizontal kartochka dizayni
+   Rasm chapda, ma'lumotlar o'ngda, ikonkali chiplar pastda
+   ============================================================ */
+
+.feed-container {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0px;
+  box-sizing: border-box;
+}
+
+.feed-header {
+  padding: 14px 14px 0 14px;
+  background: var(--bg-color);
+  position: relative !important;
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: rgba(118, 118, 128, 0.12);
+  padding: 12px 16px;
+  border-radius: 14px;
+  margin-bottom: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.view-mode-switcher {
+  display: flex;
+  background: rgba(118, 118, 128, 0.12);
+  padding: 3px;
+  border-radius: 12px;
+  gap: 2px;
+}
+
+.view-mode-btn {
+  border: none;
+  background: transparent;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-mode-btn.active {
+  background: var(--card-bg);
+  color: var(--primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  margin-left: 10px;
+  font-size: 16px;
+  width: 100%;
+  color: var(--text-main);
+  outline: none;
+  font-family: inherit;
+}
+
+.search-bar input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* ====== SEGMENT BOSHQARUVI ====== */
+.segmented-control {
+  display: flex;
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  position: relative;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.segment {
+  flex: 1 0 auto;
+  text-align: center;
+  padding: 7px 6px;
+  font-size: 11.5px;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  word-break: keep-all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.segment.active {
+  background: var(--bg-color);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12), 0 3px 1px rgba(0,0,0,0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  .segmented-control {
+    background: rgba(118, 118, 128, 0.24);
+  }
+  .segment.active {
+    background: #636366;
+  }
+}
+
+/* ====== E'LONLAR RO'YXATI ====== */
+.jobs-list {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ============================================================
+   GOO-NET USLUBIDAGI GORIZONTAL KARTOCHKA
+   Chapda: Rasm (fix width)
+   O'ngda: Ma'lumotlar (flex grow)
+   ============================================================ */
+.job-card-hz {
+  display: flex;
+  flex-direction: column; /* Changed from row to column to support full-width action buttons at the bottom */
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  min-height: auto;
+  border-radius: 24px; /* Matches the Home page hero banner border-radius */
+  padding: 12px; /* Inset padding so card has a border/padding around thumbnail */
+  background: var(--card-bg);
+  box-sizing: border-box;
+}
+
+.job-card-hz:active {
+  transform: scale(0.98);
+}
+
+/* Premium styling for international job card recruiting from abroad */
+.job-card-international {
+  background: linear-gradient(135deg, rgba(94, 92, 230, 0.04), rgba(175, 82, 222, 0.04)) !important;
+  border: 1.5px solid rgba(175, 82, 222, 0.3) !important;
+  box-shadow: 0 8px 30px rgba(94, 92, 230, 0.05), 0 0 10px rgba(175, 82, 222, 0.03) !important;
+}
+
+html.dark-mode .job-card-international {
+  background: linear-gradient(135deg, rgba(94, 92, 230, 0.08), rgba(175, 82, 222, 0.08)) !important;
+  border-color: rgba(175, 82, 222, 0.4) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3) !important;
+}
+
+.international-card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #FF453A, #FF9F0A);
+  color: #FFF;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(255, 69, 58, 0.15);
+}
+
+.international-card-tag .airplane-icon {
+  font-size: 10px;
+}
+
+.local-visa-renew-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #0A84FF, #5E5CE6);
+  color: #FFF;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(10, 132, 255, 0.15);
+}
+
+.local-visa-renew-tag .briefcase-icon {
+  font-size: 10px;
+}
+
+.local-foreigner-ok-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #30D158, #34C759);
+  color: #FFF;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(48, 209, 88, 0.15);
+}
+
+.local-foreigner-ok-tag .users-icon {
+  font-size: 10px;
+}
+
+.job-card-main-layout {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+/* ---- Chap: Rasm qismi ---- */
+.job-card-img {
+  position: relative;
+  width: 95px; /* Compact square thumbnail size */
+  height: 95px;
+  min-width: 95px;
+  max-width: 95px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border-radius: 16px; /* Slightly rounded/convex thumbnail edges */
+}
+
+.job-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.job-card-hz:hover .job-card-img img {
+  transform: scale(1.06);
+}
+
+/* Ish turi belgisi (rasm ustida) */
+.job-type-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 8.5px; /* Scaled down for smaller thumbnail */
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  white-space: nowrap;
+}
+
+.job-type-badge.type-fulltime {
+  background: rgba(48, 209, 88, 0.85);
+  color: #fff;
+}
+
+.job-type-badge.type-parttime {
+  background: rgba(255, 159, 10, 0.85);
+  color: #fff;
+}
+
+.job-type-badge.type-contract {
+  background: rgba(10, 132, 255, 0.85);
+  color: #fff;
+}
+
+/* ---- O'ng: Ma'lumotlar qismi ---- */
+.job-card-body {
+  flex: 1;
+  padding: 0 0 0 12px; /* Cleared horizontal padding, only left gap from image */
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* Tighter gap for smaller fonts */
+  min-width: 0; /* for overflow-ellipsis */
+}
+
+/* Kompaniya qatori */
+.job-card-company {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px; /* Reduced company font size */
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.job-card-company-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* Sarlavha */
+.job-card-title {
+  font-size: 12.5px; /* Reduced title font size */
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+/* Maosh — yashil rang bilan ajralib turadi */
+.job-card-salary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px; /* Reduced salary font size */
+  font-weight: 800;
+  color: #30D158;
+}
+
+/* ====== CHIP / TAG TIZIMI ====== */
+.job-card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.job-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px; /* Reduced chip padding */
+  border-radius: 6px;
+  font-size: 9.5px; /* Reduced chip font size */
+  font-weight: 500;
+  background: rgba(118, 118, 128, 0.08);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.job-chip.chip-highlight {
+  background: rgba(10, 132, 255, 0.1);
+  color: #0A84FF;
+}
+
+.job-chip.chip-green {
+  background: rgba(48, 209, 88, 0.1);
+  color: #30D158;
+}
+
+/* ====== KARTOCHKA PASTIDAGI TUGMALAR ====== */
+.job-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.job-card-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px; /* Unified larger padding for premium feel */
+  border-radius: 12px; /* Slightly more rounded premium border radius */
+  border: none;
+  font-size: 11.5px; /* Highly readable font size */
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-apply {
+  background: #5A6062;
+  color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.btn-call {
+  background: #e5e5ea;
+  color: #0A84FF;
+  border: 1px solid rgba(10, 132, 255, 0.15);
+  box-shadow: 0 2px 8px rgba(10, 132, 255, 0.04);
+}
+
+.btn-shoukai {
+  background: #e5e5ea;
+  color: #FF9F0A;
+  border: 1px solid rgba(255, 159, 10, 0.15);
+  box-shadow: 0 2px 8px rgba(255, 159, 10, 0.04);
+}
+
+.btn-apply.applied {
+  background: #f2f2f7;
+  color: #8E8E93;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+  cursor: default;
+}
+
+.btn-apply:hover { background: #6a7072; }
+.btn-call:hover { background: #ececed; }
+.btn-shoukai:hover { background: #ececed; }
+
+.btn-apply:active,
+.btn-call:active,
+.btn-shoukai:active {
+  transform: scale(0.90);
+  background: #ffffff;
+  filter: none;
+  box-shadow: inset 0 4px 10px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.06);
+}
+
+html.light-mode .btn-apply:active {
+  transform: scale(0.90) !important;
+  background: #ffffff !important;
+  color: #1c1c1e !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  filter: none !important;
+  box-shadow: inset 0 4px 10px rgba(0,0,0,0.28), 0 1px 3px rgba(0,0,0,0.08) !important;
+}
+
+html.light-mode .btn-call:active {
+  transform: scale(0.90) !important;
+  background: #ffffff !important;
+  color: #0A84FF !important;
+  border-color: rgba(10, 132, 255, 0.35) !important;
+  filter: none !important;
+  box-shadow: inset 0 4px 10px rgba(0,0,0,0.22), 0 1px 3px rgba(0,0,0,0.06) !important;
+}
+
+html.light-mode .btn-shoukai:active {
+  transform: scale(0.90) !important;
+  background: #ffffff !important;
+  color: #FF9F0A !important;
+  border-color: rgba(255, 159, 10, 0.35) !important;
+  filter: none !important;
+  box-shadow: inset 0 4px 10px rgba(0,0,0,0.22), 0 1px 3px rgba(0,0,0,0.06) !important;
+}
+
+/* ====== BO'SH HOLAT ====== */
+.empty-feed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.empty-feed p {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* ====== DARK MODE MOSLASHUVI ====== */
+html.dark-mode .btn-apply,
+html.dark-mode .btn-call {
+  background: linear-gradient(135deg, #0066cc, #8b5cf6);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 102, 204, 0.3);
+}
+
+html.dark-mode .btn-apply.applied {
+  background: rgba(48, 209, 88, 0.15) !important;
+  color: #30D158 !important;
+  border: 1px solid rgba(48, 209, 88, 0.25) !important;
+  box-shadow: none !important;
+}
+
+html.dark-mode .btn-apply:hover,
+html.dark-mode .btn-call:hover {
+  background: linear-gradient(135deg, #0066cc, #8b5cf6);
+  opacity: 0.9;
+}
+
+html.dark-mode .btn-apply:active,
+html.dark-mode .btn-call:active {
+  transform: scale(0.93);
+  filter: brightness(0.82);
+  box-shadow: inset 0 3px 8px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.1);
+}
+
+html.dark-mode .btn-shoukai {
+  background: rgba(255, 159, 10, 0.12);
+  color: #ffb340;
+  border-color: rgba(255, 159, 10, 0.2);
+}
+
+html.dark-mode .job-chip {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+html.dark-mode .job-chip.chip-highlight {
+  background: rgba(10, 132, 255, 0.15);
+}
+
+html.dark-mode .job-chip.chip-green {
+  background: rgba(48, 209, 88, 0.15);
+}
+
+/* ====== MOBILE RESPONSIVENESS AND ANTI-OVERFLOW ====== */
+@media (max-width: 480px) {
+  .segment {
+    font-size: 11px !important;
+    padding: 6px 3px !important;
+    letter-spacing: -0.035em !important;
+  }
+
+  .feed-container {
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  
+  .jobs-list {
+    padding: 12px;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .job-card-hz {
+    min-height: 140px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .job-card-img {
+    width: 105px;
+    min-width: 105px;
+    max-width: 105px;
+  }
+
+  .job-card-body {
+    padding: 10px;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .job-card-company {
+    font-size: 10.5px;
+    gap: 4px;
+  }
+
+  .job-card-title {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  .job-card-salary {
+    font-size: 13px;
+  }
+
+  .job-chip {
+    padding: 1.5px 5px;
+    font-size: 9px;
+    gap: 2px;
+  }
+
+  .job-card-actions {
+    gap: 4px;
+    padding-top: 4px;
+  }
+
+  .job-card-btn {
+    padding: 5px 6px;
+    font-size: 10px;
+  }
+}
+
+/* ====== NEW CHIPS & SECTION GROUPS FOR JOB CREATION FORM ====== */
+.chip-group-container {
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.65);
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+  transition: all 0.2s ease;
+}
+
+html.dark-mode .chip-group-container {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+}
+
+.form-chip {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(118, 118, 128, 0.15);
+  background: rgba(118, 118, 128, 0.06);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .form-chip:hover {
+    background: rgba(118, 118, 128, 0.12);
+    color: var(--text-main);
+  }
+}
+
+.form-chip.selected {
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.25);
+}
+
+html.dark-mode .form-chip {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  color: #A1A1AA;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html.dark-mode .form-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+  }
+}
+
+html.dark-mode .form-chip.selected {
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(94, 92, 230, 0.35);
+}
+
+/* ============================================================
+   ADVANCED FILTER DRAWER & CHIPS STYLING
+   ============================================================ */
+.search-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 16px; /* Spacing between search bar and segmented control tabs */
+}
+
+.search-row .search-bar {
+  flex: 1;
+  margin-bottom: 0 !important; /* Override layout margin since it is inside row */
+}
+
+.filter-toggle-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+  outline: none;
+}
+
+.filter-toggle-btn:active {
+  transform: scale(0.96);
+}
+
+.filter-toggle-btn.active {
+  color: #FFFFFF;
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.3);
+}
+
+.filter-badge {
+  width: 7px;
+  height: 7px;
+  background: #FF3B30;
+  border: 1.5px solid #FFF;
+  border-radius: 50%;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+html.dark-mode .filter-badge {
+  border-color: #1C1C1E;
+}
+
+/* Drawer overlay screen */
+.filter-drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4); /* Slightly darker for better focus */
+  backdrop-filter: blur(16px);    /* Enhanced glass blur */
+  -webkit-backdrop-filter: blur(16px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;            /* Centered in the middle of simulator/phone viewport */
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* ============================================================
+   TOWNWORK-STYLE JAPANESE RECRUITMENT LOCATION FILTER DRAWER
+   ============================================================ */
+.townwork-filter-drawer {
+  width: 95%;
+  max-width: 440px;
+  background: var(--card-bg);
+  border-radius: 24px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  height: 88vh;
+  max-height: 844px;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+
+.filter-drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--card-bg);
+}
+
+/* Clean White / Glass Standard Header Banner matching MichiApp design system */
+.townwork-filter-banner {
+  background: var(--card-bg);
+  color: var(--text-main);
+  padding: 18px 20px 0 20px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+html.dark-mode .townwork-filter-banner {
+  background: var(--card-bg);
+  color: var(--text-main);
+}
+
+.townwork-banner-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.townwork-banner-title-row h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.townwork-banner-tabs {
+  display: flex;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.townwork-tab-btn {
+  flex: 1;
+  padding: 10px 4px;
+  border: none;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  transition: all 0.2s;
+}
+
+html.dark-mode .townwork-tab-btn {
+  color: var(--text-secondary);
+}
+
+.townwork-tab-btn.active {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+html.dark-mode .townwork-tab-btn.active {
+  color: var(--primary);
+}
+
+.townwork-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 15%;
+  right: 15%;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 4px 4px 0 0;
+}
+
+html.dark-mode .townwork-tab-btn.active::after {
+  background: var(--primary);
+}
+
+/* Prefecture Selector Header Bar */
+.prefecture-selector-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px 16px;
+  background: var(--card-bg);
+}
+
+.prefecture-pill-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+}
+
+.prefecture-pill-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Accordion Item & Square Checkbox List */
+.townwork-accordion-item {
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+}
+
+.townwork-accordion-item:last-child {
+  border-bottom: none;
+}
+
+.townwork-accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.townwork-accordion-header:hover {
+  background: rgba(118, 118, 128, 0.04);
+}
+
+.townwork-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  flex: 1;
+  padding: 6px 4px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.townwork-square-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1.8px solid var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  background: transparent;
+  pointer-events: none; /* Let parent label handle click event cleanly */
+}
+
+.townwork-square-checkbox.checked {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #FFFFFF;
+}
+
+.townwork-accordion-body {
+  background: var(--card-bg);
+  padding: 10px 16px 14px 42px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.townwork-sub-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.townwork-sub-checkbox-item:hover {
+  background: rgba(10, 132, 255, 0.08);
+}
+
+/* Radius Radio Options */
+.townwork-radius-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.townwork-radius-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1.2px solid var(--glass-border);
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.townwork-radius-item.selected {
+  border-color: var(--primary);
+  background: rgba(10, 132, 255, 0.08);
+  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.15);
+}
+
+.townwork-radio-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.townwork-radius-item.selected .townwork-radio-circle {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.townwork-radio-inner {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #FFFFFF;
+}
+
+/* Floating Bottom Sticky Bar */
+.townwork-filter-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--card-bg);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  z-index: var(--z-content);
+}
+
+.townwork-btn-clear {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.townwork-btn-clear:hover {
+  background: rgba(118, 118, 128, 0.1);
+  color: var(--text-main);
+}
+
+.townwork-btn-search-cta {
+  width: 100%;
+  max-width: 100%;
+  padding: 14px 24px;
+  border-radius: 26px;
+  border: none;
+  background: linear-gradient(135deg, #0A84FF 0%, #5E5CE6 100%);
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 10px 28px rgba(10, 132, 255, 0.4);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+}
+
+.townwork-btn-search-cta:active {
+  transform: scale(0.97);
+}
+
+/* Active Filter Chips Bar */
+.active-filter-chips-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  gap: 8px;
+}
+
+.active-filter-chips-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 0 6px 0;
+  flex-wrap: nowrap;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.12) 0%, rgba(10, 132, 255, 0.05) 100%);
+  border: 1px solid rgba(10, 132, 255, 0.28);
+  box-shadow: 0 3px 10px rgba(10, 132, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #0066CC;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.active-chip:hover {
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.2) 0%, rgba(10, 132, 255, 0.1) 100%);
+  border-color: rgba(10, 132, 255, 0.45);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(10, 132, 255, 0.15);
+}
+
+.active-chip:active {
+  transform: scale(0.96);
+}
+
+.active-chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 132, 255, 0.16);
+  color: #0055B8;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  border: 1px solid rgba(10, 132, 255, 0.22);
+  margin-left: 2px;
+}
+
+.active-chip-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: rgba(10, 132, 255, 0.15);
+  color: #0066CC;
+  transition: all 0.15s ease;
+  margin-left: 1px;
+}
+
+.active-chip:hover .active-chip-close {
+  background: rgba(10, 132, 255, 0.3);
+  color: #004499;
+}
+
+.clear-all-chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.12) 0%, rgba(255, 59, 48, 0.05) 100%);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  color: #FF3B30;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.sticky-reset-btn {
+  position: sticky;
+  right: 0;
+  flex-shrink: 0;
+  z-index: var(--z-content);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--card-bg, #ffffff);
+  box-shadow: -10px 0 16px var(--card-bg, #ffffff), 0 3px 10px rgba(255, 59, 48, 0.08);
+}
+
+.chip-svg-icon {
+  flex-shrink: 0;
+  stroke-width: 2.2px;
+  color: #0066CC;
+  transition: transform 0.2s ease;
+}
+
+html.dark-mode .chip-svg-icon {
+  color: #409CFF;
+}
+
+.active-chip:hover .chip-svg-icon {
+  transform: scale(1.15);
+}
+
+.reset-spin-icon {
+  flex-shrink: 0;
+  stroke-width: 2.2px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sticky-reset-btn:hover .reset-spin-icon {
+  transform: rotate(-180deg);
+}
+
+.clear-all-chip:hover, .sticky-reset-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.2) 0%, rgba(255, 59, 48, 0.1) 100%);
+  border-color: rgba(255, 59, 48, 0.45);
+  transform: translateY(-1px);
+  box-shadow: -10px 0 16px var(--card-bg, #ffffff), 0 5px 14px rgba(255, 59, 48, 0.15);
+}
+
+.clear-all-chip:active, .sticky-reset-btn:active {
+  transform: scale(0.96);
+}
+
+/* Sort and Results Counter Bar */
+.sort-results-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 6px 0;
+  margin-bottom: 0;
+}
+
+.result-count {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.sort-select {
+  font-size: 12.5px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Accordion Collapsible Section Header */
+.category-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: rgba(118, 118, 128, 0.05);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--text-main);
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.category-section-header:hover {
+  background: rgba(118, 118, 128, 0.1);
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-section h4 {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Tag Chips */
+.filter-tag-chip {
+  padding: 8px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--glass-border);
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
+}
+
+.filter-tag-chip:active {
+  transform: scale(0.95);
+}
+
+.filter-tag-chip.active {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(94, 92, 230, 0.25);
+}
+
+.filter-drawer-actions {
+  padding: 16px 24px; /* Centered modal doesn't need bottom-sheet safe area padding */
+  display: flex;
+  gap: 12px;
+  background: var(--bg-color);
+  box-sizing: border-box;
+}
+
+.filter-action-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.filter-action-btn:active {
+  transform: scale(0.97);
+}
+
+.filter-action-btn.btn-reset {
+  background: rgba(118, 118, 128, 0.08);
+  color: var(--text-secondary);
+}
+
+.filter-action-btn.btn-reset:hover {
+  background: rgba(118, 118, 128, 0.12);
+  color: var(--text-main);
+}
+
+.filter-action-btn.btn-apply {
+  background: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(94, 92, 230, 0.3);
+}
+
+/* Animations */
+.animate-slide-up {
+  animation: slideUpSheet 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* Shimmering Skeleton Loader styles */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.15) 37%,
+    rgba(255, 255, 255, 0.05) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeletonLoading 1.4s ease infinite;
+}
+
+@keyframes skeletonLoading {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* ====== REAL JOB MAP MODAL IN-APP MOBILE STYLING ====== */
+.job-map-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+@media (min-width: 481px) {
+  .job-map-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 48px;
+  }
+}
+
+.job-map-modal-card {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  background: var(--card-bg, rgba(255, 255, 255, 0.95));
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.job-location-chip-clickable {
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.job-location-chip-clickable:hover {
+  background: var(--primary-light, rgba(10, 132, 255, 0.12));
+  color: var(--primary, #0A84FF);
+  transform: translateY(-1px);
+}
+
+.job-location-chip-clickable:active {
+  transform: scale(0.96);
+}
+
+/* Custom Compact Circular Map Marker Pin */
+.real-job-map-pin-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.job-pin-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50% 50% 50% 4px;
+  transform: rotate(-45deg);
+  background: linear-gradient(135deg, #0A84FF 0%, #0056B3 100%);
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.job-pin-badge .pin-icon {
+  transform: rotate(45deg);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.job-pin-badge:hover,
+.job-pin-badge.selected {
+  transform: rotate(-45deg) scale(1.25);
+  background: linear-gradient(135deg, #34C759 0%, #249D44 100%);
+  border-color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(52, 199, 89, 0.6);
+  z-index: var(--z-content);
+}
+
+@media (prefers-color-scheme: light) {
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.03) 25%,
+      rgba(0, 0, 0, 0.08) 37%,
+      rgba(0, 0, 0, 0.03) 63%
+    );
+    background-size: 400% 100%;
+  }
+}
+
+@keyframes skeleton-loading-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.job-card-hz.skeleton-card {
+  pointer-events: none;
+  min-height: 156px;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN SYSTEM & DESKTOP ENHANCEMENTS (BOSQICH 3.2)
+   ============================================================ */
+
+/* Map Modal Body Base Layout */
+.job-map-modal-body {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  overflow: hidden;
+}
+
+.job-map-modal-sidebar {
+  display: none;
+}
+
+.job-map-modal-map {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* 3.2.8 Filter Chips Hover Effects */
+@media (hover: hover) and (pointer: fine) {
+  .job-chip {
+    transition: all 0.2s ease;
+  }
+  .job-chip:hover {
+    background: rgba(10, 132, 255, 0.15);
+    color: var(--primary);
+    transform: translateY(-1px);
+  }
+  .filter-tag-chip {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .filter-tag-chip:hover {
+    background: rgba(10, 132, 255, 0.12);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-1px);
+  }
+  .active-chip {
+    transition: all 0.2s ease;
+  }
+  .active-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(10, 132, 255, 0.2);
+  }
+  .segment:hover {
+    background: rgba(118, 118, 128, 0.15);
+    color: var(--primary);
+  }
+  .prefecture-pill-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-1px);
+  }
+}
+
+/* 3.2.7 Image Size — Mobile Default (< 768px) */
+@media (max-width: 767px) {
+  .job-card-img {
+    width: 105px !important;
+    min-width: 105px !important;
+    max-width: 105px !important;
+    height: 105px !important;
+  }
+}
+
+/* ------------------------------------------------------------
+   TABLET BREAKPOINT (768px – 1199px)
+   ------------------------------------------------------------ */
+@media (min-width: 768px) {
+  /* 3.2.1 Grid Layout: 2 Columns on Tablet */
+  .jobs-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+    padding: 16px !important;
+  }
+
+  /* 3.2.7 Image Size — Tablet (140px) */
+  .job-card-img {
+    width: 140px !important;
+    min-width: 140px !important;
+    max-width: 140px !important;
+    height: 140px !important;
+  }
+
+  /* 3.2.2 Horizontal Scroll -> Grid Wrap */
+  .segmented-control {
+    flex-wrap: wrap !important;
+    overflow-x: visible !important;
+  }
+
+  .active-filter-chips-row {
+    flex-wrap: wrap !important;
+    overflow-x: visible !important;
+  }
+
+  .filter-tags {
+    flex-wrap: wrap !important;
+  }
+
+  /* 3.2.3 Qidiruv paneli — desktop kengligi (max-width: 600px markazlashtirilgan) */
+  .search-row {
+    max-width: 600px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100% !important;
+  }
+
+  /* 3.2.4 Segment filter — desktop kengligi */
+  .segmented-control {
+    max-width: 600px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    justify-content: center !important;
+    padding: 4px !important;
+    gap: 4px !important;
+  }
+
+  .segment {
+    padding: 9px 16px !important;
+    font-size: 13px !important;
+  }
+
+  /* 3.2.5 Advanced Filter Modal -> Sidebar Panel (Slide in from Right) */
+  .filter-drawer-overlay {
+    justify-content: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .townwork-filter-drawer {
+    width: 420px !important;
+    max-width: 420px !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 24px 0 0 24px !important;
+    box-shadow: -12px 0 40px rgba(0, 0, 0, 0.25) !important;
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  }
+
+  /* 3.2.6 Xarita modal — desktop split view */
+  .job-map-modal-card {
+    width: 90vw !important;
+    max-width: 1100px !important;
+    height: 85vh !important;
+    max-height: 750px !important;
+    border-radius: 28px !important;
+  }
+
+  .job-map-modal-body {
+    display: flex !important;
+    flex-direction: row !important;
+  }
+
+  .job-map-modal-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 320px !important;
+    min-width: 320px !important;
+    background: var(--card-bg) !important;
+    border-right: 1px solid var(--glass-border) !important;
+    padding: 14px !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .job-map-sidebar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .job-map-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 14px;
+    background: var(--bg-color);
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .job-map-sidebar-item:hover,
+  .job-map-sidebar-item.active {
+    border-color: var(--primary);
+    background: rgba(10, 132, 255, 0.08);
+    transform: translateX(2px);
+  }
+
+  .sidebar-item-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .sidebar-item-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .sidebar-item-company {
+    font-size: 10.5px;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  .sidebar-item-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sidebar-item-salary {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #30D158;
+  }
+}
+
+/* ------------------------------------------------------------
+   DESKTOP BREAKPOINT (≥ 1200px)
+   ------------------------------------------------------------ */
+@media (min-width: 1200px) {
+  /* 3.2.1 Grid Layout: 3 Columns on Desktop */
+  .jobs-list {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 20px !important;
+    padding: 20px !important;
+  }
+
+  /* 3.2.7 Image Size — Desktop (180px) */
+  .job-card-img {
+    width: 180px !important;
+    min-width: 180px !important;
+    max-width: 180px !important;
+    height: 180px !important;
+  }
+
+  .job-card-hz {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .search-row {
+    max-width: 680px !important;
+  }
+
+  .segmented-control {
+    max-width: 680px !important;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+

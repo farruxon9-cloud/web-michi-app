@@ -1,0 +1,328 @@
+/* ==========================================================================
+   🖥️ SideNav — Premium Desktop & Tablet Navigation Sidebar
+   ========================================================================== */
+
+.sidenav-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100vh;
+  height: 100dvh;
+  width: var(--sidebar-width, 260px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.7));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
+  z-index: var(--z-nav);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 14px;
+  box-sizing: border-box;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease;
+  user-select: none;
+}
+
+html.dark-mode .sidenav-container {
+  background: rgba(19, 21, 27, 0.85);
+  border-right-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Header Section: Logo & App Title */
+.sidenav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px 20px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+html.dark-mode .sidenav-header {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.sidenav-logo-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.sidenav-logo-kanji {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary, #5E5CE6), #8B5CF6);
+  color: white;
+  font-weight: 900;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(94, 92, 230, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.sidenav-logo-brand:hover .sidenav-logo-kanji {
+  transform: scale(1.05);
+}
+
+.sidenav-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidenav-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.sidenav-subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+}
+
+/* Navigation List */
+.sidenav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  margin-top: 12px;
+}
+
+.sidenav-item {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  box-sizing: border-box;
+}
+
+.sidenav-item:hover {
+  background: rgba(94, 92, 230, 0.08);
+  color: var(--text-main);
+  transform: translateX(3px);
+}
+
+html.dark-mode .sidenav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.sidenav-item.active {
+  background: var(--primary-light, rgba(94, 92, 230, 0.12));
+  color: var(--primary, #5E5CE6);
+  font-weight: 700;
+}
+
+html.dark-mode .sidenav-item.active {
+  background: rgba(94, 92, 230, 0.22);
+  color: #8E8CFF;
+}
+
+.sidenav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--primary, #5E5CE6);
+}
+
+.sidenav-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.sidenav-badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  background: var(--danger, #FF453A);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 10px;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(255, 69, 58, 0.4);
+}
+
+/* Footer Section: AI Avatar, Theme Toggle, Profile */
+.sidenav-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+html.dark-mode .sidenav-footer {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Language Selector Dropdown in SideNav */
+.sidenav-lang-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin-bottom: 2px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+html.dark-mode .sidenav-lang-container {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidenav-lang-container:hover {
+  background: rgba(94, 92, 230, 0.08);
+  border-color: rgba(94, 92, 230, 0.25);
+}
+
+.sidenav-lang-icon {
+  color: var(--text-secondary, #8E8E93);
+  flex-shrink: 0;
+}
+
+.sidenav-lang-select {
+  all: unset;
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  background: transparent;
+  width: 100%;
+}
+
+.sidenav-lang-select option {
+  background: var(--card-bg, #ffffff);
+  color: var(--text-main, #1c1c1e);
+  font-size: 13px;
+  padding: 6px;
+}
+
+.sidenav-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+}
+
+.sidenav-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+html.dark-mode .sidenav-user-card {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.sidenav-user-card:hover {
+  background: rgba(94, 92, 230, 0.08);
+}
+
+.sidenav-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-light-border);
+}
+
+.sidenav-user-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.sidenav-user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidenav-user-role {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   📑 Tablet Collapsed Mode (768px – 1023px)
+   ========================================================================== */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .sidenav-container {
+    width: 72px;
+    padding: 16px 8px;
+  }
+
+  .sidenav-brand-text,
+  .sidenav-item span:not(.sidenav-badge),
+  .sidenav-user-info,
+  .sidenav-subtitle {
+    display: none;
+  }
+
+  .sidenav-header {
+    justify-content: center;
+    padding: 4px 0 16px;
+  }
+
+  .sidenav-item {
+    justify-content: center;
+    padding: 12px 0;
+  }
+
+  .sidenav-item.active::before {
+    left: 2px;
+  }
+
+  .sidenav-user-card {
+    justify-content: center;
+    padding: 6px;
+  }
+
+  .sidenav-action-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

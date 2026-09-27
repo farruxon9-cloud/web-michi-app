@@ -1,0 +1,105 @@
+/* ============================================================
+   MICHI APP — macOS Platform Home Component CSS
+   Clean Apple macOS Desktop Styling & Native Title Bar
+   ============================================================ */
+
+.macos-home-container {
+  flex: 1;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 16px 0 16px;
+  box-sizing: border-box;
+  position: relative;
+  background: var(--bg-main, #F2F2F7);
+}
+
+/* macOS Native Titlebar Header */
+.macos-titlebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.macos-traffic-lights {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.macos-traffic-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.macos-traffic-dot:hover {
+  opacity: 0.85;
+  transform: scale(1.08);
+}
+
+.macos-traffic-dot.macos-close {
+  background-color: #FF5F56;
+  border: 1px solid #E0443E;
+}
+
+.macos-traffic-dot.macos-minimize {
+  background-color: #FFBD2E;
+  border: 1px solid #DEA123;
+}
+
+.macos-traffic-dot.macos-maximize {
+  background-color: #27C93F;
+  border: 1px solid #1AAB29;
+}
+
+.macos-titlebar-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main, #1C1C1E);
+  display: flex;
+  align-items: center;
+}
+
+.macos-platform-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #007AFF;
+  background: rgba(0, 122, 255, 0.1);
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+/* Dark Mode Overrides for macOS Titlebar */
+body.dark-mode .macos-titlebar-header {
+  background: rgba(30, 30, 30, 0.75);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .macos-titlebar-title {
+  color: #FFFFFF;
+}
+
+body.dark-mode .macos-platform-badge {
+  color: #0A84FF;
+  background: rgba(10, 132, 255, 0.15);
+}
