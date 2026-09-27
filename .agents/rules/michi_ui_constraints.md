@@ -80,6 +80,10 @@
     - Search containers on list screens (`.feed-header` in `DriverFeed.jsx`, `.academy-header` in `DrivingAcademy.jsx`) MUST use `position: relative` so they scroll away naturally when the user scrolls down, allowing maximum content visibility. Only the top `.global-header` and bottom `.bottom-nav` remain pinned.
 22. **Desktop Container Centering Invariant (Rule 22)**:
     - Desktop bounds `@media (min-width: 768px)` for all page containers (`.dashboard-container`, `.profile-container`, `.academy-container`, `.job-detail-container`, `.feed-container`) MUST use strictly `max-width: 820px !important; margin: 0 auto !important; width: 100% !important;`. Never apply `left: 50%` or `transform: translateX(-50%)` without absolute positioning, which causes leftward alignment shifts.
+23. **Selective Page Clearance Spacer Invariant (Rule 23)**:
+    - Feeds, Academy, Dashboard, and CompanyHome MUST use an exact 8px trailing clearance spacer (`<div style={{ height: '8px', minHeight: '8px' }} />`).
+    - Profile Main and all Profile sub-pages MUST retain an exact 12px trailing clearance spacer (`<div style={{ height: '12px', minHeight: '12px' }} />`).
+
 
 
 
