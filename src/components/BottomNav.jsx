@@ -125,48 +125,50 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
   }, []);
 
   return (
-    <div 
-      className="bottom-nav" 
-      ref={containerRef}
-      onMouseDown={handlePointerDown}
-      onTouchStart={handlePointerDown}
-    >
-      {/* Sliding Active Indicator Pill */}
-      <div className="bottom-nav-indicator-track" ref={trackRef}>
-        <div 
-          ref={indicatorRef}
-          className="bottom-nav-indicator" 
-          style={{ 
-            transform: `translateX(${activeIndex * 100}%)`,
-            '--active-index': activeIndex
-          }}
-        />
-      </div>
-
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = activeTab === item.id;
-        const showBadge = item.id === 'profile' && unreadCount > 0;
-        return (
-          <button
-            key={item.id}
-            className={`nav-item ${isActive ? 'active' : ''} ${item.isSpecial ? 'nav-item-special' : ''}`}
-            onClick={() => {
-              if (dragDistance.current <= 25) {
-                handleTabClick(item.id);
-              }
+    <div className="bottom-nav-dock">
+      <div 
+        className="bottom-nav" 
+        ref={containerRef}
+        onMouseDown={handlePointerDown}
+        onTouchStart={handlePointerDown}
+      >
+        {/* Sliding Active Indicator Pill */}
+        <div className="bottom-nav-indicator-track" ref={trackRef}>
+          <div 
+            ref={indicatorRef}
+            className="bottom-nav-indicator" 
+            style={{ 
+              transform: `translateX(${activeIndex * 100}%)`,
+              '--active-index': activeIndex
             }}
-          >
-            <div className={`nav-icon-wrap ${item.isSpecial ? 'special-icon-wrap' : ''}`}>
-              <Icon size={24} strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
-              {showBadge && (
-                <span className="nav-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
-              )}
-            </div>
-            <span>{item.label}</span>
-          </button>
-        );
-      })}
+          />
+        </div>
+
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          const showBadge = item.id === 'profile' && unreadCount > 0;
+          return (
+            <button
+              key={item.id}
+              className={`nav-item ${isActive ? 'active' : ''} ${item.isSpecial ? 'nav-item-special' : ''}`}
+              onClick={() => {
+                if (dragDistance.current <= 25) {
+                  handleTabClick(item.id);
+                }
+              }}
+            >
+              <div className={`nav-icon-wrap ${item.isSpecial ? 'special-icon-wrap' : ''}`}>
+                <Icon size={24} strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
+                {showBadge && (
+                  <span className="nav-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                )}
+              </div>
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
