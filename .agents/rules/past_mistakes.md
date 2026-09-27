@@ -779,13 +779,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **Capacitor Prefs Permission Grant**: Zarurat tug'ilganda `/Users/kanoatovfarrux/Library/Preferences/capacitor` katalogiga `mkdir -p` hamda `chmod -R 755` buyrug'i orqali yozish/o'qish huquqlari beriladi va `npx cap sync` buyrug'i unsandboxed mode (BypassSandbox) orqali toza va to'liq bajarilishi ta'minlanadi.
 
-## 🚫 128. Floating Search CTA Button Squircle, Minimalist Glow & Compact 64px Spacer Invariant
+## 🚫 128. Floating Search CTA Button Squircle, Minimalist Glow & Compact 70px Spacer Invariant
 * **Xatolik**:
-  1. Filtr oynalaridagi suzib turuvchi qidiruv tugmasiga (`.townwork-btn-search-cta`) o'ta o'tkir/rigid pill burchaklar berilishi, yon marjinlari boshqa kartochkalar bilan tekislanmasligi hamda `160px` keraksiz katta bo'shliq oqibatida ulkan ochiq oq joy qolishi.
+  1. Filtr oynalaridagi suzib turuvchi qidiruv tugmasiga (`.townwork-btn-search-cta`) o'ta o'tkir/rigid pill burchaklar berilishi, yon marjinlari boshqa kartochkalar bilan tekislanmasligi hamda bo'shliq o'ta ulkan yoki o'ta taqalgan bo'lib qolishi.
 * **Yechim (MAJBURIY)**:
   1. **Container-Matching Squircle (`border-radius: 20px`)**: Floating search CTA tugmalari strictly barcha boshqa kartochkalar kabi **`border-radius: 20px`** squircle atributiga ega bo'lishi SHART.
   2. **Minimalist Subtle Glow (`box-shadow: 0 4px 16px rgba(10, 132, 255, 0.2)`)**: Og'ir va ko'zga tashlanadigan nurlanishlar o'rniga minimalistik va mayin iOS shisha osti soyasi hamda `border: 1px solid rgba(255, 255, 255, 0.25)` ishlatiladi.
-  3. **Compact 64px Clearance Spacer**: Filtr kontenti oxirida strictly **`64px` Spacer** (`<div style={{ height: '64px', minHeight: '64px' }} />`) ishlatiladi. Natijada `52px` balandlikdagi qidiruv tugmasi ustida har qanday keraksiz ochiq joylarsiz strictly **12px** toza va ixcham masofa bilan to'xtaydi (`64px - 52px = 12px gap`).
+  3. **Compact 70px Clearance Spacer**: Filtr kontenti oxirida strictly **`70px` Spacer** (`<div style={{ height: '70px', minHeight: '70px' }} />`) ishlatiladi. Natijada `52px` balandlikdagi qidiruv tugmasi ustida o'ta toza va silliq masofa bilan to'xtaydi ($70\text{px} - 52\text{px} = 18\text{px}$ visual gap).
 
 
 
