@@ -1382,8 +1382,8 @@ export default function DriverFeed({
           </div>
         </div>
 
-        {/* Learned Rule Invariant: Compact 70px Clearance Spacer so filter content halts cleanly above 52px floating search CTA button */}
-        <div style={{ height: '70px', minHeight: '70px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* Learned Rule Invariant: Compact 78px Clearance Spacer so filter content halts cleanly above 52px floating search CTA button */}
+        <div style={{ height: '78px', minHeight: '78px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
         {/* Pinned Search CTA Button Dock — aligned 1:1 on single vertical margin line */}
         <div 
