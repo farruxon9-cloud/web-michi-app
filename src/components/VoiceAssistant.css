@@ -1945,18 +1945,20 @@ html.dark-mode .ai-response-text {
   line-height: 1;
 }
 
-/* Side Drawer Overlay & Translucent Container Panel */
+/* AI Hub Page Overlay & Container Panel — Seamless Native Page Match */
 .voice-side-drawer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--bg-color, #e5eafc);
   z-index: 100000;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: drawerOverlayFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: drawerOverlayFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+html.dark-mode .voice-side-drawer-overlay {
+  background: #0B0C10 !important;
 }
 
 @keyframes drawerOverlayFade {
@@ -1969,12 +1971,9 @@ html.dark-mode .ai-response-text {
   max-width: 820px;
   height: 100vh;
   height: 100dvh;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
-  border-right: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.35);
+  background: var(--bg-color, #e5eafc);
+  border: none;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   padding-top: max(20px, calc(env(safe-area-inset-top) + 12px));
@@ -1987,8 +1986,7 @@ html.dark-mode .ai-response-text {
 }
 
 html.dark-mode .voice-side-drawer-panel {
-  background: rgba(15, 17, 23, 0.96);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: #0B0C10 !important;
   color: #FFFFFF;
 }
 
