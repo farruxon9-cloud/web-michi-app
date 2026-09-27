@@ -630,8 +630,8 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
         </div>
       </div>
 
-      {/* Learned Rule Invariant: Compact 8px Clearance Spacer above bottom nav */}
-      <div style={{ height: '8px', minHeight: '8px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+      <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
     </div>
   );

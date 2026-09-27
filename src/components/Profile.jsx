@@ -213,8 +213,8 @@ export default function Profile({
           <div className="skeleton-pulse skeleton-row" />
           <div className="skeleton-pulse skeleton-row" />
         </div>
-        {/* Learned Rule Invariant: Profile 12px Clearance Spacer */}
-        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2728,8 +2728,8 @@ const getLicenseLabel = (type) => {
           )}
         </div>
 
-        {/* Learned Rule Invariant: Profile 12px Clearance Spacer */}
-        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2832,8 +2832,8 @@ const getLicenseLabel = (type) => {
             </div>
           </div>
         </div>
-        {/* 12px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
-        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3087,8 +3087,8 @@ const getLicenseLabel = (type) => {
             </div>
           </div>
         </div>
-        {/* Learned Rule Invariant: Profile 12px Clearance Spacer */}
-        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3138,8 +3138,8 @@ const getLicenseLabel = (type) => {
           schoolApplications={schoolApplications}
           userRole={userRole}
         />
-        {/* 12px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
-        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3671,8 +3671,8 @@ const getLicenseLabel = (type) => {
                 </div>
               )}
         </div>
-        {/* 12px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
-        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -4227,8 +4227,8 @@ const getLicenseLabel = (type) => {
             })
           )}
         </div>
-        {/* Learned Rule Invariant: Profile 12px Clearance Spacer */}
-        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -4326,8 +4326,8 @@ const getLicenseLabel = (type) => {
             </>
           )}
         </div>
-        {/* 12px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
-        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -4786,8 +4786,8 @@ const getLicenseLabel = (type) => {
             </div>
           )}
 
-          {/* 12px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
-          <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+          {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+          <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       );
     }
@@ -4859,8 +4859,8 @@ const getLicenseLabel = (type) => {
             </>
           )}
         </div>
-        {/* 12px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
-        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -5212,8 +5212,8 @@ const getLicenseLabel = (type) => {
           </div>
 
         </div>
-        {/* 12px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
-        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -7223,8 +7223,8 @@ const getLicenseLabel = (type) => {
         </button>
       </div>
 
-      {/* Learned Rule Invariant: Profile 12px Clearance Spacer */}
-      <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+      <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
       {/* Universal Japanese Vehicle Fleet Picker Modal */}
       <JapaneseVehiclePickerModal
