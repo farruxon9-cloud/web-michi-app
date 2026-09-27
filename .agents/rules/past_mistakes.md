@@ -806,7 +806,11 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Xatolik**:
   1. `.voice-side-drawer-trigger` tugmasiga oddiy `position: fixed; right: 0;` berilishi oqibatida, desktop versiyada tugma 820px ilova konteyneri devoridan uzilib, monitorining eng o'ng chekkasiga surilib ketishi (ko'rinmay qolishi).
 * **Yechim (MAJBURIY)**:
-  1. **App Container Wall Docking**: Desktop versiyasida (`@media (min-width: 768px)`) `.voice-side-drawer-trigger` uchun strictly **`right: calc(50% - 410px)`** qo'llaniladi. Natijada suzib turuvchi AI Hub tugmasi har doim 820px ilova konteynerining o'ng devor chizig'iga strictly doking qilinadi.
+## 🚫 134. AI Hub Seamless Native Page Background Matching Invariant
+* **Xatolik**:
+  1. AI Hub overlay (`.voice-side-drawer-overlay`) uchun `rgba(0,0,0,0.5)` qora backdrop ishlatilishi oqibatida desktop versiyada sahifaning yon tomonlari qorong'u bo'lib, begona pop-up modaldek ajralib qolishi.
+* **Yechim (MAJBURIY)**:
+  1. **Seamless Background Matching**: `.voice-side-drawer-overlay` va `.voice-side-drawer-panel` foni strictly **`var(--bg-color)`** (qorong'u rejimda `#0B0C10`) qilib belgilanadi hamda border/shadow bekor qilinadi. Natijada AI Hub sahifasi boshqa standart sahifalar bilan 100% tabiiy va bir xil ko'rinadi.
 
 
 

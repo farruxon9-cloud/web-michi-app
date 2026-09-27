@@ -93,6 +93,8 @@
     - Clearance spacers from screen bottom MUST be set to **`92px`** on main feeds (`DriverFeed`, `DrivingAcademy`, `Dashboard`, `CompanyHome`), **`96px`** on My Page / Profile (`Profile.jsx` main and all sub-pages), and **`162px`** on Filter Drawers (`DriverFeed`, `DrivingAcademy`).
 28. **Floating AI Hub Side Drawer Trigger Boundary Docking (Rule 28)**:
     - The floating AI Hub trigger (`.voice-side-drawer-trigger`) MUST dock on the right boundary wall of the 820px container on desktop using `@media (min-width: 768px) { right: calc(50% - 410px); }` and `right: 0` on mobile.
+29. **AI Hub Native Background Color Matching (Rule 29)**:
+    - `.voice-side-drawer-overlay` and `.voice-side-drawer-panel` MUST use `background: var(--bg-color, #e5eafc)` (and `#0B0C10` in dark mode) so the AI Hub view matches all regular app pages natively without dark black side backdrops.
 
 
 
