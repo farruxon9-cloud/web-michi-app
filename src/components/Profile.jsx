@@ -230,11 +230,26 @@ export default function Profile({
   const [notifTab, setNotifTab] = useState('all'); // 'all' | 'unread' | 'interview' | 'shoukai' | 'all'
 
   const handleOpenSubPage = (page) => {
-    const container = mainContainerRef.current || document.querySelector('.profile-container');
+    const container = document.querySelector('.main-content') || mainContainerRef.current || document.querySelector('.profile-container');
     if (container) {
       setSavedMainScroll(container.scrollTop);
     }
     setActivePage(page);
+    
+    // Force immediate scroll to top on opening sub-page
+    const resetScroll = () => {
+      if (typeof window !== 'undefined') window.scrollTo(0, 0);
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) mainContent.scrollTop = 0;
+      const containers = document.querySelectorAll('.profile-container');
+      containers.forEach(c => { c.scrollTop = 0; });
+    };
+
+    resetScroll();
+    requestAnimationFrame(resetScroll);
+    setTimeout(resetScroll, 20);
+    setTimeout(resetScroll, 60);
+    setTimeout(resetScroll, 150);
   };
 
   const handleBackToMain = () => {
@@ -251,7 +266,7 @@ export default function Profile({
         let attempts = 0;
         const maxAttempts = 15;
         const restoreScroll = () => {
-          const container = mainContainerRef.current || document.querySelector('.profile-container');
+          const container = document.querySelector('.main-content') || mainContainerRef.current || document.querySelector('.profile-container');
           if (container) {
             container.scrollTop = savedMainScroll;
             if (container.scrollTop < savedMainScroll && attempts < maxAttempts) {
@@ -268,8 +283,19 @@ export default function Profile({
         setTimeout(restoreScroll, 250);
       }
     } else {
-      const containers = document.querySelectorAll('.profile-container');
-      containers.forEach(c => { c.scrollTop = 0; });
+      const resetSubPageScroll = () => {
+        if (typeof window !== 'undefined') window.scrollTo(0, 0);
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) mainContent.scrollTop = 0;
+        const containers = document.querySelectorAll('.profile-container');
+        containers.forEach(c => { c.scrollTop = 0; });
+      };
+
+      resetSubPageScroll();
+      requestAnimationFrame(resetSubPageScroll);
+      setTimeout(resetSubPageScroll, 30);
+      setTimeout(resetSubPageScroll, 100);
+      setTimeout(resetSubPageScroll, 200);
     }
   }, [activePage, savedMainScroll]);
 
