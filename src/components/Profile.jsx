@@ -3138,8 +3138,8 @@ const getLicenseLabel = (type) => {
           schoolApplications={schoolApplications}
           userRole={userRole}
         />
-        {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
-        <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 12px clearance spacer for myAds view to prevent duplicate spacer stack */}
+        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
