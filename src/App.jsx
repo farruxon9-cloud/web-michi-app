@@ -1107,19 +1107,7 @@ function App() {
       <div className="glass-blob blob-2"></div>
       <div className="glass-blob blob-3"></div>
 
-      {/* Native Mobile iOS Status Bar */}
-      <div className="mobile-status-bar">
-        <span className="status-time">{clockTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
-        <div className="status-notch">
-          <div className="notch-camera"></div>
-        </div>
-        <div className="status-icons">
-          <span className="status-signal">5G</span>
-          <span className="status-battery">
-            <span className="battery-level"></span>
-          </span>
-        </div>
-      </div>
+
 
       <header className="global-header">
         {/* Left Side: Clickable MICHI Logo (redirects to Home) */}
