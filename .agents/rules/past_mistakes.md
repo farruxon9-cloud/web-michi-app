@@ -759,12 +759,12 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Strict Compact Max-Width (`max-width: 820px`)**: Barcha sahifalar hamda asosiy layout konteynerlari `@media (min-width: 768px)` desktop va noutbuk ekranlarida strictly `max-width: 820px; margin: 0 auto;` o'lchamiga va ekranning o'rtasiga mukammal tekislanadi.
   2. **Zero Horizontal Stretching**: Bento gridlar, e'lon kartochkalari, qidiruv paneli, va tafsilot bloklari keraksiz yon tomonga cho'zilmasdan, strictly compact `820px` konteyner ichida zich, mukammal va vizual tarzda ko'rkam bo'lishi shart.
 
-## 🚫 124. Compact 8px Content Clearance Spacer Invariant
+## 🚫 124. Page Clearance Spacer Invariant
 * **Xatolik**:
   1. Pastki menyu (`.bottom-nav`) ustida keraksiz katta masofalar yuzaga kelishi yoki kartochkalar taqab qolishi.
 * **Yechim (MAJBURIY)**:
-  1. **Compact 8px Clearance Spacer (`8px Spacer`)**: `.main-content` flex-konteynerining va barcha sahifalarning (`Dashboard.jsx`, `DriverFeed.jsx`, `DrivingAcademy.jsx`, `Profile.jsx`, `CompanyHome.jsx`) eng so'nggi kartochkasidan keyin strictly bitta **`8px` Spacer** (`<div style={{ height: '8px', minHeight: '8px', width: '100%', flexShrink: 0, clear: 'both' }} />`) qo'yiladi hamda ota-konteynerlar `padding-bottom: 0px` qilinadi.
-  2. **Micro-Compact Clearance**: Natijada eng so'nggi kartochka pastki menyuning tepasida strictly **EXACT 8px** toza va ixcham vizual masofa bilan to'xtaydi.
+  1. **Feeds, Academy & Dashboard 8px Spacer**: `.main-content` flex-konteynerining va `Dashboard.jsx`, `DriverFeed.jsx`, `DrivingAcademy.jsx`, `CompanyHome.jsx` sahifalarining eng so'nggi kartochkasidan keyin strictly bitta **`8px` Spacer** (`<div style={{ height: '8px', minHeight: '8px', width: '100%', flexShrink: 0, clear: 'both' }} />`) qo'yiladi.
+  2. **Profile Page 12px Spacer**: Profil sahifasi hamda uning sub-sahifalarida (`Profile.jsx`) esa strictly bitta **`12px` Spacer** (`<div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />`) saqlanadi. Ota-konteynerlar `padding-bottom: 0px` bo'ladi.
 
 ## 🚫 125. Feed & Page Search Bar Natural Scroll-Away Invariant
 * **Xatolik**:
