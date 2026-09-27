@@ -81,8 +81,8 @@
 22. **Desktop Container Centering Invariant (Rule 22)**:
     - Desktop bounds `@media (min-width: 768px)` for all page containers (`.dashboard-container`, `.profile-container`, `.academy-container`, `.job-detail-container`, `.feed-container`) MUST use strictly `max-width: 820px !important; margin: 0 auto !important; width: 100% !important;`. Never apply `left: 50%` or `transform: translateX(-50%)` without absolute positioning, which causes leftward alignment shifts.
 23. **Selective Page Clearance Spacer Invariant (Rule 23)**:
-    - Feeds, Academy, Dashboard, and CompanyHome MUST use an exact 8px trailing clearance spacer (`<div style={{ height: '8px', minHeight: '8px' }} />`).
-    - Profile Main and all Profile sub-pages MUST retain an exact 12px trailing clearance spacer (`<div style={{ height: '12px', minHeight: '12px' }} />`).
+    - Feeds, Academy, Dashboard, and CompanyHome main view MUST use an exact 8px trailing clearance spacer (`<div style={{ height: '8px', minHeight: '8px' }} />`).
+    - Profile Main, all Profile sub-pages, and Job Posting page (`Profile.jsx` -> `myAds`) MUST retain an exact 12px trailing clearance spacer (`<div style={{ height: '12px', minHeight: '12px' }} />`) leaving an exact 12px gap from bottom navigation.
 24. **Floating Search CTA Button Squircle & Compact 78px Filter Spacer Invariant (Rule 24)**:
     - Floating search CTA buttons (`.townwork-btn-search-cta`) MUST use `border-radius: 20px` to match container squircle aesthetics, `box-shadow: 0 4px 16px rgba(10, 132, 255, 0.2)` for a subtle minimalist glow, strict 1:1 vertical margin alignment (`left: 14px; width: calc(100% - 28px)` / desktop `.floating-search-cta-dock` `max-width: 792px`), and an exact **78px filter clearance spacer** (`<div style={{ height: '78px', minHeight: '78px' }} />`) in filter drawers so content halts cleanly with a 26px visual gap above the floating search CTA button.
 

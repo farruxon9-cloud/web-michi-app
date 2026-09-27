@@ -764,7 +764,7 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. Pastki menyu (`.bottom-nav`) ustida keraksiz katta masofalar yuzaga kelishi yoki kartochkalar taqab qolishi.
 * **Yechim (MAJBURIY)**:
   1. **Feeds, Academy & Dashboard 8px Spacer**: `.main-content` flex-konteynerining va `Dashboard.jsx`, `DriverFeed.jsx`, `DrivingAcademy.jsx`, `CompanyHome.jsx` sahifalarining eng so'nggi kartochkasidan keyin strictly bitta **`8px` Spacer** (`<div style={{ height: '8px', minHeight: '8px', width: '100%', flexShrink: 0, clear: 'both' }} />`) qo'yiladi.
-  2. **Profile Page 12px Spacer**: Profil sahifasi hamda uning sub-sahifalarida (`Profile.jsx`) esa strictly bitta **`12px` Spacer** (`<div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />`) saqlanadi. Ota-konteynerlar `padding-bottom: 0px` bo'ladi.
+  2. **Profile Page & Job Posting (myAds) 12px Spacer**: Profil sahifasi, uning barcha sub-sahifalari va E'lon berish sahifasida (`Profile.jsx` -> `myAds` / `CompanyHome`) strictly 84px olib tashlanib, bitta **`12px` Spacer** (`<div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />`) saqlanadi. Natijada BottomNav panelidan roppa-rosa 12px vizual masofa saqlanadi. Ota-konteynerlar `padding-bottom: 0px` bo'ladi.
 
 ## 🚫 125. Feed & Page Search Bar Natural Scroll-Away Invariant
 * **Xatolik**:
