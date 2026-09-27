@@ -787,6 +787,13 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   2. **Minimalist Subtle Glow (`box-shadow: 0 4px 16px rgba(10, 132, 255, 0.2)`)**: Og'ir va ko'zga tashlanadigan nurlanishlar o'rniga minimalistik va mayin iOS shisha osti soyasi hamda `border: 1px solid rgba(255, 255, 255, 0.25)` ishlatiladi.
   3. **Compact 78px Clearance Spacer**: Filtr kontenti oxirida strictly **`78px` Spacer** (`<div style={{ height: '78px', minHeight: '78px' }} />`) ishlatiladi. Natijada `52px` balandlikdagi qidiruv tugmasi ustida o'ta toza va silliq masofa bilan to'xtaydi ($78\text{px} - 52\text{px} = 26\text{px}$ visual gap).
 
+## 🚫 129. Profile Sub-Pages & Job Posting 12px Clearance Spacer Invariant
+* **Xatolik**:
+  1. `Profile.jsx` sub-sahifalarida (`myAds` / E'lon berish, `personalInfo` / `会社情報`, va h.k.) eski `96px` trailing clearance spacer div saqlanib qolishi. Bu `BottomNav` panelidan 84px ni ayirib tashlamasdan, 96px o'lchamda qolib ketgani uchun scroll oxirida pastki menyu ustida keraksiz ulkan va xunuk ochiq bo'shliq (blank void) hosil qilgan.
+* **Yechim (MAJBURIY)**:
+  1. **Exact 12px Sub-Page Clearance Spacer**: Barcha profil sub-sahifalarida (`myAds`, `personalInfo` / `会社情報`) trailing spacer balandligi strictly **`12px`** (`<div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />`) qilib o'rnatilishi SHART.
+  2. **Exact Visual Gap**: Natijada barcha profil sub-sahifalari va e'lon berish oynalarining eng oxirgi kontent kartochkasi suzib turuvchi `BottomNav` panelidan toza va parallel **12 px** vizual masofada to'xtaydi.
+
 
 
 
