@@ -1524,8 +1524,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             {isAdCourse ? t('publishSchoolAd') : t('publishJob')}
           </button>
 
-          {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
-          <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+          {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
+          <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       </div>
     );
@@ -1619,8 +1619,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               </p>
             </div>
           </div>
-          {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
-          <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+          {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
+          <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       </div>
     );
@@ -1701,8 +1701,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               </p>
             </div>
           </div>
-          {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
-          <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+          {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
+          <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       </div>
     );
