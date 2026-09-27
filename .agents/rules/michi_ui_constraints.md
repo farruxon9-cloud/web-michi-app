@@ -91,6 +91,8 @@
     - `.main-content` MUST be `position: absolute; top: 56px; bottom: 0; left: 0; right: 0;` so page content scrolls dynamically underneath floating BottomNav.
     - `.bottom-nav-dock` MUST be `position: absolute; bottom: 0; left: 0; right: 0; width: 100%; pointer-events: none;` ensuring `.bottom-nav` (`width: calc(100% - 28px)`) lines up 1:1 in a straight vertical line with cards above.
     - Clearance spacers from screen bottom MUST be set to **`92px`** on main feeds (`DriverFeed`, `DrivingAcademy`, `Dashboard`, `CompanyHome`), **`96px`** on My Page / Profile (`Profile.jsx` main and all sub-pages), and **`162px`** on Filter Drawers (`DriverFeed`, `DrivingAcademy`).
+28. **Floating AI Hub Side Drawer Trigger Boundary Docking (Rule 28)**:
+    - The floating AI Hub trigger (`.voice-side-drawer-trigger`) MUST dock on the right boundary wall of the 820px container on desktop using `@media (min-width: 768px) { right: calc(50% - 410px); }` and `right: 0` on mobile.
 
 
 

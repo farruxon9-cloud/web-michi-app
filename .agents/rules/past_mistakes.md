@@ -802,7 +802,11 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **Full-Height Scroll Layer**: `.main-content` strictly `position: absolute; top: 56px; bottom: 0; left: 0; right: 0;` qilinadi. Kontent `BottomNav` ostidan dinamik shaffof blur (`backdrop-filter: blur(24px)`) bo'lib o'tadi.
   2. **1:1 Pixel Alignment**: `.bottom-nav-dock` strictly `position: absolute; bottom: 0; left: 0; right: 0; width: 100%; pointer-events: none; background: transparent !important;` bo'lib, `.bottom-nav` menyusi (`width: calc(100% - 28px)`) tepadagi kartochkalar va sarlavhalar bilan 1:1 vertikal chiziqda tekislanadi.
-  3. **Differential Clearance Spacers**: Main Feeds (`DriverFeed`, `DrivingAcademy`, `Dashboard`, `CompanyHome`) uchun strictly **`92px` Spacer** (`<div style={{ height: '92px', minHeight: '92px' }} />`), Profile / My Page (`Profile.jsx` main va barcha sub-sahifalari) uchun strictly **`96px` Spacer** (`<div style={{ height: '96px', minHeight: '96px' }} />`), hamda Filtr Drawers (`DriverFeed`, `DrivingAcademy`) uchun suzib turuvchi `6件 検索` CTA tugmasi ustida toza to'xtashi uchun strictly **`162px` Spacer** (`<div style={{ height: '162px', minHeight: '162px' }} />`) qo'llaniladi.
+## 🚫 133. Floating AI Hub Side Drawer Trigger Boundary Docking Invariant
+* **Xatolik**:
+  1. `.voice-side-drawer-trigger` tugmasiga oddiy `position: fixed; right: 0;` berilishi oqibatida, desktop versiyada tugma 820px ilova konteyneri devoridan uzilib, monitorining eng o'ng chekkasiga surilib ketishi (ko'rinmay qolishi).
+* **Yechim (MAJBURIY)**:
+  1. **App Container Wall Docking**: Desktop versiyasida (`@media (min-width: 768px)`) `.voice-side-drawer-trigger` uchun strictly **`right: calc(50% - 410px)`** qo'llaniladi. Natijada suzib turuvchi AI Hub tugmasi har doim 820px ilova konteynerining o'ng devor chizig'iga strictly doking qilinadi.
 
 
 
