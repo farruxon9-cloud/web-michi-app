@@ -1886,8 +1886,8 @@ export default function DriverFeed({
         )}
       </div>
 
-      {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
-      <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
+      <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
       {/* ====== REAL LEAFLET MAP MODAL (Behind ENABLE_MAP_SEARCH feature flag) ====== */}
       {ENABLE_MAP_SEARCH && (
