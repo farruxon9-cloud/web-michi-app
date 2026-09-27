@@ -816,6 +816,25 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **Nested Component Spacer Deduplication**: Ichma-ich boshqa komponentni o'rab oluvchi konteynerlarda takroriy spacer qo'yilmaydi. `Profile.jsx` ning `myAds` bo'limi spaceri strictly **`12px`** (`<div style={{ height: '12px', minHeight: '12px' }} />`) qilib (84px ayirib) belgilanadi.
 
+## 🚫 140. BottomNav Bottom Placement Invariant Across All Viewports
+* **Xatolik**:
+  1. Desktop hamda planshet ekranlarida `isDesktop` media query `SideNav` ni chap tarafga chiqarib, `BottomNav` menyusini pastdan yoqotib qo'yishi.
+* **Yechim (MAJBURIY)**:
+  1. **Fixed Bottom Navigation**: Ilova navigatsiyasi har qanday ekran kengligi, viewport hamda platforma o'lchamida pastki qismda (`BottomNav`) 100% barqaror saqlanadi. Yon menyu (`SideNav`) chiqarilmaydi.
+
+## 🚫 141. Universal Top-Scroll Reset Invariant on Tab Navigation
+* **Xatolik**:
+  1. Pastki menyu yoki boshqa sahifa havolalari orqali yangi bo'limga o'tilganda avvalgi skroll pozitsiyasining saqlanib qolishi va yangi sahifaning o'rtasidan ochilishi.
+* **Yechim (MAJBURIY)**:
+  1. **Top-Scroll Reset**: Tab almashtirilganda va yo'nalish o'zgarganda `resetAllScrollPositions()` yordamida barcha ota va ichki scrollable konteynerlar (`.dashboard-container`, `.feed-container`, `.profile-container`, `window`) skroll pozitsiyasi darhol majburiy `0` ga (`scrollTop = 0`) o'tkaziladi.
+
+## 🚫 142. Single Active Working Branch (`web-1`) & Branch Switching/Merge/Push Prohibition Invariant
+* **Xatolik**:
+  1. Foydalanuvchi ruxsatisiz boshqa git tarmoqlariga (`web`, `full-branch` va h.k.) o'tib ketish, avtomatik `git merge` yoki `git push` bajarish.
+* **Yechim (MAJBURIY)**:
+  1. **Strict Working Branch (`web-1`)**: Agent har doim va faqat `web-1` tarmog'ida ishlaydi.
+  2. **Prohibition Guarantee**: Boshqa tarmoqqa o'tish (`git checkout`), `git merge` va `git push` buyruqlarini bajarish foydalanuvchining alohida va oshkora buyrug'isiz QAT'IYAN TAQIQLANADI.
+
 
 
 
