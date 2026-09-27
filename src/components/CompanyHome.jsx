@@ -1524,8 +1524,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             {isAdCourse ? t('publishSchoolAd') : t('publishJob')}
           </button>
 
-          {/* Trailing Clearance Spacer */}
-          <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0 }} />
+          {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+          <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       </div>
     );
@@ -1619,8 +1619,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               </p>
             </div>
           </div>
-          {/* Trailing Clearance Spacer */}
-          <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0 }} />
+          {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+          <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       </div>
     );
@@ -1701,8 +1701,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               </p>
             </div>
           </div>
-          {/* Trailing Clearance Spacer */}
-          <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0 }} />
+          {/* 96px clearance spacer yielding exact 12px visual gap above floating BottomNav */}
+          <div style={{ height: '96px', minHeight: '96px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       </div>
     );
