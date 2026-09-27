@@ -35,6 +35,7 @@ async function executeMichiAttempt(userMessage, onChunkUpdate = null) {
 
   const fetchPromise = (async () => {
     let client;
+    let finalResultText = '';
     try {
       client = await Client.connect("https://farruxkanoatov-michiai.hf.space");
     } catch (connErr) {
