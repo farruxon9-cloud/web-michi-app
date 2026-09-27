@@ -1,7 +1,7 @@
 .bottom-nav {
-  position: absolute;
-  bottom: 12px;
-  left: var(--screen-margin-x, 14px);
+  position: relative;
+  flex-shrink: 0;
+  margin: 0 var(--screen-margin-x, 14px) 12px;
   width: var(--card-width-full, calc(100% - 28px));
   height: 72px;
   display: flex;
@@ -16,6 +16,7 @@
   z-index: 500;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(90, 85, 234, 0.05);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
 }
 
 @media (prefers-color-scheme: dark) {

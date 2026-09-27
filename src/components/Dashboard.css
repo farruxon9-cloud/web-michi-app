@@ -26,17 +26,9 @@ html.light-mode {
 }
 
 .dashboard-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   padding: 14px;
-  padding-bottom: 96px;
+  padding-bottom: 0px;
   background-color: transparent;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
   width: 100% !important;
   box-sizing: border-box !important;
   scrollbar-width: none !important;
@@ -1416,9 +1408,8 @@ html.dark-mode .ambient-light {
 @media (min-width: 768px) {
   .dashboard-container {
     max-width: 820px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
     margin: 0 auto !important;
+    width: 100% !important;
     box-sizing: border-box !important;
   }
 }

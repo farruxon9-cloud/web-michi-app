@@ -213,7 +213,8 @@ export default function Profile({
           <div className="skeleton-pulse skeleton-row" />
           <div className="skeleton-pulse skeleton-row" />
         </div>
-        <div style={{ height: '80px', minHeight: '80px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* Learned Rule Invariant: Direct 12px Clearance Spacer */}
+        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2694,8 +2695,8 @@ const getLicenseLabel = (type) => {
           )}
         </div>
 
-        {/* 84px dock clearance spacer for clean parallel BottomNav alignment */}
-        <div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* Learned Rule Invariant: Direct 12px Clearance Spacer */}
+        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3053,8 +3054,8 @@ const getLicenseLabel = (type) => {
             </div>
           </div>
         </div>
-        {/* 90px dock clearance spacer (yielding 6px micro-compact visual gap above 84px BottomNav) */}
-        <div style={{ height: '90px', minHeight: '90px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* Learned Rule Invariant: Direct 12px Clearance Spacer */}
+        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -4192,8 +4193,8 @@ const getLicenseLabel = (type) => {
             })
           )}
         </div>
-        {/* 84px dock clearance for clean parallel alignment with BottomNav */}
-        <div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* Learned Rule Invariant: Direct 12px Clearance Spacer */}
+        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -7188,8 +7189,8 @@ const getLicenseLabel = (type) => {
         </button>
       </div>
 
-      {/* 100px dock clearance so logout button lifts cleanly above floating BottomNav (100px - 84px = 16px gap) */}
-      <div style={{ height: '100px', minHeight: '100px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* Learned Rule Invariant: Direct 12px Clearance Spacer */}
+      <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
       {/* Universal Japanese Vehicle Fleet Picker Modal */}
       <JapaneseVehiclePickerModal

@@ -1,17 +1,9 @@
 .profile-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0; /* Extends to bottom of screen so cards scroll smoothly under glass BottomNav */
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-bottom: 104px; /* 104px scroll padding for exact 20px clearance gap above BottomNav */
+  padding-bottom: 0px;
   width: 100% !important;
   box-sizing: border-box !important;
-  -webkit-overflow-scrolling: touch;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -35,16 +27,6 @@
 }
 
 .profile-container.sub-page-view {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  touch-action: pan-y;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
   padding-bottom: 0px !important;
 }
 
@@ -1733,9 +1715,8 @@ button.profile-btn-interactive {
 @media (min-width: 768px) {
   .profile-container {
     max-width: 820px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
     margin: 0 auto !important;
+    width: 100% !important;
     box-sizing: border-box !important;
   }
 }

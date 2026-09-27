@@ -811,9 +811,8 @@ html.dark-mode .ssw-requirements-block {
 @media (min-width: 768px) {
   .job-detail-container {
     max-width: 820px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
     margin: 0 auto !important;
+    width: 100% !important;
     box-sizing: border-box !important;
   }
 }

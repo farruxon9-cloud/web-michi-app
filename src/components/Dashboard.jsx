@@ -630,6 +630,9 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
         </div>
       </div>
 
+      {/* Learned Rule Invariant: Direct 12px Clearance Spacer above bottom nav */}
+      <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+
     </div>
   );
 }

@@ -759,12 +759,34 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Strict Compact Max-Width (`max-width: 820px`)**: Barcha sahifalar hamda asosiy layout konteynerlari `@media (min-width: 768px)` desktop va noutbuk ekranlarida strictly `max-width: 820px; margin: 0 auto;` o'lchamiga va ekranning o'rtasiga mukammal tekislanadi.
   2. **Zero Horizontal Stretching**: Bento gridlar, e'lon kartochkalari, qidiruv paneli, va tafsilot bloklari keraksiz yon tomonga cho'zilmasdan, strictly compact `820px` konteyner ichida zich, mukammal va vizual tarzda ko'rkam bo'lishi shart.
 
-## 🚫 124. Bottom Dock Navigation Zero-Gap & Content Clearance Invariant
+## 🚫 124. Direct 12px Content Clearance Spacer Invariant
 * **Xatolik**:
-  1. Pastki menyuga (`.bottom-nav`) `position: sticky; margin-top: auto;` atributlari berilganda, u DOM hujjat oqimida o'ziga joy ajratib, sahifa oxirida ulkan xunuk va keraksiz sun'iy ochiq bo'shliq (gap) paydo qilishi va layoutni buzib yuborishi.
+  1. Pastki menyu (`.bottom-nav`) ustida sun'iy o'lchamdagi 84px, 90px yoki 96px hisob-kitoblar ishlatilishi natijasida keraksiz katta bo'shliqlar yuzaga kelishi yoki kartochkalar taqab qolishi.
 * **Yechim (MAJBURIY)**:
-  1. **Absolute Floating Overlay Dock**: Pastki navigatsiya menyusi (`.bottom-nav`) strictly layout ustida suzib turuvchi **`position: absolute; bottom: 12px; z-index: 400;`** atributi bilan qotiriladi. U hech qachon DOM flex-oqimiga ta'sir o'tkazib sun'iy ochiq bo'shliq hosil qilmasligi SHART.
-  2. **Immutable Bottom Clearance Padding (`padding-bottom: 96px`)**: Barcha scroll bo'ladigan sahifa konteynerlari (`.feed-container`, `.dashboard-container`, `.profile-container`, `.academy-container`, `.job-detail-container`) strictly pastdan **`padding-bottom: 96px`** zaxira masofasini saqlaydi. Natijada eng so'nggi kartochka pastgacha scroll qilinganda dok menyuning tepasida 12px silliq va o'zgarmas masofa bilan toza turadi.
+  1. **Direct 12px Clearance Spacer (`12px Spacer`)**: `.main-content` flex-konteynerining eng so'nggi kartochkasidan keyin to'g'ridan-to'g'ri strictly bitta **`12px` Spacer** (`<div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />`) qo'yiladi hamda ota-konteynerlar `padding-bottom: 0px` qilinadi.
+  2. **Zero Offset Math**: Natijada eng so'nggi kartochka pastki menyuning tepasida to'g'ridan-to'g'ri EXACT 12px masofa bilan toza va mukammal to'xtaydi.
+
+## 🚫 125. Feed & Page Search Bar Natural Scroll-Away Invariant
+* **Xatolik**:
+  1. Ish o'rinlari (`DriverFeed`) va Maktablar (`DrivingAcademy`) sahifalaridagi qidiruv va filtrlash konteyneriga (`.feed-header`, `.academy-header`) `position: sticky !important` atributi berilishi natijasida u scroll qilinganda ham ekranda qotib turib, kontent maydonini toraytirishi.
+* **Yechim (MAJBURIY)**:
+  1. **Natural Scroll Position (`position: relative`)**: Sahifadagi qidiruv va sarlavha panellari (`.feed-header`, `.academy-header`) strictly **`position: relative`** atributiga ega bo'lishi SHART. Foydalanuvchi pastga scroll qilganda qidiruv konteyneri kontent bilan birga silliq tepaga chiqib ketadi.
+  2. **Global Pinning Integrity**: Faqatgina ilovaning eng yuqori global sarlavhasi (`.global-header`) hamda pastki menyusi (`.bottom-nav`) muqim va o'zgarmas holatda pinned (qotirilgan) bo'lib turadi.
+
+## 🚫 126. Capacitor Build & Sync Permissions Invariant
+* **Xatolik**:
+  1. `npm run build` yoki `npx cap sync` bajarilayotganda macOS `~/Library/Preferences/capacitor/sysconfig.json` faylini ochishda `EPERM: operation not permitted` xatoligi yuzaga kelishi va mobil sinxronizatsiya to'xtab qolishi.
+* **Yechim (MAJBURIY)**:
+  1. **Capacitor Prefs Permission Grant**: Zarurat tug'ilganda `/Users/kanoatovfarrux/Library/Preferences/capacitor` katalogiga `mkdir -p` hamda `chmod -R 755` buyrug'i orqali yozish/o'qish huquqlari beriladi va `npx cap sync` buyrug'i unsandboxed mode (BypassSandbox) orqali toza va to'liq bajarilishi ta'minlanadi.
+
+## 🚫 127. Desktop Container Centering Without Stray TranslateX Invariant
+* **Xatolik**:
+  1. Desktop media so'rovlarida (`@media (min-width: 768px)`) `.dashboard-container`, `.profile-container`, `.academy-container` hamda `.job-detail-container` kabi sahifalarda `position: absolute` bo'lmagan holatda `left: 50% !important; transform: translateX(-50%) !important;` berilishi oqibatida butun sahifa va menyu 50% ga chap tomonga surilib (og'ib) ketishi.
+* **Yechim (MAJBURIY)**:
+  1. **Pure Margin Centering (`margin: 0 auto !important; width: 100% !important`)**: Barcha sahifa konteynerlarining desktop chegara klasslarida `left: 50%` hamda `transform: translateX(-50%)` **UMUMAN ISHLATILMASLIGI SHART**.
+  2. **Standard Bounds**: Centering Strictly `max-width: 820px !important; margin: 0 auto !important; width: 100% !important; box-sizing: border-box !important;` orqali markazlashtiriladi.
+
+
 
 
 

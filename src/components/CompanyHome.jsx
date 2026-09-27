@@ -2012,7 +2012,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       )}
 
 
-      {/* Explicit BottomNav clearance spacer for compact clearance gap */}
+      {/* Learned Rule Invariant: Direct 12px Clearance Spacer */}
       <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
     </div>
   );

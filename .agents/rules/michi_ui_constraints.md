@@ -76,5 +76,10 @@
       2. Exact purpose and responsibilities.
       3. Key props, inputs, and state dependencies.
       4. Placement within the visual Mermaid architecture diagram.
+21. **Search Header Scrollability Invariant (Rule 21)**:
+    - Search containers on list screens (`.feed-header` in `DriverFeed.jsx`, `.academy-header` in `DrivingAcademy.jsx`) MUST use `position: relative` so they scroll away naturally when the user scrolls down, allowing maximum content visibility. Only the top `.global-header` and bottom `.bottom-nav` remain pinned.
+22. **Desktop Container Centering Invariant (Rule 22)**:
+    - Desktop bounds `@media (min-width: 768px)` for all page containers (`.dashboard-container`, `.profile-container`, `.academy-container`, `.job-detail-container`, `.feed-container`) MUST use strictly `max-width: 820px !important; margin: 0 auto !important; width: 100% !important;`. Never apply `left: 50%` or `transform: translateX(-50%)` without absolute positioning, which causes leftward alignment shifts.
+
 
 
