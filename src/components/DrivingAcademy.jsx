@@ -1467,8 +1467,8 @@ export default function DrivingAcademy({
 
         </div>
 
-        {/* Learned Rule Invariant: Compact 78px Clearance Spacer so filter content halts cleanly above 52px floating search CTA button */}
-        <div style={{ height: '78px', minHeight: '78px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 154px clearance spacer so filter drawer content halts cleanly above 52px floating search CTA button at bottom 96px */}
+        <div style={{ height: '154px', minHeight: '154px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
         {/* Pinned Search CTA Button Dock — aligned 1:1 on single vertical margin line */}
         <div 
