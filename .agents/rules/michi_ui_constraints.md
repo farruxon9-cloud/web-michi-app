@@ -85,10 +85,12 @@
     - Profile Main, all Profile sub-pages, and Job Posting page (`Profile.jsx` -> `myAds`) MUST retain an exact 12px trailing clearance spacer (`<div style={{ height: '12px', minHeight: '12px' }} />`) leaving an exact 12px gap from bottom navigation.
 24. **Floating Search CTA Button Squircle & Compact 78px Filter Spacer Invariant (Rule 24)**:
     - Floating search CTA buttons (`.townwork-btn-search-cta`) MUST use `border-radius: 20px` to match container squircle aesthetics, `box-shadow: 0 4px 16px rgba(10, 132, 255, 0.2)` for a subtle minimalist glow, strict 1:1 vertical margin alignment (`left: 14px; width: calc(100% - 28px)` / desktop `.floating-search-cta-dock` `max-width: 792px`), and an exact **78px filter clearance spacer** (`<div style={{ height: '78px', minHeight: '78px' }} />`) in filter drawers so content halts cleanly with a 26px visual gap above the floating search CTA button.
-25. **Profile Sub-Page Navigation Scroll Mechanics Invariant (Rule 25)**:
+26. **Profile Sub-Page Navigation Scroll Mechanics Invariant (Rule 26)**:
     - Navigating to any Profile sub-page (`handleOpenSubPage`) MUST force scroll position to top (`scrollTop = 0`), while saving current pixel offset in `savedMainScroll`. Clicking back (`handleBackToMain`) MUST reliably restore main Profile scroll position to the exact saved position. All sub-page back buttons MUST call `handleBackToMain`.
-26. **All Profile Sub-Pages 12px Clearance Spacer Invariant (Rule 26)**:
-    - All sub-pages in `Profile.jsx` (`applications`, `my_shoukai`, `employees`, `notifications`, `settings`, `saved_items`, `myAds`, `personalInfo` / `会社情報`, `about`) MUST use an exact 12px trailing clearance spacer (`<div style={{ height: '12px', minHeight: '12px' }} />`) so content halts cleanly leaving an exact 12px gap from bottom navigation.
+27. **Floating BottomNav Layer & Clearance Spacer Standards (Rule 27)**:
+    - `.main-content` MUST be `position: absolute; top: 56px; bottom: 0; left: 0; right: 0;` so page content scrolls dynamically underneath floating BottomNav.
+    - `.bottom-nav-dock` MUST be `position: absolute; bottom: 0; left: 0; right: 0; width: 100%; pointer-events: none;` ensuring `.bottom-nav` (`width: calc(100% - 28px)`) lines up 1:1 in a straight vertical line with cards above.
+    - Clearance spacers from screen bottom MUST be set to **`92px`** on main feeds (`DriverFeed`, `DrivingAcademy`, `Dashboard`, `CompanyHome`) and **`96px`** on My Page / Profile (`Profile.jsx` main and all sub-pages).
 
 
 

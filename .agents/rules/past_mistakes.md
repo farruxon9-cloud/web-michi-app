@@ -794,12 +794,15 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. **Top-Scroll on Sub-Page Open**: Sub-sahifaga kirilganda (`handleOpenSubPage`) `.main-content`, `.profile-container` hamda `window` skroll pozitsiyasi darhol majburiy `0` ga (`scrollTop = 0`) o'tkaziladi.
   2. **Saved Click Position Restoration**: Sub-sahifa menyusi bosilgan lahzada `.main-content` yoki `window.scrollY` o'lchovlaridan foydalanib exact piksel `savedMainScroll` saqlanadi va ortga qaytishda (`handleBackToMain`) 100% aniqlikda o'sha joyga qaytariladi.
-## 🚫 131. All Profile Sub-Pages Exact 12px Clearance Spacer Invariant
+## 🚫 132. Floating BottomNav Full-Height Scroll Layer & Clearance Spacers (92px Feeds / 96px Profile Invariant)
 * **Xatolik**:
-  1. `Profile.jsx` ning `applications` (受信した応募), `my_shoukai` (紹介経由の応募), `employees` (従業員 HR), `notifications` (通知), `settings` (設定), `saved_items` (保存した求人), `myAds` (E'lon berish), `personalInfo` (`会社情報`) kabi sub-sahifalarida eski `96px` spacer div saqlanib qolishi oqibatida pastki menyu ustida keraksiz ulkan bo'shliq hosil bo'lishi.
+  1. `.bottom-nav` flex tartibida turishi oqibatida `.main-content` kontenti uning tagidan o'tmasdan statik to'xtab qolishi hamda foni no-shaffof ko'rinishi.
+  2. `.bottom-nav-dock` containeriga keraksiz `left: 50%` transform berilishi desktop va mobil versiyalarda menyu o'lchamini toraytirib, tepadagi kartochkalar bilan tekislanmay qolishiga olib kelishi.
+  3. Full-height `.main-content` pastki chegarasiga nisbatan kiritilgan qisqa `8px`/`12px` spacerlar oxirgi kartochkani `BottomNav` menyusi ostiga ko'mib qo'yishi.
 * **Yechim (MAJBURIY)**:
-  1. **Universal Sub-Page 12px Spacer**: Barcha profil sub-sahifalarida trailing spacer div balandligi strictly **`12px`** (`<div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />`) bo'lishi SHART.
-  2. **Exact 12px Visual Gap**: Barcha sub-sahifalarning oxirgi konteyneri suzib turuvchi `BottomNav` panelidan roppa-rosa 12 px vizual masofada scroll bo'lmasdan toza to'xtaydi.
+  1. **Full-Height Scroll Layer**: `.main-content` strictly `position: absolute; top: 56px; bottom: 0; left: 0; right: 0;` qilinadi. Kontent `BottomNav` ostidan dinamik shaffof blur (`backdrop-filter: blur(24px)`) bo'lib o'tadi.
+  2. **1:1 Pixel Alignment**: `.bottom-nav-dock` strictly `position: absolute; bottom: 0; left: 0; right: 0; width: 100%; pointer-events: none; background: transparent !important;` bo'lib, `.bottom-nav` menyusi (`width: calc(100% - 28px)`) tepadagi kartochkalar va sarlavhalar bilan 1:1 vertikal chiziqda tekislanadi.
+  3. **Differential Clearance Spacers**: Main Feeds (`DriverFeed`, `DrivingAcademy`, `Dashboard`, `CompanyHome`) uchun strictly **`92px` Spacer** (`<div style={{ height: '92px', minHeight: '92px' }} />`), Profile / My Page (`Profile.jsx` main va barcha sub-sahifalari) uchun strictly **`96px` Spacer** (`<div style={{ height: '96px', minHeight: '96px' }} />`) qo'llaniladi. Natijada oxirgi kartochka `BottomNav` tepasidan toza vizual masofada to'xtaydi.
 
 
 
