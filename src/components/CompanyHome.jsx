@@ -2012,8 +2012,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       )}
 
 
-      {/* Learned Rule Invariant: Direct 12px Clearance Spacer */}
-      <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* Learned Rule Invariant: Compact 8px Clearance Spacer */}
+      <div style={{ height: '8px', minHeight: '8px', width: '100%', flexShrink: 0, clear: 'both' }} />
     </div>
   );
 }

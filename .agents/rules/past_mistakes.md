@@ -759,12 +759,12 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Strict Compact Max-Width (`max-width: 820px`)**: Barcha sahifalar hamda asosiy layout konteynerlari `@media (min-width: 768px)` desktop va noutbuk ekranlarida strictly `max-width: 820px; margin: 0 auto;` o'lchamiga va ekranning o'rtasiga mukammal tekislanadi.
   2. **Zero Horizontal Stretching**: Bento gridlar, e'lon kartochkalari, qidiruv paneli, va tafsilot bloklari keraksiz yon tomonga cho'zilmasdan, strictly compact `820px` konteyner ichida zich, mukammal va vizual tarzda ko'rkam bo'lishi shart.
 
-## 🚫 124. Direct 12px Content Clearance Spacer Invariant
+## 🚫 124. Compact 8px Content Clearance Spacer Invariant
 * **Xatolik**:
-  1. Pastki menyu (`.bottom-nav`) ustida sun'iy o'lchamdagi 84px, 90px yoki 96px hisob-kitoblar ishlatilishi natijasida keraksiz katta bo'shliqlar yuzaga kelishi yoki kartochkalar taqab qolishi.
+  1. Pastki menyu (`.bottom-nav`) ustida keraksiz katta masofalar yuzaga kelishi yoki kartochkalar taqab qolishi.
 * **Yechim (MAJBURIY)**:
-  1. **Direct 12px Clearance Spacer (`12px Spacer`)**: `.main-content` flex-konteynerining eng so'nggi kartochkasidan keyin to'g'ridan-to'g'ri strictly bitta **`12px` Spacer** (`<div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />`) qo'yiladi hamda ota-konteynerlar `padding-bottom: 0px` qilinadi.
-  2. **Zero Offset Math**: Natijada eng so'nggi kartochka pastki menyuning tepasida to'g'ridan-to'g'ri EXACT 12px masofa bilan toza va mukammal to'xtaydi.
+  1. **Compact 8px Clearance Spacer (`8px Spacer`)**: `.main-content` flex-konteynerining va barcha sahifalarning (`Dashboard.jsx`, `DriverFeed.jsx`, `DrivingAcademy.jsx`, `Profile.jsx`, `CompanyHome.jsx`) eng so'nggi kartochkasidan keyin strictly bitta **`8px` Spacer** (`<div style={{ height: '8px', minHeight: '8px', width: '100%', flexShrink: 0, clear: 'both' }} />`) qo'yiladi hamda ota-konteynerlar `padding-bottom: 0px` qilinadi.
+  2. **Micro-Compact Clearance**: Natijada eng so'nggi kartochka pastki menyuning tepasida strictly **EXACT 8px** toza va ixcham vizual masofa bilan to'xtaydi.
 
 ## 🚫 125. Feed & Page Search Bar Natural Scroll-Away Invariant
 * **Xatolik**:
