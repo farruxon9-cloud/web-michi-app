@@ -20,9 +20,9 @@
   position: relative !important;
   pointer-events: auto !important;
   flex-shrink: 0 !important;
-  margin: 0 auto !important;
+  margin: 0 var(--screen-margin-x, 14px) !important;
   width: var(--card-width-full, calc(100% - 28px)) !important;
-  max-width: 600px !important;
+  max-width: 100% !important;
   height: 72px !important;
   display: flex !important;
   flex-direction: row !important;
@@ -39,7 +39,7 @@
   box-sizing: border-box !important;
 }
 
-/* Enforce Universal Bottom Horizontal Docking across ALL Screen Resolutions & Orientations */
+/* Enforce Universal Bottom Horizontal Docking & Pixel-Perfect 14px Edge Grid Alignment */
 @media screen and (min-width: 0px) {
   .bottom-nav-dock {
     position: absolute !important;
@@ -55,8 +55,9 @@
 
   .bottom-nav {
     flex-direction: row !important;
+    margin: 0 var(--screen-margin-x, 14px) !important;
     width: var(--card-width-full, calc(100% - 28px)) !important;
-    max-width: 600px !important;
+    max-width: 100% !important;
     height: 72px !important;
   }
 
