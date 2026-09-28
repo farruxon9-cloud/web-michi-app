@@ -27,6 +27,75 @@
   margin: 0 auto;
 }
 
+/* Town Work Style Optional Side Panels (Active on widescreen >= 1280px) */
+.townwork-side-panel {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .townwork-side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 200px;
+    position: absolute;
+    top: 60px;
+    z-index: 100;
+  }
+
+  .townwork-left-panel {
+    left: -216px;
+  }
+
+  .townwork-right-panel {
+    right: -216px;
+  }
+
+  .townwork-widget-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .townwork-widget-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  .townwork-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .townwork-chip {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(94, 92, 230, 0.08);
+    color: var(--primary);
+    border: 1px solid rgba(94, 92, 230, 0.15);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .townwork-chip:hover {
+    background: var(--primary);
+    color: #ffffff;
+  }
+}
+
 .global-header {
   display: flex;
   justify-content: space-between;
