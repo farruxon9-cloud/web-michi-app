@@ -8,6 +8,25 @@
   overflow: hidden;
 }
 
+/* Town Work Style Desktop Outer Canvas Wrapper */
+.townwork-desktop-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--bg-color);
+  position: relative;
+  box-sizing: border-box;
+}
+
+.townwork-desktop-canvas {
+  width: 100%;
+  max-width: 820px;
+  position: relative;
+  margin: 0 auto;
+}
+
 .global-header {
   display: flex;
   justify-content: space-between;
