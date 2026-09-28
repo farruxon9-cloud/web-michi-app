@@ -1209,22 +1209,7 @@ function App() {
         handleApplyJob, handleApplySchool,
         handleShoukai, handleToggleSave,
       }}>
-        {isDesktop && (
-          <SideNav 
-            activeTab={activeTab}
-            setActiveTab={handleSetActiveTab}
-            unreadCount={showProfileBadges ? unreadCount : 0}
-            userRole={userRole}
-            profileData={profileData}
-            darkMode={darkMode}
-            setDarkMode={setDarkMode}
-            isVoiceActive={isVoiceActive}
-            isVoiceStandby={isVoiceStandby}
-            voiceStatus={voiceStatus}
-            handleVoiceToggle={handleVoiceToggle}
-          />
-        )}
-        <div className={`app-layout ${isDesktop ? 'has-sidenav' : ''}`}>
+        <div className="app-layout">
       <div className="glass-blob blob-1"></div>
       <div className="glass-blob blob-2"></div>
       <div className="glass-blob blob-3"></div>
@@ -1245,8 +1230,8 @@ function App() {
         </div>
       )}
 
-      {/* Header Bar: Mobile header for small devices (Desktop uses SideNav for navigation and language switcher) */}
-      {!isDesktop && !showJDMNavigation && !selectedJob && !showAssistHeroShowcase && activeTab !== 'nav' && (
+      {/* Header Bar: Navigation header for all devices */}
+      {!showJDMNavigation && !selectedJob && !showAssistHeroShowcase && activeTab !== 'nav' && (
         <header className="global-header mobile-header">
           {/* Left Side: Clickable MICHI Logo */}
           <div 
@@ -1401,7 +1386,7 @@ function App() {
       )}
 
 
-      {!isDesktop && !(activeTab === 'profile' && profileActivePage === 'resume_builder') && (
+      {!(activeTab === 'profile' && profileActivePage === 'resume_builder') && (
         <BottomNav 
           activeTab={activeTab} 
           setActiveTab={handleSetActiveTab}
