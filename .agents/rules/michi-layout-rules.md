@@ -1,18 +1,20 @@
-# Michi App UI & Navigation Rules
+# Michi App UI, Navigation & Git Rules
 
-## 1. Bottom Navigation Docking Rule
-- `BottomNav` MUST always remain a fixed horizontal dock at the bottom of the screen (`bottom: 0`, `flex-direction: row`).
-- Do NOT convert or refactor `BottomNav` into a sidebar, vertical drawer, or side column on wider desktop screens.
+## 1. Git Branch Sync Protocol Rule
+- All active development and experimental iterations occur strictly on `web-1` branch.
+- Synchronizing or merging changes across `full-branch`, `web`, `s`, `s1`, `b` is STRICTLY FORBIDDEN until the user explicitly requests or approves via chat.
 
-## 2. Vertical Line Grid Alignment Rule
-- `BottomNav`'s outer left and right boundaries MUST align precisely in a single vertical line with the outer edges of the content cards above it.
-- Always use `--screen-margin-x` (14px) and `--card-width-full` (`calc(100% - 28px)`).
-- Ensure `max-width: 100%` on `.bottom-nav` so it matches the container's responsive grid bounds identically.
+## 2. Bottom Navigation & Grid Boundary Rule
+- `BottomNav` and AI Hub button MUST stay anchored to the 820px grid boundaries (`margin: 0 14px`, `max-width: 820px`).
+- Do NOT convert `BottomNav` into a sidebar or vertical drawer on wide desktop screens.
 
-## 3. Branch Workflow Rule
-- `full-branch` serves as the clean baseline reference.
-- Active development and feature iterations continue on `web-1` branch.
+## 3. Town Work Style 820px Core Container Rule
+- The core app (`#root` & `.app-layout`) is strictly locked to `max-width: 820px; margin: 0 auto;`.
+- The outer desktop canvas remains clean neutral/white space (Town Work style). Side extensions do NOT shrink or distort the 820px core container.
 
-## 4. Unified App Container Dimensions Rule
-- The app container (`#root` & `.app-layout`) MUST enforce a unified fixed-width app container (`max-width: 820px`) centered on larger screens (tablets, laptops, desktops, 4K displays).
-- This ensures that the AI Hub button, header elements, card containers, margins, and bottom navigation stay perfectly aligned on the 820px grid boundaries.
+## 4. Scroll & Back Navigation Invariants
+- Switching tabs from `BottomNav` MUST scroll main content to top (`scrollTop = 0`).
+- Clicking detail back button (`ArrowLeft`) MUST restore the exact scroll position where the user clicked the item.
+
+## 5. Language Rule
+- All user responses, plans, explanations, and documentation MUST be provided in 100% clean, professional Uzbek language.
