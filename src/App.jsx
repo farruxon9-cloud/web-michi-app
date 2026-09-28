@@ -252,6 +252,14 @@ function App() {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const audioRef = useRef(null);
+  const mainContentRef = useRef(null);
+
+  // Pastki menyudan tab o'zgarganda kontentni eng yuqoridan ochish
+  useEffect(() => {
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTop = 0;
+    }
+  }, [activeTab]);
 
   // Status Bar Clock State
   const [clockTime, setClockTime] = useState(() => new Date());
@@ -1146,7 +1154,7 @@ function App() {
         </div>
       </header>
 
-      <main className="main-content" style={{ zIndex: 10 }}>
+      <main className="main-content" ref={mainContentRef} style={{ zIndex: 10 }}>
         <ChunkErrorBoundary>
           {renderTabContent()}
         </ChunkErrorBoundary>
