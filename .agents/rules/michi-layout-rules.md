@@ -12,3 +12,7 @@
 ## 3. Branch Workflow Rule
 - `full-branch` serves as the clean baseline reference.
 - Active development and feature iterations continue on `web-1` branch.
+
+## 4. Unified App Container Dimensions Rule
+- The app container (`#root` & `.app-layout`) MUST enforce a unified fixed-width mobile app container (`max-width: 480px`) centered on larger screens (tablets, laptops, desktops, 4K displays).
+- This ensures that font sizes, card proportions, margins, and bottom navigation look 100% IDENTICAL across all devices.
