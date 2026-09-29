@@ -236,7 +236,7 @@ export default function DrivingAcademy({
   selectedSchool, setSelectedSchool, onBackPress, schools = MOCK_SCHOOLS, setSchools,
   onEditJob, searchQuery = '', setSearchQuery
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   const getMaskedAddress = (fullAddress) => {
     if (!fullAddress) return '';
