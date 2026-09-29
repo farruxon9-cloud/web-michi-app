@@ -864,3 +864,10 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. Kod o'zgarishlarini bir nechta git tarmoqlariga (`full-branch`, `web`, `s`, `s1`, `b`) foydalanuvchi tasdiqlamasidan avval tayyorgarliksiz sync qilish.
 * **Yechim (MAJBURIY)**:
   1. Ish strictly va faqat `web-1` tarmog'ida olib boriladi. Boshqa tarmoqlarga sync qilish faqat foydalanuvchining chatingizdagi aniq yozma ruxsatidan so'ng amalga oshiriladi.
+
+## 🚫 148. Bottom Clearance Spacer Invariant (+8px Breathing Gap)
+* **Xatolik**:
+  1. Top offset to'g'rilangach, pastki menyu (`BottomNav`) hamda eng pastki konteyner/tugmalar paneli o'rtasidagi masofa qisqarib, kontent menyu ostiga yaqin tiqilib qolishi.
+* **Yechim (MAJBURIY)**:
+  1. Eng pastki clearance spacerlar masofasi kamida **`100px`** (`height: 100px; minHeight: 100px;`) va detail oynalar uchun `padding-bottom: 104px;` etib belgilanadi, bu esa kontent va `BottomNav` o'rtasida shaffof, erkin nafas oluvchi oraliqni kafolatlaydi.
+

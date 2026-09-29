@@ -1524,8 +1524,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             {isAdCourse ? t('publishSchoolAd') : t('publishJob')}
           </button>
 
-          {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
-          <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
+          {/* 100px clearance spacer yielding exact visual clearance above floating BottomNav (+8px added) */}
+          <div style={{ height: '100px', minHeight: '100px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       </div>
     );
@@ -1619,8 +1619,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               </p>
             </div>
           </div>
-          {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
-          <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
+          {/* 100px clearance spacer yielding exact visual clearance above floating BottomNav (+8px added) */}
+          <div style={{ height: '100px', minHeight: '100px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       </div>
     );
@@ -1701,8 +1701,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               </p>
             </div>
           </div>
-          {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
-          <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
+          {/* 100px clearance spacer yielding exact visual clearance above floating BottomNav (+8px added) */}
+          <div style={{ height: '100px', minHeight: '100px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       </div>
     );
@@ -2012,8 +2012,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       )}
 
 
-      {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
-      <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* 100px clearance spacer yielding exact visual clearance above floating BottomNav (+8px added) */}
+      <div style={{ height: '100px', minHeight: '100px', width: '100%', flexShrink: 0, clear: 'both' }} />
     </div>
   );
 }
