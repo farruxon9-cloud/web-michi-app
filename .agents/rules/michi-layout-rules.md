@@ -25,11 +25,6 @@
 ## 7. `useTranslation` i18n Scope Safety Rule
 - Whenever `i18n.language` is accessed, `{ t, i18n }` MUST be destructured from `useTranslation()`.
 
-## 8. Bottom Clearance Spacers (+8px breathing room)
-- Feed and tab list bottom clearance spacers MUST be at least `100px` (`height: 100px; minHeight: 100px`).
-- Detail view containers (`JobDetail.css`, `DrivingAcademy.css`, `Profile.jsx`) MUST set `padding-bottom: 104px` / `104px` clearance to guarantee clean visual separation above the floating `BottomNav`.
-
-## 9. Language Rule
+## 8. Language Rule
 - All user responses, plans, explanations, and documentation MUST be provided in 100% clean, professional Uzbek language.
-
 
