@@ -402,6 +402,39 @@ export default function DrivingAcademy({
     /** isSaved — Ushbu maktab profilning "Saqlanganlar" bo'limida bormi */
     const isSaved = profileData?.savedItems?.schools?.some(s => s.id === school.id);
 
+    const getLanguageLabel = (langCode) => {
+      if (!langCode) return '';
+      const code = String(langCode).trim().toUpperCase();
+      const currentLang = i18n.language || 'ja';
+      
+      if (currentLang === 'ja') {
+        if (code === 'JP' || code === 'JAPANESE') return '日本語';
+        if (code === 'EN' || code === 'ENGLISH') return '英語';
+        if (code === 'UZ' || code === 'UZBEK') return 'ウズベク語';
+        if (code === 'RU' || code === 'RUSSIAN') return 'ロシア語';
+        if (code === 'ZH' || code === 'CHINESE') return '中国語';
+        if (code === 'VN' || code === 'VIETNAMESE') return 'ベトナム語';
+        return code;
+      } else if (currentLang === 'en') {
+        if (code === 'JP' || code === 'JAPANESE') return 'Japanese';
+        if (code === 'EN' || code === 'ENGLISH') return 'English';
+        if (code === 'UZ' || code === 'UZBEK') return 'Uzbek';
+        if (code === 'RU' || code === 'RUSSIAN') return 'Russian';
+        if (code === 'ZH' || code === 'CHINESE') return 'Chinese';
+        if (code === 'VN' || code === 'VIETNAMESE') return 'Vietnamese';
+        return code;
+      } else {
+        // Uzbek locale default
+        if (code === 'JP' || code === 'JAPANESE') return 'Yapon tili';
+        if (code === 'EN' || code === 'ENGLISH') return 'Ingliz tili';
+        if (code === 'UZ' || code === 'UZBEK') return "O'zbek tili";
+        if (code === 'RU' || code === 'RUSSIAN') return 'Rus tili';
+        if (code === 'ZH' || code === 'CHINESE') return 'Xitoy tili';
+        if (code === 'VN' || code === 'VIETNAMESE') return 'Vyetnam tili';
+        return code;
+      }
+    };
+
     return (
       <div className="academy-container detail-view fade-in">
         <div className="school-detail-scroll hide-scrollbar">
@@ -412,13 +445,6 @@ export default function DrivingAcademy({
               Sticky pozitsiyada, scroll qilinganda ham ko'rinib turadi.
               ============================================================ */}
           <div className="academy-header-actions">
-            {/* 
-              ORTGA TUGMASI:
-              - onBackPress mavjud bo'lsa → Profilga qaytaradi 
-                (Profil > Saqlanganlar > Maktab dan kelgan holat)
-              - onBackPress yo'q bo'lsa → Ro'yxatga qaytaradi
-                (Akademiya tab dan to'g'ridan-to'g'ri ochilgan holat)
-            */}
             <button className="icon-btn glass" onClick={() => { 
               if (onBackPress) {
                 onBackPress(); // App.jsx dagi handleSchoolBack — profilga qaytish
@@ -438,8 +464,7 @@ export default function DrivingAcademy({
 
           {/* ============================================================
               MAKTAB RASMI
-              To'liq kenglikda, yuqori burchakda til badge ko'rsatiladi.
-              onError — rasm yuklanmasa zaxira rasm ko'rsatiladi.
+              To'liq kenglikda, toza ko'rinishda ko'rsatiladi.
               ============================================================ */}
           <div className="school-image-container">
             <img 
@@ -448,7 +473,6 @@ export default function DrivingAcademy({
               className="school-image" 
               onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
             />
-            <div className="langs-badge glass">{school.langs ? school.langs.join(', ') : 'UZ, JP'}</div>
           </div>
 
           {/* ============================================================
@@ -465,9 +489,37 @@ export default function DrivingAcademy({
             </div>
             
             {/* ------- JOYLASHUV ------- */}
-            <p className="school-location" style={{ marginBottom: '20px' }}>
+            <p className="school-location" style={{ marginBottom: '16px' }}>
               <MapPin size={14} /> {t(`school_${school.id}_location`, school.location)}
             </p>
+
+            {/* ------- O'QITISH TILLARI (B VARIANT) ------- */}
+            {school.langs && school.langs.length > 0 && (
+              <div className="detail-section instruction-languages-section">
+                <h4 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Globe size={15} color="#0A84FF" />
+                  {i18n.language === 'ja' ? '対応言語' : i18n.language === 'en' ? 'Languages Offered' : 'O\'qitish tillari'}
+                </h4>
+                <div className="categories-row" style={{ marginTop: '6px', marginBottom: '16px' }}>
+                  {school.langs.map(lang => (
+                    <span key={lang} className="category-tag glass" style={{
+                      background: 'rgba(10, 132, 255, 0.1)',
+                      color: 'var(--info)',
+                      border: '1px solid rgba(10, 132, 255, 0.25)',
+                      fontWeight: '700',
+                      padding: '5px 12px',
+                      borderRadius: '10px',
+                      fontSize: '12.5px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}>
+                      🌐 {getLanguageLabel(lang)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* ------- KURSLAR BO'LIMI ------- */}
             <div className="detail-section">
