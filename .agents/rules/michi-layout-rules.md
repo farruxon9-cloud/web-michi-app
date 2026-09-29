@@ -25,6 +25,11 @@
 ## 7. `useTranslation` i18n Scope Safety Rule
 - Whenever `i18n.language` is accessed, `{ t, i18n }` MUST be destructured from `useTranslation()`.
 
-## 8. Language Rule
+## 8. Strict Component Scope Control for Layout Tweaks
+- Visual padding, margin, or layout offset changes requested for a specific component (e.g. `DrivingAcademy.css` detail view) MUST be applied ONLY to that target component.
+- Never apply global changes across all pages/components when the user explicitly specified a single view.
+
+## 9. Language Rule
 - All user responses, plans, explanations, and documentation MUST be provided in 100% clean, professional Uzbek language.
+
 

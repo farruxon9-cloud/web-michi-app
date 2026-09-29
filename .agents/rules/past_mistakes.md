@@ -864,3 +864,10 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. Kod o'zgarishlarini bir nechta git tarmoqlariga (`full-branch`, `web`, `s`, `s1`, `b`) foydalanuvchi tasdiqlamasidan avval tayyorgarliksiz sync qilish.
 * **Yechim (MAJBURIY)**:
   1. Ish strictly va faqat `web-1` tarmog'ida olib boriladi. Boshqa tarmoqlarga sync qilish faqat foydalanuvchining chatingizdagi aniq yozma ruxsatidan so'ng amalga oshiriladi.
+
+## 🚫 148. Component-Specific Scope Isolation for Visual Spacing Requests
+* **Xatolik**:
+  1. Foydalanuvchi faqat bitta sahifa (masalan, avtomaktab e'lonlarining batafsil sahifasi) uchun masofa/padding so'raganda, loyihadagi barcha boshqa sahifalar va global feed spacerlarni ham o'zgartirib yuborish.
+* **Yechim (MAJBURIY)**:
+  1. Vizual dizayn va padding o'zgartirishlari faqat va faqat foydalanuvchi so'ragan tegishli komponent (`DrivingAcademy.css`) doirasida strictly cheklanadi va boshqa umumiy komponentlarga tarqatilmaydi.
+
