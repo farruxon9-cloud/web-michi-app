@@ -16,5 +16,15 @@
 - Switching tabs from `BottomNav` MUST scroll main content to top (`scrollTop = 0`).
 - Clicking detail back button (`ArrowLeft`) MUST restore the exact scroll position where the user clicked the item.
 
-## 5. Language Rule
+## 5. Detail View Overlay Top Offset Invariant
+- Detail view overlays (`JobDetail.css`, `DrivingAcademy.css`) MUST strictly set `top: 56px` to flush perfectly against the `.global-header` (`56px`), eliminating any 8px peeking background search bar gap.
+
+## 6. Instruction Languages Layout (B Variant)
+- Instruction languages in detail views MUST be rendered inside the detail body metadata section as localized glassmorphic pills with flags (🇯🇵 🇺🇿 🇬🇧), avoiding crowding in the hero image.
+
+## 7. `useTranslation` i18n Scope Safety Rule
+- Whenever `i18n.language` is accessed, `{ t, i18n }` MUST be destructured from `useTranslation()`.
+
+## 8. Language Rule
 - All user responses, plans, explanations, and documentation MUST be provided in 100% clean, professional Uzbek language.
+

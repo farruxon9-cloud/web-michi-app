@@ -835,14 +835,32 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
   1. **Strict Working Branch (`web-1`)**: Agent har doim va faqat `web-1` tarmog'ida ishlaydi.
   2. **Prohibition Guarantee**: Boshqa tarmoqqa o'tish (`git checkout`), `git merge` va `git push` buyruqlarini bajarish foydalanuvchining alohida va oshkora buyrug'isiz QAT'IYAN TAQIQLANADI.
 
+## 🚫 143. Detail View Overlay Top Offset Alignment (`top: 56px`)
+* **Xatolik**:
+  1. `JobDetail.css` yoki `DrivingAcademy.css` overlay oynasi uchun `top: 64px` berilishi va `.global-header` balandligi `56px` bo'lgani sababli header ostidan 8px qidiruv paneli yoki oraliq ko'rinib qolishi.
+* **Yechim (MAJBURIY)**:
+  1. Detail overlay oynalari tepa masofasi `.global-header` balandligiga 100% zich yopishib turishi uchun strictly **`top: 56px;`** qilinadi.
 
+## 🚫 144. Detail Hero Image Action Button vs Language Badges Crowding (B Variant)
+* **Xatolik**:
+  1. E'lon batafsil sahifasida e'lon rasmining tepa o'ng burchagida Bookmark (Saqlash) tugmasi yoniga ta'lim tillari (`langs-badge`) nishonlarini joylashtirish tugmalar tiqilib qolishiga olib kelishi.
+* **Yechim (MAJBURIY)**:
+  1. O'qitish tillari nishonlari (B Variant) e'lon rasmi ustidan olib tashlanadi va e'lon matni (Detail Body) metadata qismida Yaponiya (🇯🇵), O'zbekiston (🇺🇿), Buyuk Britaniya (🇬🇧) bayroqlari bilan ixcham glassmorphic pill nishon ko'rinishida ko'rsatiladi.
 
+## 🚫 145. `useTranslation` Destructuring & i18n Scope Safety
+* **Xatolik**:
+  1. Komponent ichida `i18n.language` o'zgaruvchisidan foydalanib, `useTranslation()` hookidan `{ t, i18n }` ni destructuring qilishni unutib qoldirish. Bu brauzerda `ReferenceError: Can't find variable: i18n` xatosi berib ilovani qulatadi.
+* **Yechim (MAJBURIY)**:
+  1. Har safar `i18n.language` ishlatilganda, `const { t, i18n } = useTranslation()` destructuring to'g'ri bajarilgani tekshiriladi.
 
+## 🚫 146. Back Button State & Dynamic Scroll Position Preservation
+* **Xatolik**:
+  1. Tafsilotlar oynasidan (Detail view) ortga qaytganda asosiy ro'yxat skroll pozitsiyasining yo'qolib qolishi yoki tab almashtirish paytida skrollning tepaga qaytmasligi.
+* **Yechim (MAJBURIY)**:
+  1. `App.jsx` dagi `mainContentRef` orqali pastki menyu tablari almashtirilganda `.main-content.scrollTop = 0` bajariladi, lekin tafsilotlar oynasidan ortga qaytilganda asosiy oyna skroll pozitsiyasi aniq saqlab qolinadi.
 
-
-
-
-
-
-
-
+## 🚫 147. Multi-Branch Git Synchronization Safety Protocol
+* **Xatolik**:
+  1. Kod o'zgarishlarini bir nechta git tarmoqlariga (`full-branch`, `web`, `s`, `s1`, `b`) foydalanuvchi tasdiqlamasidan avval tayyorgarliksiz sync qilish.
+* **Yechim (MAJBURIY)**:
+  1. Ish strictly va faqat `web-1` tarmog'ida olib boriladi. Boshqa tarmoqlarga sync qilish faqat foydalanuvchining chatingizdagi aniq yozma ruxsatidan so'ng amalga oshiriladi.
