@@ -435,6 +435,18 @@ export default function DrivingAcademy({
       }
     };
 
+    const getLanguageFlag = (langCode) => {
+      if (!langCode) return '🌐';
+      const code = String(langCode).trim().toUpperCase();
+      if (code === 'JP' || code === 'JAPANESE') return '🇯🇵';
+      if (code === 'UZ' || code === 'UZBEK') return '🇺🇿';
+      if (code === 'EN' || code === 'ENGLISH') return '🇬🇧';
+      if (code === 'RU' || code === 'RUSSIAN') return '🇷🇺';
+      if (code === 'ZH' || code === 'CHINESE') return '🇨🇳';
+      if (code === 'VN' || code === 'VIETNAMESE') return '🇻🇳';
+      return '🌐';
+    };
+
     return (
       <div className="academy-container detail-view fade-in">
         <div className="school-detail-scroll hide-scrollbar">
@@ -493,28 +505,32 @@ export default function DrivingAcademy({
               <MapPin size={14} /> {t(`school_${school.id}_location`, school.location)}
             </p>
 
-            {/* ------- O'QITISH TILLARI (B VARIANT) ------- */}
+            {/* ------- O'QITISH TILLARI (B VARIANT - PREMIUM GLASS PILLS) ------- */}
             {school.langs && school.langs.length > 0 && (
-              <div className="detail-section instruction-languages-section">
-                <h4 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Globe size={15} color="#0A84FF" />
+              <div className="detail-section instruction-languages-section" style={{ marginBottom: '16px' }}>
+                <h4 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '800', color: 'var(--primary)', letterSpacing: '0.03em' }}>
+                  <Globe size={15} color="var(--primary)" />
                   {i18n.language === 'ja' ? '対応言語' : i18n.language === 'en' ? 'Languages Offered' : 'O\'qitish tillari'}
                 </h4>
-                <div className="categories-row" style={{ marginTop: '6px', marginBottom: '16px' }}>
+                <div className="categories-row" style={{ marginTop: '8px', gap: '8px' }}>
                   {school.langs.map(lang => (
-                    <span key={lang} className="category-tag glass" style={{
-                      background: 'rgba(10, 132, 255, 0.1)',
-                      color: 'var(--info)',
-                      border: '1px solid rgba(10, 132, 255, 0.25)',
-                      fontWeight: '700',
-                      padding: '5px 12px',
-                      borderRadius: '10px',
-                      fontSize: '12.5px',
+                    <span key={lang} className="lang-chip-premium" style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '5px'
+                      gap: '7px',
+                      padding: '6px 14px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, rgba(94, 92, 230, 0.09) 0%, rgba(10, 132, 255, 0.05) 100%)',
+                      border: '1.5px solid rgba(94, 92, 230, 0.22)',
+                      boxShadow: '0 3px 10px rgba(94, 92, 230, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+                      color: 'var(--text-main)',
+                      fontSize: '13px',
+                      fontWeight: '750',
+                      letterSpacing: '-0.01em',
+                      transition: 'all 0.2s ease'
                     }}>
-                      🌐 {getLanguageLabel(lang)}
+                      <span style={{ fontSize: '16px', lineHeight: 1 }}>{getLanguageFlag(lang)}</span>
+                      <span>{getLanguageLabel(lang)}</span>
                     </span>
                   ))}
                 </div>
