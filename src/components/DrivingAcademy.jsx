@@ -895,56 +895,55 @@ export default function DrivingAcademy({
           
           {/* SECTION 1: Prefektura va Joylashuv (都道府県・市区町村から探す) */}
           <div className="job-category-section" style={{
-            background: 'var(--card-bg)', borderRadius: '18px', padding: '14px 16px',
-            border: '1px solid var(--glass-border)', boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+            background: 'var(--card-bg)', borderRadius: '20px',
+            border: selectedCitiesList.length > 0 ? '1px solid rgba(10, 132, 255, 0.4)' : '1px solid var(--glass-border)',
+            boxShadow: selectedCitiesList.length > 0 ? '0 8px 24px rgba(10, 132, 255, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden', transition: 'all 0.25s ease'
           }}>
-            <button
-              type="button"
+            <div 
+              className="category-section-header"
               onClick={() => setIsLocationSectionOpen(!isLocationSectionOpen)}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
-              }}
+              style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  width: '36px', height: '36px', borderRadius: '10px', background: '#0A84FF15',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  width: '38px', height: '38px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #0A84FF 0%, #0056B3 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(10, 132, 255, 0.35)', flexShrink: 0
                 }}>
-                  <MapPin size={18} color="#0A84FF" />
+                  <MapPin size={20} color="#FFFFFF" />
                 </div>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
                     {t('prefectureHeader', '都道府県・市区町村から探す')}
-                  </h4>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  </span>
+                  <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
                     {selectedCitiesList.length > 0 
                       ? `${selectedCitiesList.length} ${t('selected', '件選択中')}` 
                       : (selectedPrefecture === 'all' ? t('allLocations', 'すべての地域') : selectedPrefecture)}
-                  </p>
+                  </span>
                 </div>
               </div>
+
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {selectedCitiesList.length > 0 && (
                   <span style={{
-                    background: 'var(--primary)', color: '#FFFFFF', fontSize: '11px',
-                    fontWeight: '800', padding: '2px 8px', borderRadius: '10px'
+                    fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #0A84FF, #5E5CE6)', color: '#FFF',
+                    boxShadow: '0 2px 8px rgba(10, 132, 255, 0.3)'
                   }}>
                     {selectedCitiesList.length}件
                   </span>
                 )}
-                <div style={{
-                  width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transform: isLocationSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
-                }}>
-                  <ChevronDown size={16} color="var(--text-secondary)" />
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(118, 118, 128, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isLocationSectionOpen ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
                 </div>
               </div>
-            </button>
+            </div>
 
             {isLocationSectionOpen && (
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)' }}>
+              <div style={{ padding: '14px 16px' }}>
                 {/* Prefecture Selection Header Card */}
                 <div style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -1064,55 +1063,53 @@ export default function DrivingAcademy({
 
           {/* SECTION 2: Bekat va Liniyalar (沿線・駅から探す) */}
           <div className="job-category-section" style={{
-            background: 'var(--card-bg)', borderRadius: '18px', padding: '14px 16px',
+            background: 'var(--card-bg)', borderRadius: '20px',
             border: selectedStations.length > 0 ? '1px solid rgba(48, 209, 88, 0.4)' : '1px solid var(--glass-border)',
-            boxShadow: selectedStations.length > 0 ? '0 8px 24px rgba(48, 209, 88, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.03)'
+            boxShadow: selectedStations.length > 0 ? '0 8px 24px rgba(48, 209, 88, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden', transition: 'all 0.25s ease'
           }}>
-            <button
-              type="button"
+            <div 
+              className="category-section-header"
               onClick={() => setIsStationsSectionOpen(!isStationsSectionOpen)}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
-              }}
+              style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  width: '36px', height: '36px', borderRadius: '10px', background: '#30D15815',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  width: '38px', height: '38px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #30D158 0%, #248A3D 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(48, 209, 88, 0.35)', flexShrink: 0
                 }}>
-                  <Train size={18} color="#30D158" />
+                  <Train size={20} color="#FFFFFF" />
                 </div>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
                     {t('searchByStations', '沿線・駅から探す')}
-                  </h4>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  </span>
+                  <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
                     {selectedStations.length === 0 ? t('allStations', '路線名・最寄り駅の指定') : `${selectedStations.length} ${t('selected', '件選択中')}`}
-                  </p>
+                  </span>
                 </div>
               </div>
+
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {selectedStations.length > 0 && (
                   <span style={{
-                    background: '#30D158', color: '#FFFFFF', fontSize: '11px',
-                    fontWeight: '800', padding: '2px 8px', borderRadius: '10px'
+                    fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #30D158, #248A3D)', color: '#FFF',
+                    boxShadow: '0 2px 8px rgba(48, 209, 88, 0.3)'
                   }}>
                     {selectedStations.length}件
                   </span>
                 )}
-                <div style={{
-                  width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transform: isStationsSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
-                }}>
-                  <ChevronDown size={16} color="var(--text-secondary)" />
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(118, 118, 128, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isStationsSectionOpen ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
                 </div>
               </div>
-            </button>
+            </div>
 
             {isStationsSectionOpen && (
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)' }}>
+              <div style={{ padding: '14px 16px' }}>
                 <div className="tab-stations-wrapper">
                   {(() => {
                     const prefKey = (selectedPrefecture || 'all').toLowerCase();
@@ -1183,55 +1180,65 @@ export default function DrivingAcademy({
             )}
           </div>
 
-          {/* SECTION 2: Litsenziya toifalari / Kurslar (取得希望の免許・コース) */}
+          {/* SECTION 3: Litsenziya toifalari / Kurslar (取得希望の免許・コース) */}
           <div className="job-category-section" style={{
-            background: 'var(--card-bg)', borderRadius: '18px', padding: '14px 16px',
-            border: '1px solid var(--glass-border)', boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+            background: 'var(--card-bg)', borderRadius: '20px',
+            border: selectedCourses.length > 0 ? '1px solid rgba(10, 132, 255, 0.4)' : '1px solid var(--glass-border)',
+            boxShadow: selectedCourses.length > 0 ? '0 8px 24px rgba(10, 132, 255, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden', transition: 'all 0.25s ease'
           }}>
-            <button
-              type="button"
+            <div 
+              className="category-section-header"
               onClick={() => setIsCourseSectionOpen(!isCourseSectionOpen)}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
-              }}
+              style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  width: '36px', height: '36px', borderRadius: '10px', background: '#34C75915',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  width: '38px', height: '38px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #0A84FF 0%, #0056B3 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(10, 132, 255, 0.35)', flexShrink: 0
                 }}>
-                  <Car size={18} color="#34C759" />
+                  <Car size={20} color="#FFFFFF" />
                 </div>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
                     {t('coursesOfferedHeader', '取得希望の免許・コース')}
-                  </h4>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  </span>
+                  <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
                     {selectedCourses.length === 0 ? t('allCourses', 'すべてのコース') : `${selectedCourses.length} ${t('selected', '件選択中')}`}
-                  </p>
+                  </span>
                 </div>
               </div>
-              <div style={{
-                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transform: isCourseSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
-              }}>
-                <ChevronDown size={16} color="var(--text-secondary)" />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {selectedCourses.length > 0 && (
+                  <span style={{
+                    fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #0A84FF, #5E5CE6)', color: '#FFF',
+                    boxShadow: '0 2px 8px rgba(10, 132, 255, 0.3)'
+                  }}>
+                    {selectedCourses.length}件
+                  </span>
+                )}
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(118, 118, 128, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isCourseSectionOpen ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+                </div>
               </div>
-            </button>
+            </div>
 
             {isCourseSectionOpen && (
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ padding: '14px 16px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {courseOptions.map(c => {
                   const isSelected = selectedCourses.includes(c.id);
                   return (
                     <button
                       key={c.id}
                       type="button"
+                      className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
                       onClick={() => toggleMultiSelect(setSelectedCourses, selectedCourses, c.id)}
                       style={{
-                        padding: '8px 12px', borderRadius: '12px', border: isSelected ? '1px solid #0A84FF' : '1px solid var(--glass-border)',
+                        padding: '8px 12px', borderRadius: '14px', border: isSelected ? '1px solid #0A84FF' : '1px solid var(--glass-border)',
                         background: isSelected ? 'rgba(10, 132, 255, 0.12)' : 'var(--glass-bg)',
                         color: isSelected ? '#0A84FF' : 'var(--text-main)',
                         fontWeight: isSelected ? '800' : '600', fontSize: '13px',
@@ -1247,55 +1254,65 @@ export default function DrivingAcademy({
             )}
           </div>
 
-          {/* SECTION 3: O'quv uslubi (教習スタイル・受講形態) */}
+          {/* SECTION 4: O'quv uslubi (教習スタイル・受講形態) */}
           <div className="job-category-section" style={{
-            background: 'var(--card-bg)', borderRadius: '18px', padding: '14px 16px',
-            border: '1px solid var(--glass-border)', boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+            background: 'var(--card-bg)', borderRadius: '20px',
+            border: selectedStyles.length > 0 ? '1px solid rgba(255, 149, 0, 0.4)' : '1px solid var(--glass-border)',
+            boxShadow: selectedStyles.length > 0 ? '0 8px 24px rgba(255, 149, 0, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden', transition: 'all 0.25s ease'
           }}>
-            <button
-              type="button"
+            <div 
+              className="category-section-header"
               onClick={() => setIsStyleSectionOpen(!isStyleSectionOpen)}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
-              }}
+              style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  width: '36px', height: '36px', borderRadius: '10px', background: '#FF950015',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  width: '38px', height: '38px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #FF9500 0%, #C27000 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(255, 149, 0, 0.35)', flexShrink: 0
                 }}>
-                  <GraduationCap size={18} color="#FF9500" />
+                  <GraduationCap size={20} color="#FFFFFF" />
                 </div>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
                     {t('trainingStyleHeader', '教習スタイル・受講形態')}
-                  </h4>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  </span>
+                  <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
                     {selectedStyles.length === 0 ? t('allStyles', 'すべての受講形態') : `${selectedStyles.length} ${t('selected', '件選択中')}`}
-                  </p>
+                  </span>
                 </div>
               </div>
-              <div style={{
-                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transform: isStyleSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
-              }}>
-                <ChevronDown size={16} color="var(--text-secondary)" />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {selectedStyles.length > 0 && (
+                  <span style={{
+                    fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #FF9500, #FFB340)', color: '#FFF',
+                    boxShadow: '0 2px 8px rgba(255, 149, 0, 0.3)'
+                  }}>
+                    {selectedStyles.length}件
+                  </span>
+                )}
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(118, 118, 128, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isStyleSectionOpen ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+                </div>
               </div>
-            </button>
+            </div>
 
             {isStyleSectionOpen && (
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ padding: '14px 16px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {styleOptions.map(s => {
                   const isSelected = selectedStyles.includes(s.id);
                   return (
                     <button
                       key={s.id}
                       type="button"
+                      className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
                       onClick={() => toggleMultiSelect(setSelectedStyles, selectedStyles, s.id)}
                       style={{
-                        padding: '8px 12px', borderRadius: '12px', border: isSelected ? '1px solid #FF9500' : '1px solid var(--glass-border)',
+                        padding: '8px 12px', borderRadius: '14px', border: isSelected ? '1px solid #FF9500' : '1px solid var(--glass-border)',
                         background: isSelected ? 'rgba(255, 149, 0, 0.12)' : 'var(--glass-bg)',
                         color: isSelected ? '#FF9500' : 'var(--text-main)',
                         fontWeight: isSelected ? '800' : '600', fontSize: '13px',
@@ -1311,46 +1328,55 @@ export default function DrivingAcademy({
             )}
           </div>
 
-          {/* SECTION 4: Dars tillari (授業言語・通訳サポート) */}
+          {/* SECTION 5: Dars tillari (授業言語・通訳サポート) */}
           <div className="job-category-section" style={{
-            background: 'var(--card-bg)', borderRadius: '18px', padding: '14px 16px',
-            border: '1px solid var(--glass-border)', boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+            background: 'var(--card-bg)', borderRadius: '20px',
+            border: selectedLang !== 'all' ? '1px solid rgba(175, 82, 222, 0.4)' : '1px solid var(--glass-border)',
+            boxShadow: selectedLang !== 'all' ? '0 8px 24px rgba(175, 82, 222, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden', transition: 'all 0.25s ease'
           }}>
-            <button
-              type="button"
+            <div 
+              className="category-section-header"
               onClick={() => setIsLangSectionOpen(!isLangSectionOpen)}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
-              }}
+              style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  width: '36px', height: '36px', borderRadius: '10px', background: '#AF52DE15',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  width: '38px', height: '38px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #AF52DE 0%, #7B2CBF 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(175, 82, 222, 0.35)', flexShrink: 0
                 }}>
-                  <Globe size={18} color="#AF52DE" />
+                  <Globe size={20} color="#FFFFFF" />
                 </div>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
                     {t('languageHeader', '授業言語・通訳サポート')}
-                  </h4>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  </span>
+                  <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
                     {selectedLang === 'all' ? t('allLanguages', 'すべての言語') : selectedLang}
-                  </p>
+                  </span>
                 </div>
               </div>
-              <div style={{
-                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transform: isLangSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
-              }}>
-                <ChevronDown size={16} color="var(--text-secondary)" />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {selectedLang !== 'all' && (
+                  <span style={{
+                    fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #AF52DE, #D084FF)', color: '#FFF',
+                    boxShadow: '0 2px 8px rgba(175, 82, 222, 0.3)'
+                  }}>
+                    1件
+                  </span>
+                )}
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(118, 118, 128, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isLangSectionOpen ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+                </div>
               </div>
-            </button>
+            </div>
 
             {isLangSectionOpen && (
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              <div style={{ padding: '14px 16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {[
                   { id: 'all', label: t('allLanguages', 'すべての言語'), fullWidth: true },
                   { id: 'UZ', label: t('lang_uz', "ウズベク語 (UZ)") },
@@ -1363,11 +1389,12 @@ export default function DrivingAcademy({
                     <button
                       key={l.id}
                       type="button"
+                      className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
                       onClick={() => setSelectedLang(l.id)}
                       style={{
                         gridColumn: l.fullWidth ? 'span 2' : 'span 1',
                         padding: '10px 12px',
-                        borderRadius: '12px',
+                        borderRadius: '14px',
                         border: isSelected ? '1.5px solid #AF52DE' : '1px solid var(--glass-border)',
                         background: isSelected ? 'rgba(175, 82, 222, 0.12)' : 'var(--card-bg)',
                         color: isSelected ? '#AF52DE' : 'var(--text-main)',
@@ -1390,46 +1417,55 @@ export default function DrivingAcademy({
             )}
           </div>
 
-          {/* SECTION 5: Narxlar diapazoni (受講料・価格帯) */}
+          {/* SECTION 6: Narxlar diapazoni (受講料・価格帯) */}
           <div className="job-category-section" style={{
-            background: 'var(--card-bg)', borderRadius: '18px', padding: '14px 16px',
-            border: '1px solid var(--glass-border)', boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+            background: 'var(--card-bg)', borderRadius: '20px',
+            border: selectedPriceRange !== 'all' ? '1px solid rgba(48, 209, 88, 0.4)' : '1px solid var(--glass-border)',
+            boxShadow: selectedPriceRange !== 'all' ? '0 8px 24px rgba(48, 209, 88, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden', transition: 'all 0.25s ease'
           }}>
-            <button
-              type="button"
+            <div 
+              className="category-section-header"
               onClick={() => setIsPriceSectionOpen(!isPriceSectionOpen)}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
-              }}
+              style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  width: '36px', height: '36px', borderRadius: '10px', background: '#30D15815',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  width: '38px', height: '38px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #30D158 0%, #248A3D 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(48, 209, 88, 0.35)', flexShrink: 0
                 }}>
-                  <Banknote size={18} color="#30D158" />
+                  <Banknote size={20} color="#FFFFFF" />
                 </div>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
                     {t('priceHeader', '受講料・価格帯')}
-                  </h4>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  </span>
+                  <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
                     {selectedPriceRange === 'all' ? t('allPrices', 'すべての価格帯') : selectedPriceRange}
-                  </p>
+                  </span>
                 </div>
               </div>
-              <div style={{
-                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transform: isPriceSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
-              }}>
-                <ChevronDown size={16} color="var(--text-secondary)" />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {selectedPriceRange !== 'all' && (
+                  <span style={{
+                    fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #30D158, #248A3D)', color: '#FFF',
+                    boxShadow: '0 2px 8px rgba(48, 209, 88, 0.3)'
+                  }}>
+                    1件
+                  </span>
+                )}
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(118, 118, 128, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isPriceSectionOpen ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+                </div>
               </div>
-            </button>
+            </div>
 
             {isPriceSectionOpen && (
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              <div style={{ padding: '14px 16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {[
                   { id: 'all', label: t('allPrices', 'すべての価格帯'), fullWidth: true },
                   { id: 'under250k', label: '~¥250,000' },
@@ -1442,11 +1478,12 @@ export default function DrivingAcademy({
                     <button
                       key={p.id}
                       type="button"
+                      className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
                       onClick={() => setSelectedPriceRange(p.id)}
                       style={{
                         gridColumn: p.fullWidth ? 'span 2' : 'span 1',
                         padding: '10px 12px',
-                        borderRadius: '12px',
+                        borderRadius: '14px',
                         border: isSelected ? '1.5px solid #30D158' : '1px solid var(--glass-border)',
                         background: isSelected ? 'rgba(48, 209, 88, 0.12)' : 'var(--card-bg)',
                         color: isSelected ? '#30D158' : 'var(--text-main)',
@@ -1469,55 +1506,65 @@ export default function DrivingAcademy({
             )}
           </div>
 
-          {/* SECTION 6: Imkoniyatlar va Imtiyozlar (こだわり条件・特典) */}
+          {/* SECTION 7: Imkoniyatlar va Imtiyozlar (こだわり条件・特典) */}
           <div className="job-category-section" style={{
-            background: 'var(--card-bg)', borderRadius: '18px', padding: '14px 16px',
-            border: '1px solid var(--glass-border)', boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+            background: 'var(--card-bg)', borderRadius: '20px',
+            border: selectedFeatures.length > 0 ? '1px solid rgba(255, 45, 85, 0.4)' : '1px solid var(--glass-border)',
+            boxShadow: selectedFeatures.length > 0 ? '0 8px 24px rgba(255, 45, 85, 0.1)' : '0 4px 20px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden', transition: 'all 0.25s ease'
           }}>
-            <button
-              type="button"
+            <div 
+              className="category-section-header"
               onClick={() => setIsFeatureSectionOpen(!isFeatureSectionOpen)}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left'
-              }}
+              style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  width: '36px', height: '36px', borderRadius: '10px', background: '#FF2D5515',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  width: '38px', height: '38px', borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #FF2D55 0%, #D00030 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(255, 45, 85, 0.35)', flexShrink: 0
                 }}>
-                  <Sparkles size={18} color="#FF2D55" />
+                  <Sparkles size={20} color="#FFFFFF" />
                 </div>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-main)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
                     {t('featuresHeader', 'こだわり条件・特典')}
-                  </h4>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  </span>
+                  <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
                     {selectedFeatures.length === 0 ? t('allFeatures', 'すべてのこだわり条件') : `${selectedFeatures.length} ${t('selected', '件選択中')}`}
-                  </p>
+                  </span>
                 </div>
               </div>
-              <div style={{
-                width: '28px', height: '28px', borderRadius: '50%', background: 'var(--glass-bg)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transform: isFeatureSectionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'
-              }}>
-                <ChevronDown size={16} color="var(--text-secondary)" />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {selectedFeatures.length > 0 && (
+                  <span style={{
+                    fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #FF2D55, #FF6B8B)', color: '#FFF',
+                    boxShadow: '0 2px 8px rgba(255, 45, 85, 0.3)'
+                  }}>
+                    {selectedFeatures.length}件
+                  </span>
+                )}
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(118, 118, 128, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isFeatureSectionOpen ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+                </div>
               </div>
-            </button>
+            </div>
 
             {isFeatureSectionOpen && (
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed var(--glass-border)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ padding: '14px 16px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {featureOptions.map(f => {
                   const isSelected = selectedFeatures.includes(f.id);
                   return (
                     <button
                       key={f.id}
                       type="button"
+                      className={`filter-tag-chip ${isSelected ? 'active' : ''}`}
                       onClick={() => toggleMultiSelect(setSelectedFeatures, selectedFeatures, f.id)}
                       style={{
-                        padding: '8px 12px', borderRadius: '12px', border: isSelected ? '1px solid #FF2D55' : '1px solid var(--glass-border)',
+                        padding: '8px 12px', borderRadius: '14px', border: isSelected ? '1px solid #FF2D55' : '1px solid var(--glass-border)',
                         background: isSelected ? 'rgba(255, 45, 85, 0.12)' : 'var(--glass-bg)',
                         color: isSelected ? '#FF2D55' : 'var(--text-main)',
                         fontWeight: isSelected ? '800' : '600', fontSize: '13px',
@@ -1697,7 +1744,7 @@ export default function DrivingAcademy({
           <button 
             type="button"
             className={`filter-toggle-btn ${hasActiveFilters ? 'active' : ''}`}
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            onClick={() => setIsFilterOpen(true)}
             title={t('schoolFilters', 'Avtomaktab filtrlari')}
           >
             <SlidersHorizontal size={20} />

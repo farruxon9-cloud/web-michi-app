@@ -871,3 +871,15 @@ Ushbu fayl loyihani tahrirlash davomida aniqlangan kritik xatoliklar va ularning
 * **Yechim (MAJBURIY)**:
   1. Vizual dizayn va padding o'zgartirishlari faqat va faqat foydalanuvchi so'ragan tegishli komponent (`DrivingAcademy.css`) doirasida strictly cheklanadi va boshqa umumiy komponentlarga tarqatilmaydi.
 
+## 🚫 149. Filter Accordion Header Non-Button Element & Touch Feedback Invariant (`category-section-header`)
+* **Xatolik**:
+  1. Avtomaktab yoki boshqa e'lonlar filtr sahifasida (`DrivingAcademy.jsx`) sektsiya sarlavhasi / akordeon sarlavhasini HTML `<button type="button">` elementi bilan o'rash.
+  2. Natijada mobil brauzerlarda va iOS/Android webview'da sektsiyani ochish/yopish paytida native button shrink/transform (`active scale`) va tap highlight effekti sektsiyani vizual ravishda xunuk tebranishiga va keraksiz bosilish effektini berishiga olib kelishi.
+* **Yechim (MAJBURIY)**:
+  1. **Non-Button Accordion Header Structure**: Barcha akordeon/sektsiya sarlavhalari strictly silliq `<div className="category-section-header" onClick={() => setIsSectionOpen(!isSectionOpen)} style={{ cursor: 'pointer', padding: '16px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>` elementi sifatida quriladi (`DriverFeed.jsx` bilan 1:1 garmoniya).
+  2. **Premium Visual Indicators & Badges**:
+     - Chap tomondagi ikonka strictly `38px x 38px`, `border-radius: 12px` va `linear-gradient` fonda, white SVG icon (size 20) va `boxShadow` glowing nishon shaklida tayyorlanadi.
+     - O'ng tomondagi indikator doiraviy `28px x 28px` container (`background: 'rgba(118, 118, 128, 0.08)'`) ichida ochiq holda `<ChevronUp size={16} color="var(--text-secondary)" />`, yopiq holda `<ChevronDown size={16} color="var(--text-secondary)" />` bilan ishlaydi.
+     - Filtrlangan elementlar bo'lsa, o'ng tomonda gradiyent badge nishoni (`fontSize: '11px'`, `fontWeight: '800'`, `padding: '3px 10px'`, `borderRadius: '12px'`) ko'rsatiladi.
+
+

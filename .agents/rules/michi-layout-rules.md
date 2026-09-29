@@ -32,4 +32,9 @@
 ## 9. Language Rule
 - All user responses, plans, explanations, and documentation MUST be provided in 100% clean, professional Uzbek language.
 
+## 10. Filter Accordion Header Non-Button Element & Touch Feedback Invariant
+- Filter drawer section headers MUST be implemented using `<div className="category-section-header">` instead of `<button>` elements to prevent native button press scale/shake effects.
+- Sections MUST use 38x38px rounded gradient icon badges on the left and 28x28px circular `{isOpen ? <ChevronUp /> : <ChevronDown />}` indicators on the right (1:1 parity with `DriverFeed.jsx`).
+
+
 
