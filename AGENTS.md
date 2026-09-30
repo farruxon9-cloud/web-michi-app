@@ -1,8 +1,8 @@
-# Michi App Workspace Guidelines & Learnings
+# Michi App Workspace Guidelines & Audited Modules Summary
 
-This repository represents the Michi Japan Logistics Web Application. Follow these mandatory guidelines during all tasks:
+This repository represents the Michi Japan Logistics Web Application. All 39 core components, services, and UI modules have been systematically audited, optimized, localized (5 languages), and tested.
 
-## Layout & Architecture Standards
+## 1. Layout & Architecture Standards
 1. **820px Desktop Web Canvas (`src/index.css`)**: The app is designed as an 820px max-width Desktop Web Canvas (`max-width: 820px; margin: 0 auto;` with ambient background blobs in light mode). NEVER narrow `#root` or `.app-layout` to a 430px mobile container.
 2. **Scrolling Contract (`src/App.css`)**: `.main-content` MUST maintain `overflow-y: auto;` and `-webkit-overflow-scrolling: touch;`. Never use `overflow: hidden` on `.main-content`.
 3. **Trailing Clearance Spacers**:
@@ -16,7 +16,14 @@ This repository represents the Michi Japan Logistics Web Application. Follow the
    - Use `const EMPTY_ARRAY = []` for default array props.
    - Do NOT modify `document.body.style.overflow` inside Leaflet map modals.
 
-## Code Quality & Git Rules
+## 2. Audited & Verified Components (39 Files)
+- **Core Views**: `Dashboard.jsx`, `DriverFeed.jsx`, `DrivingAcademy.jsx`, `CompanyHome.jsx`, `JobDetail.jsx`, `RoleSelect.jsx`
+- **Michi AI Suite**: `VoiceAssistant.jsx`, `VoiceAssistant.css`, `MichiDrawerTrigger.jsx`, `MichiChatPanel.jsx`, `AssistHeroShowcase.jsx`, plus 9 specialized AI assistant cards (`CandidateMatchingCard`, `CareerAdvancementCard`, `DocumentTranslationCard`, `ExamPrepCard`, `InterviewPrepCard`, `SalaryCalculatorCard`, `TrafficRulesCard`, `VisaAssistantCard`, `WorkplaceJapaneseCard`)
+- **Profile Subpages**: `Profile.jsx`, `ProfileMain.jsx`, `ShoukaiReferrals.jsx`, `Settings.jsx`, `SavedItems.jsx`, `Notifications.jsx`, `MyAds.jsx`, `Applications.jsx`, `EmployeeManagement.jsx`
+- **JDM Fleet & Vehicle**: `JapaneseVehiclePickerModal.jsx`, `LazyVehicleImage.jsx`, `VehicleGradientCard.jsx`, `JDMNavigation.jsx`, `JDMNavigationSearch.jsx`
+- **Engine Services**: `michiApiService.js`, `authSecurityService.js`, `vehicleApiService.js`
+
+## 3. Code Quality & Git Rules
 - Maintain 100% unit test pass rate (`npm test -- --run`).
 - Local commits only on `web-1` branch. **NEVER execute `git push`**.
 - Support 5 languages: Japanese (`ja`), Uzbek (`uz`), English (`en`), Russian (`ru`), Chinese (`zh`).

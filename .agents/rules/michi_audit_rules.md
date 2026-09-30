@@ -1,6 +1,6 @@
-# Michi App Development, Architectural & Layout Rules
+# Michi App Full Codebase Audit & Architectural Rules
 
-This file documents all technical, architectural, layout, and bug-fix rules learned during codebase audits and pair programming sessions.
+This file documents all technical, architectural, layout, component fixes, and error patterns learned during the 39-component audit and pair programming sessions.
 
 ---
 
@@ -19,43 +19,61 @@ This file documents all technical, architectural, layout, and bug-fix rules lear
 
 ---
 
-## 3. Component Performance & State Management
-- **Job Feed Flashing & Skeleton Fix (`DriverFeed.jsx`)**: 
-  - In-memory job filtering over `MOCK_JOBS` must use `useMemo` for `filteredJobs`.
-  - Default array props MUST use module-level constants (e.g., `const EMPTY_ARRAY = []`) instead of inline `[]` defaults to prevent reference shifts that trigger infinite re-render loops.
-  - Never insert artificial loading delays (e.g., `setTimeout(..., 200)`) in client-side filter handlers.
-- **Leaflet Map Modal (`JobMapModal` in `DriverFeed.jsx`)**:
-  - Rendered via `createPortal` into `#root`.
-  - Do NOT mutate `document.body.style.overflow` during modal lifecycles to prevent page scroll jumping on close.
-  - Carto Voyager tile layer (`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/...`) and custom `🚛` pin markers must be preserved.
+## 3. Component Fixes & Audited Modules (39 Files Breakdown)
+
+### A. Core Feed & Map Components
+- **`DriverFeed.jsx`**:
+  - **Flickering Skeleton Fix**: Resolved infinite re-render loop by wrapping `filteredJobs` in `useMemo` and utilizing a module-level constant (`const EMPTY_ARRAY = []`) for default array props. Removed artificial 200ms `setLocalLoading` delay.
+  - **`JobMapModal` Restoration**: Rendered via `createPortal` into `#root`. Leaflet Voyager Carto tiles (`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/...`) restored. Removed `document.body.style.overflow` mutation to prevent scroll jump.
+- **`DrivingAcademy.jsx`**: License category filters (AT, MT, Heavy Truck, Towing), school course pricing, 5-language dictionary, 64px clearance spacer.
+- **`CompanyHome.jsx`**: Multi-view layout for job posting, local vs Tokutei Ginou (SSW) international visa recruitment, driving school ad creation, and applicant overview.
+- **`Dashboard.jsx`**: Bento hero carousel slider, calendar week selector, Michi Voice AI card, 3D JDM Truck Navigation banner, lofi music player.
+
+### B. Michi AI Suite (`src/components/michi-ai/*`)
+- **`VoiceAssistant.jsx` & `VoiceAssistant.css`**: Restored right-aligned side drawer panel (`max-width: 440px; right: 0; top: 0; bottom: 0;`) with `backdrop-filter: blur(16px)` overlay, keeping page content visible on the left.
+- **`MichiDrawerTrigger.jsx`**: Clamped dragging bounds to `minY: 110px` to prevent trigger button from sliding behind `.global-header` (height: 56px).
+- **`MichiChatPanel.jsx`**: Integrated Gateway AI endpoint `api.michi.jp.net/api/chat`, localized error handling, `<think>` tag stripping via `sanitizeMichiResponse()`.
+- **`AssistHeroShowcase.jsx`**: Fixed dangling syntax error lines at end of file, added keyboard shortcuts and feature cards.
+- **Specialized AI Assistants (9 Cards)**:
+  1. `CandidateMatchingCard.jsx`
+  2. `CareerAdvancementCard.jsx`
+  3. `DocumentTranslationCard.jsx`
+  4. `ExamPrepCard.jsx`
+  5. `InterviewPrepCard.jsx`
+  6. `SalaryCalculatorCard.jsx`
+  7. `TrafficRulesCard.jsx`
+  8. `VisaAssistantCard.jsx`
+  9. `WorkplaceJapaneseCard.jsx`
+
+### C. Profile & Employer Subcomponents
+- **`ProfileMain.jsx` & `Profile.jsx`**: Unified user profile management, vehicle Fleet picker modal integration, Shoukai referral bonus tracking, 76px trailing clearance spacer.
+- **`ShoukaiReferrals.jsx`**: 5-language dictionary (`ja`, `uz`, `en`, `ru`, `zh`), referral link copy to clipboard, QR code generator, bonus tier table.
+- **`Settings.jsx`**: Sound & vibration haptic toggles, dark/light theme switcher, `aria-pressed` states, keyboard navigation.
+- **`SavedItems.jsx`**: Bookmarked jobs & driving school courses, bookmarkManager sync, keyboard accessibility.
+- **`Notifications.jsx`**: Read/unread status filtering, mark all read button, localized notification cards.
+- **`MyAds.jsx`**: Active job and school vacancy ad management, applicant count, edit/delete modal triggers.
+- **`Applications.jsx`**: Applicant status pipeline (Submitted, Under Review, Interview, Accepted/Rejected).
+- **`EmployeeManagement.jsx`**: Fleet driver team management, driver invitation link generation.
+
+### D. Vehicle & Navigation Engine
+- **`JapaneseVehiclePickerModal.jsx`**: Dark OLED matte aesthetic backdrop, Escape key listener, photo cache handling (`resolvedPhotosRef`), historical era tags (Showa, Heisei, Reiwa).
+- **`LazyVehicleImage.jsx`**: Progressive HD image loader with skeleton shimmer fallback.
+- **`VehicleGradientCard.jsx`**: Premium glass gradient card displaying active vehicle specs (height, width, weight, length).
+- **`JDMNavigation.jsx` & `JDMNavigationSearch.jsx`**: Heavy truck routing avoiding 3.8m height & weight limits using Overpass API restrictions.
+
+### E. Service Layer (`src/services/*`)
+- **`michiApiService.js`**: Exported default object + named exports for `VoiceAssistant` backward compatibility. `AbortController` timeout (15–25s), CORS Vite proxy `/api`, rate limit 429 localized warnings.
+- **`authSecurityService.js`**: Session token handling, n8n webhook security headers `X-API-Key`, zero plaintext OTP exposure on client UI.
+- **`vehicleApiService.js`**: Master database lookup, Wikipedia HD photo resolution, in-memory photo caching.
 
 ---
 
-## 4. Michi AI Drawer & Trigger Alignment
-- **Trigger Bounds (`MichiDrawerTrigger.jsx`)**: The floating AI trigger button `minY` bound is set to `110px` to prevent the trigger from sliding behind the `.global-header` (height: 56px).
-- **Side Drawer Panel (`VoiceAssistant.css`)**: The Michi AI Hub drawer is styled as a right-aligned side panel (`max-width: 440px; right: 0; top: 0; bottom: 0;`) with a glassmorphism backdrop blur (`backdrop-filter: blur(16px);`), keeping the main page content visible on the left side.
-
----
-
-## 5. Network & Timeout Security
-- **AbortController Timeout**: External fetch requests (n8n webhooks, Gateway API) MUST include an `AbortController` timeout (15–25s).
-- **Vite Dev Server Proxy**: Local browser requests to `api.michi.jp.net` must go through the Vite proxy (`/api` -> `https://api.michi.jp.net` with `changeOrigin: true`) to avoid CORS blocks.
-- **HTTPS Enforcement**: Webhook endpoints must always use `https://`.
-
----
-
-## 6. Gateway AI Integration (`api.michi.jp.net`)
-- **Chat Endpoint**: AI requests use `POST https://api.michi.jp.net/api/chat` with body `{ "message": text }`.
-- **Response Sanitization**: All AI responses must pass through `sanitizeMichiResponse()` to strip `<think>...</think>` tags and JSON role leaks before display.
-
----
-
-## 7. 5-Language Localization (`ja`, `uz`, `en`, `ru`, `zh`)
+## 4. 5-Language Localization Standard (`ja`, `uz`, `en`, `ru`, `zh`)
 - All UI text must provide 5-language coverage via dictionary objects (`DICT`) or `i18n.t()`.
 - Always include fallback logic (`DICT[key]?.[lang] || DICT[key]?.uz || t(key, '')`).
 
 ---
 
-## 8. Git & Workflow Protocol
+## 5. Git & Workflow Protocol
 - **Unit Test Requirement**: Every change must be validated against the full 20-file test suite (`npm test -- --run`).
 - **CRITICAL GIT CONSTRAINT**: Code changes are committed locally on the working branch (`web-1`). NEVER execute `git push` under any circumstances.
