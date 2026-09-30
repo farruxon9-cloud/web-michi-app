@@ -187,18 +187,17 @@ function App() {
 
   // Bento AI Card va switch yoqilganda brauzer mikrofon so'rovini darhol chiqarish
   const handleVoiceActivate = async () => {
-    setIsVoiceActive(false); // AI Hub ichiga kirib ketmasin
+    setIsVoiceActive(true);
+    setIsVoiceStandby(true);
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         stream.getTracks().forEach(track => track.stop());
-        setIsVoiceStandby(true);
       } catch (err) {
         console.warn("[VoiceAI] User denied or blocked microphone permission:", err);
+        setIsVoiceActive(false);
         setIsVoiceStandby(false);
       }
-    } else {
-      setIsVoiceStandby(true);
     }
   };
 

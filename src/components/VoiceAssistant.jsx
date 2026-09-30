@@ -2728,7 +2728,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
       <MichiSideDrawer
         isOpen={isSideDrawerOpen}
         onClose={() => setIsSideDrawerOpen(false)}
-        isActive={isActive}
+        isActive={isActive || isVoiceStandby}
         status={status}
         speechLang={speechLang}
         chatHistoryList={chatHistoryList}
@@ -2754,7 +2754,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
           if (onClose) onClose();
         }}
         onMicToggle={() => {
-          if (!isActive) {
+          if (!isActive && !isVoiceStandby) {
             unlockMobileAudio();
             if (setIsVoiceStandby) setIsVoiceStandby(true);
             if (onStartVoice) onStartVoice();
