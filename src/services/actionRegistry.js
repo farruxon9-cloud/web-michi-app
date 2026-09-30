@@ -14,31 +14,32 @@ class AIActionRegistry {
   /**
    * Register a new action definition
    * @param {Object} config
-   * @param {string} config.name - Unique command name (e.g. 'NAVIGATE_TO_JOBS')
-   * @param {string} config.category - Action category ('navigation' | 'music' | 'data' | 'resume' | 'system' | 'tool')
-   * @param {string} config.description - Detailed description for LLM tool selection
-   * @param {Object} [config.parameters] - JSON Schema for function arguments
-   * @param {Function} config.execute - Execution handler: async (params, context) => void
-   * @param {string[]} [config.examples] - Example phrase variations for Semantic Router / Embedding match
-   * @param {Object} [config.responses] - Multi-lingual default audio/text responses { ja, uz, en }
-   * @param {boolean} [config.requiresOnline] - Whether action needs internet
-   * @param {boolean} [config.isDelayed] - Whether action should wait for TTS to complete
    */
   register(config) {
-    if (!config.name) {
-      throw new Error('[AIActionRegistry] Action configuration must include a name');
+    if (!config || !config.name) {
+      throw new Error('[AIActionRegistry] Action configuration must include a valid name');
     }
+
+    const defaultParams = {
+      type: 'object',
+      properties: {},
+      required: []
+    };
 
     const actionEntry = {
       name: config.name,
       category: config.category || 'general',
       description: config.description || '',
-      parameters: config.parameters || { type: 'object', properties: {} },
-      examples: config.examples || [],
+      parameters: config.parameters ? {
+        type: 'object',
+        properties: config.parameters.properties || {},
+        required: config.parameters.required || []
+      } : defaultParams,
+      examples: Array.isArray(config.examples) ? [...config.examples] : [],
       responses: config.responses || {},
       requiresOnline: Boolean(config.requiresOnline),
-      isDelayed: config.isDelayed !== undefined ? config.isDelayed : true,
-      execute: this.wrapWithSafety(config.execute, config.name)
+      isDelayed: config.isDelayed !== undefined ? Boolean(config.isDelayed) : true,
+      execute: this.wrapWithSafety(config.execute || (async () => ({ success: true })), config.name)
     };
 
     this.actions.set(config.name, actionEntry);
@@ -58,27 +59,21 @@ class AIActionRegistry {
   wrapWithSafety(fn, name) {
     return async (params = {}, context = {}) => {
       try {
-        console.log(`[AIActionRegistry] 🚀 Executing action: ${name}`, params);
-        const result = await fn(params, context);
-        console.log(`[AIActionRegistry] ✅ Action ${name} completed successfully`);
+        const safeParams = params && typeof params === 'object' ? params : {};
+        const safeContext = context && typeof context === 'object' ? context : {};
+        const result = await fn(safeParams, safeContext);
         return { success: true, result };
       } catch (error) {
         console.error(`[AIActionRegistry] ❌ Error executing action ${name}:`, error);
-        return { success: false, error: error.message };
+        return { success: false, error: error.message || 'Execution error' };
       }
     };
   }
 
-  /**
-   * Get an action definition by name
-   */
   get(commandName) {
-    return this.actions.get(commandName);
+    return this.actions.get(commandName) || null;
   }
 
-  /**
-   * Check if an action exists
-   */
   has(commandName) {
     return this.actions.has(commandName);
   }
@@ -93,20 +88,23 @@ class AIActionRegistry {
       return { success: false, error: `Unknown command: ${commandName}` };
     }
 
-    if (action.requiresOnline && !navigator.onLine) {
+    const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+    if (action.requiresOnline && !isOnline) {
       const fallbackMsg = action.responses?.offline || {
         uz: "Ushbu buyruq uchun internet aloqasi kerak.",
         ja: "このコマンドにはインターネット接続が必要です。",
-        en: "Internet connection is required for this command."
+        en: "Internet connection is required for this command.",
+        ru: "Для этой команды требуется подключение к интернету.",
+        zh: "此命令需要互联网连接。"
       };
       return { success: false, error: 'offline', fallbackMsg };
     }
 
-    return action.execute(params, context);
+    return action.execute(params || {}, context || {});
   }
 
   /**
-   * Get OpenAI/vLLM format Tool Definitions
+   * Get OpenAI/vLLM standard Tool Definitions
    */
   getToolDefinitions() {
     return Array.from(this.actions.values())
@@ -121,32 +119,31 @@ class AIActionRegistry {
       }));
   }
 
-  /**
-   * Get map of command -> phrase examples for Semantic Router
-   */
   getIntentExamples() {
     const examplesMap = {};
     for (const [name, action] of this.actions) {
       if (action.examples && action.examples.length > 0) {
-        examplesMap[name] = action.examples;
+        examplesMap[name] = [...action.examples];
       }
     }
     return examplesMap;
   }
 
   /**
-   * Get natural localized response string for a command
+   * Get natural localized response string for a command across 5 languages
    */
   getResponse(commandName, lang = 'uz') {
     const action = this.actions.get(commandName);
     if (!action || !action.responses) return null;
-    const cleanLang = lang.substring(0, 2).toLowerCase();
-    return action.responses[cleanLang] || action.responses['uz'] || action.responses['en'] || action.responses['ja'] || null;
+    const cleanLang = (lang || 'uz').substring(0, 2).toLowerCase();
+    
+    return action.responses[cleanLang] || 
+           action.responses['ja'] || 
+           action.responses['uz'] || 
+           action.responses['en'] || 
+           null;
   }
 
-  /**
-   * List all registered action names
-   */
   listActionNames() {
     return Array.from(this.actions.keys());
   }
@@ -167,7 +164,9 @@ actionRegistry.register({
   responses: {
     ja: 'ホーム画面を開きます。',
     uz: 'Bosh sahifani ochaman.',
-    en: 'Opening home page.'
+    en: 'Opening home page.',
+    ru: 'Открываю главную страницу.',
+    zh: '打开主页。'
   },
   execute: async (params, ctx) => {
     ctx.setSelectedJob?.(null);
@@ -184,7 +183,9 @@ actionRegistry.register({
   responses: {
     ja: '求人一覧ページを開きます。',
     uz: 'Ish joylari ro\'yxatini ochaman.',
-    en: 'Opening jobs page.'
+    en: 'Opening jobs page.',
+    ru: 'Открываю список вакансий.',
+    zh: '打开职位列表。'
   },
   execute: async (params, ctx) => {
     ctx.setSelectedJob?.(null);
@@ -201,7 +202,9 @@ actionRegistry.register({
   responses: {
     ja: '自動車教習所・アカデミーページを開きます。',
     uz: 'Haydovchilik akademiyasi sahifasini ochaman.',
-    en: 'Opening driving academy page.'
+    en: 'Opening driving academy page.',
+    ru: 'Открываю страницу автошколы.',
+    zh: '打开驾校页面。'
   },
   execute: async (params, ctx) => {
     ctx.setSelectedJob?.(null);
@@ -218,24 +221,9 @@ actionRegistry.register({
   responses: {
     ja: '企業マイページ・掲載一覧を開きます。',
     uz: 'Kompaniya e\'lonlar boshqaruvi sahifasini ochaman.',
-    en: 'Opening company management portal.'
-  },
-  execute: async (params, ctx) => {
-    ctx.setSelectedJob?.(null);
-    ctx.setSelectedSchool?.(null);
-    ctx.setActiveTab?.('company');
-  }
-});
-
-actionRegistry.register({
-  name: 'NAVIGATE_TO_MY_ADS',
-  category: 'navigation',
-  description: 'Navigate directly to Company My Posted Ads management view',
-  examples: ['マイ掲載', '掲載管理', 'e\'lonlarimni ko\'rsat', 'my ads'],
-  responses: {
-    ja: '掲載中のお仕事一覧を開きます。',
-    uz: 'Sizning e\'lonlaringiz boshqaruvi sahifasini ochaman.',
-    en: 'Opening your job listings.'
+    en: 'Opening company management portal.',
+    ru: 'Открываю кабинет компании.',
+    zh: '打开企业中心。'
   },
   execute: async (params, ctx) => {
     ctx.setSelectedJob?.(null);
@@ -252,7 +240,9 @@ actionRegistry.register({
   responses: {
     ja: 'マイページ・プロフィールを開きます。',
     uz: 'Mening sahifamni ochaman.',
-    en: 'Opening profile page.'
+    en: 'Opening profile page.',
+    ru: 'Открываю профиль.',
+    zh: '打开个人中心。'
   },
   execute: async (params, ctx) => {
     ctx.setSelectedJob?.(null);
@@ -270,7 +260,9 @@ actionRegistry.register({
   responses: {
     ja: '応募履歴を開きます。',
     uz: 'Topshirilgan arizalar sahifasini ochaman.',
-    en: 'Opening job application history.'
+    en: 'Opening job application history.',
+    ru: 'Открываю историю откликов.',
+    zh: '打开应聘记录。'
   },
   execute: async (params, ctx) => {
     ctx.setSelectedJob?.(null);
@@ -288,7 +280,9 @@ actionRegistry.register({
   responses: {
     ja: 'ドライバーコミュニティを開きます。',
     uz: 'Haydovchilar jamiyati chatini ochaman.',
-    en: 'Opening community forum.'
+    en: 'Opening community forum.',
+    ru: 'Открываю сообщество водителей.',
+    zh: '打开司机社区。'
   },
   execute: async (params, ctx) => {
     ctx.setSelectedJob?.(null);
@@ -305,7 +299,9 @@ actionRegistry.register({
   responses: {
     ja: '便利ツールを開きます。',
     uz: 'Foydali asboblar sahifasini ochaman.',
-    en: 'Opening utility tools.'
+    en: 'Opening utility tools.',
+    ru: 'Открываю полезные инструменты.',
+    zh: '打开实用工具。'
   },
   execute: async (params, ctx) => {
     ctx.setSelectedJob?.(null);
@@ -322,7 +318,9 @@ actionRegistry.register({
   responses: {
     ja: '前の画面に戻ります。',
     uz: 'Orqaga qaytaman.',
-    en: 'Going back.'
+    en: 'Going back.',
+    ru: 'Возвращаюсь назад.',
+    zh: '返回上一页。'
   },
   execute: async (params, ctx) => {
     if (ctx.selectedJob) {
@@ -344,7 +342,9 @@ actionRegistry.register({
   responses: {
     ja: 'ラジオ・音楽を再生します。',
     uz: 'Musiqani qo\'yaman.',
-    en: 'Playing music.'
+    en: 'Playing music.',
+    ru: 'Включаю музыку.',
+    zh: '播放音乐。'
   },
   execute: async (params, ctx) => {
     ctx.musicPlayer?.play?.();
@@ -359,7 +359,9 @@ actionRegistry.register({
   responses: {
     ja: '音楽を一時停止します。',
     uz: 'Musiqani to\'xtataman.',
-    en: 'Pausing music.'
+    en: 'Pausing music.',
+    ru: 'Останавливаю музыку.',
+    zh: '暂停音乐。'
   },
   execute: async (params, ctx) => {
     ctx.musicPlayer?.pause?.();
@@ -374,7 +376,9 @@ actionRegistry.register({
   responses: {
     ja: '次の曲に移動します。',
     uz: 'Keyingi qo\'shiqqa o\'taman.',
-    en: 'Next song.'
+    en: 'Next song.',
+    ru: 'Следующий треク.',
+    zh: '下一首。'
   },
   execute: async (params, ctx) => {
     ctx.musicPlayer?.next?.();
@@ -389,7 +393,9 @@ actionRegistry.register({
   responses: {
     ja: '前の曲に戻ります。',
     uz: 'Oldingi qo\'shiqqa o\'taman.',
-    en: 'Previous song.'
+    en: 'Previous song.',
+    ru: 'Предыдущий трек.',
+    zh: '上一首。'
   },
   execute: async (params, ctx) => {
     ctx.musicPlayer?.previous?.();
@@ -408,13 +414,16 @@ actionRegistry.register({
       prefecture: { type: 'string', description: 'Prefecture name in English/Japanese (e.g. Tokyo, Osaka)' },
       minSalary: { type: 'number', description: 'Minimum monthly salary in JPY' },
       license: { type: 'string', description: 'License type required (大型, 中型, 普通, 牽引)' }
-    }
+    },
+    required: []
   },
   examples: ['東京の仕事を探して', 'Tokyoda ish qidir', 'find jobs in Tokyo', '月給30万以上の求人', '300000 maoshli ish'],
   responses: {
     ja: '条件に合う求人を検索します。',
     uz: 'Berilgan shartlarga mos ishlarni qidirmoqdaman.',
-    en: 'Filtering job listings.'
+    en: 'Filtering job listings.',
+    ru: 'Ищу подходящие вакансии.',
+    zh: '正在根据条件筛选职位。'
   },
   execute: async (params, ctx) => {
     if (params.searchQuery) ctx.setJobSearchQuery?.(params.searchQuery);
@@ -435,7 +444,9 @@ actionRegistry.register({
   responses: {
     ja: 'テーマモードを切り替えます。',
     uz: 'Ekran rejimini o\'zgartiraman.',
-    en: 'Toggling theme mode.'
+    en: 'Toggling theme mode.',
+    ru: 'Переключаю тему оформления.',
+    zh: '切换界面主题。'
   },
   execute: async (params, ctx) => {
     ctx.toggleDarkMode?.();
@@ -456,8 +467,7 @@ actionRegistry.register({
   examples: ['今日の天気は', 'bugungi ob-havo', 'what is weather today', '最新ニュース', 'yangiliklar'],
   requiresOnline: true,
   execute: async (params, ctx) => {
-    // Calling server-side search backend when connected
-    return { query: params.query, info: "Live search trigger" };
+    return { query: params.query, info: 'Live search trigger' };
   }
 });
 
@@ -465,8 +475,6 @@ actionRegistry.register({
   name: 'NONE',
   category: 'general',
   description: 'General conversational query or response without UI navigation',
-  parameters: { type: 'object', properties: {} },
-  execute: async () => {
-    return { success: true };
-  }
+  parameters: { type: 'object', properties: {}, required: [] },
+  execute: async () => ({ success: true })
 });
