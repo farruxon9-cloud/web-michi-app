@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone, Edit3, CheckCircle2, SlidersHorizontal, X, ChevronDown, ChevronUp, Check, ArrowLeft, Train, Navigation, Sparkles, RotateCcw, Building2, FileText, Calendar, Target, Star, ShieldCheck } from 'lucide-react';
@@ -10,6 +10,8 @@ import './DriverFeed.css';
 import { REGIONS, PREFECTURES, CITIES_BY_PREFECTURE, TRAIN_LINES_BY_PREFECTURE, getAllTrainLines, getAllCities } from '../data/japanLocationDB';
 import { JOB_CATEGORIES } from '../data/jobCategories';
 import { JOB_FEATURES } from '../data/jobFeatures';
+
+const EMPTY_ARRAY = [];
 
 // ============================================================
 // TOWNWORK-STYLE JAPANESE RECRUITMENT LOCATION DATASETS
@@ -386,12 +388,12 @@ export function SkeletonCard() {
 // Har bir kartochkada: chapda rasm, o'ngda ma'lumotlar, pastda ikonkali chiplar
 // ============================================================
 export default function DriverFeed({ 
-  onJobClick, isContractActive, verifiedCompanies = [], onShoukai, 
-  jobs = MOCK_JOBS, userRole, profileData, onEditJob, onApply, applications = [],
+  onJobClick, isContractActive, verifiedCompanies = EMPTY_ARRAY, onShoukai, 
+  jobs = MOCK_JOBS, userRole, profileData, onEditJob, onApply, applications = EMPTY_ARRAY,
   searchQuery = '', setSearchQuery, activeSegment = 'all', setActiveSegment,
-  selectedLicenses = [], setSelectedLicenses,
+  selectedLicenses = EMPTY_ARRAY, setSelectedLicenses,
   selectedLangLevel = 'all', setSelectedLangLevel,
-  selectedBenefits = [], setSelectedBenefits,
+  selectedBenefits = EMPTY_ARRAY, setSelectedBenefits,
   minSalary = 0, setMinSalary,
   selectedPrefecture = 'all', setSelectedPrefecture,
   selectedCity = 'all', setSelectedCity,
@@ -405,7 +407,6 @@ export default function DriverFeed({
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(10);
-  const [localLoading, setLocalLoading] = useState(false);
   const markersRef = React.useRef([]);
 
   // Townwork-style Location Filter States
@@ -433,20 +434,9 @@ export default function DriverFeed({
   const [isJobCatSectionOpen, setIsJobCatSectionOpen] = useState(false);
   const [isFeatureSectionOpen, setIsFeatureSectionOpen] = useState(false);
 
-  const isInitialMount = useRef(true);
-
   // Reset pagination when any filter changes
   useEffect(() => {
     setVisibleCount(10);
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    setLocalLoading(true);
-    const timer = setTimeout(() => {
-      setLocalLoading(false);
-    }, 200);
-    return () => clearTimeout(timer);
   }, [
     searchQuery, activeSegment, selectedLicenses,
     selectedLangLevel, selectedBenefits, minSalary,
@@ -456,7 +446,7 @@ export default function DriverFeed({
     selectedTimeSlots, selectedFeatures, sortBy
   ]);
 
-  const showLoading = isLoading || localLoading;
+  const showLoading = isLoading;
 
 
   const getSalaryNumber = (salaryStr) => {
@@ -510,178 +500,184 @@ export default function DriverFeed({
   };
 
   // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
-  // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
-  const filteredJobs = (jobs || []).filter(job => {
-    if (!job) return false;
+  const filteredJobs = useMemo(() => {
+    return (jobs || []).filter(job => {
+      if (!job) return false;
 
-    const matchSegment = !activeSegment || activeSegment === 'all' 
-      || (activeSegment === 'international' && job.isInternational === true)
-      || (activeSegment === 'permanent' && job.type === 'fulltime')
-      || (activeSegment === 'hourly' && (job.type === 'parttime' || job.type === 'contract'));
-      
-    const sq = (searchQuery || '').toLowerCase();
-    const matchSearch = !sq || 
-      (job.title && job.title.toLowerCase().includes(sq)) ||
-      (job.company && job.company.toLowerCase().includes(sq)) ||
-      (job.location && job.location.toLowerCase().includes(sq)) ||
-      (job.description && job.description.toLowerCase().includes(sq));
+      const matchSegment = !activeSegment || activeSegment === 'all' 
+        || (activeSegment === 'international' && job.isInternational === true)
+        || (activeSegment === 'permanent' && job.type === 'fulltime')
+        || (activeSegment === 'hourly' && (job.type === 'parttime' || job.type === 'contract'));
+        
+      const sq = (searchQuery || '').toLowerCase();
+      const matchSearch = !sq || 
+        (job.title && job.title.toLowerCase().includes(sq)) ||
+        (job.company && job.company.toLowerCase().includes(sq)) ||
+        (job.location && job.location.toLowerCase().includes(sq)) ||
+        (job.description && job.description.toLowerCase().includes(sq));
 
-    // 1. License filter
-    const matchLicense = !selectedLicenses || selectedLicenses.length === 0 || selectedLicenses.includes(job.license);
+      // 1. License filter
+      const matchLicense = !selectedLicenses || selectedLicenses.length === 0 || selectedLicenses.includes(job.license);
 
-    // 2. Japanese level filter (visible if user level >= job required level)
-    const langMap = { 'all': 4, 'none': 0, 'n5_n4': 1, 'n3': 2, 'n2_n1': 3, 'N5': 1, 'N4': 1, 'N3': 2, 'N2': 3, 'N1': 3 };
-    const userVal = langMap[selectedLangLevel] ?? 4;
-    const jobVal = {
-      'foreigners_n4': 1,
-      'foreigners_nolang': 1,
-      'foreigners_ok': 1,
-      'foreigners_visa': 1,
-      'foreigners_visa_renew': 1,
-      'foreigners_n3': 2,
-      'foreigners_n2': 3
-    }[job.foreigners] || 0;
-    const matchLang = userVal >= jobVal;
+      // 2. Japanese level filter (visible if user level >= job required level)
+      const langMap = { 'all': 4, 'none': 0, 'n5_n4': 1, 'n3': 2, 'n2_n1': 3, 'N5': 1, 'N4': 1, 'N3': 2, 'N2': 3, 'N1': 3 };
+      const userVal = langMap[selectedLangLevel] ?? 4;
+      const jobVal = {
+        'foreigners_n4': 1,
+        'foreigners_nolang': 1,
+        'foreigners_ok': 1,
+        'foreigners_visa': 1,
+        'foreigners_visa_renew': 1,
+        'foreigners_n3': 2,
+        'foreigners_n2': 3
+      }[job.foreigners] || 0;
+      const matchLang = userVal >= jobVal;
 
-    // 3. Benefits filter (all selected benefits must match)
-    const matchBenefits = !selectedBenefits || selectedBenefits.length === 0 || selectedBenefits.every(benefit => {
-      if (benefit === 'housing') return job.housing && job.housing !== 'housing_none';
-      if (benefit === 'foreigner') return job.foreigners && job.foreigners !== 'foreigners_none';
-      if (benefit === 'bonus') return job.bonus && job.bonus !== 'bonus_none' && !job.bonus.includes('なし') && !job.bonus.includes('Yo\'q') && !job.bonus.includes('No Bonus');
-      if (benefit === 'insurance') return job.insurance && job.insurance.startsWith('insurance_');
-      if (benefit === 'international') return job.isInternational === true;
-      if (benefit === 'signon_bonus') return (job.hasShoukai === true || job.hasShoukai === 'yes' || Number(job.shoukaiFee) > 0 || (job.shoukai && job.shoukai !== '0' && job.shoukai !== 'Yo\'q'));
-      return true;
+      // 3. Benefits filter (all selected benefits must match)
+      const matchBenefits = !selectedBenefits || selectedBenefits.length === 0 || selectedBenefits.every(benefit => {
+        if (benefit === 'housing') return job.housing && job.housing !== 'housing_none';
+        if (benefit === 'foreigner') return job.foreigners && job.foreigners !== 'foreigners_none';
+        if (benefit === 'bonus') return job.bonus && job.bonus !== 'bonus_none' && !job.bonus.includes('なし') && !job.bonus.includes('Yo\'q') && !job.bonus.includes('No Bonus');
+        if (benefit === 'insurance') return job.insurance && job.insurance.startsWith('insurance_');
+        if (benefit === 'international') return job.isInternational === true;
+        if (benefit === 'signon_bonus') return (job.hasShoukai === true || job.hasShoukai === 'yes' || Number(job.shoukaiFee) > 0 || (job.shoukai && job.shoukai !== '0' && job.shoukai !== 'Yo\'q'));
+        return true;
+      });
+
+      // 4. Salary filter
+      const matchSalary = !minSalary || minSalary === 0 || getSalaryNumber(job.salary) >= minSalary;
+
+      // 5. Prefecture and City location filter
+      const prefSq = (selectedPrefecture && selectedPrefecture !== 'all') ? selectedPrefecture.toLowerCase() : '';
+      const matchPrefecture = !prefSq || 
+        (job.location && job.location.toLowerCase().includes(prefSq)) ||
+        (job.fullAddress && job.fullAddress.toLowerCase().includes(prefSq)) ||
+        (job.prefecture && job.prefecture.toLowerCase().includes(prefSq));
+
+      const citySq = (selectedCity && selectedCity !== 'all') ? selectedCity.toLowerCase() : '';
+      const matchCity = !citySq || 
+        (job.location && job.location.toLowerCase().includes(citySq)) ||
+        (job.fullAddress && job.fullAddress.toLowerCase().includes(citySq)) ||
+        (job.detailAddress && job.detailAddress.toLowerCase().includes(citySq)) ||
+        (job.city && job.city.toLowerCase().includes(citySq)) ||
+        (job.ward && job.ward.toLowerCase().includes(citySq));
+
+      // 6. Station query filter
+      const stSq = (stationQuery || '').toLowerCase();
+      const matchStation = !stSq || 
+        (job.nearestStation && job.nearestStation.toLowerCase().includes(stSq)) ||
+        (job.fullAddress && job.fullAddress.toLowerCase().includes(stSq));
+
+      // 7. Near station walk time filter (<10 min walk)
+      const matchWalkTime = !onlyNearStation || 
+        (job.walkTime !== undefined && job.walkTime !== '' && Number(job.walkTime) <= 10);
+
+      // 8. Multi-selected Station Checkboxes Filter
+      const matchSelectedStations = !selectedStations || selectedStations.length === 0 || selectedStations.some(st => {
+        const stClean = st.replace('駅', '').toLowerCase();
+        return (job.nearestStation && job.nearestStation.toLowerCase().includes(stClean)) ||
+               (job.location && job.location.toLowerCase().includes(stClean)) ||
+               (job.fullAddress && job.fullAddress.toLowerCase().includes(stClean));
+      });
+
+      // 9. Multi-selected Cities/Wards Checkboxes Filter
+      const matchSelectedCitiesList = !selectedCitiesList || selectedCitiesList.length === 0 || selectedCitiesList.some(c => {
+        const cClean = c.replace(/(区|市)$/g, '').toLowerCase();
+        return (job.location && job.location.toLowerCase().includes(cClean)) ||
+               (job.fullAddress && job.fullAddress.toLowerCase().includes(cClean)) ||
+               (job.city && job.city.toLowerCase().includes(cClean)) ||
+               (job.ward && job.ward.toLowerCase().includes(cClean));
+      });
+
+      // 10. Job Category & Subcategory Filter
+      const matchJobCategory = (!selectedJobCategories || selectedJobCategories.length === 0 || selectedJobCategories.some(catId => job.category === catId || job.subcategory === catId))
+        && (!selectedSubcategories || selectedSubcategories.length === 0 || selectedSubcategories.some(subId => job.subcategory === subId || job.category === subId));
+
+      // 11. Employment Type Filter
+      const matchEmploymentType = !selectedEmploymentTypes || selectedEmploymentTypes.length === 0 || selectedEmploymentTypes.includes(job.type);
+
+      // 12. Duration Filter
+      const matchDuration = !selectedDurations || selectedDurations.length === 0 || selectedDurations.some(d => {
+        if (d === 'long') return job.duration === 'long' || !job.duration;
+        if (d === 'short_1w') return job.duration === 'short_1w';
+        if (d === 'short_1m') return job.duration === 'short_1m';
+        if (d === 'single_day') return job.duration === 'single_day';
+        return true;
+      });
+
+      // 13. Time Slot Filter
+      const matchTimeSlot = !selectedTimeSlots || selectedTimeSlots.length === 0 || selectedTimeSlots.some(ts => {
+        const st = parseInt(job.startTime || '8', 10);
+        if (ts === 'morning') return st >= 6 && st < 9;
+        if (ts === 'daytime') return st >= 9 && st < 18;
+        if (ts === 'evening') return st >= 16 && st < 20;
+        if (ts === 'night') return st >= 20 && st < 24;
+        if (ts === 'midnight') return st >= 0 && st < 6;
+        return true;
+      });
+
+      // 14. Special Features Filter
+      const matchFeatures = !selectedFeatures || selectedFeatures.length === 0 || selectedFeatures.every(f => {
+        if (f === 'foreigner_welcome') return job.foreigners && job.foreigners !== 'foreigners_none';
+        if (f === 'no_experience') return job.noExperienceOk === true || job.experienceRequired === false;
+        if (f === 'daily_pay') return job.payType === 'daily';
+        if (f === 'weekly_pay') return job.payType === 'weekly';
+        if (f === 'transport_paid') return job.transportPaid === true;
+        if (f === 'dormitory') return job.housing && job.housing !== 'housing_none';
+        if (f === 'insurance') return job.insurance && job.insurance.startsWith('insurance_');
+        if (f === 'tokutei_ginou') return job.isInternational === true;
+        if (f === 'visa_support') return job.foreigners === 'foreigners_visa' || job.foreigners === 'foreigners_visa_renew';
+        if (f === 'promotion') return job.bonus && job.bonus !== 'bonus_none';
+        if (f === 'signon_bonus') return (job.hasShoukai === true || job.hasShoukai === 'yes' || Number(job.shoukaiFee) > 0 || (job.shoukai && job.shoukai !== '0' && job.shoukai !== 'Yo\'q'));
+        if (f === 'shift_day') return job.hours === 'day' || job.hours === 'daytime' || (job.description && job.description.includes('日勤'));
+        if (f === 'shift_night') return job.hours === 'night' || job.hours === 'midnight' || (job.description && (job.description.includes('夜勤') || job.description.includes('深夜')));
+        if (f === 'shift_rotation') return job.hours === 'shift' || (job.description && job.description.includes('シフト'));
+        if (f === 'off_2days_full') return job.dayOff?.includes('2') || (job.description && job.description.includes('完全週休2日'));
+        if (f === 'off_paid') return job.hasPaidLeave === true || (job.description && job.description.includes('有給'));
+        if (f === 'truck_at') return job.truckType?.includes('AT') || (job.description && job.description.includes('AT'));
+        if (f === 'truck_etc_navi') return job.hasNavi === true || (job.description && (job.description.includes('カーナビ') || job.description.includes('ETC')));
+        if (f === 'truck_camera') return job.hasCamera === true || (job.description && (job.description.includes('バックカメラ') || job.description.includes('ドラレコ')));
+        if (f === 'truck_dedicated') return job.dedicatedTruck === true || (job.description && job.description.includes('専用車'));
+        if (f === 'load_pallet') return job.loadingMethod === 'pallet' || (job.description && job.description.includes('パレット'));
+        if (f === 'load_forklift') return job.loadingMethod === 'forklift' || (job.description && job.description.includes('フォークリフト'));
+        if (f === 'load_hand') return job.loadingMethod === 'hand' || (job.description && job.description.includes('手積み'));
+        if (f === 'highway_ok') return job.highwayOk === true || (job.description && job.description.includes('高速'));
+        return true;
+      });
+
+      // 15. GPS Radius Distance Filter (Haversine formula)
+      const matchRadius = !selectedRadius || selectedRadius === 0 || (() => {
+        if (!job.lat || !job.lng) return true;
+        const refLat = 35.6812; // Tokyo Center reference coordinate
+        const refLng = 139.7671;
+        const dLat = (job.lat - refLat) * (Math.PI / 180);
+        const dLon = (job.lng - refLng) * (Math.PI / 180);
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(refLat * (Math.PI / 180)) * Math.cos(job.lat * (Math.PI / 180)) *
+          Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distKm = 6371 * c;
+        return distKm <= selectedRadius;
+      })();
+
+      return matchSegment && matchSearch && matchLicense && matchLang && 
+             matchBenefits && matchSalary && matchPrefecture && matchCity && 
+             matchStation && matchWalkTime && matchSelectedStations && 
+             matchSelectedCitiesList && matchJobCategory && matchEmploymentType && 
+             matchDuration && matchTimeSlot && matchFeatures && matchRadius;
+    }).sort((a, b) => {
+      if (sortBy === 'salary_high') return getSalaryNumber(b.salary) - getSalaryNumber(a.salary);
+      if (sortBy === 'salary_low') return getSalaryNumber(a.salary) - getSalaryNumber(b.salary);
+      return (b.id || 0) - (a.id || 0);
     });
-
-    // 4. Salary filter
-    const matchSalary = !minSalary || minSalary === 0 || getSalaryNumber(job.salary) >= minSalary;
-
-    // 5. Prefecture and City location filter
-    // 5. Prefecture and City location filter
-    const prefSq = (selectedPrefecture && selectedPrefecture !== 'all') ? selectedPrefecture.toLowerCase() : '';
-    const matchPrefecture = !prefSq || 
-      (job.location && job.location.toLowerCase().includes(prefSq)) ||
-      (job.fullAddress && job.fullAddress.toLowerCase().includes(prefSq)) ||
-      (job.prefecture && job.prefecture.toLowerCase().includes(prefSq));
-
-    const citySq = (selectedCity && selectedCity !== 'all') ? selectedCity.toLowerCase() : '';
-    const matchCity = !citySq || 
-      (job.location && job.location.toLowerCase().includes(citySq)) ||
-      (job.fullAddress && job.fullAddress.toLowerCase().includes(citySq)) ||
-      (job.detailAddress && job.detailAddress.toLowerCase().includes(citySq)) ||
-      (job.city && job.city.toLowerCase().includes(citySq)) ||
-      (job.ward && job.ward.toLowerCase().includes(citySq));
-
-    // 6. Station query filter
-    const stSq = (stationQuery || '').toLowerCase();
-    const matchStation = !stSq || 
-      (job.nearestStation && job.nearestStation.toLowerCase().includes(stSq)) ||
-      (job.fullAddress && job.fullAddress.toLowerCase().includes(stSq));
-
-    // 7. Near station walk time filter (<10 min walk)
-    const matchWalkTime = !onlyNearStation || 
-      (job.walkTime !== undefined && job.walkTime !== '' && Number(job.walkTime) <= 10);
-
-    // 8. Multi-selected Station Checkboxes Filter
-    const matchSelectedStations = !selectedStations || selectedStations.length === 0 || selectedStations.some(st => {
-      const stClean = st.replace('駅', '').toLowerCase();
-      return (job.nearestStation && job.nearestStation.toLowerCase().includes(stClean)) ||
-             (job.location && job.location.toLowerCase().includes(stClean)) ||
-             (job.fullAddress && job.fullAddress.toLowerCase().includes(stClean));
-    });
-
-    // 9. Multi-selected Cities/Wards Checkboxes Filter
-    const matchSelectedCitiesList = !selectedCitiesList || selectedCitiesList.length === 0 || selectedCitiesList.some(c => {
-      const cClean = c.replace(/(区|市)$/g, '').toLowerCase();
-      return (job.location && job.location.toLowerCase().includes(cClean)) ||
-             (job.fullAddress && job.fullAddress.toLowerCase().includes(cClean)) ||
-             (job.city && job.city.toLowerCase().includes(cClean)) ||
-             (job.ward && job.ward.toLowerCase().includes(cClean));
-    });
-
-    // 10. Job Category & Subcategory Filter
-    const matchJobCategory = (!selectedJobCategories || selectedJobCategories.length === 0 || selectedJobCategories.some(catId => job.category === catId || job.subcategory === catId))
-      && (!selectedSubcategories || selectedSubcategories.length === 0 || selectedSubcategories.some(subId => job.subcategory === subId || job.category === subId));
-
-    // 11. Employment Type Filter
-    const matchEmploymentType = !selectedEmploymentTypes || selectedEmploymentTypes.length === 0 || selectedEmploymentTypes.includes(job.type);
-
-    // 12. Duration Filter
-    const matchDuration = !selectedDurations || selectedDurations.length === 0 || selectedDurations.some(d => {
-      if (d === 'long') return job.duration === 'long' || !job.duration;
-      if (d === 'short_1w') return job.duration === 'short_1w';
-      if (d === 'short_1m') return job.duration === 'short_1m';
-      if (d === 'single_day') return job.duration === 'single_day';
-      return true;
-    });
-
-    // 13. Time Slot Filter
-    const matchTimeSlot = !selectedTimeSlots || selectedTimeSlots.length === 0 || selectedTimeSlots.some(ts => {
-      const st = parseInt(job.startTime || '8', 10);
-      if (ts === 'morning') return st >= 6 && st < 9;
-      if (ts === 'daytime') return st >= 9 && st < 18;
-      if (ts === 'evening') return st >= 16 && st < 20;
-      if (ts === 'night') return st >= 20 && st < 24;
-      if (ts === 'midnight') return st >= 0 && st < 6;
-      return true;
-    });
-
-    // 14. Special Features Filter
-    const matchFeatures = !selectedFeatures || selectedFeatures.length === 0 || selectedFeatures.every(f => {
-      if (f === 'foreigner_welcome') return job.foreigners && job.foreigners !== 'foreigners_none';
-      if (f === 'no_experience') return job.noExperienceOk === true || job.experienceRequired === false;
-      if (f === 'daily_pay') return job.payType === 'daily';
-      if (f === 'weekly_pay') return job.payType === 'weekly';
-      if (f === 'transport_paid') return job.transportPaid === true;
-      if (f === 'dormitory') return job.housing && job.housing !== 'housing_none';
-      if (f === 'insurance') return job.insurance && job.insurance.startsWith('insurance_');
-      if (f === 'tokutei_ginou') return job.isInternational === true;
-      if (f === 'visa_support') return job.foreigners === 'foreigners_visa' || job.foreigners === 'foreigners_visa_renew';
-      if (f === 'promotion') return job.bonus && job.bonus !== 'bonus_none';
-      if (f === 'signon_bonus') return (job.hasShoukai === true || job.hasShoukai === 'yes' || Number(job.shoukaiFee) > 0 || (job.shoukai && job.shoukai !== '0' && job.shoukai !== 'Yo\'q'));
-      if (f === 'shift_day') return job.hours === 'day' || job.hours === 'daytime' || (job.description && job.description.includes('日勤'));
-      if (f === 'shift_night') return job.hours === 'night' || job.hours === 'midnight' || (job.description && (job.description.includes('夜勤') || job.description.includes('深夜')));
-      if (f === 'shift_rotation') return job.hours === 'shift' || (job.description && job.description.includes('シフト'));
-      if (f === 'off_2days_full') return job.dayOff?.includes('2') || (job.description && job.description.includes('完全週休2日'));
-      if (f === 'off_paid') return job.hasPaidLeave === true || (job.description && job.description.includes('有給'));
-      if (f === 'truck_at') return job.truckType?.includes('AT') || (job.description && job.description.includes('AT'));
-      if (f === 'truck_etc_navi') return job.hasNavi === true || (job.description && (job.description.includes('カーナビ') || job.description.includes('ETC')));
-      if (f === 'truck_camera') return job.hasCamera === true || (job.description && (job.description.includes('バックカメラ') || job.description.includes('ドラレコ')));
-      if (f === 'truck_dedicated') return job.dedicatedTruck === true || (job.description && job.description.includes('専用車'));
-      if (f === 'load_pallet') return job.loadingMethod === 'pallet' || (job.description && job.description.includes('パレット'));
-      if (f === 'load_forklift') return job.loadingMethod === 'forklift' || (job.description && job.description.includes('フォークリフト'));
-      if (f === 'load_hand') return job.loadingMethod === 'hand' || (job.description && job.description.includes('手積み'));
-      if (f === 'highway_ok') return job.highwayOk === true || (job.description && job.description.includes('高速'));
-      return true;
-    });
-
-    // 15. GPS Radius Distance Filter (Haversine formula)
-    const matchRadius = !selectedRadius || selectedRadius === 0 || (() => {
-      if (!job.lat || !job.lng) return true;
-      const refLat = 35.6812; // Tokyo Center reference coordinate
-      const refLng = 139.7671;
-      const dLat = (job.lat - refLat) * (Math.PI / 180);
-      const dLon = (job.lng - refLng) * (Math.PI / 180);
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(refLat * (Math.PI / 180)) * Math.cos(job.lat * (Math.PI / 180)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distKm = 6371 * c;
-      return distKm <= selectedRadius;
-    })();
-
-    return matchSegment && matchSearch && matchLicense && matchLang && 
-           matchBenefits && matchSalary && matchPrefecture && matchCity && 
-           matchStation && matchWalkTime && matchSelectedStations && 
-           matchSelectedCitiesList && matchJobCategory && matchEmploymentType && 
-           matchDuration && matchTimeSlot && matchFeatures && matchRadius;
-  }).sort((a, b) => {
-    if (sortBy === 'salary_high') return getSalaryNumber(b.salary) - getSalaryNumber(a.salary);
-    if (sortBy === 'salary_low') return getSalaryNumber(a.salary) - getSalaryNumber(b.salary);
-    return (b.id || 0) - (a.id || 0);
-  });
+  }, [
+    jobs, activeSegment, searchQuery, selectedLicenses, selectedLangLevel,
+    selectedBenefits, minSalary, selectedPrefecture, selectedCity,
+    stationQuery, onlyNearStation, selectedStations, selectedCitiesList,
+    selectedJobCategories, selectedSubcategories, selectedEmploymentTypes,
+    selectedDurations, selectedTimeSlots, selectedFeatures, selectedRadius, sortBy
+  ]);
 
   const getJobCategoryLabel = (catId) => {
     for (const cat of JOB_CATEGORIES) {
