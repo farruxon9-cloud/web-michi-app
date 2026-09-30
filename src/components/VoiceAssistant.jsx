@@ -583,7 +583,7 @@ export default function VoiceAssistant({
     if (statusRef.current !== 'thinking' && statusRef.current !== 'speaking' && !aiResponseTextRef.current) {
       setTranscript('');
       setAiResponseText('');
-      setShowPill(false);
+      setShowPill(true);
     }
     setHasStarted(true);
     isListeningRef.current = true;
