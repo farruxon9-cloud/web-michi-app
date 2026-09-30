@@ -1,11 +1,6 @@
 /**
- * 🔒 Michi AI — Privacy-First Local Storage Engine (Device Local Storage / IndexedDB / SQLite)
- * 
- * Guarantees 100% user privacy:
- * - 0% server database costs (No external cloud database required)
- * - 100% local device storage (IndexedDB / LocalStorage / Capacitor SQLite)
- * - Fast local full-text search across all past conversations
- * - Export / Import / One-tap Purge privacy controls
+ * 🔒 Michi AI — Privacy-First Local Storage Engine
+ * Device-local IndexedDB storage with localStorage fallback.
  */
 
 class MichiLocalStorageEngine {
@@ -17,35 +12,27 @@ class MichiLocalStorageEngine {
     this.requestPersistentStorage();
   }
 
-  /**
-   * Request WebKit/iOS Safari persistent storage (prevents 7-day auto-purge)
-   */
   async requestPersistentStorage() {
-    if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
+    if (typeof navigator !== 'undefined' && navigator.storage?.persist) {
       try {
-        const isPersisted = await navigator.storage.persist();
-        console.log(`[MichiLocalStorage] 🛡️ Storage persistence granted: ${isPersisted}`);
+        await navigator.storage.persist();
       } catch (err) {
-        console.warn('[MichiLocalStorage] Storage persistence request warning:', err);
+        console.warn('[MichiLocalStorage] Storage persist warning:', err);
       }
     }
   }
 
-  /**
-   * Initialize IndexedDB for unlimited local storage capacity
-   */
   async initIndexedDB() {
-    if (typeof window === 'undefined' || !window.indexedDB) return;
+    if (typeof window === 'undefined' || !window.indexedDB) return false;
     return new Promise((resolve) => {
       try {
         const request = window.indexedDB.open(this.dbName, 1);
         request.onupgradeneeded = (e) => {
           const db = e.target.result;
           if (!db.objectStoreNames.contains(this.storeName)) {
-            const store = db.createObjectStore(this.storeName, { keyPath: 'id', autoIncrement: true });
+            const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
             store.createIndex('timestamp', 'timestamp', { unique: false });
             store.createIndex('language', 'language', { unique: false });
-            store.createIndex('category', 'category', { unique: false });
           }
         };
         request.onsuccess = (e) => {
@@ -53,25 +40,24 @@ class MichiLocalStorageEngine {
           resolve(true);
         };
         request.onerror = () => {
-          console.warn('[MichiLocalStorage] IndexedDB initialization failed, using localStorage fallback');
+          console.warn('[MichiLocalStorage] IndexedDB failed, fallback to localStorage');
           resolve(false);
         };
       } catch (err) {
-        console.warn('[MichiLocalStorage] IndexedDB error:', err);
+        console.warn('[MichiLocalStorage] DB Init error:', err);
         resolve(false);
       }
     });
   }
 
   /**
-   * Save conversation item strictly into local device memory
-   * @param {{ question: string, answer: string, language: string, category?: string, isError?: boolean }} chatData
+   * Suhbatni xavfsiz saqlash
    */
   async saveConversation(chatData) {
     await this.dbReadyPromise;
 
     const entry = {
-      id: Date.now(),
+      id: `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       question: chatData.question || '',
       answer: chatData.answer || '',
       language: chatData.language || 'ja',
@@ -82,30 +68,27 @@ class MichiLocalStorageEngine {
       formattedDate: new Date().toLocaleDateString()
     };
 
-    // 1. Primary IndexedDB Storage
     if (this.db) {
       try {
         const tx = this.db.transaction(this.storeName, 'readwrite');
-        const store = tx.objectStore(this.storeName);
-        store.add(entry);
+        tx.objectStore(this.storeName).put(entry);
       } catch (e) {
         console.warn('[MichiLocalStorage] IndexedDB write failed:', e);
       }
     }
 
-    // 2. Synchronize with localStorage for instant synchronous read
+    // LocalStorage zaxirasi (oxirgi 100 ta xabar bilan cheklangan)
     try {
       const existing = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
       existing.push(entry);
-      localStorage.setItem('michi_chat_history', JSON.stringify(existing.slice(-200)));
+      localStorage.setItem('michi_chat_history', JSON.stringify(existing.slice(-100)));
     } catch (e) {}
 
     return entry;
   }
 
   /**
-   * Retrieve all conversations stored on device
-   * @returns {Promise<Array>}
+   * Barcha suhbatlar tarixini olish (saralangan holda)
    */
   async getAllConversations() {
     await this.dbReadyPromise;
@@ -116,13 +99,14 @@ class MichiLocalStorageEngine {
           const tx = this.db.transaction(this.storeName, 'readonly');
           const store = tx.objectStore(this.storeName);
           const req = store.getAll();
+          
           req.onsuccess = () => {
             const results = req.result || [];
             if (results.length > 0) {
-              resolve(results.reverse());
+              // Asil massivga tegmasdan yangi teskari massiv qaytarish
+              resolve([...results].reverse());
               return;
             }
-            // Fallback to localStorage
             resolve(this.getLocalStorageConversations());
           };
           req.onerror = () => resolve(this.getLocalStorageConversations());
@@ -134,21 +118,17 @@ class MichiLocalStorageEngine {
     return this.getLocalStorageConversations();
   }
 
-  /**
-   * Fallback synchronous local storage reader
-   */
   getLocalStorageConversations() {
     try {
       const history = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
-      return history.reverse();
-    } catch (e) {
+      return [...history].reverse();
+    } catch {
       return [];
     }
   }
 
   /**
-   * Fast full-text local search across saved conversations
-   * @param {string} keyword 
+   * Suhbatlar orasidan so'z bo'yicha qidirish
    */
   async searchConversations(keyword) {
     const all = await this.getAllConversations();
@@ -161,7 +141,7 @@ class MichiLocalStorageEngine {
   }
 
   /**
-   * Export conversation history as a JSON / TXT file for user download
+   * Tarixni JSON fayl ko'rinishida yuklab olish (Export)
    */
   async exportConversationsToFile() {
     const data = await this.getAllConversations();
@@ -178,47 +158,59 @@ class MichiLocalStorageEngine {
   }
 
   /**
-   * Import conversation history from a JSON backup file
-   * @param {File} file 
+   * Fayldan bitta tezkor tranzaksiya orqali import qilish
    */
   async importConversationsFromFile(file) {
+    await this.dbReadyPromise;
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
           const imported = JSON.parse(e.target.result);
-          if (Array.isArray(imported)) {
+          if (!Array.isArray(imported)) {
+            return reject(new Error('Noto\'g\'ri fayl formati'));
+          }
+
+          if (this.db) {
+            const tx = this.db.transaction(this.storeName, 'readwrite');
+            const store = tx.objectStore(this.storeName);
             for (const item of imported) {
-              await this.saveConversation(item);
+              if (item.question && item.answer) {
+                store.put({
+                  ...item,
+                  id: item.id || `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
+                });
+              }
             }
-            resolve(true);
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => reject(tx.error);
           } else {
-            reject(new Error('Invalid backup file format'));
+            localStorage.setItem('michi_chat_history', JSON.stringify(imported.slice(-100)));
+            resolve(true);
           }
         } catch (err) {
           reject(err);
         }
       };
+      reader.onerror = () => reject(reader.error);
       reader.readAsText(file);
     });
   }
 
   /**
-   * 100% Data Wipe / Delete All Device Memory
+   * Barcha lokal ma'lumotlarni to'liq o'chirish (Wipe)
    */
   async clearAllDeviceData() {
     await this.dbReadyPromise;
     localStorage.removeItem('michi_chat_history');
     localStorage.removeItem('michi_ai_memory_cache');
-    
+
     if (this.db) {
       try {
         const tx = this.db.transaction(this.storeName, 'readwrite');
-        const store = tx.objectStore(this.storeName);
-        store.clear();
+        tx.objectStore(this.storeName).clear();
       } catch (e) {}
     }
-    console.log('[MichiLocalStorage] 🛡️ All local device conversation memory completely purged');
     return true;
   }
 }
