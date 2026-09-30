@@ -1945,20 +1945,21 @@ html.dark-mode .ai-response-text {
   line-height: 1;
 }
 
-/* AI Hub Page Overlay & Container Panel — Seamless Native Page Match */
+/* AI Hub Page Overlay & Container Panel — True Side Drawer Layout */
 .voice-side-drawer-overlay {
   position: fixed;
   inset: 0;
-  background: var(--bg-color, #e5eafc);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 100000;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   animation: drawerOverlayFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 html.dark-mode .voice-side-drawer-overlay {
-  background: #0B0C10 !important;
+  background: rgba(0, 0, 0, 0.65) !important;
 }
 
 @keyframes drawerOverlayFade {
@@ -1968,12 +1969,12 @@ html.dark-mode .voice-side-drawer-overlay {
 
 .voice-side-drawer-panel {
   width: 100%;
-  max-width: 820px;
+  max-width: 440px;
   height: 100vh;
   height: 100dvh;
   background: var(--bg-color, #e5eafc);
-  border: none;
-  box-shadow: none;
+  border-left: 1px solid var(--glass-border);
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   padding-top: max(20px, calc(env(safe-area-inset-top) + 12px));
@@ -1982,11 +1983,11 @@ html.dark-mode .voice-side-drawer-overlay {
   padding-right: var(--screen-margin-x, 14px);
   box-sizing: border-box;
   overflow: hidden;
-  margin: 0 auto;
+  margin: 0;
 }
 
 html.dark-mode .voice-side-drawer-panel {
-  background: #0B0C10 !important;
+  background: #13151B !important;
   color: #FFFFFF;
 }
 
