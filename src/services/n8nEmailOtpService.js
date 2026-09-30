@@ -1,16 +1,16 @@
 /**
  * n8nEmailOtpService.js — Secure n8n Webhook Email OTP Integration Service
  * 
- * Security Architecture (OWASP Compliant):
- * 1. Request OTP: Sends { action: "send", email, session_id, code } to n8n Webhook for SMTP dispatch.
- *    Response to Client: Returns ONLY { success: true, session_id, cooldownSeconds }, NEVER exposing the plain OTP code.
- * 2. Verify OTP: Sends { action: "verify", email, code, session_id } to n8n Webhook.
- *    Response from Backend/n8n: { success: true, token: "JWT..." } or { success: false, messageKey: "invalidCode" }.
+ * Production Security Rules:
+ * 1. Requests are sent over HTTPS to prevent Mixed Content blocking.
+ * 2. OTP code generation & verification are handled server-side/n8n.
+ * 3. Client only handles session tokens.
  */
 
-import { generateOTP, verifyOTP, resetAttempts } from './authSecurityService';
+import { resetAttempts } from './authSecurityService';
 
-const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_OTP_WEBHOOK_URL || 'http://138.197.28.114:5678/webhook/351b1de7-f29c-422c-ad21-ac6e506fa6e3';
+// Mixed Content oldini olish uchun HTTPS shlyuz orqali ulanish
+export const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_OTP_WEBHOOK_URL || 'https://api.michi.jp.net/webhook/351b1de7-f29c-422c-ad21-ac6e506fa6e3';
 const N8N_API_KEY = import.meta.env.VITE_N8N_API_KEY || import.meta.env.VITE_OTP_API_KEY || 'michi_secret_otp_key_2026';
 
 /**
@@ -40,22 +40,21 @@ export async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
       ...options,
       signal: controller.signal
     });
-    clearTimeout(timer);
     return response;
   } catch (error) {
-    clearTimeout(timer);
     if (error.name === 'AbortError') {
-      throw new Error(`Request timed out after ${Math.round(timeoutMs / 1000)}s`);
+      throw new Error(`リクエストがタイムアウトしました (${Math.round(timeoutMs / 1000)}秒)`);
     }
     throw error;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
 /**
  * Requests 6-digit OTP dispatch via n8n Webhook.
  * 
- * SECURITY RULE: Returns ONLY session_id to frontend.
- * Plain text OTP code is NEVER exposed in the response object to client UI!
+ * SECURITY RULE: Plain text OTP is generated inside n8n/SMTP node, NOT in frontend Network tab!
  * 
  * @param {string} email - Recipient's email address
  * @returns {Promise<{ success: boolean, messageKey: string, sessionId?: string, cooldownSeconds?: number }>}
@@ -70,61 +69,48 @@ export async function sendEmailOtpViaN8n(email) {
     };
   }
 
-  // Generate OTP session securely inside authSecurityService
-  const otpData = generateOTP(cleanEmail);
-  const sessionId = otpData.sessionId;
-  const code = otpData.internalCode;
-
-  console.log(`[n8n Email OTP] Dispatched OTP request for ${cleanEmail} (Session: ${sessionId})`);
+  // Brauzer darajasida faqat sessiya ID yaratiladi
+  const clientSessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
   try {
     const response = await fetchWithTimeout(N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json, text/plain, */*',
-        'X-API-Key': N8N_API_KEY,
-        'x-api-key': N8N_API_KEY
+        'Accept': 'application/json',
+        'X-API-Key': N8N_API_KEY
       },
       body: JSON.stringify({
         action: 'send',
         email: cleanEmail,
-        session_id: sessionId,
-        code: code
+        session_id: clientSessionId
       })
-    }, 15000); // 15 seconds timeout
+    }, 15000);
 
-    let n8nData = null;
-    try {
-      n8nData = await response.json();
-    } catch {
-      // Non-JSON response fallback
+    if (!response.ok) {
+      throw new Error(`Server returned status: ${response.status}`);
     }
 
-    const returnedSessionId = n8nData?.session_id || n8nData?.sessionId || sessionId;
+    const n8nData = await response.json().catch(() => null);
+    const sessionId = n8nData?.session_id || n8nData?.sessionId || clientSessionId;
 
-    return {
-      success: true,
-      messageKey: 'otpSentSuccess',
-      sessionId: returnedSessionId,
-      cooldownSeconds: 60
-    };
-  } catch (error) {
-    console.warn(`[n8n Email OTP] Webhook dispatch notice (Local fallback active):`, error?.message || error);
-    
-    // Security Fallback: Session ID returned without code
     return {
       success: true,
       messageKey: 'otpSentSuccess',
       sessionId: sessionId,
-      cooldownSeconds: 60,
-      isFallback: true
+      cooldownSeconds: 60
+    };
+  } catch (error) {
+    console.error(`[n8n Email OTP] Webhook dispatch error:`, error?.message || error);
+    return {
+      success: false,
+      messageKey: 'otpSendFailed'
     };
   }
 }
 
 /**
- * Verifies user-entered 6-digit OTP code against n8n Webhook / Auth Service.
+ * Verifies user-entered 6-digit OTP code against n8n Webhook.
  * 
  * @param {string} email 
  * @param {string} inputCode 
@@ -142,15 +128,13 @@ export async function verifyEmailOtpCodeViaN8n(email, inputCode, sessionId = nul
     };
   }
 
-  // Attempt Webhook Verification first
   try {
     const response = await fetchWithTimeout(N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json, text/plain, */*',
-        'X-API-Key': N8N_API_KEY,
-        'x-api-key': N8N_API_KEY
+        'Accept': 'application/json',
+        'X-API-Key': N8N_API_KEY
       },
       body: JSON.stringify({
         action: 'verify',
@@ -158,11 +142,7 @@ export async function verifyEmailOtpCodeViaN8n(email, inputCode, sessionId = nul
         code: cleanCode,
         session_id: sessionId
       })
-    }, 12000); // 12 seconds timeout
-
-    if (response.ok) {
-      const data = await response.json().catch(() => null);
-      if (data && (data.success === true || data.verified === true)) {
+    }, 12000);
 
     if (response.ok) {
       const data = await response.json().catch(() => null);
@@ -171,29 +151,21 @@ export async function verifyEmailOtpCodeViaN8n(email, inputCode, sessionId = nul
         return {
           success: true,
           messageKey: 'emailVerifiedSuccess',
-          token: data.token || `jwt_session_${Date.now()}`
+          token: data.token || `jwt_${Date.now()}`
         };
       }
     }
-  } catch (e) {
-    console.warn(`[n8n Email OTP] Webhook verify notice, using local session verification:`, e?.message || e);
-  }
-
-  // Fallback to local session verification
-  const result = verifyOTP(cleanEmail, cleanCode, sessionId);
-
-  if (result.isValid) {
-    resetAttempts(cleanEmail);
-    return {
-      success: true,
-      messageKey: 'emailVerifiedSuccess',
-      token: result.token || `jwt_session_${Date.now()}`
-    };
-  } else {
+    
     return {
       success: false,
-      messageKey: result.messageKey || 'invalidCode',
-      remainingAttempts: result.remainingAttempts ?? 2
+      messageKey: 'invalidCode',
+      remainingAttempts: 2
+    };
+  } catch (e) {
+    console.error(`[n8n Email OTP] Webhook verification failed:`, e?.message || e);
+    return {
+      success: false,
+      messageKey: 'verificationNetworkError'
     };
   }
 }
@@ -201,21 +173,6 @@ export async function verifyEmailOtpCodeViaN8n(email, inputCode, sessionId = nul
 /**
  * Backwards compatibility sync wrapper
  */
-export function verifyEmailOtpCode(email, inputCode, sessionId = null) {
-  const result = verifyOTP(email, inputCode, sessionId);
-  if (result.isValid) {
-    resetAttempts(email);
-    return {
-      success: true,
-      messageKey: 'emailVerifiedSuccess',
-      token: result.token || `jwt_session_${Date.now()}`
-    };
-  } else {
-    return {
-      success: false,
-      messageKey: result.messageKey || 'invalidCode',
-      remainingAttempts: result.remainingAttempts ?? 2
-    };
-  }
+export async function verifyEmailOtpCode(email, inputCode, sessionId = null) {
+  return verifyEmailOtpCodeViaN8n(email, inputCode, sessionId);
 }
-
