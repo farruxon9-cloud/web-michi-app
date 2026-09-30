@@ -419,7 +419,7 @@ export default function VoiceAssistant({
           }
         }
       }
-    } else {
+    } else if (!isVoiceStandby) {
       stopAllVoiceActivities();
       hasGreetedRef.current = false;
       isFillingResumeRef.current = false;
@@ -428,9 +428,11 @@ export default function VoiceAssistant({
     }
 
     return () => {
-      stopAllVoiceActivities();
+      if (!isActiveRef.current && !isVoiceStandbyRef.current) {
+        stopAllVoiceActivities();
+      }
     };
-  }, [isActive, apiKey, isOnline, showKeyInput]);
+  }, [isActive, isVoiceStandby, apiKey, isOnline, showKeyInput]);
 
   // Auto-close overlay or restart listening when conversation finishes
   useEffect(() => {
