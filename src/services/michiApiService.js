@@ -81,9 +81,14 @@ export async function sendMichiChatMessage(userMessageText, onChunkUpdate = null
       throw fetchErr;
     }
 
-    // Handle HTTP 429: Rate Limit Exceeded
+    // Handle HTTP 429: Rate Limit Exceeded (Server limit: 20 req/min per IP)
     if (response.status === 429) {
-      throw new Error('リクエスト制限を超えました。1分後に再度お試しください。');
+      const userLang = (typeof localStorage !== 'undefined' && (localStorage.getItem('michi_speech_lang') || localStorage.getItem('i18nextLng'))) || 'ja';
+      const isUz = userLang.toLowerCase().startsWith('uz');
+      const rateLimitMsg = isUz
+        ? "So'rovlar chegarasi oshib ketdi. Iltimos, 1 daqiqadan so'ng qayta urinib ko'ring."
+        : "リクエスト制限を超えました。1分後に再度お試しください。";
+      throw new Error(rateLimitMsg);
     }
 
     // Handle HTTP 500 or other non-200 responses
