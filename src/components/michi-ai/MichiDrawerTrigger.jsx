@@ -1,11 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speechLang }) {
-  // Y-position state (in pixels from top). Default ~42% of window height.
+export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount = 0, speechLang = 'ja' }) {
+  const { i18n, t } = useTranslation();
+  const currentLang = (speechLang || i18n?.language || 'ja').substring(0, 2).toLowerCase();
+
+  // Y-pozitsiyasi holati (localStorage xavfsiz o'qish bilan)
   const [yPos, setYPos] = useState(() => {
-    const saved = localStorage.getItem('michi_trigger_y_pos');
-    return saved ? parseFloat(saved) : null;
+    try {
+      const saved = localStorage.getItem('michi_trigger_y_pos');
+      return saved ? parseFloat(saved) : null;
+    } catch (e) {
+      return null;
+    }
   });
 
   const isDraggingRef = useRef(false);
@@ -14,17 +22,15 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
   const hasDraggedRef = useRef(false);
   const buttonRef = useRef(null);
 
-  // Dynamic boundaries:
-  // Top boundary: 70px (near the top header / AI robot area)
-  // Bottom boundary: window.innerHeight - 120px (above the bottom navigation bar)
-  const getMinMaxY = () => {
+  // Dinamik chegaralar (Top: 70px, Bottom: window.innerHeight - 120px)
+  const getMinMaxY = useCallback(() => {
     const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
     const minY = 70;
     const maxY = Math.max(minY, vh - 120);
     return { minY, maxY };
-  };
+  }, []);
 
-  // Initialize Y position on mount if not loaded from localStorage
+  // Boshlang'ich pozitsiyani belgilash
   useEffect(() => {
     if (yPos === null && typeof window !== 'undefined') {
       const vh = window.innerHeight;
@@ -33,7 +39,7 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
     }
   }, [yPos]);
 
-  // Recalculate and constrain position on window resize
+  // Ekran o'lchami o'zgarganda pozitsiyani qayta moslash
   useEffect(() => {
     const handleResize = () => {
       setYPos((prevY) => {
@@ -44,9 +50,18 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [getMinMaxY]);
 
-  // --- Touch Event Handlers (Mobile) ---
+  // Pozitsiyani keshga yozish yordamchi funksiyasi
+  const saveYPos = (newY) => {
+    try {
+      localStorage.setItem('michi_trigger_y_pos', newY.toString());
+    } catch (e) {
+      // localStorage cheklovlari bo'lsa e'tiborsiz qoldiriladi
+    }
+  };
+
+  // --- Mobil Sensorli Boshqaruv (Touch Events) ---
   const handleTouchStart = (e) => {
     if (e.touches.length !== 1) return;
     isDraggingRef.current = true;
@@ -59,7 +74,7 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
     if (!isDraggingRef.current || e.touches.length !== 1) return;
     const currentY = e.touches[0].clientY;
     const deltaY = currentY - startYRef.current;
-    
+
     if (Math.abs(deltaY) > 4) {
       hasDraggedRef.current = true;
     }
@@ -76,13 +91,13 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
     if (hasDraggedRef.current && yPos !== null) {
-      localStorage.setItem('michi_trigger_y_pos', yPos.toString());
+      saveYPos(yPos);
     }
   };
 
-  // --- Mouse Event Handlers (Desktop) ---
+  // --- Desktop Sichqoncha Boshqaruvi (Mouse Events) ---
   const handleMouseDown = (e) => {
-    if (e.button !== 0) return; // Only primary left mouse click
+    if (e.button !== 0) return; // Faqat chap tugma uchun
     isDraggingRef.current = true;
     hasDraggedRef.current = false;
     startYRef.current = e.clientY;
@@ -107,7 +122,7 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
       if (hasDraggedRef.current && yPos !== null) {
-        localStorage.setItem('michi_trigger_y_pos', yPos.toString());
+        saveYPos(yPos);
       }
     };
 
@@ -115,7 +130,23 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
     window.addEventListener('mouseup', handleMouseUp);
   };
 
-  // Handle click: toggle drawer only if not dragging
+  // Klaviatura strelka tugmalari orqali pozitsiyani surish
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const step = e.shiftKey ? 30 : 10;
+      const { minY, maxY } = getMinMaxY();
+      setYPos((prevY) => {
+        const current = prevY !== null ? prevY : Math.round(window.innerHeight * 0.42);
+        const nextY = e.key === 'ArrowUp' ? current - step : current + step;
+        const clamped = Math.max(minY, Math.min(maxY, nextY));
+        saveYPos(clamped);
+        return clamped;
+      });
+    }
+  };
+
+  // Drayverni ochish hodisasi (agar surib surilmagan bo'lsa)
   const handleClick = (e) => {
     if (hasDraggedRef.current) {
       e.preventDefault();
@@ -129,20 +160,32 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
 
   const currentTop = yPos !== null ? `${yPos}px` : '42%';
 
+  const tooltips = {
+    ja: "Michi AI Hub (ドラッグまたは矢印キーで移動可能)",
+    uz: "Michi AI Hub (Surib yoki strelkalar bilan joylashtirish mumkin)",
+    en: "Michi AI Hub (Drag or use arrow keys to reposition)",
+    ru: "Michi AI Hub (Перетащите или используйте стрелки)",
+    zh: "Michi AI Hub (拖动或使用方向键移动)"
+  };
+
+  const titleText = t('michiTriggerTitle', tooltips[currentLang] || tooltips.ja);
+
   return (
     <button 
       ref={buttonRef}
+      type="button"
       className="voice-side-drawer-trigger"
-      style={{ top: currentTop, transform: 'none' }}
+      style={{ top: currentTop, transform: 'none', touchAction: 'none', userSelect: 'none' }}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onMouseDown={handleMouseDown}
-      title={speechLang === 'ja' ? 'Michi AI Hub (ドラッグして移動可能)' : 'Michi AI Hub (Surib joylashtirish mumkin)'}
-      aria-label="Toggle Michi AI Side Drawer"
+      title={titleText}
+      aria-label={titleText}
     >
-      <div className="drawer-trigger-pulse"></div>
+      <div className="drawer-trigger-pulse" aria-hidden="true"></div>
       <Sparkles size={16} color="#FFF" />
       <span className="drawer-trigger-badge">
         {chatCount > 0 ? chatCount : 'AI'}
