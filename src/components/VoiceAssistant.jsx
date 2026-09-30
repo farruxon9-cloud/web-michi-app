@@ -330,6 +330,7 @@ export default function VoiceAssistant({
   // Trigger speech recognition if overlay opens, has key, and has permission
   useEffect(() => {
     if (isActive) {
+      setIsSideDrawerOpen(true);
       if (!isOnline) {
         stopAllVoiceActivities();
         setStatus('error');
@@ -704,20 +705,7 @@ export default function VoiceAssistant({
         const text = localSTT.cleanTranscription(currentFinal, currentLang);
         console.log(`STT Final raw: "${currentFinal}" -> cleaned: "${text}"`);
 
-        // Standby background mode wake word filtering
-        if (!isActiveRef.current) {
-          const lowerText = text.toLowerCase();
-          const hasWakeWord = /(michi|miki|miti|hey michi|ミチ|みち)/i.test(lowerText);
-          if (!hasWakeWord) {
-            console.log(`Standby background listening ignored text without wake word: "${text}"`);
-            setStatus('idle');
-            if (isVoiceStandbyRef.current) {
-              scheduleRelisten();
-            }
-            return;
-          }
-        }
-
+        // Process all final spoken text directly without wake-word drop filter
         setStatus('thinking');
 
         try {
