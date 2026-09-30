@@ -131,3 +131,15 @@ export async function sendMichiChatMessage(userMessageText, onChunkUpdate = null
 export async function askMichiCore(userMessageText, onChunkUpdate = null) {
   return sendMichiChatMessage(userMessageText, onChunkUpdate);
 }
+
+/**
+ * Service object export for components importing { michiApiService }
+ */
+export const michiApiService = {
+  sendChatMessage: sendMichiChatMessage,
+  askCore: askMichiCore,
+  sanitize: sanitizeMichiResponse
+};
+
+export default michiApiService;
+
