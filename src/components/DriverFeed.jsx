@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, MapPin, Share2, Clock, Banknote, Shield, Home, Globe, Award, Briefcase, Car, Phone, Edit3, CheckCircle2, SlidersHorizontal, X, ChevronDown, ChevronUp, Check, ArrowLeft, Train, Navigation, Sparkles, RotateCcw, Building2, FileText, Calendar, Target, Star, ShieldCheck } from 'lucide-react';
@@ -433,13 +433,19 @@ export default function DriverFeed({
   const [isJobCatSectionOpen, setIsJobCatSectionOpen] = useState(false);
   const [isFeatureSectionOpen, setIsFeatureSectionOpen] = useState(false);
 
+  const isInitialMount = useRef(true);
+
   // Reset pagination when any filter changes
   useEffect(() => {
     setVisibleCount(10);
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     setLocalLoading(true);
     const timer = setTimeout(() => {
       setLocalLoading(false);
-    }, 450);
+    }, 200);
     return () => clearTimeout(timer);
   }, [
     searchQuery, activeSegment, selectedLicenses,
@@ -451,6 +457,7 @@ export default function DriverFeed({
   ]);
 
   const showLoading = isLoading || localLoading;
+
 
   const getSalaryNumber = (salaryStr) => {
     if (!salaryStr) return 0;
