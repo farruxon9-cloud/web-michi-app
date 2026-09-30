@@ -1,151 +1,150 @@
 /**
  * 🏯 Michi AI — Japanese JLPT Master Engine: Choukai, Dokkai, Bunpou & Cultural Values
  * 
- * Advanced engine for:
- * 1. Choukai (聴解) — Audio speech rhythm, Aizuchi (相槌), pitch tone & listening comprehension analysis.
- * 2. Dokkai (読解) — Passage reading logic, contextual inference, implicit message resolution.
- * 3. Bunpou Nuance (文法) — Comparative analysis between similar grammar patterns.
- * 4. Japanese Cultural Values (文化・報連相・おもてなし・空気を読む) — Infusing empathy and business etiquette.
+ * Choukai (聴解), Dokkai (読解), Bunpou Nuance (文法) va Yaponiya biznes etiketi (報連相・おもてなし).
  */
 
 import { JAPANESE_JLPT_MASTER_LIBRARY } from '../data/japaneseJLPTMasterLibrary.js';
 
 class JapaneseJLPTMasterEngine {
   constructor() {
-    this.library = JAPANESE_JLPT_MASTER_LIBRARY;
+    this.library = JAPANESE_JLPT_MASTER_LIBRARY || {};
   }
 
   /**
-   * Analyze Choukai listening audio scenario or text snippet
+   * Choukai (Eshitib tushunish va Aizuchi reaksiyalari) tahlili
    * @param {string} input 
    */
   analyzeChoukaiScenario(input) {
-    if (!input) return null;
-    const cleanInput = input.toLowerCase();
+    if (!input || typeof input !== 'string') return null;
+    const cleanInput = input.trim().toLowerCase();
 
-    // Check pre-defined scenarios first
-    const foundScenario = this.library.choukaiScenarios.find(
-      s => s.id === input || s.audioScript.includes(input) || cleanInput.includes(s.title.toLowerCase())
+    const scenarios = this.library.choukaiScenarios || [];
+    const foundScenario = scenarios.find(
+      s => s.id === input || (s.audioScript && s.audioScript.includes(input)) || (s.title && cleanInput.includes(s.title.toLowerCase()))
     );
 
     if (foundScenario) {
       return {
         type: 'SCENARIO_MATCH',
         scenario: foundScenario,
-        aizuchiRecommendation: foundScenario.aizuchiUsed.join('、'),
-        uzExplanation: foundScenario.uzExplanation
+        aizuchiRecommendation: Array.isArray(foundScenario.aizuchiUsed) ? foundScenario.aizuchiUsed.join('、') : '',
+        uzExplanation: foundScenario.uzExplanation || ''
       };
     }
 
-    // Dynamic Choukai audio analysis
-    const aizuchiDetected = (this.library.culturalValues.aizuchi.principles || [])
-      .concat(['ええ', 'なるほど', 'はい', 'かしこまりました', 'そうですね', 'おっしゃる通りです'])
-      .filter(a => input.includes(a));
+    // Dinamik Aizuchi signallarini aniqlash
+    const defaultAizuchi = ['ええ', 'なるほど', 'はい', 'かしこまりました', 'そうですね', 'おっしゃる通りです', '了解いたしました'];
+    const libraryAizuchi = this.library.culturalValues?.aizuchi?.principles || [];
+    const allAizuchi = Array.from(new Set([...libraryAizuchi, ...defaultAizuchi]));
+
+    const aizuchiDetected = allAizuchi.filter(a => input.includes(a));
 
     return {
       type: 'DYNAMIC_CHOUKAI_ANALYSIS',
       aizuchiDetected,
       audioPacing: input.length > 50 ? 'Natural Spoken Pacing' : 'Compact Phrase',
       uzExplanation: aizuchiDetected.length > 0 
-        ? `Tinglashda Aizuchi (相槌) tasdiq signallari topildi: ${aizuchiDetected.join(', ')}.`
-        : 'Tinglash signallari tahlil qilindi.'
+        ? `Tinglashda Aizuchi (相槌) tasdiq signallari aniqlandi: ${aizuchiDetected.join(', ')}.`
+        : 'Tinglash signallari va ritmi tahlil qilindi.'
     };
   }
 
   /**
-   * Analyze Dokkai reading passage and extract logical arguments
+   * Dokkai (Yaponcha rasmiy matnlar va qoidalar) mantiqiy tahlili
    * @param {string} text 
    */
   analyzeDokkaiPassage(text) {
-    if (!text) return null;
+    if (!text || typeof text !== 'string') return null;
+    const cleanText = text.trim();
 
-    const foundPassage = this.library.dokkaiPassages.find(
-      p => p.id === text || text.includes(p.passage.substring(0, 15))
+    const passages = this.library.dokkaiPassages || [];
+    const searchSlice = cleanText.substring(0, Math.min(cleanText.length, 20));
+
+    const foundPassage = passages.find(
+      p => p.id === cleanText || (p.passage && p.passage.includes(searchSlice))
     );
 
     if (foundPassage) {
       return {
         type: 'PASSAGE_MATCH',
         passage: foundPassage,
-        logicalAnalysis: foundPassage.logicalAnalysis,
-        uzTranslation: foundPassage.uzTranslation
+        logicalAnalysis: foundPassage.logicalAnalysis || '',
+        uzTranslation: foundPassage.uzTranslation || ''
       };
     }
 
-    // Dynamic Dokkai logical structure analysis
-    const isRequirement = text.includes('条件') || text.includes('必須') || text.includes('求める');
-    const isRegulation = text.includes('改定') || text.includes('上限') || text.includes('義務');
+    // Qonunlar, ish talablari va shartnomalarni dinamik ajratish
+    const isRequirement = /(条件|必須|求める|資格|経験)/.test(cleanText);
+    const isRegulation = /(改定|上限|義務|法律|規則|労働基準)/.test(cleanText);
 
     return {
       type: 'DYNAMIC_DOKKAI_ANALYSIS',
-      contentType: isRequirement ? 'Vacancy Requirements (求人要件)' : isRegulation ? 'Regulation/Law Notice (規定・法律)' : 'General Business Passage',
-      extractedNuanceUz: 'Yaponcha rasmiy matn strukturasi va mazmuni tahlil qilindi.'
+      contentType: isRequirement 
+        ? 'Talablar va Shartlar (求人要件・資格)' 
+        : isRegulation 
+        ? 'Qonunchilik va Rasmiy Qoidalar (規定・法律)' 
+        : 'Umumiy Biznes Matni',
+      extractedNuanceUz: 'Yaponcha rasmiy matnning mantiqiy tuzilishi va kalit talablari tahlil qilindi.'
     };
   }
 
   /**
-   * Compare two similar grammar patterns and explain nuances
+   * Grammatik qoliplar orasidagi nozik ma'no farqlarini (Nuance) solishtirish
    * @param {string} patternA 
    * @param {string} patternB 
    */
   compareBunpouNuance(patternA, patternB) {
     if (!patternA || !patternB) return null;
+    const pA = patternA.trim();
+    const pB = patternB.trim();
 
-    const key1 = `${patternA}_vs_${patternB}`;
-    const key2 = `${patternB}_vs_${patternA}`;
+    const matrix = this.library.bunpouNuanceMatrix || {};
+    const key1 = `${pA}_vs_${pB}`;
+    const key2 = `${pB}_vs_${pA}`;
 
-    const match = this.library.bunpouNuanceMatrix[key1] || this.library.bunpouNuanceMatrix[key2];
-    if (match) {
-      return match;
-    }
-
-    // Check partial matches
-    for (const [key, details] of Object.entries(this.library.bunpouNuanceMatrix)) {
-      if (key.includes(patternA) || key.includes(patternB)) {
-        return details;
-      }
-    }
+    if (matrix[key1]) return matrix[key1];
+    if (matrix[key2]) return matrix[key2];
 
     return {
-      patternA,
-      patternB,
-      differenceUz: `${patternA} va ${patternB} grammatik qoliplari nozik ma'no farqlariga ega. Kontekstga qarab mos ravishda qo'llaniladi.`,
-      differenceJa: `「${patternA}」と「${patternB}」はニュアンスが異なります。文脈に応じて使い分けます。`
+      patternA: pA,
+      patternB: pB,
+      differenceUz: `「${pA}」va「${pB}」grammatik qoliplari nozik ma'no farqlariga ega. Ular gapdagi his-tuyg'u va rasmiylik darajasiga qarab farqlanadi.`,
+      differenceJa: `「${pA}」と「${pB}」はニュアンスが異なります。話者の意図や文脈に応じて使い分けます。`
     };
   }
 
   /**
-   * Infuse Japanese Cultural Values (Horenso, Omotenashi, Kuuki wo yomu) into AI response
+   * Yapon madaniyati (Horenso, Omotenashi) qoidalarini xabarga singdirish
    * @param {string} text 
-   * @param {string} [cultureType='horenso'] 
+   * @param {string} cultureType - 'horenso' | 'omotenashi'
    */
   applyCulturalValues(text, cultureType = 'horenso') {
-    if (!text) return '';
+    if (!text || typeof text !== 'string') return '';
+    let infusedText = text.trim();
 
-    let infusedText = text;
-
-    // Apply Horenso reporting politeness prefix
+    // Horenso (Hisobot berish madaniyati)
     if (cultureType === 'horenso' && !infusedText.includes('ご報告') && !infusedText.includes('かしこまりました')) {
-      infusedText = `謹んでご報告申し上げます。${infusedText}`;
+      infusedText = `ご報告いたします。${infusedText}`;
     }
 
-    // Apply Omotenashi anticipatory assistance
+    // Omotenashi (G'amxo'rlik va mehmondo'stlik)
     if (cultureType === 'omotenashi' && !infusedText.includes('お気軽')) {
-      infusedText = `${infusedText} 何かご不明な点がございましたら、いつでもお気軽にお申し付けくださいませ。`;
+      infusedText = `${infusedText}\n\n何かご不明な点がございましたら、いつでもお気軽にお申し付けくださいませ。`;
     }
 
     return infusedText;
   }
 
   /**
-   * Get library statistics
+   * Ma'lumotlar bazasi statistikasi
    */
   getMasterLibraryStats() {
     return {
-      choukaiScenariosCount: this.library.choukaiScenarios.length,
-      dokkaiPassagesCount: this.library.dokkaiPassages.length,
-      bunpouNuancePairsCount: Object.keys(this.library.bunpouNuanceMatrix).length,
-      culturalPrinciplesCount: Object.keys(this.library.culturalValues).length
+      choukaiScenariosCount: (this.library.choukaiScenarios || []).length,
+      dokkaiPassagesCount: (this.library.dokkaiPassages || []).length,
+      bunpouNuancePairsCount: Object.keys(this.library.bunpouNuanceMatrix || {}).length,
+      culturalPrinciplesCount: Object.keys(this.library.culturalValues || {}).length
     };
   }
 }
