@@ -12,6 +12,7 @@ import ResumeBuilder from './ResumeBuilder';
 import AssistHeroShowcase from './AssistHeroShowcase';
 import JapaneseVehiclePickerModal from './JapaneseVehiclePickerModal';
 import { POPULAR_GLOBAL_BRANDS, getModelsForMake, getHDVehiclePhoto } from '../services/vehicleApiService';
+import { vehicleImageService } from '../services/vehicleImageService';
 import { MASTER_VEHICLE_DATABASE, JAPANESE_AUTOMAKERS_MASTER } from '../data/japaneseVehiclesMaster';
 import './Profile.css';
 
@@ -5668,20 +5669,28 @@ const getLicenseLabel = (type) => {
                         {myVehicle.photoUrl ? (
                           <img 
                             src={myVehicle.photoUrl} 
-                            alt={myVehicle.model || 'Vehicle Photo'} 
+                            alt={`${myVehicle.make || ''} ${myVehicle.model || 'Vehicle'}`}
                             onError={async (e) => {
                               e.currentTarget.onerror = null;
-                              const hdUrl = await getHDVehiclePhoto(myVehicle.make, myVehicle.model);
-                              if (hdUrl) {
-                                setMyVehicle(prev => prev ? ({ ...prev, photoUrl: hdUrl }) : null);
+                              const fallbackUrl = vehicleImageService.getVehicleImageUrl(myVehicle);
+                              if (fallbackUrl && fallbackUrl !== myVehicle.photoUrl) {
+                                e.currentTarget.src = fallbackUrl;
+                              } else {
+                                e.currentTarget.src = 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80';
                               }
                             }}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                           />
                         ) : (
-                          <div style={{ width: '130px', height: '65px', transform: 'scale(1.2)' }}>
-                            {renderVehicleSVG(myVehicle.type, myVehicle.bodyStyle, myVehicle.color)}
-                          </div>
+                          <img 
+                            src={vehicleImageService.getVehicleImageUrl(myVehicle)} 
+                            alt={`${myVehicle.make || ''} ${myVehicle.model || 'Vehicle'}`}
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80';
+                            }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
                         )}
                       </div>
 
@@ -6108,26 +6117,28 @@ const getLicenseLabel = (type) => {
                         {editVehicleData.photoUrl ? (
                           <img 
                             src={editVehicleData.photoUrl} 
-                            alt="Vehicle Preview" 
+                            alt={`${editVehicleData.make || ''} ${editVehicleData.model || 'Vehicle'}`}
                             onError={async (e) => {
                               e.currentTarget.onerror = null;
-                              const hdUrl = await getHDVehiclePhoto(editVehicleData.make, editVehicleData.model);
-                              if (hdUrl) {
-                                setEditVehicleData(prev => prev ? ({ ...prev, photoUrl: hdUrl }) : null);
+                              const fallbackUrl = vehicleImageService.getVehicleImageUrl(editVehicleData);
+                              if (fallbackUrl && fallbackUrl !== editVehicleData.photoUrl) {
+                                e.currentTarget.src = fallbackUrl;
+                              } else {
+                                e.currentTarget.src = 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80';
                               }
                             }}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                           />
                         ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', textAlign: 'center' }}>
-                            <Camera size={22} color="#0084FF" />
-                            <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-main)' }}>
-                              {editVehicleData.make} {editVehicleData.model}
-                            </span>
-                            <span style={{ fontSize: '9px', color: '#0084FF', background: 'rgba(0, 132, 255, 0.12)', padding: '1px 6px', borderRadius: '6px' }}>
-                              📸 HD Rasm Yuklanmoqda...
-                            </span>
-                          </div>
+                          <img 
+                            src={vehicleImageService.getVehicleImageUrl(editVehicleData)} 
+                            alt={`${editVehicleData.make || ''} ${editVehicleData.model || 'Vehicle'}`}
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80';
+                            }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
                         )}
                         <span style={{
                           position: 'absolute',
