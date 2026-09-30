@@ -39,7 +39,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
   const [loading, setLoading] = useState(false);
   const resolvedPhotosRef = useRef(new Map());
 
-  // 1. Escape bilan yopish va Body Scroll Lock
+  // 1. Escape tugmasi va Body Scroll Lock
   useEffect(() => {
     if (!isOpen) return;
 
@@ -166,7 +166,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 132, 255, 0.15)'
         }}
       >
-        {/* Pro Header */}
+        {/* Pro Header with Live Status Badge */}
         <div style={{
           padding: '14px 16px',
           borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
@@ -229,7 +229,6 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
 
         {/* Search Bar & Era / Brand Pills */}
         <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0, 0, 0, 0.25)' }}>
-          {/* Pro Search Field */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -270,7 +269,6 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             )}
           </div>
 
-          {/* Era Filter Pills */}
           <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '2px' }}>
             {JAPANESE_HISTORICAL_ERAS.map(era => (
               <button
@@ -300,7 +298,6 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             ))}
           </div>
 
-          {/* Automakers Cascading Brand Pills */}
           <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', paddingBottom: '2px' }}>
             {POPULAR_GLOBAL_BRANDS.map(brand => {
               const isActive = selectedMake.toLowerCase() === brand.name.toLowerCase();
@@ -360,7 +357,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
               const isSelected = selectedVehicleId === veh.id;
 
               const handleSelect = () => {
-                const finalPhoto = veh.photoUrl || resolvedPhotosRef.current.get(veh.id) || null;
+                const finalPhoto = veh.photoUrl || veh._resolvedPhoto || resolvedPhotosRef.current.get(veh.id) || null;
                 onSelectVehicle?.({
                   ...veh,
                   photoUrl: finalPhoto
@@ -409,6 +406,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                     type={veh.type || 'car'}
                     height={75}
                     onPhotoLoaded={(url) => {
+                      veh._resolvedPhoto = url;
                       resolvedPhotosRef.current.set(veh.id, url);
                     }}
                   />
@@ -472,5 +470,3 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
     </div>
   );
 }
-
-
