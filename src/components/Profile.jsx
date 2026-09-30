@@ -214,8 +214,8 @@ export default function Profile({
           <div className="skeleton-pulse skeleton-row" />
           <div className="skeleton-pulse skeleton-row" />
         </div>
-        {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-        <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 76px clearance spacer (+12px custom for Profile tab) */}
+        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2729,8 +2729,8 @@ const getLicenseLabel = (type) => {
           )}
         </div>
 
-        {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-        <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 76px clearance spacer (+12px custom for Profile tab) */}
+        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2833,8 +2833,8 @@ const getLicenseLabel = (type) => {
             </div>
           </div>
         </div>
-        {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-        <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 76px clearance spacer (+12px custom for Profile tab) */}
+        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3088,8 +3088,8 @@ const getLicenseLabel = (type) => {
             </div>
           </div>
         </div>
-        {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-        <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 76px clearance spacer (+12px custom for Profile tab) */}
+        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3672,8 +3672,8 @@ const getLicenseLabel = (type) => {
                 </div>
               )}
         </div>
-        {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-        <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 76px clearance spacer (+12px custom for Profile tab) */}
+        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -4228,8 +4228,8 @@ const getLicenseLabel = (type) => {
             })
           )}
         </div>
-        {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-        <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 76px clearance spacer (+12px custom for Profile tab) */}
+        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -4327,8 +4327,8 @@ const getLicenseLabel = (type) => {
             </>
           )}
         </div>
-        {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-        <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 76px clearance spacer (+12px custom for Profile tab) */}
+        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -4787,8 +4787,8 @@ const getLicenseLabel = (type) => {
             </div>
           )}
 
-          {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-          <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+          {/* 76px clearance spacer (+12px custom for Profile tab) */}
+          <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       );
     }
@@ -4860,8 +4860,8 @@ const getLicenseLabel = (type) => {
             </>
           )}
         </div>
-        {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-        <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 76px clearance spacer (+12px custom for Profile tab) */}
+        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -5213,8 +5213,8 @@ const getLicenseLabel = (type) => {
           </div>
 
         </div>
-        {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-        <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 76px clearance spacer (+12px custom for Profile tab) */}
+        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -7228,14 +7228,14 @@ const getLicenseLabel = (type) => {
           </div>
         </div>
 
-        <button className="logout-btn glass" onClick={onLogout}>
+        <button className="logout-btn glass" onClick={onLogout} style={{ marginTop: '12px' }}>
           <LogOut size={20} />
           <span>{t('logout')}</span>
         </button>
       </div>
 
-      {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-      <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* 76px clearance spacer (64px + 12px extra) yielding custom clearance for Profile tab */}
+      <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
       {/* Universal Japanese Vehicle Fleet Picker Modal */}
       <JapaneseVehiclePickerModal
