@@ -14,10 +14,13 @@ export default function MichiTextInputField({
       placeholder={
         status === 'listening' 
           ? t('listeningPlaceholder') 
-          : t('askInputPlaceholder')
+          : status === 'thinking'
+            ? '応答を生成中...'
+            : t('askInputPlaceholder')
       }
       value={drawerInput}
       onChange={(e) => setDrawerInput(e.target.value)}
+      disabled={status === 'thinking'}
       className="voice-drawer-input"
     />
   );

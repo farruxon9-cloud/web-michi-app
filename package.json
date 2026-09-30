@@ -22,7 +22,6 @@
     "@capacitor/cli": "^8.5.2",
     "@capacitor/core": "^8.5.2",
     "@capacitor/ios": "^8.5.2",
-    "@gradio/client": "^2.6.0",
     "compromise": "^14.17.0",
     "i18next": "^26.4.2",
     "leaflet": "^1.9.4",

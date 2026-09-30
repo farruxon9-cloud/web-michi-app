@@ -27,25 +27,6 @@ class MultiAiMeshEngine {
       import.meta.env.VITE_DEEPSEEK_API_KEY,
       typeof localStorage !== 'undefined' ? localStorage.getItem('michi_deepseek_api_key') : null
     ].filter(Boolean);
-
-    // Auto Keep-Alive Pinger for Hugging Face Space (wakes server up on launch & keeps active)
-    this.pingHfBrainSpace();
-    if (typeof window !== 'undefined') {
-      setInterval(() => this.pingHfBrainSpace(), 10 * 60 * 1000); // Ping every 10 mins
-    }
-  }
-
-  pingHfBrainSpace() {
-    const hfBrainUrl = import.meta.env.VITE_HF_BRAIN_URL || '';
-    if (!hfBrainUrl) return;
-    try {
-      fetch(hfBrainUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: 'ping', language: 'ja' }),
-        signal: AbortSignal.timeout(4000)
-      }).catch(() => {});
-    } catch (e) {}
   }
 
   /**
