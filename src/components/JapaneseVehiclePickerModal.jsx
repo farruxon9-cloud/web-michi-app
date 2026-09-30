@@ -472,19 +472,5 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
     </div>
   );
 }
-adient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              color: '#fff',
-              fontSize: '11px',
-              fontWeight: 'bold',
-              cursor: 'pointer'
-            }}
-          >
-            {closeText}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+
 
