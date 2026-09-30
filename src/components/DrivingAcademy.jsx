@@ -1591,13 +1591,15 @@ export default function DrivingAcademy({
           style={{
             position: 'fixed',
             bottom: '96px',
-            left: 'var(--screen-margin-x, 14px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
             width: 'var(--card-width-full, calc(100% - 28px))',
             maxWidth: '792px',
             zIndex: 250,
             pointerEvents: 'none',
             display: 'flex',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            boxSizing: 'border-box'
           }}
         >
           <button 
