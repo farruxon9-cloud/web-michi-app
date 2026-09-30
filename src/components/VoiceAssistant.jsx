@@ -329,97 +329,19 @@ export default function VoiceAssistant({
 
   // Trigger speech recognition when active or in standby mode
   useEffect(() => {
-    if (isVoiceStandby && !isActive) {
-      if (apiKey && !showKeyInput && isOnline && !isListeningRef.current && statusRef.current === 'idle') {
-        startListeningSequence();
-      }
-    }
-  }, [isVoiceStandby, isActive, apiKey, showKeyInput, isOnline]);
-
-  useEffect(() => {
-    if (isActive) {
+    const isEffectiveActive = isActive || isVoiceStandby;
+    if (isEffectiveActive) {
       if (!isOnline) {
         stopAllVoiceActivities();
         setStatus('error');
         setErrorMessage(t('noInternetWait', 'インターネット接続がありません。接続の再開を待っています...'));
         setShowPill(true);
-        speakResponse('インターネット接続がありません。接続を待機しています。', 'ja');
       } else if (apiKey && !showKeyInput) {
-        if (pendingResumeStartRef.current) {
-          pendingResumeStartRef.current = false;
-          hasGreetedRef.current = true;
-          
-          const todayStr = new Date().toISOString().split('T')[0];
-          const lastResumeGreetDate = localStorage.getItem('michi_ai_last_resume_greet_date');
-          const alreadyGreetedResumeToday = lastResumeGreetDate === todayStr;
-          localStorage.setItem('michi_ai_last_resume_greet_date', todayStr);
-
-          const lang = speechLangRef.current || i18n.language || 'uz';
-          if (alreadyGreetedResumeToday) {
-            setStatus('idle');
-            startListeningSequence();
-          } else {
-            const greetings = {
-              uz: "Tez orada rezyumeni sizning o'rningizga yozib berish imkoniyatlarim rivojlantirilmoqda. Yangilanishlarni kuting!",
-              ja: "只今、履歴書を自動作成する機能を開発中でございます。今後のアップデートにご期待ください！",
-              en: "Resume auto-fill features are currently under active development. Stay tuned for upcoming updates!"
-            };
-            const greeting = greetings[lang.startsWith('uz') ? 'uz' : lang.startsWith('ja') ? 'ja' : 'en'] || greetings['uz'];
-            
-            setAiResponseText(greeting);
-            setTranscript('');
-            setShowPill(true);
-            setStatus('speaking');
-            
-            speakResponse(greeting, lang, () => {
-              setStatus('idle');
-              startListeningSequence();
-            });
-          }
-        } else if (!hasGreetedRef.current && !isFillingResumeRef.current) {
-          hasGreetedRef.current = true;
-          
-          const todayStr = new Date().toISOString().split('T')[0];
-          const lastGreetDate = localStorage.getItem('michi_ai_last_greet_date');
-          const alreadyGreetedToday = lastGreetDate === todayStr;
-          localStorage.setItem('michi_ai_last_greet_date', todayStr);
-
-          if (alreadyGreetedToday) {
-            // Already greeted today: skip repetitive salutations and listen directly
-            setStatus('idle');
-            startListeningSequence();
-          } else {
-            // First time today: greet politely once!
-            const hour = new Date().getHours();
-            let greeting = '';
-            const lang = speechLang || i18n.language || 'uz';
-            const isUz = lang.startsWith('uz');
-            const isJa = lang.startsWith('ja');
-            
-            if (isUz) {
-              greeting = "Assalomu alaykum! Men Michi AI yordamchisiman. Qanday yordam bera olaman?";
-            } else if (isJa) {
-              greeting = "こんにちは！Michi AIアシスタントです。何かお手伝いできることはございますか？";
-            } else { // en
-              greeting = "Hello! I am Michi AI assistant. How can I help you today?";
-            }
-            
-            setAiResponseText(greeting);
-            setShowPill(true);
-            setStatus('speaking');
-            speakResponse(greeting, lang, () => {
-              setStatus('idle');
-              startListeningSequence();
-            });
-          }
-        } else {
-          // If already greeted or currently speaking, do not cancel speech synthesis!
-          if (statusRef.current !== 'speaking' && statusRef.current !== 'listening' && statusRef.current !== 'thinking') {
-            startListeningSequence();
-          }
+        if (statusRef.current !== 'speaking' && statusRef.current !== 'listening' && statusRef.current !== 'thinking') {
+          startListeningSequence();
         }
       }
-    } else if (!isVoiceStandby) {
+    } else {
       stopAllVoiceActivities();
       hasGreetedRef.current = false;
       isFillingResumeRef.current = false;
@@ -771,15 +693,6 @@ export default function VoiceAssistant({
     };
 
     try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && micPermission !== 'granted') {
-        try {
-          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          setMicPermission('granted');
-          micStream.getTracks().forEach(track => track.stop());
-        } catch (permErr) {
-          console.warn("[SpeechSTT] Mic permission check warning:", permErr);
-        }
-      }
       recognition.start();
     } catch (e) {
       console.warn("recognition.start exception:", e);
