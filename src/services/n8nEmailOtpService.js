@@ -11,6 +11,7 @@
 import { generateOTP, verifyOTP, resetAttempts } from './authSecurityService';
 
 const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_OTP_WEBHOOK_URL || 'http://138.197.28.114:5678/webhook/351b1de7-f29c-422c-ad21-ac6e506fa6e3';
+const N8N_API_KEY = import.meta.env.VITE_N8N_API_KEY || import.meta.env.VITE_OTP_API_KEY || 'michi_secret_otp_key_2026';
 
 /**
  * Validates email format using regex
@@ -54,7 +55,9 @@ export async function sendEmailOtpViaN8n(email) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json, text/plain, */*'
+        'Accept': 'application/json, text/plain, */*',
+        'X-API-Key': N8N_API_KEY,
+        'x-api-key': N8N_API_KEY
       },
       body: JSON.stringify({
         action: 'send',
@@ -119,7 +122,9 @@ export async function verifyEmailOtpCodeViaN8n(email, inputCode, sessionId = nul
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json, text/plain, */*'
+        'Accept': 'application/json, text/plain, */*',
+        'X-API-Key': N8N_API_KEY,
+        'x-api-key': N8N_API_KEY
       },
       body: JSON.stringify({
         action: 'verify',
