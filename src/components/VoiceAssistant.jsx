@@ -1909,7 +1909,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
 
   // Process Multimodal Audio directly with Gemini 2.0 Flash (Zero-roundtrip STT+LLM)
   const processAudioWithGemini = async (base64Audio, mimeType) => {
-    if (!isActiveRef.current) return;
+    if (!isActiveRef.current && !isVoiceStandbyRef.current) return;
     setStatus('thinking');
 
     const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
@@ -1972,7 +1972,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
     try {
       const data = await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext, true);
 
-      if (!isActiveRef.current) return;
+      if (!isActiveRef.current && !isVoiceStandbyRef.current) return;
 
       const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       const aiResult = safeJsonParse(rawText, '音声の解析に成功しました。');
@@ -1986,7 +1986,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
       handleGeminiSuccess(aiResult, finalTranscription);
 
     } catch (error) {
-      if (!isActiveRef.current) return;
+      if (!isActiveRef.current && !isVoiceStandbyRef.current) return;
       console.error('Gemini API Error:', error);
       setStatus('error');
       
