@@ -336,7 +336,7 @@ export default function VoiceAssistant({
         setStatus('error');
         setErrorMessage(t('noInternetWait', 'インターネット接続がありません。接続の再開を待っています...'));
         setShowPill(true);
-      } else if (apiKey && !showKeyInput) {
+      } else if (!showKeyInput) {
         if (statusRef.current !== 'speaking' && statusRef.current !== 'listening' && statusRef.current !== 'thinking') {
           startListeningSequence();
         }
@@ -370,6 +370,12 @@ export default function VoiceAssistant({
   }, [status, showPill, isActive, hasStarted, showKeyInput, isOnline, micPermission, onClose, isVoiceStandby]);
 
   const stopAllVoiceActivities = () => {
+    if (window.michiActiveMicStream) {
+      try {
+        window.michiActiveMicStream.getTracks().forEach(track => track.stop());
+      } catch(e){}
+      window.michiActiveMicStream = null;
+    }
     if (localStreamRef.current) {
       try {
         localStreamRef.current.getTracks().forEach(track => track.stop());

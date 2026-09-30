@@ -185,10 +185,18 @@ function App() {
     }
   }, [showJDMNavigation]);
 
-  // Bento AI Card va switch yoqilganda ovozli yordamchini ishga tushirish
-  const handleVoiceActivate = () => {
+  // Bento AI Card va switch yoqilganda brauzer mikrofon so'rovini darhol chiqarish
+  const handleVoiceActivate = async () => {
     setIsVoiceActive(true);
     setIsVoiceStandby(true);
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        window.michiActiveMicStream = stream;
+      } catch (err) {
+        console.warn("[VoiceAI] User denied or blocked microphone permission:", err);
+      }
+    }
   };
 
   // Ovozni o'chirish/yoqish toggle (to'liq o'chirish/yoqish)
