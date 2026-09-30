@@ -16,6 +16,7 @@ This file documents all technical, architectural, layout, component fixes, and e
   <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
   ```
 - **Profile Page Exception (`Profile.jsx`)**: The Profile page uses a custom **`76px`** clearance spacer (`64px + 12px`), and the `.logout-btn` element has `marginTop: '12px'` to maintain a distinct 12px gap below the profile menu box.
+- **Fixed Floating CTA Dock Centering (`DriverFeed.jsx` & `DrivingAcademy.jsx`)**: Any floating CTA button container positioned with `position: fixed` MUST use `left: 50%; transform: translateX(-50%);` (instead of `left: 14px`) so that it is mathematically dead-centered on both desktop (820px canvas) and mobile viewports.
 
 ---
 

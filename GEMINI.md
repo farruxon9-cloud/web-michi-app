@@ -13,6 +13,7 @@ This repository contains the Michi Japan Logistics Web Application codebase. The
     <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
     ```
   - **`Profile` Page Exception**: Uses a custom **`76px`** clearance spacer (`64px + 12px`), and the `.logout-btn` element has `marginTop: '12px'` to maintain a distinct 12px gap below the profile menu box.
+  - **Fixed Floating CTA Dock Centering**: Any floating CTA button container positioned with `position: fixed` MUST use `left: 50%; transform: translateX(-50%);` (instead of `left: 14px`) so that it is mathematically dead-centered on both desktop (820px canvas) and mobile viewports.
 
 ---
 
