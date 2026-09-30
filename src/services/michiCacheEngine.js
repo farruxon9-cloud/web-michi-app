@@ -1,26 +1,31 @@
 /**
  * ⚡ Michi AI — High-Speed Client Response Cache Engine
  * Provides instant 0ms responses for recurring user queries
- * using LocalStorage with 24-hour automatic TTL expiration.
+ * using LocalStorage with dynamic TTL and memory quota protection.
  */
 
 class MichiCacheEngine {
   constructor() {
     this.cacheKeyPrefix = 'michi_ai_cache_v1_';
-    this.defaultTTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    this.defaultTTL = 24 * 60 * 60 * 1000; // 24 soat
+    this.shortTTL = 15 * 60 * 1000;         // Dinamik ma'lumotlar uchun 15 daqiqa
   }
 
   /**
-   * Generate a normalized hash key for user prompt & language
+   * So'rov matnidan toza kalit yaratish
    */
   _generateKey(prompt, lang = 'ja') {
-    const cleanPrompt = (prompt || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    const cleanPrompt = (prompt || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .substring(0, 120); // Juda uzun kalit bo'lib ketishining oldini olish
     const cleanLang = (lang || 'ja').substring(0, 2).toLowerCase();
     return `${this.cacheKeyPrefix}${cleanLang}_${cleanPrompt}`;
   }
 
   /**
-   * Retrieve cached answer if valid and unexpired
+   * Keshdan javobni o'qish (0ms)
    * @param {string} prompt 
    * @param {string} lang 
    * @returns {{ text: string, provider: string } | null}
@@ -34,25 +39,23 @@ class MichiCacheEngine {
       const item = JSON.parse(raw);
       if (!item || !item.timestamp || !item.data) return null;
 
-      // Check if cache has expired
+      // Amal qilish muddati (TTL) tugaganini tekshirish
       if (Date.now() - item.timestamp > (item.ttl || this.defaultTTL)) {
         localStorage.removeItem(key);
         return null;
       }
 
-      console.log(`[MichiCache] ⚡ 0ms Cache Hit for: "${prompt.substring(0, 25)}..."`);
       return {
         text: item.data,
         provider: 'Michi Instant Cache (0ms)'
       };
     } catch (e) {
-      console.warn('[MichiCache] Cache read error:', e);
       return null;
     }
   }
 
   /**
-   * Store query-response pair in local cache
+   * Javobni keshga saqlash
    * @param {string} prompt 
    * @param {string} responseText 
    * @param {string} lang 
@@ -60,26 +63,50 @@ class MichiCacheEngine {
    */
   set(prompt, responseText, lang = 'ja', customTTL = null) {
     if (!prompt || !responseText || responseText.length < 15) return;
-    try {
-      const key = this._generateKey(prompt, lang);
-      const item = {
-        timestamp: Date.now(),
-        ttl: customTTL || this.defaultTTL,
-        data: responseText
-      };
-      localStorage.setItem(key, JSON.stringify(item));
 
-      // Auto prune old cache entries if storage grows large
-      this._pruneStorage();
+    // Server uzilishi yoki xatolik matnlarini keshga yozmaslik
+    const lowerText = responseText.toLowerCase();
+    if (
+      lowerText.includes('サーバーとの通信') ||
+      lowerText.includes('aloqa vaqtincha uzildi') ||
+      lowerText.includes('temporarily interrupted') ||
+      lowerText.includes('rate limit')
+    ) {
+      return;
+    }
+
+    // Dinamik savollar (ob-havo, yangiliklar) uchun qisqa TTL
+    let ttl = customTTL;
+    if (!ttl) {
+      const isDynamicQuery = /(ob-havo|weather|tenki|天気|yangilik|news|ニュース|hozir|bugun)/i.test(prompt);
+      ttl = isDynamicQuery ? this.shortTTL : this.defaultTTL;
+    }
+
+    const key = this._generateKey(prompt, lang);
+    const item = {
+      timestamp: Date.now(),
+      ttl,
+      data: responseText
+    };
+
+    try {
+      localStorage.setItem(key, JSON.stringify(item));
+      this._pruneStorage(100); // 100 ta yozuvdan oshganda nazorat qilish
     } catch (e) {
-      console.warn('[MichiCache] Cache write error:', e);
+      // Xotira to'lib qolgan bo'lsa (QuotaExceededError), eski keshni tozalab qayta yozish
+      this._pruneStorage(0, true);
+      try {
+        localStorage.setItem(key, JSON.stringify(item));
+      } catch (retryErr) {
+        console.warn('[MichiCache] Storage full, cache skipped');
+      }
     }
   }
 
   /**
-   * Prune oldest cache items if storage is near capacity
+   * Xotirani tozalash va eski yozuvlarni olib tashlash
    */
-  _pruneStorage() {
+  _pruneStorage(maxItems = 100, forceClean = false) {
     try {
       const keys = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -89,35 +116,35 @@ class MichiCacheEngine {
         }
       }
 
-      // If more than 200 items cached, remove the oldest 50
-      if (keys.length > 200) {
+      if (keys.length > maxItems || forceClean) {
         const items = keys.map(k => {
           try {
             return { key: k, ts: JSON.parse(localStorage.getItem(k) || '{}').timestamp || 0 };
-          } catch (e) {
+          } catch {
             return { key: k, ts: 0 };
           }
         }).sort((a, b) => a.ts - b.ts);
 
-        items.slice(0, 50).forEach(item => localStorage.removeItem(item.key));
+        // Eng eski 25 ta yozuvni o'chirish
+        const countToDelete = forceClean ? Math.min(items.length, 30) : 25;
+        items.slice(0, countToDelete).forEach(item => localStorage.removeItem(item.key));
       }
     } catch (e) {}
   }
 
   /**
-   * Clear all cached query-response pairs from local memory
+   * Barcha keshni tozalash
    */
   clear() {
     try {
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
-        if (k && (k.startsWith(this.cacheKeyPrefix) || k.includes('michi_ai_cache'))) {
+        if (k && k.startsWith(this.cacheKeyPrefix)) {
           keysToRemove.push(k);
         }
       }
       keysToRemove.forEach(k => localStorage.removeItem(k));
-      console.log('[MichiCache] 🧹 All query cache entries cleared');
     } catch (e) {}
   }
 }
