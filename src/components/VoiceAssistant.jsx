@@ -191,7 +191,7 @@ export default function VoiceAssistant({
   isActiveRef.current = isActive;
 
   const isChatActiveRef = useRef(false);
-  isChatActiveRef.current = isActive || isSideDrawerOpen;
+  isChatActiveRef.current = isActive || isSideDrawerOpen || isVoiceStandby;
 
   const isVoiceStandbyRef = useRef(isVoiceStandby);
   isVoiceStandbyRef.current = isVoiceStandby;
@@ -682,22 +682,24 @@ export default function VoiceAssistant({
       if (statusRef.current !== 'thinking' && statusRef.current !== 'speaking') {
         setStatus('listening');
       }
+      setShowPill(true);
     };
 
     recognition.onresult = async (event) => {
       let interimTranscript = '';
       let currentFinal = '';
 
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
+      for (let i = 0; i < event.results.length; ++i) {
+        const chunk = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          currentFinal += event.results[i][0].transcript;
+          currentFinal += chunk;
         } else {
-          interimTranscript += event.results[i][0].transcript;
+          interimTranscript += chunk;
         }
       }
 
-      const activeSpeechText = currentFinal || interimTranscript;
-      if (activeSpeechText.trim()) {
+      const activeSpeechText = (currentFinal + (interimTranscript ? ' ' + interimTranscript : '')).trim();
+      if (activeSpeechText) {
         const cleanedLive = localSTT.cleanTranscription(activeSpeechText, currentLang);
         setTranscript(cleanedLive);
         setDrawerInput(cleanedLive);
@@ -2061,7 +2063,7 @@ Return ONLY the raw JSON object, no markdown wrappers.
           setIsFadeOut(false);
           setDisplayedAiText('');
           setAiResponseText('');
-          if (isActiveRef.current) {
+          if (isActiveRef.current || isVoiceStandbyRef.current) {
             setStatus('idle');
             startLocalSpeechRecognition();
           }
@@ -2571,6 +2573,21 @@ Return ONLY the raw JSON object, no markdown wrappers.
           )}
           
           <div className="speech-bubble-content" ref={speechContentRef}>
+            {/* Listening Section (when mic is active and no user transcription yet) */}
+            {status === 'listening' && !transcript && (
+              <div className="voice-card-section listening-section">
+                <div className="card-badge-row">
+                  <div className="avatar-badge user-avatar-badge listening-glow">
+                    <Mic size={13} className="badge-svg-icon pulse-mic" />
+                    <span>{speechLang === 'uz' ? 'Eshitilmoqda...' : speechLang === 'ja' ? '聞き取り中...' : 'Listening...'}</span>
+                  </div>
+                </div>
+                <p className="user-transcription-text placeholder-listening">
+                  {speechLang === 'uz' ? 'Savolingizni ayting, eshitmoqdaman...' : speechLang === 'ja' ? 'ご質問をお話しください...' : 'Ask your question, listening...'}
+                </p>
+              </div>
+            )}
+
             {/* Top Section: User Transcribed Question */}
             {transcript && (
               <div className="voice-card-section user-section">

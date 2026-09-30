@@ -236,8 +236,8 @@
 
 /* ====== 2. FLOATING ROBOT SPEECH BUBBLE (TOP-RIGHT) ====== */
 .voice-robot-speech-bubble {
-  position: absolute;
-  top: calc(76px + env(safe-area-inset-top)); /* Sits right below header next to the robot avatar with safe area inset */
+  position: fixed;
+  top: calc(70px + env(safe-area-inset-top)); /* Sits right below header next to the robot avatar with safe area inset */
   right: 16px;
   width: calc(100% - 32px);
   max-width: 320px;
