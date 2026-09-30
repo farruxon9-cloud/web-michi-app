@@ -1,10 +1,5 @@
 /**
  * 🏯 Michi AI — Japanese Universal Language & Multi-Industry Master Engine
- * 
- * Provides Japanese terms lookup across 10 major industries (IT, Business, Medical, Hotel, Construction, Manufacturing, Food, Retail, Agriculture, Education),
- * global Japanese textbook integration (Minna no Nihongo, GENKI, TOBIRA, MARUGOTO, SHADOWING, Kanji Master N5-N1, Buddy Tango 1000-3000, Shin Kanzen Master, Try! JLPT),
- * universal cross-industry sentence construction, Keigo (敬語) honorific response formatting, multi-lingual politeness enforcement (Uzbek, Japanese, English),
- * Choukai (聴解) audio analysis, Dokkai (読解) text logic, Bunpou (文法) nuance comparison, and Japanese cultural etiquette (報連相・おもてなし).
  */
 
 import { JAPANESE_LOGISTICS_DICTIONARY } from '../data/japaneseLogisticsDictionary.js';
@@ -15,62 +10,61 @@ import { japaneseTextbookEngine } from './japaneseTextbookEngine.js';
 
 class JapaneseLanguageEngine {
   constructor() {
-    this.dictionary = JAPANESE_LOGISTICS_DICTIONARY;
-    this.universalDictionary = JAPANESE_UNIVERSAL_MASTER_DICTIONARY;
+    this.dictionary = JAPANESE_LOGISTICS_DICTIONARY || {};
+    this.universalDictionary = JAPANESE_UNIVERSAL_MASTER_DICTIONARY || {};
     this.flattenedMap = new Map();
     this.initializeIndex();
   }
 
   /**
-   * Index all dictionary terms for instant lookup (Logistics + Universal Industries)
+   * Lug'at atamalarini tezkor qidiruv uchun indekslash
    */
   initializeIndex() {
-    // 1. Index Logistics Dictionary
+    const addEntry = (category, key, details) => {
+      if (!details) return;
+      const data = { category, key, ...details };
+      if (key) this.flattenedMap.set(key.toLowerCase(), data);
+      if (details.kanji) this.flattenedMap.set(details.kanji.toLowerCase(), data);
+      if (details.hiragana) this.flattenedMap.set(details.hiragana.toLowerCase(), data);
+      if (details.rōmaji) this.flattenedMap.set(details.rōmaji.toLowerCase(), data);
+    };
+
+    // 1. Logistika lug'atini indekslash
     for (const [category, termsObj] of Object.entries(this.dictionary)) {
-      if (category === 'keigoResponses') continue;
+      if (category === 'keigoResponses' || !termsObj) continue;
       for (const [key, details] of Object.entries(termsObj)) {
-        this.flattenedMap.set(key.toLowerCase(), { category, key, ...details });
-        if (details.kanji) this.flattenedMap.set(details.kanji.toLowerCase(), { category, key, ...details });
-        if (details.hiragana) this.flattenedMap.set(details.hiragana.toLowerCase(), { category, key, ...details });
-        if (details.rōmaji) this.flattenedMap.set(details.rōmaji.toLowerCase(), { category, key, ...details });
+        addEntry(category, key, details);
       }
     }
 
-    // 2. Index Universal Cross-Industry Dictionary
+    // 2. Umumiy sohalararo lug'atni indekslash
     for (const [category, termsObj] of Object.entries(this.universalDictionary)) {
+      if (!termsObj) continue;
       for (const [key, details] of Object.entries(termsObj)) {
-        this.flattenedMap.set(key.toLowerCase(), { category, key, ...details });
-        if (details.kanji) this.flattenedMap.set(details.kanji.toLowerCase(), { category, key, ...details });
-        if (details.hiragana) this.flattenedMap.set(details.hiragana.toLowerCase(), { category, key, ...details });
-        if (details.rōmaji) this.flattenedMap.set(details.rōmaji.toLowerCase(), { category, key, ...details });
+        addEntry(category, key, details);
       }
     }
   }
 
   /**
-   * Lookup a term in Japanese or Uzbek/English
-   * @param {string} query 
+   * Atamani yapon, o'zbek yoki ingliz tilida qidirish
    */
   lookupTerm(query) {
     if (!query || typeof query !== 'string') return null;
-    const clean = query.trim().toLowerCase();
-    return this.flattenedMap.get(clean) || null;
+    return this.flattenedMap.get(query.trim().toLowerCase()) || null;
   }
 
   /**
-   * Format response text with professional Japanese N1 Master Keigo (尊敬語・謙譲語)
-   * @param {string} text 
-   * @param {string} [lang='ja'] 
+   * N1 darajasidagi Keigo xushmuomalalik shaklini qo'llash
    */
   applyKeigoPoliteness(text, lang = 'ja') {
     if (!text) return '';
     if (!lang.startsWith('ja')) return text;
-
     return jlptN1LanguageEngine.elevateToN1MasterKeigo(text);
   }
 
   /**
-   * Strip raw JSON artifacts ({ "userTranscription": ..., "command": ..., "response": ... }) if present
+   * AI javoblaridagi keraksiz JSON sintaksisini tozalash
    */
   stripRawJsonSyntax(text) {
     if (!text || typeof text !== 'string') return '';
@@ -86,16 +80,15 @@ class JapaneseLanguageEngine {
           }
         } catch (e) {
           const respRegexMatch = str.match(/"response"\s*:\s*"([\s\S]*?)"(?=\s*,\s*"|\s*\}|$)/) 
-                              || str.match(/"response"\s*:\s*"([\s\S]*)"/)
-                              || str.match(/"response"\s*:\s*`([\s\S]*?)`/);
-          if (respRegexMatch && respRegexMatch[1]) {
+                                 || str.match(/"response"\s*:\s*"([\s\S]*)"/);
+          if (respRegexMatch?.[1]) {
             str = respRegexMatch[1];
           }
         }
       }
     }
 
-    str = str
+    return str
       .replace(/^\{?\s*"userTranscription"\s*:\s*"[^"]*",?\s*/gi, '')
       .replace(/"command"\s*:\s*"[^"]*",?\s*/gi, '')
       .replace(/"response"\s*:\s*"/gi, '')
@@ -105,14 +98,10 @@ class JapaneseLanguageEngine {
       .replace(/^[\s"{}]+/g, '')
       .replace(/[\s"}]+$/g, '')
       .trim();
-
-    return str;
   }
 
   /**
-   * Format response text with strict, warm, and clear politeness etiquette across all languages.
-   * @param {string} text 
-   * @param {string} lang 
+   * Barcha tillar (ja, uz, en) uchun xushmuomala formatlash
    */
   formatPoliteResponse(text, lang = 'ja') {
     if (!text || typeof text !== 'string') return '';
@@ -124,36 +113,30 @@ class JapaneseLanguageEngine {
     }
 
     if (cleanLang === 'uz') {
-      let politeUz = text;
-      // Convert casual Uzbek verb endings into polite forms
-      politeUz = politeUz
+      let politeUz = cleanText
         .replace(/qildim/g, 'bajardim')
         .replace(/topdim/g, 'topib berdim')
         .replace(/ochaman/g, 'ochib beraman')
         .replace(/ko'rsataman/g, "ko'rsatib beraman")
         .replace(/o'g'iraman/g, "o'zgartirib beraman");
 
-      // Add respectful prefix if missing
-      if (!politeUz.includes('Assalomu alaykum') && !politeUz.includes('Xo\'p') && !politeUz.includes('Albatta') && !politeUz.includes('Marhamat')) {
+      if (!politeUz.match(/(Assalomu alaykum|Xo'p|Albatta|Marhamat)/i)) {
         politeUz = `Albatta, marhamat. ${politeUz}`;
       }
       return politeUz;
     }
 
     if (cleanLang === 'en') {
-      let politeEn = text;
-      if (!politeEn.includes('Certainly') && !politeEn.includes('With pleasure') && !politeEn.includes('Here is')) {
+      let politeEn = cleanText;
+      if (!politeEn.match(/(Certainly|With pleasure|Here is)/i)) {
         politeEn = `Certainly! ${politeEn}`;
       }
       return politeEn;
     }
 
-    return text;
+    return cleanText;
   }
 
-  /**
-   * Dynamically build Japanese sentences across 10 professional domains (IT, Business, Medical, Hotel, Construction, etc.)
-   */
   buildUniversalSentence({ domain = 'IT', level = 'N1', subject = '', object = '', verb = '', pattern = '', isKeigo = true }) {
     const domainDefaults = {
       IT: { object: '仕様書', verb: '開発いたします' },
@@ -175,87 +158,57 @@ class JapaneseLanguageEngine {
     return jlptN1LanguageEngine.buildSentencePattern({ level, subject, object: targetObj, verb: targetVerb, pattern, isKeigo });
   }
 
-  /**
-   * Lookup Kanji details from Kanji Master N5-N1
-   */
   lookupKanji(query) {
     return japaneseTextbookEngine.lookupKanji(query);
   }
 
-  /**
-   * Get Minna no Nihongo lesson patterns
-   */
   getMinnaNoNihongoLesson(num) {
     return japaneseTextbookEngine.getMinnaNoNihongoLesson(num);
   }
 
-  /**
-   * Get GENKI lesson details
-   */
   getGenkiLesson(num) {
     return japaneseTextbookEngine.getGenkiLesson(num);
   }
 
-  /**
-   * Get Tobira module details
-   */
   getTobiraModule(query) {
     return japaneseTextbookEngine.getTobiraModule(query);
   }
 
-  /**
-   * Search Hajimete no Nihongo Tango ("Buddy Tango") vocabulary
-   */
   searchBuddyTango(query, level) {
     return japaneseTextbookEngine.searchBuddyTango(query, level);
   }
 
-  /**
-   * Analyze Choukai audio/speech scenario
-   */
   analyzeChoukaiScenario(input) {
     return japaneseJLPTMasterEngine.analyzeChoukaiScenario(input);
   }
 
-  /**
-   * Analyze Dokkai reading passage
-   */
   analyzeDokkaiPassage(text) {
     return japaneseJLPTMasterEngine.analyzeDokkaiPassage(text);
   }
 
-  /**
-   * Compare Bunpou grammar nuances
-   */
   compareBunpouNuance(patternA, patternB) {
     return japaneseJLPTMasterEngine.compareBunpouNuance(patternA, patternB);
   }
 
-  /**
-   * Apply Japanese cultural values (Horenso, Omotenashi)
-   */
   applyCulturalValues(text, cultureType) {
     return japaneseJLPTMasterEngine.applyCulturalValues(text, cultureType);
   }
 
-  /**
-   * Get Japanese domain vocabulary statistics
-   */
   getVocabularyStats() {
-    const masterStats = japaneseJLPTMasterEngine.getMasterLibraryStats();
-    const textbookStats = japaneseTextbookEngine.getTextbookStats();
+    const masterStats = japaneseJLPTMasterEngine.getMasterLibraryStats?.() || {};
+    const textbookStats = japaneseTextbookEngine.getTextbookStats?.() || {};
     return {
       totalIndexedTerms: this.flattenedMap.size,
       categoriesCount: Object.keys(this.dictionary).length - 1 + Object.keys(this.universalDictionary).length,
       keigoTemplatesCount: Object.keys(this.dictionary.keigoResponses || {}).length,
-      choukaiScenariosCount: masterStats.choukaiScenariosCount,
-      dokkaiPassagesCount: masterStats.dokkaiPassagesCount,
-      bunpouNuancePairsCount: masterStats.bunpouNuancePairsCount,
-      kanjiMasterCount: textbookStats.kanjiMasterCount,
-      minnaLessonsCount: textbookStats.minnaLessonsCount,
-      genkiLessonsCount: textbookStats.genkiLessonsCount,
-      tobiraModulesCount: textbookStats.tobiraModulesCount,
-      buddyTangoCount: textbookStats.buddyTangoCount
+      choukaiScenariosCount: masterStats.choukaiScenariosCount || 0,
+      dokkaiPassagesCount: masterStats.dokkaiPassagesCount || 0,
+      bunpouNuancePairsCount: masterStats.bunpouNuancePairsCount || 0,
+      kanjiMasterCount: textbookStats.kanjiMasterCount || 0,
+      minnaLessonsCount: textbookStats.minnaLessonsCount || 0,
+      genkiLessonsCount: textbookStats.genkiLessonsCount || 0,
+      tobiraModulesCount: textbookStats.tobiraModulesCount || 0,
+      buddyTangoCount: textbookStats.buddyTangoCount || 0
     };
   }
 }
