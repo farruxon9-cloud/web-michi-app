@@ -8,9 +8,7 @@
  * Response Body: { "reply": "AI response text" }
  */
 
-export const MICHI_API_CHAT_ENDPOINT = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ? '/api/chat'
-  : 'https://api.michi.jp.net/api/chat';
+export const MICHI_API_CHAT_ENDPOINT = 'https://api.michi.jp.net/api/chat';
 
 /**
  * Universal Response Sanitizer
@@ -20,24 +18,27 @@ export function sanitizeMichiResponse(text) {
   if (!text || typeof text !== 'string') return '';
   let clean = text;
 
-  // 1. JSON reasoning / role leaks
+  // 1. JSON reasoning / role leaks (Xavfsiz JSON parse orqali qirqib tashlamasdan olish)
   if (clean.includes('"reasoning":') || clean.includes('role":"assistant"')) {
-    const contentMatch = clean.match(/"content"\s*:\s*"([^"]+)"/);
-    if (contentMatch && contentMatch[1]) {
-      clean = contentMatch[1];
-    } else {
-      clean = clean.replace(/role":"assistant"[\s\S]*?"reasoning":\s*"[\s\S]*?"/gi, '');
-      clean = clean.replace(/\{?[\s\S]*?"reasoning":[\s\S]*?\}/gi, '');
+    try {
+      const parsed = JSON.parse(clean);
+      if (parsed.content) clean = parsed.content;
+      else if (parsed.reply) clean = parsed.reply;
+    } catch {
+      // Regex faqat JSON parsing o'xshamaganda ishlaydi (qo'shtirnoqlarni saqlab qoladi)
+      clean = clean.replace(/role"\s*:\s*"assistant"[\s\S]*?"reasoning"\s*:\s*"[\s\S]*?"/gi, '');
+      clean = clean.replace(/\{?\s*"reasoning"\s*:[\s\S]*?\}/gi, '');
     }
   }
 
-  // 2. Remove <think> tags (both closed and open)
+  // 2. Remove <think> tags (both closed and open streaming tags)
   clean = clean.replace(/<think>[\s\S]*?<\/think>/gi, '');
   clean = clean.replace(/<think>[\s\S]*$/gi, '');
 
   // 3. Remove metadata / search footnotes
   clean = clean.replace(/---\s*\n\s*\*\*【確認済み参照ソース】[\s\S]*$/gi, '');
   clean = clean.replace(/\*\*【確認済み参照ソース】[\s\S]*$/gi, '');
+  clean = clean.replace(/【確認済み参照ソース】[\s\S]*$/gi, '');
 
   // 4. Clean residual leading/trailing JSON chars
   clean = clean.replace(/^[,":\s{}]+/, '').replace(/[,":\s{}]+$/, '').trim();
@@ -57,11 +58,11 @@ export async function sendMichiChatMessage(userMessageText, onChunkUpdate = null
   }
 
   const cleanInput = userMessageText.trim();
+  const controller = new AbortController();
+  // 72B model va Search oqimlari hisobga olinib, timeout 25s ga kengaytirildi
+  const timer = setTimeout(() => controller.abort(), 25000);
 
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 15000); // 15s timeout
-
     let response;
     try {
       response = await fetch(MICHI_API_CHAT_ENDPOINT, {
@@ -72,11 +73,9 @@ export async function sendMichiChatMessage(userMessageText, onChunkUpdate = null
         body: JSON.stringify({ message: cleanInput }),
         signal: controller.signal
       });
-      clearTimeout(timer);
     } catch (fetchErr) {
-      clearTimeout(timer);
       if (fetchErr.name === 'AbortError') {
-        throw new Error('応答時間がタイムアウトしました (15秒)。ネットワーク接続をご確認ください。');
+        throw new Error('応答時間がタイムアウトしました (25秒)。ネットワーク接続をご確認ください。');
       }
       throw fetchErr;
     }
@@ -121,6 +120,8 @@ export async function sendMichiChatMessage(userMessageText, onChunkUpdate = null
       throw new Error('ネットワーク接続エラーが発生しました。インターネット接続をご確認ください。');
     }
     throw error;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
