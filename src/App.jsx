@@ -125,6 +125,7 @@ class ChunkErrorBoundary extends React.Component {
             {this.state.error?.toString() || "Render Error"}
           </div>
           <button 
+            type="button"
             onClick={() => {
               this.setState({ hasError: false, error: null });
             }} 
@@ -1125,8 +1126,16 @@ function App() {
       <header className="global-header">
         {/* Left Side: Clickable MICHI Logo (redirects to Home) */}
         <div 
+          role="button"
+          tabIndex={0}
           className="header-logo-left"
           onClick={() => setActiveTab('home')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setActiveTab('home');
+            }
+          }}
           title={i18n.language === 'ja' ? 'ホーム' : i18n.language === 'en' ? 'Home' : 'Bosh sahifa'}
         >
           <div className="logo-kanji">道</div>
@@ -1136,6 +1145,7 @@ function App() {
         {/* Center: Mathematically Centered Theme Toggle Switch (sliding track) */}
         <div className="header-theme-toggle-centered">
           <button
+            type="button"
             className="theme-toggle-btn"
             onClick={() => setDarkMode(prev => !prev)}
             aria-label="Toggle theme"
@@ -1385,6 +1395,7 @@ function App() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '8px', marginTop: '8px' }}>
               <button 
+                type="button"
                 className="btn-primary squircle"
                 style={{
                   width: '100%',
@@ -1406,6 +1417,7 @@ function App() {
                 {t('completeResumeBtn', 'Rezyume to\'ldirish')}
               </button>
               <button 
+                type="button"
                 className="btn-secondary squircle"
                 style={{
                   width: '100%',
