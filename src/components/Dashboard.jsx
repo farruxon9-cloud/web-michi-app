@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, 
@@ -54,7 +54,7 @@ const DICT = {
   navJobs: { ja: '求人', uz: 'Ishlar', en: 'Jobs', ru: 'Работа', zh: '职位' },
   bentoView: { ja: '閲覧', uz: "Ko'rish", en: 'View', ru: 'Просмотр', zh: '查看' },
 
-  navAcademy: { ja: '自動車教習所', uz: 'Maktablar', en: 'Schools', ru: 'Автошколы', zh: '驾校' },
+  navAcademy: { ja: '自動車教習所', uz: 'Maktablar', en: 'Schools', ru: '力車学校', zh: '驾校' },
   bentoStudy: { ja: '学ぶ', uz: "O'qish", en: 'Learn', ru: 'Учеба', zh: '学习' },
 
   navService: { ja: '整備サービス', uz: 'Servis', en: 'Service', ru: 'Сервис', zh: '服务' },
@@ -111,7 +111,7 @@ const DICT = {
 };
 
 const formatTime = (secs) => {
-  if (isNaN(secs)) return '0:00';
+  if (isNaN(secs) || secs < 0) return '0:00';
   const m = Math.floor(secs / 60);
   const s = Math.floor(secs % 60);
   return `${m}:${s < 10 ? '0' : ''}${s}`;
@@ -134,7 +134,7 @@ export default function Dashboard({
 }) {
   const { t, i18n } = useTranslation();
   const lang = useMemo(() => (i18n?.language || 'uz').substring(0, 2).toLowerCase(), [i18n?.language]);
-  const getText = (key) => DICT[key]?.[lang] || DICT[key]?.uz || t(key, '');
+  const getText = useCallback((key) => DICT[key]?.[lang] || DICT[key]?.uz || t(key, ''), [lang, t]);
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -176,20 +176,31 @@ export default function Dashboard({
       icon: <Rocket size={56} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'jobs'
     }
-  ], [lang]);
+  ], [getText]);
 
+  // Soat va daqiqa yangilanishi
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // Karusel avto-slayd taymeri
   useEffect(() => {
     if (isPaused) return;
     const slideTimer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
-    }, 4000);
+    }, 4500);
     return () => clearInterval(slideTimer);
   }, [isPaused, SLIDES.length]);
+
+  // Window darajasida sichqoncha qo'yib yuborilishini nazorat qilish
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      if (isPaused) setIsPaused(false);
+    };
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+  }, [isPaused]);
 
   const handleTouchStart = (e) => {
     setIsPaused(true);
@@ -204,7 +215,7 @@ export default function Dashboard({
   const handleTouchEnd = () => {
     setIsPaused(false);
     const diffX = touchStartX.current - touchEndX.current;
-    const swipeThreshold = 50;
+    const swipeThreshold = 45;
     if (diffX > swipeThreshold) {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
     } else if (diffX < -swipeThreshold) {
@@ -216,31 +227,6 @@ export default function Dashboard({
     setIsPaused(true);
     touchStartX.current = e.clientX;
     touchEndX.current = e.clientX;
-  };
-
-  const handleMouseMove = (e) => {
-    if (isPaused) {
-      touchEndX.current = e.clientX;
-    }
-  };
-
-  const handleMouseUp = () => {
-    if (isPaused) {
-      setIsPaused(false);
-      const diffX = touchStartX.current - touchEndX.current;
-      const swipeThreshold = 50;
-      if (diffX > swipeThreshold) {
-        setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
-      } else if (diffX < -swipeThreshold) {
-        setCurrentSlide((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
-      }
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (isPaused) {
-      setIsPaused(false);
-    }
   };
 
   const handleCardClick = (tab) => {
@@ -262,38 +248,27 @@ export default function Dashboard({
   };
 
   const getDayName = (date) => {
-    let locale = 'uz-UZ';
-    if (lang === 'en') locale = 'en-US';
-    if (lang === 'ja') locale = 'ja-JP';
-    if (lang === 'ru') locale = 'ru-RU';
-    if (lang === 'zh') locale = 'zh-CN';
-    return date.toLocaleDateString(locale, { weekday: 'short' }).toUpperCase();
+    const localeMap = { en: 'en-US', ja: 'ja-JP', ru: 'ru-RU', zh: 'zh-CN', uz: 'uz-UZ' };
+    return date.toLocaleDateString(localeMap[lang] || 'uz-UZ', { weekday: 'short' }).toUpperCase();
   };
 
   const getFormattedDate = () => {
-    let locale = 'uz-UZ';
-    if (lang === 'en') locale = 'en-US';
-    if (lang === 'ja') locale = 'ja-JP';
-    if (lang === 'ru') locale = 'ru-RU';
-    if (lang === 'zh') locale = 'zh-CN';
-    return currentTime.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' });
+    const localeMap = { en: 'en-US', ja: 'ja-JP', ru: 'ru-RU', zh: 'zh-CN', uz: 'uz-UZ' };
+    return currentTime.toLocaleDateString(localeMap[lang] || 'uz-UZ', { weekday: 'long', day: 'numeric', month: 'long' });
   };
 
-  const daysArray = getDaysArray();
+  const daysArray = useMemo(() => getDaysArray(), []);
 
   return (
     <div className="dashboard-container hide-scrollbar">
       
-      {/* Top Banner Area (Premium Sliding Cards) */}
+      {/* Top Banner Karusel */}
       <div 
         className="dash-hero-carousel-container"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
         style={{ cursor: isPaused ? 'grabbing' : 'grab' }}
       >
         <div 
@@ -346,8 +321,8 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* Calendar Row Widget */}
-      <div className="calendar-row">
+      {/* Taqvim qatori */}
+      <div className="calendar-row" aria-label="Taqvim kunlari">
         {daysArray.map((d, index) => {
           const isToday = index === 3;
           return (
@@ -361,9 +336,9 @@ export default function Dashboard({
 
       <div className="dash-greeting-row">
         <h2 className="greeting-title">{getText('welcomeTitle')}</h2>
-        <div className="greeting-line"></div>
+        <div className="greeting-line" aria-hidden="true"></div>
         <span className="greeting-date">{getFormattedDate()}</span>
-        <div className="greeting-line"></div>
+        <div className="greeting-line" aria-hidden="true"></div>
         <div className="time-pill">
           {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
@@ -373,12 +348,12 @@ export default function Dashboard({
       <div 
         className={`bento-ai-card glass squircle ${isVoiceStandby ? 'active' : ''}`} 
         onClick={onVoiceActivate}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onVoiceActivate(); } }}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onVoiceActivate?.(); } }}
         role="button"
         tabIndex={0}
       >
         <div className="ai-card-left">
-          <div className="ai-gradient-icon">
+          <div className="ai-gradient-icon" aria-hidden="true">
             <Sparkles size={20} color="#FFF" fill="currentColor" />
           </div>
           <div className="ai-card-info">
@@ -388,8 +363,7 @@ export default function Dashboard({
           </div>
         </div>
         <div className="ai-card-right">
-          {/* Subtle wave visualizer inside card */}
-          <div className="ai-card-visualizer">
+          <div className="ai-card-visualizer" aria-hidden="true">
             {[1, 2, 3, 4].map((bar) => (
               <div key={bar} className={`ai-bar ai-bar-${bar} ${isVoiceStandby ? 'active' : ''} ${isVoiceActive ? 'animating' : ''}`}></div>
             ))}
@@ -397,19 +371,19 @@ export default function Dashboard({
           <div 
             className={`ios-switch ${isVoiceStandby ? 'checked' : ''}`}
             onClick={(e) => {
-              e.stopPropagation(); // Avoid triggering onVoiceActivate (starting speech recognition)
-              onVoiceToggle();
+              e.stopPropagation();
+              onVoiceToggle?.();
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.stopPropagation();
                 e.preventDefault();
-                onVoiceToggle();
+                onVoiceToggle?.();
               }
             }}
             role="switch"
             tabIndex={0}
-            aria-checked={isVoiceStandby}
+            aria-checked={Boolean(isVoiceStandby)}
             aria-label={getText('voiceAssistantTitle')}
           >
             <span className="ios-switch-thumb"></span>
@@ -417,9 +391,8 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* Bento Icons Row (Like BON App Store / Google Play / Inst) */}
+      {/* Bento Asosiy Bo'limlar */}
       <div className="bento-icons-row">
-        
         <div 
           className="bento-icon-card dark-card" 
           onClick={() => { triggerSound(); setActiveTab('jobs'); }}
@@ -427,7 +400,7 @@ export default function Dashboard({
           role="button"
           tabIndex={0}
         >
-          <div className="bento-icon-wrap">
+          <div className="bento-icon-wrap" aria-hidden="true">
             <Briefcase size={28} />
           </div>
           <div className="bento-text-wrap">
@@ -443,7 +416,7 @@ export default function Dashboard({
           role="button"
           tabIndex={0}
         >
-          <div className="bento-icon-wrap">
+          <div className="bento-icon-wrap" aria-hidden="true">
             <GraduationCap size={28} />
           </div>
           <div className="bento-text-wrap">
@@ -459,7 +432,7 @@ export default function Dashboard({
           role="button"
           tabIndex={0}
         >
-          <div className="bento-icon-wrap">
+          <div className="bento-icon-wrap" aria-hidden="true">
             <Wrench size={26} />
           </div>
           <div className="bento-text-wrap">
@@ -467,14 +440,13 @@ export default function Dashboard({
             <p>{getText('bentoServices')}</p>
           </div>
         </div>
-
       </div>
 
-      {/* Xalqaro Rekruting & Tokutei Ginou Visa Card */}
+      {/* Xalqaro Rekruting va Tokutei Ginou Card */}
       <div 
         className="bento-action-card bento-international-card squircle" 
         onClick={onNavigateToInternational}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateToInternational(); } }}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateToInternational?.(); } }}
         role="button"
         tabIndex={0}
         style={{ padding: '20px 24px', cursor: 'pointer' }}
@@ -482,7 +454,7 @@ export default function Dashboard({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
           <div style={{ flex: 1, paddingRight: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span className="premium-live-dot"></span>
+              <span className="premium-live-dot" aria-hidden="true"></span>
               <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1.5px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
                 🇯🇵 JAPAN RECRUITING
               </span>
@@ -500,7 +472,6 @@ export default function Dashboard({
               {getText('bentoInternationalSub')}
             </p>
             
-            {/* Minimalist details */}
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700' }}>
                 特定技能 (SSW)
@@ -514,30 +485,29 @@ export default function Dashboard({
             </div>
           </div>
           
-          <div className="bento-international-card-icon">
+          <div className="bento-international-card-icon" aria-hidden="true">
             <Compass size={24} />
           </div>
         </div>
       </div>
 
-      {/* Premium Minimalist Music Player / Company My Ads / Driver Applications Shortcut Cards */}
+      {/* Musiqa pleyer va Maxsus Rollar kartasi */}
       {(userRole === 'company' || userRole === 'driver') ? (
         <div className="bento-double-cards-row">
-          {/* Music Player (Compact) */}
           <div className="bento-music-card compact-music-card glass squircle">
             <div className="compact-music-body">
               <div className="music-player-info">
-                <div className={`music-gradient-icon ${musicPlayer.isPlaying ? 'playing-pulse' : ''}`}>
+                <div className={`music-gradient-icon ${musicPlayer?.isPlaying ? 'playing-pulse' : ''}`} aria-hidden="true">
                   <Music size={18} color="#FFF" />
                 </div>
                 
                 <div className="music-track-meta">
                   <span className="music-sub-label">
-                    {musicPlayer.isPlaying ? getText('playingBackgroundMusic') : getText('musicPaused')}
+                    {musicPlayer?.isPlaying ? getText('playingBackgroundMusic') : getText('musicPaused')}
                   </span>
                   <div className="music-track-title-container">
                     <h3 className="music-track-title compact-title">
-                      {musicPlayer.currentTrack.title}
+                      {musicPlayer?.currentTrack?.title || 'Lofi Radio'}
                     </h3>
                   </div>
                 </div>
@@ -547,25 +517,25 @@ export default function Dashboard({
                 <div className="music-player-controls">
                   <button 
                     type="button"
-                    onClick={musicPlayer.prevTrack}
+                    onClick={musicPlayer?.prevTrack}
                     className="player-control-btn btn-skip"
-                    aria-label="Previous track"
+                    aria-label="Oldingi qo'shiq"
                   >
                     <SkipBack size={18} fill="currentColor" />
                   </button>
                   <button 
                     type="button"
-                    onClick={musicPlayer.togglePlay}
+                    onClick={musicPlayer?.togglePlay}
                     className="player-control-btn btn-play-pause"
-                    aria-label="Play or Pause"
+                    aria-label={musicPlayer?.isPlaying ? "Pauza" : "Qo'yish"}
                   >
-                    {musicPlayer.isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" style={{ marginLeft: '2.5px' }} />}
+                    {musicPlayer?.isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" style={{ marginLeft: '2.5px' }} />}
                   </button>
                   <button 
                     type="button"
-                    onClick={musicPlayer.nextTrack}
+                    onClick={musicPlayer?.nextTrack}
                     className="player-control-btn btn-skip"
-                    aria-label="Next track"
+                    aria-label="Keyingi qo'shiq"
                   >
                     <SkipForward size={18} fill="currentColor" />
                   </button>
@@ -574,23 +544,23 @@ export default function Dashboard({
                 <div className="compact-volume-control">
                   <button 
                     type="button"
-                    onClick={() => musicPlayer.setVolume(musicPlayer.volume > 0 ? 0 : 0.7)}
+                    onClick={() => musicPlayer?.setVolume?.((musicPlayer?.volume || 0) > 0 ? 0 : 0.7)}
                     className="player-control-btn btn-vol"
-                    aria-label="Volume"
+                    aria-label="Ovoz balandligi"
                   >
-                    {musicPlayer.volume === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
+                    {(musicPlayer?.volume || 0) === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
                   </button>
                   <input 
                     type="range"
                     min={0}
                     max={1}
                     step={0.05}
-                    value={musicPlayer.volume}
-                    onChange={(e) => musicPlayer.setVolume(parseFloat(e.target.value))}
+                    value={musicPlayer?.volume ?? 0.7}
+                    onChange={(e) => musicPlayer?.setVolume?.(parseFloat(e.target.value))}
                     className="volume-slider compact-slider"
                     aria-label="Volume slider"
                     style={{
-                      background: `linear-gradient(to right, var(--primary) ${musicPlayer.volume * 100}%, rgba(120, 120, 128, 0.2) ${musicPlayer.volume * 100}%)`
+                      background: `linear-gradient(to right, var(--primary) ${(musicPlayer?.volume ?? 0.7) * 100}%, rgba(120, 120, 128, 0.2) ${(musicPlayer?.volume ?? 0.7) * 100}%)`
                     }}
                   />
                 </div>
@@ -598,29 +568,28 @@ export default function Dashboard({
             </div>
           </div>
 
-          {/* Bento Action Card (Megaphone for Company, FileCheck for Driver) */}
           {userRole === 'company' ? (
             <div 
               className="bento-my-ads-card glass squircle" 
               onClick={() => {
                 triggerSound();
-                if (setProfileActivePageSource) setProfileActivePageSource('home');
-                if (setProfileActivePage) setProfileActivePage('my_ads');
+                setProfileActivePageSource?.('home');
+                setProfileActivePage?.('my_ads');
                 setActiveTab('profile');
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   triggerSound();
-                  if (setProfileActivePageSource) setProfileActivePageSource('home');
-                  if (setProfileActivePage) setProfileActivePage('my_ads');
+                  setProfileActivePageSource?.('home');
+                  setProfileActivePage?.('my_ads');
                   setActiveTab('profile');
                 }
               }}
               role="button"
               tabIndex={0}
             >
-              <div className="my-ads-icon">
+              <div className="my-ads-icon" aria-hidden="true">
                 <Megaphone size={24} color="#FFF" />
               </div>
               <div className="my-ads-text">
@@ -634,23 +603,23 @@ export default function Dashboard({
               className="bento-my-ads-card bento-my-apps-card glass squircle" 
               onClick={() => {
                 triggerSound();
-                if (setProfileActivePageSource) setProfileActivePageSource('home');
-                if (setProfileActivePage) setProfileActivePage('applications');
+                setProfileActivePageSource?.('home');
+                setProfileActivePage?.('applications');
                 setActiveTab('profile');
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   triggerSound();
-                  if (setProfileActivePageSource) setProfileActivePageSource('home');
-                  if (setProfileActivePage) setProfileActivePage('applications');
+                  setProfileActivePageSource?.('home');
+                  setProfileActivePage?.('applications');
                   setActiveTab('profile');
                 }
               }}
               role="button"
               tabIndex={0}
             >
-              <div className="my-apps-icon">
+              <div className="my-apps-icon" aria-hidden="true">
                 <FileCheck size={24} color="#FFF" />
               </div>
               <div className="my-ads-text">
@@ -662,21 +631,19 @@ export default function Dashboard({
           )}
         </div>
       ) : (
-        /* Original Full-Width Music Player Card */
         <div className="bento-music-card glass squircle">
           <div className="music-player-top">
             <div className="music-player-info">
-              {/* Elegant visual icon wrapper (glowing pulse when playing) */}
-              <div className={`music-gradient-icon ${musicPlayer.isPlaying ? 'playing-pulse' : ''}`}>
+              <div className={`music-gradient-icon ${musicPlayer?.isPlaying ? 'playing-pulse' : ''}`} aria-hidden="true">
                 <Music size={18} color="#FFF" />
               </div>
               
               <div className="music-track-meta">
                 <span className="music-sub-label">
-                  {musicPlayer.isPlaying ? getText('playingBackgroundMusic') : getText('musicPaused')}
+                  {musicPlayer?.isPlaying ? getText('playingBackgroundMusic') : getText('musicPaused')}
                 </span>
                 <h3 className="music-track-title">
-                  {musicPlayer.currentTrack.title}
+                  {musicPlayer?.currentTrack?.title || 'Lofi Radio'}
                 </h3>
               </div>
             </div>
@@ -684,80 +651,80 @@ export default function Dashboard({
             <div className="music-player-controls">
               <button 
                 type="button"
-                onClick={musicPlayer.prevTrack}
+                onClick={musicPlayer?.prevTrack}
                 className="player-control-btn btn-skip"
-                aria-label="Previous track"
+                aria-label="Oldingi qo'shiq"
               >
                 <SkipBack size={14} fill="currentColor" />
               </button>
               <button 
                 type="button"
-                onClick={musicPlayer.togglePlay}
+                onClick={musicPlayer?.togglePlay}
                 className="player-control-btn btn-play-pause"
-                aria-label="Play or Pause"
+                aria-label={musicPlayer?.isPlaying ? "Pauza" : "Qo'yish"}
               >
-                {musicPlayer.isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" style={{ marginLeft: '2px' }} />}
+                {musicPlayer?.isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" style={{ marginLeft: '2px' }} />}
               </button>
               <button 
                 type="button"
-                onClick={musicPlayer.nextTrack}
+                onClick={musicPlayer?.nextTrack}
                 className="player-control-btn btn-skip"
-                aria-label="Next track"
+                aria-label="Keyingi qo'shiq"
               >
                 <SkipForward size={14} fill="currentColor" />
               </button>
               <div className="volume-control">
                 <button 
                   type="button"
-                  onClick={() => musicPlayer.setVolume(musicPlayer.volume > 0 ? 0 : 0.7)}
+                  onClick={() => musicPlayer?.setVolume?.((musicPlayer?.volume || 0) > 0 ? 0 : 0.7)}
                   className="player-control-btn btn-vol"
-                  aria-label="Volume"
+                  aria-label="Ovoz balandligi"
                 >
-                  {musicPlayer.volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                  {(musicPlayer?.volume || 0) === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
                 </button>
                 <input 
                   type="range"
                   min={0}
                   max={1}
                   step={0.05}
-                  value={musicPlayer.volume}
-                  onChange={(e) => musicPlayer.setVolume(parseFloat(e.target.value))}
+                  value={musicPlayer?.volume ?? 0.7}
+                  onChange={(e) => musicPlayer?.setVolume?.(parseFloat(e.target.value))}
                   className="volume-slider"
                   aria-label="Volume slider"
                   style={{
-                    background: `linear-gradient(to right, var(--primary) ${musicPlayer.volume * 100}%, rgba(120, 120, 128, 0.2) ${musicPlayer.volume * 100}%)`
+                    background: `linear-gradient(to right, var(--primary) ${(musicPlayer?.volume ?? 0.7) * 100}%, rgba(120, 120, 128, 0.2) ${(musicPlayer?.volume ?? 0.7) * 100}%)`
                   }}
                 />
               </div>
             </div>
           </div>
           <div className="music-player-bottom">
-            {/* Timeline */}
             <div className="player-timeline-wrapper">
               <span className="player-time-text">
-                {formatTime(musicPlayer.currentTime)}
+                {formatTime(musicPlayer?.currentTime || 0)}
               </span>
               <input 
                 type="range"
                 min={0}
-                max={musicPlayer.duration || 100}
-                value={musicPlayer.currentTime}
-                onChange={(e) => musicPlayer.seek(parseFloat(e.target.value))}
+                max={musicPlayer?.duration || 100}
+                value={musicPlayer?.currentTime || 0}
+                onChange={(e) => musicPlayer?.seek?.(parseFloat(e.target.value))}
                 className="player-timeline"
-                aria-label="Track progress"
+                aria-label="Qo'shiq davomiyligi"
               />
               <span className="player-time-text">
-                {formatTime(musicPlayer.duration)}
+                {formatTime(musicPlayer?.duration || 0)}
               </span>
             </div>
           </div>
         </div>
       )}
-      {/* 🗺️ Smart Truck JDM Navigation Bento Card (Ultra-Compact Single-Row Sleek) */}
+
+      {/* Smart Truck JDM Navigation Card */}
       <div 
         className="bento-action-card bento-jdm-card squircle" 
-        onClick={() => { triggerSound(); onNavigateToJDM(); }}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerSound(); onNavigateToJDM(); } }}
+        onClick={() => { triggerSound(); onNavigateToJDM?.(); }}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerSound(); onNavigateToJDM?.(); } }}
         role="button"
         tabIndex={0}
         style={{ 
@@ -772,7 +739,6 @@ export default function Dashboard({
           boxShadow: '0 3px 14px rgba(16, 185, 129, 0.06)'
         }}
       >
-        {/* Floating "Tez orada / 近日公開" Badge */}
         <div style={{
           position: 'absolute',
           top: '8px',
@@ -816,7 +782,6 @@ export default function Dashboard({
               {getText('bentoJDMSub')}
             </p>
 
-            {/* Single-Row Horizontal Pill Subtags */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', whiteSpace: 'nowrap' }}>
               <span style={{ fontSize: '8.5px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
                 <Truck size={9} color="#10b981" />
@@ -833,17 +798,14 @@ export default function Dashboard({
             </div>
           </div>
           
-          <div className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 3px 10px rgba(16, 185, 129, 0.3)', width: '30px', height: '30px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 'auto' }}>
+          <div className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 3px 10px rgba(16, 185, 129, 0.3)', width: '30px', height: '30px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 'auto' }} aria-hidden="true">
             <Navigation size={14} color="#FFF" />
           </div>
         </div>
       </div>
 
-      {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
       <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
     </div>
   );
 }
-
-
