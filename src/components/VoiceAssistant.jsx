@@ -330,7 +330,6 @@ export default function VoiceAssistant({
   // Trigger speech recognition if overlay opens, has key, and has permission
   useEffect(() => {
     if (isActive) {
-      setIsSideDrawerOpen(true);
       if (!isOnline) {
         stopAllVoiceActivities();
         setStatus('error');

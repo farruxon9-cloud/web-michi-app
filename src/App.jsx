@@ -185,22 +185,30 @@ function App() {
     }
   }, [showJDMNavigation]);
 
-  // Ovozni yoqish — overlay ochiladi + standby faollashadi
-  const handleVoiceActivate = () => {
-    setIsVoiceStandby(true);  // Standby rejimga qo'yamiz
-    setIsVoiceActive(true);   // Overlay ochiladi
+  // Bento AI Card va switch yoqilganda brauzer mikrofon so'rovini darhol chiqarish
+  const handleVoiceActivate = async () => {
+    setIsVoiceActive(false); // AI Hub ichiga kirib ketmasin
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+        setIsVoiceStandby(true);
+      } catch (err) {
+        console.warn("[VoiceAI] User denied or blocked microphone permission:", err);
+        setIsVoiceStandby(false);
+      }
+    } else {
+      setIsVoiceStandby(true);
+    }
   };
 
   // Ovozni o'chirish/yoqish toggle (to'liq o'chirish/yoqish)
-  const handleVoiceToggle = () => {
-    if (isVoiceActive || isVoiceStandby) {
-      // Hozir faol yoki standby → to'liq o'chiramiz
+  const handleVoiceToggle = async () => {
+    if (isVoiceStandby || isVoiceActive) {
       setIsVoiceActive(false);
       setIsVoiceStandby(false);
     } else {
-      // O'chiq → standby + active qilamiz
-      setIsVoiceStandby(true);
-      setIsVoiceActive(true);
+      await handleVoiceActivate();
     }
   };
   // ==========================================
