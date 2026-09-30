@@ -1997,10 +1997,11 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
 
   if (!isOpen) return null;
 
-  const targetContainer = document.getElementById('root') || document.body;
+  const targetContainer = typeof document !== 'undefined' ? (document.getElementById('root') || document.body) : null;
+  if (!targetContainer) return null;
 
   return createPortal(
-    <div className="job-map-modal-overlay animate-fade-in">
+    <div className="job-map-modal-overlay animate-fade-in" role="dialog" aria-modal="true" aria-label={t('jobMapTitle', '求人マップ検索')}>
       <div className="job-map-modal-card glass animate-slide-up">
         {/* Header */}
         <div className="job-map-modal-header glass" style={{ padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--card-bg)', borderBottom: '1px solid var(--glass-border)', zIndex: 10 }}>
@@ -2010,7 +2011,13 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
               🗺️ {t('jobMapTitle', '求人マップ検索')} ({jobs.length})
             </h3>
           </div>
-          <button className="icon-btn glass" onClick={onClose} style={{ padding: '6px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}>
+          <button 
+            type="button" 
+            className="icon-btn glass" 
+            onClick={onClose} 
+            aria-label="Close"
+            style={{ padding: '6px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
+          >
             <X size={18} />
           </button>
         </div>
@@ -2030,7 +2037,7 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
                   </h4>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', margin: '2px 0 0 0' }}>{selectedMapJob.title}</h3>
                 </div>
-                <button className="icon-btn glass" onClick={() => setSelectedMapJob(null)} style={{ padding: '6px' }}>
+                <button type="button" className="icon-btn glass" onClick={() => setSelectedMapJob(null)} aria-label="Close preview" style={{ padding: '6px' }}>
                   <X size={16} />
                 </button>
               </div>
@@ -2042,6 +2049,7 @@ function JobMapModal({ isOpen, onClose, jobs, onSelectJob, t }) {
                 )}
               </div>
               <button 
+                type="button"
                 className="btn-primary"
                 onClick={() => {
                   onClose();
