@@ -1,19 +1,42 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, X, Check, Globe, Loader2 } from 'lucide-react';
 import { POPULAR_GLOBAL_BRANDS, getModelsForMake } from '../services/vehicleApiService';
-
 import { MASTER_VEHICLE_DATABASE, JAPANESE_HISTORICAL_ERAS } from '../data/japaneseVehiclesMaster';
 import LazyVehicleImage from './LazyVehicleImage';
 
+const DICT = {
+  catalogTitle: { ja: '自動車カタログ', uz: 'Avtomobil Katalogi', en: 'Vehicle Catalog', ru: 'Каталог автомобилей', zh: '汽车目录' },
+  catalogSub: { ja: '12,340+ グローバルブランド & リアルHD写真統合', uz: "12,340+ Global Brendlar & Real HD Foto Integratsiya", en: '12,340+ Global Brands & Real HD Photo Integration', ru: '12 340+ мировых брендов и HD-фото', zh: '12,340+ 全球品牌与高清图片集成' },
+  searchPlaceholder: {
+    ja: (make) => `${make}のモデルを検索 (Corolla, Supra, X5)...`,
+    uz: (make) => `${make} modellari boʻyicha qidiruv (Corolla, Supra, X5)...`,
+    en: (make) => `Search ${make} models (Corolla, Supra, X5)...`,
+    ru: (make) => `Поиск моделей ${make} (Corolla, Supra, X5)...`,
+    zh: (make) => `搜索 ${make} 车型 (Corolla, Supra, X5)...`
+  },
+  loadingText: {
+    ja: (make) => `${make}フリートを読み込み中...`,
+    uz: (make) => `${make} floti yuklanmoqda...`,
+    en: (make) => `Loading ${make} fleet...`,
+    ru: (make) => `Загрузка автопарка ${make}...`,
+    zh: (make) => `正在加载 ${make} 车队...`
+  },
+  noVehiclesFound: { ja: '該当する車両が見つかりません。', uz: 'Ushbu filtr boʻyicha avtomobil topilmadi.', en: 'No vehicles found for this filter.', ru: 'Транспортные средства не найдены.', zh: '未找到符合条件的车辆。' },
+  modelsLoaded: { ja: 'モデル読み込み完了', uz: 'model yuklandi', en: 'models loaded', ru: 'моделей загружено', zh: '个车型已加载' },
+  closeBtn: { ja: '閉じる', uz: 'Yopish', en: 'Close', ru: 'Закрыть', zh: '关闭' },
+  clearSearch: { ja: '検索をクリア', uz: 'Qidiruvni tozalash', en: 'Clear search', ru: 'Очистить поиск', zh: '清除搜索' }
+};
+
 export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVehicle, selectedVehicleId }) {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
+  const currentLang = (i18n?.language || 'uz').substring(0, 2).toLowerCase();
+
   const [selectedMake, setSelectedMake] = useState('Toyota');
   const [selectedEra, setSelectedEra] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(false);
-
 
   useEffect(() => {
     if (!isOpen) return;
@@ -22,29 +45,26 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
     async function loadModels() {
       setLoading(true);
       try {
-        // Fetch from NHTSA API (cached automatically)
         const apiModels = await getModelsForMake(selectedMake);
         
-        // Also query local preset items for this make if any
-        const localItems = MASTER_VEHICLE_DATABASE.filter(
-          v => v.make.toLowerCase() === selectedMake.toLowerCase()
+        const localItems = (MASTER_VEHICLE_DATABASE || []).filter(
+          v => (v.make || '').toLowerCase() === selectedMake.toLowerCase()
         );
 
-        // Merge API & local items safely
         const combined = [...localItems];
-        apiModels.forEach(apiM => {
-          const exists = combined.some(c => c.model.toLowerCase() === apiM.model.toLowerCase());
+        (apiModels || []).forEach(apiM => {
+          const exists = combined.some(c => (c.model || '').toLowerCase() === (apiM.model || '').toLowerCase());
           if (!exists) {
             combined.push({
-              id: apiM.id,
+              id: apiM.id || `${apiM.make}-${apiM.model}`,
               make: apiM.make,
               makeJa: apiM.make,
               model: apiM.model,
               modelJa: apiM.model,
               era: 'modern',
               year: '2024',
-              type: apiM.model.toLowerCase().includes('truck') ? 'truck_4t' : 'car',
-              bodyStyle: apiM.model.toLowerCase().includes('suv') ? 'suv' : 'sedan',
+              type: (apiM.model || '').toLowerCase().includes('truck') ? 'truck_4t' : 'car',
+              bodyStyle: (apiM.model || '').toLowerCase().includes('suv') ? 'suv' : 'sedan',
               photoUrl: null
             });
           }
@@ -53,8 +73,6 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
         if (isMounted) {
           setModels(combined);
         }
-
-
       } catch (err) {
         console.warn('Failed to load vehicle models:', err);
       } finally {
@@ -66,37 +84,51 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
     return () => { isMounted = false; };
   }, [isOpen, selectedMake]);
 
+  const filteredModels = useMemo(() => {
+    return models.filter(m => {
+      if (selectedEra !== 'all' && m.era !== selectedEra) return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const matchModel = (m.model || '').toLowerCase().includes(q) || (m.modelJa && m.modelJa.toLowerCase().includes(q));
+        const matchMake = (m.make || '').toLowerCase().includes(q);
+        if (!matchModel && !matchMake) return false;
+      }
+      return true;
+    });
+  }, [models, selectedEra, searchQuery]);
+
   if (!isOpen) return null;
 
-  const filteredModels = models.filter(m => {
-    // Era filter
-    if (selectedEra !== 'all' && m.era !== selectedEra) return false;
-    // Search query filter
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      const matchModel = m.model.toLowerCase().includes(q) || (m.modelJa && m.modelJa.toLowerCase().includes(q));
-      const matchMake = m.make.toLowerCase().includes(q);
-      if (!matchModel && !matchMake) return false;
-    }
-    return true;
-  });
+  const titleText = DICT.catalogTitle[currentLang] || DICT.catalogTitle.uz;
+  const subText = DICT.catalogSub[currentLang] || DICT.catalogSub.uz;
+  const closeText = DICT.closeBtn[currentLang] || DICT.closeBtn.uz;
+  const searchPlaceholderText = (DICT.searchPlaceholder[currentLang] || DICT.searchPlaceholder.uz)(selectedMake);
+  const loadingMsg = (DICT.loadingText[currentLang] || DICT.loadingText.uz)(selectedMake);
+  const emptyMsg = DICT.noVehiclesFound[currentLang] || DICT.noVehiclesFound.uz;
+  const loadedSuffix = DICT.modelsLoaded[currentLang] || DICT.modelsLoaded.uz;
+  const clearSearchText = DICT.clearSearch[currentLang] || DICT.clearSearch.uz;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      zIndex: 9999,
-      background: 'rgba(0, 0, 0, 0.82)',
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '10px'
-    }}>
+    <div 
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="vehicle-picker-title"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        background: 'rgba(0, 0, 0, 0.82)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '10px'
+      }}
+    >
       <div style={{
         background: 'linear-gradient(180deg, #1c1c1e 0%, #121214 100%)',
         border: '1px solid rgba(255, 255, 255, 0.14)',
@@ -128,8 +160,8 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
               }}>
                 <Globe size={14} color="#fff" />
               </span>
-              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#fff', letterSpacing: '-0.2px' }}>
-                {t('vehicleCatalogTitle', i18n.language === 'ja' ? '自動車カタログ' : i18n.language === 'en' ? 'Vehicle Catalog' : 'Avtomobil Katalogi')}
+              <h3 id="vehicle-picker-title" style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#fff', letterSpacing: '-0.2px' }}>
+                {titleText}
               </h3>
               <span style={{
                 fontSize: '9px',
@@ -144,11 +176,14 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
               </span>
             </div>
             <p style={{ margin: '3px 0 0 0', fontSize: '10.5px', color: 'rgba(255, 255, 255, 0.65)' }}>
-              {t('vehicleCatalogSub', i18n.language === 'ja' ? '12,340+ グローバルブランド & リアルHD写真統合' : i18n.language === 'en' ? '12,340+ Global Brands & Real HD Photo Integration' : '12,340+ Global Brendlar & Real HD Foto Integratsiya')}
+              {subText}
             </p>
           </div>
           <button 
+            type="button"
             onClick={onClose}
+            aria-label={closeText}
+            title={closeText}
             style={{
               background: 'rgba(255, 255, 255, 0.1)',
               border: '1px solid rgba(255, 255, 255, 0.12)',
@@ -183,7 +218,8 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             <Search size={14} color="#0084FF" />
             <input 
               type="text"
-              placeholder={i18n.language === 'ja' ? `${selectedMake}のモデルを検索 (Corolla, Supra, X5)...` : i18n.language === 'en' ? `Search ${selectedMake} models (Corolla, Supra, X5)...` : `${selectedMake} modellari boʻyicha qidiruv (Corolla, Supra, X5)...`}
+              placeholder={searchPlaceholderText}
+              aria-label={searchPlaceholderText}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{
@@ -198,7 +234,10 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             />
             {searchQuery && (
               <button 
+                type="button"
                 onClick={() => setSearchQuery('')}
+                aria-label={clearSearchText}
+                title={clearSearchText}
                 style={{ background: 'none', border: 'none', color: '#8e8e93', cursor: 'pointer', padding: 0 }}
               >
                 <X size={13} />
@@ -211,7 +250,10 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             {JAPANESE_HISTORICAL_ERAS.map(era => (
               <button
                 key={era.id}
+                type="button"
                 onClick={() => setSelectedEra(era.id)}
+                aria-pressed={selectedEra === era.id}
+                title={era.label}
                 style={{
                   padding: '3px 8px',
                   borderRadius: '7px',
@@ -240,7 +282,10 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
               return (
                 <button
                   key={brand.id}
+                  type="button"
                   onClick={() => setSelectedMake(brand.name)}
+                  aria-pressed={isActive}
+                  title={brand.name}
                   style={{
                     padding: '5px 10px',
                     borderRadius: '9px',
@@ -282,22 +327,33 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '35px', color: '#8e8e93', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
               <Loader2 size={20} className="animate-spin" color="#0084FF" />
               <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: '#fff' }}>
-                {i18n.language === 'ja' ? `${selectedMake}フリートを読み込み中...` : i18n.language === 'en' ? `Loading ${selectedMake} fleet...` : `${selectedMake} floti yuklanmoqda...`}
+                {loadingMsg}
               </span>
             </div>
           ) : filteredModels.length > 0 ? (
             filteredModels.map(veh => {
               const isSelected = selectedVehicleId === veh.id;
 
+              const handleSelect = () => {
+                onSelectVehicle({
+                  ...veh,
+                  photoUrl: veh.photoUrl || veh._resolvedPhoto || null
+                });
+                onClose();
+              };
+
               return (
                 <div
                   key={veh.id}
-                  onClick={() => {
-                    onSelectVehicle({
-                      ...veh,
-                      photoUrl: veh.photoUrl || veh._resolvedPhoto || null
-                    });
-                    onClose();
+                  role="button"
+                  tabIndex={0}
+                  aria-selected={isSelected}
+                  onClick={handleSelect}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSelect();
+                    }
                   }}
                   style={{
                     background: isSelected 
@@ -350,7 +406,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             })
           ) : (
             <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '30px', color: '#8e8e93', fontSize: '11.5px' }}>
-              {t('noVehiclesFound', i18n.language === 'ja' ? '該当する車両が見つかりません。' : i18n.language === 'en' ? 'No vehicles found for this filter.' : 'Ushbu filtr boʻyicha avtomobil topilmadi.')}
+              {emptyMsg}
             </div>
           )}
         </div>
@@ -367,11 +423,13 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#30D158', display: 'inline-block' }}></span>
             <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>
-              <b>{selectedMake}</b>: {filteredModels.length} {i18n.language === 'ja' ? 'モデル読み込み完了' : i18n.language === 'en' ? 'models loaded' : 'model yuklandi'}
+              <b>{selectedMake}</b>: {filteredModels.length} {loadedSuffix}
             </span>
           </div>
           <button
+            type="button"
             onClick={onClose}
+            aria-label={closeText}
             style={{
               padding: '6px 14px',
               borderRadius: '8px',
@@ -383,10 +441,11 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
               cursor: 'pointer'
             }}
           >
-            {t('closeBtn', i18n.language === 'ja' ? '閉じる' : i18n.language === 'en' ? 'Close' : 'Yopish')}
+            {closeText}
           </button>
         </div>
       </div>
     </div>
   );
 }
+
