@@ -536,7 +536,7 @@ export default function ResumeBuilder({
     <div className="resume-builder-container fade-in">
       {/* Floating Sticky Back Button */}
       <div className="resume-builder-sticky-back" style={{ display: 'flex', width: '92%', justifyContent: 'space-between', alignItems: 'center' }}>
-        <button onClick={handleBackWithSave} className="icon-btn glass" aria-label="Back">
+        <button type="button" onClick={handleBackWithSave} className="icon-btn glass" aria-label={t('backBtn', 'Orqaga')} title={t('backBtn', 'Orqaga')}>
           <ArrowLeft size={20} />
         </button>
 
@@ -544,6 +544,7 @@ export default function ResumeBuilder({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>AI VOICE</span>
             <button
+              type="button"
               className="theme-toggle-btn"
               onClick={() => {
                 const nextVal = !isVoiceStandby;
@@ -554,7 +555,8 @@ export default function ResumeBuilder({
                 setIsVoiceStandby(nextVal);
                 setIsVoiceActive(nextVal);
               }}
-              aria-label="Toggle AI Assistant"
+              aria-label={t('toggleAiAssistant', 'AI Assistant (Golos)')}
+              title={t('toggleAiAssistant', 'AI Assistant (Golos)')}
             >
               <div className={`theme-toggle-track ${isVoiceStandby ? 'dark' : 'light'}`} style={{ width: '48px', height: '24px', borderRadius: '12px' }}>
                 <div className="theme-toggle-thumb" style={{ width: '18px', height: '18px', left: isVoiceStandby ? 'calc(100% - 20px)' : '2px', top: '2px', background: isVoiceStandby ? 'linear-gradient(135deg, #a133ff, #8b5cf6)' : 'linear-gradient(135deg, #e5e5ea, #8e8e93)', boxShadow: isVoiceStandby ? '0 2px 6px rgba(138, 43, 226, 0.4)' : 'none' }}>
@@ -790,7 +792,7 @@ export default function ResumeBuilder({
               <div key={idx} className="history-card glass-card">
                 <div className="history-card-header">
                   <h4>{t('education', 'Ta\'lim')} #{idx + 1}</h4>
-                  <button onClick={() => handleRemoveEdu(idx)} className="remove-btn">
+                  <button type="button" onClick={() => handleRemoveEdu(idx)} className="remove-btn" aria-label={t('remove', 'O\'chirish')}>
                     {t('remove', 'O\'chirish')}
                   </button>
                 </div>
@@ -878,7 +880,7 @@ export default function ResumeBuilder({
             ))}
           </div>
 
-          <button onClick={handleAddEdu} className="add-btn squircle">
+          <button type="button" onClick={handleAddEdu} className="add-btn squircle" aria-label={t('addEducation', 'Ta\'lim qo\'shish')}>
             + {t('addEducation', 'Ta\'lim qo\'shish')}
           </button>
         </div>
@@ -896,7 +898,7 @@ export default function ResumeBuilder({
               <div key={idx} className="history-card glass-card">
                 <div className="history-card-header">
                   <h4>{t('company', 'Kompaniya')} #{idx + 1}</h4>
-                  <button onClick={() => handleRemoveWork(idx)} className="remove-btn">
+                  <button type="button" onClick={() => handleRemoveWork(idx)} className="remove-btn" aria-label={t('remove', 'O\'chirish')}>
                     {t('remove', 'O\'chirish')}
                   </button>
                 </div>
@@ -995,7 +997,7 @@ export default function ResumeBuilder({
             ))}
           </div>
 
-          <button onClick={handleAddWork} className="add-btn squircle">
+          <button type="button" onClick={handleAddWork} className="add-btn squircle" aria-label={t('addWork', 'Ish joyi qo\'shish')}>
             + {t('addWork', 'Ish joyi qo\'shish')}
           </button>
 
@@ -1012,8 +1014,10 @@ export default function ResumeBuilder({
                 {['futsu', 'junchugata', 'chugata', 'oogata'].map(lic => (
                   <button 
                     key={lic}
+                    type="button"
                     onClick={() => handleToggleLicense(lic)}
                     className={`badge-select-btn squircle ${formData.driverLicenses.includes(lic) ? 'selected' : ''}`}
+                    aria-pressed={formData.driverLicenses.includes(lic)}
                   >
                     {t(`lic_${lic}`)}
                   </button>
@@ -1027,8 +1031,10 @@ export default function ResumeBuilder({
                 {['futsu_nishu', 'junchugata_nishu', 'chugata_nishu', 'oogata_nishu'].map(lic => (
                   <button 
                     key={lic}
+                    type="button"
                     onClick={() => handleToggleLicense(lic)}
                     className={`badge-select-btn squircle ${formData.driverLicenses.includes(lic) ? 'selected' : ''}`}
+                    aria-pressed={formData.driverLicenses.includes(lic)}
                   >
                     {t(`lic_${lic}`)}
                   </button>
@@ -1042,8 +1048,10 @@ export default function ResumeBuilder({
                 {['oogata_tokushu', 'kogata_tokushu', 'kenin', 'oogata_tokushu_nishu', 'kenin_nishu', 'motorcycle', 'oogata_motorcycle', 'gentsuki'].map(lic => (
                   <button 
                     key={lic}
+                    type="button"
                     onClick={() => handleToggleLicense(lic)}
                     className={`badge-select-btn squircle ${formData.driverLicenses.includes(lic) ? 'selected' : ''}`}
+                    aria-pressed={formData.driverLicenses.includes(lic)}
                   >
                     {t(`lic_${lic}`)}
                   </button>
@@ -1056,8 +1064,10 @@ export default function ResumeBuilder({
               {['forklift', 'crane', 'towing'].map(cert => (
                 <button 
                   key={cert}
+                  type="button"
                   onClick={() => handleToggleCertificate(cert)}
                   className={`badge-select-btn squircle ${formData.techCertificates.includes(cert) ? 'selected' : ''}`}
+                  aria-pressed={formData.techCertificates.includes(cert)}
                 >
                   {t(`cert_${cert}`, cert === 'forklift' ? 'Forklift (フォークリフト)' : cert === 'crane' ? 'Crane (クレーン)' : 'Towing (牽引)')}
                 </button>
@@ -1247,7 +1257,7 @@ export default function ResumeBuilder({
           )}
 
           <div className="action-buttons-group">
-            <button onClick={handleDownloadPDF} className="download-pdf-btn squircle">
+            <button type="button" onClick={handleDownloadPDF} className="download-pdf-btn squircle" aria-label={t('downloadPDF', 'PDF yuklab olish')}>
               📥 {t('downloadPDF', 'PDF yuklab olish')}
             </button>
             
