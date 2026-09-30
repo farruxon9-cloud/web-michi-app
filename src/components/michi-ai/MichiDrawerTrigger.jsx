@@ -10,7 +10,13 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount = 0, sp
   const [yPos, setYPos] = useState(() => {
     try {
       const saved = localStorage.getItem('michi_trigger_y_pos');
-      return saved ? parseFloat(saved) : null;
+      if (saved) {
+        const parsed = parseFloat(saved);
+        if (!isNaN(parsed) && parsed >= 110) {
+          return parsed;
+        }
+      }
+      return null;
     } catch (e) {
       return null;
     }
@@ -22,22 +28,28 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount = 0, sp
   const hasDraggedRef = useRef(false);
   const buttonRef = useRef(null);
 
-  // Dinamik chegaralar (Top: 70px, Bottom: window.innerHeight - 120px)
+  // Dinamik chegaralar (Top: 110px — header ostida xavfsiz masofa, Bottom: window.innerHeight - 130px)
   const getMinMaxY = useCallback(() => {
     const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
-    const minY = 70;
-    const maxY = Math.max(minY, vh - 120);
+    const minY = 110;
+    const maxY = Math.max(minY, vh - 130);
     return { minY, maxY };
   }, []);
 
-  // Boshlang'ich pozitsiyani belgilash
+  // Boshlang'ich pozitsiyani va chegaralarni belgilash
   useEffect(() => {
-    if (yPos === null && typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
       const vh = window.innerHeight;
-      const defaultY = Math.round(vh * 0.42);
-      setYPos(defaultY);
+      const { minY, maxY } = getMinMaxY();
+      setYPos((prevY) => {
+        if (prevY === null || prevY < minY || prevY > maxY) {
+          const defaultY = Math.round(vh * 0.42);
+          return Math.max(minY, Math.min(maxY, defaultY));
+        }
+        return prevY;
+      });
     }
-  }, [yPos]);
+  }, [getMinMaxY]);
 
   // Ekran o'lchami o'zgarganda pozitsiyani qayta moslash
   useEffect(() => {
