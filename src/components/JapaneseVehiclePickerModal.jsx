@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, X, Check, Globe, Loader2 } from 'lucide-react';
 import { POPULAR_GLOBAL_BRANDS, getModelsForMake } from '../services/vehicleApiService';
@@ -37,7 +37,27 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
   const [searchQuery, setSearchQuery] = useState('');
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(false);
+  const resolvedPhotosRef = useRef(new Map());
 
+  // 1. Escape bilan yopish va Body Scroll Lock
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose?.();
+    };
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  // 2. Modellar ro'yxatini yuklash
   useEffect(() => {
     if (!isOpen) return;
 
@@ -84,11 +104,12 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
     return () => { isMounted = false; };
   }, [isOpen, selectedMake]);
 
+  // 3. Filtrlangan modellar
   const filteredModels = useMemo(() => {
     return models.filter(m => {
       if (selectedEra !== 'all' && m.era !== selectedEra) return false;
       if (searchQuery) {
-        const q = searchQuery.toLowerCase();
+        const q = searchQuery.toLowerCase().trim();
         const matchModel = (m.model || '').toLowerCase().includes(q) || (m.modelJa && m.modelJa.toLowerCase().includes(q));
         const matchMake = (m.make || '').toLowerCase().includes(q);
         if (!matchModel && !matchMake) return false;
@@ -113,6 +134,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
       role="dialog"
       aria-modal="true"
       aria-labelledby="vehicle-picker-title"
+      onClick={onClose}
       style={{
         position: 'fixed',
         top: 0,
@@ -129,19 +151,22 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
         padding: '10px'
       }}
     >
-      <div style={{
-        background: 'linear-gradient(180deg, #1c1c1e 0%, #121214 100%)',
-        border: '1px solid rgba(255, 255, 255, 0.14)',
-        borderRadius: '24px',
-        width: '100%',
-        maxWidth: 'min(380px, 92vw)',
-        maxHeight: '84vh',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 132, 255, 0.15)'
-      }}>
-        {/* Pro Header with Live Status Badge */}
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: 'linear-gradient(180deg, #1c1c1e 0%, #121214 100%)',
+          border: '1px solid rgba(255, 255, 255, 0.14)',
+          borderRadius: '24px',
+          width: '100%',
+          maxWidth: 'min(380px, 92vw)',
+          maxHeight: '84vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 132, 255, 0.15)'
+        }}
+      >
+        {/* Pro Header */}
         <div style={{
           padding: '14px 16px',
           borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
@@ -157,7 +182,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                 padding: '4px',
                 borderRadius: '8px',
                 display: 'inline-flex'
-              }}>
+              }} aria-hidden="true">
                 <Globe size={14} color="#fff" />
               </span>
               <h3 id="vehicle-picker-title" style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#fff', letterSpacing: '-0.2px' }}>
@@ -215,7 +240,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
             padding: '8px 12px',
             boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
           }}>
-            <Search size={14} color="#0084FF" />
+            <Search size={14} color="#0084FF" aria-hidden="true" />
             <input 
               type="text"
               placeholder={searchPlaceholderText}
@@ -335,11 +360,12 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
               const isSelected = selectedVehicleId === veh.id;
 
               const handleSelect = () => {
-                onSelectVehicle({
+                const finalPhoto = veh.photoUrl || resolvedPhotosRef.current.get(veh.id) || null;
+                onSelectVehicle?.({
                   ...veh,
-                  photoUrl: veh.photoUrl || veh._resolvedPhoto || null
+                  photoUrl: finalPhoto
                 });
-                onClose();
+                onClose?.();
               };
 
               return (
@@ -375,7 +401,6 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  {/* Lazy Vehicle Image */}
                   <LazyVehicleImage
                     make={veh.make}
                     model={veh.model}
@@ -384,18 +409,17 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
                     type={veh.type || 'car'}
                     height={75}
                     onPhotoLoaded={(url) => {
-                      veh._resolvedPhoto = url;
+                      resolvedPhotosRef.current.set(veh.id, url);
                     }}
                   />
 
-                  {/* Model Labels */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '125px' }}>
                         {veh.make} {veh.model}
                       </span>
                       {isSelected && (
-                        <span style={{ background: '#30D158', borderRadius: '50%', padding: '2px', display: 'inline-flex' }}>
+                        <span style={{ background: '#30D158', borderRadius: '50%', padding: '2px', display: 'inline-flex' }} aria-hidden="true">
                           <Check size={10} color="#000" />
                         </span>
                       )}
@@ -421,7 +445,7 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
           background: 'rgba(0, 0, 0, 0.3)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#30D158', display: 'inline-block' }}></span>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#30D158', display: 'inline-block' }} aria-hidden="true"></span>
             <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>
               <b>{selectedMake}</b>: {filteredModels.length} {loadedSuffix}
             </span>
@@ -434,6 +458,21 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
               padding: '6px 14px',
               borderRadius: '8px',
               background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: '#fff',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            {closeText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+adient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%)',
               border: '1px solid rgba(255,255,255,0.15)',
               color: '#fff',
               fontSize: '11px',
