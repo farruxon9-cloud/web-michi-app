@@ -327,7 +327,15 @@ export default function VoiceAssistant({
     }
   }, [status, onStatusChange]);
 
-  // Trigger speech recognition if overlay opens, has key, and has permission
+  // Trigger speech recognition when active or in standby mode
+  useEffect(() => {
+    if (isVoiceStandby && !isActive) {
+      if (apiKey && !showKeyInput && isOnline && !isListeningRef.current && statusRef.current === 'idle') {
+        startListeningSequence();
+      }
+    }
+  }, [isVoiceStandby, isActive, apiKey, showKeyInput, isOnline]);
+
   useEffect(() => {
     if (isActive) {
       if (!isOnline) {
