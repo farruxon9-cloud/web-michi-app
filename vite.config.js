@@ -14,7 +14,14 @@ export default defineConfig({
     }
   },
   server: {
-    allowedHosts: true
+    allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'https://api.michi.jp.net',
+        changeOrigin: true,
+        secure: true
+      }
+    }
   },
   optimizeDeps: {
     exclude: ['maplibre-gl']

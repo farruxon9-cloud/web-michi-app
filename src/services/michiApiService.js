@@ -8,7 +8,9 @@
  * Response Body: { "reply": "AI response text" }
  */
 
-export const MICHI_API_CHAT_ENDPOINT = 'https://api.michi.jp.net/api/chat';
+export const MICHI_API_CHAT_ENDPOINT = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? '/api/chat'
+  : 'https://api.michi.jp.net/api/chat';
 
 /**
  * Universal Response Sanitizer
