@@ -2020,8 +2020,8 @@ export default function DrivingAcademy({
         )}
       </div>
 
-      {/* 84px clearance spacer yielding exact visual clearance above floating BottomNav */}
-      <div style={{ height: '84px', minHeight: '84px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
+      <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
     </div>
   );
 }
