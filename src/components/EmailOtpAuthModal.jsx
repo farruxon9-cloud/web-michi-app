@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mail, ShieldCheck, ArrowLeft, RefreshCw, CheckCircle2, Loader2, Sparkles, X, User, Building2, GraduationCap, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { sendEmailOtpViaN8n, verifyEmailOtpCode, isValidEmail } from '../services/n8nEmailOtpService';
+import { sendEmailOtpViaN8n, verifyEmailOtpCodeViaN8n, isValidEmail } from '../services/n8nEmailOtpService';
 import './EmailOtpAuthModal.css';
 
 export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialRole = 'driver' }) {
@@ -16,7 +16,7 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
   const [cooldown, setCooldown] = useState(0);
-  const [demoCode, setDemoCode] = useState('');
+  const [sessionId, setSessionId] = useState(null);
 
   const inputRefs = useRef([]);
 
@@ -41,7 +41,7 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
       setInfoMsg('');
       setLoading(false);
       setOtpDigits(['', '', '', '', '', '']);
-      setDemoCode('');
+      setSessionId(null);
     }
   }, [isOpen]);
 
@@ -71,7 +71,7 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
       if (result.success) {
         setStep('otp');
         setCooldown(result.cooldownSeconds || 60);
-        setDemoCode(result.code || '');
+        setSessionId(result.sessionId || null);
         setInfoMsg(
           result.message ||
           (currentLang === 'ja'
@@ -169,7 +169,7 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
     setErrorMsg('');
 
     try {
-      const result = verifyEmailOtpCode(email, fullCode);
+      const result = await verifyEmailOtpCodeViaN8n(email, fullCode, sessionId);
       if (result.success) {
         setStep('success');
         
@@ -353,13 +353,6 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
                 {currentLang === 'ja' ? 'へお送りしたコードを入力してください。' : 'manziliga n8n Webhook orqali yuborildi.'}
               </p>
             </div>
-
-            {/* Demo Code Badge Hint */}
-            {demoCode && (
-              <div className="demo-otp-badge">
-                <span>⚡ Test OTP kodi: <strong>{demoCode}</strong></span>
-              </div>
-            )}
 
             {/* 6 Digit Inputs */}
             <div className="otp-digits-row" onPaste={handlePaste}>

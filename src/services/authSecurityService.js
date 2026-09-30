@@ -309,28 +309,24 @@ export function resetAttempts(email) {
 export function generateOTP(email) {
   const normalized = normalizeEmail(email);
 
-  // Kriptografik jihatdan xavfsiz tasodifiy 6 xonali kod
   let code;
   try {
-    // crypto.getRandomValues — Math.random() ga qaraganda xavfsizroq
     const array = new Uint32Array(1);
     crypto.getRandomValues(array);
-    // 100000-999999 oralig'ida
     code = (100000 + (array[0] % 900000)).toString();
   } catch {
-    // Fallback (eski brauzerlar uchun)
     code = Math.floor(100000 + Math.random() * 900000).toString();
   }
 
+  const sessionId = 'session_' + (crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).substring(2)));
   const now = Date.now();
   const payload = {
-    // Kodni to'g'ridan saqlamang — real loyihada hash qiling
-    // Hozir demo uchun oddiy saqlash
     code,
+    sessionId,
     createdAt: now,
     expiresAt: now + OTP_EXPIRY_MINUTES * 60 * 1000,
-    wrongAttempts: 0,          // Necha marta noto'g'ri kiritildi
-    deviceId: getDeviceId(),   // Qaysi qurilmadan so'ralgan
+    wrongAttempts: 0,
+    deviceId: getDeviceId(),
   };
 
   try {
@@ -341,12 +337,7 @@ export function generateOTP(email) {
     console.error('[Auth] OTP saqlash xatosi:', err);
   }
 
-  // MUHIM ESLATMA: Haqiqiy loyihada bu yerda email yuborish kerak!
-  // emailService.sendOTP(email, code);
-  // Bu hozir demo — kod UI ga qaytariladi
-  console.info('[Auth Demo] OTP kodi:', code, '— Real loyihada bu email orqali yuboriladi!');
-
-  return { code, cooldownSeconds: 60 };
+  return { code, sessionId, internalCode: code, cooldownSeconds: 60 };
 }
 
 /**
