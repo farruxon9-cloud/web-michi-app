@@ -25,6 +25,33 @@ export function isValidEmail(email) {
 }
 
 /**
+ * Cross-browser resilient fetch wrapper with AbortController timeout
+ * @param {string} url 
+ * @param {RequestInit} options 
+ * @param {number} timeoutMs 
+ * @returns {Promise<Response>}
+ */
+export async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    return response;
+  } catch (error) {
+    clearTimeout(timer);
+    if (error.name === 'AbortError') {
+      throw new Error(`Request timed out after ${Math.round(timeoutMs / 1000)}s`);
+    }
+    throw error;
+  }
+}
+
+/**
  * Requests 6-digit OTP dispatch via n8n Webhook.
  * 
  * SECURITY RULE: Returns ONLY session_id to frontend.
@@ -51,7 +78,7 @@ export async function sendEmailOtpViaN8n(email) {
   console.log(`[n8n Email OTP] Dispatched OTP request for ${cleanEmail} (Session: ${sessionId})`);
 
   try {
-    const response = await fetch(N8N_WEBHOOK_URL, {
+    const response = await fetchWithTimeout(N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -64,9 +91,8 @@ export async function sendEmailOtpViaN8n(email) {
         email: cleanEmail,
         session_id: sessionId,
         code: code
-      }),
-      signal: AbortSignal.timeout(12000) // 12 seconds timeout
-    });
+      })
+    }, 15000); // 15 seconds timeout
 
     let n8nData = null;
     try {
@@ -118,7 +144,7 @@ export async function verifyEmailOtpCodeViaN8n(email, inputCode, sessionId = nul
 
   // Attempt Webhook Verification first
   try {
-    const response = await fetch(N8N_WEBHOOK_URL, {
+    const response = await fetchWithTimeout(N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -131,9 +157,12 @@ export async function verifyEmailOtpCodeViaN8n(email, inputCode, sessionId = nul
         email: cleanEmail,
         code: cleanCode,
         session_id: sessionId
-      }),
-      signal: AbortSignal.timeout(8000)
-    });
+      })
+    }, 12000); // 12 seconds timeout
+
+    if (response.ok) {
+      const data = await response.json().catch(() => null);
+      if (data && (data.success === true || data.verified === true)) {
 
     if (response.ok) {
       const data = await response.json().catch(() => null);

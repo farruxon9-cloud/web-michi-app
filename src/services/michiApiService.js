@@ -59,13 +59,27 @@ export async function sendMichiChatMessage(userMessageText, onChunkUpdate = null
   const cleanInput = userMessageText.trim();
 
   try {
-    const response = await fetch(MICHI_API_CHAT_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ message: cleanInput })
-    });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+    let response;
+    try {
+      response = await fetch(MICHI_API_CHAT_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: cleanInput }),
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+    } catch (fetchErr) {
+      clearTimeout(timer);
+      if (fetchErr.name === 'AbortError') {
+        throw new Error('応答時間がタイムアウトしました (15秒)。ネットワーク接続をご確認ください。');
+      }
+      throw fetchErr;
+    }
 
     // Handle HTTP 429: Rate Limit Exceeded
     if (response.status === 429) {

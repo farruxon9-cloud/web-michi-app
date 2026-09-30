@@ -38,13 +38,13 @@ describe('michiApiService', () => {
       const onChunk = vi.fn();
       const result = await sendMichiChatMessage('東京の天気は？', onChunk);
 
-      expect(globalThis.fetch).toHaveBeenCalledWith(MICHI_API_CHAT_ENDPOINT, {
+      expect(globalThis.fetch).toHaveBeenCalledWith(MICHI_API_CHAT_ENDPOINT, expect.objectContaining({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ message: '東京の天気は？' })
-      });
+      }));
 
       expect(result).toBe(mockReply);
       expect(onChunk).toHaveBeenCalledWith(mockReply);
