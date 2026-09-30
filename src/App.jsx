@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
-import { Sun, Moon, FileText, Bell } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Splash from './components/Splash';
 import LanguageSelect from './components/LanguageSelect';
@@ -13,7 +13,6 @@ import DrivingAcademy, { MOCK_SCHOOLS } from './components/DrivingAcademy';
 import ServiceComingSoon from './components/ServiceComingSoon';
 import Profile from './components/Profile';
 import AdminDashboard from './components/AdminDashboard';
-import CompanyHome from './components/CompanyHome';
 import VoiceAssistant from './components/VoiceAssistant';
 import RobotAvatar from './components/RobotAvatar';
 import JDMNavigation from './components/JDMNavigation';
@@ -22,8 +21,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ReferralModal from './components/ReferralModal';
 import { getPermanentUserId } from './utils/userIdManager';
 import { AppProvider } from './context/AppContext';
-
-
 
 const TRACKS = [
   { id: 1, title: 'Tokyo Rain (東京の雨)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/chill-lofi-background-music-331434.mp3' },
@@ -45,7 +42,7 @@ const mockIncomingApplications = [
     shoukaiAmount: '¥10,000',
     shoukaiPaid: false,
     applicantInfo: {
-      fullName: 'Anonim Do\'st',
+      fullName: "Anonim Do'st",
       email: 'demo@michi-app.com',
       birthDate: '1995-01-01',
       birthPlace: 'Yaponiya',
@@ -68,43 +65,8 @@ const mockIncomingApplications = [
         { company: 'Toshkent Express', position: 'Kuryer', startDate: '2018-07', endDate: '2022-09', isCurrent: false }
       ]
     }
-  },
-  {
-    id: 102,
-    jobId: 2,
-    company: 'Sagawa Express',
-    title: 'Xalqaro yuk tashish (Trailer)',
-    logo: 'https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100',
-    status: 'reviewed',
-    appliedDate: '2026-06-11',
-    shoukaiId: null,
-    shoukaiAmount: null,
-    shoukaiPaid: false,
-    applicantInfo: {
-      fullName: 'Jaloliddin Tursunov',
-      email: 'jaloliddin.t@gmail.com',
-      birthDate: '1993-04-15',
-      birthPlace: 'Samarqand',
-      nationality: 'O\'zbekiston',
-      gender: 'male',
-      phone: '+81 80-1111-2222',
-      postalCode: '220-0012',
-      address: 'Kanagawa, Yokohama, Nishi-ku, Minatomirai 2-1',
-      addressHistory: [
-        { address: 'Kanagawa, Yokohama, Nishi-ku, Minatomirai 2-1', isCurrent: true }
-      ],
-      educationHistory: [
-        { school: 'Samarqand Davlat Universiteti', major: 'Iqtisodiyot', startDate: '2011-09', endDate: '2015-06', isCurrent: false }
-      ],
-      driverLicenses: ['oogata', 'kenin'],
-      techCertificates: ['forklift', 'tamakake'],
-      workHistory: [
-        { company: 'Yokohama Marine Logistics', position: 'Trailer Driver', startDate: '2020-05', endDate: '2026-03', isCurrent: false }
-      ]
-    }
   }
 ];
-
 
 class ChunkErrorBoundary extends React.Component {
   constructor(props) {
@@ -126,9 +88,7 @@ class ChunkErrorBoundary extends React.Component {
           </div>
           <button 
             type="button"
-            onClick={() => {
-              this.setState({ hasError: false, error: null });
-            }} 
+            onClick={() => this.setState({ hasError: false, error: null })} 
             style={{ padding: '10px 20px', borderRadius: '12px', background: '#0084FF', color: 'white', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '12px' }}
           >
             Qayta Urinib Ko'rish
@@ -144,100 +104,79 @@ function App() {
   const { t, i18n } = useTranslation();
   const [showSplash, setShowSplash] = useState(true);
   const [languageSelected, setLanguageSelected] = useState(false);
-  const [userRole, setUserRole] = useState(null); // Temporarily disable auto-login
+  const [userRole, setUserRole] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
   const [showJDMNavigation, setShowJDMNavigation] = useState(false);
   const [showAssistHeroShowcase, setShowAssistHeroShowcase] = useState(false);
   const [hasOpenedJDM, setHasOpenedJDM] = useState(false);
 
-  /**
-   * Ovoz holatlari:
-   * 
-   * isVoiceStandby — Ovoz assistenti "kutish" rejimida.
-   *   true  → Mikrofon ikonkasi faol (highlight), bosishga tayyor
-   *   false → Ovoz assistenti o'chirilgan
-   * 
-   * isVoiceActive — Ovoz assistenti hozir ochiq va ishlayapti.
-   *   true  → VoiceAssistant overlay ko'rinmoqda
-   *   false → Overlay yashirilgan
-   * 
-   * Farq: Standby = tayyor tur, Active = hozir ishlayapti
-   */
-
-  // Standby: localStorage'dan o'qiladi (default true)
+  // Ovozli yordamchi holati
   const [isVoiceStandby, setIsVoiceStandby] = useState(() => {
-    const saved = localStorage.getItem('michi_voice_standby');
-    if (saved === null) return true;
-    return saved === 'true';
+    try {
+      const saved = localStorage.getItem('michi_voice_standby');
+      return saved === null ? true : saved === 'true';
+    } catch {
+      return true;
+    }
   });
 
-  // Active: har doim false boshlanadi (overlay yopiq bo'ladi)
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState('idle');
 
-  // Standby o'zgarganda localStorage'ga yozamiz
   useEffect(() => {
-    localStorage.setItem('michi_voice_standby', isVoiceStandby);
+    try {
+      localStorage.setItem('michi_voice_standby', String(isVoiceStandby));
+    } catch {}
   }, [isVoiceStandby]);
 
   useEffect(() => {
-    if (showJDMNavigation) {
-      setHasOpenedJDM(true);
-    }
+    if (showJDMNavigation) setHasOpenedJDM(true);
   }, [showJDMNavigation]);
 
-  // Bento AI Card va switch yoqilganda brauzer mikrofon so'rovini darhol chiqarish
-  const handleVoiceActivate = async () => {
+  // Mikrofon resurslarini xavfsiz boshqarish
+  const stopMicrophoneStream = useCallback(() => {
+    if (window.michiActiveMicStream) {
+      try {
+        window.michiActiveMicStream.getTracks().forEach(track => track.stop());
+      } catch (e) {}
+      window.michiActiveMicStream = null;
+    }
+  }, []);
+
+  const handleVoiceActivate = useCallback(async () => {
     setIsVoiceActive(true);
     setIsVoiceStandby(true);
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
+        stopMicrophoneStream();
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         window.michiActiveMicStream = stream;
       } catch (err) {
-        console.warn("[VoiceAI] User denied or blocked microphone permission:", err);
+        console.warn("[VoiceAI] Mikrofon ruxsati berilmadi:", err);
       }
     }
-  };
+  }, [stopMicrophoneStream]);
 
-  // Ovozni o'chirish/yoqish toggle (to'liq o'chirish/yoqish)
-  const handleVoiceToggle = async () => {
+  const handleVoiceToggle = useCallback(async () => {
     if (isVoiceStandby || isVoiceActive) {
       setIsVoiceActive(false);
       setIsVoiceStandby(false);
+      stopMicrophoneStream();
     } else {
       await handleVoiceActivate();
     }
-  };
-  // ==========================================
-  // NAVIGATSIYA VA HOLATLARNI BOSHQARISH (LIFTED STATES & UX ENHANCEMENTS)
-  // Barcha brauzerlarda va mobil qurilmalarda bir xil, silliq va xatosiz ishlashini ta'minlash maqsadida
-  // holatlar (state) ilovaning eng yuqori qismiga ko'tarildi.
-  // ==========================================
+  }, [isVoiceStandby, isVoiceActive, handleVoiceActivate, stopMicrophoneStream]);
 
-  // selectedJob: Foydalanuvchi hozir ko'rayotgan ish e'lonining obyekti.
-  // Tanlanganida, ilova ustidan JobDetail to'liq ekranli overlay (z-index: 200) bo'lib ochiladi.
   const [selectedJob, setSelectedJob] = useState(null);
-
-  // selectedSchool: Foydalanuvchi tanlagan avtomaktab obyekti.
-  // DrivingAcademy komponentiga uzatilib, maktab tafsilotlarini ochish uchun qo'llaniladi.
   const [selectedSchool, setSelectedSchool] = useState(null);
-
-  // profileActivePage: Profil bo'limidagi faol sub-sahifa (masalan: 'main', 'saved_items', 'settings').
-  // Brauzerda tablar almashganda (masalan home tabiga o'tib qaytganda) profil reset bo'lmasligi uchun bu holat App.jsx darajasida saqlanadi.
   const [profileActivePage, setProfileActivePage] = useState('main');
   const [profileActivePageSource, setProfileActivePageSource] = useState('profile');
-  const [profileScrollToTopTrigger, setProfileScrollToTopTrigger] = useState(0);
-
-  // backTab: Profilning saqlanganlaridan e'longa kirilganda, ortga qaytish manzilini eslab qoluvchi o'zgaruvchi.
   const [backTab, setBackTab] = useState(null);
 
-  // Guest redirection states
   const [pendingApply, setPendingApply] = useState(null);
   const [authInitialStep, setAuthInitialStep] = useState('role');
   const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
 
-  // Referral Modal State
   const [referralModal, setReferralModal] = useState({
     isOpen: false,
     item: null,
@@ -245,63 +184,91 @@ function App() {
     resolve: null
   });
 
-  const openReferralModal = (item, type) => {
+  const openReferralModal = useCallback((item, type) => {
     return new Promise((resolve) => {
       setReferralModal({ isOpen: true, item, type, resolve });
     });
-  };
+  }, []);
 
-  // Music Player states
+  // 🎵 Radio Player Integratsiyasi
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const audioRef = useRef(null);
   const mainContentRef = useRef(null);
 
-  // Pastki menyudan tab o'zgarganda kontentni eng yuqoridan ochish
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio(TRACKS[currentTrackIndex].url);
+      audioRef.current.volume = volume;
+      audioRef.current.onended = () => {
+        setCurrentTrackIndex(prev => (prev + 1) % TRACKS.length);
+      };
+    }
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.src = TRACKS[currentTrackIndex].url;
+      if (isPlaying) {
+        audioRef.current.play().catch(() => setIsPlaying(false));
+      }
+    }
+  }, [currentTrackIndex]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.play().catch(() => setIsPlaying(false));
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying]);
+
+  const musicPlayer = useMemo(() => ({
+    play: () => setIsPlaying(true),
+    pause: () => setIsPlaying(false),
+    next: () => setCurrentTrackIndex(prev => (prev + 1) % TRACKS.length),
+    previous: () => setCurrentTrackIndex(prev => (prev - 1 + TRACKS.length) % TRACKS.length),
+    setVolume: (v) => {
+      setVolume(v);
+      if (audioRef.current) audioRef.current.volume = v;
+    },
+    isPlaying,
+    currentTrack: TRACKS[currentTrackIndex]
+  }), [isPlaying, currentTrackIndex]);
+
+  // Tab almashganda tepaga skroll
   useEffect(() => {
     if (mainContentRef.current) {
       mainContentRef.current.scrollTop = 0;
     }
   }, [activeTab]);
 
-  // Status Bar Clock State
-  const [clockTime, setClockTime] = useState(() => new Date());
+  // Modal ochilganda Body Scroll Lock
   useEffect(() => {
-    const timer = setInterval(() => setClockTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+    const isModalOpen = showJDMNavigation || showAssistHeroShowcase || selectedJob;
+    document.body.style.overflow = isModalOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showJDMNavigation, showAssistHeroShowcase, selectedJob]);
 
-  // Lifted Search and Filter States (For AI voice query control)
   const [jobSearchQuery, setJobSearchQuery] = useState('');
   const [jobActiveSegment, setJobActiveSegment] = useState('all');
   const [academySearchQuery, setAcademySearchQuery] = useState('');
 
-  // Advanced Filter States (For premium filter drawer and AI control)
   const [selectedLicenses, setSelectedLicenses] = useState([]);
-  const [selectedLangLevel, setSelectedLangLevel] = useState('all');
   const [selectedBenefits, setSelectedBenefits] = useState([]);
   const [minSalary, setMinSalary] = useState(0);
   const [selectedPrefecture, setSelectedPrefecture] = useState('all');
-  const [selectedCity, setSelectedCity] = useState('all');
-  const [stationQuery, setStationQuery] = useState('');
-  const [onlyNearStation, setOnlyNearStation] = useState(false);
-
-  const togglePlay = () => {
-    setIsPlaying(prev => !prev);
-  };
-
-  const nextTrack = () => {
-    setCurrentTrackIndex(prev => (prev + 1) % TRACKS.length);
-    setIsPlaying(true);
-  };
-
-  const prevTrack = () => {
-    setCurrentTrackIndex(prev => (prev - 1 + TRACKS.length) % TRACKS.length);
-    setIsPlaying(true);
-  };
 
   const [contractStatus, setContractStatus] = useState('none');
   const [verifiedCompanies, setVerifiedCompanies] = useState(['Sagawa Express', 'Yamato Transport']);
@@ -312,16 +279,12 @@ function App() {
     );
   };
 
-  // handleSchoolClick: Saqlangan avtomaktab bosilganda ishlaydi.
-  // Foydalanuvchini Avtomaktab tabiga o'tkazadi va maktab batafsil sahifasini ochadi.
   const handleSchoolClick = (school) => {
-    setBackTab('profile'); // Kelgan manzilini 'profile' deb belgilaymiz
-    setActiveTab('academy'); // Tabni avtomaktabga o'zgartiramiz
-    setSelectedSchool(school); // Maktabni tanlangan qilamiz
+    setBackTab('profile');
+    setActiveTab('academy');
+    setSelectedSchool(school);
   };
 
-  // handleSchoolBack: Avtomaktab tafsilotlaridan chiqqanda ishlaydi.
-  // Maktab tanlovini bekor qiladi va agar backTab o'rnatilgan bo'lsa, foydalanuvchini o'sha tabga qaytaradi.
   const handleSchoolBack = () => {
     setSelectedSchool(null);
     if (backTab) {
@@ -330,11 +293,9 @@ function App() {
     }
   };
 
-  // handleNavigateToInternationalJobs: Dashboarddagi Xalqaro bento card bosilganda ishlaydi.
   const handleNavigateToInternationalJobs = () => {
     setSelectedBenefits(['international']);
     setSelectedLicenses([]);
-    setSelectedLangLevel('all');
     setJobSearchQuery('');
     setJobActiveSegment('all');
     setMinSalary(0);
@@ -342,50 +303,24 @@ function App() {
     setActiveTab('jobs');
   };
 
-  // Dark mode
+  // Dark Mode boshqaruvi
   const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('michi_darkmode');
-    return saved ? saved === 'true' : false;
+    try {
+      const saved = localStorage.getItem('michi_darkmode');
+      return saved ? saved === 'true' : false;
+    } catch {
+      return false;
+    }
   });
 
-  // Sound settings
-  const [soundSettings, setSoundSettings] = useState(() => {
-    const saved = localStorage.getItem('michi_sound');
-    return saved ? JSON.parse(saved) : { sound: true, vibration: true };
-  });
-
-  // Apply dark mode class
   useEffect(() => {
     document.documentElement.classList.toggle('dark-mode', darkMode);
     document.documentElement.classList.toggle('light-mode', !darkMode);
-    localStorage.setItem('michi_darkmode', darkMode);
+    try {
+      localStorage.setItem('michi_darkmode', String(darkMode));
+    } catch {}
   }, [darkMode]);
 
-  useEffect(() => {
-    localStorage.setItem('michi_sound', JSON.stringify(soundSettings));
-  }, [soundSettings]);
-
-  // Show profile badges preference
-  const [showProfileBadges, setShowProfileBadges] = useState(() => {
-    const saved = localStorage.getItem('michi_show_badges');
-    return saved ? saved === 'true' : true;
-  });
-
-  // Notification sound preference
-  const [notificationSound, setNotificationSound] = useState(() => {
-    const saved = localStorage.getItem('michi_notif_sound');
-    return saved ? saved === 'true' : true;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('michi_show_badges', showProfileBadges);
-  }, [showProfileBadges]);
-
-  useEffect(() => {
-    localStorage.setItem('michi_notif_sound', notificationSound);
-  }, [notificationSound]);
-
-  // Profile Data
   const [profileData, setProfileData] = useState({
     userId: getPermanentUserId(),
     fullName: 'Mehmon',
@@ -397,89 +332,30 @@ function App() {
     workHistory: [],
     addressHistory: [],
     educationHistory: [],
-    address: '',
-    education: '',
-    companyType: '',
-    companyAddress: '',
-    employeeCount: '',
-    contactPerson: '',
-    companyPhone: '',
-    companyDesc: '',
-    furigana: '',
-    phone: '',
-    postalCode: '',
     gender: 'male',
-    motivation: '',
-    selfPR: '',
-    hobbies: '',
-    personalRequests: '貴社規定に従います。',
-    jlptStatus: null
+    personalRequests: '貴社規定に従います。'
   });
 
-  // Disabled auto-save logic for role and profile
-  useEffect(() => {
-    // We intentionally don't save to localStorage anymore
-    // so the user can test the registration flow on every reload.
-  }, [userRole, profileData]);
-
-
-
-  // Control audio playback
-  useEffect(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.play().catch(err => {
-          console.log("Audio play blocked by browser autoplay policy:", err);
-          setIsPlaying(false);
-        });
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [isPlaying, currentTrackIndex]);
-
-  // Sync volume with audio element
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
-
-  // Global Jobs & Driving Schools State
   const [jobs, setJobs] = useState(MOCK_JOBS);
   const [schools, setSchools] = useState(MOCK_SCHOOLS);
-
-  // Applications state
   const [applications, setApplications] = useState([]);
-
-  // Company Employees state (for HR)
-  const [companyEmployees, setCompanyEmployees] = useState([]);
-
-  // Notifications state
   const [notifications, setNotifications] = useState([]);
-  
-  // Edit mode state
-  const [jobToEdit, setJobToEdit] = useState(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const isProfileComplete = useCallback(() => {
-    // If it's the admin test profile, it's always complete (bypass check)
-    if (profileData && (profileData.email === 'admin@driver.jp' || profileData.email === 'admin@sagawa.jp')) {
+    if (profileData?.email === 'admin@driver.jp' || profileData?.email === 'admin@sagawa.jp') {
       return true;
     }
+    const hasFullName = Boolean(profileData.fullName && profileData.fullName.trim() !== '' && profileData.fullName !== 'Mehmon');
+    const hasBirthDate = Boolean(profileData.birthDate);
+    const hasPhone = Boolean(profileData.phone && profileData.phone.trim() !== '');
+    const hasAddress = Boolean(profileData.address?.trim() || profileData.addressHistory?.length > 0);
+    const hasEducation = Boolean(profileData.education?.trim() || profileData.educationHistory?.length > 0);
     
-    // Required fields: fullName, birthDate, phone, address (or addressHistory), education (or educationHistory)
-    const hasFullName = !!(profileData.fullName && profileData.fullName.trim() !== '' && profileData.fullName !== 'Mehmon');
-    const hasBirthDate = !!profileData.birthDate;
-    const hasPhone = !!(profileData.phone && profileData.phone.trim() !== '');
-    const hasAddress = !!((profileData.address && profileData.address.trim() !== '') || (profileData.addressHistory && profileData.addressHistory.length > 0));
-    const hasEducation = !!((profileData.education && profileData.education.trim() !== '') || (profileData.educationHistory && profileData.educationHistory.length > 0));
-    
-    return !!(hasFullName && hasBirthDate && hasPhone && hasAddress && hasEducation);
+    return Boolean(hasFullName && hasBirthDate && hasPhone && hasAddress && hasEducation);
   }, [profileData]);
 
-  // Apply for a job
   const handleApplyJob = useCallback(async (job) => {
     if (userRole === 'guest') {
       setPendingApply({ type: 'job', item: job });
@@ -488,7 +364,6 @@ function App() {
       return;
     }
     
-    // Check if resume is complete
     if (!isProfileComplete()) {
       setShowCompleteProfileModal(true);
       return;
@@ -505,7 +380,7 @@ function App() {
       company: job.company,
       title: job.title,
       logo: job.logo,
-      status: 'submitted', // initial state is now submitted
+      status: 'submitted',
       appliedDate: new Date().toLocaleDateString(),
       shoukaiId: refId || null,
       shoukaiAmount: job.shoukaiAmount || null,
@@ -513,20 +388,17 @@ function App() {
       applicantInfo: { ...profileData }
     };
     setApplications(prev => [...prev, newApp]);
-  }, [userRole, applications, profileData, isProfileComplete]);
+  }, [userRole, applications, profileData, isProfileComplete, openReferralModal]);
 
-  // Simulate status change (for demo - single-click idempotent)
   const handleChangeAppStatus = (appId, newStatus) => {
     const targetApp = applications.find(a => a.id === appId);
-    if (!targetApp || targetApp.status === newStatus) {
-      return; // Already in this status! Prevent duplicate notification bell increment.
-    }
+    if (!targetApp || targetApp.status === newStatus) return;
 
     setApplications(prev => prev.map(a => 
       a.id === appId ? { ...a, status: newStatus } : a
     ));
 
-    if (newStatus === 'accepted' || newStatus === 'interview' || newStatus === 'reviewed' || newStatus === 'rejected') {
+    if (['accepted', 'interview', 'reviewed', 'rejected'].includes(newStatus)) {
       const notif = {
         id: Date.now(),
         type: newStatus,
@@ -536,81 +408,9 @@ function App() {
         read: false,
       };
       setNotifications(prev => [notif, ...prev]);
-
-      if (newStatus === 'accepted') {
-        // Add to user work history if not already present
-        setProfileData(prev => {
-          const updatedHistory = [...(prev.workHistory || [])];
-          if (updatedHistory.some(w => w.company === targetApp.company && w.position === targetApp.title)) {
-            return prev;
-          }
-          if (updatedHistory.length >= 3) {
-            updatedHistory.shift();
-          }
-          updatedHistory.push({ company: targetApp.company, position: targetApp.title, years: 'Hozirgi vaqtda' });
-          return { ...prev, workHistory: updatedHistory };
-        });
-
-        // Auto-add to company HR employees if not already present
-        setCompanyEmployees(prev => {
-          const empName = targetApp.applicantInfo?.fullName || profileData.fullName;
-          const empPhone = targetApp.applicantInfo?.phone || profileData.phone || '+81 90-8888-9999';
-          const empRole = targetApp.title.includes('Mahalliy') ? 'ルート配送ドライバー (地場デリバリー)' : targetApp.title;
-          const empId = targetApp.shoukaiId || `EMP-${targetApp.id}`;
-          if (prev.some(emp => emp.name === empName && emp.role === empRole)) {
-            return prev;
-          }
-          return [
-            ...prev, 
-            { id: Date.now(), name: empName, phone: empPhone, role: empRole, verified: true, michiId: empId }
-          ];
-        });
-      }
     }
   };
 
-  // Add employee manually via HR
-  const handleAddEmployee = (empData) => {
-    setCompanyEmployees(prev => [...prev, { id: Date.now(), ...empData }]);
-  };
-
-  const handleAcceptEmployeeRequest = (michiId, company) => {
-    // 1. Verify in company employees list
-    setCompanyEmployees(prev => prev.map(emp => 
-      emp.michiId === michiId ? { ...emp, verified: true, name: profileData.fullName, phone: profileData.phone || '+81 000-0000' } : emp
-    ));
-    // 2. Add to user's work history
-    setProfileData(prev => {
-      const newWork = { company: company, position: 'Xodim', years: 'Hozirgi vaqtda' };
-      const updatedHistory = [...(prev.workHistory || [])];
-      if (updatedHistory.length >= 3) {
-        updatedHistory.shift();
-      }
-      updatedHistory.push(newWork);
-      return { ...prev, workHistory: updatedHistory };
-    });
-  };
-
-  // Mark notifications as read
-  const markNotificationRead = (notifId) => {
-    setNotifications(prev => prev.map(n => 
-      n.id === notifId ? { ...n, read: true } : n
-    ));
-  };
-
-  const markAllNotificationsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
-  const deleteNotification = (notifId) => {
-    setNotifications(prev => prev.filter(n => n.id !== notifId));
-  };
-
-  const clearAllNotifications = () => {
-    setNotifications([]);
-  };
-
-  // Academy applications
   const [schoolApplications, setSchoolApplications] = useState([]);
 
   const handleApplySchool = useCallback(async (school) => {
@@ -621,7 +421,6 @@ function App() {
       return;
     }
 
-    // Check if resume is complete
     if (!isProfileComplete()) {
       setShowCompleteProfileModal(true);
       return;
@@ -643,58 +442,7 @@ function App() {
       applicantInfo: { ...profileData }
     };
     setSchoolApplications(prev => [...prev, newApp]);
-  }, [userRole, schoolApplications, profileData, isProfileComplete]);
-
-  // Re-apply if a guest registers/logs in
-  useEffect(() => {
-    if (userRole === 'driver' && pendingApply) {
-      if (pendingApply.type === 'job') {
-        handleApplyJob(pendingApply.item);
-      } else if (pendingApply.type === 'school') {
-        handleApplySchool(pendingApply.item);
-      }
-      setPendingApply(null);
-      setAuthInitialStep('role');
-    }
-  }, [userRole, pendingApply, handleApplyJob, handleApplySchool]);
-
-  const handleShoukaiPaid = (appId) => {
-    let isJob = applications.some(a => a.id === appId);
-    
-    if (isJob) {
-      setApplications(prev => prev.map(a => 
-        a.id === appId ? { ...a, shoukaiPaid: true } : a
-      ));
-      const app = applications.find(a => a.id === appId);
-      if (app && app.shoukaiId) {
-        const notif = {
-          id: Date.now(),
-          type: 'shoukai_paid',
-          company: app.company,
-          title: app.shoukaiAmount || '¥10,000',
-          date: new Date().toLocaleString(),
-          read: false,
-        };
-        setNotifications(prev => [notif, ...prev]);
-      }
-    } else {
-      setSchoolApplications(prev => prev.map(a => 
-        a.id === appId ? { ...a, paid: true } : a
-      ));
-      const app = schoolApplications.find(a => a.id === appId);
-      if (app && app.shoukaiId) {
-        const notif = {
-          id: Date.now(),
-          type: 'shoukai_paid',
-          company: app.schoolName,
-          title: app.shoukaiAmount || '¥10,000',
-          date: new Date().toLocaleString(),
-          read: false,
-        };
-        setNotifications(prev => [notif, ...prev]);
-      }
-    }
-  };
+  }, [userRole, schoolApplications, profileData, isProfileComplete, openReferralModal]);
 
   const handleRoleSelection = (role, data) => {
     setUserRole(role);
@@ -705,166 +453,26 @@ function App() {
       setProfileData(prev => ({
         ...prev,
         ...data,
-        fullName: data.fullName || t('roleGuest'),
+        fullName: data.fullName || t('roleGuest', 'Mehmon'),
         email: data.email || 'michi@example.com'
       }));
-    } else {
-      setProfileData(prev => ({
-        ...prev,
-        fullName: role === 'company' ? 'Sagawa Express' : t('roleGuest'),
-        email: 'michi@example.com'
-      }));
     }
   };
 
-  const handleChangeLanguage = () => {
-    setLanguageSelected(false);
-  };
-
-  const handleUpdateProfile = (newData) => {
-    setProfileData(prev => ({ ...prev, ...newData }));
-  };
-
-  const handleTriggerRegister = () => {
-    setUserRole(null);
-    setAuthInitialStep('register');
-  };
-
-
-
-  // ==========================================
-  // VIRAL SHOUKAI REFERRAL ALGORITHM & GROW LOOP
-  // ==========================================
-  // [UZ] Ushbu algoritm foydalanuvchilar o'rtasida e'lonlar va ilovani virusli tarqatishni simulyatsiya qiladi.
-  // Har safar foydalanuvchi "Shoukai" tugmasini bosganida, shaxsiy havola nusxalanadi va tizimda do'stlarining
-  // ilovani yuklab olib, ushbu e'longa ariza yuborgani (Friend Simulation) zudlik bilan simulyatsiya qilinadi.
-  // Bu foydalanuvchining shaxsiy arizasini yoki faolligini cheklamaydi va "Mening Shoukai'larim" sahifasida aks etadi.
-  //
-  // [JA] 紹介（Shoukai）ウイルス性拡散アルゴリズム：
-  // ユーザーが「紹介」ボタンを押すと、パーソナライズされた紹介リンクがコピーされ、
-  // 友人がアプリをダウンロードして該当の求人または自動車学校に応募したシミュレーション（Friend Simulation）が即座に実行されます。
-  // これにより、紹介報酬の追跡と、友人紹介によるアプリ認知拡大・就職支援のビジネスロジックが美しく表現されます。
-  //
-  // [EN] Viral Shoukai Referral Algorithm & Growth Engine:
-  // When a user shares via Shoukai, it copies a unique link and immediately triggers a simulated referral application
-  // representing a friend downloading the app and applying. This handles the social network effect, satisfies job seekers'
-  // demand for work, and visualizes pending/paid referral rewards under "My Shoukai" in the profile.
   const handleShoukai = (item) => {
-    // 1. Havolani nusxalash simulyatsiyasi
-    const isJob = !!((item.shoukaiAmount || item.shoukai) && (item.title || item.name));
-    const isActuallyJob = !!item.title;
-    
+    const isActuallyJob = Boolean(item.title);
     const amount = isActuallyJob ? (item.shoukaiAmount || item.shoukai || '¥50,000') : (item.shoukai || '¥10,000');
-    const title = isActuallyJob ? item.title : item.name;
-
     const link = `michi-app.com/${isActuallyJob ? 'job' : 'school'}/${item.id}?ref=${profileData.userId}`;
     
-    // Multi-language Alert messages based on active locale
     const alertMsg = i18n.language === 'ja'
-      ? `紹介リンクをコピーしました！\n\n${link}\n\n友達にシェアして紹介報酬を獲得しましょう！`
-      : i18n.language === 'en'
-      ? `Referral link copied successfully:\n\n${link}\n\nShare with friends to earn Shoukai rewards!`
-      : `Shoukai havolasi nusxalandi:\n\n${link}\n\nDo'stlaringiz bilan ulashing va mukofot oling!`;
+      ? `紹介リンクをコピーしました！\n\n${link}`
+      : `Shoukai havolasi nusxalandi:\n\n${link}`;
       
-    setTimeout(() => {
-      alert(alertMsg);
-    }, 150);
-
-    // 2. Mantiqiy algoritm: Do'stingiz ushbu havola orqali yuklab ariza yuborganligini simulyatsiya qilish.
-    if (isActuallyJob) {
-      // Dublikat bo'lmasligi uchun tekshiramiz
-      const exists = applications.some(a => a.jobId === item.id && a.shoukaiId === profileData.userId && a.isSimulatedReferral);
-      if (!exists) {
-        const newApp = {
-          id: Date.now(),
-          jobId: item.id,
-          company: item.company,
-          title: item.title,
-          logo: item.logo,
-          status: 'submitted',
-          appliedDate: new Date().toLocaleDateString(),
-          shoukaiId: profileData.userId, // Referrer ID bu hozirgi foydalanuvchining ID raqami
-          shoukaiAmount: amount,
-          shoukaiPaid: false,
-          friendName: 'Do\'stingiz (Simulyatsiya)',
-          isSimulatedReferral: true, // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
-          applicantInfo: {
-            fullName: t('simulatedFriend', 'Anonim Do\'st'),
-            email: 'demo@michi-app.com',
-            birthDate: '1995-01-01',
-            birthPlace: t('japan', 'Yaponiya'),
-            nationality: t('mixed', 'Xorijiy'),
-            gender: 'male',
-            phone: '+81 00-0000-0000',
-            postalCode: '000-0000',
-            address: t('demoAddress', 'Tokyo, Shinjuku-ku'),
-            addressHistory: [
-              { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
-              { address: 'Chiba, Matsudo 2-12', isCurrent: false }
-            ],
-            educationHistory: [
-              { school: 'Toshkent Axborot Texnologiyalari Universiteti', major: 'Kompyuter muhandisligi', startDate: '2014-09', endDate: '2018-06', isCurrent: false }
-            ],
-            driverLicenses: ['oogata', 'kenin', 'futsu'],
-            techCertificates: ['forklift'],
-            workHistory: [
-              { company: 'Yamato Transport Tokyo', position: 'Driver', startDate: '2022-10', endDate: '2025-12', isCurrent: false },
-              { company: 'Toshkent Express', position: 'Kuryer', startDate: '2018-07', endDate: '2022-09', isCurrent: false }
-            ]
-          }
-        };
-        setApplications(prev => [...prev, newApp]);
-      }
-    } else {
-      // Avtomaktablar uchun shoukai simulyatsiyasi
-      const exists = schoolApplications.some(a => a.schoolId === item.id && a.shoukaiId === profileData.userId && a.isSimulatedReferral);
-      if (!exists) {
-        const newApp = {
-          id: Date.now(),
-          schoolId: item.id,
-          schoolName: item.name,
-          image: item.image,
-          appliedDate: new Date().toLocaleDateString(),
-          shoukaiId: profileData.userId, // Referrer ID bu hozirgi foydalanuvchining ID raqami
-          shoukaiAmount: item.shoukai || '¥10,000',
-          paid: false,
-          friendName: 'Do\'stingiz (Simulyatsiya)',
-          isSimulatedReferral: true, // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
-          applicantInfo: {
-            fullName: t('simulatedFriend', 'Anonim Do\'st'),
-            email: 'demo@michi-app.com',
-            birthDate: '1995-01-01',
-            birthPlace: t('japan', 'Yaponiya'),
-            nationality: t('mixed', 'Xorijiy'),
-            gender: 'male',
-            phone: '+81 00-0000-0000',
-            postalCode: '000-0000',
-            address: t('demoAddress', 'Tokyo, Shinjuku-ku'),
-            addressHistory: [
-              { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
-              { address: 'Chiba, Matsudo 2-12', isCurrent: false }
-            ],
-            educationHistory: [
-              { school: 'Toshkent Axborot Texnologiyalari Universiteti', major: 'Kompyuter muhandisligi', startDate: '2014-09', endDate: '2018-06', isCurrent: false }
-            ],
-            driverLicenses: ['oogata', 'kenin', 'futsu'],
-            techCertificates: ['forklift'],
-            workHistory: [
-              { company: 'Yamato Transport Tokyo', position: 'Driver', startDate: '2022-10', endDate: '2025-12', isCurrent: false },
-              { company: 'Toshkent Express', position: 'Kuryer', startDate: '2018-07', endDate: '2022-09', isCurrent: false }
-            ]
-          }
-        };
-        setSchoolApplications(prev => [...prev, newApp]);
-      }
-    }
+    setTimeout(() => alert(alertMsg), 150);
   };
 
   const handleToggleSave = (item, type) => {
-    if (userRole === 'company' || userRole === 'school' || userRole === 'admin') {
-      alert("Faqat haydovchilar e'lonlarni saqlashi mumkin.");
-      return;
-    }
+    if (userRole !== 'driver') return;
     setProfileData(prev => {
       const savedItems = prev.savedItems || { jobs: [], schools: [] };
       const currentList = savedItems[type] || [];
@@ -880,58 +488,10 @@ function App() {
     });
   };
 
-  if (showSplash) {
-    return <Splash onFinish={() => setShowSplash(false)} />;
-  }
-
-  if (!languageSelected) {
-    return <LanguageSelect onFinish={() => setLanguageSelected(true)} />;
-  }
-
-  if (!userRole) {
-    return (
-      <RoleSelect 
-        onSelectRole={handleRoleSelection}
-        onGuest={() => handleRoleSelection('guest')}
-        initialStep={authInitialStep}
-      />
-    );
-  }
-
-  if (userRole === 'admin') {
-    return <AdminDashboard verifiedCompanies={verifiedCompanies} onToggleVerify={handleToggleVerify} onLogout={() => setUserRole(null)} contractStatus={contractStatus} setContractStatus={setContractStatus} profileData={profileData} />;
-  }
-
-  const getUserNameWithHonorific = () => {
-    return profileData.fullName;
-  };
-
-  const getAvatarSrc = () => {
-    if (profileData.avatar) return profileData.avatar;
-    const name = encodeURIComponent(profileData.fullName || 'User');
-    const bg = userRole === 'company' ? 'AF52DE' : userRole === 'school' ? '34C759' : userRole === 'driver' ? '0A84FF' : '8E8E93';
-    return `https://ui-avatars.com/api/?name=${name}&background=${bg}&color=fff`;
-  };
-
-  const musicPlayer = {
-    isPlaying,
-    currentTrack: TRACKS[currentTrackIndex],
-    togglePlay,
-    play: () => setIsPlaying(true),
-    pause: () => setIsPlaying(false),
-    nextTrack,
-    prevTrack,
-    currentTime,
-    duration,
-    volume,
-    setVolume,
-    seek: (time) => {
-      if (audioRef.current) {
-        audioRef.current.currentTime = time;
-        setCurrentTime(time);
-      }
-    }
-  };
+  if (showSplash) return <Splash onFinish={() => setShowSplash(false)} />;
+  if (!languageSelected) return <LanguageSelect onFinish={() => setLanguageSelected(true)} />;
+  if (!userRole) return <RoleSelect onSelectRole={handleRoleSelection} onGuest={() => handleRoleSelection('guest')} initialStep={authInitialStep} />;
+  if (userRole === 'admin') return <AdminDashboard verifiedCompanies={verifiedCompanies} onToggleVerify={handleToggleVerify} onLogout={() => setUserRole(null)} contractStatus={contractStatus} setContractStatus={setContractStatus} profileData={profileData} />;
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -940,7 +500,6 @@ function App() {
           <Dashboard 
             setActiveTab={setActiveTab} 
             profileData={profileData} 
-            musicPlayer={musicPlayer}
             isVoiceStandby={isVoiceStandby}
             isVoiceActive={isVoiceActive}
             onVoiceActivate={handleVoiceActivate}
@@ -952,7 +511,6 @@ function App() {
             onNavigateToJDM={() => setShowJDMNavigation(true)}
             onOpenAssistShowcase={() => setShowAssistHeroShowcase(true)}
           />
-
         );
       case 'jobs':
         return (
@@ -966,32 +524,10 @@ function App() {
             applications={applications}
             userRole={userRole} 
             profileData={profileData}
-            onEditJob={(job) => {
-              setSelectedJob(null);
-              setJobToEdit(job);
-              setProfileActivePage('my_ads');
-              setActiveTab('profile');
-            }}
             searchQuery={jobSearchQuery}
             setSearchQuery={setJobSearchQuery}
             activeSegment={jobActiveSegment}
             setActiveSegment={setJobActiveSegment}
-            selectedLicenses={selectedLicenses}
-            setSelectedLicenses={setSelectedLicenses}
-            selectedLangLevel={selectedLangLevel}
-            setSelectedLangLevel={setSelectedLangLevel}
-            selectedBenefits={selectedBenefits}
-            setSelectedBenefits={setSelectedBenefits}
-            minSalary={minSalary}
-            setMinSalary={setMinSalary}
-            selectedPrefecture={selectedPrefecture}
-            setSelectedPrefecture={setSelectedPrefecture}
-            selectedCity={selectedCity}
-            setSelectedCity={setSelectedCity}
-            stationQuery={stationQuery}
-            setStationQuery={setStationQuery}
-            onlyNearStation={onlyNearStation}
-            setOnlyNearStation={setOnlyNearStation}
           />
         );
       case 'academy':
@@ -1000,7 +536,6 @@ function App() {
             isContractActive={contractStatus === 'active'} 
             onApplySchool={handleApplySchool}
             schoolApplications={schoolApplications}
-            onShoukaiPaid={handleShoukaiPaid}
             profileData={profileData}
             onShoukai={handleShoukai}
             verifiedCompanies={verifiedCompanies}
@@ -1011,26 +546,12 @@ function App() {
             onBackPress={handleSchoolBack}
             schools={schools}
             setSchools={setSchools}
-            onEditJob={(school) => {
-              setSelectedSchool(null);
-              setJobToEdit(school);
-              setProfileActivePage('my_ads');
-              setActiveTab('profile');
-            }}
             searchQuery={academySearchQuery}
             setSearchQuery={setAcademySearchQuery}
           />
         );
       case 'service':
-        return (
-          <ServiceComingSoon 
-            onOpenAssistShowcase={() => {
-              setProfileActivePage('assist_showcase');
-              setActiveTab('profile');
-            }}
-            onNavigate={setActiveTab}
-          />
-        );
+        return <ServiceComingSoon onOpenAssistShowcase={() => { setProfileActivePage('assist_showcase'); setActiveTab('profile'); }} onNavigate={setActiveTab} />;
       case 'profile':
         return (
           <Profile 
@@ -1043,48 +564,23 @@ function App() {
             setIsVoiceActive={setIsVoiceActive}
             isVoiceStandby={isVoiceStandby}
             setIsVoiceStandby={setIsVoiceStandby}
-            onChangeLanguage={handleChangeLanguage}
-            onUpdateProfile={handleUpdateProfile}
+            onChangeLanguage={() => setLanguageSelected(false)}
+            onUpdateProfile={(newData) => setProfileData(prev => ({ ...prev, ...newData }))}
             onApply={handleApplyJob}
             onApplySchool={handleApplySchool}
             onShoukai={handleShoukai}
             applications={applications}
             schoolApplications={schoolApplications}
             onChangeAppStatus={handleChangeAppStatus}
-            onShoukaiPaid={handleShoukaiPaid}
             notifications={notifications}
-            onMarkRead={markNotificationRead}
-            onMarkAllRead={markAllNotificationsRead}
-            onDeleteNotif={deleteNotification}
-            onClearAllNotifs={clearAllNotifications}
             unreadCount={unreadCount}
             darkMode={darkMode}
             setDarkMode={setDarkMode}
-            soundSettings={soundSettings}
-            setSoundSettings={setSoundSettings}
-            companyEmployees={companyEmployees}
-            onAddEmployee={handleAddEmployee}
-            onAcceptEmployeeRequest={handleAcceptEmployeeRequest}
-            setNotifications={setNotifications}
             onNavigate={setActiveTab}
             activePage={profileActivePage}
             setActivePage={setProfileActivePage}
-            profileActivePageSource={profileActivePageSource}
-            setProfileActivePageSource={setProfileActivePageSource}
-            scrollToTopTrigger={profileScrollToTopTrigger}
-            onJobClick={setSelectedJob}
-            onSchoolClick={handleSchoolClick}
-            showProfileBadges={showProfileBadges}
-            setShowProfileBadges={setShowProfileBadges}
-            notificationSound={notificationSound}
-            setNotificationSound={setNotificationSound}
             jobs={jobs}
             schools={schools}
-            setJobs={setJobs}
-            setSchools={setSchools}
-            jobToEdit={jobToEdit}
-            setJobToEdit={setJobToEdit}
-            onTriggerRegister={handleTriggerRegister}
           />
         );
       default:
@@ -1094,364 +590,201 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <AppProvider value={{
-        // Foydalanuvchi
-        userRole, setUserRole,
-        profileData, handleUpdateProfile,
-        
-        // Ilova holati
-        darkMode, setDarkMode,
-        activeTab, setActiveTab,
-        
-        // Bildirishnomalar
-        notifications, unreadCount,
-        markNotificationRead, markAllNotificationsRead,
-        
-        // Ma'lumotlar
-        jobs, setJobs,
-        schools, setSchools,
-        applications, setApplications,
-        
-        // Funksiyalar
-        handleApplyJob, handleApplySchool,
-        handleShoukai, handleToggleSave,
-      }}>
+      <AppProvider value={{ userRole, setUserRole, profileData, darkMode, setDarkMode, activeTab, setActiveTab }}>
         <div className="app-layout">
-      <div className="glass-blob blob-1"></div>
-      <div className="glass-blob blob-2"></div>
-      <div className="glass-blob blob-3"></div>
-
-
-
-      <header className="global-header">
-        {/* Left Side: Clickable MICHI Logo (redirects to Home) */}
-        <div 
-          role="button"
-          tabIndex={0}
-          className="header-logo-left"
-          onClick={() => setActiveTab('home')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              setActiveTab('home');
-            }
-          }}
-          title={i18n.language === 'ja' ? 'ホーム' : i18n.language === 'en' ? 'Home' : 'Bosh sahifa'}
-        >
-          <div className="logo-kanji">道</div>
-          <span className="logo-text">MICHI</span>
-        </div>
-
-        {/* Center: Mathematically Centered Theme Toggle Switch (sliding track) */}
-        <div className="header-theme-toggle-centered">
-          <button
-            type="button"
-            className="theme-toggle-btn"
-            onClick={() => setDarkMode(prev => !prev)}
-            aria-label="Toggle theme"
-            title={darkMode ? (i18n.language === 'ja' ? 'ライトモード' : i18n.language === 'en' ? 'Light Mode' : 'Kunduzgi rejim') : (i18n.language === 'ja' ? 'ダークモード' : i18n.language === 'en' ? 'Dark Mode' : 'Tungi rejim')}
-          >
-            <div className={`theme-toggle-track ${darkMode ? 'dark' : 'light'}`}>
-              <div className="theme-toggle-thumb">
-                {darkMode ? <Moon size={11} strokeWidth={2.5} /> : <Sun size={11} strokeWidth={2.5} />}
-              </div>
-            </div>
-          </button>
-        </div>
-
-        {/* Right Side: Standalone Robot Avatar (Separated AI widget) */}
-        <div className="header-robot-right">
-          <RobotAvatar 
-            isVoiceActive={isVoiceActive || isVoiceStandby} 
-            voiceStatus={isVoiceActive ? voiceStatus : 'idle'} 
-            onClick={handleVoiceToggle} 
-          />
-        </div>
-      </header>
-
-      <main className="main-content" ref={mainContentRef} style={{ zIndex: 10 }}>
-        <ChunkErrorBoundary>
-          {renderTabContent()}
-        </ChunkErrorBoundary>
-      </main>
-
-      {selectedJob && (
-        <ChunkErrorBoundary>
-          <JobDetail 
-            job={selectedJob} 
-            onBack={() => setSelectedJob(null)} 
-            onApply={handleApplyJob}
-            applications={applications}
-            onShoukai={handleShoukai}
-            onToggleSave={handleToggleSave}
-            profileData={profileData}
-            userRole={userRole}
-            onEditJob={(job) => {
-              setSelectedJob(null);
-              setJobToEdit(job);
-              setProfileActivePage('my_ads');
-              setActiveTab('profile');
-            }}
-          />
-        </ChunkErrorBoundary>
-      )}
-
-      {hasOpenedJDM && (
-        <div 
-          className="jdm-nav-overlay-container" 
-          style={{ 
-            display: showJDMNavigation ? 'block' : 'none',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 1000,
-            height: '100%',
-            width: '100%',
-            overflow: 'hidden'
-          }}
-        >
-          <ChunkErrorBoundary>
-            <JDMNavigation 
-              onBack={() => setShowJDMNavigation(false)} 
-              showJDMNavigation={showJDMNavigation}
-              darkMode={darkMode}
-            />
-          </ChunkErrorBoundary>
-        </div>
-      )}
-
-      {showAssistHeroShowcase && (
-        <div 
-          className="assist-showcase-overlay-container" 
-          style={{ 
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 9000,
-            height: '100%',
-            width: '100%',
-            overflowY: 'auto',
-            borderRadius: '44px',
-            background: darkMode ? '#07090E' : '#FAFBFD'
-          }}
-        >
-          <ChunkErrorBoundary>
-            <AssistHeroShowcase 
-              onBack={() => setShowAssistHeroShowcase(false)} 
-              onActivateVoice={() => {
-                setShowAssistHeroShowcase(false);
-                handleVoiceActivate();
+          <header className="global-header">
+            <div 
+              role="button" 
+              tabIndex={0} 
+              className="header-logo-left" 
+              onClick={() => setActiveTab('home')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setActiveTab('home');
+                }
               }}
-              darkMode={darkMode}
-            />
-          </ChunkErrorBoundary>
-        </div>
-      )}
-
-
-      {!(activeTab === 'profile' && profileActivePage === 'resume_builder') && (
-        <BottomNav 
-          activeTab={activeTab} 
-          setActiveTab={(tab, options = {}) => {
-            // Close JDM Navigation when switching tabs
-            setShowJDMNavigation(false);
-            
-            // Agar foydalanuvchi profile tabini BEVOSITA BottomNav pastki menyusidan bossa, profilning asosiy oynasiga qaytaradi va eng yuqoridan scroll qiladi
-            if (tab === 'profile' && options.fromBottomNav) {
-              setProfileActivePage('main');
-              setProfileScrollToTopTrigger(prev => prev + 1);
-            }
-            
-            setSelectedJob(null);
-            setSelectedSchool(null);
-            setBackTab(null);
-            if (tab === 'jobs') {
-              setSelectedBenefits([]);
-              setSelectedLicenses([]);
-              setSelectedLangLevel('all');
-              setJobSearchQuery('');
-              setJobActiveSegment('all');
-              setMinSalary(0);
-              setSelectedPrefecture('all');
-            }
-            setActiveTab(tab);
-          }}
-          unreadCount={showProfileBadges ? unreadCount : 0}
-          userRole={userRole}
-          isVoiceStandby={isVoiceStandby}
-          isVoiceActive={isVoiceActive}
-          voiceStatus={voiceStatus}
-        />
-      )}
-
-      <VoiceAssistant 
-        isActive={isVoiceActive} 
-        onClose={() => setIsVoiceActive(false)} 
-        onStartVoice={() => setIsVoiceActive(true)}
-        isVoiceStandby={isVoiceStandby}
-        setIsVoiceStandby={setIsVoiceStandby}
-        setActiveTab={setActiveTab} 
-        musicPlayer={musicPlayer} 
-        onStatusChange={setVoiceStatus}
-        activeTab={activeTab}
-        jobs={jobs}
-        schools={schools}
-        profileData={profileData}
-        applications={applications}
-        selectedJob={selectedJob}
-        selectedSchool={selectedSchool}
-        setSelectedJob={setSelectedJob}
-        setSelectedSchool={setSelectedSchool}
-        setJobSearchQuery={setJobSearchQuery}
-        setJobActiveSegment={setJobActiveSegment}
-        setAcademySearchQuery={setAcademySearchQuery}
-        handleApplyJob={handleApplyJob}
-        handleApplySchool={handleApplySchool}
-        handleShoukai={handleShoukai}
-        userRole={userRole}
-        selectedLicenses={selectedLicenses}
-        setSelectedLicenses={setSelectedLicenses}
-        selectedLangLevel={selectedLangLevel}
-        setSelectedLangLevel={setSelectedLangLevel}
-        selectedBenefits={selectedBenefits}
-        setSelectedBenefits={setSelectedBenefits}
-        minSalary={minSalary}
-        setMinSalary={setMinSalary}
-        selectedPrefecture={selectedPrefecture}
-        setSelectedPrefecture={setSelectedPrefecture}
-        profileActivePage={profileActivePage}
-        setProfileActivePage={setProfileActivePage}
-        setApplications={setApplications}
-        toggleDarkMode={() => setDarkMode(prev => !prev)}
-      />
-
-      <audio 
-        ref={audioRef}
-        src={TRACKS[currentTrackIndex].url}
-        onTimeUpdate={() => {
-          if (audioRef.current) {
-            setCurrentTime(audioRef.current.currentTime);
-          }
-        }}
-        onLoadedMetadata={() => {
-          if (audioRef.current) {
-            setDuration(audioRef.current.duration);
-          }
-        }}
-        onEnded={nextTrack}
-      />
-
-      {showCompleteProfileModal && (
-        <div className="complete-profile-modal-overlay" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          backdropFilter: 'blur(10px)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 9999,
-          padding: '20px',
-          boxSizing: 'border-box'
-        }}>
-          <div className="glass squircle slide-up" style={{
-            maxWidth: '350px',
-            width: '100%',
-            padding: '24px',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '16px',
-            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.25)',
-            border: '1px solid rgba(255, 255, 255, 0.15)'
-          }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              background: 'rgba(10, 132, 255, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#0A84FF'
-            }}>
-              <FileText size={32} />
+              aria-label="Michi Bosh Sahifa"
+            >
+              <div className="logo-kanji">道</div>
+              <span className="logo-text">MICHI</span>
             </div>
-            <div>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>
-                {t('completeResumeModalTitle', 'Rezyumeni to\'ldiring')}
-              </h3>
-              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-                {t('completeResumeModalDesc', 'Ushbu vakansiyaga ariza topshirish uchun oldindan rezyume ma\'lumotlaringizni to\'liq to\'ldirishingiz lozim.')}
-              </p>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '8px', marginTop: '8px' }}>
+
+            <div className="header-theme-toggle-centered">
               <button 
-                type="button"
-                className="btn-primary squircle"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  fontWeight: '700',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  border: 'none',
-                  background: 'var(--primary)',
-                  color: 'white'
-                }}
-                onClick={() => {
-                  setShowCompleteProfileModal(false);
-                  setProfileActivePage('resume_builder');
-                  setProfileActivePageSource('profile');
-                  setActiveTab('profile');
-                }}
+                type="button" 
+                className="theme-toggle-btn" 
+                onClick={() => setDarkMode(prev => !prev)} 
+                aria-label="Toggle theme"
               >
-                {t('completeResumeBtn', 'Rezyume to\'ldirish')}
-              </button>
-              <button 
-                type="button"
-                className="btn-secondary squircle"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  border: '1px solid var(--glass-border)',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  color: 'var(--text-main)',
-                  borderRadius: '12px'
-                }}
-                onClick={() => setShowCompleteProfileModal(false)}
-              >
-                {t('cancelEdit', 'Bekor qilish')}
+                <div className={`theme-toggle-track ${darkMode ? 'dark' : 'light'}`}>
+                  <div className="theme-toggle-thumb">
+                    {darkMode ? <Moon size={11} /> : <Sun size={11} />}
+                  </div>
+                </div>
               </button>
             </div>
-          </div>
+
+            <div className="header-robot-right">
+              <RobotAvatar 
+                isVoiceActive={isVoiceActive || isVoiceStandby} 
+                voiceStatus={isVoiceActive ? voiceStatus : 'idle'} 
+                onClick={handleVoiceToggle} 
+              />
+            </div>
+          </header>
+
+          <main className="main-content" ref={mainContentRef} style={{ zIndex: 10 }}>
+            <ChunkErrorBoundary>
+              {renderTabContent()}
+            </ChunkErrorBoundary>
+          </main>
+
+          {/* Vakansiya tafsilotlari modali */}
+          {selectedJob && (
+            <ChunkErrorBoundary>
+              <JobDetail 
+                job={selectedJob} 
+                onBack={() => setSelectedJob(null)} 
+                onApply={handleApplyJob} 
+                applications={applications} 
+                onShoukai={handleShoukai} 
+                onToggleSave={handleToggleSave} 
+                profileData={profileData} 
+                userRole={userRole} 
+              />
+            </ChunkErrorBoundary>
+          )}
+
+          {/* JDM Yuk Mashinasi Navigatsiyasi */}
+          {hasOpenedJDM && (
+            <div 
+              className="jdm-nav-overlay-container" 
+              style={{ 
+                display: showJDMNavigation ? 'block' : 'none', 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                zIndex: 1000, 
+                height: '100%', 
+                width: '100%', 
+                overflow: 'hidden' 
+              }}
+            >
+              <ChunkErrorBoundary>
+                <JDMNavigation 
+                  onBack={() => setShowJDMNavigation(false)} 
+                  showJDMNavigation={showJDMNavigation} 
+                  darkMode={darkMode} 
+                />
+              </ChunkErrorBoundary>
+            </div>
+          )}
+
+          {/* AI Vitrina Taqdimoti */}
+          {showAssistHeroShowcase && (
+            <div 
+              className="assist-showcase-overlay-container" 
+              style={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                zIndex: 9000, 
+                height: '100%', 
+                width: '100%', 
+                overflowY: 'auto', 
+                borderRadius: '44px', 
+                background: darkMode ? '#07090E' : '#FAFBFD' 
+              }}
+            >
+              <ChunkErrorBoundary>
+                <AssistHeroShowcase 
+                  onBack={() => setShowAssistHeroShowcase(false)} 
+                  onActivateVoice={() => { 
+                    setShowAssistHeroShowcase(false); 
+                    handleVoiceActivate(); 
+                  }} 
+                  darkMode={darkMode} 
+                />
+              </ChunkErrorBoundary>
+            </div>
+          )}
+
+          {/* Pastki navigatsiya paneli */}
+          <BottomNav 
+            activeTab={activeTab} 
+            setActiveTab={(tab) => { 
+              setShowJDMNavigation(false); 
+              setSelectedJob(null); 
+              setSelectedSchool(null); 
+              setActiveTab(tab); 
+            }} 
+            unreadCount={unreadCount} 
+            userRole={userRole} 
+            isVoiceStandby={isVoiceStandby} 
+            isVoiceActive={isVoiceActive} 
+            voiceStatus={voiceStatus} 
+          />
+
+          {/* Markaziy Ovozli Yordamchi Orchestrator */}
+          <VoiceAssistant 
+            isActive={isVoiceActive} 
+            onClose={() => {
+              setIsVoiceActive(false);
+              stopMicrophoneStream();
+            }} 
+            onStartVoice={() => handleVoiceActivate()} 
+            isVoiceStandby={isVoiceStandby} 
+            setIsVoiceStandby={setIsVoiceStandby} 
+            setActiveTab={setActiveTab} 
+            onStatusChange={setVoiceStatus} 
+            activeTab={activeTab} 
+            jobs={jobs} 
+            schools={schools} 
+            profileData={profileData} 
+            applications={applications} 
+            musicPlayer={musicPlayer}
+            toggleDarkMode={() => setDarkMode(prev => !prev)}
+            selectedJob={selectedJob}
+            selectedSchool={selectedSchool}
+            setSelectedJob={setSelectedJob}
+            setSelectedSchool={setSelectedSchool}
+            profileActivePage={profileActivePage}
+            setProfileActivePage={setProfileActivePage}
+            setJobSearchQuery={setJobSearchQuery}
+            setJobActiveSegment={setJobActiveSegment}
+            setAcademySearchQuery={setAcademySearchQuery}
+            handleApplyJob={handleApplyJob}
+            handleApplySchool={handleApplySchool}
+            handleShoukai={handleShoukai}
+            userRole={userRole}
+            selectedLicenses={selectedLicenses}
+            setSelectedLicenses={setSelectedLicenses}
+            minSalary={minSalary}
+            setMinSalary={setMinSalary}
+            selectedPrefecture={selectedPrefecture}
+            setSelectedPrefecture={setSelectedPrefecture}
+            setApplications={setApplications}
+          />
+
+          {/* Shoukai Taklif Kodi Modali */}
+          <ReferralModal 
+            isOpen={referralModal.isOpen} 
+            jobTitle={referralModal.item?.title || referralModal.item?.name} 
+            onConfirm={(refId) => { 
+              referralModal.resolve?.(refId); 
+              setReferralModal({ isOpen: false, item: null, type: null, resolve: null }); 
+            }} 
+            onCancel={() => { 
+              referralModal.resolve?.(null); 
+              setReferralModal({ isOpen: false, item: null, type: null, resolve: null }); 
+            }} 
+          />
         </div>
-      )}
-      {/* Referral Modal */}
-      <ReferralModal
-        isOpen={referralModal.isOpen}
-        jobTitle={referralModal.item?.title || referralModal.item?.name || referralModal.item?.schoolName}
-        onConfirm={(refId) => {
-          referralModal.resolve?.(refId);
-          setReferralModal({ isOpen: false, item: null, type: null, resolve: null });
-        }}
-        onCancel={() => {
-          referralModal.resolve?.(null);
-          setReferralModal({ isOpen: false, item: null, type: null, resolve: null });
-        }}
-      />
-      </div>
       </AppProvider>
     </ErrorBoundary>
   );
