@@ -1,8 +1,114 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck, Globe, Compass, Navigation, Truck, ShieldCheck } from 'lucide-react';
+import { 
+  Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, 
+  CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, 
+  Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck, Globe, Compass, 
+  Navigation, Truck, ShieldCheck 
+} from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import './Dashboard.css';
+
+const DICT = {
+  heroSlide1Badge: { ja: '🔥 ボーナス', uz: '🔥 Bonus', en: '🔥 Bonus', ru: '🔥 Бонус', zh: '🔥 奖金' },
+  heroSlide1Title: { ja: '紹介報酬を獲得', uz: 'Shoukai Pulini Oling', en: 'Get Referral Bonus', ru: 'Получите бонус за рекомендацию', zh: '获得推荐奖金' },
+  heroSlide1Desc: { 
+    ja: '知人を仕事に紹介して特別紹介報酬をゲット！', 
+    uz: 'Tanishlaringizni ishga taklif qiling, maxsus shoukai pul mukofotini oling!', 
+    en: 'Invite acquaintances to work and receive a special referral reward!', 
+    ru: 'Приглашайте знакомых на работу и получайте денежный бонус!', 
+    zh: '邀请朋友工作，获得特别推荐奖金！' 
+  },
+
+  heroSlide2Badge: { ja: '⏳ 近日公開', uz: '⏳ Tez kunda', en: '⏳ Coming Soon', ru: '⏳ Скоро', zh: '⏳ 即将来临' },
+  heroSlide2Title: { ja: '待ち時間ゼロサービス', uz: 'Navbatlarsiz Servis', en: 'Zero-Wait Service', ru: 'Сервис без очередей', zh: '零等待服务' },
+  heroSlide2Desc: { 
+    ja: '整備工場を事前予約＆決済。時間を有効活用！', 
+    uz: "Avtoservislarga oldindan navbat oling va to'lov qiling. Vaqtingizni tejang!", 
+    en: 'Pre-book auto service & pay in advance. Save your time!', 
+    ru: 'Бронируйте автосервисы заранее и оплачивайте. Экономьте время!', 
+    zh: '提前预约并支付汽车维修服务。节省您的时间！' 
+  },
+
+  heroSlide3Badge: { ja: '💼 求人情報', uz: '💼 Vakansiyalar', en: '💼 Vacancies', ru: '💼 Вакансии', zh: '💼 招聘' },
+  heroSlide3Title: { ja: '理想の仕事', uz: 'Orzuingizdagi Ish', en: 'Your Dream Job', ru: 'Работа вашей мечты', zh: '理想的工作' },
+  heroSlide3Desc: { 
+    ja: '最新の高収入求人をいち早くチェック。', 
+    uz: "Eng so'nggi va yuqori maoshli vakansiyalarni birinchilardan bo'lib toping.", 
+    en: 'Find the latest high-paying vacancies first.', 
+    ru: 'Находите самые свежие и высокооплачиваемые вакансии первыми.', 
+    zh: '率先查找最新高薪职位。' 
+  },
+
+  welcomeTitle: { ja: 'ようこそ', uz: 'Xush kelibsiz', en: 'Welcome', ru: 'Добро пожаловать', zh: '欢迎' },
+
+  voiceAssistantTitle: { ja: '音声アシスタント', uz: 'Ovozli yordamchi', en: 'Voice Assistant', ru: 'Голосовой помощник', zh: '语音助手' },
+  voiceAssistantDesc: { 
+    ja: '音声でアプリを快適に操作できます', 
+    uz: 'Ilovani yapon tilida masofaviy ovozda boshqaring', 
+    en: 'Control the app via voice commands in Japanese', 
+    ru: 'Управляйте приложением с помощью голосовых команд', 
+    zh: '通过日语语音指令控制应用' 
+  },
+
+  navJobs: { ja: '求人', uz: 'Ishlar', en: 'Jobs', ru: 'Работа', zh: '职位' },
+  bentoView: { ja: '閲覧', uz: "Ko'rish", en: 'View', ru: 'Просмотр', zh: '查看' },
+
+  navAcademy: { ja: '自動車教習所', uz: 'Maktablar', en: 'Schools', ru: 'Автошколы', zh: '驾校' },
+  bentoStudy: { ja: '学ぶ', uz: "O'qish", en: 'Learn', ru: 'Учеба', zh: '学习' },
+
+  navService: { ja: '整備サービス', uz: 'Servis', en: 'Service', ru: 'Сервис', zh: '服务' },
+  bentoServices: { ja: 'サービス一覧', uz: 'Xizmatlar', en: 'Services', ru: 'Услуги', zh: '服务' },
+
+  bentoInternationalTitle: { ja: '国際就労・特定技能', uz: 'Xalqaro Ishlar', en: 'International Jobs', ru: 'Международная работа', zh: '国际招聘' },
+  bentoInternationalSub: { 
+    ja: '特定技能ビザサポート付き求人', 
+    uz: "Tokutei Ginou viza beruvchi e'lonlar", 
+    en: 'Tokutei Ginou visa sponsored jobs', 
+    ru: 'Вакансии с поддержкой визы Tokutei Ginou', 
+    zh: '提供特定技能签证支持的职位' 
+  },
+  bentoHousingAvailable: { ja: '🏠 寮・社宅あり', uz: '🏠 Uy-joy bor', en: '🏠 Housing Provided', ru: '🏠 Предоставляется жилье', zh: '🏠 提供住房' },
+  bentoMinN4: { ja: 'JLPT N4以上', uz: 'Minimal N4', en: 'Min N4 Level', ru: 'Мин. N4', zh: '最低 N4' },
+
+  playingBackgroundMusic: { ja: 'BGM再生中', uz: 'Music', en: 'Background Music', ru: 'Музыка', zh: '背景音乐' },
+  musicPaused: { ja: '一時停止中', uz: 'Music', en: 'Music Paused', ru: 'Пауза', zh: '音乐暂停' },
+
+  manageAdsSub: { ja: '求人管理', uz: "E'lonlarni boshqarish", en: 'Manage Ads', ru: 'Управление объявлениями', zh: '管理广告' },
+  myAdsMenu: { ja: '掲載中の求人', uz: "Mening e'lonlarim", en: 'My Ads', ru: 'Мои объявления', zh: '我的广告' },
+  myAdsDesc: { 
+    ja: '新規求人の投稿と応募者の管理。', 
+    uz: "Yangi vakansiyalar qo'shing va arizalarni boshqaring.", 
+    en: 'Post new vacancies and manage applicants.', 
+    ru: 'Добавляйте новые вакансии и управляйте заявками.', 
+    zh: '发布新职位并管理求职者。' 
+  },
+
+  manageAppsSub: { ja: '応募ステータス', uz: 'Arizalar holatini tekshirish', en: 'Application Status', ru: 'Статус заявок', zh: '申请状态' },
+  myApplications: { ja: '応募履歴', uz: 'Mening arizalarim', en: 'My Applications', ru: 'Мои заявки', zh: '我的申请' },
+  myApplicationsDesc: { 
+    ja: '提出した応募書類と選考状況をリアルタイムで確認。', 
+    uz: 'Yuborilgan arizalar va javoblar holatini kuzating.', 
+    en: 'Track submitted applications and status.', 
+    ru: 'Отслеживайте отправленные заявки и ответы.', 
+    zh: '跟踪已提交的申请和面试状态。' 
+  },
+
+  comingSoonTag: { ja: '近日公開', uz: 'Tez orada', en: 'Coming Soon', ru: 'Скоро', zh: '即将来临' },
+  bentoJDMBadge1: { ja: '日本トラックマップ', uz: 'Yaponiya Xaritasi', en: 'Japan Map', ru: 'Карта Японии', zh: '日本地图' },
+  bentoJDMBadge2: { ja: 'スマートナビ', uz: 'Aqlli Navigatsiya', en: 'Smart Navigation', ru: 'Умная навигация', zh: '智能导航' },
+  bentoJDMTitle: { ja: '大型トラック専用スマートナビ', uz: 'Aqlli Yuk Mashinalari Navigatsiyasi', en: 'Smart Heavy Truck Navigation', ru: 'Умная навигация для грузовиков', zh: '智能重型卡车导航' },
+  bentoJDMSub: { 
+    ja: '車体寸法・重量制限・高さ制限を自動回避', 
+    uz: "Yaponiyadagi transport o'lchamlari va ko'prik cheklovlari xaritasi", 
+    en: 'Height, weight & dimension restriction-aware routing in Japan', 
+    ru: 'Карта ограничений по высоте, весу и габаритам в Японии', 
+    zh: '日本车身尺寸、限高、限重自动避让地图' 
+  },
+  bentoJDMSubtag1: { ja: '車両サイズ設定', uz: 'Mashina sozlamalari', en: 'Vehicle Specs', ru: 'Настройки авто', zh: '车辆规格设置' },
+  bentoJDMSubtag2: { ja: '3.8m高さ制限回避', uz: 'Balandlik taqiqi', en: 'Height Limits', ru: 'Ограничение высоты', zh: '避开限高' },
+  bentoJDMSubtag3: { ja: '重量制限回避', uz: 'Vazn cheklovi', en: 'Weight Limits', ru: 'Ограничение веса', zh: '避开限重' }
+};
 
 const formatTime = (secs) => {
   if (isNaN(secs)) return '0:00';
@@ -11,8 +117,25 @@ const formatTime = (secs) => {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
 
-export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVoiceStandby, isVoiceActive, onVoiceActivate, onVoiceToggle, setProfileActivePage, setProfileActivePageSource, userRole, onNavigateToInternational, onNavigateToJDM, onOpenAssistShowcase }) {
+export default function Dashboard({ 
+  setActiveTab, 
+  profileData, 
+  musicPlayer, 
+  isVoiceStandby, 
+  isVoiceActive, 
+  onVoiceActivate, 
+  onVoiceToggle, 
+  setProfileActivePage, 
+  setProfileActivePageSource, 
+  userRole, 
+  onNavigateToInternational, 
+  onNavigateToJDM, 
+  onOpenAssistShowcase 
+}) {
   const { t, i18n } = useTranslation();
+  const lang = useMemo(() => (i18n?.language || 'uz').substring(0, 2).toLowerCase(), [i18n?.language]);
+  const getText = (key) => DICT[key]?.[lang] || DICT[key]?.uz || t(key, '');
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -28,32 +151,32 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
     } catch (e) {}
   };
 
-  const SLIDES = [
+  const SLIDES = useMemo(() => [
     {
       id: 'referral',
-      badge: t('heroSlide1Badge', '🔥 Bonus'),
-      title: t('heroSlide1Title', 'Shoukai Pulini Oling'),
-      desc: t('heroSlide1Desc', 'Tanishlaringizni ishga taklif qiling, maxsus shoukai pul mukofotini oling!'),
+      badge: getText('heroSlide1Badge'),
+      title: getText('heroSlide1Title'),
+      desc: getText('heroSlide1Desc'),
       icon: <Gift size={56} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'profile'
     },
     {
       id: 'service',
-      badge: t('heroSlide2Badge', '⏳ Tez kunda'),
-      title: t('heroSlide2Title', 'Navbatlarsiz Servis'),
-      desc: t('heroSlide2Desc', "Avtoservislarga oldindan navbat oling va to'lov qiling. Vaqtingizni tejang!"),
+      badge: getText('heroSlide2Badge'),
+      title: getText('heroSlide2Title'),
+      desc: getText('heroSlide2Desc'),
       icon: <CalendarClock size={56} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'service'
     },
     {
       id: 'jobs',
-      badge: t('heroSlide3Badge', '💼 Vakansiyalar'),
-      title: t('heroSlide3Title', 'Orzuingizdagi Ish'),
-      desc: t('heroSlide3Desc', "Eng so'nggi va yuqori maoshli vakansiyalarni birinchilardan bo'lib toping."),
+      badge: getText('heroSlide3Badge'),
+      title: getText('heroSlide3Title'),
+      desc: getText('heroSlide3Desc'),
       icon: <Rocket size={56} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
       tab: 'jobs'
     }
-  ];
+  ], [lang]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -140,18 +263,19 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
 
   const getDayName = (date) => {
     let locale = 'uz-UZ';
-    if (i18n.language === 'en') locale = 'en-US';
-    if (i18n.language === 'ja') locale = 'ja-JP';
+    if (lang === 'en') locale = 'en-US';
+    if (lang === 'ja') locale = 'ja-JP';
+    if (lang === 'ru') locale = 'ru-RU';
+    if (lang === 'zh') locale = 'zh-CN';
     return date.toLocaleDateString(locale, { weekday: 'short' }).toUpperCase();
   };
 
   const getFormattedDate = () => {
     let locale = 'uz-UZ';
-    if (i18n.language === 'en') locale = 'en-US';
-    if (i18n.language === 'ja') locale = 'ja-JP';
-    if (i18n.language === 'ru') locale = 'ru-RU';
-    if (i18n.language === 'vi') locale = 'vi-VN';
-    if (i18n.language === 'zh') locale = 'zh-CN';
+    if (lang === 'en') locale = 'en-US';
+    if (lang === 'ja') locale = 'ja-JP';
+    if (lang === 'ru') locale = 'ru-RU';
+    if (lang === 'zh') locale = 'zh-CN';
     return currentTime.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' });
   };
 
@@ -181,6 +305,9 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
               <div 
                 className="dash-hero-card" 
                 onClick={() => handleCardClick(slide.tab)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(slide.tab); } }}
+                role="button"
+                tabIndex={0}
               >
                 <div className="dash-hero-content">
                   <span className="dash-badge">{slide.badge}</span>
@@ -203,6 +330,16 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                   e.stopPropagation();
                   setCurrentSlide(index);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setCurrentSlide(index);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Slide ${index + 1}`}
               ></span>
             ))}
           </div>
@@ -223,7 +360,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
       </div>
 
       <div className="dash-greeting-row">
-        <h2 className="greeting-title">{t('welcomeTitle', 'Xush kelibsiz')}</h2>
+        <h2 className="greeting-title">{getText('welcomeTitle')}</h2>
         <div className="greeting-line"></div>
         <span className="greeting-date">{getFormattedDate()}</span>
         <div className="greeting-line"></div>
@@ -233,15 +370,21 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
       </div>
 
       {/* Premium Bento AI Voice Card */}
-      <div className={`bento-ai-card glass squircle ${isVoiceStandby ? 'active' : ''}`} onClick={onVoiceActivate}>
+      <div 
+        className={`bento-ai-card glass squircle ${isVoiceStandby ? 'active' : ''}`} 
+        onClick={onVoiceActivate}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onVoiceActivate(); } }}
+        role="button"
+        tabIndex={0}
+      >
         <div className="ai-card-left">
           <div className="ai-gradient-icon">
             <Sparkles size={20} color="#FFF" fill="currentColor" />
           </div>
           <div className="ai-card-info">
             <span className="ai-card-badge">🗣️ <span className="ai-badge-text">Michi Voice AI (テスト中)</span></span>
-            <h3 className="ai-card-title">{t('voiceAssistantTitle', 'Ovozli yordamchi')}</h3>
-            <p className="ai-card-sub">{t('voiceAssistantDesc', 'Ilovani yapon tilida masofaviy ovozda boshqaring')}</p>
+            <h3 className="ai-card-title">{getText('voiceAssistantTitle')}</h3>
+            <p className="ai-card-sub">{getText('voiceAssistantDesc')}</p>
           </div>
         </div>
         <div className="ai-card-right">
@@ -257,8 +400,17 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
               e.stopPropagation(); // Avoid triggering onVoiceActivate (starting speech recognition)
               onVoiceToggle();
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation();
+                e.preventDefault();
+                onVoiceToggle();
+              }
+            }}
             role="switch"
+            tabIndex={0}
             aria-checked={isVoiceStandby}
+            aria-label={getText('voiceAssistantTitle')}
           >
             <span className="ios-switch-thumb"></span>
           </div>
@@ -268,33 +420,51 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
       {/* Bento Icons Row (Like BON App Store / Google Play / Inst) */}
       <div className="bento-icons-row">
         
-        <div className="bento-icon-card dark-card" onClick={() => { triggerSound(); setActiveTab('jobs'); }}>
+        <div 
+          className="bento-icon-card dark-card" 
+          onClick={() => { triggerSound(); setActiveTab('jobs'); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerSound(); setActiveTab('jobs'); } }}
+          role="button"
+          tabIndex={0}
+        >
           <div className="bento-icon-wrap">
             <Briefcase size={28} />
           </div>
           <div className="bento-text-wrap">
-            <h4>{t("navJobs", "Ishlar")}</h4>
-            <p>{t('bentoView', "Ko'rish")}</p>
+            <h4>{getText('navJobs')}</h4>
+            <p>{getText('bentoView')}</p>
           </div>
         </div>
 
-        <div className="bento-icon-card dark-card" onClick={() => { triggerSound(); setActiveTab('academy'); }}>
+        <div 
+          className="bento-icon-card dark-card" 
+          onClick={() => { triggerSound(); setActiveTab('academy'); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerSound(); setActiveTab('academy'); } }}
+          role="button"
+          tabIndex={0}
+        >
           <div className="bento-icon-wrap">
             <GraduationCap size={28} />
           </div>
           <div className="bento-text-wrap">
-            <h4>{t('navAcademy', 'Maktablar')}</h4>
-            <p>{t('bentoStudy', "O'qish")}</p>
+            <h4>{getText('navAcademy')}</h4>
+            <p>{getText('bentoStudy')}</p>
           </div>
         </div>
 
-        <div className="bento-icon-card light-card" onClick={() => { triggerSound(); setActiveTab('service'); }}>
+        <div 
+          className="bento-icon-card light-card" 
+          onClick={() => { triggerSound(); setActiveTab('service'); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerSound(); setActiveTab('service'); } }}
+          role="button"
+          tabIndex={0}
+        >
           <div className="bento-icon-wrap">
             <Wrench size={26} />
           </div>
           <div className="bento-text-wrap">
-            <h4>{t('navService', 'Servis')}</h4>
-            <p>{t('bentoServices', 'Xizmatlar')}</p>
+            <h4>{getText('navService')}</h4>
+            <p>{getText('bentoServices')}</p>
           </div>
         </div>
 
@@ -304,6 +474,9 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
       <div 
         className="bento-action-card bento-international-card squircle" 
         onClick={onNavigateToInternational}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateToInternational(); } }}
+        role="button"
+        tabIndex={0}
         style={{ padding: '20px 24px', cursor: 'pointer' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
@@ -320,11 +493,11 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
             </div>
             
             <h3 style={{ fontSize: '20px', fontWeight: '900', margin: '0 0 6px 0', color: 'var(--text-main)', letterSpacing: '-0.03em', lineHeight: '1.2' }}>
-              {t('bentoInternationalTitle', 'Xalqaro Ishlar')}
+              {getText('bentoInternationalTitle')}
             </h3>
             
             <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0 0 12px 0', opacity: 0.85, lineHeight: '1.4' }}>
-              {t('bentoInternationalSub', 'Tokutei Ginou viza beruvchi e\'lonlar')}
+              {getText('bentoInternationalSub')}
             </p>
             
             {/* Minimalist details */}
@@ -333,10 +506,10 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                 特定技能 (SSW)
               </span>
               <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700' }}>
-                {t('bentoHousingAvailable', '🏠 Uy-joy bor')}
+                {getText('bentoHousingAvailable')}
               </span>
               <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700' }}>
-                {t('bentoMinN4', 'Minimal N4')}
+                {getText('bentoMinN4')}
               </span>
             </div>
           </div>
@@ -360,7 +533,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                 
                 <div className="music-track-meta">
                   <span className="music-sub-label">
-                    {musicPlayer.isPlaying ? t('playingBackgroundMusic', 'Music') : t('musicPaused', 'Music')}
+                    {musicPlayer.isPlaying ? getText('playingBackgroundMusic') : getText('musicPaused')}
                   </span>
                   <div className="music-track-title-container">
                     <h3 className="music-track-title compact-title">
@@ -373,6 +546,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
               <div className="compact-controls-volume">
                 <div className="music-player-controls">
                   <button 
+                    type="button"
                     onClick={musicPlayer.prevTrack}
                     className="player-control-btn btn-skip"
                     aria-label="Previous track"
@@ -380,6 +554,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                     <SkipBack size={18} fill="currentColor" />
                   </button>
                   <button 
+                    type="button"
                     onClick={musicPlayer.togglePlay}
                     className="player-control-btn btn-play-pause"
                     aria-label="Play or Pause"
@@ -387,6 +562,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                     {musicPlayer.isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" style={{ marginLeft: '2.5px' }} />}
                   </button>
                   <button 
+                    type="button"
                     onClick={musicPlayer.nextTrack}
                     className="player-control-btn btn-skip"
                     aria-label="Next track"
@@ -397,6 +573,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
 
                 <div className="compact-volume-control">
                   <button 
+                    type="button"
                     onClick={() => musicPlayer.setVolume(musicPlayer.volume > 0 ? 0 : 0.7)}
                     className="player-control-btn btn-vol"
                     aria-label="Volume"
@@ -411,6 +588,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                     value={musicPlayer.volume}
                     onChange={(e) => musicPlayer.setVolume(parseFloat(e.target.value))}
                     className="volume-slider compact-slider"
+                    aria-label="Volume slider"
                     style={{
                       background: `linear-gradient(to right, var(--primary) ${musicPlayer.volume * 100}%, rgba(120, 120, 128, 0.2) ${musicPlayer.volume * 100}%)`
                     }}
@@ -430,14 +608,25 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                 if (setProfileActivePage) setProfileActivePage('my_ads');
                 setActiveTab('profile');
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  triggerSound();
+                  if (setProfileActivePageSource) setProfileActivePageSource('home');
+                  if (setProfileActivePage) setProfileActivePage('my_ads');
+                  setActiveTab('profile');
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               <div className="my-ads-icon">
                 <Megaphone size={24} color="#FFF" />
               </div>
               <div className="my-ads-text">
-                <span className="my-ads-sub">{t('manageAdsSub', 'E\'lonlarni boshqarish')}</span>
-                <h3 className="my-ads-title">{t('myAdsMenu', 'Mening e\'lonlarim')}</h3>
-                <p className="my-ads-desc">{t('myAdsDesc', 'Yangi vakansiyalar qo\'shing va arizalarni boshqaring.')}</p>
+                <span className="my-ads-sub">{getText('manageAdsSub')}</span>
+                <h3 className="my-ads-title">{getText('myAdsMenu')}</h3>
+                <p className="my-ads-desc">{getText('myAdsDesc')}</p>
               </div>
             </div>
           ) : (
@@ -449,14 +638,25 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                 if (setProfileActivePage) setProfileActivePage('applications');
                 setActiveTab('profile');
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  triggerSound();
+                  if (setProfileActivePageSource) setProfileActivePageSource('home');
+                  if (setProfileActivePage) setProfileActivePage('applications');
+                  setActiveTab('profile');
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               <div className="my-apps-icon">
                 <FileCheck size={24} color="#FFF" />
               </div>
               <div className="my-ads-text">
-                <span className="my-ads-sub">{t('manageAppsSub', 'Arizalar holatini tekshirish')}</span>
-                <h3 className="my-ads-title">{t('myApplications', 'Mening arizalarim')}</h3>
-                <p className="my-ads-desc">{t('myApplicationsDesc', 'Yuborilgan arizalar va javoblar holatini kuzating.')}</p>
+                <span className="my-ads-sub">{getText('manageAppsSub')}</span>
+                <h3 className="my-ads-title">{getText('myApplications')}</h3>
+                <p className="my-ads-desc">{getText('myApplicationsDesc')}</p>
               </div>
             </div>
           )}
@@ -473,7 +673,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
               
               <div className="music-track-meta">
                 <span className="music-sub-label">
-                  {musicPlayer.isPlaying ? t('playingBackgroundMusic', 'Background Music') : t('musicPaused', 'Background Music')}
+                  {musicPlayer.isPlaying ? getText('playingBackgroundMusic') : getText('musicPaused')}
                 </span>
                 <h3 className="music-track-title">
                   {musicPlayer.currentTrack.title}
@@ -483,6 +683,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
 
             <div className="music-player-controls">
               <button 
+                type="button"
                 onClick={musicPlayer.prevTrack}
                 className="player-control-btn btn-skip"
                 aria-label="Previous track"
@@ -490,6 +691,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                 <SkipBack size={14} fill="currentColor" />
               </button>
               <button 
+                type="button"
                 onClick={musicPlayer.togglePlay}
                 className="player-control-btn btn-play-pause"
                 aria-label="Play or Pause"
@@ -497,6 +699,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                 {musicPlayer.isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" style={{ marginLeft: '2px' }} />}
               </button>
               <button 
+                type="button"
                 onClick={musicPlayer.nextTrack}
                 className="player-control-btn btn-skip"
                 aria-label="Next track"
@@ -505,6 +708,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
               </button>
               <div className="volume-control">
                 <button 
+                  type="button"
                   onClick={() => musicPlayer.setVolume(musicPlayer.volume > 0 ? 0 : 0.7)}
                   className="player-control-btn btn-vol"
                   aria-label="Volume"
@@ -519,6 +723,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                   value={musicPlayer.volume}
                   onChange={(e) => musicPlayer.setVolume(parseFloat(e.target.value))}
                   className="volume-slider"
+                  aria-label="Volume slider"
                   style={{
                     background: `linear-gradient(to right, var(--primary) ${musicPlayer.volume * 100}%, rgba(120, 120, 128, 0.2) ${musicPlayer.volume * 100}%)`
                   }}
@@ -539,6 +744,7 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
                 value={musicPlayer.currentTime}
                 onChange={(e) => musicPlayer.seek(parseFloat(e.target.value))}
                 className="player-timeline"
+                aria-label="Track progress"
               />
               <span className="player-time-text">
                 {formatTime(musicPlayer.duration)}
@@ -551,6 +757,9 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
       <div 
         className="bento-action-card bento-jdm-card squircle" 
         onClick={() => { triggerSound(); onNavigateToJDM(); }}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerSound(); onNavigateToJDM(); } }}
+        role="button"
+        tabIndex={0}
         style={{ 
           padding: '10px 12px', 
           cursor: 'pointer', 
@@ -584,42 +793,42 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
           whiteSpace: 'nowrap'
         }}>
           <Sparkles size={10} color="#FFF" />
-          <span>{t('comingSoonTag', 'Tez orada')}</span>
+          <span>{getText('comingSoonTag')}</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, gap: '10px' }}>
           <div style={{ flex: 1, minWidth: 0, paddingRight: '40px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
               <span style={{ fontSize: '8.5px', fontWeight: '800', letterSpacing: '0.6px', color: '#10b981', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-                {t('bentoJDMBadge1', 'Yaponiya Xaritasi')}
+                {getText('bentoJDMBadge1')}
               </span>
               <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.5)' }}></span>
               <span style={{ fontSize: '8.5px', fontWeight: '800', letterSpacing: '0.6px', color: 'var(--text-secondary)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-                {t('bentoJDMBadge2', 'Aqlli Navigatsiya')}
+                {getText('bentoJDMBadge2')}
               </span>
             </div>
             
             <h3 style={{ fontSize: '13px', fontWeight: '850', margin: '0 0 2px 0', color: 'var(--text-main)', letterSpacing: '-0.2px', lineHeight: '1.2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {t('bentoJDMTitle', 'Aqlli Yuk Mashinalari Navigatsiyasi')}
+              {getText('bentoJDMTitle')}
             </h3>
             
             <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: '0 0 6px 0', opacity: 0.85, lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {t('bentoJDMSub', 'Yaponiyadagi transport o\'lchamlari va ko\'prik cheklovlari xaritasi')}
+              {getText('bentoJDMSub')}
             </p>
 
             {/* Single-Row Horizontal Pill Subtags */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', whiteSpace: 'nowrap' }}>
               <span style={{ fontSize: '8.5px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
                 <Truck size={9} color="#10b981" />
-                <span>{t('bentoJDMSubtag1', 'Mashina sozlamalari')}</span>
+                <span>{getText('bentoJDMSubtag1')}</span>
               </span>
               <span style={{ fontSize: '8.5px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
                 <ShieldCheck size={9} color="#10b981" />
-                <span>{t('bentoJDMSubtag2', 'Balandlik taqiqi')}</span>
+                <span>{getText('bentoJDMSubtag2')}</span>
               </span>
               <span style={{ fontSize: '8.5px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
                 <Navigation size={9} color="#10b981" />
-                <span>{t('bentoJDMSubtag3', 'Vazn cheklovi')}</span>
+                <span>{getText('bentoJDMSubtag3')}</span>
               </span>
             </div>
           </div>
@@ -636,4 +845,5 @@ export default function Dashboard({ setActiveTab, profileData, musicPlayer, isVo
     </div>
   );
 }
+
 
