@@ -41,8 +41,8 @@ export default function MichiDrawerHeader({
   };
 
   return (
-    <div className="voice-drawer-header">
-      <div className="voice-drawer-title-box">
+    <div className="voice-drawer-header" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingBottom: '10px', marginBottom: '8px', borderBottom: '1px solid rgba(0,0,0,0.08)', boxSizing: 'border-box', flexShrink: 0 }}>
+      <div className="voice-drawer-title-box" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
         {/* Back Arrow Button matching Screenshot 2 */}
         <button
           type="button"
@@ -65,7 +65,7 @@ export default function MichiDrawerHeader({
           <Sparkles size={16} color="#FFF" />
         </div>
 
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           <h3 className="voice-drawer-title" style={{ fontSize: '16px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>Michi AI Hub</h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '1px' }}>
             <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#30D158', display: 'inline-block' }} aria-hidden="true"></span>
@@ -76,7 +76,7 @@ export default function MichiDrawerHeader({
         </div>
       </div>
 
-      <div className="voice-drawer-header-actions">
+      <div className="voice-drawer-header-actions" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '6px', flexShrink: 0, marginLeft: 'auto' }}>
         {/* AI quvvatini o'chirish */}
         {onDeactivateAI && (
           <button 
