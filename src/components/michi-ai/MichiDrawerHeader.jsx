@@ -32,10 +32,10 @@ export default function MichiDrawerHeader({
             <span className={`voice-drawer-status-dot ${status}`}></span>
             <span className="voice-drawer-status-text">
               {status === 'thinking' 
-                ? t('statusThinking', 'O\'ylamoqda...') 
+                ? (speechLang.startsWith('ja') ? '考え中...' : speechLang === 'uz' ? "O'ylamoqda..." : 'Thinking...') 
                 : status === 'speaking' 
-                ? t('statusSpeaking', 'Gapirmoqda...') 
-                : t('statusReady', '準備完了')}
+                ? (speechLang.startsWith('ja') ? '話し中...' : speechLang === 'uz' ? 'Gapirmoqda...' : 'Speaking...') 
+                : (speechLang.startsWith('ja') ? '準備完了' : speechLang === 'uz' ? 'Tayyor' : 'Ready')}
             </span>
           </div>
         </div>

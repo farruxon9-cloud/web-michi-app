@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { User, Sparkles, Mic, Bot } from 'lucide-react';
 import './VoiceAssistant.css';
 import { matchLexiconCommand } from '../utils/voiceLexicon';
 import { actionRegistry } from '../services/actionRegistry';
@@ -14,12 +15,18 @@ import { michiApiService } from '../services/michiApiService';
 import MichiDrawerTrigger from './michi-ai/MichiDrawerTrigger';
 import MichiSideDrawer from './michi-ai/MichiSideDrawer';
 
-function calculateReadingDuration(text, lang = 'ja') {
-  if (!text) return 6000;
+function calculateReadingDuration(questionText = '', answerText = '', lang = 'ja') {
+  const qLen = (questionText || '').length;
+  const aLen = (answerText || '').length;
+  const totalLength = qLen + aLen;
+  if (totalLength === 0) return 8000;
+
   const isJa = (lang || 'ja').toLowerCase().startsWith('ja');
-  const msPerChar = isJa ? 85 : 65;
-  const calculated = Math.round(text.length * msPerChar + 3000);
-  return Math.min(25000, Math.max(5000, calculated));
+  // Sekinroq o'qiydigan foydalanuvchilar uchun har bir belgiga ~120ms (ja) yoki ~100ms (uz/en) + 5000ms baza vaqti
+  const msPerChar = isJa ? 120 : 100;
+  const calculated = Math.round(totalLength * msPerChar + 5000);
+  // Minimalka 8000ms (8 soniya), maksimalka 40000ms (40 soniya)
+  return Math.min(40000, Math.max(8000, calculated));
 }
 
 export default function VoiceAssistant({ 
@@ -67,6 +74,7 @@ export default function VoiceAssistant({
   const [chatHistoryList, setChatHistoryList] = useState([]);
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const [drawerInput, setDrawerInput] = useState('');
+  const [bubbleTimerMs, setBubbleTimerMs] = useState(8000);
 
   const chatEndRef = useRef(null);
   const speechContentRef = useRef(null);
@@ -94,7 +102,6 @@ export default function VoiceAssistant({
   const reloadChatHistory = useCallback(async () => {
     try {
       const saved = await michiLocalStorageEngine.getAllConversations();
-      // getAllConversations allaqachon teskari (eng yangisi pastda bo'lishi uchun to'g'rilanadi)
       const list = Array.isArray(saved) ? [...saved].reverse() : [];
       setChatHistoryList(list);
     } catch (e) {
@@ -115,33 +122,36 @@ export default function VoiceAssistant({
     onStatusChange?.(status);
   }, [status, onStatusChange]);
 
-  // 2. Ovozli o'qib berish (Text-to-Speech)
+  // 1. Voice AI Bento kartasi yoki Robot faollashganda STT mikrofon va ovoz tinglashni yoqish (Faqat matnga yozadi, avto-jo'natmaydi)
+  useEffect(() => {
+    if (isActive) {
+      setStatus('listening');
+      localSTT.startListening({
+        lang: speechLang === 'ja' ? 'ja-JP' : speechLang === 'uz' ? 'uz-UZ' : 'en-US',
+        onResult: (res) => {
+          if (res.cleanText || res.rawText) {
+            setTranscript(res.cleanText || res.rawText);
+            setDrawerInput(res.cleanText || res.rawText);
+          }
+          // Jo'natish tugmasi bosilgandagina API so'rovi yuboriladi
+        },
+        onError: () => setStatus('idle'),
+        onEnd: () => {
+          if (statusRef.current === 'listening') setStatus('idle');
+        }
+      });
+    } else {
+      localSTT.stopListening();
+      if (statusRef.current === 'listening') setStatus('idle');
+    }
+  }, [isActive, speechLang]);
+
+  // 2. Ovozli o'qib berish o'chirildi - Faqat matnli javob beriladi
   const speakText = useCallback((text, lang = speechLang) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis || !text) return;
-
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const shortLang = (lang || 'ja').substring(0, 2).toLowerCase();
-
-    utterance.lang = shortLang === 'ja' ? 'ja-JP' : shortLang === 'uz' ? 'uz-UZ' : 'en-US';
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-
-    utterance.onstart = () => {
-      setStatus('speaking');
-      musicPlayer?.pause?.(); // Audio Ducking
-    };
-
-    utterance.onend = () => {
-      setStatus('idle');
-    };
-
-    utterance.onerror = () => {
-      setStatus('idle');
-    };
-
-    window.speechSynthesis.speak(utterance);
-  }, [speechLang, musicPlayer]);
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+  }, []);
 
   // 3. Chat tarixini xavfsiz tozalash
   const clearChatHistory = async () => {
@@ -172,8 +182,9 @@ export default function VoiceAssistant({
 
         setAiResponseText(actionResponse);
         setDisplayedAiText(actionResponse);
+        setStatus('idle');
 
-        // Tarixga saqlash
+        // Tarixga saqlash (Michi AI Hub uchun)
         await michiLocalStorageEngine.saveConversation({
           question: text,
           answer: actionResponse,
@@ -182,7 +193,17 @@ export default function VoiceAssistant({
         });
         await reloadChatHistory();
 
-        speakText(actionResponse, speechLang);
+        // Sekinroq o'qiydiganlar uchun hisoblangan avto-yo'qolish vaqti
+        const duration = calculateReadingDuration(text, actionResponse, speechLang);
+        setBubbleTimerMs(duration);
+
+        if (readingTimeoutRef.current) clearTimeout(readingTimeoutRef.current);
+        readingTimeoutRef.current = setTimeout(() => {
+          setTranscript('');
+          setAiResponseText('');
+          setDisplayedAiText('');
+        }, duration);
+
         return;
       }
 
@@ -212,8 +233,9 @@ export default function VoiceAssistant({
 
       setAiResponseText(polishedReply);
       setDisplayedAiText(polishedReply);
+      setStatus('idle');
 
-      // BOSQICH 4: Saqlash va Ovoz berish
+      // BOSQICH 4: Tarixga saqlash (Michi AI Hub da ko'rish va o'chirish imkoniyati bilan)
       await michiLocalStorageEngine.saveConversation({
         question: text,
         answer: polishedReply,
@@ -222,11 +244,15 @@ export default function VoiceAssistant({
       });
       await reloadChatHistory();
 
-      speakText(polishedReply, speechLang);
+      // Sekin o'qiydigan foydalanuvchilar o'qib tugatishi uchun dynamic timer
+      const duration = calculateReadingDuration(text, polishedReply, speechLang);
+      setBubbleTimerMs(duration);
 
-      const duration = calculateReadingDuration(polishedReply, speechLang);
+      if (readingTimeoutRef.current) clearTimeout(readingTimeoutRef.current);
       readingTimeoutRef.current = setTimeout(() => {
-        if (statusRef.current === 'speaking') setStatus('idle');
+        setTranscript('');
+        setAiResponseText('');
+        setDisplayedAiText('');
       }, duration);
 
     } catch (error) {
@@ -235,12 +261,161 @@ export default function VoiceAssistant({
       const errText = t('aiErrorOccurred', "So'rovni bajarishda xatolik yuz berdi. Qayta urinib ko'ring.");
       setAiResponseText(errText);
       setDisplayedAiText(errText);
-      setTimeout(() => setStatus('idle'), 3500);
+      setTimeout(() => {
+        setStatus('idle');
+        setTranscript('');
+        setAiResponseText('');
+        setDisplayedAiText('');
+      }, 5000);
     }
   };
 
+  // Dynamic status text helper functions based on selected speech language
+  const getListeningStatusText = () => {
+    const lang = (speechLang || i18n?.language || 'ja').substring(0, 2).toLowerCase();
+    if (lang === 'ja') return '聞き取り中... (音声で話しかけてください)';
+    if (lang === 'uz') return 'Tinglanmoqda... (Ovozingizni ayting)';
+    return 'Listening... (Speak now)';
+  };
+
+  const getThinkingStatusText = () => {
+    const lang = (speechLang || i18n?.language || 'ja').substring(0, 2).toLowerCase();
+    if (lang === 'ja') return '考え中...';
+    if (lang === 'uz') return 'O\'ylamoqda...';
+    return 'Thinking...';
+  };
+
+  useEffect(() => {
+    if (i18n?.language) {
+      const saved = localStorage.getItem('michi_speech_lang');
+      if (!saved) {
+        setSpeechLang(i18n.language);
+      }
+    }
+  }, [i18n?.language]);
+
+  const showBubble = (status === 'listening' || status === 'thinking' || transcript || aiResponseText) && !isSideDrawerOpen;
+
   return (
     <>
+      {/* Top-Right Floating Robot Speech Bubble when active/listening/thinking/speaking and drawer closed */}
+      {showBubble && (
+        <div className="voice-robot-speech-bubble animate-slide-in">
+          <div className="speech-bubble-pointer" />
+          <div className="speech-bubble-content">
+            {transcript && (
+              <div className="bubble-row">
+                <div className="bubble-avatar user-avatar" title="Foydalanuvchi">
+                  <User size={12} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
+                </div>
+                <p className="bubble-text">{transcript}</p>
+              </div>
+            )}
+            {status === 'listening' && !transcript && (
+              <div className="bubble-row">
+                <div className="bubble-avatar listening-avatar" title="Eshitmoqda">
+                  <Mic size={12} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
+                </div>
+                <p className="bubble-text" style={{ fontStyle: 'italic', opacity: 0.8 }}>
+                  {getListeningStatusText()}
+                </p>
+              </div>
+            )}
+            {status === 'thinking' && (
+              <div className="bubble-row">
+                <div className="bubble-avatar thinking-avatar" title="O'ylamoqda">
+                  <Sparkles size={12} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
+                </div>
+                <p className="bubble-text" style={{ fontStyle: 'italic', opacity: 0.8 }}>
+                  {getThinkingStatusText()}
+                </p>
+              </div>
+            )}
+            {(displayedAiText || aiResponseText) && (
+              <div className="bubble-row">
+                <div className="bubble-avatar ai-avatar" title="Michi AI">
+                  <Bot size={12} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
+                </div>
+                <p className={`bubble-text ${speechLang.startsWith('ja') ? 'ja-text' : ''}`}>
+                  {displayedAiText || aiResponseText}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Send Bar for floating bubble: allows reviewing/editing text and explicit Send button click */}
+          {(transcript || drawerInput) && status !== 'thinking' && !aiResponseText && (
+            <div className="bubble-send-bar" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '6px 0 2px 0' }}>
+              <input 
+                type="text" 
+                value={drawerInput || transcript} 
+                onChange={(e) => {
+                  setTranscript(e.target.value);
+                  setDrawerInput(e.target.value);
+                }}
+                placeholder={speechLang.startsWith('ja') ? '質問を確認・編集...' : speechLang === 'uz' ? 'Savolni tahrirlash...' : 'Edit question...'}
+                style={{
+                  flex: 1, height: '30px', borderRadius: '8px', border: '1px solid rgba(94, 92, 230, 0.2)',
+                  padding: '0 8px', fontSize: '11.5px', background: 'rgba(255, 255, 255, 0.95)', color: 'var(--text-main)', outline: 'none'
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  localSTT.stopListening();
+                  handleSendText(drawerInput || transcript);
+                }}
+                style={{
+                  height: '30px', padding: '0 10px', borderRadius: '8px', border: 'none',
+                  background: 'var(--primary, #5e5ce6)', color: '#fff', fontSize: '11px', fontWeight: '700',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0
+                }}
+              >
+                <span>{speechLang.startsWith('ja') ? '送信' : speechLang === 'uz' ? "Jo'natish" : 'Send'}</span> ➔
+              </button>
+            </div>
+          )}
+
+          {/* Dynamic timer progress bar indicating remaining reading duration */}
+          {(transcript || aiResponseText) && (
+            <div 
+              className="speech-bubble-timer-bar" 
+              style={{ animationDuration: `${bubbleTimerMs}ms` }} 
+            />
+          )}
+
+          <div className="bubble-footer-actions">
+            <button 
+              className="voice-lang-toggle-bubble"
+              onClick={() => {
+                const nextLang = speechLang === 'ja' ? 'uz' : speechLang === 'uz' ? 'en' : 'ja';
+                setSpeechLang(nextLang);
+                localStorage.setItem('michi_speech_lang', nextLang);
+              }}
+            >
+              🌐 {speechLang === 'ja' ? '日本語' : speechLang === 'uz' ? 'O\'zbek' : 'English'}
+            </button>
+            <button 
+              className="voice-bubble-close-btn"
+              onClick={() => {
+                localSTT.stopListening(true);
+                if (typeof window !== 'undefined' && window.speechSynthesis) {
+                  window.speechSynthesis.cancel();
+                }
+                setStatus('idle');
+                setTranscript('');
+                setAiResponseText('');
+                setDisplayedAiText('');
+                if (onClose) onClose();
+              }}
+              title="Yopish"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 1. Suzuvchi Trigger Tugmasi */}
       <MichiDrawerTrigger
         isOpen={isSideDrawerOpen}
@@ -291,8 +466,9 @@ export default function VoiceAssistant({
             localSTT.startListening({
               lang: speechLang === 'ja' ? 'ja-JP' : speechLang === 'uz' ? 'uz-UZ' : 'en-US',
               onResult: (res) => {
-                if (res.isFinal && res.cleanText) {
-                  handleSendText(res.cleanText);
+                if (res.cleanText || res.rawText) {
+                  setTranscript(res.cleanText || res.rawText);
+                  setDrawerInput(res.cleanText || res.rawText);
                 }
               },
               onError: () => setStatus('idle'),

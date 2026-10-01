@@ -367,21 +367,49 @@ html.dark-mode .speech-bubble-pointer {
   min-width: 0;
 }
 
-.bubble-dot {
-  width: 6px;
-  height: 6px;
+.bubble-avatar {
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.user-dot { background: #FF9500; }
-.ai-dot { background: #5E5CE6; }
-.thinking-dot {
-  background: #0A84FF;
-  animation: pulse-slow 1s infinite alternate;
+.bubble-avatar.user-avatar {
+  background: linear-gradient(135deg, #FF9500 0%, #FF5E00 100%);
+  box-shadow: 0 3px 10px rgba(255, 149, 0, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
-.error-dot { background: #FF3B30; }
+
+.bubble-avatar.ai-avatar {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
+  box-shadow: 0 3px 10px rgba(99, 102, 241, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.bubble-avatar.listening-avatar {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  animation: pulse-slow 1.2s infinite alternate;
+}
+
+.bubble-avatar.thinking-avatar {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  box-shadow: 0 3px 10px rgba(59, 130, 246, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  animation: spin-slow 4s infinite linear;
+}
+
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
 .bubble-text {
   margin: 0;
