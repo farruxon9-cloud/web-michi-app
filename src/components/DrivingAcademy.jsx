@@ -1582,15 +1582,15 @@ export default function DrivingAcademy({
 
         </div>
 
-        {/* 160px clearance spacer so filter drawer content halts cleanly above 52px floating search CTA button at bottom 96px with 12px standard gap (96px + 52px + 12px = 160px) */}
-        <div style={{ height: '160px', minHeight: '160px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 148px clearance spacer so filter drawer content halts cleanly above 52px floating search CTA button at bottom 84px with 12px standard gap (84px + 52px + 12px = 148px) */}
+        <div style={{ height: '148px', minHeight: '148px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
         {/* Pinned Search CTA Button Dock — aligned 1:1 on single vertical margin line */}
         <div 
           className="floating-search-cta-dock"
           style={{
             position: 'fixed',
-            bottom: '96px',
+            bottom: '84px',
             left: '50%',
             transform: 'translateX(-50%)',
             width: 'var(--card-width-full, calc(100% - 28px))',

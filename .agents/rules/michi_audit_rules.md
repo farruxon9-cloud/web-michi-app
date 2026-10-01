@@ -17,7 +17,7 @@ This file documents all technical, architectural, layout, component fixes, and e
   ```
 - **Profile Page Exception (`Profile.jsx`)**: The Profile page uses a custom **`76px`** clearance spacer (`64px + 12px`), and the `.logout-btn` element has `marginTop: '12px'` to maintain a distinct 12px gap below the profile menu box.
 - **Fixed Floating CTA Dock Centering (`DriverFeed.jsx` & `DrivingAcademy.jsx`)**: Any floating CTA button container positioned with `position: fixed` MUST use `left: 50%; transform: translateX(-50%);` (instead of `left: 14px`) so that it is mathematically dead-centered on both desktop (820px canvas) and mobile viewports.
-- **Filter Modal Clearance Spacer (`DriverFeed.jsx` & `DrivingAcademy.jsx`)**: Filter drawer content uses a **`160px`** clearance spacer (`96px` CTA bottom + `52px` CTA height + `12px` standard gap = `160px`) so that when fully scrolled, the last card halts with an exact standard **12px** gap above the search button.
+- **Filter Modal Clearance Spacer (`DriverFeed.jsx` & `DrivingAcademy.jsx`)**: Filter drawer content uses a **`148px`** clearance spacer (`84px` CTA bottom + `52px` CTA height + `12px` standard gap = `148px`) so that the floating search CTA dock sits flush at `84px` directly above `BottomNav` and the last content card halts with an exact standard **12px** gap above the search button.
 
 ---
 

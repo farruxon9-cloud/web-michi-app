@@ -16,7 +16,7 @@ This repository represents the Michi Japan Logistics Web Application. All 39 cor
    - Use `const EMPTY_ARRAY = []` for default array props.
    - Do NOT modify `document.body.style.overflow` inside Leaflet map modals.
 6. **Filter Modal Clearance Spacer (`DriverFeed.jsx` & `DrivingAcademy.jsx`)**:
-   - Filter drawer content uses a **`160px`** clearance spacer (`96px` CTA bottom + `52px` CTA height + `12px` standard gap = `160px`) so that when fully scrolled, the last card halts with an exact standard **12px** gap above the search button.
+   - Filter drawer content uses a **`148px`** clearance spacer (`84px` CTA bottom + `52px` CTA height + `12px` standard gap = `148px`) so that the floating search CTA dock sits flush at `84px` directly above `BottomNav` and the last card halts with an exact standard **12px** gap above the search button.
 
 ## 2. Audited & Verified Components (39 Files)
 - **Core Views**: `Dashboard.jsx`, `DriverFeed.jsx`, `DrivingAcademy.jsx`, `CompanyHome.jsx`, `JobDetail.jsx`, `RoleSelect.jsx`
