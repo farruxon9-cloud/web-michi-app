@@ -154,6 +154,16 @@
 
 ---
 
+### 🚛 1.14. Jobs Central API Service Protocol (`michiJobsApiService.js`)
+- **Foydalanuvchi Buyrug'i**:
+  > *"Base API URL: https://api.michi.jp.net, Headers: Content-Type: application/json, Accept: application/json. GET /api/jobs (?prefecture=Tokyo&license=oogata&minSalary=350000&q=Sagawa), POST /api/jobs, GET /api/jobs/:id"*
+- **Learn Qoidasi va Yechimi**:
+  1. `michiJobsApiService.js` xizmati `https://api.michi.jp.net` serveriga `Content-Type: application/json` va `Accept: application/json` sarlavhalari bilan ulangan.
+  2. `POST /api/jobs` e'loni serverga yuborilishidan oldin FAZA 1 dagi `validateJobPayload` middleware validatsiyasidan o'tkazilib, faqat to'g'ri e mekin e'lonlar yuboriladi. Noto'g'ri e'londa `400 Bad Request` xatoligi qaytariladi.
+  3. `GET /api/jobs` uchun `buildJobsQueryUrl` yordamida `prefecture`, `license`, `minSalary` hamda `q` parametrlari to'g'ri qidiruv qatoriga o'giriladi.
+
+---
+
 ## 🛠️ 2. Bo'lajak AI Agentlar Uchun Qat'iy Ishlash Protokoli (`Agent Execution Checklist`)
 
 Har bir AI agent loyihada topshiriq bajarayotganda quyidagi ketma-ketlikni ko'r-ko'rona buzmasdan bajarishi shart:
