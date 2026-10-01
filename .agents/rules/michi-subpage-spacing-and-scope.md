@@ -98,6 +98,52 @@
 
 ---
 
+### 🎙️ 1.9. Voice Assistant & STT Status Multilingual Localization (`VoiceAssistant.jsx` & `MichiDrawerHeader.jsx`)
+- **Foydalanuvchi Buyrug'i**:
+  > *"yapon tili tanlanganda yaponcha yozuvlar ko`rinsin"*
+- **Yuzaga Kelgan Xatolik**:
+  STT holati `listening` yoki `thinking` bo'lganda, `speechLang` yaponcha (`ja`) qilib tanlangan bo'lsa ham status text fallback sifatida o'zbekcha (`Tinglanmoqda... (Ovozingizni ayting)`) bo'lib ko'rinayotgan edi.
+- **Learn Qoidasi va Yechimi**:
+  1. `VoiceAssistant.jsx` va `MichiDrawerHeader.jsx` holat matnlarini har doim `speechLang` parametriga qarab chiqarishi shart:
+     - `ja`: `聞き取り中... (音声で話しかけてください)` / `考え中...` / `準備完了`
+     - `uz`: `Tinglanmoqda... (Ovozingizni ayting)` / `O'ylamoqda...` / `Tayyor`
+     - `en`: `Listening... (Speak now)` / `Thinking...` / `Ready`
+  2. `i18n.language` o'zgarganda foydalanuvchi alohida saqlamagan bo'lsa `speechLang` avtomatik ilova tili bilan sinxronlashadi.
+
+---
+
+### ⏱️ 1.10. Dynamic Reading Timer, No TTS Audio & AI Hub Chat History Rule (`VoiceAssistant.jsx`)
+- **Foydalanuvchi Buyrug'i**:
+  > *"shu savol va javoblar konteynerchasi vaqt rejmida ishlasin uzun textli savollar va uzun javoblar bo`lsa shunga mos sekinroq o`qiydigan odamlarning javoblarini o`qib tugatishi darajasida vaqtdan keyin avtomatik yo`qolsin. ai hub sahifasida esa saqlanadi uni hoxlagan vaqti ko`rsa bo`ladi. o`chirib tashlash ham shu shahifada bo`ladi. ai javoblarni o`qib bermasin faqat teks orqali javob beramiz."*
+- **Learn Qoidasi va Yechimi**:
+  1. **Ovozli (TTS Audio) Ijro Etish O'chirildi**: AI javoblari audio ovoz orqali o'qib berilmaydi (`window.speechSynthesis` ovozli o'qishi o'chirildi, faqat matn ko'rsatiladi).
+  2. **Sekin O'qiydiganlar Uchun Dynamic Timer**: `calculateReadingDuration(questionText, answerText, speechLang)` har bir belgiga ~120ms (ja) yoki ~100ms (uz/en) + 5000ms baza beradi (minimum 8s, maksimum 40s). Progress bar timer tugagach top-right pufakcha avtomatik yo'qoladi.
+  3. **AI Hub Chat Tarixi**: Barcha savol va javoblar Michi AI Hub (Side Drawer) bo'limida IndexedDB da doimiy saqlanadi. Foydalanuvchi xohlagan payti tarixni ko'rishi hamda "Tarixni tozalash" tugmasi orqali o'chirib tashlashi mumkin.
+
+---
+
+### ✈️ 1.11. Explicit Send Button Click Protocol for Michi AI API Queries (`VoiceAssistant.jsx`)
+- **Foydalanuvchi Buyrug'i**:
+  > *"endi hamma joyda textlarni yozadi. jo`natish tugmasini bosgandan keyingina api michi jp netga savollarni yuboradigan qilamiz. shunda hamma har xil tushinarsiz gaplarni ai orqali qidiruv qilishga to`g`ri kelmaydi va bu foydalanuvchilarning aniq savollariga aniq javoblar beradigan bo`ladi."*
+- **Learn Qoidasi va Yechimi**:
+  1. STT (`localSTT`) gapirilgan barcha gaplarni matn maydonlariga (`drawerInput` va `transcript`) real vaqt rejimida yozib beradi.
+  2. Nutq tugaganda API (`michiApiService.sendChatMessage`) ga avtomatik so'rov yuborish butunlay to'xtatildi (`handleSendText` avto-chaqirig'i olib tashlandi).
+  3. Foydalanuvchi yozilgan matnni ko'rib, kerak bo'lsa tahrirlab, **"Jo'natish" (`Send` / `送信`)** tugmasini bosgandagina API ga so'rov yuboriladi.
+
+---
+
+### 🎨 1.12. Premium Glass-Gradient User & AI Avatar Icons (`VoiceAssistant.jsx` & `VoiceAssistant.css`)
+- **Foydalanuvchi Buyrug'i**:
+  > *"savol bergan foydalanuvchining iconkisi va ai ning iconkisi zamonaviy va profesional premium ko`rinishda qilib ber iltimos."*
+- **Learn Qoidasi va Yechimi**:
+  1. Oddiy 6px nuqtachalar (`.bubble-dot`) o'rniga **22px x 22px 3D Glass-Gradient Avatar Belgilari (`.bubble-avatar`)** joriy etildi:
+     - **Foydalanuvchi (`.user-avatar`)**: Iliq to'q sariq gradient (`#FF9500` -> `#FF5E00`), oq foydalanuvchi silueti (`<User size={12} color="#FFF" />`) hamda oyna chegarali soya (`box-shadow: 0 3px 10px rgba(255, 149, 0, 0.38)`).
+     - **Michi AI (`.ai-avatar`)**: Cyberpunk ultra-premium gradient (`#6366F1` -> `#8B5CF6` -> `#EC4899`), oq robot belgisi (`<Bot size={12} color="#FFF" />`) va neon nurlanish.
+     - **Eshitish (`.listening-avatar`)**: Zumrad yashil gradient (`#10B981` -> `#059669`), mikrafon belgisi (`<Mic size={12} />`) va breathing pulse.
+     - **O'ylash (`.thinking-avatar`)**: Ultramarin ko'k gradient (`#3B82F6` -> `#1D4ED8`), porloq yulduzcha (`<Sparkles size={12} />`) va 360-darajali tekis rotatsiya.
+
+---
+
 ## 🛠️ 2. Bo'lajak AI Agentlar Uchun Qat'iy Ishlash Protokoli (`Agent Execution Checklist`)
 
 Har bir AI agent loyihada topshiriq bajarayotganda quyidagi ketma-ketlikni ko'r-ko'rona buzmasdan bajarishi shart:
