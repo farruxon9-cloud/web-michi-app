@@ -1,7 +1,9 @@
 .profile-container {
   display: flex;
   flex-direction: column;
-  padding-bottom: 0px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 12px !important;
   width: 100% !important;
   box-sizing: border-box !important;
   -ms-overflow-style: none;
@@ -27,7 +29,7 @@
 }
 
 .profile-container.sub-page-view {
-  padding-bottom: 0px !important;
+  padding-bottom: 12px !important;
 }
 
 .profile-container.sub-page-view > .sub-page-header,
@@ -36,7 +38,7 @@
 }
 
 .profile-container.sub-page-view > .profile-menu {
-  padding-bottom: 0px !important;
+  padding-bottom: 12px !important;
 }
 
 @keyframes skeletonPulse {
@@ -709,7 +711,7 @@ html.light-mode .contract-btn:active {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 16px;
+  padding: 14px 16px;
   border: 1px solid var(--glass-border) !important;
   border-radius: 20px !important;
   background: var(--card-bg) !important;

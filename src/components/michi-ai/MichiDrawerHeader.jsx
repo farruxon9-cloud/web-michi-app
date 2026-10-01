@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Power, Trash2, X, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Sparkles, Power, Trash2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export default function MichiDrawerHeader({
@@ -11,108 +11,64 @@ export default function MichiDrawerHeader({
 }) {
   const { t } = useTranslation();
 
-  // Tarixni tasodifan o'chirib yuborishdan himoya
-  const handleClearWithConfirm = () => {
-    if (!onClearHistory) return;
-    const confirmMsg = {
-      ja: "会話履歴をすべて消去してもよろしいですか？",
-      uz: "Barcha suhbatlar tarixini o'chirishni tasdiqlaysizmi?",
-      en: "Are you sure you want to clear all conversation history?"
-    };
-    const lang = (speechLang || 'ja').substring(0, 2).toLowerCase();
-    const promptText = t('confirmClearHistory', confirmMsg[lang] || confirmMsg.ja);
-
-    if (window.confirm(promptText)) {
-      onClearHistory();
-    }
-  };
-
-  const getStatusText = () => {
-    switch (status) {
-      case 'listening':
-        return t('statusListening', 'Tinglanmoqda...');
-      case 'thinking':
-        return t('statusThinking', 'O\'ylamoqda...');
-      case 'speaking':
-        return t('statusSpeaking', 'Gapirmoqda...');
-      default:
-        return t('statusReady', '準備完了');
-    }
-  };
-
   return (
-    <div className="voice-drawer-header" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingBottom: '10px', marginBottom: '8px', borderBottom: '1px solid rgba(0,0,0,0.08)', boxSizing: 'border-box', flexShrink: 0 }}>
-      <div className="voice-drawer-title-box" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-        {/* Back Arrow Button matching Screenshot 2 */}
-        <button
+    <div className="voice-drawer-header">
+      <div className="voice-drawer-title-box">
+        <button 
           type="button"
-          className="voice-drawer-back-btn"
+          className="voice-drawer-back-btn" 
           onClick={onClose}
-          title={t('backBtn', 'Orqaga')}
-          aria-label={t('backBtn', 'Orqaga')}
-          style={{
-            width: '36px', height: '36px', borderRadius: '50%',
-            border: 'none', background: 'rgba(118, 118, 128, 0.08)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', color: 'var(--text-main)', flexShrink: 0,
-            transition: 'all 0.15s ease'
-          }}
+          aria-label="Back to main app"
+          title={t('back', 'Orqaga')}
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={18} aria-hidden="true" />
         </button>
-
-        <div className="ai-logo-gradient small" aria-hidden="true" style={{ background: 'linear-gradient(135deg, #A855F7 0%, #7E22CE 100%)', borderRadius: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Sparkles size={16} color="#FFF" />
+        <div className="ai-logo-gradient small">
+          <Sparkles size={16} color="#FFF" aria-hidden="true" />
         </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <h3 className="voice-drawer-title" style={{ fontSize: '16px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>Michi AI Hub</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '1px' }}>
-            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#30D158', display: 'inline-block' }} aria-hidden="true"></span>
-            <span className="voice-drawer-status-text" style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>
-              {getStatusText()}
+        <div>
+          <h3 className="voice-drawer-title">Michi AI Hub</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span className={`voice-drawer-status-dot ${status}`}></span>
+            <span className="voice-drawer-status-text">
+              {status === 'thinking' 
+                ? t('statusThinking', 'O\'ylamoqda...') 
+                : status === 'speaking' 
+                ? t('statusSpeaking', 'Gapirmoqda...') 
+                : t('statusReady', '準備完了')}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="voice-drawer-header-actions" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '6px', flexShrink: 0, marginLeft: 'auto' }}>
-        {/* AI quvvatini o'chirish */}
+      <div className="voice-drawer-header-actions">
         {onDeactivateAI && (
           <button 
             type="button"
             className="voice-drawer-action-btn power-off" 
             onClick={onDeactivateAI}
-            title={t('turnOffAi', 'AI tizimini to\'xtatish')}
-            aria-label={t('turnOffAi', 'AI tizimini to\'xtatish')}
+            title={speechLang === 'ja' ? 'AIをオフにする' : speechLang === 'uz' ? "AI ni o'chirish" : 'Turn Off AI'}
+            aria-label="Turn Off AI"
             style={{ color: '#FF3B30', background: 'rgba(255, 59, 48, 0.12)' }}
           >
-            <Power size={14} />
+            <Power size={14} aria-hidden="true" />
           </button>
         )}
-
-        {/* Tarixni xavfsiz tozalash */}
-        {onClearHistory && (
-          <button 
-            type="button"
-            className="voice-drawer-action-btn danger" 
-            onClick={handleClearWithConfirm}
-            title={t('clearHistoryBtn', 'Tarixni tozalash')}
-            aria-label={t('clearHistoryBtn', 'Tarixni tozalash')}
-          >
-            <Trash2 size={14} />
-          </button>
-        )}
-
-        {/* Oynani yopish */}
+        <button 
+          type="button"
+          className="voice-drawer-action-btn danger" 
+          onClick={onClearHistory}
+          title={t('clearHistoryBtn', 'Tarixni tozalash')}
+        >
+          <Trash2 size={14} aria-hidden="true" />
+        </button>
         <button 
           type="button"
           className="voice-drawer-action-btn close" 
           onClick={onClose}
-          title={t('closeBtn', 'Yopish')}
-          aria-label={t('closeBtn', 'Yopish')}
+          aria-label="Close drawer"
         >
-          <X size={18} />
+          <X size={18} aria-hidden="true" />
         </button>
       </div>
     </div>

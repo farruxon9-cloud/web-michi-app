@@ -73,7 +73,7 @@ describe('DriverFeed Component Render', () => {
     expect(html).toContain('Test Sagawa');
   });
 
-  it('renders 64px compact trailing dock clearance spacer', () => {
+  it('renders 92px trailing dock clearance spacer', () => {
     const html = renderToString(
       <DriverFeed 
         jobs={[]} 
@@ -82,6 +82,6 @@ describe('DriverFeed Component Render', () => {
         applications={[]} 
       />
     );
-    expect(html).toContain('height:64px');
+    expect(html).toContain('height:92px');
   });
 });

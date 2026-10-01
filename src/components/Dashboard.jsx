@@ -804,8 +804,8 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-      <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
+      <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
     </div>
   );

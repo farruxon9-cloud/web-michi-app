@@ -318,40 +318,50 @@ export default function AssistHeroShowcase({ onBack, isVoiceActive, onToggleVoic
     >
       <div className="assist-ambient-spotlight-1" aria-hidden="true"></div>
 
-      {/* Orqaga qaytish tugmasi */}
-      <button 
-        type="button"
-        className="icon-btn glass" 
-        onClick={onBack} 
-        aria-label={getStr('backBtn')}
-        title={getStr('backBtn')}
-        style={{ 
-          position: 'sticky', 
-          top: '16px', 
-          left: '0px', 
-          zIndex: 100, 
-          alignSelf: 'flex-start',
-          margin: 0, 
-          width: '40px', 
-          height: '40px', 
-          borderRadius: '50%', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          border: '1.2px solid var(--glass-border)',
-          background: 'var(--card-bg, rgba(255, 255, 255, 0.75))',
-          color: 'var(--text-main)',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
-          cursor: 'pointer',
-          marginBottom: '-40px'
-        }}
-      >
-        <ArrowLeft size={20} />
-      </button>
+      {/* ONLY Pinned Sticky Back Button (Stays sticky at top: 0, z-index: 300) */}
+      <div style={{
+        position: 'sticky',
+        top: 0,
+        left: 0,
+        zIndex: 300,
+        pointerEvents: 'none',
+        marginBottom: '-40px',
+        display: 'flex',
+        alignItems: 'center',
+        height: '40px',
+        width: '40px'
+      }}>
+        <button 
+          type="button" 
+          onClick={onBack}
+          style={{
+            pointerEvents: 'auto',
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            border: '1px solid var(--glass-border)',
+            background: 'var(--card-bg)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            color: 'var(--text-main)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.1)',
+            transition: 'transform 0.15s ease',
+            flexShrink: 0
+          }}
+          aria-label={getStr('backBtn')}
+          title={getStr('backBtn')}
+        >
+          <ArrowLeft size={18} />
+        </button>
+      </div>
 
       {/* Asosiy kontent */}
       <div className="assist-hero-mobile-content">
-        <div className="assist-social-badge" style={{ marginLeft: '52px', marginTop: '4px', alignSelf: 'flex-start' }}>
+        <div className="assist-social-badge" style={{ margin: '0 auto 14px auto', alignSelf: 'center' }}>
           <div className="assist-social-badge-icon" aria-hidden="true">
             <Sparkles size={12} color="#0084FF" />
           </div>

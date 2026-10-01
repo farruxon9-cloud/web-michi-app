@@ -321,6 +321,43 @@ function App() {
     } catch {}
   }, [darkMode]);
 
+  const [soundSettings, setSoundSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem('michi_sound_settings');
+      return saved ? JSON.parse(saved) : { sound: true, vibration: true };
+    } catch {
+      return { sound: true, vibration: true };
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('michi_sound_settings', JSON.stringify(soundSettings));
+    } catch {}
+  }, [soundSettings]);
+
+  const [notificationSound, setNotificationSound] = useState(() => {
+    try {
+      const saved = localStorage.getItem('michi_notif_sound');
+      return saved !== null ? saved === 'true' : true;
+    } catch { return true; }
+  });
+
+  const [showProfileBadges, setShowProfileBadges] = useState(() => {
+    try {
+      const saved = localStorage.getItem('michi_show_badges');
+      return saved !== null ? saved === 'true' : true;
+    } catch { return true; }
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem('michi_notif_sound', String(notificationSound)); } catch {}
+  }, [notificationSound]);
+
+  useEffect(() => {
+    try { localStorage.setItem('michi_show_badges', String(showProfileBadges)); } catch {}
+  }, [showProfileBadges]);
+
   const [profileData, setProfileData] = useState({
     userId: getPermanentUserId(),
     fullName: 'Mehmon',
@@ -576,6 +613,12 @@ function App() {
             unreadCount={unreadCount}
             darkMode={darkMode}
             setDarkMode={setDarkMode}
+            soundSettings={soundSettings}
+            setSoundSettings={setSoundSettings}
+            notificationSound={notificationSound}
+            setNotificationSound={setNotificationSound}
+            showProfileBadges={showProfileBadges}
+            setShowProfileBadges={setShowProfileBadges}
             onNavigate={setActiveTab}
             activePage={profileActivePage}
             setActivePage={setProfileActivePage}
@@ -592,6 +635,9 @@ function App() {
     <ErrorBoundary>
       <AppProvider value={{ userRole, setUserRole, profileData, darkMode, setDarkMode, activeTab, setActiveTab }}>
         <div className="app-layout">
+          <div className="glass-blob blob-1"></div>
+          <div className="glass-blob blob-2"></div>
+          <div className="glass-blob blob-3"></div>
           <header className="global-header">
             <div 
               role="button" 

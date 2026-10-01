@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import MichiDrawerHeader from './MichiDrawerHeader';
 import MichiQuickChips from './MichiQuickChips';
 import MichiActivationCard from './MichiActivationCard';
@@ -10,8 +11,8 @@ export default function MichiSideDrawer({
   onClose,
   isActive,
   status,
-  speechLang,
-  chatHistoryList,
+  speechLang = 'ja',
+  chatHistoryList = [],
   transcript,
   aiResponseText,
   displayedAiText,
@@ -40,9 +41,9 @@ export default function MichiSideDrawer({
     }, 2000);
   };
 
-  return (
+  const drawerContent = (
     <div className="voice-side-drawer-overlay" onClick={onClose}>
-      <aside className="voice-side-drawer-panel animate-slide-left" onClick={(e) => e.stopPropagation()}>
+      <aside className="voice-side-drawer-panel animate-slide-left" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
         {/* Modular Drawer Header */}
         <MichiDrawerHeader 
           status={status}
@@ -92,4 +93,6 @@ export default function MichiSideDrawer({
       </aside>
     </div>
   );
+
+  return createPortal(drawerContent, document.body);
 }

@@ -25,20 +25,7 @@ export default function MichiDictationInput({
   };
 
   return (
-    <form 
-      className="voice-drawer-input-form" 
-      onSubmit={handleFormSubmit}
-      aria-label="Michi AI kiritish shakli"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        width: '100%',
-        padding: '8px 0 4px 0',
-        boxSizing: 'border-box'
-      }}
-    >
-      {/* Mikrofon / Ovozli diktovka tugmasi */}
+    <form className="voice-drawer-input-form" onSubmit={handleFormSubmit}>
       <MichiMicButton 
         isActive={isActive}
         status={status}
@@ -48,20 +35,15 @@ export default function MichiDictationInput({
         onDeactivateAI={onDeactivateAI}
       />
 
-      {/* Matn kiritish maydoni */}
       <MichiTextInputField 
         status={status}
         drawerInput={drawerInput}
         setDrawerInput={setDrawerInput}
-        onSubmit={handleFormSubmit}
+        speechLang={speechLang}
         disabled={isThinking}
       />
 
-      {/* Yuborish tugmasi */}
-      <MichiSendButton 
-        disabled={isSendDisabled}
-        isThinking={isThinking}
-      />
+      <MichiSendButton disabled={isSendDisabled} />
     </form>
   );
 }

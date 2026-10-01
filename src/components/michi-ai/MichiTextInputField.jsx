@@ -5,16 +5,17 @@ export default function MichiTextInputField({
   status,
   drawerInput = '',
   setDrawerInput,
-  disabled = false
+  disabled = false,
+  speechLang = 'ja'
 }) {
   const { t } = useTranslation();
   const isThinking = status === 'thinking';
   const isListening = status === 'listening';
 
   const getPlaceholder = () => {
-    if (isListening) return t('listeningPlaceholder', 'Tinglanmoqda...');
-    if (isThinking) return t('generatingResponse', 'Javob tayyorlanmoqda...');
-    return t('askInputPlaceholder', 'Michi AI に質問を入力...');
+    if (isListening) return speechLang === 'ja' ? '聴き取り中...' : speechLang === 'uz' ? 'Tinglanmoqda...' : 'Listening...';
+    if (isThinking) return speechLang === 'ja' ? '思考中...' : speechLang === 'uz' ? 'Javob tayyorlanmoqda...' : 'Thinking...';
+    return speechLang === 'ja' ? 'Michi AI に質問を入力...' : speechLang === 'uz' ? 'Michi AI ga savolingizni kiriting...' : 'Type a message to Michi AI...';
   };
 
   return (
@@ -25,21 +26,9 @@ export default function MichiTextInputField({
       onChange={(e) => setDrawerInput?.(e.target.value)}
       disabled={disabled || isThinking}
       className={`voice-drawer-input ${isThinking ? 'thinking' : ''}`}
-      aria-label={t('askInputPlaceholder', 'Michi AI に質問を入力...')}
+      aria-label="Michi AI input field"
       autoComplete="off"
       spellCheck="false"
-      style={{
-        flex: 1,
-        height: '40px',
-        borderRadius: '24px',
-        border: '1px solid rgba(229, 231, 235, 0.8)',
-        background: 'rgba(243, 244, 246, 0.9)',
-        padding: '0 16px',
-        fontSize: '13px',
-        color: 'var(--text-main)',
-        outline: 'none',
-        boxSizing: 'border-box'
-      }}
     />
   );
 }

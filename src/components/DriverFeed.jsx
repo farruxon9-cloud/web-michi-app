@@ -1385,8 +1385,8 @@ export default function DriverFeed({
           </div>
         </div>
 
-        {/* 140px clearance spacer so filter drawer content halts cleanly above 52px floating search CTA button at bottom 96px */}
-        <div style={{ height: '140px', minHeight: '140px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 160px clearance spacer so filter drawer content halts cleanly 12px above 52px floating search CTA button at bottom 96px */}
+        <div style={{ height: '160px', minHeight: '160px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
         {/* Pinned Search CTA Button Dock — aligned 1:1 on single vertical margin line */}
         <div 
@@ -1891,8 +1891,8 @@ export default function DriverFeed({
         )}
       </div>
 
-      {/* 64px clearance spacer yielding exact visual clearance above floating BottomNav */}
-      <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
+      <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
       {/* ====== REAL LEAFLET MAP MODAL (Behind ENABLE_MAP_SEARCH feature flag) ====== */}
       {ENABLE_MAP_SEARCH && (

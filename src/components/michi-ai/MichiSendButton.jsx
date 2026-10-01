@@ -1,27 +1,15 @@
 import React from 'react';
-import { Send, Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Send } from 'lucide-react';
 
-export default function MichiSendButton({ disabled = false, isThinking = false }) {
-  const { t } = useTranslation();
-
-  const label = isThinking 
-    ? t('sendingStatus', 'Yuborilmoqda...') 
-    : t('sendMessageBtn', 'Xabarni yuborish');
-
+export default function MichiSendButton({ disabled }) {
   return (
     <button 
       type="submit" 
-      className={`voice-drawer-send-btn ${isThinking ? 'thinking' : ''}`} 
-      disabled={disabled || isThinking}
-      aria-label={label}
-      title={label}
+      className="voice-drawer-send-btn" 
+      disabled={disabled}
+      aria-label="Send message"
     >
-      {isThinking ? (
-        <Loader2 size={15} className="animate-spin" color="#FFF" />
-      ) : (
-        <Send size={15} color="#FFF" />
-      )}
+      <Send size={15} color="#FFF" aria-hidden="true" />
     </button>
   );
 }

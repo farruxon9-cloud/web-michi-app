@@ -193,7 +193,7 @@ body {
   filter: blur(80px);
   z-index: 0;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.64;
   mix-blend-mode: multiply;
   animation: blob-float 15s infinite alternate ease-in-out;
 }
@@ -216,9 +216,9 @@ html.dark-mode .glass-blob {
 }
 
 .blob-1 {
-  width: 350px;
-  height: 350px;
-  background: #e0f2fe;
+  width: 360px;
+  height: 360px;
+  background: #d8f0fe;
   top: -50px;
   left: -50px;
 }
@@ -226,7 +226,7 @@ html.dark-mode .glass-blob {
 .blob-2 {
   width: 400px;
   height: 400px;
-  background: #e0e7ff;
+  background: #dbe2fe;
   bottom: 0px;
   right: -50px;
   animation-duration: 18s;
@@ -234,8 +234,8 @@ html.dark-mode .glass-blob {
 }
 
 .blob-3 {
-  width: 300px;
-  height: 300px;
+  width: 320px;
+  height: 320px;
   background: #f3e8ff;
   top: 30%;
   left: 20%;

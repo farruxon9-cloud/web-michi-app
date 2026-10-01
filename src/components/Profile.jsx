@@ -167,37 +167,37 @@ const STATUS_COLORS = {
 };
 
 export default function Profile({ 
-  onLogout, contractStatus, setContractStatus, profileData, userRole, 
-  onChangeLanguage, onUpdateProfile, applications, onChangeAppStatus,
-  notifications, onMarkRead, onMarkAllRead, onDeleteNotif, onClearAllNotifs, unreadCount,
-  darkMode, setDarkMode, soundSettings, setSoundSettings,
-  companyEmployees, onAddEmployee, onAcceptEmployeeRequest, setNotifications,
-  schoolApplications = [], onShoukaiPaid, onNavigate,
+  onLogout = () => {}, contractStatus, setContractStatus = () => {}, profileData, userRole, 
+  onChangeLanguage = () => {}, onUpdateProfile = () => {}, applications = [], onChangeAppStatus = () => {},
+  notifications = [], onMarkRead = () => {}, onMarkAllRead = () => {}, onDeleteNotif = () => {}, onClearAllNotifs = () => {}, unreadCount = 0,
+  darkMode = false, setDarkMode = () => {}, soundSettings = { sound: true, vibration: true }, setSoundSettings = () => {},
+  companyEmployees = [], onAddEmployee = () => {}, onAcceptEmployeeRequest = () => {}, setNotifications = () => {},
+  schoolApplications = [], onShoukaiPaid = () => {}, onNavigate = () => {},
   activePage = 'main',
-  setActivePage,
+  setActivePage = () => {},
   profileActivePageSource,
-  setProfileActivePageSource,
+  setProfileActivePageSource = () => {},
   scrollToTopTrigger = 0,
-  onJobClick,
-  onSchoolClick,
-  showProfileBadges = true,
-  setShowProfileBadges,
-  notificationSound = true,
-  setNotificationSound,
-  jobs,
-  schools,
-  setJobs,
-  setSchools,
-  jobToEdit,
-  setJobToEdit,
-  onApply,
-  onApplySchool,
-  onShoukai,
-  onTriggerRegister,
-  isVoiceActive,
-  setIsVoiceActive,
-  isVoiceStandby,
-  setIsVoiceStandby
+  onJobClick = () => {},
+  onSchoolClick = () => {},
+  showProfileBadges: propShowProfileBadges,
+  setShowProfileBadges: propSetShowProfileBadges,
+  notificationSound: propNotificationSound,
+  setNotificationSound: propSetNotificationSound,
+  jobs = [],
+  schools = [],
+  setJobs = () => {},
+  setSchools = () => {},
+  jobToEdit = null,
+  setJobToEdit = () => {},
+  onApply = () => {},
+  onApplySchool = () => {},
+  onShoukai = () => {},
+  onTriggerRegister = () => {},
+  isVoiceActive = false,
+  setIsVoiceActive = () => {},
+  isVoiceStandby = false,
+  setIsVoiceStandby = () => {}
 }) {
   const { t, i18n } = useTranslation();
 
@@ -214,8 +214,8 @@ export default function Profile({
           <div className="skeleton-pulse skeleton-row" />
           <div className="skeleton-pulse skeleton-row" />
         </div>
-        {/* 76px clearance spacer (+12px custom for Profile tab) */}
-        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 12px clearance spacer for Profile sub-page */}
+        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -229,6 +229,39 @@ export default function Profile({
   const [selectedShoukaiApp, setSelectedShoukaiApp] = useState(null);
   const [appPipelineTab, setAppPipelineTab] = useState('submitted'); // 'submitted' | 'processing' | 'accepted' | 'rejected' | 'all'
   const [notifTab, setNotifTab] = useState('all'); // 'all' | 'unread' | 'interview' | 'shoukai' | 'all'
+
+  const [internalNotifSound, setInternalNotifSound] = useState(() => {
+    try {
+      const saved = localStorage.getItem('michi_notif_sound');
+      return saved !== null ? saved === 'true' : true;
+    } catch { return true; }
+  });
+
+  const [internalShowBadges, setInternalShowBadges] = useState(() => {
+    try {
+      const saved = localStorage.getItem('michi_show_badges');
+      return saved !== null ? saved === 'true' : true;
+    } catch { return true; }
+  });
+
+  const notificationSound = propNotificationSound !== undefined ? propNotificationSound : internalNotifSound;
+  const showProfileBadges = propShowProfileBadges !== undefined ? propShowProfileBadges : internalShowBadges;
+
+  const handleToggleNotifSound = (val) => {
+    setInternalNotifSound(val);
+    try { localStorage.setItem('michi_notif_sound', String(val)); } catch {}
+    if (typeof propSetNotificationSound === 'function') {
+      propSetNotificationSound(val);
+    }
+  };
+
+  const handleToggleShowBadges = (val) => {
+    setInternalShowBadges(val);
+    try { localStorage.setItem('michi_show_badges', String(val)); } catch {}
+    if (typeof propSetShowProfileBadges === 'function') {
+      propSetShowProfileBadges(val);
+    }
+  };
 
   const handleOpenSubPage = (page) => {
     const mainContent = document.querySelector('.main-content');
@@ -2729,8 +2762,8 @@ const getLicenseLabel = (type) => {
           )}
         </div>
 
-        {/* 76px clearance spacer (+12px custom for Profile tab) */}
-        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 12px clearance spacer for Profile sub-page */}
+        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -2780,7 +2813,7 @@ const getLicenseLabel = (type) => {
                 <span>{t('notifSoundLabel')}</span>
               </div>
               <label className="toggle-switch">
-                <input type="checkbox" checked={notificationSound} onChange={(e) => setNotificationSound(e.target.checked)} />
+                <input type="checkbox" checked={Boolean(notificationSound)} onChange={(e) => handleToggleNotifSound(e.target.checked)} />
                 <span className="toggle-slider"></span>
               </label>
             </div>
@@ -2792,49 +2825,56 @@ const getLicenseLabel = (type) => {
                 <span>{t('showBadgesLabel')}</span>
               </div>
               <label className="toggle-switch">
-                <input type="checkbox" checked={showProfileBadges} onChange={(e) => setShowProfileBadges(e.target.checked)} />
+                <input type="checkbox" checked={Boolean(showProfileBadges)} onChange={(e) => handleToggleShowBadges(e.target.checked)} />
                 <span className="toggle-slider"></span>
               </label>
             </div>
           </div>
 
           {/* Sound Settings */}
-          <div className="menu-group glass squircle">
-            <h4 className="settings-section-title">{t('soundSettings')}</h4>
-            <div className="sound-options">
-              <button 
-                className={`sound-option profile-btn-interactive ${soundSettings.sound && soundSettings.vibration ? 'active' : ''}`}
-                onClick={() => setSoundSettings({ sound: true, vibration: true })}
-              >
-                <Volume2 size={20} />
-                <span>{t('soundOn')}</span>
-              </button>
-              <button 
-                className={`sound-option profile-btn-interactive ${!soundSettings.sound && soundSettings.vibration ? 'active' : ''}`}
-                onClick={() => setSoundSettings({ sound: false, vibration: true })}
-              >
-                <Vibrate size={20} />
-                <span>{t('vibration')}</span>
-              </button>
-              <button 
-                className={`sound-option profile-btn-interactive ${soundSettings.sound && !soundSettings.vibration ? 'active' : ''}`}
-                onClick={() => setSoundSettings({ sound: true, vibration: false })}
-              >
-                <VolumeX size={20} />
-                <span>{t('silent')}</span>
-              </button>
-              <button 
-                className={`sound-option profile-btn-interactive ${!soundSettings.sound && !soundSettings.vibration ? 'active' : ''}`}
-                onClick={() => setSoundSettings({ sound: false, vibration: false })}
-              >
-                <BellOff size={20} />
-                <span>{t('allOff')}</span>
-              </button>
-            </div>
-          </div>
+          {(() => {
+            const safeSound = soundSettings || { sound: true, vibration: true };
+            const isSoundOn = Boolean(safeSound.sound);
+            const isVibOn = Boolean(safeSound.vibration);
+            return (
+              <div className="menu-group glass squircle">
+                <h4 className="settings-section-title">{t('soundSettings')}</h4>
+                <div className="sound-options">
+                  <button 
+                    className={`sound-option profile-btn-interactive ${isSoundOn && isVibOn ? 'active' : ''}`}
+                    onClick={() => setSoundSettings?.({ sound: true, vibration: true })}
+                  >
+                    <Volume2 size={20} />
+                    <span>{t('soundOn')}</span>
+                  </button>
+                  <button 
+                    className={`sound-option profile-btn-interactive ${!isSoundOn && isVibOn ? 'active' : ''}`}
+                    onClick={() => setSoundSettings?.({ sound: false, vibration: true })}
+                  >
+                    <Vibrate size={20} />
+                    <span>{t('vibration')}</span>
+                  </button>
+                  <button 
+                    className={`sound-option profile-btn-interactive ${isSoundOn && !isVibOn ? 'active' : ''}`}
+                    onClick={() => setSoundSettings?.({ sound: true, vibration: false })}
+                  >
+                    <VolumeX size={20} />
+                    <span>{t('silent')}</span>
+                  </button>
+                  <button 
+                    className={`sound-option profile-btn-interactive ${!isSoundOn && !isVibOn ? 'active' : ''}`}
+                    onClick={() => setSoundSettings?.({ sound: false, vibration: false })}
+                  >
+                    <BellOff size={20} />
+                    <span>{t('allOff')}</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
         </div>
-        {/* 76px clearance spacer (+12px custom for Profile tab) */}
-        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 86px clearance spacer yielding exact 12px gap between last settings card and floating BottomNav */}
+        <div style={{ height: '86px', minHeight: '86px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3088,8 +3128,8 @@ const getLicenseLabel = (type) => {
             </div>
           </div>
         </div>
-        {/* 76px clearance spacer (+12px custom for Profile tab) */}
-        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 86px clearance spacer yielding exact 12px gap between last text and floating BottomNav */}
+        <div style={{ height: '86px', minHeight: '86px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -3672,8 +3712,8 @@ const getLicenseLabel = (type) => {
                 </div>
               )}
         </div>
-        {/* 76px clearance spacer (+12px custom for Profile tab) */}
-        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 82px clearance spacer for Company Info page */}
+        <div style={{ height: '82px', minHeight: '82px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -4228,8 +4268,8 @@ const getLicenseLabel = (type) => {
             })
           )}
         </div>
-        {/* 76px clearance spacer (+12px custom for Profile tab) */}
-        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 86px clearance spacer yielding exact 12px gap between last item and floating BottomNav */}
+        <div style={{ height: '86px', minHeight: '86px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -4327,8 +4367,8 @@ const getLicenseLabel = (type) => {
             </>
           )}
         </div>
-        {/* 76px clearance spacer (+12px custom for Profile tab) */}
-        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 12px clearance spacer for Profile sub-page */}
+        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -4781,14 +4821,14 @@ const getLicenseLabel = (type) => {
                   </div>
                 )}
 
-                {/* 40px Extra Bottom Scroll Clearance Spacer */}
-                <div style={{ height: '40px', minHeight: '40px', width: '100%', flexShrink: 0 }} />
+                {/* 12px Extra Bottom Scroll Clearance Spacer */}
+                <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0 }} />
               </div>
             </div>
           )}
 
-          {/* 76px clearance spacer (+12px custom for Profile tab) */}
-          <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
+          {/* 86px clearance spacer yielding exact 12px gap between last item and floating BottomNav */}
+          <div style={{ height: '86px', minHeight: '86px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       );
     }
@@ -4860,8 +4900,8 @@ const getLicenseLabel = (type) => {
             </>
           )}
         </div>
-        {/* 76px clearance spacer (+12px custom for Profile tab) */}
-        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 86px clearance spacer yielding exact 12px gap between last item and floating BottomNav */}
+        <div style={{ height: '86px', minHeight: '86px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -5213,8 +5253,8 @@ const getLicenseLabel = (type) => {
           </div>
 
         </div>
-        {/* 76px clearance spacer (+12px custom for Profile tab) */}
-        <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        {/* 12px clearance spacer for Profile sub-page */}
+        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -7234,8 +7274,8 @@ const getLicenseLabel = (type) => {
         </button>
       </div>
 
-      {/* 76px clearance spacer (64px + 12px extra) yielding custom clearance for Profile tab */}
-      <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* 86px clearance spacer yielding custom clearance for Profile tab */}
+      <div style={{ height: '86px', minHeight: '86px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
       {/* Universal Japanese Vehicle Fleet Picker Modal */}
       <JapaneseVehiclePickerModal

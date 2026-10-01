@@ -8,13 +8,14 @@ This repository contains the Michi Japan Logistics Web Application codebase. The
 - **820px Townwork Web Canvas (`src/index.css`)**: The app is designed as an 820px max-width Desktop Web Application (`max-width: 820px; margin: 0 auto;` with ambient background glass blobs in light mode). NEVER constrain `#root` or `.app-layout` to a 430px mobile shell container.
 - **Vertical Scrolling Contract (`src/App.css`)**: `.main-content` MUST maintain `overflow-y: auto;` and `-webkit-overflow-scrolling: touch;`. Never set `.main-content` to `overflow: hidden`, as it locks vertical scrolling across all main views (`Dashboard`, `DriverFeed`, `DrivingAcademy`, `Profile`, `CompanyHome`).
 - **Trailing Dock Clearance Spacers**:
-  - **`Dashboard`**, **`DriverFeed`**, **`DrivingAcademy`**, **`CompanyHome`**: Use a trailing clearance spacer of **`64px`**:
+  - **`Dashboard`**, **`DriverFeed`**, **`DrivingAcademy`**: Use a trailing clearance spacer of **`92px`**:
     ```jsx
-    <div style={{ height: '64px', minHeight: '64px', width: '100%', flexShrink: 0, clear: 'both' }} />
+    <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
     ```
-  - **`Profile` Page Exception**: Uses a custom **`76px`** clearance spacer (`64px + 12px`), and the `.logout-btn` element has `marginTop: '12px'` to maintain a distinct 12px gap below the profile menu box.
+  - **`CompanyHome` (`マイ掲載一覧`)**: Uses a **`76px`** clearance spacer (`<div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />`) so job posting buttons (`publishJob`/`publishSchoolAd`) halt 12px clear of floating `BottomNav`.
+  - **`Profile` Page & Sub-pages**: `about`, `settings`, `applications`, `my_shoukai` use **`86px`**; `personalInfo` (`会社情報`) uses **`82px`**; main profile view logout button uses **`86px`**.
   - **Fixed Floating CTA Dock Centering**: Any floating CTA button container positioned with `position: fixed` MUST use `left: 50%; transform: translateX(-50%);` (instead of `left: 14px`) so that it is mathematically dead-centered on both desktop (820px canvas) and mobile viewports.
-  - **Filter Modal Clearance Spacer**: Filter drawer content uses a **`140px`** clearance spacer with the floating search CTA dock positioned at **`bottom: 96px`** (adding a 12px gap above `BottomNav` at 84px, and reducing the gap between the search button and the last scroll container by 20px).
+  - **Filter Modal Clearance Spacer**: Filter drawer content in `DriverFeed.jsx` & `DrivingAcademy.jsx` uses a **`160px`** clearance spacer with the floating search CTA dock positioned at **`bottom: 96px`**, guaranteeing 12px clearance between the search button top edge and the last filter container.
 
 ---
 
@@ -40,52 +41,23 @@ This repository contains the Michi Japan Logistics Web Application codebase. The
 ### Core Views & Layout
 1. `src/App.css`: Unblocked `.main-content` scrolling with `overflow-y: auto`.
 2. `src/index.css`: Restored 820px web canvas layout bounds and background ambient blobs.
-3. `src/components/Dashboard.jsx`: Hero carousel slider, calendar selector, Michi Voice AI card, JDM truck navigation card, music player, 64px spacer.
-4. `src/components/DriverFeed.jsx`: Resolved infinite skeleton loop, memoized `filteredJobs`, restored `JobMapModal` Leaflet Carto tile map without scroll lock, 64px spacer.
-5. `src/components/DrivingAcademy.jsx`: License category filters (AT/MT/Truck/Towing), course pricing, 5-language dict, 64px spacer.
-6. `src/components/CompanyHome.jsx`: Local vs Tokutei Ginou SSW visa recruitment, driving school ad creation, 64px spacers.
+3. `src/components/Dashboard.jsx`: Hero carousel slider, calendar selector, Michi Voice AI card, JDM truck navigation card, music player, 92px spacer.
+4. `src/components/DriverFeed.jsx`: Resolved infinite skeleton loop, memoized `filteredJobs`, restored `JobMapModal` Leaflet Carto tile map without scroll lock, 92px spacer, 160px filter spacer.
+5. `src/components/DrivingAcademy.jsx`: License category filters (AT/MT/Truck/Towing), course pricing, 5-language dict, 92px spacer, 160px filter spacer.
+6. `src/components/CompanyHome.jsx`: Local vs Tokutei Ginou SSW visa recruitment, driving school ad creation, 76px spacers.
 7. `src/components/JobDetail.jsx`: Job details modal, company phone dialer, apply button, 5-language dictionary.
 8. `src/components/RoleSelect.jsx`: Employer vs Driver role toggle with persistence.
 
-### Michi AI Suite (13 Files)
-9. `src/components/michi-ai/VoiceAssistant.jsx`: Voice AI drawer logic, speech synthesis fallback, voice standby toggle.
-10. `src/components/VoiceAssistant.css`: Right-side panel (`max-width: 440px`), shaffof glass overlay.
-11. `src/components/michi-ai/MichiDrawerTrigger.jsx`: Drag bounds clamped to `minY: 110px`.
-12. `src/components/michi-ai/MichiChatPanel.jsx`: AI Gateway integration, `sanitizeMichiResponse()`.
-13. `src/components/michi-ai/AssistHeroShowcase.jsx`: Cleaned dangling syntax errors, added keyboard shortcuts.
-14–22. Specialized AI Assistant Cards:
-    - `CandidateMatchingCard.jsx`
-    - `CareerAdvancementCard.jsx`
-    - `DocumentTranslationCard.jsx`
-    - `ExamPrepCard.jsx`
-    - `InterviewPrepCard.jsx`
-    - `SalaryCalculatorCard.jsx`
-    - `TrafficRulesCard.jsx`
-    - `VisaAssistantCard.jsx`
-    - `WorkplaceJapaneseCard.jsx`
-
 ### Profile & Subpages (9 Files)
-23. `src/components/Profile.jsx`: Profile main controller, vehicle fleet modal, 76px spacer, logout button `marginTop: 12px`.
+23. `src/components/Profile.jsx`: Profile main controller, vehicle fleet modal, 86px/82px spacers, logout button `marginTop: 12px`.
 24. `src/components/ProfileMain.jsx`: User info, contract toggle, profile photo upload.
 25. `src/components/ShoukaiReferrals.jsx`: Shoukai referral bonus tracking, QR code generator, copy link.
-26. `src/components/Settings.jsx`: Sound/vibration toggles, theme switcher, `aria-pressed`.
+26. `src/components/Settings.jsx`: Sound/vibration toggles, theme switcher, `aria-pressed`, defensive local state fallbacks.
 27. `src/components/SavedItems.jsx`: Saved jobs & driving school courses.
 28. `src/components/Notifications.jsx`: Read/unread status filter, mark all read.
 29. `src/components/MyAds.jsx`: Posted vacancy & school ad management.
 30. `src/components/Applications.jsx`: Application status pipeline tracking.
 31. `src/components/EmployeeManagement.jsx`: Fleet driver management & invitation link copy.
-
-### JDM Fleet & Vehicle (5 Files)
-32. `src/components/JapaneseVehiclePickerModal.jsx`: Dark OLED aesthetic backdrop, Escape key listener, photo cache (`resolvedPhotosRef`), era tags.
-33. `src/components/LazyVehicleImage.jsx`: Progressive HD image loader with skeleton shimmer fallback.
-34. `src/components/VehicleGradientCard.jsx`: Glass gradient card displaying active vehicle specs.
-35. `src/components/JDMNavigation.jsx`: Heavy truck navigation avoiding 3.8m height & weight limits.
-36. `src/components/JDMNavigationSearch.jsx`: Address & landmark lookup for truck navigation.
-
-### Engine Services (3 Files)
-37. `src/services/michiApiService.js`: Export default object + named exports, `AbortController` timeout, CORS Vite proxy `/api`, 429 rate limit warnings.
-38. `src/services/authSecurityService.js`: Webhook security headers `X-API-Key`, OTP session lifecycle.
-39. `src/services/vehicleApiService.js`: JDM database search, Wikipedia HD photo lookup, in-memory photo cache.
 
 ---
 
@@ -93,6 +65,7 @@ This repository contains the Michi Japan Logistics Web Application codebase. The
 - **Unit Testing**: Run `npm test -- --run` to verify 100% pass across all 20 test files (90 tests).
 - **CRITICAL GIT CONSTRAINT**: All commits MUST remain local on branch `web-1`. **NEVER execute `git push`**.
 - **Localization**: Support 5 languages (`ja`, `uz`, `en`, `ru`, `zh`) across all UI text.
+- **AI Learn Protocol**: Save all learned rules and error prevention audits into `.agents/rules/` and map in `codebase_map.md`.
 
 ---
 
@@ -100,23 +73,18 @@ This repository contains the Michi Japan Logistics Web Application codebase. The
 1. **Fixed Positioning inside Centered 820px Canvas**:
    - **Error**: `position: fixed; left: 14px;` causes floating CTA docks to align to the viewport left edge on desktop displays.
    - **Fix**: Use `position: fixed; left: 50%; transform: translateX(-50%); width: calc(100% - 28px); maxWidth: 792px;` so fixed elements stay dead-centered on desktop (820px) and mobile.
-
 2. **Floating CTA Dock & BottomNav Touch/Overlap Bug**:
    - **Error**: CTA dock at `bottom: 84px` touches the top border of `BottomNav`.
    - **Fix**: Set floating CTA dock at `bottom: 96px` to maintain a 12px vertical gap above `BottomNav`.
-
-3. **Excessive Clearance Spacer White Space**:
-   - **Error**: Over-inflating clearance spacers (e.g., 162px/160px), creating empty white space below the last content card.
-   - **Fix**: Set filter drawer clearance spacer to **`140px`**, keeping content tightly bound to the search CTA dock.
-
-4. **Infinite Re-render & Flickering Skeleton Loop (`DriverFeed.jsx`)**:
+3. **Filter Drawer CTA Search Button & Last Container Touch Bug**:
+   - **Error**: Trailing spacer of 140px caused the last filter container to collide with/overlap the fixed search CTA button when scrolled down to the end.
+   - **Fix**: Set filter drawer clearance spacer to **`160px`**, halting the last container 12px clear of the search button.
+4. **Missing Callback Prop Crashes (`TypeError: fn is not a function`)**:
+   - **Error**: Optional toggles like `notificationSound` or `showProfileBadges` crashing when parent component omits props.
+   - **Fix**: Provide default fallback parameters (`onLogout = () => {}`) and internal `useState` + `localStorage` persistence fallbacks.
+5. **Infinite Re-render & Flickering Skeleton Loop (`DriverFeed.jsx`)**:
    - **Error**: Inline array props or un-memoized state triggering constant re-renders.
    - **Fix**: Memoize computed lists with `useMemo` and use module-level constant arrays (`const EMPTY_ARRAY = []`).
-
-5. **Global `document.body` Overflow Mutation Bug (`JobMapModal`)**:
+6. **Global `document.body` Overflow Mutation Bug (`JobMapModal`)**:
    - **Error**: Setting `document.body.style.overflow = 'hidden'` resets page scroll position on modal close.
    - **Fix**: Render modals via `createPortal` into `#root` and handle scroll containment strictly in CSS.
-
-6. **AI Gateway Request Timeout & Raw JSON Leak**:
-   - **Error**: Gateway AI calls hanging indefinitely or outputting raw `<think>` tags.
-   - **Fix**: Add `AbortController` timeout (15–25s) in `michiApiService.js` and sanitize output via `sanitizeMichiResponse()`.
