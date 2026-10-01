@@ -144,6 +144,16 @@
 
 ---
 
+### 🔀 1.13. On-Demand Branch Merge Protocol (Strict Explicit User Command Only)
+- **Foydalanuvchi Buyrug'i**:
+  > *"endi merge qilish haqida alohida bir donagina aytaman qolgan marta qilma iltimos."*
+- **Learn Qoidasi va Yechimi**:
+  1. AI Agentlar har bir bajarilgan topshiriqdan so'ng **avtomatik ravishda boshqa branchlarga (`start-1.0`, `start-1.0a`, `b`, `web`, va h.k.) merge bajarishi QAT'IYAN TAQIQLANADI**.
+  2. Barcha ishlar faqat va faqat **`web-1`** branchida olib boriladi va saqlanadi.
+  3. Branchlarni alohida merge qilish faqat va faqat foydalanuvchi alohida xabarda **aniq "merge qilib ber"** deb buyruq bergandagina amalga oshiriladi.
+
+---
+
 ## 🛠️ 2. Bo'lajak AI Agentlar Uchun Qat'iy Ishlash Protokoli (`Agent Execution Checklist`)
 
 Har bir AI agent loyihada topshiriq bajarayotganda quyidagi ketma-ketlikni ko'r-ko'rona buzmasdan bajarishi shart:
@@ -154,3 +164,4 @@ Har bir AI agent loyihada topshiriq bajarayotganda quyidagi ketma-ketlikni ko'r-
 4. **Defensive Code Standard**: Har bir prop uchun safe default fallback funksiyalar va `localStorage` fallbacklar qo mekin.
 5. **Unit Test Verification**: Har bir o'zgarishdan so'ng `npm test -- --run` komandasini yurgizib, barcha 90/90 vitest testlari 100% PASS berishini tekshirish.
 6. **Learn Record & Map Persistence**: Yangi o'rganilgan qoidani ushbu faylga (`.agents/rules/michi-subpage-spacing-and-scope.md`), [AGENTS.md](file:///Users/kanoatovfarrux/michiappforjapan/AGENTS.md), [GEMINI.md](file:///Users/kanoatovfarrux/michiappforjapan/GEMINI.md) hamda [codebase_map.md](file:///Users/kanoatovfarrux/michiappforjapan/codebase_map.md) fayllariga yozib saqlash.
+7. **Explicit Merge Command Protocol**: Barcha ishlar va commitlar faqat `web-1` branchida bajariladi. Foydalanuvchi alohida va aniq "merge qilib ber" deb so'ramaguncha boshqa branchlarga (`start-1.0`, `b`, `web`...) avtomatik merge qilish QAT'IYAN TAQIQLANADI!

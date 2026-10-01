@@ -60,3 +60,5 @@ This repository represents the Michi Japan Logistics Web Application. All core c
 9. **Premium Glass-Gradient User & AI Avatar Icons**:
    - **Requirement**: Replace plain dot indicators with modern, professional 3D glass gradient avatar icons.
    - **Fix**: Implemented 22px x 22px `.bubble-avatar` badges with Lucide icons: User (`<User size={12} />` with warm orange gradient), AI (`<Bot size={12} />` with futuristic purple-pink gradient), Listening (`<Mic size={12} />` emerald gradient with pulse), and Thinking (`<Sparkles size={12} />` cobalt gradient with 360° rotation).
+10. **On-Demand Branch Merge Protocol**:
+    - **Rule**: AI agents MUST NOT automatically merge code into other branches (`start-1.0`, `b`, `web`, etc.) after finishing tasks. All work remains strictly on `web-1`. Branch merges must ONLY be performed when the user explicitly sends an explicit merge command.
