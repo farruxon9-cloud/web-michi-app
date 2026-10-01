@@ -79,3 +79,33 @@ This file documents all technical, architectural, layout, component fixes, and e
 ## 5. Git & Workflow Protocol
 - **Unit Test Requirement**: Every change must be validated against the full 20-file test suite (`npm test -- --run`).
 - **CRITICAL GIT CONSTRAINT**: Code changes are committed locally on the working branch (`web-1`). NEVER execute `git push` under any circumstances.
+
+---
+
+## 6. Documented Error Patterns, Anti-Patterns & Defensive Fixes
+
+1. **Fixed Positioning inside Centered 820px Canvas**:
+   - **Error**: Using `position: fixed; left: 14px;` for bottom floating CTA docks.
+   - **Consequence**: On desktop displays, `left: 14px` anchors to the far left viewport edge, shifting the CTA button out of alignment with the centered 820px layout.
+   - **Fix**: Always use `position: fixed; left: 50%; transform: translateX(-50%); width: calc(100% - 28px); maxWidth: 792px;` so fixed elements sit dead-centered on both desktop and mobile.
+
+2. **Floating CTA Dock & BottomNav Touch/Overlap Bug**:
+   - **Error**: Setting fixed CTA dock `bottom: 84px`, causing the button bottom to touch the top border of `BottomNav` (which sits at 84px top edge).
+   - **Fix**: Set floating CTA dock `bottom: 96px` to maintain a distinct 12px vertical gap above `BottomNav`.
+
+3. **Excessive Clearance Spacer White Space**:
+   - **Error**: Over-inflating clearance spacers (e.g., 162px/160px), creating a large empty white gap below the last content card when scrolled down.
+   - **Fix**: Calibrate filter drawer clearance spacer to **`140px`**, keeping content tightly bound to the search CTA dock without excess whitespace.
+
+4. **Infinite Re-render & Flickering Skeleton Loop (`DriverFeed.jsx`)**:
+   - **Error**: Re-creating array props or state inside render loops, triggering repeated loading skeleton flashes.
+   - **Fix**: Wrap filtered lists in `useMemo` and use module-level constant arrays (`const EMPTY_ARRAY = []`).
+
+5. **Global `document.body` Overflow Mutation Bug (`JobMapModal`)**:
+   - **Error**: Mutating `document.body.style.overflow = 'hidden'` when opening Leaflet map modal.
+   - **Consequence**: Page scroll position resets and jumps unexpectedly when closing the modal.
+   - **Fix**: Render modals via `createPortal` into `#root` and handle scroll containment strictly in CSS.
+
+6. **AI Gateway Request Timeout & Raw JSON Exposure**:
+   - **Error**: Gateway AI calls hanging indefinitely or returning unparsed `<think>` tags and raw JSON blocks to the UI.
+   - **Fix**: Use `AbortController` timeout (15–25s) in `michiApiService.js` and sanitize output via `sanitizeMichiResponse()`.

@@ -29,3 +29,28 @@ This repository represents the Michi Japan Logistics Web Application. All 39 cor
 - Maintain 100% unit test pass rate (`npm test -- --run`).
 - Local commits only on `web-1` branch. **NEVER execute `git push`**.
 - Support 5 languages: Japanese (`ja`), Uzbek (`uz`), English (`en`), Russian (`ru`), Chinese (`zh`).
+
+## 4. Documented Error Patterns, Anti-Patterns & Defensive Fixes
+1. **Fixed Positioning inside Centered 820px Canvas**:
+   - **Error**: `position: fixed; left: 14px;` causes floating CTA docks to align to the viewport left edge on desktop displays.
+   - **Fix**: Always use `position: fixed; left: 50%; transform: translateX(-50%); width: calc(100% - 28px); maxWidth: 792px;` so fixed elements stay dead-centered on desktop (820px) and mobile.
+
+2. **Floating CTA Dock & BottomNav Touch/Overlap Bug**:
+   - **Error**: CTA dock at `bottom: 84px` touches the top border of `BottomNav`.
+   - **Fix**: Set floating CTA dock at `bottom: 96px` to maintain a 12px vertical gap above `BottomNav`.
+
+3. **Excessive Clearance Spacer White Space**:
+   - **Error**: Over-inflating clearance spacers (e.g., 162px/160px), creating empty white space below the last content card.
+   - **Fix**: Set filter drawer clearance spacer to **`140px`**, keeping content tightly bound to the search CTA dock.
+
+4. **Infinite Re-render & Flickering Skeleton Loop (`DriverFeed.jsx`)**:
+   - **Error**: Inline array props or un-memoized state triggering constant re-renders.
+   - **Fix**: Memoize computed lists with `useMemo` and use module-level constant arrays (`const EMPTY_ARRAY = []`).
+
+5. **Global `document.body` Overflow Mutation Bug (`JobMapModal`)**:
+   - **Error**: Setting `document.body.style.overflow = 'hidden'` resets page scroll position on modal close.
+   - **Fix**: Render modals via `createPortal` into `#root` and handle scroll containment strictly in CSS.
+
+6. **AI Gateway Request Timeout & Raw JSON Leak**:
+   - **Error**: Gateway AI calls hanging indefinitely or outputting raw `<think>` tags.
+   - **Fix**: Add `AbortController` timeout (15–25s) in `michiApiService.js` and sanitize output via `sanitizeMichiResponse()`.
