@@ -210,7 +210,7 @@ export default function VoiceAssistant({
       // BOSQICH 2: Lingvistik qoidalar va Ekran Konteksti
       const screenContext = screenStructureIndex.getRichScreenContext(activeTab, profileActivePage, speechLang);
 
-      // BOSQICH 3: Multi-AI Gateway / VPS Shlyuzi orqali javob olish
+      // BOSQICH 3: Multi-AI Gateway / VPS Shlyuzi (https://api.michi.jp.net/api/chat) orqali javob olish
       let replyText = '';
       try {
         const gatewayRes = await michiApiService.sendChatMessage({
@@ -218,12 +218,12 @@ export default function VoiceAssistant({
           speechLang,
           context: screenContext
         });
-        replyText = gatewayRes?.text || gatewayRes?.reply;
+        replyText = typeof gatewayRes === 'string' ? gatewayRes : (gatewayRes?.reply || gatewayRes?.text || gatewayRes?.message || '');
       } catch (gatewayErr) {
         console.warn('[VoiceAssistant] Gateway xatosi, kaskadli AI qatlamiga o\'tilmoqda:', gatewayErr.message);
         // Tier 1-3 Kaskadli zaxira tarmog'i
         const fallbackRes = await multiAiMeshEngine.processCascadingQuery(text, speechLang);
-        replyText = fallbackRes?.text;
+        replyText = typeof fallbackRes === 'string' ? fallbackRes : (fallbackRes?.text || fallbackRes?.reply || '');
       }
 
       // Javobni nozik yapon biznes odobiga o'girish (agar til ja bo'lsa)
