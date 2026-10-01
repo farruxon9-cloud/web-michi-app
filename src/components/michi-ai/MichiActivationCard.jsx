@@ -57,15 +57,39 @@ export default function MichiActivationCard({ onActivate, speechLang }) {
       onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
-      style={{ cursor: 'pointer' }}
+      style={{
+        cursor: 'pointer',
+        background: 'rgba(238, 242, 255, 0.75)',
+        border: '1.5px solid rgba(199, 210, 254, 0.6)',
+        borderRadius: '20px',
+        padding: '24px 20px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
+        boxSizing: 'border-box'
+      }}
       aria-label={texts.title}
     >
-      <div className="activation-icon-ring" aria-hidden="true">
-        <Power size={22} color="#5E5CE6" />
+      <div 
+        style={{
+          width: '44px',
+          height: '44px',
+          borderRadius: '50%',
+          background: 'rgba(199, 210, 254, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#4F46E5',
+          flexShrink: 0
+        }}
+        aria-hidden="true"
+      >
+        <Power size={22} color="#4F46E5" />
       </div>
-      <div className="activation-text">
-        <h4>{texts.title}</h4>
-        <p>{texts.desc}</p>
+      <div className="activation-text" style={{ marginTop: '10px', width: '100%' }}>
+        <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#1E1B4B' }}>{texts.title}</h4>
+        <p style={{ margin: '4px 0 16px 0', fontSize: '12px', color: '#6B7280', lineHeight: '1.4' }}>{texts.desc}</p>
       </div>
       <button 
         type="button"
@@ -74,8 +98,23 @@ export default function MichiActivationCard({ onActivate, speechLang }) {
           e.stopPropagation();
           onActivate?.();
         }}
+        style={{
+          background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+          color: '#FFFFFF',
+          padding: '10px 24px',
+          borderRadius: '20px',
+          fontWeight: '800',
+          fontSize: '13.5px',
+          border: 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          boxShadow: '0 4px 14px rgba(59, 130, 246, 0.35)',
+          transition: 'all 0.15s ease'
+        }}
       >
-        <Sparkles size={15} aria-hidden="true" /> {texts.btn}
+        <Sparkles size={15} aria-hidden="true" color="#FFF" /> {texts.btn}
       </button>
     </div>
   );

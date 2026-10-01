@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Power, Trash2, X } from 'lucide-react';
+import { Sparkles, Power, Trash2, X, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export default function MichiDrawerHeader({
@@ -36,21 +36,40 @@ export default function MichiDrawerHeader({
       case 'speaking':
         return t('statusSpeaking', 'Gapirmoqda...');
       default:
-        return t('statusReady', 'Tayyor');
+        return t('statusReady', '準備完了');
     }
   };
 
   return (
     <div className="voice-drawer-header">
       <div className="voice-drawer-title-box">
-        <div className="ai-logo-gradient small" aria-hidden="true">
+        {/* Back Arrow Button matching Screenshot 2 */}
+        <button
+          type="button"
+          className="voice-drawer-back-btn"
+          onClick={onClose}
+          title={t('backBtn', 'Orqaga')}
+          aria-label={t('backBtn', 'Orqaga')}
+          style={{
+            width: '36px', height: '36px', borderRadius: '50%',
+            border: 'none', background: 'rgba(118, 118, 128, 0.08)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: 'var(--text-main)', flexShrink: 0,
+            transition: 'all 0.15s ease'
+          }}
+        >
+          <ArrowLeft size={18} />
+        </button>
+
+        <div className="ai-logo-gradient small" aria-hidden="true" style={{ background: 'linear-gradient(135deg, #A855F7 0%, #7E22CE 100%)', borderRadius: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <Sparkles size={16} color="#FFF" />
         </div>
+
         <div>
-          <h3 className="voice-drawer-title">Michi AI Hub</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span className={`voice-drawer-status-dot ${status || 'ready'}`} aria-hidden="true"></span>
-            <span className="voice-drawer-status-text">
+          <h3 className="voice-drawer-title" style={{ fontSize: '16px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>Michi AI Hub</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '1px' }}>
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#30D158', display: 'inline-block' }} aria-hidden="true"></span>
+            <span className="voice-drawer-status-text" style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>
               {getStatusText()}
             </span>
           </div>

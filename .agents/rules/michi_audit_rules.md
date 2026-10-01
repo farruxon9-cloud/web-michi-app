@@ -32,10 +32,13 @@ This file documents all technical, architectural, layout, component fixes, and e
 - **`Dashboard.jsx`**: Bento hero carousel slider, calendar week selector, Michi Voice AI card, 3D JDM Truck Navigation banner, lofi music player.
 
 ### B. Michi AI Suite (`src/components/michi-ai/*`)
-- **`VoiceAssistant.jsx` & `VoiceAssistant.css`**: Restored right-aligned side drawer panel (`max-width: 440px; right: 0; top: 0; bottom: 0;`) with `backdrop-filter: blur(16px)` overlay, keeping page content visible on the left.
-- **`MichiDrawerTrigger.jsx`**: Clamped dragging bounds to `minY: 110px` to prevent trigger button from sliding behind `.global-header` (height: 56px).
-- **`MichiChatPanel.jsx`**: Integrated Gateway AI endpoint `api.michi.jp.net/api/chat`, localized error handling, `<think>` tag stripping via `sanitizeMichiResponse()`.
-- **`AssistHeroShowcase.jsx`**: Fixed dangling syntax error lines at end of file, added keyboard shortcuts and feature cards.
+- **`MichiDrawerTrigger.jsx`**: Floating AI trigger is styled as a 38px x 44px rounded square (`borderRadius: 14px 0 0 14px`), `linear-gradient(135deg, #4F46E5, #3B82F6)`, `box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45)` displaying a white sparkle icon `✨` and bold white `"AI"` badge.
+- **`MichiSideDrawer.jsx` & Subcomponents**:
+  - **`MichiDrawerHeader.jsx`**: Features a circular left back button `←`, purple gradient icon badge (`#A855F7` to `#7E22CE`) with `✨`, `Michi AI Hub` title, `🟢 準備完了` status, and top-right actions (Power `⏻`, Trash `🗑`, Close `✕`).
+  - **`MichiQuickChips.jsx`**: 3-column grid with color-coded circular icon badges: `🚗 免許切替` (Orange `#FF9500`), `🌐 ビザ情報` (Blue `#0A84FF`), `☀️ 天気・生活` (Green `#30D158`).
+  - **`MichiActivationCard.jsx`**: Soft lavender glass card with circular power badge `⏻`, title `Michi AI を有効化`, and primary blue gradient button `✨ AI を起動する`.
+  - **`MichiEmptyChatView.jsx`**: Robot avatar badge `🤖` with title `Michi AI アシスタントへようこそ` and subtext `質問を入力するか、上のクイックタグをタップしてください。`.
+  - **`MichiDictationInput.jsx`**: Circular mic button, rounded pill input (`Michi AI に質問を入力...`), and blue circular send button.
 - **Specialized AI Assistants (9 Cards)**:
   1. `CandidateMatchingCard.jsx`
   2. `CareerAdvancementCard.jsx`

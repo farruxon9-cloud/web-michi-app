@@ -34,15 +34,22 @@ export default function MichiEmptyChatView({ speechLang = 'ja' }) {
   const subtitleText = t('emptyChatSub', localized.subtitle);
 
   return (
-    <div className="voice-drawer-empty" role="region" aria-label="Bo'sh chat holati">
-      <div className="empty-bot-avatar" aria-hidden="true">
-        <Bot size={28} color="#5e5ce6" />
-        <Sparkles size={14} className="empty-sparkle-badge" color="#FFD700" />
+    <div className="voice-drawer-empty" role="region" aria-label="Bo'sh chat holati" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '30px 16px', margin: 'auto 0' }}>
+      <div 
+        style={{
+          width: '44px', height: '44px', borderRadius: '50%',
+          background: 'rgba(238, 242, 255, 0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#4F46E5', flexShrink: 0
+        }} 
+        aria-hidden="true"
+      >
+        <Bot size={24} color="#4F46E5" />
       </div>
-      <h4 className="empty-title">
+      <h4 className="empty-title" style={{ margin: '10px 0 0 0', fontSize: '15px', fontWeight: '800', color: '#1E1B4B' }}>
         {titleText}
       </h4>
-      <p className="empty-sub">
+      <p className="empty-sub" style={{ margin: '4px 0 0 0', fontSize: '11.5px', color: '#6B7280', lineHeight: '1.4' }}>
         {subtitleText}
       </p>
     </div>

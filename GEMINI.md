@@ -19,12 +19,13 @@ This repository contains the Michi Japan Logistics Web Application codebase. The
 ---
 
 ## 2. Michi AI Suite Standards (`src/components/michi-ai/*`)
-- **Side Drawer Panel (`VoiceAssistant.css`)**: AI Hub drawer is right-aligned (`max-width: 440px; right: 0; top: 0; bottom: 0;`) with a glassmorphism backdrop blur (`backdrop-filter: blur(16px);`), keeping the main web content visible on the left side.
-- **Trigger Alignment (`MichiDrawerTrigger.jsx`)**: Floating trigger `minY` bound is set to `110px` to prevent the trigger button from sliding behind the `.global-header` (height: 56px).
-- **Gateway AI Integration (`MichiChatPanel.jsx` & `michiApiService.js`)**:
-  - AI requests use `POST https://api.michi.jp.net/api/chat` with body `{ "message": text }`.
-  - All AI responses must pass through `sanitizeMichiResponse()` to strip `<think>...</think>` tags and raw JSON leaks.
-  - Fetch requests use `AbortController` timeout (15–25s) and handle HTTP 429 rate limits gracefully.
+- **Michi AI Floating Trigger (`MichiDrawerTrigger.jsx`)**: 38px x 44px rounded rectangle (`borderRadius: 14px 0 0 14px`), `linear-gradient(135deg, #4F46E5, #3B82F6)` with white `✨` sparkle + `"AI"` badge, box shadow `0 6px 20px rgba(79, 70, 229, 0.45)`.
+- **Michi AI Hub Page (`MichiSideDrawer.jsx` & Subcomponents)**:
+  - Header: Circular back button `←`, purple square icon badge (`#A855F7` to `#7E22CE`) with `✨`, title `Michi AI Hub`, status `🟢 準備完了`, actions (Power `⏻`, Trash `🗑`, Close `✕`).
+  - Quick Chips: 3-column color-coded grid: `🚗 免許切替` (Orange `#FF9500`), `🌐 ビザ情報` (Blue `#0A84FF`), `☀️ 天気・生活` (Green `#30D158`).
+  - Hero Card: Soft lavender glass banner with circular power badge `⏻`, title `Michi AI を有効化`, and primary blue gradient button `✨ AI を起動する`.
+  - Empty Chat View: Robot avatar badge `🤖` with title `Michi AI アシスタントへようこそ` and subtext `質問を入力するか、上のクイックタグをタップしてください。`.
+  - Input Bar: Mic button, rounded pill input (`Michi AI に質問を入力...`), and blue circular send button.
 
 ---
 

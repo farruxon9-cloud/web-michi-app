@@ -29,6 +29,14 @@ export default function MichiDictationInput({
       className="voice-drawer-input-form" 
       onSubmit={handleFormSubmit}
       aria-label="Michi AI kiritish shakli"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        width: '100%',
+        padding: '8px 0 4px 0',
+        boxSizing: 'border-box'
+      }}
     >
       {/* Mikrofon / Ovozli diktovka tugmasi */}
       <MichiMicButton 
