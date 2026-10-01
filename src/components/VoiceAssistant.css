@@ -1906,6 +1906,12 @@ html.dark-mode .ai-response-text {
   transition: box-shadow 0.25s ease, transform 0.2s ease;
 }
 
+@media (min-width: 821px) {
+  .voice-side-drawer-trigger {
+    right: max(0px, calc((100vw - 820px) / 2));
+  }
+}
+
 .voice-side-drawer-trigger:active {
   cursor: grabbing;
 }
