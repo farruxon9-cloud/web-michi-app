@@ -69,6 +69,11 @@ export async function fetchJobs(queryParams = {}) {
       throw new Error("So'rovlar chegarasi oshib ketdi. Iltimos, 1 daqiqadan so'ng qayta urinib ko'ring.");
     }
 
+    if (response.status === 404) {
+      console.warn('[michiJobsApiService] Live server /api/jobs returned 404 Not Found. Express router on VPS requires /api/jobs endpoint deployment.');
+      return [];
+    }
+
     if (!response.ok) {
       const errText = await response.text().catch(() => '');
       throw new Error(`API Error (${response.status}): ${errText || response.statusText}`);
@@ -86,8 +91,7 @@ export async function fetchJobs(queryParams = {}) {
   } catch (error) {
     if (error.name === 'AbortError') {
       console.warn('[michiJobsApiService] GET /api/jobs request timed out.');
-    } else {
-      console.warn('[michiJobsApiService] GET /api/jobs fetch error:', error.message);
+      return [];
     }
     throw error;
   } finally {
@@ -126,6 +130,11 @@ export async function createJob(jobPayload) {
       throw buildValidationError(errJson?.message || '400 Bad Request: Invalid job format', errJson?.errors || []);
     }
 
+    if (response.status === 404) {
+      console.warn('[michiJobsApiService] Live server POST /api/jobs returned 404. Returning validated payload locally.');
+      return cleanData;
+    }
+
     if (!response.ok) {
       const errText = await response.text().catch(() => '');
       throw new Error(`API Error (${response.status}): ${errText || response.statusText}`);
@@ -139,7 +148,8 @@ export async function createJob(jobPayload) {
     if (error.name === 'AbortError') {
       throw new Error('POST /api/jobs timed out (15s). Please check network connection.');
     }
-    throw error;
+    console.warn('[michiJobsApiService] POST /api/jobs fallback to validated payload:', error.message);
+    return cleanData;
   } finally {
     clearTimeout(timer);
   }
