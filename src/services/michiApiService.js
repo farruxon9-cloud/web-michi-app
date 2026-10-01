@@ -53,11 +53,22 @@ export function sanitizeMichiResponse(text) {
  * @returns {Promise<string>} AI reply text
  */
 export async function sendMichiChatMessage(userMessageText, onChunkUpdate = null) {
-  if (!userMessageText || typeof userMessageText !== 'string' || !userMessageText.trim()) {
+  let cleanInput = '';
+  let chunkCallback = onChunkUpdate;
+
+  if (userMessageText && typeof userMessageText === 'object') {
+    cleanInput = (userMessageText.message || userMessageText.text || userMessageText.query || '').trim();
+    if (typeof userMessageText.onChunkUpdate === 'function') {
+      chunkCallback = userMessageText.onChunkUpdate;
+    }
+  } else if (typeof userMessageText === 'string') {
+    cleanInput = userMessageText.trim();
+  }
+
+  if (!cleanInput) {
     throw new Error('メッセージを入力してください。');
   }
 
-  const cleanInput = userMessageText.trim();
   const controller = new AbortController();
   // 72B model va Search oqimlari hisobga olinib, timeout 25s ga kengaytirildi
   const timer = setTimeout(() => controller.abort(), 25000);
@@ -109,8 +120,8 @@ export async function sendMichiChatMessage(userMessageText, onChunkUpdate = null
 
     const cleanReply = sanitizeMichiResponse(rawReply);
 
-    if (typeof onChunkUpdate === 'function') {
-      onChunkUpdate(cleanReply);
+    if (typeof chunkCallback === 'function') {
+      chunkCallback(cleanReply);
     }
 
     return cleanReply;
