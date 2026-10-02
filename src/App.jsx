@@ -21,6 +21,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ReferralModal from './components/ReferralModal';
 import { getPermanentUserId } from './utils/userIdManager';
 import { AppProvider } from './context/AppContext';
+import { submitApplicationToBackend } from './services/applicationService';
+
 
 const TRACKS = [
   { id: 1, title: 'Tokyo Rain (東京の雨)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/chill-lofi-background-music-331434.mp3' },
@@ -132,6 +134,20 @@ function App() {
   useEffect(() => {
     if (showJDMNavigation) setHasOpenedJDM(true);
   }, [showJDMNavigation]);
+
+  // 5-BOSQICH: URL'dagi referral parametrini ushlab qolish (?ref=...)
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && window.location) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refCode = urlParams.get('ref');
+        if (refCode) {
+          sessionStorage.setItem('michi_referrer_id', refCode);
+        }
+      }
+    } catch (e) {}
+  }, []);
+
 
   // Mikrofon resurslarini xavfsiz boshqarish
   const stopMicrophoneStream = useCallback(() => {
