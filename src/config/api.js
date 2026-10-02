@@ -1,5 +1,8 @@
 // src/config/api.js
-export const API_BASE_URL = 'https://api.michi.jp.net';
+export const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) 
+  ? import.meta.env.VITE_API_BASE_URL 
+  : 'https://api.michi.jp.net';
+
 
 export const API_ENDPOINTS = {
   // Auth
