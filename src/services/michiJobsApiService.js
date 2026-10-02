@@ -11,14 +11,16 @@
  */
 
 import { validateJobPayload, buildValidationError } from './schemaValidationService';
+import { API_BASE_URL, API_ENDPOINTS, getAuthHeaders } from '../config/api';
 
-export const MICHI_BASE_API_URL = 'https://api.michi.jp.net';
-export const MICHI_JOBS_API_ENDPOINT = `${MICHI_BASE_API_URL}/api/jobs`;
+export const MICHI_BASE_API_URL = API_BASE_URL;
+export const MICHI_JOBS_API_ENDPOINT = API_ENDPOINTS.JOBS;
 
 export const DEFAULT_API_HEADERS = {
   'Content-Type': 'application/json',
   'Accept': 'application/json'
 };
+
 
 /**
  * Builds full URL with query parameters for GET /api/jobs
