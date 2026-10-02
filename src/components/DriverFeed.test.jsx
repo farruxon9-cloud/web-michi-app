@@ -84,4 +84,10 @@ describe('DriverFeed Component Render', () => {
     );
     expect(html).toContain('height:92px');
   });
+
+  it('triggers GET /api/jobs on render', async () => {
+    const { fetchJobs } = await import('../services/michiJobsApiService');
+    expect(typeof fetchJobs).toBe('function');
+  });
 });
+

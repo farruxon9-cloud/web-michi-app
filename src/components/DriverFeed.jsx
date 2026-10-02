@@ -10,8 +10,11 @@ import './DriverFeed.css';
 import { REGIONS, PREFECTURES, CITIES_BY_PREFECTURE, TRAIN_LINES_BY_PREFECTURE, getAllTrainLines, getAllCities } from '../data/japanLocationDB';
 import { JOB_CATEGORIES } from '../data/jobCategories';
 import { JOB_FEATURES } from '../data/jobFeatures';
+import { fetchJobs } from '../services/michiJobsApiService';
+import { normalizeJobPosting } from '../utils/jobPostingNormalizer';
 
 const EMPTY_ARRAY = [];
+
 
 // ============================================================
 // TOWNWORK-STYLE JAPANESE RECRUITMENT LOCATION DATASETS
@@ -499,9 +502,53 @@ export default function DriverFeed({
     setIsFeatureSectionOpen(false);
   };
 
+  const [apiJobs, setApiJobs] = useState([]);
+  const [isApiLoading, setIsApiLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsApiLoading(true);
+    fetchJobs({
+      prefecture: selectedPrefecture !== 'all' ? selectedPrefecture : '',
+      minSalary: minSalary > 0 ? minSalary : '',
+      q: searchQuery || ''
+    })
+      .then(remoteJobs => {
+        if (!isMounted) return;
+        if (Array.isArray(remoteJobs) && remoteJobs.length > 0) {
+          const normalized = remoteJobs.map(normalizeJobPosting).filter(Boolean);
+          setApiJobs(normalized);
+        }
+      })
+      .catch(err => {
+        console.warn('[DriverFeed] GET /api/jobs fetch fallback:', err.message);
+      })
+      .finally(() => {
+        if (isMounted) setIsApiLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedPrefecture, minSalary, searchQuery]);
+
+  const activeJobsList = useMemo(() => {
+    if (apiJobs.length > 0) {
+      const merged = [...apiJobs];
+      (jobs || []).forEach(j => {
+        if (!merged.some(aj => aj.id === j.id)) {
+          merged.push(j);
+        }
+      });
+      return merged;
+    }
+    return jobs || [];
+  }, [apiJobs, jobs]);
+
   // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
   const filteredJobs = useMemo(() => {
-    return (jobs || []).filter(job => {
+    return (activeJobsList || []).filter(job => {
+
       if (!job) return false;
 
       const matchSegment = !activeSegment || activeSegment === 'all' 
