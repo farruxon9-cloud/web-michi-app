@@ -1,35 +1,45 @@
 // src/services/applicationService.js
 import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
 
-export const submitApplicationToBackend = async (jobId, applicantData) => {
-  const referrerId = typeof sessionStorage !== 'undefined'
-    ? (sessionStorage.getItem('michi_referrer_id') || applicantData.referrerId || null)
-    : (applicantData.referrerId || null);
+export const submitApplication = async (jobId, applicantInfo) => {
+  const referrerId = typeof sessionStorage !== 'undefined' ? (sessionStorage.getItem('michi_referrer_id') || null) : null;
 
   const payload = {
-    jobId: jobId,
-    fullName: applicantData.fullName,
-    phone: applicantData.phone,
-    email: applicantData.email || '',
-    visaType: applicantData.visaType || '特定技能',
-    japaneseLevel: applicantData.japaneseLevel || 'N3',
+    type: 'job',
+    targetId: jobId,
+    applicantData: {
+      name: applicantInfo.name || applicantInfo.fullName,
+      phone: applicantInfo.phone,
+      email: applicantInfo.email,
+      license: applicantInfo.license || ''
+    },
     referrerId: referrerId
   };
 
-  const res = await fetch(API_ENDPOINTS.APPLICATIONS, {
+  const response = await fetch(API_ENDPOINTS.APPLICATIONS, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Arizani topshirishda xatolik yuz berdi');
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(result.error || 'Arizani topshirishda xatolik yuz berdi');
   }
 
-  return await res.json();
+  return result;
+};
+
+export const submitApplicationToBackend = async (jobId, applicantData) => {
+  return submitApplication(jobId, {
+    name: applicantData.fullName || applicantData.name,
+    phone: applicantData.phone,
+    email: applicantData.email,
+    license: applicantData.license
+  });
 };
 
 export default {
+  submitApplication,
   submitApplicationToBackend
 };

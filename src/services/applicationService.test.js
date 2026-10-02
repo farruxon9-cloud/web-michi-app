@@ -33,16 +33,17 @@ describe('5-BOSQICH: Application & Referral Tracking Service Tests', () => {
     expect(fetch).toHaveBeenCalledWith(API_ENDPOINTS.APPLICATIONS, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer jwt_applicant_999'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        jobId: 101,
-        fullName: 'Farrux Kanoatov',
-        phone: '080-1234-5678',
-        email: 'farrux@michi.jp',
-        visaType: '特定技能',
-        japaneseLevel: 'N2',
+        type: 'job',
+        targetId: 101,
+        applicantData: {
+          name: 'Farrux Kanoatov',
+          phone: '080-1234-5678',
+          email: 'farrux@michi.jp',
+          license: ''
+        },
         referrerId: 'REF_MEMBER_777'
       })
     });
