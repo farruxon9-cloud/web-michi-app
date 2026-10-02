@@ -12,7 +12,8 @@ import { getAllTrainLineOptions, getStationsByLine, getStationsByPrefecture } fr
 import './DriverFeed.css';
 import { JOB_CATEGORIES } from '../data/jobCategories';
 import { submitJobToBackend } from '../services/michiJobsApiService';
-import { submitSchoolToBackend } from '../services/schoolService';
+import { submitSchoolToBackend, createSchoolInBackend } from '../services/schoolService';
+
 
 
 
@@ -633,21 +634,21 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         setSchools(schools.map(s => s.id === newJob.id ? school : s));
       } else {
         setSchools([school, ...schools]);
-        // 4-BOSQICH: Send driving school payload to VPS backend (POST /api/schools)
-        submitSchoolToBackend({
+        // Send driving school payload to VPS backend (POST /api/schools)
+        createSchoolInBackend({
           name: school.name,
-          prefecture: school.prefecture,
-          city: school.detailAddress,
-          phone: school.phone,
-          email: school.email,
-          description: school.description,
-          title: school.type,
-          priceNum: 300000
+          prefecture: school.prefecture || 'Tokyo',
+          city: school.detailAddress || '',
+          lat: 35.6686,
+          lng: 139.4776,
+          courses: Array.isArray(school.courses) ? school.courses.map(c => ({ name: typeof c === 'string' ? c : (c.name || 'Course'), license: 'Heavy', price: 300000 })) : [{ name: school.type || 'Course', license: 'Heavy', price: 300000 }],
+          tags: school.langs || []
         }).catch(err => {
           console.warn('[CompanyHome] Backend school post warning:', err.message);
         });
       }
     } else {
+
 
       const job = {
         id: newJob.id || Date.now(),

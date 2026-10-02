@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchSchoolsFromBackend, submitSchoolToBackend } from './schoolService';
+import { fetchSchoolsFromBackend, createSchoolInBackend, submitSchoolToBackend } from './schoolService';
 import { API_ENDPOINTS } from '../config/api';
 
 global.fetch = vi.fn();
@@ -34,33 +34,38 @@ describe('4-BOSQICH: Driving Schools Backend API Service Tests', () => {
     expect(data).toEqual([]);
   });
 
-  it('should submit new school via POST /api/schools with auth header', async () => {
-    localStorage.setItem('michi_jwt_token', 'school_jwt_token_999');
-
+  it('should create new school via createSchoolInBackend (POST /api/schools)', async () => {
     fetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ success: true, id: 'sch_new_1' })
+      json: async () => ({ success: true, id: 'sch_new_888' })
     });
 
     const schoolData = {
       name: 'Fuji Gasshuku School',
       prefecture: 'Shizuoka',
-      priceNum: 290000,
-      license: 'Heavy',
-      phone: '054-123-4567'
+      city: 'Gotemba',
+      lat: 35.3000,
+      lng: 138.9333,
+      courses: [{ name: 'Heavy License', license: 'Heavy', price: 320000 }],
+      tags: ['Gasshuku', 'UzbekSupport']
     };
 
-    const res = await submitSchoolToBackend(schoolData);
+    const res = await createSchoolInBackend(schoolData);
 
     expect(fetch).toHaveBeenCalledWith(API_ENDPOINTS.SCHOOLS, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer school_jwt_token_999'
-      },
-      body: expect.stringContaining('"name":"Fuji Gasshuku School"')
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Fuji Gasshuku School',
+        prefecture: 'Shizuoka',
+        city: 'Gotemba',
+        lat: 35.3,
+        lng: 138.9333,
+        courses: [{ name: 'Heavy License', license: 'Heavy', price: 320000 }],
+        tags: ['Gasshuku', 'UzbekSupport']
+      })
     });
 
-    expect(res).toEqual({ success: true, id: 'sch_new_1' });
+    expect(res).toEqual({ success: true, id: 'sch_new_888' });
   });
 });

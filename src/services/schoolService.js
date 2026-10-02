@@ -12,41 +12,32 @@ export const fetchSchoolsFromBackend = async () => {
   }
 };
 
-export const submitSchoolToBackend = async (schoolData) => {
+export const createSchoolInBackend = async (schoolData) => {
   const payload = {
-    name: schoolData.name || schoolData.title || 'Avtomaktab',
-    location: {
-      prefecture: schoolData.prefecture || 'Tokyo',
-      city: schoolData.city || '',
-      lat: Number(schoolData.lat) || 35.6812,
-      lng: Number(schoolData.lng) || 139.7671
-    },
-    courses: Array.isArray(schoolData.courses) ? schoolData.courses : [{
-      name: schoolData.type || schoolData.title || 'Driving Course',
-      license: schoolData.license || 'Heavy',
-      price: Number(schoolData.priceNum || schoolData.price) || 300000
-    }],
-    phone: schoolData.phone || '',
-    email: schoolData.email || '',
-    description: schoolData.description || '',
-    hasAccommodation: Boolean(schoolData.hasAccommodation)
+    name: schoolData.name,
+    prefecture: schoolData.prefecture,
+    city: schoolData.city || '',
+    lat: Number(schoolData.lat) || 35.6686,
+    lng: Number(schoolData.lng) || 139.4776,
+    courses: schoolData.courses || [], // [{ name, license, price }]
+    tags: schoolData.tags || []
   };
 
   const res = await fetch(API_ENDPOINTS.SCHOOLS, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || 'Avtomaktab e‘lonini saqlashda xatolik yuz berdi');
-  }
 
   return await res.json();
 };
 
+export const submitSchoolToBackend = async (schoolData) => {
+  return createSchoolInBackend(schoolData);
+};
+
 export default {
   fetchSchoolsFromBackend,
+  createSchoolInBackend,
   submitSchoolToBackend
 };
