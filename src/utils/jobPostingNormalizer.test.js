@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeJobPosting } from './jobPostingNormalizer';
+import { normalizeJobPosting, normalizeSchoolPosting, formatSalaryJPY } from './jobPostingNormalizer';
 
-describe('Job Posting Normalizer Tests', () => {
+describe('Job & School Posting Normalizer Tests', () => {
   it('should normalize minimal raw job object with all required Townwork fields', () => {
     const raw = {
       title: 'Yangi yuk mashinasi haydovchisi',
@@ -19,6 +19,22 @@ describe('Job Posting Normalizer Tests', () => {
     expect(normalized.walkTime).toBe(8);
     expect(normalized.transportPaid).toBe(true);
     expect(normalized.noExperienceOk).toBe(true);
+  });
+
+  it('should format numeric salary into JPY string', () => {
+    expect(formatSalaryJPY(350000)).toBe('¥350,000 / oyiga');
+    expect(formatSalaryJPY('400000')).toBe('¥400,000 / oyiga');
+
+    const raw = {
+      title: 'Kuryer',
+      company: 'Sagawa',
+      salary: 350000,
+      licenses: ['oogata', 'futsu']
+    };
+
+    const normalized = normalizeJobPosting(raw);
+    expect(normalized.salary).toBe('¥350,000 / oyiga');
+    expect(normalized.licenses).toEqual(['oogata', 'futsu']);
   });
 
   it('should preserve custom fields when provided', () => {
@@ -46,4 +62,24 @@ describe('Job Posting Normalizer Tests', () => {
     expect(normalized.nearestStation).toBe('仙台駅 (Sendai Station)');
     expect(normalized.walkTime).toBe(3);
   });
+
+  it('should normalize school posting correctly', () => {
+    const rawSchool = {
+      name: 'Tokyo Driving School',
+      price: 320000,
+      location: 'Tokyo, Shinjuku',
+      licenses: ['oogata', 'futsu'],
+      hasAccommodation: true
+    };
+
+    const normalized = normalizeSchoolPosting(rawSchool);
+
+    expect(normalized).toBeDefined();
+    expect(normalized.name).toBe('Tokyo Driving School');
+    expect(normalized.price).toBe('¥320,000');
+    expect(normalized.prefecture).toBe('Tokyo');
+    expect(normalized.licenses).toEqual(['oogata', 'futsu']);
+    expect(normalized.hasAccommodation).toBe(true);
+  });
 });
+
