@@ -19,10 +19,22 @@ export function normalizeJobPosting(rawJob) {
   if (!rawJob) return null;
 
   // Extract prefecture, city, ward, and address parts
-  const fullAddr = rawJob.fullAddress || rawJob.location || '';
+  let fullAddr = '';
   let prefecture = rawJob.prefecture || '';
   let city = rawJob.city || '';
   let ward = rawJob.ward || '';
+  let lat = rawJob.lat;
+  let lng = rawJob.lng;
+
+  if (typeof rawJob.location === 'object' && rawJob.location !== null) {
+    prefecture = prefecture || rawJob.location.prefecture || '';
+    city = city || rawJob.location.city || '';
+    lat = lat !== undefined ? lat : rawJob.location.lat;
+    lng = lng !== undefined ? lng : rawJob.location.lng;
+    fullAddr = [prefecture, city].filter(Boolean).join(', ');
+  } else {
+    fullAddr = typeof rawJob.fullAddress === 'string' ? rawJob.fullAddress : (typeof rawJob.location === 'string' ? rawJob.location : '');
+  }
 
   if (!prefecture) {
     if (fullAddr.includes('Tokyo') || fullAddr.includes('東京')) prefecture = 'Tokyo';
@@ -45,20 +57,33 @@ export function normalizeJobPosting(rawJob) {
     licenses = [rawJob.license];
   }
 
-  // Normalize salary
-  const salaryDisplay = formatSalaryJPY(rawJob.salary);
+  // Normalize salary (handling object { min: 420000, max: 550000 } or numeric or string)
+  let rawSalaryVal = rawJob.salary;
+  let salaryMin = 250000;
+  let salaryMax = 450000;
+
+  if (typeof rawJob.salary === 'object' && rawJob.salary !== null) {
+    salaryMin = rawJob.salary.min || 250000;
+    salaryMax = rawJob.salary.max || salaryMin * 1.5;
+    rawSalaryVal = salaryMin;
+  } else if (typeof rawJob.salaryMin === 'number') {
+    salaryMin = rawJob.salaryMin;
+    salaryMax = rawJob.salaryMax || salaryMin * 1.5;
+  }
+
+  const salaryDisplay = formatSalaryJPY(rawSalaryVal);
 
   return {
     id: rawJob.id || Date.now(),
     company: rawJob.company || 'Kompaniya',
     title: rawJob.title || 'Ish o\'rni',
     salary: salaryDisplay,
-    salaryMin: typeof rawJob.salaryMin === 'number' ? rawJob.salaryMin : (typeof rawJob.salary === 'number' ? rawJob.salary : 250000),
-    salaryMax: typeof rawJob.salaryMax === 'number' ? rawJob.salaryMax : (typeof rawJob.salary === 'number' ? rawJob.salary * 1.5 : 450000),
+    salaryMin,
+    salaryMax,
     type: rawJob.type || 'fulltime', // fulltime | parttime | contract | dispatch
     category: rawJob.category || 'delivery_driver',
     subcategory: rawJob.subcategory || 'delivery_local',
-    payType: rawJob.payType || (String(rawJob.salary).includes('soat') ? 'hourly' : 'monthly'),
+    payType: rawJob.payType || (String(salaryDisplay).includes('soat') ? 'hourly' : 'monthly'),
     duration: rawJob.duration || 'long', // long | short_1m | short_1w | single_day
     startTime: rawJob.startTime || '8',
     transportPaid: rawJob.transportPaid !== undefined ? rawJob.transportPaid : true,
@@ -67,12 +92,12 @@ export function normalizeJobPosting(rawJob) {
     shoukaiAmount: rawJob.shoukaiAmount || '¥30,000',
     image: rawJob.image || 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800',
     verified: rawJob.verified !== undefined ? rawJob.verified : true,
-    location: rawJob.location || fullAddr,
+    location: typeof rawJob.location === 'string' ? rawJob.location : fullAddr,
     prefecture,
     city,
     ward,
-    lat: rawJob.lat ? parseFloat(rawJob.lat) : 35.6812,
-    lng: rawJob.lng ? parseFloat(rawJob.lng) : 139.7671,
+    lat: lat ? parseFloat(lat) : 35.6812,
+    lng: lng ? parseFloat(lng) : 139.7671,
     fullAddress: fullAddr,
     nearestStation: rawJob.nearestStation || '東京駅 (Tokyo Station)',
     walkTime: rawJob.walkTime !== undefined ? Number(rawJob.walkTime) : 8,
@@ -97,8 +122,19 @@ export function normalizeJobPosting(rawJob) {
 export function normalizeSchoolPosting(rawSchool) {
   if (!rawSchool) return null;
 
-  const fullAddr = rawSchool.fullAddress || rawSchool.location || '';
+  let fullAddr = '';
   let prefecture = rawSchool.prefecture || '';
+  let lat = rawSchool.lat;
+  let lng = rawSchool.lng;
+
+  if (typeof rawSchool.location === 'object' && rawSchool.location !== null) {
+    prefecture = prefecture || rawSchool.location.prefecture || '';
+    lat = lat !== undefined ? lat : rawSchool.location.lat;
+    lng = lng !== undefined ? lng : rawSchool.location.lng;
+    fullAddr = prefecture;
+  } else {
+    fullAddr = typeof rawSchool.fullAddress === 'string' ? rawSchool.fullAddress : (typeof rawSchool.location === 'string' ? rawSchool.location : '');
+  }
 
   if (!prefecture) {
     if (fullAddr.includes('Tokyo') || fullAddr.includes('東京')) prefecture = 'Tokyo';
@@ -110,11 +146,19 @@ export function normalizeSchoolPosting(rawSchool) {
   }
 
   let licenses = Array.isArray(rawSchool.licenses) ? rawSchool.licenses : [];
+  if (licenses.length === 0 && Array.isArray(rawSchool.courses)) {
+    licenses = rawSchool.courses.map(c => typeof c === 'object' ? c.license : c).filter(Boolean);
+  }
   if (licenses.length === 0 && rawSchool.license) {
     licenses = [rawSchool.license];
   }
 
-  const rawPrice = rawSchool.price || rawSchool.fee || 300000;
+  let rawPrice = rawSchool.price || rawSchool.fee;
+  if (!rawPrice && Array.isArray(rawSchool.courses) && rawSchool.courses[0]) {
+    rawPrice = rawSchool.courses[0].price;
+  }
+  rawPrice = rawPrice || 300000;
+
   const priceDisplay = typeof rawPrice === 'number' 
     ? `¥${rawPrice.toLocaleString('ja-JP')}` 
     : String(rawPrice);
@@ -127,9 +171,9 @@ export function normalizeSchoolPosting(rawSchool) {
     priceNum: typeof rawPrice === 'number' ? rawPrice : 300000,
     duration: rawSchool.duration || '14 kun (Gasshuku)',
     prefecture,
-    location: rawSchool.location || fullAddr || 'Tokyo, Japan',
-    lat: rawSchool.lat ? parseFloat(rawSchool.lat) : 35.6812,
-    lng: rawSchool.lng ? parseFloat(rawSchool.lng) : 139.7671,
+    location: typeof rawSchool.location === 'string' ? rawSchool.location : (fullAddr || 'Tokyo, Japan'),
+    lat: lat ? parseFloat(lat) : 35.6812,
+    lng: lng ? parseFloat(lng) : 139.7671,
     licenses,
     hasAccommodation: rawSchool.hasAccommodation !== undefined ? Boolean(rawSchool.hasAccommodation) : true,
     hasEnglishSupport: rawSchool.hasEnglishSupport !== undefined ? Boolean(rawSchool.hasEnglishSupport) : true,
@@ -142,4 +186,5 @@ export function normalizeSchoolPosting(rawSchool) {
     description: rawSchool.description || ''
   };
 }
+
 

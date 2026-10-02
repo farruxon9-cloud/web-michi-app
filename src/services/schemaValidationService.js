@@ -286,11 +286,36 @@ export function validationMiddleware(type = 'job') {
   };
 }
 
+export function validateJobSchema(payload) {
+  const res = validateJobPayload(payload);
+  if (!res.isValid) {
+    return {
+      isValid: false,
+      errors: res.details ? res.details.map(d => d.message) : [res.message]
+    };
+  }
+  return { isValid: true, data: res.data, errors: [] };
+}
+
+export function validateSchoolSchema(payload) {
+  const res = validateSchoolPayload(payload);
+  if (!res.isValid) {
+    return {
+      isValid: false,
+      errors: res.details ? res.details.map(d => d.message) : [res.message]
+    };
+  }
+  return { isValid: true, data: res.data, errors: [] };
+}
+
 export default {
   validateJobPayload,
   validateSchoolPayload,
+  validateJobSchema,
+  validateSchoolSchema,
   validationMiddleware,
   parseNumericValue,
   parseCoordinateValue,
   buildValidationError
 };
+
