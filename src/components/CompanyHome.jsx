@@ -12,6 +12,8 @@ import { getAllTrainLineOptions, getStationsByLine, getStationsByPrefecture } fr
 import './DriverFeed.css';
 import { JOB_CATEGORIES } from '../data/jobCategories';
 import { submitJobToBackend } from '../services/michiJobsApiService';
+import { submitSchoolToBackend } from '../services/schoolService';
+
 
 
 const INITIAL_COMPANY_JOBS = [
@@ -631,8 +633,22 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         setSchools(schools.map(s => s.id === newJob.id ? school : s));
       } else {
         setSchools([school, ...schools]);
+        // 4-BOSQICH: Send driving school payload to VPS backend (POST /api/schools)
+        submitSchoolToBackend({
+          name: school.name,
+          prefecture: school.prefecture,
+          city: school.detailAddress,
+          phone: school.phone,
+          email: school.email,
+          description: school.description,
+          title: school.type,
+          priceNum: 300000
+        }).catch(err => {
+          console.warn('[CompanyHome] Backend school post warning:', err.message);
+        });
       }
     } else {
+
       const job = {
         id: newJob.id || Date.now(),
         company: profileData?.fullName || "Sagawa Express",

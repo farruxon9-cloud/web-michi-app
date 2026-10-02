@@ -47,6 +47,9 @@ import { PREFECTURES, CITIES_BY_PREFECTURE, TRAIN_LINES_BY_PREFECTURE, getAllTra
 import CustomInlineDropdown from './CustomInlineDropdown';
 import './DrivingAcademy.css';
 import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinadi
+import { fetchSchoolsFromBackend } from '../services/schoolService';
+import { normalizeSchoolPosting } from '../utils/jobPostingNormalizer';
+
 
 
 /**
@@ -335,8 +338,43 @@ export default function DrivingAcademy({
   }, [searchQuery, selectedPrefecture, selectedCitiesList, selectedStations, selectedCourses, selectedStyles, selectedLang, selectedPriceRange, selectedFeatures]);
 
 
+  const [apiSchools, setApiSchools] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchSchoolsFromBackend()
+      .then(remoteSchools => {
+        if (!isMounted) return;
+        if (Array.isArray(remoteSchools) && remoteSchools.length > 0) {
+          const normalized = remoteSchools.map(normalizeSchoolPosting).filter(Boolean);
+          setApiSchools(normalized);
+        }
+      })
+      .catch(err => {
+        console.warn('[DrivingAcademy] GET /api/schools fetch error:', err.message);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const activeSchoolsList = React.useMemo(() => {
+    if (apiSchools.length > 0) {
+      const merged = [...apiSchools];
+      (schools || []).forEach(s => {
+        if (!merged.some(as => as.id === s.id)) {
+          merged.push(s);
+        }
+      });
+      return merged;
+    }
+    return schools || [];
+  }, [apiSchools, schools]);
+
   // Filtrlash: qidiruv, kurs, uslub, prefektura, shaharlar, til, narx va imkoniyatlar bo'yicha
-  const filteredSchools = schools.filter(school => {
+  const filteredSchools = activeSchoolsList.filter(school => {
+
     const query = (searchQuery || '').toLowerCase();
     const localizedName = t(`school_${school.id}_name`, school.name).toLowerCase();
     const localizedLocation = t(`school_${school.id}_location`, school.location).toLowerCase();
