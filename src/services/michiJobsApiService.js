@@ -204,11 +204,63 @@ export async function fetchJobById(jobId) {
   }
 }
 
+export const submitJobToBackend = async (formData) => {
+  const payload = {
+    title: formData.title,
+    company: formData.company,
+    minSalary: Number(formData.minSalary) || 0,
+    maxSalary: Number(formData.maxSalary) || 0,
+    salary: formData.salary || `¥${Number(formData.minSalary).toLocaleString()}`,
+    employmentType: formData.employmentType || '正社員',
+    bonusPrivilege: formData.bonusPrivilege || '',
+    postalCode: formData.postalCode || '',
+    prefecture: formData.prefecture || 'Tokyo',
+    city: formData.city || '',
+    addressLine: formData.addressLine || '',
+    building: formData.building || '',
+    nearestStation: formData.nearestStation || '',
+    walkMinutes: Number(formData.walkMinutes) || 0,
+    lat: Number(formData.lat) || 35.6812,
+    lng: Number(formData.lng) || 139.7671,
+    licenses: Array.isArray(formData.licenses) ? formData.licenses : [formData.license || 'Heavy'],
+    conditions: {
+      workShift: formData.workShift || '',
+      holidayType: formData.holidayType || '',
+      socialInsurance: formData.socialInsurance || '',
+      dormitorySupport: formData.dormitorySupport || ''
+    },
+    foreignerSupport: formData.foreignerSupport || [],
+    contact: {
+      phone: formData.phone || '',
+      email: formData.email || '',
+      callReceptionStyle: formData.callReceptionStyle || '一般公開'
+    },
+    description: formData.description || '',
+    hasShoukai: Boolean(formData.hasShoukai),
+    shoukaiAmount: Number(formData.shoukaiAmount) || 0
+  };
+
+  const response = await fetch(API_ENDPOINTS.JOBS, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'E‘lonni saqlashda xatolik yuz berdi');
+  }
+
+  return await response.json();
+};
+
 export const michiJobsApiService = {
   fetchJobs,
   createJob,
+  submitJobToBackend,
   fetchJobById,
   buildJobsQueryUrl
 };
 
 export default michiJobsApiService;
+

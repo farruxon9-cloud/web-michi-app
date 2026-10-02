@@ -11,6 +11,8 @@ import { getCitiesByPrefecture } from '../data/japanCities.js';
 import { getAllTrainLineOptions, getStationsByLine, getStationsByPrefecture } from '../data/japanStations.js';
 import './DriverFeed.css';
 import { JOB_CATEGORIES } from '../data/jobCategories';
+import { submitJobToBackend } from '../services/michiJobsApiService';
+
 
 const INITIAL_COMPANY_JOBS = [
   {
@@ -675,10 +677,34 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         setJobs(jobs.map(j => j.id === newJob.id ? job : j));
       } else {
         setJobs([job, ...jobs]);
+        // 3-BOSQICH: Send job payload to VPS backend (POST /api/jobs)
+        submitJobToBackend({
+          title: job.title,
+          company: job.company,
+          minSalary: 250000,
+          maxSalary: 450000,
+          salary: job.salary,
+          postalCode: job.postalCode,
+          prefecture: job.prefecture,
+          city: job.detailAddress,
+          addressLine: job.townAddress,
+          building: job.buildingAddress,
+          nearestStation: job.nearestStation,
+          walkMinutes: job.walkTime,
+          licenses: [job.license],
+          phone: job.phone,
+          email: job.email,
+          description: job.description,
+          hasShoukai: job.hasShoukai,
+          shoukaiAmount: job.shoukaiFee
+        }).catch(err => {
+          console.warn('[CompanyHome] Backend job post warning:', err.message);
+        });
       }
     }
 
     setShowAddForm(false);
+
     setJobImage(null);
     setNewJob({
       title: '', 
