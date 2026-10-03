@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fetchSchoolsFromBackend, createSchoolInBackend, submitSchoolToBackend } from './schoolService';
 import { API_ENDPOINTS } from '../config/api';
 
-global.fetch = vi.fn();
+globalThis.fetch = vi.fn();
 
 describe('4-BOSQICH: Driving Schools Backend API Service Tests', () => {
   beforeEach(() => {
@@ -22,7 +22,7 @@ describe('4-BOSQICH: Driving Schools Backend API Service Tests', () => {
 
     const data = await fetchSchoolsFromBackend();
 
-    expect(fetch).toHaveBeenCalledWith(API_ENDPOINTS.SCHOOLS);
+    expect(fetch).toHaveBeenCalledWith(API_ENDPOINTS.SCHOOLS, expect.anything());
     expect(data).toEqual(mockSchools);
   });
 
@@ -52,9 +52,8 @@ describe('4-BOSQICH: Driving Schools Backend API Service Tests', () => {
 
     const res = await createSchoolInBackend(schoolData);
 
-    expect(fetch).toHaveBeenCalledWith(API_ENDPOINTS.SCHOOLS, {
+    expect(fetch).toHaveBeenCalledWith(API_ENDPOINTS.SCHOOLS, expect.objectContaining({
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: 'Fuji Gasshuku School',
         prefecture: 'Shizuoka',
@@ -64,7 +63,7 @@ describe('4-BOSQICH: Driving Schools Backend API Service Tests', () => {
         courses: [{ name: 'Heavy License', license: 'Heavy', price: 320000 }],
         tags: ['Gasshuku', 'UzbekSupport']
       })
-    });
+    }));
 
     expect(res).toEqual({ success: true, id: 'sch_new_888' });
   });

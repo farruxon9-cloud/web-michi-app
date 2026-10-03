@@ -8,6 +8,8 @@
  * Response Body: { "reply": "AI response text" }
  */
 
+import { apiFetch } from './apiClient';
+
 export const MICHI_API_CHAT_ENDPOINT = 'https://api.michi.jp.net/api/chat';
 
 /**
@@ -76,7 +78,7 @@ export async function sendMichiChatMessage(userMessageText, onChunkUpdate = null
   try {
     let response;
     try {
-      response = await fetch(MICHI_API_CHAT_ENDPOINT, {
+      response = await apiFetch(MICHI_API_CHAT_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -86,7 +88,7 @@ export async function sendMichiChatMessage(userMessageText, onChunkUpdate = null
       });
     } catch (fetchErr) {
       if (fetchErr.name === 'AbortError') {
-        throw new Error('応答時間がタイムアウトしました (25秒)。ネットワーク接続をご確認ください。');
+        throw new Error('応答時間がタイムアウトしました (25秒)。ネットワーク接続をご確認ください。', { cause: fetchErr });
       }
       throw fetchErr;
     }
@@ -128,7 +130,7 @@ export async function sendMichiChatMessage(userMessageText, onChunkUpdate = null
 
   } catch (error) {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      throw new Error('ネットワーク接続エラーが発生しました。インターネット接続をご確認ください。');
+      throw new Error('ネットワーク接続エラーが発生しました。インターネット接続をご確認ください。', { cause: error });
     }
     throw error;
   } finally {

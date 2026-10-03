@@ -1,9 +1,9 @@
-// src/services/schoolService.js
-import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
+import { API_ENDPOINTS } from '../config/api';
+import { apiFetch } from './apiClient';
 
 export const fetchSchoolsFromBackend = async () => {
   try {
-    const res = await fetch(API_ENDPOINTS.SCHOOLS);
+    const res = await apiFetch(API_ENDPOINTS.SCHOOLS);
     if (!res.ok) throw new Error('Maktablar ma‘lumotini olib bo‘lmadi');
     return await res.json();
   } catch (err) {
@@ -23,9 +23,8 @@ export const createSchoolInBackend = async (schoolData) => {
     tags: schoolData.tags || []
   };
 
-  const res = await fetch(API_ENDPOINTS.SCHOOLS, {
+  const res = await apiFetch(API_ENDPOINTS.SCHOOLS, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
 

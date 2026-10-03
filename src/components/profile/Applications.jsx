@@ -80,7 +80,7 @@ export default function Applications({ applications = [], schoolApplications = [
               >
                 <div className="app-main-info">
                   <h4>{app.title || app.schoolName || app.company}</h4>
-                  <p>{app.company || app.schoolName}</p>
+                  <p>{app.company || app.schoolName}{app.branchName ? `（${app.branchName}）` : ''}</p>
                   <span className="app-date">{app.appliedDate}</span>
                 </div>
                 <div className={`status-pill ${rawStatus}`}>

@@ -43,7 +43,7 @@ describe('vehicleApiService Tests', () => {
       ]
     };
 
-    global.fetch = vi.fn().mockResolvedValue({
+    globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => mockApiResponse
     });

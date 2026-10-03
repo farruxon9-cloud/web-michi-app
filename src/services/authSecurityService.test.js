@@ -3,8 +3,6 @@ import {
   checkLockout,
   recordFailedAttempt,
   resetAttempts,
-  generateOTP,
-  verifyOTP,
   generateCaptcha,
   sanitizeInput,
   evaluatePasswordStrength,
@@ -56,25 +54,6 @@ describe('authSecurityService', () => {
     });
   });
 
-  describe('OTP Generation & Verification', () => {
-    it('should generate a 6-digit OTP and verify it correctly', () => {
-      const email = 'test@michi.jp';
-      const { code } = generateOTP(email);
-      expect(code).toHaveLength(6);
-
-      const invalidRes = verifyOTP(email, '000000');
-      expect(invalidRes.isValid).toBe(false);
-
-      const validRes = verifyOTP(email, code);
-      expect(validRes.isValid).toBe(true);
-    });
-
-    it('should allow demo test code 1234 or 123456', () => {
-      expect(verifyOTP('driver@michi.jp', '1234').isValid).toBe(true);
-      expect(verifyOTP('company@michi.jp', '123456').isValid).toBe(true);
-    });
-  });
-
   describe('Input Sanitization & Password Strength', () => {
     it('should sanitize dangerous HTML tags to prevent XSS', () => {
       const dirty = '<script>alert("hack")</script>';
@@ -89,13 +68,15 @@ describe('authSecurityService', () => {
       expect(evaluatePasswordStrength('SecurePass123!').label).toBe('strong');
     });
 
-    it('should generate valid math captcha challenge', () => {
+    it('should generate valid math captcha challenge with dynamic operators', () => {
       const captcha = generateCaptcha();
       expect(captcha.question).toContain('?');
       if (captcha.op === '+') {
         expect(captcha.num1 + captcha.num2).toBe(captcha.expectedAnswer);
-      } else {
+      } else if (captcha.op === '-') {
         expect(captcha.num1 - captcha.num2).toBe(captcha.expectedAnswer);
+      } else if (captcha.op === '×') {
+        expect(captcha.num1 * captcha.num2).toBe(captcha.expectedAnswer);
       }
     });
   });

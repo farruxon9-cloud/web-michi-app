@@ -21,6 +21,9 @@ export default function LanguageSelect({ onFinish }) {
   const handleSelectLanguage = (code) => {
     setSelected(code);
     i18n.changeLanguage(code);
+    if (typeof document !== 'undefined' && document.documentElement) {
+      document.documentElement.lang = code;
+    }
     localStorage.setItem('michi_lang', code);
     // Small delay for visual feedback before proceeding
     setTimeout(() => onFinish(), 350);

@@ -4,12 +4,16 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './',
+  // '/' (not './'): with a relative base, refreshing a nested URL on the web
+  // requested /some/path/assets/*.js and got index.html → white screen.
+  // Capacitor serves from the WebView root, so '/' works there too.
+  base: '/',
   build: {
+    minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
-        drop_debugger: true
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace']
       }
     }
   },

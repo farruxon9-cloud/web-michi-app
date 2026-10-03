@@ -54,6 +54,7 @@ describe('FAZA 4: useMichiJobs React Hook Tests', () => {
 
   it('should validate and post a new job', async () => {
     const newJobPayload = {
+      id: 'job_101',
       title: 'Taksi Haydovchisi',
       company: 'Nihon Kotsu',
       salary: { min: 420000, max: 550000 },

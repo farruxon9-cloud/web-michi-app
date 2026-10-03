@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { submitJobToBackend } from './michiJobsApiService';
+import { submitJobToBackend, notifyJobCreatedConfirmation } from './michiJobsApiService';
 import { API_ENDPOINTS } from '../config/api';
 
-global.fetch = vi.fn();
+globalThis.fetch = vi.fn();
 
 describe('3-BOSQICH: submitJobToBackend API Integration Tests', () => {
   beforeEach(() => {
@@ -50,5 +50,30 @@ describe('3-BOSQICH: submitJobToBackend API Integration Tests', () => {
     });
 
     await expect(submitJobToBackend({ title: 'Invalid' })).rejects.toThrow('Kompaniya nomi kiritilishi shart');
+  });
+
+  it('should send job publication confirmation email via notifyJobCreatedConfirmation', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true, message: 'Job notification sent' })
+    });
+
+    const res = await notifyJobCreatedConfirmation({
+      companyEmail: 'hr@yamato.jp',
+      companyName: 'Yamato Transport',
+      jobTitle: 'Deliver Driver'
+    });
+
+    expect(fetch).toHaveBeenCalledWith(API_ENDPOINTS.NOTIFY_COMPANY, expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({
+        companyEmail: 'hr@yamato.jp',
+        companyName: 'Yamato Transport',
+        jobTitle: 'Deliver Driver',
+        type: 'job_published'
+      })
+    }));
+
+    expect(res).toEqual({ success: true, message: 'Job notification sent' });
   });
 });

@@ -36,6 +36,7 @@ describe('FAZA 4: useMichiSchools React Hook Tests', () => {
 
   it('should post new school with validation', async () => {
     const schoolPayload = {
+      id: 'school_101',
       name: 'Fuji Gasshuku Academy',
       courses: [{ name: 'Oogata Course', license: 'Heavy', price: 280000 }],
       location: { prefecture: 'Tokyo', lat: 35.6812, lng: 139.7671 }

@@ -210,6 +210,9 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
       const result = await verifyEmailOtpCodeViaN8n(email.trim().toLowerCase(), fullCode, sessionId);
       if (result?.success) {
         setStep('success');
+        if (result.token) {
+          localStorage.setItem('michi_jwt_token', result.token);
+        }
         
         const userData = {
           email: email.trim().toLowerCase(),

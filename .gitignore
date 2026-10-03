@@ -41,3 +41,8 @@ ios/App/Pods/
 # Test natijalari
 coverage/
 .nyc_output/
+
+# Graphify outputs (local only)
+graph.html
+graphify-out/
+CODEBASE_GRAPH.md

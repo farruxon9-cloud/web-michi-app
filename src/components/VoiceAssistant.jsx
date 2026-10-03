@@ -29,6 +29,38 @@ function calculateReadingDuration(questionText = '', answerText = '', lang = 'ja
   return Math.min(40000, Math.max(8000, calculated));
 }
 
+const STT_LANG_MAP = {
+  ja: 'ja-JP',
+  uz: 'uz-UZ',
+  en: 'en-US',
+  ru: 'ru-RU',
+  zh: 'zh-CN',
+  vi: 'vi-VN',
+  ne: 'ne-NP'
+};
+
+const SUPPORTED_SPEECH_LANGS = [
+  { code: 'ja', label: '日本語' },
+  { code: 'uz', label: "O'zbek" },
+  { code: 'en', label: 'English' },
+  { code: 'ru', label: 'Русский' },
+  { code: 'zh', label: '中文' },
+  { code: 'vi', label: 'Tiếng Việt' },
+  { code: 'ne', label: 'नेपाली' }
+];
+
+const getSttLangCode = (langKey) => {
+  const code = (langKey || 'ja').substring(0, 2).toLowerCase();
+  return STT_LANG_MAP[code] || 'ja-JP';
+};
+
+const getNextSpeechLang = (current) => {
+  const code = (current || 'ja').substring(0, 2).toLowerCase();
+  const idx = SUPPORTED_SPEECH_LANGS.findIndex(l => l.code === code);
+  const nextIdx = (idx < 0 ? 0 : idx + 1) % SUPPORTED_SPEECH_LANGS.length;
+  return SUPPORTED_SPEECH_LANGS[nextIdx].code;
+};
+
 export default function VoiceAssistant({ 
   isActive, 
   onClose, 
@@ -79,7 +111,7 @@ export default function VoiceAssistant({
   const chatEndRef = useRef(null);
   const speechContentRef = useRef(null);
   const statusRef = useRef(status);
-  statusRef.current = status;
+  useEffect(() => { statusRef.current = status; }, [status]);
   const readingTimeoutRef = useRef(null);
 
   // App Context obyekti - actionRegistry harakatlari uchun
@@ -127,10 +159,9 @@ export default function VoiceAssistant({
     if (isActive) {
       setStatus('listening');
       localSTT.startListening({
-        lang: speechLang === 'ja' ? 'ja-JP' : speechLang === 'uz' ? 'uz-UZ' : 'en-US',
+        lang: getSttLangCode(speechLang),
         onResult: (res) => {
           if (res.cleanText || res.rawText) {
-            setTranscript(res.cleanText || res.rawText);
             setDrawerInput(res.cleanText || res.rawText);
           }
           // Jo'natish tugmasi bosilgandagina API so'rovi yuboriladi
@@ -147,7 +178,7 @@ export default function VoiceAssistant({
   }, [isActive, speechLang]);
 
   // 2. Ovozli o'qib berish o'chirildi - Faqat matnli javob beriladi
-  const speakText = useCallback((text, lang = speechLang) => {
+  const speakText = useCallback(() => {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
@@ -270,11 +301,15 @@ export default function VoiceAssistant({
     }
   };
 
-  // Dynamic status text helper functions based on selected speech language
+  // Dynamic status text helper functions based on selected speech language across all 7 supported locales
   const getListeningStatusText = () => {
     const lang = (speechLang || i18n?.language || 'ja').substring(0, 2).toLowerCase();
     if (lang === 'ja') return '聞き取り中... (音声で話しかけてください)';
     if (lang === 'uz') return 'Tinglanmoqda... (Ovozingizni ayting)';
+    if (lang === 'ru') return 'Слушаю... (Произнесите команду)';
+    if (lang === 'zh') return '正在聆听... (请说话)';
+    if (lang === 'vi') return 'Đang lắng nghe... (Hãy nói)';
+    if (lang === 'ne') return 'सुन्दैछ... (कृपया बोल्नुहोस्)';
     return 'Listening... (Speak now)';
   };
 
@@ -282,6 +317,10 @@ export default function VoiceAssistant({
     const lang = (speechLang || i18n?.language || 'ja').substring(0, 2).toLowerCase();
     if (lang === 'ja') return '考え中...';
     if (lang === 'uz') return 'O\'ylamoqda...';
+    if (lang === 'ru') return 'Думаю...';
+    if (lang === 'zh') return '思考中...';
+    if (lang === 'vi') return 'Đang suy nghĩ...';
+    if (lang === 'ne') return 'सोच्दैछ...';
     return 'Thinking...';
   };
 
@@ -388,12 +427,12 @@ export default function VoiceAssistant({
             <button 
               className="voice-lang-toggle-bubble"
               onClick={() => {
-                const nextLang = speechLang === 'ja' ? 'uz' : speechLang === 'uz' ? 'en' : 'ja';
+                const nextLang = getNextSpeechLang(speechLang);
                 setSpeechLang(nextLang);
                 localStorage.setItem('michi_speech_lang', nextLang);
               }}
             >
-              🌐 {speechLang === 'ja' ? '日本語' : speechLang === 'uz' ? 'O\'zbek' : 'English'}
+              🌐 {SUPPORTED_SPEECH_LANGS.find(l => l.code === (speechLang || 'ja').substring(0, 2))?.label || '日本語'}
             </button>
             <button 
               className="voice-bubble-close-btn"
@@ -464,10 +503,9 @@ export default function VoiceAssistant({
           } else {
             setStatus('listening');
             localSTT.startListening({
-              lang: speechLang === 'ja' ? 'ja-JP' : speechLang === 'uz' ? 'uz-UZ' : 'en-US',
+              lang: getSttLangCode(speechLang),
               onResult: (res) => {
                 if (res.cleanText || res.rawText) {
-                  setTranscript(res.cleanText || res.rawText);
                   setDrawerInput(res.cleanText || res.rawText);
                 }
               },

@@ -10,6 +10,12 @@ export const API_ENDPOINTS = {
   REGISTER: `${API_BASE_URL}/api/auth/register`,
   ME: `${API_BASE_URL}/api/auth/me`,
   SEND_OTP: `${API_BASE_URL}/api/auth/send-otp`,
+  VERIFY_OTP: `${API_BASE_URL}/api/auth/verify-otp`,
+  NOTIFY_COMPANY: `${API_BASE_URL}/api/auth/notify-company`,
+  RESET_PASSWORD: `${API_BASE_URL}/api/auth/reset-password`,
+  CHECK_EMAIL: `${API_BASE_URL}/api/auth/check-email`,
+  REFRESH_TOKEN: `${API_BASE_URL}/api/auth/refresh`,
+  LOGOUT: `${API_BASE_URL}/api/auth/logout`,
   
   // Data
   JOBS: `${API_BASE_URL}/api/jobs`,

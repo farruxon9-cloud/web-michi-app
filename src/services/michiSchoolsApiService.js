@@ -12,6 +12,7 @@
 
 import { validateSchoolPayload, buildValidationError } from './schemaValidationService';
 import { API_BASE_URL, API_ENDPOINTS, getAuthHeaders } from '../config/api';
+import { apiFetch } from './apiClient';
 
 export const MICHI_BASE_API_URL = API_BASE_URL;
 export const MICHI_SCHOOLS_API_ENDPOINT = API_ENDPOINTS.SCHOOLS;
@@ -53,7 +54,7 @@ export async function fetchSchools(queryParams = {}) {
   const timer = setTimeout(() => controller.abort(), 15000);
 
   try {
-    const response = await fetch(requestUrl, {
+    const response = await apiFetch(requestUrl, {
       method: 'GET',
       headers: DEFAULT_API_HEADERS,
       signal: controller.signal
@@ -112,7 +113,7 @@ export async function createSchool(schoolPayload) {
   const timer = setTimeout(() => controller.abort(), 15000);
 
   try {
-    const response = await fetch(MICHI_SCHOOLS_API_ENDPOINT, {
+    const response = await apiFetch(MICHI_SCHOOLS_API_ENDPOINT, {
       method: 'POST',
       headers: DEFAULT_API_HEADERS,
       body: JSON.stringify(cleanData),
@@ -125,8 +126,7 @@ export async function createSchool(schoolPayload) {
     }
 
     if (response.status === 404) {
-      console.warn('[michiSchoolsApiService] Live server POST /api/schools returned 404. Returning validated payload locally.');
-      return cleanData;
+      throw new Error('Server /api/schools endpoint mavjud emas (404). Backend ni tekshiring.');
     }
 
     if (!response.ok) {
@@ -140,10 +140,9 @@ export async function createSchool(schoolPayload) {
   } catch (error) {
     if (error.isValid === false) throw error; // Re-throw validation error
     if (error.name === 'AbortError') {
-      throw new Error('POST /api/schools timed out (15s). Please check network connection.');
+      throw new Error('POST /api/schools timed out (15s). Please check network connection.', { cause: error });
     }
-    console.warn('[michiSchoolsApiService] POST /api/schools fallback to validated payload:', error.message);
-    return cleanData;
+    throw error;
   } finally {
     clearTimeout(timer);
   }
@@ -166,7 +165,7 @@ export async function fetchSchoolById(schoolId) {
   const timer = setTimeout(() => controller.abort(), 15000);
 
   try {
-    const response = await fetch(requestUrl, {
+    const response = await apiFetch(requestUrl, {
       method: 'GET',
       headers: DEFAULT_API_HEADERS,
       signal: controller.signal
@@ -188,7 +187,7 @@ export async function fetchSchoolById(schoolId) {
 
   } catch (error) {
     if (error.name === 'AbortError') {
-      throw new Error(`GET /api/schools/${schoolId} request timed out.`);
+      throw new Error(`GET /api/schools/${schoolId} request timed out.`, { cause: error });
     }
     throw error;
   } finally {
@@ -198,7 +197,7 @@ export async function fetchSchoolById(schoolId) {
 
 export const fetchSchoolsFromBackend = async () => {
   try {
-    const res = await fetch(API_ENDPOINTS.SCHOOLS);
+    const res = await apiFetch(API_ENDPOINTS.SCHOOLS);
     if (!res.ok) throw new Error('Maktablar ma‘lumotini olib bo‘lmadi');
     return await res.json();
   } catch (err) {
@@ -227,9 +226,9 @@ export const submitSchoolToBackend = async (schoolData) => {
     hasAccommodation: Boolean(schoolData.hasAccommodation)
   };
 
-  const res = await fetch(API_ENDPOINTS.SCHOOLS, {
+  const res = await apiFetch(API_ENDPOINTS.SCHOOLS, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: DEFAULT_API_HEADERS,
     body: JSON.stringify(payload)
   });
 
@@ -241,9 +240,12 @@ export const submitSchoolToBackend = async (schoolData) => {
   return await res.json();
 };
 
+export const postSchool = createSchool;
+
 export const michiSchoolsApiService = {
   fetchSchools,
   createSchool,
+  postSchool: createSchool,
   fetchSchoolsFromBackend,
   submitSchoolToBackend,
   fetchSchoolById,

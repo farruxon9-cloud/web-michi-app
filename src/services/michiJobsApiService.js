@@ -11,7 +11,9 @@
  */
 
 import { validateJobPayload, buildValidationError } from './schemaValidationService';
-import { API_BASE_URL, API_ENDPOINTS, getAuthHeaders } from '../config/api';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import { apiFetch } from './apiClient';
+import { normalizeBranch } from '../utils/jobPostingNormalizer';
 
 export const MICHI_BASE_API_URL = API_BASE_URL;
 export const MICHI_JOBS_API_ENDPOINT = API_ENDPOINTS.JOBS;
@@ -40,6 +42,11 @@ export function buildJobsQueryUrl(params = {}) {
     url.searchParams.append('minSalary', String(params.minSalary));
   }
 
+  const companyQuery = params.company || params.companyId;
+  if (companyQuery && typeof companyQuery === 'string' && companyQuery.trim()) {
+    url.searchParams.append('company', companyQuery.trim());
+  }
+
   const querySearch = params.q || params.search;
   if (querySearch && typeof querySearch === 'string' && querySearch.trim()) {
     url.searchParams.append('q', querySearch.trim());
@@ -61,7 +68,7 @@ export async function fetchJobs(queryParams = {}) {
   const timer = setTimeout(() => controller.abort(), 15000);
 
   try {
-    const response = await fetch(requestUrl, {
+    const response = await apiFetch(requestUrl, {
       method: 'GET',
       headers: DEFAULT_API_HEADERS,
       signal: controller.signal
@@ -120,7 +127,7 @@ export async function createJob(jobPayload) {
   const timer = setTimeout(() => controller.abort(), 15000);
 
   try {
-    const response = await fetch(MICHI_JOBS_API_ENDPOINT, {
+    const response = await apiFetch(MICHI_JOBS_API_ENDPOINT, {
       method: 'POST',
       headers: DEFAULT_API_HEADERS,
       body: JSON.stringify(cleanData),
@@ -133,8 +140,7 @@ export async function createJob(jobPayload) {
     }
 
     if (response.status === 404) {
-      console.warn('[michiJobsApiService] Live server POST /api/jobs returned 404. Returning validated payload locally.');
-      return cleanData;
+      throw new Error('Server /api/jobs endpoint mavjud emas (404). Backend ni tekshiring.');
     }
 
     if (!response.ok) {
@@ -148,10 +154,9 @@ export async function createJob(jobPayload) {
   } catch (error) {
     if (error.isValid === false) throw error; // Re-throw validation error
     if (error.name === 'AbortError') {
-      throw new Error('POST /api/jobs timed out (15s). Please check network connection.');
+      throw new Error('POST /api/jobs timed out (15s). Please check network connection.', { cause: error });
     }
-    console.warn('[michiJobsApiService] POST /api/jobs fallback to validated payload:', error.message);
-    return cleanData;
+    throw error;
   } finally {
     clearTimeout(timer);
   }
@@ -174,7 +179,7 @@ export async function fetchJobById(jobId) {
   const timer = setTimeout(() => controller.abort(), 15000);
 
   try {
-    const response = await fetch(requestUrl, {
+    const response = await apiFetch(requestUrl, {
       method: 'GET',
       headers: DEFAULT_API_HEADERS,
       signal: controller.signal
@@ -196,7 +201,7 @@ export async function fetchJobById(jobId) {
 
   } catch (error) {
     if (error.name === 'AbortError') {
-      throw new Error(`GET /api/jobs/${jobId} request timed out.`);
+      throw new Error(`GET /api/jobs/${jobId} request timed out.`, { cause: error });
     }
     throw error;
   } finally {
@@ -211,38 +216,45 @@ export const submitJobToBackend = async (formData) => {
     minSalary: Number(formData.minSalary) || 0,
     maxSalary: Number(formData.maxSalary) || 0,
     salary: formData.salary || `¥${Number(formData.minSalary).toLocaleString()}`,
-    employmentType: formData.employmentType || '正社員',
-    bonusPrivilege: formData.bonusPrivilege || '',
+    employmentType: formData.employmentType || formData.type || '正社員',
+    bonusPrivilege: formData.bonusPrivilege || formData.bonus || '',
     postalCode: formData.postalCode || '',
     prefecture: formData.prefecture || 'Tokyo',
-    city: formData.city || '',
-    addressLine: formData.addressLine || '',
-    building: formData.building || '',
+    city: formData.city || formData.detailAddress || '',
+    addressLine: formData.addressLine || formData.townAddress || '',
+    building: formData.building || formData.buildingAddress || '',
+    trainLine: formData.trainLine || '',
     nearestStation: formData.nearestStation || '',
-    walkMinutes: Number(formData.walkMinutes) || 0,
+    walkMinutes: Number(formData.walkMinutes || formData.walkTime) || 0,
     lat: Number(formData.lat) || 35.6812,
     lng: Number(formData.lng) || 139.7671,
     licenses: Array.isArray(formData.licenses) ? formData.licenses : [formData.license || 'Heavy'],
+    category: formData.category || 'delivery_driver',
+    subcategory: formData.subcategory || 'delivery_local',
+    image: formData.image || '',
     conditions: {
-      workShift: formData.workShift || '',
-      holidayType: formData.holidayType || '',
-      socialInsurance: formData.socialInsurance || '',
-      dormitorySupport: formData.dormitorySupport || ''
+      workShift: formData.workShift || formData.hours || '',
+      holidayType: formData.holidayType || formData.dayOff || '',
+      socialInsurance: formData.socialInsurance || formData.insurance || '',
+      dormitorySupport: formData.dormitorySupport || formData.housing || ''
     },
-    foreignerSupport: formData.foreignerSupport || [],
+    foreignerSupport: Array.isArray(formData.foreignerSupport) ? formData.foreignerSupport : (formData.foreigners ? [formData.foreigners] : []),
     contact: {
       phone: formData.phone || '',
       email: formData.email || '',
-      callReceptionStyle: formData.callReceptionStyle || '一般公開'
+      callReceptionStyle: formData.callReceptionStyle || formData.phoneMode || '一般公開'
     },
     description: formData.description || '',
     hasShoukai: Boolean(formData.hasShoukai),
-    shoukaiAmount: Number(formData.shoukaiAmount) || 0
+    shoukaiAmount: Number(formData.shoukaiAmount || formData.shoukaiFee) || 0,
+    hiringScope: formData.hiringScope === 'branch' ? 'branch' : 'headquarters',
+    branches: formData.hiringScope === 'branch'
+      ? (Array.isArray(formData.branches) ? formData.branches : []).map((b, i) => normalizeBranch(b, i, { keepPrivatePhone: true })).filter(Boolean)
+      : []
   };
 
-  const response = await fetch(API_ENDPOINTS.JOBS, {
+  const response = await apiFetch(API_ENDPOINTS.JOBS, {
     method: 'POST',
-    headers: getAuthHeaders(),
     body: JSON.stringify(payload)
   });
 
@@ -251,16 +263,131 @@ export const submitJobToBackend = async (formData) => {
     throw new Error(errorData.error || 'E‘lonni saqlashda xatolik yuz berdi');
   }
 
-  return await response.json();
+  const result = await response.json().catch(() => ({}));
+
+  // Trigger company confirmation email webhook on job creation
+  const targetCompanyEmail = payload.contact?.email || formData.email || formData.companyEmail;
+  if (targetCompanyEmail) {
+    notifyJobCreatedConfirmation({
+      companyEmail: targetCompanyEmail,
+      companyName: payload.company || formData.company,
+      jobTitle: payload.title || formData.title
+    }).catch(err => console.warn('[michiJobsApiService] Email notify warning:', err.message));
+  }
+
+  return result;
+};
+
+export const notifyJobCreatedConfirmation = async ({ companyEmail, companyName, jobTitle }) => {
+  if (!companyEmail) return null;
+  try {
+    const notifyUrl = API_ENDPOINTS.NOTIFY_COMPANY || API_ENDPOINTS.SEND_OTP.replace('send-otp', 'notify-company');
+    const response = await apiFetch(notifyUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        companyEmail,
+        companyName,
+        jobTitle,
+        type: 'job_published'
+      })
+    });
+    return await response.json().catch(() => ({}));
+  } catch (err) {
+    console.warn('[michiJobsApiService] Failed to send job creation email notification:', err.message);
+    return null;
+  }
+};
+
+export const postJob = createJob;
+
+/**
+ * Updates an existing job ad on VPS backend via PUT /api/jobs/:id
+ */
+export const updateJobInBackend = async (jobId, formData) => {
+  if (!jobId) throw new Error('Job ID is required for update');
+  const hiringScope = formData?.hiringScope === 'branch' ? 'branch' : 'headquarters';
+  const body = {
+    ...formData,
+    hiringScope,
+    branches: hiringScope === 'branch'
+      ? (Array.isArray(formData?.branches) ? formData.branches : []).map((b, i) => normalizeBranch(b, i, { keepPrivatePhone: true })).filter(Boolean)
+      : []
+  };
+  const response = await apiFetch(`${API_ENDPOINTS.JOBS}/${jobId}`, {
+    method: 'PUT',
+    body: JSON.stringify(body)
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'E‘lonni yangilashda xatolik yuz berdi');
+  }
+  return await response.json().catch(() => ({ success: true }));
+};
+
+/**
+ * Deletes an existing job ad on VPS backend via DELETE /api/jobs/:id
+ */
+export const deleteJobInBackend = async (jobId) => {
+  if (!jobId) throw new Error('Job ID is required for deletion');
+  const response = await apiFetch(`${API_ENDPOINTS.JOBS}/${jobId}`, {
+    method: 'DELETE'
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'E‘lonni o‘chirishda xatolik yuz berdi');
+  }
+  return await response.json().catch(() => ({ success: true }));
 };
 
 export const michiJobsApiService = {
   fetchJobs,
+  fetchJobsPage,
   createJob,
+  postJob: createJob,
   submitJobToBackend,
+  updateJobInBackend,
+  deleteJobInBackend,
+  notifyJobCreatedConfirmation,
   fetchJobById,
   buildJobsQueryUrl
 };
 
+/**
+ * GET /api/jobs?limit=&cursor=&since=
+ * Returns { items, nextCursor, serverTime, legacy }.
+ * - legacy=true  → server returned a plain array (no cursor/since support).
+ * - serverTime   → only when the server sends it (never the client clock).
+ * Network/5xx errors are thrown so the feed can keep its cached list.
+ */
+export async function fetchJobsPage({ limit = 20, cursor = null, since = null } = {}) {
+  const url = new URL(MICHI_JOBS_API_ENDPOINT);
+  if (limit) url.searchParams.set('limit', String(limit));
+  if (cursor) url.searchParams.set('cursor', cursor);
+  if (since) url.searchParams.set('since', since);
+
+  const res = await apiFetch(url.toString(), { method: 'GET', headers: DEFAULT_API_HEADERS });
+
+  if (res.status === 404) {
+    return { items: [], nextCursor: null, serverTime: null, legacy: true };
+  }
+  if (!res.ok) {
+    throw new Error(`GET /api/jobs failed (${res.status})`);
+  }
+
+  const data = await res.json();
+  if (Array.isArray(data)) {
+    return { items: data, nextCursor: null, serverTime: null, legacy: true };
+  }
+  const items = data.items || data.jobs || data.data || [];
+  const supportsCursor = 'nextCursor' in data || 'serverTime' in data;
+  return {
+    items: Array.isArray(items) ? items : [],
+    nextCursor: data.nextCursor || null,
+    serverTime: data.serverTime || null,
+    legacy: !supportsCursor
+  };
+}
+
 export default michiJobsApiService;
+
 

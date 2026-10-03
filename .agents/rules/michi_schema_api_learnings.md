@@ -37,3 +37,9 @@
 ## 6. Strict Audit & Verification Directives
 - **Empirical Runtime Testing**: Always verify code correctness using `npm test -- --run` to ensure 100% test pass rate across all 32+ test files.
 - **Strict Branch Guardrails**: Remain strictly on branch `web-1`. Never merge automatically.
+
+## 7. Dynamic Error Message & Profile Identity Localization Protocol
+- **Store Keys in Error State**: Never assign raw hardcoded Uzbek/English error strings directly to UI error states (e.g., `setLoginErrorMessage(apiErr.message)`). Always assign standardized i18n keys (e.g., `invalidLoginCredentials`, `userNotFound`).
+- **Reactive Translation Rendering**: Always wrap error state rendering inside `t()` (e.g., `{t(loginErrorMessage, fallbackString)}`) so error banners dynamically switch language when the user toggles language (`ja`, `uz`, `en`, `ru`, `zh`).
+- **Profile Header & Status Badges**: Never hardcode default profile identity strings (e.g. `<span>Email tasdiqlangan</span>`, `<h2>Mehmon</h2>`). Always render via `t('roleGuest')` and `t('emailVerifiedBadge')` to ensure instantaneous multi-language switching across all 7 supported locales.
+

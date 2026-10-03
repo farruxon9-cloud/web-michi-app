@@ -8,11 +8,11 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
   const { t } = useTranslation();
   
   const navItems = [
-    { id: 'home', icon: Home, label: t('navHome', 'Asosiy') },
-    { id: 'jobs', icon: Briefcase, label: t('navJobs', 'Ishlar') },
-    { id: 'service', icon: Wrench, label: t('navService', 'Servis') },
-    { id: 'academy', icon: GraduationCap, label: t('navAcademy', 'Maktablar') },
-    { id: 'profile', icon: User, label: t('navProfile', 'Profil') },
+    { id: 'home', icon: Home, label: t('navHome', 'ホーム') },
+    { id: 'jobs', icon: Briefcase, label: t('navJobs', '求人') },
+    { id: 'service', icon: Wrench, label: t('navService', '整備') },
+    { id: 'academy', icon: GraduationCap, label: t('navAcademy', '教習所') },
+    { id: 'profile', icon: User, label: t('navProfile', 'マイページ') },
   ];
 
   const handleTabClick = (tabId) => {

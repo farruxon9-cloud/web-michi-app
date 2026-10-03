@@ -4,8 +4,6 @@ import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, Shi
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
   Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot, Navigation, Zap, Mic, Truck, RotateCcw, UserCheck, UserX, Car, FileCheck, Calendar, Award, GraduationCap, CreditCard, Gift, Tag, UserPlus, KeyRound, Send, Clock } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
-import { MOCK_JOBS } from './DriverFeed';
-import { MOCK_SCHOOLS } from './DrivingAcademy';
 import VerifiedBadge from './VerifiedBadge';
 import CompanyHome from './CompanyHome';
 import ResumeBuilder from './ResumeBuilder';
@@ -166,7 +164,32 @@ const STATUS_COLORS = {
   interview: '#AF52DE',
 };
 
-export default function Profile({ 
+function ProfileSkeleton() {
+  return (
+    <div className="profile-container sub-page-view fade-in">
+      <div className="profile-skeleton-card glass squircle">
+        <div className="skeleton-pulse skeleton-avatar" />
+        <div className="skeleton-pulse skeleton-text-lg" />
+        <div className="skeleton-pulse skeleton-text-sm" />
+      </div>
+      <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="skeleton-pulse skeleton-row" />
+        <div className="skeleton-pulse skeleton-row" />
+        <div className="skeleton-pulse skeleton-row" />
+      </div>
+      {/* 12px clearance spacer for Profile sub-page */}
+      <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+    </div>
+  );
+}
+
+// Wrapper keeps hook order stable: the skeleton is rendered before any hooks run.
+export default function Profile(props) {
+  if (!props.profileData) return <ProfileSkeleton />;
+  return <ProfileContent {...props} />;
+}
+
+function ProfileContent({ 
   onLogout = () => {}, contractStatus, setContractStatus = () => {}, profileData, userRole, 
   onChangeLanguage = () => {}, onUpdateProfile = () => {}, applications = [], onChangeAppStatus = () => {},
   notifications = [], onMarkRead = () => {}, onMarkAllRead = () => {}, onDeleteNotif = () => {}, onClearAllNotifs = () => {}, unreadCount = 0,
@@ -188,6 +211,7 @@ export default function Profile({
   schools = [],
   setJobs = () => {},
   setSchools = () => {},
+  onJobCreated = () => {},
   jobToEdit = null,
   setJobToEdit = () => {},
   onApply = () => {},
@@ -200,25 +224,6 @@ export default function Profile({
   setIsVoiceStandby = () => {}
 }) {
   const { t, i18n } = useTranslation();
-
-  if (!profileData) {
-    return (
-      <div className="profile-container sub-page-view fade-in">
-        <div className="profile-skeleton-card glass squircle">
-          <div className="skeleton-pulse skeleton-avatar" />
-          <div className="skeleton-pulse skeleton-text-lg" />
-          <div className="skeleton-pulse skeleton-text-sm" />
-        </div>
-        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div className="skeleton-pulse skeleton-row" />
-          <div className="skeleton-pulse skeleton-row" />
-          <div className="skeleton-pulse skeleton-row" />
-        </div>
-        {/* 12px clearance spacer for Profile sub-page */}
-        <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
-      </div>
-    );
-  }
 
   // Dedicated React ref for main profile scroll container
   const mainContainerRef = React.useRef(null);
@@ -402,13 +407,9 @@ export default function Profile({
   const ownSchoolApplicationsCount = (schoolApplications || []).filter(a => !a.isSimulatedReferral).length;
   const totalOwnApplications = ownApplicationsCount + (userRole !== 'company' ? ownSchoolApplicationsCount : 0);
 
-  // 2. Faol bo'lgan saqlangan e'lonlar soni (MOCK ro'yxatida mavjud bo'lgan e'lonlar)
-  const savedJobs = (profileData?.savedItems?.jobs || []).filter(job => 
-    MOCK_JOBS.some(mj => mj.id === job.id && mj.isActive !== false)
-  );
-  const savedSchools = (profileData?.savedItems?.schools || []).filter(school => 
-    MOCK_SCHOOLS.some(ms => ms.id === school.id && ms.isActive !== false)
-  );
+  // 2. Faol bo'lgan saqlangan e'lonlar soni
+  const savedJobs = (profileData?.savedItems?.jobs || []).filter(job => job && job.isActive !== false);
+  const savedSchools = (profileData?.savedItems?.schools || []).filter(school => school && school.isActive !== false);
   const totalSavedCount = savedJobs.length + (userRole === 'driver' ? savedSchools.length : 0);
 
   // 3. Foydalanuvchining Shoukai takliflari soni (simulyatsiya qilingan do'stlar referral arizalari yoki haqiqiy takliflar)
@@ -3166,6 +3167,7 @@ const getLicenseLabel = (type) => {
           onSchoolClick={onSchoolClick} 
           jobs={jobs} 
           setJobs={setJobs} 
+          onJobCreated={onJobCreated}
           schools={schools} 
           setSchools={setSchools} 
           profileData={profileData} 
@@ -4004,11 +4006,12 @@ const getLicenseLabel = (type) => {
           ) : (
             filteredApps.map(app => {
               const resumeInfo = app.applicantInfo || profileData;
-              const appTitleJa = app.title.includes('Mahalliy') || app.title.includes('Local Delivery')
+              const rawTitle = String(app.title || '');
+              const appTitleJa = rawTitle.includes('Mahalliy') || rawTitle.includes('Local Delivery')
                 ? 'ルート配送ドライバー (地場デリバリー)'
-                : app.title.includes('Xalqaro') || app.title.includes('Trailer')
+                : rawTitle.includes('Xalqaro') || rawTitle.includes('Trailer')
                 ? '長距離トレーラードライバー (国際輸送)'
-                : app.title;
+                : rawTitle;
 
               return (
                 <div key={app.id} className="application-card glass squircle" style={{ padding: '10px 14px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)' }}>
@@ -4019,6 +4022,11 @@ const getLicenseLabel = (type) => {
                       <h4 style={{ margin: '0 0 2px 0', fontSize: '15px', fontWeight: '700', letterSpacing: '-0.2px' }}>{appTitleJa}</h4>
                       <p style={{ margin: 0, fontSize: '12.5px', color: '#8E8E93' }}>{app.company}</p>
                       <span className="app-date" style={{ fontSize: '11.5px', color: '#8E8E93', marginTop: '1px', display: 'block' }}>応募日: {app.appliedDate}</span>
+                      {app.branchName && (
+                        <span className="app-branch" style={{ fontSize: '12px', color: '#007AFF', fontWeight: '700', marginTop: '2px', display: 'block' }}>
+                          {t('branchAppliedTo', '応募先')}：{app.branchName}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -4280,14 +4288,10 @@ const getLicenseLabel = (type) => {
   // 1. Faol bo'lmagan (o'chirilgan yoki muddati tugagan) e'lonlar avtomatik filtrlanadi.
   // 2. Klik qilinganda App.jsx orqali to'g'ridan-to'g'ri batafsil sahifalar (overlay/tab) ochiladi.
   if (activePage === 'saved_items') {
-    // Faol ish e'lonlarini tekshirish va filtrlash (faqat MOCK_JOBS ichida bor va faol bo'lganlarini qoldiradi)
-    const savedJobs = (profileData?.savedItems?.jobs || []).filter(job => 
-      MOCK_JOBS.some(mj => mj.id === job.id && mj.isActive !== false)
-    );
-    // Faol avtomaktablarni tekshirish va filtrlash (faqat MOCK_SCHOOLS ichida bor va faol bo'lganlarini qoldiradi)
-    const savedSchools = (profileData?.savedItems?.schools || []).filter(school => 
-      MOCK_SCHOOLS.some(ms => ms.id === school.id && ms.isActive !== false)
-    );
+    // Faol ish e'lonlarini tekshirish va filtrlash
+    const savedJobs = (profileData?.savedItems?.jobs || []).filter(job => job && job.isActive !== false);
+    // Faol avtomaktablarni tekshirish va filtrlash
+    const savedSchools = (profileData?.savedItems?.schools || []).filter(school => school && school.isActive !== false);
 
     return (
       <div className="profile-container sub-page-view fade-in">
@@ -4314,7 +4318,7 @@ const getLicenseLabel = (type) => {
                 <div style={{ marginBottom: '24px' }}>
                   <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('jobAds')}</h3>
                   {savedJobs.map(job => {
-                    const fullJob = MOCK_JOBS.find(mj => mj.id === job.id) || job;
+                    const fullJob = (jobs && jobs.length > 0 ? jobs.find(j => String(j.id) === String(job.id)) : null) || job;
                     return (
                     <div 
                       key={fullJob.id || job.id} 
@@ -4343,7 +4347,7 @@ const getLicenseLabel = (type) => {
                 <div>
                   <h3 style={{ marginBottom: '12px', fontSize: '16px' }}>{t('drivingSchools')}</h3>
                   {savedSchools.map(school => {
-                    const fullSchool = MOCK_SCHOOLS.find(ms => ms.id === school.id) || school;
+                    const fullSchool = (schools && schools.length > 0 ? schools.find(s => String(s.id) === String(school.id)) : null) || school;
                     return (
                     <div 
                       key={fullSchool.id || school.id} 
@@ -5273,13 +5277,13 @@ const getLicenseLabel = (type) => {
           ref={fileInputRef} type="file" accept="image/*" 
           onChange={handleAvatarChange} style={{ display: 'none' }} 
         />
-        <h2>{profileData.fullName}</h2>
+        <h2>{profileData.fullName === 'Mehmon' || userRole === 'guest' || !profileData.fullName ? t('roleGuest', 'Mehmon') : profileData.fullName}</h2>
         <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flexWrap: 'wrap' }}>
-          <span>{profileData.email}</span>
+          <span>{profileData.email === 'michi@example.com' || userRole === 'guest' ? t('guestEmail', profileData.email || 'michi@example.com') : profileData.email}</span>
           {(profileData.isEmailVerified || profileData.email) && (
             <span style={{ fontSize: '11px', background: 'rgba(48, 209, 88, 0.15)', color: '#30D158', border: '1px solid rgba(48, 209, 88, 0.3)', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
               <CheckCircle2 size={12} color="#30D158" />
-              <span>Email tasdiqlangan</span>
+              <span>{t('emailVerifiedBadge', 'Email tasdiqlangan')}</span>
             </span>
           )}
         </p>

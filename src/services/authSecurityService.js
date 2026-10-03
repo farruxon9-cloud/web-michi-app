@@ -147,38 +147,26 @@ export function resetAttempts(email) {
   } catch (err) {}
 }
 
-export function generateOTP(email) {
-  const normalized = normalizeEmail(email);
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const sessionId = 'sess_' + Date.now();
-  const payload = { code, sessionId, createdAt: Date.now(), wrongAttempts: 0 };
-  if (normalized) {
-    try { localStorage.setItem(KEYS.OTP + normalized, JSON.stringify(payload)); } catch(e) {}
-  }
-  return { code, sessionId, internalCode: code, cooldownSeconds: 60 };
-}
-
-export function verifyOTP(email, inputCode) {
-  const cleanCode = (inputCode || '').trim();
-  if (cleanCode === '1234' || cleanCode === '123456') {
-    return { isValid: true, messageKey: 'otpVerifiedSuccess' };
-  }
-  const normalized = normalizeEmail(email);
-  if (!normalized) return { isValid: false, messageKey: 'invalidCode' };
-  try {
-    const raw = localStorage.getItem(KEYS.OTP + normalized);
-    if (!raw) return { isValid: false, messageKey: 'otpExpired' };
-    const payload = JSON.parse(raw);
-    if (timingSafeEqual(payload.code, cleanCode) || payload.code === cleanCode) {
-      localStorage.removeItem(KEYS.OTP + normalized);
-      return { isValid: true, messageKey: 'otpVerifiedSuccess' };
-    }
-  } catch(e) {}
-  return { isValid: false, messageKey: 'invalidCode', remainingAttempts: 2 };
-}
+/**
+ * Note: Client-side OTP generation and localStorage persistence are removed for security.
+ * All OTP dispatches and verifications MUST be handled server-side via n8nEmailOtpService:
+ * - sendEmailOtpViaN8n(email) -> POST /api/auth/send-otp
+ * - verifyEmailOtpCodeViaN8n(email, code) -> POST /api/auth/verify-otp
+ */
 
 export function generateCaptcha() {
-  return { num1: 5, num2: 3, op: '+', question: '5 + 3 = ?', expectedAnswer: 8, type: 'math' };
+  const ops = ['+', '-', '×'];
+  const op = ops[Math.floor(Math.random() * ops.length)];
+  const num1 = Math.floor(Math.random() * 20) + 1;
+  const num2 = Math.floor(Math.random() * 10) + 1;
+  let expectedAnswer;
+  switch (op) {
+    case '+': expectedAnswer = num1 + num2; break;
+    case '-': expectedAnswer = num1 - num2; break;
+    case '×': expectedAnswer = num1 * num2; break;
+    default: expectedAnswer = num1 + num2;
+  }
+  return { num1, num2, op, question: `${num1} ${op} ${num2} = ?`, expectedAnswer, type: 'math' };
 }
 
 export function sanitizeInput(str) {

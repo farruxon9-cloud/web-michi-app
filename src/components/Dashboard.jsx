@@ -10,104 +10,120 @@ import { playHapticClick } from '../utils/haptics';
 import './Dashboard.css';
 
 const DICT = {
-  heroSlide1Badge: { ja: '🔥 ボーナス', uz: '🔥 Bonus', en: '🔥 Bonus', ru: '🔥 Бонус', zh: '🔥 奖金' },
-  heroSlide1Title: { ja: '紹介報酬を獲得', uz: 'Shoukai Pulini Oling', en: 'Get Referral Bonus', ru: 'Получите бонус за рекомендацию', zh: '获得推荐奖金' },
+  heroSlide1Badge: { ja: '🔥 ボーナス', uz: '🔥 Bonus', en: '🔥 Bonus', ru: '🔥 Бонус', zh: '🔥 奖金', vi: '🔥 Tiền thưởng', ne: '🔥 बोनस' },
+  heroSlide1Title: { ja: '紹介報酬を獲得', uz: 'Shoukai Pulini Oling', en: 'Get Referral Bonus', ru: 'Получите бонус за рекомендацию', zh: '获得推荐奖金', vi: 'Nhận tiền thưởng giới thiệu', ne: 'सिफारिस बोनस प्राप्त गर्नुहोस्' },
   heroSlide1Desc: { 
     ja: '知人を仕事に紹介して特別紹介報酬をゲット！', 
     uz: 'Tanishlaringizni ishga taklif qiling, maxsus shoukai pul mukofotini oling!', 
     en: 'Invite acquaintances to work and receive a special referral reward!', 
     ru: 'Приглашайте знакомых на работу и получайте денежный бонус!', 
-    zh: '邀请朋友工作，获得特别推荐奖金！' 
+    zh: '邀请朋友工作，获得特别推荐奖金！',
+    vi: 'Giới thiệu người quen đi làm và nhận phần thưởng giới thiệu đặc biệt!',
+    ne: 'साथीहरूलाई काममा सिफारिस गर्नुहोस् र विशेष सिफारिस बोनस प्राप्त गर्नुहोस्!'
   },
 
-  heroSlide2Badge: { ja: '⏳ 近日公開', uz: '⏳ Tez kunda', en: '⏳ Coming Soon', ru: '⏳ Скоро', zh: '⏳ 即将来临' },
-  heroSlide2Title: { ja: '待ち時間ゼロサービス', uz: 'Navbatlarsiz Servis', en: 'Zero-Wait Service', ru: 'Сервис без очередей', zh: '零等待服务' },
+  heroSlide2Badge: { ja: '⏳ 近日公開', uz: '⏳ Tez kunda', en: '⏳ Coming Soon', ru: '⏳ Скоро', zh: '⏳ 即将来临', vi: '⏳ Sắp ra mắt', ne: '⏳ छिट्टै आउँदैछ' },
+  heroSlide2Title: { ja: '待ち時間ゼロサービス', uz: 'Navbatlarsiz Servis', en: 'Zero-Wait Service', ru: 'Сервис без очередей', zh: '零等待服务', vi: 'Dịch vụ không chờ đợi', ne: 'लाइन बस्न नपर्ने सेवा' },
   heroSlide2Desc: { 
     ja: '整備工場を事前予約＆決済。時間を有効活用！', 
     uz: "Avtoservislarga oldindan navbat oling va to'lov qiling. Vaqtingizni tejang!", 
     en: 'Pre-book auto service & pay in advance. Save your time!', 
     ru: 'Бронируйте автосервисы заранее и оплачивайте. Экономьте время!', 
-    zh: '提前预约并支付汽车维修服务。节省您的时间！' 
+    zh: '提前预约并支付汽车维修服务。节省您的时间！',
+    vi: 'Đặt trước dịch vụ sửa xe & thanh toán trước. Tiết kiệm thời gian!',
+    ne: 'अगाडिनै गाडी मर्मत सेवा बुक गर्नुहोस् र भुक्तानी गर्नुहोस्। समय बचाउनुहोस्!'
   },
 
-  heroSlide3Badge: { ja: '💼 求人情報', uz: '💼 Vakansiyalar', en: '💼 Vacancies', ru: '💼 Вакансии', zh: '💼 招聘' },
-  heroSlide3Title: { ja: '理想の仕事', uz: 'Orzuingizdagi Ish', en: 'Your Dream Job', ru: 'Работа вашей мечты', zh: '理想的工作' },
+  heroSlide3Badge: { ja: '💼 求人情報', uz: '💼 Vakansiyalar', en: '💼 Vacancies', ru: '💼 Вакансии', zh: '💼 招聘', vi: '💼 Việc làm', ne: '💼 रिक्त पदहरू' },
+  heroSlide3Title: { ja: '理想の仕事', uz: 'Orzuingizdagi Ish', en: 'Your Dream Job', ru: 'Работа вашей мечты', zh: '理想的工作', vi: 'Công việc mơ ước', ne: 'तपाईंको सपनाको काम' },
   heroSlide3Desc: { 
     ja: '最新の高収入求人をいち早くチェック。', 
     uz: "Eng so'nggi va yuqori maoshli vakansiyalarni birinchilardan bo'lib toping.", 
     en: 'Find the latest high-paying vacancies first.', 
     ru: 'Находите самые свежие и высокооплачиваемые вакансии первыми.', 
-    zh: '率先查找最新高薪职位。' 
+    zh: '率先查找最新高薪职位。',
+    vi: 'Tìm các việc làm lương cao mới nhất đầu tiên.',
+    ne: 'सबैभन्दा नयाँ र उच्च तलब हुने कामहरू पहिले खोज्नुहोस्।'
   },
 
-  welcomeTitle: { ja: 'ようこそ', uz: 'Xush kelibsiz', en: 'Welcome', ru: 'Добро пожаловать', zh: '欢迎' },
+  welcomeTitle: { ja: 'ようこそ', uz: 'Xush kelibsiz', en: 'Welcome', ru: 'Добро пожаловать', zh: '欢迎', vi: 'Chào mừng', ne: 'स्वागत छ' },
 
-  voiceAssistantTitle: { ja: '音声アシスタント', uz: 'Ovozli yordamchi', en: 'Voice Assistant', ru: 'Голосовой помощник', zh: '语音助手' },
+  voiceAssistantTitle: { ja: '音声アシスタント', uz: 'Ovozli yordamchi', en: 'Voice Assistant', ru: 'Голосовой помощник', zh: '语音助手', vi: 'Trợ lý giọng nói', ne: 'भोइस सहायक' },
   voiceAssistantDesc: { 
     ja: '音声でアプリを快適に操作できます', 
     uz: 'Ilovani yapon tilida masofaviy ovozda boshqaring', 
     en: 'Control the app via voice commands in Japanese', 
     ru: 'Управляйте приложением с помощью голосовых команд', 
-    zh: '通过日语语音指令控制应用' 
+    zh: '通过日语语音指令控制应用',
+    vi: 'Điều khiển ứng dụng bằng lệnh giọng nói bằng tiếng Nhật',
+    ne: 'जापानी भाषामा भोइस कमाण्ड मार्फत एप नियन्त्रण गर्नुहोस्'
   },
 
-  navJobs: { ja: '求人', uz: 'Ishlar', en: 'Jobs', ru: 'Работа', zh: '职位' },
-  bentoView: { ja: '閲覧', uz: "Ko'rish", en: 'View', ru: 'Просмотр', zh: '查看' },
+  navJobs: { ja: '求人', uz: 'Ishlar', en: 'Jobs', ru: 'Работа', zh: '职位', vi: 'Việc làm', ne: 'कामहरू' },
+  bentoView: { ja: '閲覧', uz: "Ko'rish", en: 'View', ru: 'Просмотр', zh: '查看', vi: 'Xem', ne: 'हेर्नुहोस्' },
 
-  navAcademy: { ja: '自動車教習所', uz: 'Maktablar', en: 'Schools', ru: '力車学校', zh: '驾校' },
-  bentoStudy: { ja: '学ぶ', uz: "O'qish", en: 'Learn', ru: 'Учеба', zh: '学习' },
+  navAcademy: { ja: '自動車教習所', uz: 'Maktablar', en: 'Schools', ru: 'Автошколы', zh: '驾校', vi: 'Trường lái xe', ne: 'ड्राईभिङ स्कूलहरू' },
+  bentoStudy: { ja: '学ぶ', uz: "O'qish", en: 'Learn', ru: 'Учеба', zh: '学习', vi: 'Học tập', ne: 'सिक्नुहोस्' },
 
-  navService: { ja: '整備サービス', uz: 'Servis', en: 'Service', ru: 'Сервис', zh: '服务' },
-  bentoServices: { ja: 'サービス一覧', uz: 'Xizmatlar', en: 'Services', ru: 'Услуги', zh: '服务' },
+  navService: { ja: '整備サービス', uz: 'Servis', en: 'Service', ru: 'Сервис', zh: '服务', vi: 'Dịch vụ', ne: 'सेवा' },
+  bentoServices: { ja: 'サービス一覧', uz: 'Xizmatlar', en: 'Services', ru: 'Услуги', zh: '服务', vi: 'Danh sách dịch vụ', ne: 'सेवाहरू' },
 
-  bentoInternationalTitle: { ja: '国際就労・特定技能', uz: 'Xalqaro Ishlar', en: 'International Jobs', ru: 'Международная работа', zh: '国际招聘' },
+  bentoInternationalTitle: { ja: '国際就労・特定技能', uz: 'Xalqaro Ishlar', en: 'International Jobs', ru: 'Международная работа', zh: '国际招聘', vi: 'Việc làm quốc tế', ne: 'अन्तर्राष्ट्रिय कामहरू' },
   bentoInternationalSub: { 
     ja: '特定技能ビザサポート付き求人', 
     uz: "Tokutei Ginou viza beruvchi e'lonlar", 
     en: 'Tokutei Ginou visa sponsored jobs', 
     ru: 'Вакансии с поддержкой визы Tokutei Ginou', 
-    zh: '提供特定技能签证支持的职位' 
+    zh: '提供特定技能签证支持的职位',
+    vi: 'Tuyển dụng hỗ trợ visa Kỹ năng đặc định (Tokutei Ginou)',
+    ne: 'निर्दिष्ट कुशल भिसा (Tokutei Ginou) सहायता भएका कामहरू'
   },
-  bentoHousingAvailable: { ja: '🏠 寮・社宅あり', uz: '🏠 Uy-joy bor', en: '🏠 Housing Provided', ru: '🏠 Предоставляется жилье', zh: '🏠 提供住房' },
-  bentoMinN4: { ja: 'JLPT N4以上', uz: 'Minimal N4', en: 'Min N4 Level', ru: 'Мин. N4', zh: '最低 N4' },
+  bentoHousingAvailable: { ja: '🏠 寮・社宅あり', uz: '🏠 Uy-joy bor', en: '🏠 Housing Provided', ru: '🏠 Предоставляется жилье', zh: '🏠 提供住房', vi: '🏠 Có ký túc xá / Nhà ở', ne: '🏠 आवास उपलब्ध छ' },
+  bentoMinN4: { ja: 'JLPT N4以上', uz: 'Minimal N4', en: 'Min N4 Level', ru: 'Мин. N4', zh: '最低 N4', vi: 'Tối thiểu JLPT N4', ne: 'न्यूनतम N4' },
 
-  playingBackgroundMusic: { ja: 'BGM再生中', uz: 'Music', en: 'Background Music', ru: 'Музыка', zh: '背景音乐' },
-  musicPaused: { ja: '一時停止中', uz: 'Music', en: 'Music Paused', ru: 'Пауза', zh: '音乐暂停' },
+  playingBackgroundMusic: { ja: 'BGM再生中', uz: 'Music', en: 'Background Music', ru: 'Музыка', zh: '背景音乐', vi: 'Nhạc nền', ne: 'पृष्ठभूमि संगीत' },
+  musicPaused: { ja: '一時停止中', uz: 'Music', en: 'Music Paused', ru: 'Пауза', zh: '音乐暂停', vi: 'Đã tạm dừng', ne: 'संगीत रोकियो' },
 
-  manageAdsSub: { ja: '求人管理', uz: "E'lonlarni boshqarish", en: 'Manage Ads', ru: 'Управление объявлениями', zh: '管理广告' },
-  myAdsMenu: { ja: '掲載中の求人', uz: "Mening e'lonlarim", en: 'My Ads', ru: 'Мои объявления', zh: '我的广告' },
+  manageAdsSub: { ja: '求人管理', uz: "E'lonlarni boshqarish", en: 'Manage Ads', ru: 'Управление объявлениями', zh: '管理广告', vi: 'Quản lý tin tuyển dụng', ne: 'विज्ञापनहरू प्रबन्ध गर्नुहोस्' },
+  myAdsMenu: { ja: '掲載中の求人', uz: "Mening e'lonlarim", en: 'My Ads', ru: 'Мои объявления', zh: '我的广告', vi: 'Tin đăng của tôi', ne: 'मेरो विज्ञापनहरू' },
   myAdsDesc: { 
     ja: '新規求人の投稿と応募者の管理。', 
     uz: "Yangi vakansiyalar qo'shing va arizalarni boshqaring.", 
     en: 'Post new vacancies and manage applicants.', 
     ru: 'Добавляйте новые вакансии и управляйте заявками.', 
-    zh: '发布新职位并管理求职者。' 
+    zh: '发布新职位并管理求职者。',
+    vi: 'Đăng tuyển dụng mới và quản lý ứng viên.',
+    ne: 'नयाँ पदहरू पोस्ट गर्नुहोस् र आवेदकहरू प्रबन्ध गर्नुहोस्।'
   },
 
-  manageAppsSub: { ja: '応募ステータス', uz: 'Arizalar holatini tekshirish', en: 'Application Status', ru: 'Статус заявок', zh: '申请状态' },
-  myApplications: { ja: '応募履歴', uz: 'Mening arizalarim', en: 'My Applications', ru: 'Мои заявки', zh: '我的申请' },
+  manageAppsSub: { ja: '応募ステータス', uz: 'Arizalar holatini tekshirish', en: 'Application Status', ru: 'Статус заявок', zh: '申请状态', vi: 'Trạng thái ứng tuyển', ne: 'आवेदन स्थिति' },
+  myApplications: { ja: '応募履歴', uz: 'Mening arizalarim', en: 'My Applications', ru: 'Мои заявки', zh: '我的申请', vi: 'Đơn ứng tuyển của tôi', ne: 'मेरो आवेदनहरू' },
   myApplicationsDesc: { 
     ja: '提出した応募書類と選考状況をリアルタイムで確認。', 
     uz: 'Yuborilgan arizalar va javoblar holatini kuzating.', 
     en: 'Track submitted applications and status.', 
     ru: 'Отслеживайте отправленные заявки и ответы.', 
-    zh: '跟踪已提交的申请和面试状态。' 
+    zh: '跟踪已提交的申请和面试状态。',
+    vi: 'Theo dõi hồ sơ đã nộp và trạng thái ứng tuyển.',
+    ne: 'पठाएका आवेदनहरू र तिनको स्थिति ट्र्याक गर्नुहोस्।'
   },
 
-  comingSoonTag: { ja: '近日公開', uz: 'Tez orada', en: 'Coming Soon', ru: 'Скоро', zh: '即将来临' },
-  bentoJDMBadge1: { ja: '日本トラックマップ', uz: 'Yaponiya Xaritasi', en: 'Japan Map', ru: 'Карта Японии', zh: '日本地图' },
-  bentoJDMBadge2: { ja: 'スマートナビ', uz: 'Aqlli Navigatsiya', en: 'Smart Navigation', ru: 'Умная навигация', zh: '智能导航' },
-  bentoJDMTitle: { ja: '大型トラック専用スマートナビ', uz: 'Aqlli Yuk Mashinalari Navigatsiyasi', en: 'Smart Heavy Truck Navigation', ru: 'Умная навигация для грузовиков', zh: '智能重型卡车导航' },
+  comingSoonTag: { ja: '近日公開', uz: 'Tez orada', en: 'Coming Soon', ru: 'Скоро', zh: '即将来临', vi: 'Sắp ra mắt', ne: 'छिट्टै आउँदैछ' },
+  bentoJDMBadge1: { ja: '日本トラックマップ', uz: 'Yaponiya Xaritasi', en: 'Japan Map', ru: 'Карта Японии', zh: '日本地图', vi: 'Bản đồ Nhật Bản', ne: 'जापान नक्सा' },
+  bentoJDMBadge2: { ja: 'スマートナビ', uz: 'Aqlli Navigatsiya', en: 'Smart Navigation', ru: 'Умная навигация', zh: '智能导航', vi: 'Điều hướng thông minh', ne: 'स्मार्ट नेभिगेसन' },
+  bentoJDMTitle: { ja: '大型トラック専用スマートナビ', uz: 'Aqlli Yuk Mashinalari Navigatsiyasi', en: 'Smart Heavy Truck Navigation', ru: 'Умная навигация для грузовиков', zh: '智能重型卡车导航', vi: 'Điều hướng thông minh cho xe tải hạng nặng', ne: 'ठूला ट्रकहरूको लागि स्मार्ट नेभिगेसन' },
   bentoJDMSub: { 
     ja: '車体寸法・重量制限・高さ制限を自動回避', 
     uz: "Yaponiyadagi transport o'lchamlari va ko'prik cheklovlari xaritasi", 
     en: 'Height, weight & dimension restriction-aware routing in Japan', 
     ru: 'Карта ограничений по высоте, весу и габаритам в Японии', 
-    zh: '日本车身尺寸、限高、限重自动避让地图' 
+    zh: '日本车身尺寸、限高、限重自动避让地图',
+    vi: 'Tự động tránh các hạn chế về chiều cao, trọng lượng và kích thước xe tại Nhật Bản',
+    ne: 'जापानमा गाडीको उचाइ, तौल र आकार सीमाहरू स्वतः छल्ने नेभिगेसन'
   },
-  bentoJDMSubtag1: { ja: '車両サイズ設定', uz: 'Mashina sozlamalari', en: 'Vehicle Specs', ru: 'Настройки авто', zh: '车辆规格设置' },
-  bentoJDMSubtag2: { ja: '3.8m高さ制限回避', uz: 'Balandlik taqiqi', en: 'Height Limits', ru: 'Ограничение высоты', zh: '避开限高' },
-  bentoJDMSubtag3: { ja: '重量制限回避', uz: 'Vazn cheklovi', en: 'Weight Limits', ru: 'Ограничение веса', zh: '避开限重' }
+  bentoJDMSubtag1: { ja: '車両サイズ設定', uz: 'Mashina sozlamalari', en: 'Vehicle Specs', ru: 'Настройки авто', zh: '车辆规格设置', vi: 'Cài đặt kích thước xe', ne: 'गाडीको विवरण' },
+  bentoJDMSubtag2: { ja: '3.8m高さ制限回避', uz: 'Balandlik taqiqi', en: 'Height Limits', ru: 'Ограничение высоты', zh: '避开限高', vi: 'Tránh giới hạn chiều cao 3.8m', ne: 'उचाइ सीमा' },
+  bentoJDMSubtag3: { ja: '重量制限回避', uz: 'Vazn cheklovi', en: 'Weight Limits', ru: 'Ограничение веса', zh: '避开限重', vi: 'Tránh giới hạn trọng lượng', ne: 'तौल सीमा' }
 };
 
 const formatTime = (secs) => {

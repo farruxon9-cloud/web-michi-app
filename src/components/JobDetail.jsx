@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Bookmark, Map as MapIcon, Calendar, Clock, Banknote, Share2, 
-  Shield, Home, Globe, Award, Car, Users, Heart, Building2, CheckCircle2, Phone, Sparkles, Train } from 'lucide-react';
+  Shield, Home, Globe, Award, Car, Users, Heart, Building2, CheckCircle2, Phone, Sparkles, Train, MapPin } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
+import AppSheet from './AppSheet';
+import { formatBranchAddress, branchMapsUrl, publicBranchPhone, HIDDEN_PHONE_TEXT } from '../utils/branchUtils';
 import './JobDetail.css';
 
 // ============================================================
@@ -33,7 +35,34 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
   const myApplication = applications.find(a => a.jobId === job.id && !a.isSimulatedReferral);
   const appStatus = myApplication ? myApplication.status : null;
   const isInterviewReady = appStatus === 'interview' || appStatus === 'accepted';
-  const canCall = (job.phoneMode === 'public' || !job.phoneMode) || isInterviewReady;
+  // Never fall back to a fake number: without a phone there is nothing to call.
+  const canCall = Boolean(job.phone) && ((job.phoneMode === 'public' || !job.phoneMode) || isInterviewReady);
+
+  // 支店・営業所: one application = one selected branch
+  const branches = Array.isArray(job.branches) ? job.branches.filter(Boolean) : [];
+  const needsBranchPick = job.hiringScope === 'branch' && branches.length > 0;
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickedBranchId, setPickedBranchId] = useState(null);
+  const appliedBranchName = myApplication?.branchName
+    || (myApplication?.branchId ? branches.find(b => String(b.id) === String(myApplication.branchId))?.name : '');
+
+  const handleApplyClick = () => {
+    if (alreadyApplied) return;
+    if (!needsBranchPick) { onApply(job); return; }
+    if (branches.length === 1) {
+      onApply(job, { branchId: branches[0].id, branchName: branches[0].name });
+      return;
+    }
+    setPickedBranchId(null);
+    setPickerOpen(true);
+  };
+
+  const confirmBranch = () => {
+    const b = branches.find(x => String(x.id) === String(pickedBranchId));
+    if (!b) return;
+    setPickerOpen(false);
+    onApply(job, { branchId: b.id, branchName: b.name });
+  };
 
   // Ma'lumot elementlari ro'yxati — har biri ikonka, kalit va qiymat bilan
   // Bu tizim kompaniya e'lon yaratganda avtomatik to'ldiriladi
@@ -269,6 +298,24 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           </div>
         )}
 
+        {/* ====== FILIALLAR RO'YXATI (支店・営業所) ====== */}
+        {branches.length > 0 && (
+          <div className="branches-detail-block glass squircle" id="job-branches" style={{ padding: '16px', marginBottom: '16px' }}>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Building2 size={17} color="#007AFF" />
+              <span>{t('branchesSectionTitle', '募集勤務地（支店・営業所）')} ({branches.length})</span>
+            </h3>
+            {appliedBranchName && (
+              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#30D158', marginBottom: 10 }}>
+                ✓ {t('branchAppliedTo', '応募先')}：{appliedBranchName}
+              </div>
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {branches.map((b, idx) => <BranchCard key={b.id || idx} b={b} t={t} />)}
+            </div>
+          </div>
+        )}
+
         {/* ====== TAVSIF ====== */}
         <div className="description-block">
           <h3>{t('jobConditions', 'Ish sharoitlari')}</h3>
@@ -332,7 +379,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
               <>
                 {canCall ? (
                   <a 
-                    href={`tel:${job.phone || '03-1234-5678'}`} 
+                    href={`tel:${job.phone}`} 
                     className="apply-btn"
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontWeight: '700' }}
                   >
@@ -363,7 +410,8 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
             <>
               <button 
                 className={`apply-btn ${alreadyApplied ? 'applied' : ''}`}
-                onClick={() => !alreadyApplied && onApply(job)}
+                onClick={handleApplyClick}
+                id="job-apply-btn"
                 style={{ flex: '1.2' }}
               >
                 {alreadyApplied ? t('applied') : t('applyJob')}
@@ -378,7 +426,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
               </button>
               {canCall ? (
                 <a 
-                  href={`tel:${job.phone || '090-1234-5678'}`} 
+                  href={`tel:${job.phone}`} 
                   className="apply-btn"
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', background: 'var(--success)', color: '#fff', fontWeight: 'bold', flex: '1' }}
                 >
@@ -400,6 +448,107 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           )}
         </div>
       </div>
+
+      {/* ====== 勤務地選択（1応募 = 1勤務地） ====== */}
+      <AppSheet
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        id="branch-picker-sheet"
+        title={t('branchPickerTitle', '希望する勤務地を選択してください')}
+      >
+        <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+          {t('branchPickerSub', 'この求人は複数の勤務地で募集しています。応募する勤務地を1つ選んでください。')}
+        </p>
+        <div role="radiogroup" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {branches.map((b, idx) => {
+            const selected = String(pickedBranchId) === String(b.id);
+            return (
+              <button
+                key={b.id || idx}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                id={`branch-pick-${b.id || idx}`}
+                onClick={() => setPickedBranchId(b.id)}
+                style={{ textAlign: 'left', padding: 0, border: 'none', background: 'none', cursor: 'pointer', borderRadius: 12, outline: selected ? '2px solid #007AFF' : 'none', outlineOffset: 0 }}
+              >
+                <BranchCard b={b} t={t} compact selected={selected} />
+              </button>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          id="branch-pick-confirm"
+          className="apply-btn"
+          disabled={!pickedBranchId}
+          onClick={confirmBranch}
+          style={{ width: '100%', marginTop: 16, opacity: pickedBranchId ? 1 : 0.5, cursor: pickedBranchId ? 'pointer' : 'not-allowed' }}
+        >
+          {t('branchPickerConfirm', 'この勤務地で応募する')}
+        </button>
+      </AppSheet>
+    </div>
+  );
+}
+
+/** 支店カード: 名称・住所・最寄り駅・募集人数・電話（非公開なら「面接時にお知らせします」）・地図 */
+function BranchCard({ b, t, compact = false, selected = false }) {
+  const phone = publicBranchPhone(b);
+  const mapUrl = branchMapsUrl(b);
+  const rowStyle = { display: 'flex', alignItems: 'flex-start', gap: 6, marginTop: 4, color: 'var(--text-secondary)' };
+  return (
+    <div
+      style={{
+        padding: '12px 14px',
+        borderRadius: '12px',
+        background: selected ? 'rgba(0,122,255,0.08)' : 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        fontSize: '13px',
+        color: 'var(--text-main)'
+      }}
+    >
+      <div style={{ fontWeight: 800, fontSize: '14px' }}>{b.name}</div>
+      <div style={rowStyle}>
+        <MapPin size={13} style={{ flexShrink: 0, marginTop: 2 }} />
+        <span style={{ wordBreak: 'break-all' }}>{formatBranchAddress(b)}</span>
+      </div>
+      {b.nearestStation && (
+        <div style={rowStyle}>
+          <Train size={13} style={{ flexShrink: 0, marginTop: 2 }} />
+          <span>{b.nearestStation}{b.walkMinutes ? ` ${t('branchWalk', '徒歩{{min}}分', { min: b.walkMinutes })}` : ''}</span>
+        </div>
+      )}
+      {b.headcount ? (
+        <div style={rowStyle}>
+          <Users size={13} style={{ flexShrink: 0, marginTop: 2 }} />
+          <span>{t('branchHeadcount', '募集{{count}}名', { count: b.headcount })}</span>
+        </div>
+      ) : null}
+      <div style={rowStyle}>
+        <Phone size={13} style={{ flexShrink: 0, marginTop: 2 }} />
+        {phone ? (
+          compact ? (
+            <span>{phone}</span>
+          ) : (
+            <a href={`tel:${phone.replace(/[^\d+]/g, '')}`} style={{ color: '#007AFF', fontWeight: 700, textDecoration: 'none' }}>
+              {phone}
+            </a>
+          )
+        ) : (
+          <span data-testid="branch-phone-hidden">{HIDDEN_PHONE_TEXT}</span>
+        )}
+      </div>
+      {!compact && mapUrl && (
+        <a
+          href={mapUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: '12.5px', fontWeight: 700, color: '#007AFF', textDecoration: 'none' }}
+        >
+          <MapIcon size={13} /> {t('branchOpenMap', '地図で見る')}
+        </a>
+      )}
     </div>
   );
 }

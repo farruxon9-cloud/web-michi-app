@@ -45,7 +45,7 @@ export function parseNumericValue(val) {
   }
   if (typeof val === 'string') {
     // Remove commas, currency symbols, and spaces
-    const cleaned = val.replace(/[,¥\$\s]/g, '');
+    const cleaned = val.replace(/[,¥$\s]/g, '');
     const parsed = Number(cleaned);
     return isNaN(parsed) ? null : parsed;
   }

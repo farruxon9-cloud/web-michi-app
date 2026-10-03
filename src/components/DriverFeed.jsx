@@ -6,12 +6,12 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import VerifiedBadge from './VerifiedBadge';
 import CustomMobilePickerModal from './CustomMobilePickerModal';
+import NewJobsPill from './NewJobsPill';
 import './DriverFeed.css';
 import { REGIONS, PREFECTURES, CITIES_BY_PREFECTURE, TRAIN_LINES_BY_PREFECTURE, getAllTrainLines, getAllCities } from '../data/japanLocationDB';
 import { JOB_CATEGORIES } from '../data/jobCategories';
 import { JOB_FEATURES } from '../data/jobFeatures';
-import { fetchJobs } from '../services/michiJobsApiService';
-import { normalizeJobPosting } from '../utils/jobPostingNormalizer';
+import { compareJobs } from '../utils/jobOrdering';
 
 const EMPTY_ARRAY = [];
 
@@ -392,7 +392,7 @@ export function SkeletonCard() {
 // ============================================================
 export default function DriverFeed({ 
   onJobClick, isContractActive, verifiedCompanies = EMPTY_ARRAY, onShoukai, 
-  jobs = MOCK_JOBS, userRole, profileData, onEditJob, onApply, applications = EMPTY_ARRAY,
+  jobs = MOCK_JOBS, feed, userRole, profileData, onEditJob, onApply, applications = EMPTY_ARRAY,
   searchQuery = '', setSearchQuery, activeSegment = 'all', setActiveSegment,
   selectedLicenses = EMPTY_ARRAY, setSelectedLicenses,
   selectedLangLevel = 'all', setSelectedLangLevel,
@@ -406,11 +406,35 @@ export default function DriverFeed({
 }) {
   const { t, i18n } = useTranslation();
   const currentLang = i18n?.language || 'uz';
-  const ENABLE_MAP_SEARCH = false; // Feature flag: Set to true in future to activate Map Search
+  const ENABLE_MAP_SEARCH = true; // Feature flag: Set to true to activate Leaflet Map Search
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [mapFocusJob, setMapFocusJob] = useState(null);
   const [visibleCount, setVisibleCount] = useState(10);
   const markersRef = React.useRef([]);
+  const sentinelRef = useRef(null);
+  // Refs keep the observer stable: `feed` is a new object every render,
+  // so depending on it would recreate the observer (and double-fire loadMore).
+  const loadMoreRef = useRef(null);
+  const hasMoreRef = useRef(false);
+  useEffect(() => {
+    loadMoreRef.current = feed?.loadMore;
+    hasMoreRef.current = Boolean(feed?.hasMore);
+  });
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      setVisibleCount(prev => prev + 10);
+      if (hasMoreRef.current && typeof loadMoreRef.current === 'function') {
+        loadMoreRef.current();
+      }
+    }, { rootMargin: '400px 0px' });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Townwork-style Location Filter States
   const [locationTab, setLocationTab] = useState('stations'); // 'stations' | 'cities' | 'radius'
@@ -436,6 +460,26 @@ export default function DriverFeed({
   const [isRadiusSectionOpen, setIsRadiusSectionOpen] = useState(false);
   const [isJobCatSectionOpen, setIsJobCatSectionOpen] = useState(false);
   const [isFeatureSectionOpen, setIsFeatureSectionOpen] = useState(false);
+  const [userCoords, setUserCoords] = useState(null);
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (pos && pos.coords) {
+            setUserCoords({
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude
+            });
+          }
+        },
+        (err) => {
+          console.warn('[DriverFeed] Geolocation acquisition skipped/denied:', err?.message || err);
+        },
+        { timeout: 10000, maximumAge: 600000 }
+      );
+    }
+  }, []);
 
   // Reset pagination when any filter changes
   useEffect(() => {
@@ -449,12 +493,12 @@ export default function DriverFeed({
     selectedTimeSlots, selectedFeatures, sortBy
   ]);
 
-  const showLoading = isLoading;
+  const showLoading = isLoading || (feed?.status === "loading" && (jobs || []).length === 0);
 
 
   const getSalaryNumber = (salaryStr) => {
     if (!salaryStr) return 0;
-    const num = parseInt(salaryStr.replace(/[^0-9]/g, ''), 10);
+    const num = parseInt(String(salaryStr).replace(/[^0-9]/g, ''), 10);
     return isNaN(num) ? 0 : num;
   };
 
@@ -502,48 +546,9 @@ export default function DriverFeed({
     setIsFeatureSectionOpen(false);
   };
 
-  const [apiJobs, setApiJobs] = useState([]);
-  const [isApiLoading, setIsApiLoading] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-    setIsApiLoading(true);
-    fetchJobs({
-      prefecture: selectedPrefecture !== 'all' ? selectedPrefecture : '',
-      minSalary: minSalary > 0 ? minSalary : '',
-      q: searchQuery || ''
-    })
-      .then(remoteJobs => {
-        if (!isMounted) return;
-        if (Array.isArray(remoteJobs) && remoteJobs.length > 0) {
-          const normalized = remoteJobs.map(normalizeJobPosting).filter(Boolean);
-          setApiJobs(normalized);
-        }
-      })
-      .catch(err => {
-        console.warn('[DriverFeed] GET /api/jobs fetch fallback:', err.message);
-      })
-      .finally(() => {
-        if (isMounted) setIsApiLoading(false);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [selectedPrefecture, minSalary, searchQuery]);
-
-  const activeJobsList = useMemo(() => {
-    if (apiJobs.length > 0) {
-      const merged = [...apiJobs];
-      (jobs || []).forEach(j => {
-        if (!merged.some(aj => aj.id === j.id)) {
-          merged.push(j);
-        }
-      });
-      return merged;
-    }
-    return jobs || [];
-  }, [apiJobs, jobs]);
+  // Single source of truth: the shared feed from useJobFeed (App.jsx).
+  // Filters below run client-side so every device shows the same order.
+  const activeJobsList = jobs || EMPTY_ARRAY;
 
   // Filtrlash: segment, qidiruv va yangi filtrlar bo'yicha
   const filteredJobs = useMemo(() => {
@@ -582,10 +587,10 @@ export default function DriverFeed({
 
       // 3. Benefits filter (all selected benefits must match)
       const matchBenefits = !selectedBenefits || selectedBenefits.length === 0 || selectedBenefits.every(benefit => {
-        if (benefit === 'housing') return job.housing && job.housing !== 'housing_none';
+        if (benefit === 'housing') return job.housing && job.housing !== 'housing_none' && job.housing !== 'hou_none' && job.housing !== "Yo'q" && job.housing !== 'none' && !job.housing.includes('Yo\'q');
         if (benefit === 'foreigner') return job.foreigners && job.foreigners !== 'foreigners_none';
         if (benefit === 'bonus') return job.bonus && job.bonus !== 'bonus_none' && !job.bonus.includes('なし') && !job.bonus.includes('Yo\'q') && !job.bonus.includes('No Bonus');
-        if (benefit === 'insurance') return job.insurance && job.insurance.startsWith('insurance_');
+        if (benefit === 'insurance') return job.insurance && job.insurance.startsWith('insurance_') && job.insurance !== 'insurance_none';
         if (benefit === 'international') return job.isInternational === true;
         if (benefit === 'signon_bonus') return (job.hasShoukai === true || job.hasShoukai === 'yes' || Number(job.shoukaiFee) > 0 || (job.shoukai && job.shoukai !== '0' && job.shoukai !== 'Yo\'q'));
         return true;
@@ -670,8 +675,8 @@ export default function DriverFeed({
         if (f === 'daily_pay') return job.payType === 'daily';
         if (f === 'weekly_pay') return job.payType === 'weekly';
         if (f === 'transport_paid') return job.transportPaid === true;
-        if (f === 'dormitory') return job.housing && job.housing !== 'housing_none';
-        if (f === 'insurance') return job.insurance && job.insurance.startsWith('insurance_');
+        if (f === 'dormitory') return job.housing && job.housing !== 'housing_none' && job.housing !== 'hou_none' && job.housing !== "Yo'q" && job.housing !== 'none' && !job.housing.includes('Yo\'q');
+        if (f === 'insurance') return job.insurance && job.insurance.startsWith('insurance_') && job.insurance !== 'insurance_none';
         if (f === 'tokutei_ginou') return job.isInternational === true;
         if (f === 'visa_support') return job.foreigners === 'foreigners_visa' || job.foreigners === 'foreigners_visa_renew';
         if (f === 'promotion') return job.bonus && job.bonus !== 'bonus_none';
@@ -695,8 +700,8 @@ export default function DriverFeed({
       // 15. GPS Radius Distance Filter (Haversine formula)
       const matchRadius = !selectedRadius || selectedRadius === 0 || (() => {
         if (!job.lat || !job.lng) return true;
-        const refLat = 35.6812; // Tokyo Center reference coordinate
-        const refLng = 139.7671;
+        const refLat = userCoords?.lat || 35.6812; // Dynamic user GPS coordinate with Tokyo center fallback
+        const refLng = userCoords?.lng || 139.7671;
         const dLat = (job.lat - refLat) * (Math.PI / 180);
         const dLon = (job.lng - refLng) * (Math.PI / 180);
         const a =
@@ -716,14 +721,14 @@ export default function DriverFeed({
     }).sort((a, b) => {
       if (sortBy === 'salary_high') return getSalaryNumber(b.salary) - getSalaryNumber(a.salary);
       if (sortBy === 'salary_low') return getSalaryNumber(a.salary) - getSalaryNumber(b.salary);
-      return (b.id || 0) - (a.id || 0);
+      return compareJobs(a, b);
     });
   }, [
-    jobs, activeSegment, searchQuery, selectedLicenses, selectedLangLevel,
+    activeJobsList, activeSegment, searchQuery, selectedLicenses, selectedLangLevel,
     selectedBenefits, minSalary, selectedPrefecture, selectedCity,
     stationQuery, onlyNearStation, selectedStations, selectedCitiesList,
     selectedJobCategories, selectedSubcategories, selectedEmploymentTypes,
-    selectedDurations, selectedTimeSlots, selectedFeatures, selectedRadius, sortBy
+    selectedDurations, selectedTimeSlots, selectedFeatures, selectedRadius, sortBy, userCoords
   ]);
 
   const getJobCategoryLabel = (catId) => {
@@ -887,7 +892,7 @@ export default function DriverFeed({
                     {t('searchByCities', '都道府県・市区町村から探す')}
                   </span>
                   <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
-                    エリア・勤務地の指定
+                    {t('filterAreaSub', 'エリア・勤務地の指定')}
                   </span>
                 </div>
               </div>
@@ -928,7 +933,7 @@ export default function DriverFeed({
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
-                        対象エリア (地域)
+                        {t('targetAreaLabel', '対象エリア (地域)')}
                       </span>
                       <span style={{ fontSize: '14.5px', fontWeight: '900', color: 'var(--text-main)', marginTop: '1px' }}>
                         {selectedPrefecture === 'all' 
@@ -951,7 +956,7 @@ export default function DriverFeed({
                       transition: 'transform 0.15s ease'
                     }}
                   >
-                    <span>変更</span>
+                    <span>{t('changeBtn', '変更')}</span>
                     <ChevronDown size={14} color="#FFF" />
                   </button>
                 </div>
@@ -1053,7 +1058,7 @@ export default function DriverFeed({
                     {t('searchByStations', '沿線・駅から探す')}
                   </span>
                   <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
-                    路線名・最寄り駅の指定
+                    {t('filterStationSub', '路線名・最寄り駅の指定')}
                   </span>
                 </div>
               </div>
@@ -1172,7 +1177,7 @@ export default function DriverFeed({
                     {t('searchByRadius', '現在地からの距離')}
                   </span>
                   <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
-                    指定半径・周辺エリア
+                    {t('filterRadiusSub', '指定半径・周辺エリア')}
                   </span>
                 </div>
               </div>
@@ -1249,7 +1254,7 @@ export default function DriverFeed({
                     {t('searchByJobCategory', '職種から探す')}
                   </span>
                   <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
-                    トラック・ドライバー種別
+                    {t('filterCategorySub', 'トラック・ドライバー種別')}
                   </span>
                 </div>
               </div>
@@ -1353,7 +1358,7 @@ export default function DriverFeed({
                     {t('searchByFeatures', 'こだわり条件から探す')}
                   </span>
                   <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '1px' }}>
-                    雇用形態・給与・設備条件
+                    {t('filterFeatureSub', '雇用形態・給与・設備条件')}
                   </span>
                 </div>
               </div>
@@ -1606,7 +1611,7 @@ export default function DriverFeed({
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedLicenses([])} title={selectedLicenses.join(', ')}>
-                    <ShieldCheck size={13} className="chip-svg-icon" /> {selectedLicenses[0]} <span className="active-chip-count">外{selectedLicenses.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                    <ShieldCheck size={13} className="chip-svg-icon" /> {selectedLicenses[0]} <span className="active-chip-count">+{selectedLicenses.length - 1}</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1619,7 +1624,7 @@ export default function DriverFeed({
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedStations([])} title={selectedStations.join(', ')}>
-                    <Train size={13} className="chip-svg-icon" /> {selectedStations[0]} <span className="active-chip-count">外{selectedStations.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                    <Train size={13} className="chip-svg-icon" /> {selectedStations[0]} <span className="active-chip-count">+{selectedStations.length - 1}</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1632,7 +1637,7 @@ export default function DriverFeed({
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedCitiesList([])} title={selectedCitiesList.join(', ')}>
-                    <MapPin size={13} className="chip-svg-icon" /> {selectedCitiesList[0]} <span className="active-chip-count">外{selectedCitiesList.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                    <MapPin size={13} className="chip-svg-icon" /> {selectedCitiesList[0]} <span className="active-chip-count">+{selectedCitiesList.length - 1}</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1665,7 +1670,7 @@ export default function DriverFeed({
                   ))
                 ) : (
                   <span className="active-chip" onClick={() => setSelectedFeatures([])} title={selectedFeatures.map(getFeatureLabel).join(', ')}>
-                    <Star size={13} className="chip-svg-icon" /> {getFeatureLabel(selectedFeatures[0])} <span className="active-chip-count">外{selectedFeatures.length - 1}件</span> <span className="active-chip-close"><X size={11} /></span>
+                    <Star size={13} className="chip-svg-icon" /> {getFeatureLabel(selectedFeatures[0])} <span className="active-chip-count">+{selectedFeatures.length - 1}</span> <span className="active-chip-close"><X size={11} /></span>
                   </span>
                 )
               )}
@@ -1697,6 +1702,9 @@ export default function DriverFeed({
           </select>
         </div>
       </div>
+
+      {/* Qalqib chiquvchi real-vaqt yangi e'lonlar pill tugmasi */}
+      <NewJobsPill count={feed?.pendingCount} onClick={feed?.showPending} isOnline={feed?.isOnline !== false} />
 
       {/* ====== E'LONLAR RO'YXATI (GOO-NET USLUBIDA) ====== */}
       <div className="jobs-list hide-scrollbar">
@@ -1770,7 +1778,7 @@ export default function DriverFeed({
                         onClick={(e) => {
                           if (!ENABLE_MAP_SEARCH) return;
                           e.stopPropagation();
-                          setSelectedMapJob(job);
+                          setMapFocusJob(job);
                           setIsMapModalOpen(true);
                         }}
                       >
@@ -1917,25 +1925,14 @@ export default function DriverFeed({
                 justifyContent: 'center',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                e.currentTarget.style.borderColor = 'var(--primary)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-                e.currentTarget.style.borderColor = 'var(--glass-border)';
-              }}
             >
-              <span>{t('loadMore', 'もっと見る')}</span>
+              {t('loadMore', 'Motto miru (Ko\'proq ko\'rish)')}
             </button>
           </div>
         )}
-        {filteredJobs.length === 0 && (
-          <div className="empty-feed">
-            <Search size={40} color="#C7C7CC" />
-            <p>{t('noJobsFound', "条件に合う求人が見つかりませんでした")}</p>
-          </div>
-        )}
+
+        {/* Infinite Scroll Sentinel element */}
+        <div ref={sentinelRef} style={{ height: '20px', width: '100%' }} />
       </div>
 
       {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
@@ -1945,8 +1942,9 @@ export default function DriverFeed({
       {ENABLE_MAP_SEARCH && (
         <JobMapModal 
           isOpen={isMapModalOpen} 
-          onClose={() => setIsMapModalOpen(false)} 
+          onClose={() => { setIsMapModalOpen(false); setMapFocusJob(null); }} 
           jobs={filteredJobs} 
+          focusJob={mapFocusJob}
           onSelectJob={onJobClick} 
           t={t} 
         />
@@ -1956,11 +1954,16 @@ export default function DriverFeed({
 }
 
 // Asl dizayn, shaffoflik va layout 100% saqlangan xarita modali
-function JobMapModal({ isOpen, onClose, jobs = [], onSelectJob, t }) {
+function JobMapModal({ isOpen, onClose, jobs = [], focusJob = null, onSelectJob, t }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersGroupRef = useRef(null);
   const [selectedMapJob, setSelectedMapJob] = useState(null);
+
+  // Opened from a job card's location chip: preselect that job
+  useEffect(() => {
+    if (isOpen && focusJob) setSelectedMapJob(focusJob);
+  }, [isOpen, focusJob]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -1968,9 +1971,10 @@ function JobMapModal({ isOpen, onClose, jobs = [], onSelectJob, t }) {
     const timers = [];
 
     const setupMap = () => {
-      if (!mapContainerRef.current || typeof window === 'undefined' || !window.L) return;
+      const mapL = (typeof window !== 'undefined' && window.L) || L;
+      if (!mapContainerRef.current || !mapL) return;
 
-      const L = window.L;
+      const L = mapL;
       let map = mapInstanceRef.current;
 
       if (!map) {

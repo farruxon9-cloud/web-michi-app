@@ -7,9 +7,9 @@ import RoleSelect from './components/RoleSelect';
 import BottomNav from './components/BottomNav';
 import './App.css';
 import Dashboard from './components/Dashboard';
-import DriverFeed, { MOCK_JOBS } from './components/DriverFeed';
+import DriverFeed from './components/DriverFeed';
 import JobDetail from './components/JobDetail';
-import DrivingAcademy, { MOCK_SCHOOLS } from './components/DrivingAcademy';
+import DrivingAcademy from './components/DrivingAcademy';
 import ServiceComingSoon from './components/ServiceComingSoon';
 import Profile from './components/Profile';
 import AdminDashboard from './components/AdminDashboard';
@@ -21,7 +21,14 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ReferralModal from './components/ReferralModal';
 import { getPermanentUserId } from './utils/userIdManager';
 import { AppProvider } from './context/AppContext';
-import { submitApplicationToBackend } from './services/applicationService';
+import { submitApplicationToBackend, notifyCompanyNewApplication, notifyApplicantStatusChange } from './services/applicationService';
+import { useAuth } from './context/AuthContext';
+import { API_ENDPOINTS } from './config/api';
+import { apiFetch } from './services/apiClient';
+import { fetchSchools } from './services/michiSchoolsApiService';
+import { normalizeSchoolPosting } from './utils/jobPostingNormalizer';
+import { useJobFeed } from './hooks/useJobFeed';
+
 
 
 const TRACKS = [
@@ -31,44 +38,7 @@ const TRACKS = [
   { id: 4, title: 'Osaka Neon (大阪のネオン)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/bell-fi-broadcasts-181511.mp3' }
 ];
 
-const mockIncomingApplications = [
-  {
-    id: 101,
-    jobId: 1,
-    company: 'Sagawa Express',
-    title: 'ルート配送ドライバー (地場デリバリー)',
-    logo: 'https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100',
-    status: 'submitted',
-    appliedDate: '2026-06-10',
-    shoukaiId: '#Michi-REF1',
-    shoukaiAmount: '¥10,000',
-    shoukaiPaid: false,
-    applicantInfo: {
-      fullName: "Anonim Do'st",
-      email: 'demo@michi-app.com',
-      birthDate: '1995-01-01',
-      birthPlace: 'Yaponiya',
-      nationality: 'Xorijiy',
-      gender: 'male',
-      phone: '+81 00-0000-0000',
-      postalCode: '000-0000',
-      address: 'Tokyo, Shinjuku-ku',
-      addressHistory: [
-        { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
-        { address: 'Chiba, Matsudo 2-12', isCurrent: false }
-      ],
-      educationHistory: [
-        { school: 'Toshkent Axborot Texnologiyalari Universiteti', major: 'Kompyuter muhandisligi', startDate: '2014-09', endDate: '2018-06', isCurrent: false }
-      ],
-      driverLicenses: ['oogata', 'kenin', 'futsu'],
-      techCertificates: ['forklift'],
-      workHistory: [
-        { company: 'Yamato Transport Tokyo', position: 'Driver', startDate: '2022-10', endDate: '2025-12', isCurrent: false },
-        { company: 'Toshkent Express', position: 'Kuryer', startDate: '2018-07', endDate: '2022-09', isCurrent: false }
-      ]
-    }
-  }
-];
+const mockIncomingApplications = [];
 
 class ChunkErrorBoundary extends React.Component {
   constructor(props) {
@@ -105,8 +75,14 @@ class ChunkErrorBoundary extends React.Component {
 function App() {
   const { t, i18n } = useTranslation();
   const [showSplash, setShowSplash] = useState(true);
-  const [languageSelected, setLanguageSelected] = useState(false);
-  const [userRole, setUserRole] = useState(null);
+  const [languageSelected, setLanguageSelected] = useState(() => {
+    try {
+      return Boolean(localStorage.getItem('michi_lang'));
+    } catch {
+      return false;
+    }
+  });
+  const { user, userRole, setUserRole, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [showJDMNavigation, setShowJDMNavigation] = useState(false);
   const [showAssistHeroShowcase, setShowAssistHeroShowcase] = useState(false);
@@ -134,6 +110,20 @@ function App() {
   useEffect(() => {
     if (showJDMNavigation) setHasOpenedJDM(true);
   }, [showJDMNavigation]);
+
+  // Sync profileData when user object from AuthContext updates
+  useEffect(() => {
+    if (user) {
+      if (user.profileData || user.fullName) {
+        setProfileData(prev => ({
+          ...prev,
+          ...(user.profileData || {}),
+          fullName: user.fullName || user.profileData?.fullName || prev.fullName,
+          email: user.email || user.profileData?.email || prev.email
+        }));
+      }
+    }
+  }, [user]);
 
   // 5-BOSQICH: URL'dagi referral parametrini ushlab qolish (?ref=...)
   useEffect(() => {
@@ -261,10 +251,21 @@ function App() {
     currentTrack: TRACKS[currentTrackIndex]
   }), [isPlaying, currentTrackIndex]);
 
-  // Tab almashganda tepaga skroll
+  // Tab almashganda tepaga skroll va dinamik SEO Title o'rnatish
   useEffect(() => {
     if (mainContentRef.current) {
       mainContentRef.current.scrollTop = 0;
+    }
+    const TAB_TITLES = {
+      home: 'Michi App — 日本のトラックドライバー・自動車教習所求人プラットフォーム',
+      jobs: '求人一覧 (Driver Jobs) — Michi App',
+      service: '自動車整備・サービス (Services) — Michi App',
+      academy: '自動車教習所 (Driving Academies) — Michi App',
+      profile: 'マイページ (My Profile) — Michi App',
+      company: '企業ダッシュボード (Company Panel) — Michi App'
+    };
+    if (TAB_TITLES[activeTab]) {
+      document.title = TAB_TITLES[activeTab];
     }
   }, [activeTab]);
 
@@ -374,23 +375,40 @@ function App() {
     try { localStorage.setItem('michi_show_badges', String(showProfileBadges)); } catch {}
   }, [showProfileBadges]);
 
-  const [profileData, setProfileData] = useState({
-    userId: getPermanentUserId(),
-    fullName: 'Mehmon',
-    birthDate: '',
-    licenseType: 'Oogata',
-    experience: '',
-    email: 'michi@example.com',
-    avatar: null,
-    workHistory: [],
-    addressHistory: [],
-    educationHistory: [],
-    gender: 'male',
-    personalRequests: '貴社規定に従います。'
+  const [profileData, setProfileData] = useState(() => {
+    const base = {
+      userId: getPermanentUserId(),
+      fullName: 'Mehmon',
+      birthDate: '',
+      licenseType: 'Oogata',
+      experience: '',
+      email: 'michi@example.com',
+      avatar: null,
+      workHistory: [],
+      addressHistory: [],
+      educationHistory: [],
+      gender: 'male',
+      personalRequests: '貴社規定に従います。'
+    };
+    try {
+      const cached = localStorage.getItem('michi_user_session') || localStorage.getItem('michi_auth_user');
+      if (cached) {
+        const user = JSON.parse(cached);
+        const profile = user.profileData || user;
+        return {
+          ...base,
+          ...profile,
+          fullName: user.fullName || profile.fullName || base.fullName,
+          email: user.email || profile.email || base.email
+        };
+      }
+    } catch {}
+    return base;
   });
 
-  const [jobs, setJobs] = useState(MOCK_JOBS);
-  const [schools, setSchools] = useState(MOCK_SCHOOLS);
+  const feed = useJobFeed();
+  const [companyJobs, setCompanyJobs] = useState([]);
+  const [schools, setSchools] = useState([]);
   const [applications, setApplications] = useState([]);
   const [notifications, setNotifications] = useState([]);
 
@@ -409,9 +427,11 @@ function App() {
     return Boolean(hasFullName && hasBirthDate && hasPhone && hasAddress && hasEducation);
   }, [profileData]);
 
-  const handleApplyJob = useCallback(async (job) => {
+  const handleApplyJob = useCallback(async (job, opts = {}) => {
+    const branchId = opts && opts.branchId != null ? String(opts.branchId) : null;
+    const branchName = (opts && opts.branchName) || null;
     if (userRole === 'guest') {
-      setPendingApply({ type: 'job', item: job });
+      setPendingApply({ type: 'job', item: job, opts: { branchId, branchName } });
       setAuthInitialStep('register');
       setUserRole(null);
       return;
@@ -438,10 +458,38 @@ function App() {
       shoukaiId: refId || null,
       shoukaiAmount: job.shoukaiAmount || null,
       shoukaiPaid: false,
+      branchId,
+      branchName,
       applicantInfo: { ...profileData }
     };
     setApplications(prev => [...prev, newApp]);
-  }, [userRole, applications, profileData, isProfileComplete, openReferralModal]);
+
+    // Send application to central backend server (https://api.michi.jp.net/api/applications)
+    try {
+      await submitApplicationToBackend(job.id, profileData, branchId);
+    } catch (err) {
+      console.error('Application submit to backend error:', err);
+      // Roll back the optimistic entry so the user can retry
+      setApplications(prev => prev.filter(a => a.id !== newApp.id));
+      alert(t('applySubmitError', '応募の送信に失敗しました。通信環境を確認して再度お試しください。'));
+      return;
+    }
+
+    // Notify company via email webhook proxy (best effort)
+    try {
+      const targetCompanyEmail = job.email || job.companyEmail || job.contactEmail;
+      if (targetCompanyEmail) {
+        await notifyCompanyNewApplication({
+          companyEmail: targetCompanyEmail,
+          applicantName: profileData.fullName || profileData.name || 'Haydovchi',
+          jobTitle: branchName ? `${job.title}（${branchName}）` : job.title,
+          type: 'new_application'
+        });
+      }
+    } catch (err) {
+      console.warn('Company notify error:', err);
+    }
+  }, [userRole, applications, profileData, isProfileComplete, openReferralModal, t]);
 
   const handleChangeAppStatus = (appId, newStatus) => {
     const targetApp = applications.find(a => a.id === appId);
@@ -461,6 +509,18 @@ function App() {
         read: false,
       };
       setNotifications(prev => [notif, ...prev]);
+
+      // Notify candidate via email webhook proxy
+      const candidateEmail = targetApp.applicantInfo?.email || targetApp.email || profileData?.email;
+      if (candidateEmail) {
+        notifyApplicantStatusChange({
+          applicantEmail: candidateEmail,
+          applicantName: targetApp.applicantInfo?.fullName || targetApp.applicantInfo?.name || profileData?.fullName || 'Haydovchi',
+          companyName: targetApp.company,
+          jobTitle: targetApp.title,
+          newStatus
+        }).catch(err => console.warn('[App] Applicant email notification warning:', err.message));
+      }
     }
   };
 
@@ -497,10 +557,47 @@ function App() {
     setSchoolApplications(prev => [...prev, newApp]);
   }, [userRole, schoolApplications, profileData, isProfileComplete, openReferralModal]);
 
-  const handleRoleSelection = (role, data) => {
+  useEffect(() => {
+    if (userRole === 'company') {
+      let isMounted = true;
+      apiFetch(API_ENDPOINTS.APPLICATIONS)
+        .then(res => res.json())
+        .then(data => {
+          if (isMounted) {
+            setApplications(data.applications || data.data || []);
+          }
+        })
+        .catch(() => {
+          if (isMounted) setApplications([]);
+        });
+      return () => { isMounted = false; };
+    }
+  }, [userRole]);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchSchools()
+      .then(rawSchools => {
+        if (isMounted && Array.isArray(rawSchools) && rawSchools.length > 0) {
+          const normSchools = rawSchools.map(normalizeSchoolPosting).filter(Boolean);
+          if (normSchools.length > 0) setSchools(normSchools);
+        }
+      })
+      .catch(err => console.warn('[App] Initial fetchSchools warning:', err.message));
+
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleRoleSelection = async (role, data) => {
     setUserRole(role);
     if (role === 'company') {
-      setApplications(mockIncomingApplications);
+      try {
+        const realApps = await apiFetch(API_ENDPOINTS.APPLICATIONS);
+        const resData = await realApps.json();
+        setApplications(resData.applications || resData.data || []);
+      } catch {
+        setApplications([]);
+      }
     }
     if (data) {
       setProfileData(prev => ({
@@ -510,7 +607,29 @@ function App() {
         email: data.email || 'michi@example.com'
       }));
     }
+
+    if (pendingApply) {
+      const { type, item, opts } = pendingApply;
+      setPendingApply(null);
+      if (type === 'job') {
+        await handleApplyJob(item, opts);
+      } else if (type === 'school') {
+        await handleApplySchool(item);
+      }
+    }
   };
+
+  useEffect(() => {
+    if (userRole && userRole !== 'guest' && pendingApply) {
+      const target = pendingApply;
+      setPendingApply(null);
+      if (target.type === 'job') {
+        handleApplyJob(target.item, target.opts);
+      } else if (target.type === 'school') {
+        handleApplySchool(target.item);
+      }
+    }
+  }, [userRole, pendingApply, handleApplyJob, handleApplySchool]);
 
   const handleShoukai = (item) => {
     const isActuallyJob = Boolean(item.title);
@@ -541,10 +660,10 @@ function App() {
     });
   };
 
-  if (showSplash) return <Splash onFinish={() => setShowSplash(false)} />;
-  if (!languageSelected) return <LanguageSelect onFinish={() => setLanguageSelected(true)} />;
-  if (!userRole) return <RoleSelect onSelectRole={handleRoleSelection} onGuest={() => handleRoleSelection('guest')} initialStep={authInitialStep} />;
-  if (userRole === 'admin') return <AdminDashboard verifiedCompanies={verifiedCompanies} onToggleVerify={handleToggleVerify} onLogout={() => setUserRole(null)} contractStatus={contractStatus} setContractStatus={setContractStatus} profileData={profileData} />;
+  if (showSplash) return <ErrorBoundary><Splash onFinish={() => setShowSplash(false)} /></ErrorBoundary>;
+  if (!languageSelected) return <ErrorBoundary><LanguageSelect onFinish={() => setLanguageSelected(true)} /></ErrorBoundary>;
+  if (!userRole) return <ErrorBoundary><RoleSelect onSelectRole={handleRoleSelection} onGuest={() => handleRoleSelection('guest')} initialStep={authInitialStep} /></ErrorBoundary>;
+  if (userRole === 'admin') return <ErrorBoundary><AdminDashboard verifiedCompanies={verifiedCompanies} onToggleVerify={handleToggleVerify} onLogout={() => logout()} contractStatus={contractStatus} setContractStatus={setContractStatus} profileData={profileData} /></ErrorBoundary>;
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -569,7 +688,8 @@ function App() {
         return (
           <DriverFeed 
             onJobClick={setSelectedJob} 
-            jobs={jobs} 
+            jobs={feed.jobs} 
+            feed={feed}
             isContractActive={contractStatus === 'active'} 
             verifiedCompanies={verifiedCompanies} 
             onShoukai={handleShoukai} 
@@ -608,7 +728,7 @@ function App() {
       case 'profile':
         return (
           <Profile 
-            onLogout={() => setUserRole(null)} 
+            onLogout={() => logout()} 
             contractStatus={contractStatus} 
             setContractStatus={setContractStatus} 
             profileData={profileData}
@@ -638,12 +758,14 @@ function App() {
             onNavigate={setActiveTab}
             activePage={profileActivePage}
             setActivePage={setProfileActivePage}
-            jobs={jobs}
+            jobs={companyJobs}
+            setJobs={setCompanyJobs}
+            onJobCreated={feed.refresh}
             schools={schools}
           />
         );
       default:
-        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} verifiedCompanies={verifiedCompanies} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={feed.jobs} feed={feed} verifiedCompanies={verifiedCompanies} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
     }
   };
 
@@ -805,7 +927,7 @@ function App() {
             setActiveTab={setActiveTab} 
             onStatusChange={setVoiceStatus} 
             activeTab={activeTab} 
-            jobs={jobs} 
+            jobs={feed.jobs} 
             schools={schools} 
             profileData={profileData} 
             applications={applications} 

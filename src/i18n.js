@@ -9,6 +9,15 @@ i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false }
 });
 
+// Synchronize document.documentElement.lang on initialization & language change
+const updateDocLang = (lang) => {
+  if (typeof document !== 'undefined' && document.documentElement) {
+    document.documentElement.lang = lang || 'ja';
+  }
+};
+updateDocLang(i18n.language || localStorage.getItem('michi_lang') || 'ja');
+i18n.on('languageChanged', (lng) => updateDocLang(lng));
+
 // Global guard against undefined/null keys causing Safari key.includes crashes
 const origT = i18n.t.bind(i18n);
 i18n.t = (key, ...args) => {
