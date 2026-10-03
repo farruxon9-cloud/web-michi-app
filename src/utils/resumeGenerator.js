@@ -1,62 +1,91 @@
-import pdfMake from 'pdfmake/build/pdfmake';
 import { toJapaneseEra, calculateAge, toJapaneseEraYear } from './japaneseEra';
 
 const FONT_URL = '/SawarabiGothic-Regular.ttf';
+const FONT_FILE = 'SawarabiGothic-Regular.ttf';
 
-// Convert ArrayBuffer to Base64 (needed for pdfMake in-browser vfs)
+// pdfmake (~1MB) is loaded only when a resume is actually generated, keeping it out of the main bundle.
+let pdfMakePromise = null;
+function loadPdfMake() {
+  if (!pdfMakePromise) {
+    pdfMakePromise = import('pdfmake/build/pdfmake')
+      .then((m) => m.default || m)
+      .catch((err) => { pdfMakePromise = null; throw err; });
+  }
+  return pdfMakePromise;
+}
+
+// Convert ArrayBuffer to Base64 (needed for pdfMake in-browser vfs).
+// FileReader is native and far faster than a per-byte string loop on low-end phones.
 function arrayBufferToBase64(buffer) {
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return window.btoa(binary);
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+    reader.onerror = () => reject(reader.error || new Error('Font encoding failed'));
+    reader.readAsDataURL(new Blob([buffer]));
+  });
 }
 
-// Lazy load font and initialize pdfMake
+let fontsLoaded = false;
+let fontLoadPromise = null;
+
+function registerFont(pdfMake, base64) {
+  const family = { normal: FONT_FILE, bold: FONT_FILE, italics: FONT_FILE, bolditalics: FONT_FILE };
+  const fonts = { SawarabiGothic: family, Roboto: family };
+
+  // pdfmake >= 0.3: files must be written through addVirtualFileSystem(); assigning
+  // `pdfMake.vfs` is silently ignored and generation fails with "file not found in VFS".
+  if (typeof pdfMake.addVirtualFileSystem === 'function') {
+    pdfMake.addVirtualFileSystem({ [FONT_FILE]: base64 });
+  } else {
+    pdfMake.vfs = { ...(pdfMake.vfs || {}), [FONT_FILE]: base64 }; // pdfmake 0.2 fallback
+  }
+  if (typeof pdfMake.setFonts === 'function') {
+    pdfMake.setFonts(fonts);
+  } else {
+    pdfMake.fonts = fonts;
+  }
+}
+
+// Lazy load font and initialize pdfMake (concurrent calls share one download)
 export async function initFonts(onProgress) {
-  if (pdfMake.vfs && pdfMake.vfs['SawarabiGothic-Regular.ttf']) {
-    return true;
+  const pdfMake = await loadPdfMake();
+  if (fontsLoaded) return pdfMake;
+
+  if (!fontLoadPromise) {
+    if (onProgress) onProgress('loading_font');
+    fontLoadPromise = (async () => {
+      const response = await fetch(FONT_URL);
+      if (!response.ok) throw new Error('Failed to fetch Japanese font file.');
+      const buffer = await response.arrayBuffer();
+      const base64 = await arrayBufferToBase64(buffer);
+      registerFont(pdfMake, base64);
+      fontsLoaded = true;
+    })().catch((err) => {
+      fontLoadPromise = null; // allow retry
+      console.error('Error loading Japanese font:', err);
+      throw err;
+    });
   }
-
-  if (onProgress) onProgress('loading_font');
-
-  try {
-    const response = await fetch(FONT_URL);
-    if (!response.ok) throw new Error('Failed to fetch Japanese font file.');
-    const buffer = await response.arrayBuffer();
-    const base64 = arrayBufferToBase64(buffer);
-
-    pdfMake.vfs = pdfMake.vfs || {};
-    pdfMake.vfs['SawarabiGothic-Regular.ttf'] = base64;
-
-    pdfMake.fonts = {
-      SawarabiGothic: {
-        normal: 'SawarabiGothic-Regular.ttf',
-        bold: 'SawarabiGothic-Regular.ttf',
-        italics: 'SawarabiGothic-Regular.ttf',
-        bolditalics: 'SawarabiGothic-Regular.ttf'
-      },
-      Roboto: {
-        normal: 'SawarabiGothic-Regular.ttf',
-        bold: 'SawarabiGothic-Regular.ttf',
-        italics: 'SawarabiGothic-Regular.ttf',
-        bolditalics: 'SawarabiGothic-Regular.ttf'
-      }
-    };
-    return true;
-  } catch (err) {
-    console.error('Error loading Japanese font:', err);
-    throw err;
-  }
+  await fontLoadPromise;
+  return pdfMake;
 }
+
+// pdfmake can only embed JPEG/PNG — anything else (webp, svg, gif) would abort the whole PDF.
+const PDF_IMAGE_TYPES = /^image\/(jpe?g|png)$/i;
 
 // Convert image URL to base64 for PDF rendering
 async function urlToBase64(url) {
+  if (typeof url !== 'string' || !url) return null;
+  // Already a data URL (uploaded photo) — use as-is. Fetching it would be blocked by CSP connect-src.
+  if (url.startsWith('data:')) {
+    const mime = url.slice(5, url.indexOf(';'));
+    return PDF_IMAGE_TYPES.test(mime) ? url : null;
+  }
   try {
     const res = await fetch(url);
+    if (!res.ok) return null;
     const blob = await res.blob();
+    if (!PDF_IMAGE_TYPES.test(blob.type)) return null;
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result);
@@ -70,13 +99,14 @@ async function urlToBase64(url) {
 }
 
 /**
- * Main function to generate and download/preview standard Japanese Rirekisho PDF
+ * Generate a standard Japanese Rirekisho PDF and return it as a Blob.
+ * Delivery (download / share / native) is handled by utils/resumeDownload.js.
  */
-export async function generateRirekisho(profileData, options = {}) {
-  const { onProgress, download = true } = options;
+export async function generateRirekishoBlob(profileData = {}, options = {}) {
+  const { onProgress } = options;
 
   // Initialize fonts first
-  await initFonts(onProgress);
+  const pdfMake = await initFonts(onProgress);
 
   if (onProgress) onProgress('generating_pdf');
 
@@ -230,9 +260,11 @@ export async function generateRirekisho(profileData, options = {}) {
         case 'kenin_nishu': licName = '牽引第二種免許'; break;
         default: licName = `${lic.toUpperCase()} 運転免許`;
       }
+      // Acquisition dates are not collected yet, so leave the year/month cells blank
+      // instead of printing placeholder text on an official document.
       licenseRows.push({
-        year: '令和X', // Just placeholder or based on certification date
-        month: 'X',
+        year: '',
+        month: '',
         detail: `${licName} 取得`
       });
     });
@@ -249,10 +281,20 @@ export async function generateRirekisho(profileData, options = {}) {
         default: certName = `${cert.toUpperCase()} 資格`;
       }
       licenseRows.push({
-        year: '令和X',
-        month: 'X',
+        year: '',
+        month: '',
         detail: `${certName} 修了`
       });
+    });
+  }
+
+  // JLPT level is self-declared by the driver (not verified by the platform)
+  const jlptLevel = profileData.jlptStatus?.level;
+  if (jlptLevel && /^N[1-5]$/.test(jlptLevel)) {
+    licenseRows.push({
+      year: '',
+      month: '',
+      detail: `日本語能力試験 ${jlptLevel} 相当（自己申告）`
     });
   }
 
@@ -352,7 +394,7 @@ export async function generateRirekisho(profileData, options = {}) {
             [
               {
                 table: {
-                  widths: [45, '*', 35, 20],
+                  widths: [45, '*', 58, 20],
                   body: [
                     [
                       { text: '生年月日', style: 'label', border: [false, false, false, false] },
@@ -392,9 +434,18 @@ export async function generateRirekisho(profileData, options = {}) {
             ],
             // Phone and Email
             [
-              { text: '電話番号', style: 'label', border: [true, true, false, true] },
-              { text: phone, style: 'inputVal', border: [false, true, true, true] },
-              { text: `E-mail: ${email}`, style: 'inputVal', border: [true, true, true, true], fontSize: 8, colSpan: 1 }
+              {
+                table: {
+                  widths: [45, '*'],
+                  body: [[
+                    { text: '電話番号', style: 'label', border: [false, false, false, false] },
+                    { text: phone, style: 'inputVal', border: [false, false, false, false] }
+                  ]]
+                },
+                border: [true, true, true, true]
+              },
+              { text: `E-mail: ${email}`, style: 'inputVal', border: [true, true, true, true], fontSize: 8, colSpan: 2 },
+              {}
             ]
           ]
         },
@@ -540,25 +591,29 @@ export async function generateRirekisho(profileData, options = {}) {
 
   if (onProgress) onProgress('downloading');
 
-  // Trigger PDF Download or open preview
   try {
-    if (!pdfMake.fonts || !pdfMake.fonts.SawarabiGothic || !pdfMake.vfs || !pdfMake.vfs['SawarabiGothic-Regular.ttf']) {
-      await initFonts(onProgress);
-    }
     const pdf = pdfMake.createPdf(docDefinition);
-    if (download) {
-      const filename = `Rirekisho_${profileData.fullName.replace(/\s+/g, '_')}.pdf`;
-      await pdf.download(filename);
-      if (onProgress) onProgress('completed');
-    } else {
-      const blob = await pdf.getBlob();
-      const blobUrl = URL.createObjectURL(blob);
-      if (onProgress) onProgress('completed');
-      return blobUrl;
-    }
+    const blob = await pdf.getBlob();
+    if (onProgress) onProgress('completed');
+    return blob;
   } catch (e) {
     console.error('Error generating PDF:', e);
     if (onProgress) onProgress('failed');
     throw e;
   }
+}
+
+/**
+ * Backwards-compatible wrapper.
+ *  - download:false → returns an object URL for previewing (caller must revoke it)
+ *  - download:true  → generates and delivers the file via saveResumeBlob
+ */
+export async function generateRirekisho(profileData = {}, options = {}) {
+  const { download = true, ...rest } = options;
+  const blob = await generateRirekishoBlob(profileData, rest);
+  if (!download) {
+    return URL.createObjectURL(blob);
+  }
+  const { saveResumeBlob, safeResumeFilename } = await import('./resumeDownload');
+  return saveResumeBlob(blob, safeResumeFilename(profileData.fullName));
 }

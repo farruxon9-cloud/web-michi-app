@@ -3578,13 +3578,13 @@ const getLicenseLabel = (type) => {
                     }
                   </div>
 
-                  {/* JLPT Verified Badge section */}
-                  {profileData.jlptStatus && profileData.jlptStatus.verified && (
-                    <div className="glass squircle animate-scale-up" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'rgba(48, 209, 88, 0.08)', border: '1px solid rgba(48, 209, 88, 0.3)', borderRadius: '14px', marginTop: '4px' }}>
-                      <ShieldCheck size={20} color="#30D158" className="animate-pulse" />
+                  {/* JLPT level — self-declared by the driver (自己申告), not verified by the platform */}
+                  {profileData.jlptStatus?.level && (
+                    <div className="glass squircle animate-scale-up" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'rgba(10, 132, 255, 0.06)', border: '1px solid rgba(10, 132, 255, 0.25)', borderRadius: '14px', marginTop: '4px' }}>
+                      <Award size={20} color="#0A84FF" />
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <strong style={{ fontSize: '14px', color: '#30D158' }}>JLPT {profileData.jlptStatus.level} Verified ✓</strong>
-                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Cert No: {profileData.jlptStatus.certNo}</span>
+                        <strong style={{ fontSize: '14px', color: 'var(--text-main)' }}>JLPT {profileData.jlptStatus.level} · {t('jlptSelfDeclared', '自己申告')}</strong>
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('jlptSelfDeclaredNote', '証明書は面接時に確認されます')}</span>
                       </div>
                     </div>
                   )}
@@ -5288,10 +5288,10 @@ const getLicenseLabel = (type) => {
           )}
         </p>
         <span className="role-tag glass">{getRoleLabel()}</span>
-        {profileData.jlptStatus && profileData.jlptStatus.verified && (
-          <span className="role-tag glass animate-scale-up" style={{ border: '1px solid rgba(48, 209, 88, 0.4)', background: 'rgba(48, 209, 88, 0.08)', color: '#30D158', display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: '6px', fontWeight: 'bold' }}>
-            <ShieldCheck size={12} color="#30D158" />
-            <span>JLPT {profileData.jlptStatus.level} Verified</span>
+        {profileData.jlptStatus?.level && (
+          <span className="role-tag glass animate-scale-up" style={{ border: '1px solid rgba(10, 132, 255, 0.3)', background: 'rgba(10, 132, 255, 0.06)', color: '#0A84FF', display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: '6px', fontWeight: 'bold' }}>
+            <Award size={12} color="#0A84FF" />
+            <span>JLPT {profileData.jlptStatus.level} · {t('jlptSelfDeclared', '自己申告')}</span>
           </span>
         )}
       </div>
@@ -5496,13 +5496,13 @@ const getLicenseLabel = (type) => {
                   }
                 </div>
 
-                {/* JLPT Verified Badge section */}
-                {profileData.jlptStatus && profileData.jlptStatus.verified && (
-                  <div className="glass squircle animate-scale-up" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'rgba(48, 209, 88, 0.08)', border: '1px solid rgba(48, 209, 88, 0.3)', borderRadius: '14px', marginTop: '4px' }}>
-                    <ShieldCheck size={20} color="#30D158" className="animate-pulse" />
+                {/* JLPT level — self-declared by the driver (自己申告), not verified by the platform */}
+                {profileData.jlptStatus?.level && (
+                  <div className="glass squircle animate-scale-up" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'rgba(10, 132, 255, 0.06)', border: '1px solid rgba(10, 132, 255, 0.25)', borderRadius: '14px', marginTop: '4px' }}>
+                    <Award size={20} color="#0A84FF" />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <strong style={{ fontSize: '14px', color: '#30D158' }}>JLPT {profileData.jlptStatus.level} Verified ✓</strong>
-                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Cert No: {profileData.jlptStatus.certNo}</span>
+                      <strong style={{ fontSize: '14px', color: 'var(--text-main)' }}>JLPT {profileData.jlptStatus.level} · {t('jlptSelfDeclared', '自己申告')}</strong>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('jlptSelfDeclaredNote', '証明書は面接時に確認されます')}</span>
                     </div>
                   </div>
                 )}

@@ -20,6 +20,7 @@ import AssistHeroShowcase from './components/AssistHeroShowcase';
 import ErrorBoundary from './components/ErrorBoundary';
 import ReferralModal from './components/ReferralModal';
 import { getPermanentUserId } from './utils/userIdManager';
+import { loadUserDraft, saveUserDraft, pickProfileDraft } from './utils/localDraftStore';
 import { AppProvider } from './context/AppContext';
 import { submitApplicationToBackend, notifyCompanyNewApplication, notifyApplicantStatusChange } from './services/applicationService';
 import { useAuth } from './context/AuthContext';
@@ -375,27 +376,30 @@ function App() {
     try { localStorage.setItem('michi_show_badges', String(showProfileBadges)); } catch {}
   }, [showProfileBadges]);
 
+  const createBaseProfile = () => ({
+    userId: getPermanentUserId(),
+    fullName: 'Mehmon',
+    birthDate: '',
+    licenseType: 'Oogata',
+    experience: '',
+    email: 'michi@example.com',
+    avatar: null,
+    workHistory: [],
+    addressHistory: [],
+    educationHistory: [],
+    gender: 'male',
+    personalRequests: '貴社規定に従います。'
+  });
+
   const [profileData, setProfileData] = useState(() => {
-    const base = {
-      userId: getPermanentUserId(),
-      fullName: 'Mehmon',
-      birthDate: '',
-      licenseType: 'Oogata',
-      experience: '',
-      email: 'michi@example.com',
-      avatar: null,
-      workHistory: [],
-      addressHistory: [],
-      educationHistory: [],
-      gender: 'male',
-      personalRequests: '貴社規定に従います。'
-    };
+    const base = createBaseProfile();
+    let initial = base;
     try {
       const cached = localStorage.getItem('michi_user_session') || localStorage.getItem('michi_auth_user');
       if (cached) {
         const user = JSON.parse(cached);
         const profile = user.profileData || user;
-        return {
+        initial = {
           ...base,
           ...profile,
           fullName: user.fullName || profile.fullName || base.fullName,
@@ -403,8 +407,35 @@ function App() {
         };
       }
     } catch {}
-    return base;
+    // Restore locally saved resume edits (kept per user, cleared on logout)
+    const draft = loadUserDraft('profile', initial.userId);
+    return draft ? { ...initial, ...draft } : initial;
   });
+
+  // On logout (role goes from set → null) wipe the in-memory profile, so the next
+  // account on this device never inherits the previous person's resume data.
+  const prevRoleRef = useRef(userRole);
+  const skipNextDraftSaveRef = useRef(false);
+  useEffect(() => {
+    if (prevRoleRef.current && !userRole) {
+      skipNextDraftSaveRef.current = true;
+      setProfileData(createBaseProfile());
+    }
+    prevRoleRef.current = userRole;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userRole]);
+
+  // Persist resume/profile edits so they survive a reload (debounced, failure-safe)
+  useEffect(() => {
+    if (skipNextDraftSaveRef.current) {
+      skipNextDraftSaveRef.current = false;
+      return undefined;
+    }
+    const timer = setTimeout(() => {
+      saveUserDraft('profile', profileData.userId, pickProfileDraft(profileData));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [profileData]);
 
   const feed = useJobFeed();
   const [companyJobs, setCompanyJobs] = useState([]);

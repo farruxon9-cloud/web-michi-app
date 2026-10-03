@@ -1,6 +1,7 @@
 // src/services/authService.js
 import { API_ENDPOINTS } from '../config/api';
 import { apiFetch } from './apiClient';
+import { clearAllUserDrafts } from '../utils/localDraftStore';
 
 const TOKEN_KEY = 'michi_jwt_token';
 const REFRESH_TOKEN_KEY = 'michi_refresh_token';
@@ -219,6 +220,8 @@ export const logoutUser = () => {
   setStoredToken(null);
   setStoredRefreshToken(null);
   setStoredUser(null);
+  // Remove locally kept resume/application drafts so personal data doesn't linger on shared devices
+  clearAllUserDrafts();
 };
 
 export const checkEmailExists = async (email) => {

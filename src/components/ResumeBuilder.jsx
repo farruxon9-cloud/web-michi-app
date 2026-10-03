@@ -3,10 +3,19 @@ import { useTranslation } from 'react-i18next';
 import { 
   ArrowLeft, User, Phone, Briefcase, GraduationCap, 
   Award, BookOpen, FileText, Loader2, Sparkles, 
-  ShieldCheck, CheckCircle2, X, Plus 
+  CheckCircle2, Download, Eye
 } from 'lucide-react';
-import { generateRirekisho } from '../utils/resumeGenerator';
+import { Capacitor } from '@capacitor/core';
+import { generateRirekishoBlob } from '../utils/resumeGenerator';
+import { saveResumeBlob, safeResumeFilename, isMobileDevice } from '../utils/resumeDownload';
 import './ResumeBuilder.css';
+
+const JLPT_LEVELS = ['N1', 'N2', 'N3', 'N4', 'N5'];
+
+// Stable signature of the resume content — used to know whether a generated PDF is still up to date
+const resumeSignature = (data) => {
+  try { return JSON.stringify(data); } catch { return String(Date.now()); }
+};
 
 const getJapaneseEra = (year) => {
   const y = parseInt(year, 10);
@@ -35,8 +44,7 @@ export default function ResumeBuilder({
   isVoiceStandby,
   setIsVoiceStandby
 }) {
-  const { t, i18n } = useTranslation();
-  const currentLang = (i18n.language || 'uz').substring(0, 2).toLowerCase();
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -62,22 +70,29 @@ export default function ResumeBuilder({
 
   const [pdfStatus, setPdfStatus] = useState(null);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [pdfNotice, setPdfNotice] = useState(null); // { type: 'success' | 'error', text }
+  const lastBlobRef = useRef(null);      // last generated PDF blob
+  const lastSigRef = useRef(null);       // signature of the data it was generated from
+  const noticeTimerRef = useRef(null);
+  const isMobile = isMobileDevice();
 
-  // JLPT Verifikatsiya holatlari
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationProgress, setVerificationProgress] = useState(0);
-  const [verificationStatusText, setVerificationStatusText] = useState('');
-  const [detectedLevel, setDetectedLevel] = useState('N3');
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const fileInputRef = useRef(null);
-  const verifyIntervalRef = useRef(null);
+  // Auto-save: push edits to the app profile (which persists them) shortly after typing stops.
+  // Guarded by isHydrated so the empty initial form can never overwrite saved data.
+  const [isHydrated, setIsHydrated] = useState(false);
+  const onUpdateProfileRef = useRef(onUpdateProfile);
+  useEffect(() => { onUpdateProfileRef.current = onUpdateProfile; }, [onUpdateProfile]);
+  useEffect(() => {
+    if (!isHydrated) return undefined;
+    const timer = setTimeout(() => onUpdateProfileRef.current?.(formData), 800);
+    return () => clearTimeout(timer);
+  }, [formData, isHydrated]);
 
   // Sana boshqaruvi
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedDay, setSelectedDay] = useState('');
 
-  const debounceTimeoutRef = useRef(null);
   const previousUrlRef = useRef(null);
 
   // 1. Blob URL larni tozalash (Memory Leak Prevention)
@@ -118,7 +133,10 @@ export default function ResumeBuilder({
       workHistory: Array.isArray(profileData.workHistory) ? [...profileData.workHistory] : [],
       driverLicenses: Array.isArray(profileData.driverLicenses) ? [...profileData.driverLicenses] : [],
       techCertificates: Array.isArray(profileData.techCertificates) ? [...profileData.techCertificates] : [],
-      jlptStatus: profileData.jlptStatus || null
+      // Legacy data from the old "verification" flow is kept only as a self-declared level
+      jlptStatus: profileData.jlptStatus?.level
+        ? { level: profileData.jlptStatus.level, selfDeclared: true }
+        : null
     };
 
     setFormData(initialData);
@@ -132,15 +150,16 @@ export default function ResumeBuilder({
       }
     }
 
-    // PDF Preview yaratish
-    handlePreviewPDF(initialData);
+    setIsHydrated(true);
+
+    // PDF is generated on demand (preview / download buttons), not on every mount or keystroke.
 
     return () => {
-      if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-      if (verifyIntervalRef.current) clearInterval(verifyIntervalRef.current);
+      if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
       if (previousUrlRef.current && previousUrlRef.current.startsWith('blob:')) {
         URL.revokeObjectURL(previousUrlRef.current);
       }
+      lastBlobRef.current = null;
       if (setIsVoiceActive) setIsVoiceActive(false);
       if (setIsVoiceStandby) setIsVoiceStandby(false);
     };
@@ -172,7 +191,6 @@ export default function ResumeBuilder({
           }
         }, 100);
 
-        handlePreviewPDF(updated);
         onUpdateProfile?.(updated);
         return updated;
       });
@@ -182,57 +200,95 @@ export default function ResumeBuilder({
     return () => window.removeEventListener('michi-voice-resume-update', handleVoiceUpdate);
   }, [onUpdateProfile]);
 
-  // 4. Debounced PDF Preview generatsiyasi (3 soniya nofaollikdan keyin)
-  useEffect(() => {
-    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-    debounceTimeoutRef.current = setTimeout(() => {
-      handlePreviewPDF(formData);
-    }, 3000);
+  const isPdfFresh = () => Boolean(lastBlobRef.current) && lastSigRef.current === resumeSignature(formData);
 
-    return () => {
-      if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-    };
-  }, [formData]);
+  const showNotice = (type, text) => {
+    if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
+    setPdfNotice({ type, text });
+    noticeTimerRef.current = setTimeout(() => setPdfNotice(null), 4000);
+  };
 
-  // PDF Preview yaratish yordamchisi
-  const handlePreviewPDF = async (dataToUse = formData) => {
+  // Generate (or reuse) the PDF blob for the current form data
+  const ensurePdfBlob = async () => {
+    if (isPdfFresh()) return lastBlobRef.current;
+    const sig = resumeSignature(formData);
+    const blob = await generateRirekishoBlob(formData, {
+      onProgress: (status) => setPdfStatus(status)
+    });
+    lastBlobRef.current = blob;
+    lastSigRef.current = sig;
+    setCleanPreviewUrl(URL.createObjectURL(blob));
+    return blob;
+  };
+
+  // PDF Preview yaratish (faqat tugma bosilganda)
+  const handlePreviewPDF = async () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
     try {
-      const dataUrl = await generateRirekisho(dataToUse, {
-        onProgress: (status) => setPdfStatus(status),
-        download: false
-      });
-      if (dataUrl) {
-        setCleanPreviewUrl(dataUrl);
-      }
-    } catch (e) {
+      await ensurePdfBlob();
+    } catch {
       setPdfStatus('failed');
+      showNotice('error', t('pdfError', 'PDF yaratishda xatolik yuz berdi. Iltimos qayta urinib ko\'ring.'));
+    } finally {
+      setIsGenerating(false);
     }
   };
 
-  // PDF Yuklab olish
+  // PDF Yuklab olish / ulashish — barcha platformalarda ishonchli
   const handleDownloadPDF = async () => {
+    if (isGenerating) return;
     onUpdateProfile?.(formData);
+    setIsGenerating(true);
     try {
-      await generateRirekisho(formData, {
-        onProgress: (status) => setPdfStatus(status),
-        download: true
-      });
-    } catch (e) {
+      const blob = await ensurePdfBlob();
+      const result = await saveResumeBlob(blob, safeResumeFilename(formData.fullName));
+      if (result !== 'cancelled') {
+        showNotice('success', t('resumeSaved', '✅ Rezyume saqlandi'));
+      }
+    } catch {
       setPdfStatus('failed');
-      alert(t('pdfError', 'PDF yaratishda xatolik yuz berdi. Iltimos qayta urinib ko\'ring.'));
+      showNotice('error', t('pdfError', 'PDF yaratishda xatolik yuz berdi. Iltimos qayta urinib ko\'ring.'));
+    } finally {
+      setIsGenerating(false);
     }
   };
 
-  // Yangi oynada xavfsiz ochish
-  const handleOpenPDFInNewTab = (e) => {
+  // Yangi oynada xavfsiz ochish.
+  // The tab is opened synchronously inside the click (so popup blockers allow it),
+  // then pointed at the PDF once it is ready. 'noopener' is not passed because it makes
+  // window.open() return null; the opener link is cut manually instead.
+  const handleOpenPDFInNewTab = async (e) => {
     e.preventDefault();
-    if (pdfPreviewUrl) {
-      const newWin = window.open(pdfPreviewUrl, '_blank', 'noopener,noreferrer');
-      if (!newWin) {
-        alert(t('popupBlocked', 'Pop-up oyna bloklandi. Brauzer sozlamalaridan ruxsat bering yoki PDFni yuklab oling.'));
+    if (isGenerating) return;
+
+    if (Capacitor.isNativePlatform()) {
+      // WebViews ignore window.open — hand the file to the native viewer/share sheet
+      return handleDownloadPDF();
+    }
+
+    const fresh = isPdfFresh();
+    const win = window.open(fresh ? previousUrlRef.current : '', '_blank');
+    if (win) win.opener = null;
+    if (fresh) {
+      if (!win) showNotice('error', t('popupBlocked', 'Pop-up oyna bloklandi. Brauzer sozlamalaridan ruxsat bering yoki PDFni yuklab oling.'));
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      await ensurePdfBlob();
+      if (win && !win.closed) {
+        win.location.href = previousUrlRef.current;
+      } else {
+        showNotice('error', t('popupBlocked', 'Pop-up oyna bloklandi. Brauzer sozlamalaridan ruxsat bering yoki PDFni yuklab oling.'));
       }
-    } else {
-      alert(t('previewNotReady', 'PDF hali tayyor emas. Iltimos, bir oz kuting.'));
+    } catch {
+      if (win && !win.closed) win.close();
+      setPdfStatus('failed');
+      showNotice('error', t('pdfError', 'PDF yaratishda xatolik yuz berdi. Iltimos qayta urinib ko\'ring.'));
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -345,53 +401,13 @@ export default function ResumeBuilder({
     });
   };
 
-  // JLPT Sertifikatini verifikatsiya qilish simulyatsiyasi (Xavfsiz interval bilan)
-  const handleVerifyStart = (file) => {
-    if (!file) return;
-    setUploadedFile(file);
-    setIsVerifying(true);
-    setVerificationProgress(0);
-    setVerificationStatusText(currentLang === 'ja' ? 'ファイルを解析中...' : 'Fayl tahlil qilinmoqda...');
-
-    let extractedLevel = 'N3';
-    const match = file.name.toUpperCase().match(/N[1-5]|Ｎ[１-５]/);
-    if (match) {
-      extractedLevel = match[0].replace('Ｎ', 'N');
-    }
-    setDetectedLevel(extractedLevel);
-
-    if (verifyIntervalRef.current) clearInterval(verifyIntervalRef.current);
-
-    let progress = 0;
-    verifyIntervalRef.current = setInterval(() => {
-      progress += 20;
-      setVerificationProgress(progress);
-
-      if (progress >= 100) {
-        clearInterval(verifyIntervalRef.current);
-        const certNo = `No. 26A${Math.floor(100000 + Math.random() * 900000)}`;
-        setIsVerifying(false);
-
-        const updatedStatus = {
-          level: extractedLevel,
-          verified: true,
-          certNo,
-          date: new Date().toISOString().split('T')[0]
-        };
-
-        setFormData(prev => {
-          const updated = { ...prev, jlptStatus: updatedStatus };
-          onUpdateProfile?.(updated);
-          return updated;
-        });
-      }
-    }, 250);
-  };
-
-  const handleResetVerification = () => {
-    setUploadedFile(null);
+  // JLPT darajasi — haydovchining o'zi kiritadi (自己申告). Platforma tomonidan tasdiqlanmaydi.
+  const handleSelectJlpt = (level) => {
     setFormData(prev => {
-      const updated = { ...prev, jlptStatus: null };
+      const nextStatus = prev.jlptStatus?.level === level || !level
+        ? null
+        : { level, selfDeclared: true, date: new Date().toISOString().split('T')[0] };
+      const updated = { ...prev, jlptStatus: nextStatus };
       onUpdateProfile?.(updated);
       return updated;
     });
@@ -707,45 +723,39 @@ export default function ResumeBuilder({
             ))}
           </div>
 
-          {/* JLPT Sertifikat bloki */}
-          {formData.jlptStatus?.verified ? (
-            <div className="glass squircle" style={{ padding: '16px', border: '1px solid rgba(48, 209, 88, 0.3)', marginTop: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <ShieldCheck size={24} color="#30D158" />
-                <div>
-                  <strong style={{ color: '#30D158' }}>JLPT {formData.jlptStatus.level} Tasdiqlangan ✓</strong>
-                  <span style={{ fontSize: '11px', display: 'block', color: 'var(--text-secondary)' }}>
-                    Hujjat: {formData.jlptStatus.certNo}
-                  </span>
-                </div>
-              </div>
-              <button 
-                type="button" 
-                onClick={handleResetVerification}
-                className="remove-btn" 
-                style={{ marginTop: '10px' }}
+          {/* JLPT darajasi — 自己申告 (o'zi kiritgan, platforma tasdiqlamaydi) */}
+          <div className="step-intro" style={{ marginTop: '20px' }}>
+            <FileText className="step-icon text-purple" size={24} />
+            <h3>{t('jlptLevelLabel', 'Yapon tili darajasi (JLPT)')}</h3>
+            <p>{t('jlptSelfDeclaredHint', 'O\'zingiz tanlaysiz (自己申告). Sertifikat suhbat paytida tekshiriladi.')}</p>
+          </div>
+          <div className="badges-select-group" role="radiogroup" aria-label="JLPT">
+            {JLPT_LEVELS.map(level => (
+              <button
+                key={level}
+                type="button"
+                role="radio"
+                aria-checked={formData.jlptStatus?.level === level}
+                onClick={() => handleSelectJlpt(level)}
+                className={`badge-select-btn squircle ${formData.jlptStatus?.level === level ? 'selected' : ''}`}
               >
-                O'chirish
+                {level}
               </button>
-            </div>
-          ) : (
-            <div className="glass squircle" style={{ padding: '14px', marginTop: '14px' }}>
-              <div 
-                onClick={() => fileInputRef.current?.click()}
-                style={{ border: '2px dashed var(--glass-border)', padding: '20px', textAlign: 'center', cursor: 'pointer', borderRadius: '12px' }}
-              >
-                <FileText size={22} style={{ color: 'var(--text-secondary)', marginBottom: '6px' }} />
-                <span style={{ display: 'block', fontSize: '12px' }}>
-                  {uploadedFile ? uploadedFile.name : t('uploadCertFile', 'JLPT sertifikatini yuklash (PDF/Rasm)')}
-                </span>
-              </div>
-              <input 
-                ref={fileInputRef}
-                type="file" 
-                accept=".pdf,image/*" 
-                style={{ display: 'none' }}
-                onChange={(e) => e.target.files[0] && handleVerifyStart(e.target.files[0])}
-              />
+            ))}
+            <button
+              type="button"
+              role="radio"
+              aria-checked={!formData.jlptStatus?.level}
+              onClick={() => handleSelectJlpt(null)}
+              className={`badge-select-btn squircle ${!formData.jlptStatus?.level ? 'selected' : ''}`}
+            >
+              {t('jlptNone', 'Yo\'q')}
+            </button>
+          </div>
+          {formData.jlptStatus?.level && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '10px', fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>
+              <Award size={14} />
+              <span>JLPT {formData.jlptStatus.level} · {t('jlptSelfDeclared', '自己申告')}</span>
             </div>
           )}
         </div>
@@ -784,34 +794,74 @@ export default function ResumeBuilder({
 
         {/* 6-BO'LIM: PDF Yuklab olish va Oldindan ko'rish */}
         <div className="step-content glass squircle text-center">
-          {pdfStatus && pdfStatus !== 'completed' && pdfStatus !== 'failed' && (
-            <div className="pdf-status-pill glass" style={{ margin: '8px auto', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          {isGenerating && (
+            <div className="pdf-status-pill glass" role="status" aria-live="polite" style={{ margin: '8px auto', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <Loader2 size={14} className="animate-spin text-blue" />
-              <span>Yuklanmoqda...</span>
+              <span>
+                {pdfStatus === 'loading_font'
+                  ? t('resumeLoadingFont', 'Shrift yuklanmoqda…')
+                  : t('resumePreparing', 'PDF tayyorlanmoqda…')}
+              </span>
             </div>
           )}
 
-          {pdfPreviewUrl ? (
+          {pdfNotice && (
+            <div
+              className="pdf-status-pill glass"
+              role={pdfNotice.type === 'error' ? 'alert' : 'status'}
+              aria-live="polite"
+              style={{ margin: '8px auto', display: 'inline-flex', alignItems: 'center', gap: '6px', color: pdfNotice.type === 'error' ? '#FF3B30' : 'var(--text-main)' }}
+            >
+              {pdfNotice.type === 'success' && <CheckCircle2 size={14} color="#30D158" />}
+              <span>{pdfNotice.text}</span>
+            </div>
+          )}
+
+          {/* Desktop: inline preview. Mobile browsers can't render PDFs inside iframes reliably,
+              so phones get a tap-to-open card instead. */}
+          {pdfPreviewUrl && !isMobile ? (
             <div className="pdf-preview-box glass">
               <iframe src={pdfPreviewUrl} title="Resume PDF Preview" className="pdf-iframe-preview"></iframe>
             </div>
           ) : (
-            <div className="pdf-preview-placeholder glass squircle">
-              <span>{t('pdfPreviewRendering', '📄 PDF render qilinmoqda...')}</span>
-            </div>
+            <button
+              type="button"
+              onClick={isMobile && pdfPreviewUrl ? handleOpenPDFInNewTab : handlePreviewPDF}
+              disabled={isGenerating}
+              className="pdf-preview-placeholder glass squircle"
+              style={{ width: '100%', border: 'none', cursor: isGenerating ? 'wait' : 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', color: 'var(--text-main)' }}
+            >
+              <FileText size={28} style={{ color: 'var(--text-secondary)' }} />
+              <span>
+                {isMobile && pdfPreviewUrl
+                  ? t('resumeTapToOpen', 'PDFni ko\'rish uchun bosing')
+                  : t('resumePreviewBtn', 'Oldindan ko\'rish')}
+              </span>
+            </button>
           )}
 
-          <div className="action-buttons-group" style={{ display: 'flex', gap: '10px', marginTop: '14px', justifyContent: 'center' }}>
-            <button type="button" onClick={handleDownloadPDF} className="download-pdf-btn squircle">
-              📥 {t('downloadPDF', 'PDF yuklab olish')}
-            </button>
-            
-            <button 
-              type="button" 
-              onClick={handleOpenPDFInNewTab} 
-              className="open-pdf-tab-btn squircle"
+          <div className="action-buttons-group" style={{ display: 'flex', gap: '10px', marginTop: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={handleDownloadPDF}
+              disabled={isGenerating}
+              aria-busy={isGenerating}
+              className="download-pdf-btn squircle"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', opacity: isGenerating ? 0.7 : 1 }}
             >
-              👁️ {t('openInNewTab', 'Yangi oynada ochish')}
+              {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+              {t('downloadPDF', 'PDF yuklab olish')}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleOpenPDFInNewTab}
+              disabled={isGenerating}
+              className="open-pdf-tab-btn squircle"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', opacity: isGenerating ? 0.7 : 1 }}
+            >
+              <Eye size={16} />
+              {t('openInNewTab', 'Yangi oynada ochish')}
             </button>
           </div>
         </div>
