@@ -198,10 +198,12 @@ export default function EmployeesPage(ctx) {
           </div>
 
           {/* Filter Pills Track Bar (Apple Glass Capsule Aesthetics - Strictly 1-Row Unbroken) */}
-          <div className="hide-scrollbar" style={{ display: 'flex', gap: '6px', marginBottom: '12px', overflowX: 'auto', flexWrap: 'nowrap', alignItems: 'center', paddingBottom: '3px', width: '100%' }}>
+          <div role="tablist" className="hide-scrollbar" style={{ display: 'flex', gap: '6px', marginBottom: '12px', overflowX: 'auto', flexWrap: 'nowrap', alignItems: 'center', paddingBottom: '3px', width: '100%' }}>
             <button
               type="button"
               onClick={() => setEmpFilter('all')}
+              role="tab"
+              aria-selected={empFilter === 'all'}
               style={{
                 padding: '6px 11px',
                 borderRadius: '20px',
@@ -233,6 +235,8 @@ export default function EmployeesPage(ctx) {
             <button
               type="button"
               onClick={() => setEmpFilter('verified')}
+              role="tab"
+              aria-selected={empFilter === 'verified'}
               style={{
                 padding: '6px 11px',
                 borderRadius: '20px',
@@ -264,6 +268,8 @@ export default function EmployeesPage(ctx) {
             <button
               type="button"
               onClick={() => setEmpFilter('pending')}
+              role="tab"
+              aria-selected={empFilter === 'pending'}
               style={{
                 padding: '6px 11px',
                 borderRadius: '20px',

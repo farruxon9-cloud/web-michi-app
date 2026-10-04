@@ -677,6 +677,8 @@ const translation = {
   "jlptSelfDeclared": "自行申报（自己申告）",
   "jlptSelfDeclaredHint": "请自行选择等级（自己申告）。证书将在面试时核实。",
   "jlptSelfDeclaredNote": "证书将在面试时核实",
+  "profileCompletenessLabel": "资料完成度",
+  "changeAvatarA11y": "更换头像",
   "jlptNone": "无",
   "hideAction": "隐藏",
   "hideConfirmTitle": "要隐藏此项目吗？",

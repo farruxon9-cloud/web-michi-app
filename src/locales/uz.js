@@ -706,6 +706,8 @@ const translation = {
   "jlptSelfDeclared": "O'zi kiritgan (自己申告)",
   "jlptSelfDeclaredHint": "Darajani o'zingiz tanlaysiz (自己申告). Sertifikat suhbat paytida tekshiriladi.",
   "jlptSelfDeclaredNote": "Sertifikat suhbat paytida tekshiriladi",
+  "profileCompletenessLabel": "Profil to'ldirilgan",
+  "changeAvatarA11y": "Profil rasmini o'zgartirish",
   "jlptNone": "Yo'q",
   "hideAction": "Yashirish",
   "hideConfirmTitle": "Bu elementni yashirasizmi?",

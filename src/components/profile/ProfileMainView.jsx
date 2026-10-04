@@ -8,14 +8,30 @@ import JapaneseVehiclePickerModal from '../JapaneseVehiclePickerModal';
 import { applyCatalogSelection } from '../../utils/vehicleUtils';
 import ConfirmSheet from '../ConfirmSheet';
 import VehicleCard from './VehicleCard';
+import { pressable } from '../../utils/a11y';
+import { getProfileCompleteness } from '../../utils/profileCompleteness';
 
 export default function ProfileMainView(ctx) {
   const { confirmDeleteVehicle, contractStatus, editVehicleData, employeesCount, fileInputRef, getAvatarSrc, getRoleLabel, handleAvatarChange, handleClearAllVehicles, handleOpenSubPage, i18n, isVehiclePickerOpen, mainContainerRef, onLogout, onTriggerRegister, profileData, referralsCount, setContractStatus, setEditVehicleData, setIsVehiclePickerOpen, setProfileActivePageSource, setVehicleClearConfirm, setVehicleDeleteTarget, setVehicleNotice, showProfileBadges, t, totalOwnApplications, totalSavedCount, unreadCount, userRole, vehicleClearConfirm, vehicleDeleteTarget, vehicleNotice } = ctx;
+  const displayName = profileData.fullName === 'Mehmon' || userRole === 'guest' || !profileData.fullName ? t('roleGuest', 'Mehmon') : profileData.fullName;
+  const completeness = userRole === 'driver' ? getProfileCompleteness(profileData) : null;
   return (
     <div className="profile-container sub-page-view fade-in" ref={mainContainerRef}>
       <div className="profile-header">
-        <div className="profile-avatar-wrap" onClick={() => fileInputRef.current?.click()}>
-          <img src={getAvatarSrc()} alt="User" className="profile-avatar" />
+        <div
+          className="profile-avatar-wrap"
+          role="button"
+          tabIndex={0}
+          aria-label={t('changeAvatarA11y', 'Profil rasmini o\'zgartirish')}
+          onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
+        >
+          <img src={getAvatarSrc()} alt={displayName} className="profile-avatar" />
           <div className="avatar-change-overlay">
             <Camera size={20} color="white" />
           </div>
@@ -24,7 +40,7 @@ export default function ProfileMainView(ctx) {
           ref={fileInputRef} type="file" accept="image/*" 
           onChange={handleAvatarChange} style={{ display: 'none' }} 
         />
-        <h2>{profileData.fullName === 'Mehmon' || userRole === 'guest' || !profileData.fullName ? t('roleGuest', 'Mehmon') : profileData.fullName}</h2>
+        <h2>{displayName}</h2>
         <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flexWrap: 'wrap' }}>
           <span>{profileData.email === 'michi@example.com' || userRole === 'guest' ? t('guestEmail', profileData.email || 'michi@example.com') : profileData.email}</span>
           {(profileData.isEmailVerified || profileData.email) && (
@@ -40,6 +56,24 @@ export default function ProfileMainView(ctx) {
             <Award size={12} color="#0A84FF" />
             <span>JLPT {profileData.jlptStatus.level} · {t('jlptSelfDeclared', '自己申告')}</span>
           </span>
+        )}
+        {completeness && !completeness.complete && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+            <button
+              type="button"
+              id="profile-completeness-pill"
+              onClick={() => handleOpenSubPage('personalInfo')}
+              aria-label={`${t('profileCompletenessLabel', 'Profil to\'ldirilgan')}: ${completeness.percent}%`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '5px 12px 5px 6px', borderRadius: '999px', border: '1px solid rgba(10, 132, 255, 0.3)', background: 'rgba(10, 132, 255, 0.06)', color: '#0A84FF', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+                <circle cx="11" cy="11" r="9" fill="none" stroke="rgba(10, 132, 255, 0.18)" strokeWidth="3" />
+                <circle cx="11" cy="11" r="9" fill="none" stroke="#0A84FF" strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(completeness.percent / 100) * 56.55} 56.55`} transform="rotate(-90 11 11)" />
+              </svg>
+              <span>{t('profileCompletenessLabel', 'Profil to\'ldirilgan')} {completeness.percent}%</span>
+              <ChevronRight size={14} color="#0A84FF" />
+            </button>
+          </div>
         )}
       </div>
 
@@ -389,16 +423,16 @@ export default function ProfileMainView(ctx) {
 
         {/* Menu Items */}
         <div className="menu-group glass squircle">
-          <div className="menu-item" onClick={() => handleOpenSubPage('personalInfo')}>
+          <div className="menu-item" {...pressable(() => handleOpenSubPage('personalInfo'))}>
             <div className="menu-icon"><User size={20} /></div>
             <span>{userRole === 'company' ? t('companyInfoTitle') : t('personalData')}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
           <div className="menu-divider"></div>
-          <div className="menu-item" onClick={() => {
+          <div className="menu-item" {...pressable(() => {
             if (setProfileActivePageSource) setProfileActivePageSource('profile');
             handleOpenSubPage('applications');
-          }}>
+          })}>
             <div className="menu-icon"><Briefcase size={20} /></div>
             <span>{userRole === 'company' ? t('incomingApps') : t('myApplications')}</span>
             {showProfileBadges && totalOwnApplications > 0 && (
@@ -411,7 +445,7 @@ export default function ProfileMainView(ctx) {
           {(userRole === 'driver' || userRole === 'guest') && (
             <>
               <div className="menu-divider"></div>
-              <div className="menu-item" onClick={() => handleOpenSubPage('saved_items')}>
+              <div className="menu-item" {...pressable(() => handleOpenSubPage('saved_items'))}>
                 <div className="menu-icon"><Bookmark size={20} /></div>
                 <span>{t('savedItemsTitle')}</span>
                 {showProfileBadges && totalSavedCount > 0 && (
@@ -422,7 +456,7 @@ export default function ProfileMainView(ctx) {
                 <ChevronRight size={20} color="#8E8E93" className="chevron" />
               </div>
               <div className="menu-divider"></div>
-              <div className="menu-item" onClick={() => handleOpenSubPage('resume_builder')}>
+              <div className="menu-item" {...pressable(() => handleOpenSubPage('resume_builder'))}>
                 <div className="menu-icon"><FileText size={20} color="#30D158" /></div>
                 <span>{t('createResume')}</span>
                 <ChevronRight size={20} color="#8E8E93" className="chevron" />
@@ -430,7 +464,7 @@ export default function ProfileMainView(ctx) {
             </>
           )}
           <div className="menu-divider"></div>
-          <div className="menu-item" onClick={() => handleOpenSubPage('my_shoukai')}>
+          <div className="menu-item" {...pressable(() => handleOpenSubPage('my_shoukai'))}>
             <div className="menu-icon"><Share2 size={20} /></div>
             <span>{userRole === 'company' ? t('shoukaiViaApps') : t('myShoukai')}</span>
             {showProfileBadges && referralsCount > 0 && (
@@ -443,16 +477,16 @@ export default function ProfileMainView(ctx) {
           {userRole === 'company' && (
             <>
               <div className="menu-divider"></div>
-              <div className="menu-item" onClick={() => {
+              <div className="menu-item" {...pressable(() => {
                 if (setProfileActivePageSource) setProfileActivePageSource('profile');
                 handleOpenSubPage('my_ads');
-              }}>
+              })}>
                 <div className="menu-icon"><Megaphone size={20} /></div>
                 <span>{t('myAdsMenu')}</span>
                 <ChevronRight size={20} color="#8E8E93" className="chevron" />
               </div>
               <div className="menu-divider"></div>
-              <div className="menu-item" onClick={() => handleOpenSubPage('employees')}>
+              <div className="menu-item" {...pressable(() => handleOpenSubPage('employees'))}>
                 <div className="menu-icon"><Users size={20} /></div>
                 <span>{t('employeesHR')}</span>
                 {showProfileBadges && employeesCount > 0 && (
@@ -467,7 +501,7 @@ export default function ProfileMainView(ctx) {
         </div>
 
         <div className="menu-group glass squircle">
-          <div className="menu-item" onClick={() => handleOpenSubPage('notifications')}>
+          <div className="menu-item" {...pressable(() => handleOpenSubPage('notifications'))}>
             <div className="menu-icon"><Bell size={20} /></div>
             <span>{t('notifications')}</span>
             {showProfileBadges && unreadCount > 0 && (
@@ -476,13 +510,13 @@ export default function ProfileMainView(ctx) {
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
           <div className="menu-divider"></div>
-          <div className="menu-item" onClick={() => handleOpenSubPage('settings')}>
+          <div className="menu-item" {...pressable(() => handleOpenSubPage('settings'))}>
             <div className="menu-icon"><Settings size={20} /></div>
             <span>{t('settings')}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
           <div className="menu-divider"></div>
-          <div className="menu-item" onClick={() => handleOpenSubPage('about')}>
+          <div className="menu-item" {...pressable(() => handleOpenSubPage('about'))}>
             <div className="menu-icon"><Info size={20} /></div>
             <span>{t('aboutApp')}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />

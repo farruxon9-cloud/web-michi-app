@@ -3,6 +3,7 @@
 import {
   Bell, ChevronRight, Globe, Sun, Moon, Volume2, Vibrate, VolumeX, BellOff, ArrowLeft
 } from 'lucide-react';
+import { pressable } from '../../utils/a11y';
 
 export default function SettingsPage(ctx) {
   const { darkMode, handleBackToMain, handleToggleNotifSound, handleToggleShowBadges, notificationSound, onChangeLanguage, setDarkMode, setSoundSettings, showProfileBadges, soundSettings, t } = ctx;
@@ -17,7 +18,7 @@ export default function SettingsPage(ctx) {
       <div className="profile-menu" style={{ paddingTop: '16px' }}>
         {/* Language */}
         <div className="menu-group glass squircle">
-          <div className="menu-item" onClick={onChangeLanguage}>
+          <div className="menu-item" {...pressable(onChangeLanguage)}>
             <div className="menu-icon"><Globe size={20} /></div>
             <span>{t('changeLanguage')}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />

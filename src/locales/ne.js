@@ -676,6 +676,8 @@ const translation = {
   "jlptSelfDeclared": "स्व-घोषित (自己申告)",
   "jlptSelfDeclaredHint": "आफ्नो स्तर आफैं छान्नुहोस् (स्व-घोषित)। प्रमाणपत्र अन्तर्वार्तामा जाँच गरिन्छ।",
   "jlptSelfDeclaredNote": "प्रमाणपत्र अन्तर्वार्तामा जाँच गरिन्छ",
+  "profileCompletenessLabel": "प्रोफाइल पूरा",
+  "changeAvatarA11y": "प्रोफाइल फोटो परिवर्तन गर्नुहोस्",
   "jlptNone": "छैन",
   "hideAction": "लुकाउनुहोस्",
   "hideConfirmTitle": "यो वस्तु लुकाउने?",

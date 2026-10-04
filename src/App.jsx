@@ -29,6 +29,7 @@ import { API_ENDPOINTS } from './config/api';
 import { apiFetch } from './services/apiClient';
 import { fetchSchools } from './services/michiSchoolsApiService';
 import { normalizeSchoolPosting } from './utils/jobPostingNormalizer';
+import { isProfileCompleteData } from './utils/profileCompleteness';
 import { useJobFeed } from './hooks/useJobFeed';
 
 
@@ -464,16 +465,8 @@ function App() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const isProfileComplete = useCallback(() => {
-    if (profileData?.email === 'admin@driver.jp' || profileData?.email === 'admin@sagawa.jp') {
-      return true;
-    }
-    const hasFullName = Boolean(profileData.fullName && profileData.fullName.trim() !== '' && profileData.fullName !== 'Mehmon');
-    const hasBirthDate = Boolean(profileData.birthDate);
-    const hasPhone = Boolean(profileData.phone && profileData.phone.trim() !== '');
-    const hasAddress = Boolean(profileData.address?.trim() || profileData.addressHistory?.length > 0);
-    const hasEducation = Boolean(profileData.education?.trim() || profileData.educationHistory?.length > 0);
-    
-    return Boolean(hasFullName && hasBirthDate && hasPhone && hasAddress && hasEducation);
+    // Same 5 fields + admin bypass as before — see utils/profileCompleteness.js
+    return isProfileCompleteData(profileData);
   }, [profileData]);
 
   const handleApplyJob = useCallback(async (job, opts = {}) => {

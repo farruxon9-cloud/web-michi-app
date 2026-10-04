@@ -702,6 +702,8 @@ const translation = {
   "jlptSelfDeclared": "自己申告",
   "jlptSelfDeclaredHint": "ご自身で選択してください（自己申告）。証明書は面接時に確認されます。",
   "jlptSelfDeclaredNote": "証明書は面接時に確認されます",
+  "profileCompletenessLabel": "プロフィール完成度",
+  "changeAvatarA11y": "プロフィール写真を変更",
   "jlptNone": "なし",
   "hideAction": "非表示",
   "hideConfirmTitle": "この項目を非表示にしますか？",

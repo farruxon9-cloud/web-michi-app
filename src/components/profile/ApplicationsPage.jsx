@@ -3,9 +3,10 @@
 import { FileText, CheckCircle2, Briefcase, Share2, ArrowLeft, RotateCcw, UserCheck, UserX, FileCheck, Calendar, GraduationCap, EyeOff, Circle } from 'lucide-react';
 import { appItemKey, filterHiddenApps } from '../../utils/applicationItems';
 import { STATUS_PIPELINE, STATUS_COLORS, HIDE_LINK_BTN, HIDE_PILL_BTN, HIDE_SMALL_BTN, safeDomId } from './profileShared';
+import { formatRelativeTime } from '../../utils/relativeTime';
 
 export default function ApplicationsPage(ctx) {
-  const { appPipelineTab, appSelectMode, applications, exitAppSelectMode, expandedAppId, hiddenApps, onChangeAppStatus, onNavigate, onShoukaiPaid, profileActivePageSource, profileData, renderHideOverlays, requestHide, schoolApplications, selectedAppKeys, setActivePage, setAppPipelineTab, setAppSelectMode, setExpandedAppId, t, toggleSelectApp, totalOwnApplications, userRole } = ctx;
+  const { appPipelineTab, appSelectMode, applications, exitAppSelectMode, expandedAppId, hiddenApps, i18n, onChangeAppStatus, onNavigate, onShoukaiPaid, profileActivePageSource, profileData, renderHideOverlays, requestHide, schoolApplications, selectedAppKeys, setActivePage, setAppPipelineTab, setAppSelectMode, setExpandedAppId, t, toggleSelectApp, totalOwnApplications, userRole } = ctx;
   // Combine job and school applications for driver view
   let combinedApps = [];
   if (userRole === 'company') {
@@ -87,7 +88,7 @@ export default function ApplicationsPage(ctx) {
 
       {/* Company Funnel Pipeline 2-Tier Responsive Grid Filter - Compact */}
       {userRole === 'company' && (
-        <div style={{ 
+        <div role="tablist" style={{ 
           position: 'relative',
           zIndex: 20,
           margin: '7px 16px 8px 16px', 
@@ -123,6 +124,8 @@ export default function ApplicationsPage(ctx) {
                 whiteSpace: 'nowrap'
               }}
               onClick={() => setAppPipelineTab('submitted')}
+              role="tab"
+              aria-selected={appPipelineTab === 'submitted'}
             >
               {appPipelineTab === 'submitted' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#FFF' }} />}
               <span>新規応募</span>
@@ -158,6 +161,8 @@ export default function ApplicationsPage(ctx) {
                 whiteSpace: 'nowrap'
               }}
               onClick={() => setAppPipelineTab('processing')}
+              role="tab"
+              aria-selected={appPipelineTab === 'processing'}
             >
               {appPipelineTab === 'processing' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#FFF' }} />}
               <span>選考・面接</span>
@@ -193,6 +198,8 @@ export default function ApplicationsPage(ctx) {
                 whiteSpace: 'nowrap'
               }}
               onClick={() => setAppPipelineTab('accepted')}
+              role="tab"
+              aria-selected={appPipelineTab === 'accepted'}
             >
               {appPipelineTab === 'accepted' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#FFF' }} />}
               <span>採用決定</span>
@@ -231,6 +238,8 @@ export default function ApplicationsPage(ctx) {
                 whiteSpace: 'nowrap'
               }}
               onClick={() => setAppPipelineTab('rejected')}
+              role="tab"
+              aria-selected={appPipelineTab === 'rejected'}
             >
               {appPipelineTab === 'rejected' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#FFF' }} />}
               <span>不採用</span>
@@ -266,6 +275,8 @@ export default function ApplicationsPage(ctx) {
                 whiteSpace: 'nowrap'
               }}
               onClick={() => setAppPipelineTab('all')}
+              role="tab"
+              aria-selected={appPipelineTab === 'all'}
             >
               {appPipelineTab === 'all' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#FFF' }} />}
               <span>全件（すべて）</span>
@@ -366,7 +377,12 @@ export default function ApplicationsPage(ctx) {
                   <div className="app-card-info" style={{ flex: 1 }}>
                     <h4 style={{ margin: '0 0 2px 0', fontSize: '15px', fontWeight: '700', letterSpacing: '-0.2px' }}>{appTitleJa}</h4>
                     <p style={{ margin: 0, fontSize: '12.5px', color: '#8E8E93' }}>{app.company}</p>
-                    <span className="app-date" style={{ fontSize: '11.5px', color: '#8E8E93', marginTop: '1px', display: 'block' }}>応募日: {app.appliedDate}</span>
+                    <span className="app-date" style={{ fontSize: '11.5px', color: '#8E8E93', marginTop: '1px', display: 'block' }}>
+                      応募日: {app.appliedDate}
+                      {userRole !== 'company' && app.appliedAt && formatRelativeTime(app.appliedAt, i18n?.language) && (
+                        <time dateTime={app.appliedAt}> · {formatRelativeTime(app.appliedAt, i18n?.language)}</time>
+                      )}
+                    </span>
                     {app.branchName && (
                       <span className="app-branch" style={{ fontSize: '12px', color: '#007AFF', fontWeight: '700', marginTop: '2px', display: 'block' }}>
                         {t('branchAppliedTo', '応募先')}：{app.branchName}

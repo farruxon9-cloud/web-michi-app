@@ -676,6 +676,8 @@ const translation = {
   "jlptSelfDeclared": "Tự khai báo (自己申告)",
   "jlptSelfDeclaredHint": "Bạn tự chọn trình độ (tự khai báo). Chứng chỉ sẽ được kiểm tra khi phỏng vấn.",
   "jlptSelfDeclaredNote": "Chứng chỉ được kiểm tra khi phỏng vấn",
+  "profileCompletenessLabel": "Hồ sơ đã hoàn thành",
+  "changeAvatarA11y": "Đổi ảnh hồ sơ",
   "jlptNone": "Không có",
   "hideAction": "Ẩn",
   "hideConfirmTitle": "Ẩn mục này?",

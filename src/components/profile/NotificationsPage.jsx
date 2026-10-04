@@ -99,7 +99,7 @@ export default function NotificationsPage(ctx) {
       </div>
 
       {/* Categorization Segmented Track Filter Bar */}
-      <div style={{ 
+      <div role="tablist" style={{ 
         position: 'relative',
         zIndex: 20,
         margin: '7px 16px 12px 16px', 
@@ -134,6 +134,8 @@ export default function NotificationsPage(ctx) {
             whiteSpace: 'nowrap'
           }}
           onClick={() => setNotifTab('all')}
+          role="tab"
+          aria-selected={notifTab === 'all'}
         >
           <span>{t('filterAll', 'すべて')}</span>
           <span style={{ 
@@ -169,6 +171,8 @@ export default function NotificationsPage(ctx) {
             whiteSpace: 'nowrap'
           }}
           onClick={() => setNotifTab('unread')}
+          role="tab"
+          aria-selected={notifTab === 'unread'}
         >
           <span>{t('filterUnread', '未読')}</span>
           <span style={{ 
@@ -204,6 +208,8 @@ export default function NotificationsPage(ctx) {
             whiteSpace: 'nowrap'
           }}
           onClick={() => setNotifTab('interview')}
+          role="tab"
+          aria-selected={notifTab === 'interview'}
         >
           <span>{t('filterInterview', '選考')}</span>
           <span style={{ 
@@ -239,6 +245,8 @@ export default function NotificationsPage(ctx) {
             whiteSpace: 'nowrap'
           }}
           onClick={() => setNotifTab('shoukai')}
+          role="tab"
+          aria-selected={notifTab === 'shoukai'}
         >
           <span>{t('filterShoukai', '報酬')}</span>
           <span style={{ 

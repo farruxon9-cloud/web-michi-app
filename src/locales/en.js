@@ -701,6 +701,8 @@ const translation = {
   "jlptSelfDeclared": "Self-declared (自己申告)",
   "jlptSelfDeclaredHint": "Choose your level yourself (self-declared). The certificate is checked at the interview.",
   "jlptSelfDeclaredNote": "Certificate is checked at the interview",
+  "profileCompletenessLabel": "Profile complete",
+  "changeAvatarA11y": "Change profile photo",
   "jlptNone": "None",
   "hideAction": "Hide",
   "hideConfirmTitle": "Hide this item?",

@@ -681,6 +681,8 @@ const translation = {
   "jlptSelfDeclared": "Со слов кандидата (自己申告)",
   "jlptSelfDeclaredHint": "Уровень вы указываете сами (自己申告). Сертификат проверяется на собеседовании.",
   "jlptSelfDeclaredNote": "Сертификат проверяется на собеседовании",
+  "profileCompletenessLabel": "Профиль заполнен",
+  "changeAvatarA11y": "Изменить фото профиля",
   "jlptNone": "Нет",
   "hideAction": "Скрыть",
   "hideConfirmTitle": "Скрыть этот элемент?",

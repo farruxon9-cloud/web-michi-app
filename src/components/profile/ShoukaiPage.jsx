@@ -29,7 +29,7 @@ export default function ShoukaiPage(ctx) {
         </div>
 
         {/* Sub-Section Filter Segmented Track Bar */}
-        <div className="sub-page-tab-track" style={{ 
+        <div role="tablist" className="sub-page-tab-track" style={{ 
           position: 'relative',
           zIndex: 20,
           margin: '4px 16px 14px 16px', 
@@ -67,6 +67,8 @@ export default function ShoukaiPage(ctx) {
               whiteSpace: 'nowrap'
             }}
             onClick={() => setShoukaiTab('pending')}
+            role="tab"
+            aria-selected={shoukaiTab === 'pending'}
           >
             {shoukaiTab === 'pending' && (
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FFFFFF', display: 'inline-block' }} />
@@ -107,6 +109,8 @@ export default function ShoukaiPage(ctx) {
               whiteSpace: 'nowrap'
             }}
             onClick={() => setShoukaiTab('paid')}
+            role="tab"
+            aria-selected={shoukaiTab === 'paid'}
           >
             {shoukaiTab === 'paid' && (
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FFFFFF', display: 'inline-block' }} />
@@ -147,6 +151,8 @@ export default function ShoukaiPage(ctx) {
               whiteSpace: 'nowrap'
             }}
             onClick={() => setShoukaiTab('all')}
+            role="tab"
+            aria-selected={shoukaiTab === 'all'}
           >
             {shoukaiTab === 'all' && (
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FFFFFF', display: 'inline-block' }} />
