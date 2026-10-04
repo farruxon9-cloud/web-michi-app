@@ -164,6 +164,18 @@
 
 ---
 
+### 📄 1.15. `履歴書` Rezyume Builder (`ResumeBuilder.jsx` / `activePage === 'resume_builder'`)
+- **Foydalanuvchi Buyrug'i**:
+  > *"rezyumeni yuklab olish va yoki ko`rish tugmalari pastki menyuning tagida qolib ketmoqda. scroll qilinganda qoida va sandartlarimizdagidek 12 px oraqli masofada to`xtash kerak edi."*
+- **Yuzaga Kelgan Xatolik**:
+  `ResumeBuilder.jsx` oxirida trailing spacer yo'q edi, shuning uchun `PDFダウンロード` / `別タブで表示` tugmalari bor oxirgi `.step-content` kartasi scroll oxirida `BottomNav` ostiga 60px kirib qolardi.
+- **Learn Qoidasi va Yechimi**:
+  1. `.resume-builder-container` ichida, `.resume-builder-body` dan keyin **`72px`** trailing clearance spacer o'rnatildi (konteynerning o'z `padding: 12px` i bilan birga).
+  2. Playwright o'lchovi (oxirgi karta pastki cheti → `.bottom-nav` yuqori cheti): 390px va 1024px da **12px**, 320px da 18px.
+  3. Spacer qiymatini taxmin qilmasdan, avval haqiqiy masofani o'lchab, keyin `spacer = joriy spacer + (12 - o'lchangan gap)` formulasi bilan hisoblash shart.
+
+---
+
 ## 🛠️ 2. Bo'lajak AI Agentlar Uchun Qat'iy Ishlash Protokoli (`Agent Execution Checklist`)
 
 Har bir AI agent loyihada topshiriq bajarayotganda quyidagi ketma-ketlikni ko'r-ko'rona buzmasdan bajarishi shart:
