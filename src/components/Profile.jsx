@@ -23,6 +23,7 @@ import SettingsPage from './profile/SettingsPage';
 import NotificationsPage from './profile/NotificationsPage';
 import { createProfileRenderers } from './profile/profileRenderers';
 import ProfileMainView from './profile/ProfileMainView';
+import { useProfileScroll } from '../hooks/useProfileScroll';
 // Profile.css har doim oxirida: kaskad tartibi o'zgarmasin
 import './Profile.css';
 
@@ -91,8 +92,8 @@ function ProfileContent({
   // Dedicated React ref for main profile scroll container
   const mainContainerRef = React.useRef(null);
 
-  // Saved main Profile scroll position when navigating to sub-pages
-  const [savedMainScroll, setSavedMainScroll] = useState(0);
+  // Saved main Profile scroll position when navigating to sub-pages (v1.1 F: useProfileScroll)
+  const { rememberMainScroll, resetToTop, forgetMainScroll } = useProfileScroll({ activePage, containerRef: mainContainerRef });
   const [shoukaiTab, setShoukaiTab] = useState('pending'); // 'pending' | 'paid' | 'all'
   const [selectedShoukaiApp, setSelectedShoukaiApp] = useState(null);
   const [appPipelineTab, setAppPipelineTab] = useState('submitted'); // 'submitted' | 'processing' | 'accepted' | 'rejected' | 'all'
@@ -213,28 +214,9 @@ function ProfileContent({
   };
 
   const handleOpenSubPage = (page) => {
-    const mainContent = document.querySelector('.main-content');
-    const profileContainer = mainContainerRef.current || document.querySelector('.profile-container');
-    const currentScroll = (mainContent && mainContent.scrollTop > 0)
-      ? mainContent.scrollTop
-      : ((profileContainer && profileContainer.scrollTop > 0) ? profileContainer.scrollTop : (window.scrollY || 0));
-
-    setSavedMainScroll(currentScroll);
+    // Remember where the main page was; the hook scrolls the sub-page to top before paint
+    rememberMainScroll();
     setActivePage(page);
-    
-    // Force immediate scroll to top on opening sub-page
-    const resetScroll = () => {
-      if (typeof window !== 'undefined') window.scrollTo(0, 0);
-      if (mainContent) mainContent.scrollTop = 0;
-      const containers = document.querySelectorAll('.profile-container');
-      containers.forEach(c => { c.scrollTop = 0; });
-    };
-
-    resetScroll();
-    requestAnimationFrame(resetScroll);
-    setTimeout(resetScroll, 20);
-    setTimeout(resetScroll, 60);
-    setTimeout(resetScroll, 150);
   };
 
   const handleBackToMain = () => {
@@ -247,54 +229,14 @@ function ProfileContent({
   const prevScrollToTopRef = React.useRef(scrollToTopTrigger);
 
   // Sub-sahifadan qaytilganda asosiy profil skrollini aynan bosilgan joyga qaytarish, sub-sahifa ochilganda esa topga reset qilish
-  React.useEffect(() => {
-    if (activePage === 'main') {
-      if (savedMainScroll > 0) {
-        let attempts = 0;
-        const maxAttempts = 20;
-        const restoreScroll = () => {
-          const mainContent = document.querySelector('.main-content');
-          const profileContainer = mainContainerRef.current || document.querySelector('.profile-container');
-          
-          if (mainContent) mainContent.scrollTop = savedMainScroll;
-          if (profileContainer) profileContainer.scrollTop = savedMainScroll;
-          if (typeof window !== 'undefined') window.scrollTo(0, savedMainScroll);
-
-          attempts++;
-          if (attempts < maxAttempts) {
-            setTimeout(restoreScroll, 30);
-          }
-        };
-
-        restoreScroll();
-        requestAnimationFrame(restoreScroll);
-        setTimeout(restoreScroll, 40);
-        setTimeout(restoreScroll, 120);
-        setTimeout(restoreScroll, 250);
-      }
-    } else {
-      const resetSubPageScroll = () => {
-        if (typeof window !== 'undefined') window.scrollTo(0, 0);
-        const mainContent = document.querySelector('.main-content');
-        if (mainContent) mainContent.scrollTop = 0;
-        const containers = document.querySelectorAll('.profile-container');
-        containers.forEach(c => { c.scrollTop = 0; });
-      };
-
-      resetSubPageScroll();
-      requestAnimationFrame(resetSubPageScroll);
-      setTimeout(resetSubPageScroll, 30);
-      setTimeout(resetSubPageScroll, 100);
-      setTimeout(resetSubPageScroll, 200);
-    }
-  }, [activePage, savedMainScroll]);
+  // — endi useProfileScroll ichida (useLayoutEffect + ResizeObserver, foydalanuvchi skroll qilsa to'xtaydi).
 
   // BottomNav'da My Page tabini takroran (2-marta) yoki sub-sahifada turib bosganda profil asosiy sahifasini eng yuqoridan scroll qilib ochish
   React.useEffect(() => {
     // ONLY execute scroll reset if scrollToTopTrigger actually INCREMENTED (user clicked BottomNav profile tab)
     if (scrollToTopTrigger > 0 && scrollToTopTrigger !== prevScrollToTopRef.current) {
       prevScrollToTopRef.current = scrollToTopTrigger;
-      setSavedMainScroll(0);
+      forgetMainScroll();
 
       // Force reset to main active page if on sub-page
       if (setActivePage) {
@@ -309,35 +251,9 @@ function ProfileContent({
       if (typeof setAcceptingAppId === 'function') setAcceptingAppId(null);
       if (typeof setExpandedAppId === 'function') setExpandedAppId(null);
       
-      const performScrollReset = () => {
-        const containers = document.querySelectorAll('.profile-container');
-        containers.forEach(c => {
-          c.scrollTop = 0;
-          if (c.scrollTo) {
-            try { c.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) { c.scrollTop = 0; }
-          }
-        });
-        if (mainContainerRef.current) {
-          mainContainerRef.current.scrollTop = 0;
-          if (mainContainerRef.current.scrollTo) {
-            try { mainContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { mainContainerRef.current.scrollTop = 0; }
-          }
-        }
-        if (window.scrollY !== 0) {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      };
-
-      performScrollReset();
-      const rafId = requestAnimationFrame(performScrollReset);
-      const t1 = setTimeout(performScrollReset, 40);
-      const t2 = setTimeout(performScrollReset, 150);
-
-      return () => {
-        cancelAnimationFrame(rafId);
-        clearTimeout(t1);
-        clearTimeout(t2);
-      };
+      // Hozirgidek: tepaga silliq skroll (sub-sahifadan kelinsa, hook main'ni tiklamaydi — saqlangan joy 0)
+      resetToTop(true);
+      return undefined;
     } else {
       prevScrollToTopRef.current = scrollToTopTrigger;
     }
