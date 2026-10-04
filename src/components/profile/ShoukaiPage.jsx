@@ -4,7 +4,7 @@ import {
   User, ChevronRight, CheckCircle2, Briefcase, X, ArrowLeft, CreditCard, Gift, Tag, EyeOff
 } from 'lucide-react';
 import { appItemKey, filterHiddenApps } from '../../utils/applicationItems';
-import { HIDE_LINK_BTN, HIDE_SMALL_BTN, safeDomId } from './profileShared';
+import { HIDE_LINK_BTN, HIDE_SMALL_BTN, safeDomId, STATUS_COLORS } from './profileShared';
 
 export default function ShoukaiPage(ctx) {
   const { applications, handleBackToMain, hiddenShoukai, onShoukaiPaid, profileData, renderHideOverlays, requestHide, schoolApplications, selectedShoukaiApp, setSelectedShoukaiApp, setShoukaiTab, shoukaiTab, t, userRole } = ctx;
@@ -383,11 +383,11 @@ export default function ShoukaiPage(ctx) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: '#636366' }}>氏名:</span>
-                    <strong style={{ color: '#000000', fontWeight: '800' }}>{selectedShoukaiApp.applicantInfo?.fullName || 'Farrux Alimov'}</strong>
+                    <strong style={{ color: '#000000', fontWeight: '800' }}>{selectedShoukaiApp.applicantInfo?.fullName || t('notProvided', '未入力')}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: '#636366' }}>連絡先:</span>
-                    <span style={{ color: '#007AFF', fontWeight: '700' }}>{selectedShoukaiApp.applicantInfo?.phone || '+81 90-8888-9999'}</span>
+                    <span style={{ color: '#007AFF', fontWeight: '700' }}>{selectedShoukaiApp.applicantInfo?.phone || t('notProvided', '未入力')}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: '#636366' }}>応募日:</span>
@@ -395,7 +395,11 @@ export default function ShoukaiPage(ctx) {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: '#636366' }}>選考ステータス:</span>
-                    <span style={{ color: '#28CD41', fontWeight: '700' }}>提出済み (選考中)</span>
+                    <span style={{ color: STATUS_COLORS[selectedShoukaiApp.status] || '#28CD41', fontWeight: '700' }}>
+                      {selectedShoukaiApp.status
+                        ? t(`status${selectedShoukaiApp.status.charAt(0).toUpperCase() + selectedShoukaiApp.status.slice(1)}`)
+                        : '提出済み (選考中)'}
+                    </span>
                   </div>
                 </div>
               </div>

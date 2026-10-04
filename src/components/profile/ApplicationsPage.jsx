@@ -4,9 +4,14 @@ import { FileText, CheckCircle2, Briefcase, Share2, ArrowLeft, RotateCcw, UserCh
 import { appItemKey, filterHiddenApps } from '../../utils/applicationItems';
 import { STATUS_PIPELINE, STATUS_COLORS, HIDE_LINK_BTN, HIDE_PILL_BTN, HIDE_SMALL_BTN, safeDomId } from './profileShared';
 import { formatRelativeTime } from '../../utils/relativeTime';
+import { useState } from 'react';
+import ConfirmSheet from '../ConfirmSheet';
 
 export default function ApplicationsPage(ctx) {
-  const { appPipelineTab, appSelectMode, applications, exitAppSelectMode, expandedAppId, hiddenApps, i18n, onChangeAppStatus, onNavigate, onShoukaiPaid, profileActivePageSource, profileData, renderHideOverlays, requestHide, schoolApplications, selectedAppKeys, setActivePage, setAppPipelineTab, setAppSelectMode, setExpandedAppId, t, toggleSelectApp, totalOwnApplications, userRole } = ctx;
+  const { appPipelineTab, appSelectMode, applications, exitAppSelectMode, expandedAppId, hiddenApps, i18n, onChangeAppStatus, onNavigate, onShoukaiPaid, profileActivePageSource, renderHideOverlays, requestHide, schoolApplications, selectedAppKeys, setActivePage, setAppPipelineTab, setAppSelectMode, setExpandedAppId, t, toggleSelectApp, totalOwnApplications, userRole } = ctx;
+  // In-app notice after hiring (replaces window.alert)
+  const [hiredName, setHiredName] = useState(null);
+  const notProvided = t('notProvided', '未入力');
   // Combine job and school applications for driver view
   let combinedApps = [];
   if (userRole === 'company') {
@@ -330,7 +335,8 @@ export default function ApplicationsPage(ctx) {
           </div>
         ) : (
           filteredApps.map(app => {
-            const resumeInfo = app.applicantInfo || profileData;
+            // Applicant snapshot only — never fall back to the viewer's own profile
+            const resumeInfo = app.applicantInfo || {};
             const rawTitle = String(app.title || '');
             const appTitleJa = rawTitle.includes('Mahalliy') || rawTitle.includes('Local Delivery')
               ? 'ルート配送ドライバー (地場デリバリー)'
@@ -493,28 +499,30 @@ export default function ApplicationsPage(ctx) {
                         <div className="resume-grid" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                             <span style={{ color: '#8E8E93' }}>氏名:</span>
-                            <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.fullName || 'Farrux Alimov'}</strong>
+                            <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.fullName || notProvided}</strong>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                             <span style={{ color: '#8E8E93' }}>連絡先:</span>
-                            <strong style={{ color: '#0A84FF' }}>{resumeInfo.phone || '+81 90-8888-9999'}</strong>
+                            <strong style={{ color: '#0A84FF' }}>{resumeInfo.phone || notProvided}</strong>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                             <span style={{ color: '#8E8E93' }}>メール:</span>
-                            <span style={{ color: 'var(--text-main)' }}>{resumeInfo.email || 'farrux.alimov@gmail.com'}</span>
+                            <span style={{ color: 'var(--text-main)' }}>{resumeInfo.email || notProvided}</span>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px' }}>
                             <span style={{ color: '#8E8E93' }}>生年月日・出身:</span>
-                            <strong style={{ color: 'var(--text-main)' }}>{resumeInfo.birthDate || '1996-08-24'} ({resumeInfo.nationality || 'O\'zbekiston'})</strong>
+                            <strong style={{ color: 'var(--text-main)' }}>{[resumeInfo.birthDate, resumeInfo.nationality && `(${resumeInfo.nationality})`].filter(Boolean).join(' ') || notProvided}</strong>
                           </div>
                           <div style={{ display: 'flex', flexDirection: 'column', fontSize: '12.5px', gap: '3px' }}>
                             <span style={{ color: '#8E8E93' }}>保有資格・免許:</span>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                              {(resumeInfo.driverLicenses || ['oogata', 'kenin']).map(l => (
+                              {(Array.isArray(resumeInfo.driverLicenses) && resumeInfo.driverLicenses.length > 0) ? resumeInfo.driverLicenses.map(l => (
                                 <span key={l} style={{ background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF', padding: '2px 6px', borderRadius: '6px', fontSize: '10.5px', fontWeight: '600' }}>
                                   {t(`lic_${l}`)}
                                 </span>
-                              ))}
+                              )) : (
+                                <span style={{ color: 'var(--text-main)' }}>{notProvided}</span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -599,8 +607,7 @@ export default function ApplicationsPage(ctx) {
                       }} 
                       onClick={() => {
                         onChangeAppStatus(app.id, 'accepted');
-                        const candidateName = resumeInfo.fullName || 'Farrux Alimov';
-                        alert(`🎉 ${candidateName} 氏の採用が決定しました！\nHR社員一覧（従業員管理）に自動登録されました。`);
+                        setHiredName(resumeInfo.fullName || '');
                       }}
                     >
                       <UserCheck size={14} />
@@ -666,6 +673,19 @@ export default function ApplicationsPage(ctx) {
         )}
       </div>
       {userRole !== 'company' && renderHideOverlays()}
+      <ConfirmSheet
+        open={hiredName !== null}
+        id="hired-notice-sheet"
+        title={`🎉 ${t('hiredNoticeTitle', '採用が決定しました')}`}
+        message={hiredName
+          ? t('hiredNoticeMessage', { name: hiredName, defaultValue: '{{name}} 氏をHR社員一覧（従業員管理）に自動登録しました。' })
+          : t('hiredNoticeMessageAnon', '応募者をHR社員一覧（従業員管理）に自動登録しました。')}
+        confirmLabel="OK"
+        danger={false}
+        hideCancel
+        onConfirm={() => setHiredName(null)}
+        onCancel={() => setHiredName(null)}
+      />
       {/* 86px clearance spacer yielding exact 12px gap between last item and floating BottomNav */}
       <div style={{ height: appSelectMode ? '150px' : '86px', minHeight: appSelectMode ? '150px' : '86px', width: '100%', flexShrink: 0, clear: 'both' }} />
     </div>
