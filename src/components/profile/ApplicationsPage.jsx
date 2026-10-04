@@ -6,6 +6,7 @@ import { STATUS_PIPELINE, STATUS_COLORS, HIDE_LINK_BTN, HIDE_PILL_BTN, HIDE_SMAL
 import { formatRelativeTime } from '../../utils/relativeTime';
 import { useState } from 'react';
 import ConfirmSheet from '../ConfirmSheet';
+import ApplicationStageTimeline from './ApplicationStageTimeline';
 
 export default function ApplicationsPage(ctx) {
   const { appPipelineTab, appSelectMode, applications, exitAppSelectMode, expandedAppId, hiddenApps, i18n, onChangeAppStatus, onNavigate, onShoukaiPaid, profileActivePageSource, renderHideOverlays, requestHide, schoolApplications, selectedAppKeys, setActivePage, setAppPipelineTab, setAppSelectMode, setExpandedAppId, t, toggleSelectApp, totalOwnApplications, userRole } = ctx;
@@ -457,6 +458,7 @@ export default function ApplicationsPage(ctx) {
                       <strong style={{ fontSize: '14px', color: STATUS_COLORS[app.status] || '#0A84FF', fontWeight: '600' }}>
                         {t(`status${app.status.charAt(0).toUpperCase() + app.status.slice(1)}`)}
                       </strong>
+                      <ApplicationStageTimeline status={app.status} t={t} />
                     </div>
                   </div>
                 ) : (
