@@ -126,6 +126,16 @@ Read this before touching the resume/PDF, profile, applications, dialogs, layout
 - `git stash -u` also stashes `scratch_e2e/`; copy the probe script to a fresh temp dir *after* stashing.
 - Known residue: About page, one text line rasterises ~0.6% differently although DOM, computed styles, rects and animations are identical (compositing-layer difference after remount). Not a design change.
 
+## 9d. Phase F (premium UX) — errors → fixes
+- **Old snapshot baselines lie.** Compare against a *fresh* baseline taken from HEAD (`git stash -u` → snap → `git stash pop`), not an older snapshot dir; unrelated drift (data, time) looked like regressions.
+- ❌ React-compiler lint: `{...pressable(() => ref.current?.click())}` → "Cannot access refs during render". ✅ Write role/tabIndex/onKeyDown inline when the handler closes over a ref.
+- i18n interpolation in this repo: `t('key', { name, defaultValue: '…{{name}}…' })`. Don't use `t(key, fallback, opts)`.
+- **Company applications come from the backend** (`GET /api/applications`), not localStorage. E2E must mock that URL (`route.fulfill`), otherwise the list is empty.
+- `slimApplicationForStorage` strips `applicantInfo`, so after a reload apps have no applicant data. ❌ Never fall back to the viewer's own `profileData` or to fake demo values. ✅ Show `t('notProvided')` (未入力).
+- **Playwright + profile scroll tests:** `locator.click()` scrolls the element into view (breaks scroll assertions) and the BottomNav indicator intercepts the active tab. ✅ Click menu items via `page.evaluate(el.click())`; click the nav label via `page.mouse.click(x, y)`.
+- Scroll: `useProfileScroll` (useLayoutEffect + ResizeObserver, stops on wheel/touch/key/mousedown, max 1 s). Do not add new `setTimeout` scroll chains; the old ones yanked users back to the saved position.
+- The AI FAB overlaps the right edge of the 3rd quick-action card at ≤390px (same FAB overlap as the dashboard pill). Design decision, ask before moving the FAB.
+
 ## 10. Commit Checklist (every phase)
 1. `npx vitest run`: all tests pass.
 2. `npm run lint`: 0 errors.
