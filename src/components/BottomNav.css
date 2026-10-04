@@ -39,40 +39,7 @@
   box-sizing: border-box !important;
 }
 
-/* Enforce Universal Bottom Horizontal Docking & Pixel-Perfect 14px Edge Grid Alignment */
-@media screen and (min-width: 0px) {
-  .bottom-nav-dock {
-    position: absolute !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    top: auto !important;
-    width: 100% !important;
-    height: auto !important;
-    flex-direction: row !important;
-    display: flex !important;
-  }
-
-  .bottom-nav {
-    flex-direction: row !important;
-    margin: 0 var(--screen-margin-x, 14px) !important;
-    width: var(--card-width-full, calc(100% - 28px)) !important;
-    max-width: 100% !important;
-    height: 72px !important;
-  }
-
-  .nav-item {
-    flex-direction: column !important;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .bottom-nav {
-    background: rgba(28, 28, 30, 0.65);
-    border-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 4px 16px rgba(90, 85, 234, 0.12);
-  }
-}
+/* Dark theme follows the app toggle (html.dark-mode), not the OS setting */
 html.dark-mode .bottom-nav {
   background: rgba(28, 28, 30, 0.65);
   border-color: rgba(255, 255, 255, 0.12);
@@ -98,11 +65,6 @@ html.dark-mode .bottom-nav {
   padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  .nav-item {
-    color: #A1A1A6;
-  }
-}
 html.dark-mode .nav-item {
   color: #A1A1A6;
 }
@@ -319,3 +281,18 @@ html.dark-mode .nav-item-special.active .special-icon-wrap {
   box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
 }
 
+/* Small phones (≤360px): slightly smaller pill and icons so 5 labels fit */
+@media (max-width: 360px) {
+  .bottom-nav {
+    height: 66px !important;
+    padding: 4px 4px !important;
+    border-radius: 20px;
+  }
+  .nav-icon-wrap {
+    width: 44px;
+    height: 28px;
+  }
+  .nav-item {
+    font-size: 9.5px;
+  }
+}
