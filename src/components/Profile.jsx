@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, ShieldCheck, 
   Briefcase, Globe, Building2, MapPin, Phone, Users, Camera, Sun, Moon, 
-  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot, Navigation, Zap, Mic, Truck, RotateCcw, UserCheck, UserX, Car, FileCheck, Calendar, Award, GraduationCap, CreditCard, Gift, Tag, UserPlus, KeyRound, Send, Clock } from 'lucide-react';
+  Volume2, Vibrate, VolumeX, BellOff, Edit3, Save, X, Share2, Bookmark, ArrowLeft, Megaphone, Plus, Info, Sparkles, Mail, Wrench, Trash2, Bot, Navigation, Zap, Mic, Truck, RotateCcw, UserCheck, UserX, Car, FileCheck, Calendar, Award, GraduationCap, CreditCard, Gift, Tag, UserPlus, KeyRound, Send, Clock, EyeOff, Circle } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import VerifiedBadge from './VerifiedBadge';
 import CompanyHome from './CompanyHome';
@@ -12,6 +12,10 @@ import JapaneseVehiclePickerModal from './JapaneseVehiclePickerModal';
 import { POPULAR_GLOBAL_BRANDS, getModelsForMake, getHDVehiclePhoto } from '../services/vehicleApiService';
 import { vehicleImageService } from '../services/vehicleImageService';
 import { MASTER_VEHICLE_DATABASE, JAPANESE_AUTOMAKERS_MASTER } from '../data/japaneseVehiclesMaster';
+import ConfirmSheet from './ConfirmSheet';
+import { UndoToast, SelectionBar } from './UndoToast';
+import useHiddenItems from '../hooks/useHiddenItems';
+import { appItemKey, filterHiddenApps } from '../utils/applicationItems';
 import './Profile.css';
 
 // All global brands for inline dropdown selector
@@ -162,7 +166,14 @@ const STATUS_COLORS = {
   rejected: '#FF3B30',
   accepted: '#34C759',
   interview: '#AF52DE',
+  withdrawn: '#8E8E93', // reserved for PATCH /api/applications/:id/cancel (backend pending)
 };
+
+// Small shared styles for the hide / select controls (use existing palette only)
+const HIDE_LINK_BTN = { border: 'none', background: 'transparent', color: '#0A84FF', fontSize: '12.5px', fontWeight: 700, padding: '4px 0', cursor: 'pointer' };
+const HIDE_PILL_BTN = { border: '1px solid var(--glass-border)', background: 'var(--glass-bg, transparent)', color: 'var(--text-main)', fontSize: '12.5px', fontWeight: 700, padding: '5px 12px', borderRadius: '999px', cursor: 'pointer' };
+const HIDE_SMALL_BTN = { display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-secondary, #8E8E93)', fontSize: '11.5px', fontWeight: 700, padding: '6px 10px', borderRadius: '8px', cursor: 'pointer' };
+const safeDomId = (key) => String(key).replace(/[^a-zA-Z0-9_-]/g, '-');
 
 function ProfileSkeleton() {
   return (
@@ -234,6 +245,87 @@ function ProfileContent({
   const [selectedShoukaiApp, setSelectedShoukaiApp] = useState(null);
   const [appPipelineTab, setAppPipelineTab] = useState('submitted'); // 'submitted' | 'processing' | 'accepted' | 'rejected' | 'all'
   const [notifTab, setNotifTab] = useState('all'); // 'all' | 'unread' | 'interview' | 'shoukai' | 'all'
+  const [showClearNotifsConfirm, setShowClearNotifsConfirm] = useState(false);
+
+  // ----- Hide (非表示) / multi-select for the driver's applications & shoukai lists -----
+  // Local view preference only: nothing is deleted on the server. Real withdrawal will use
+  // PATCH /api/applications/:id/cancel once the backend ships it.
+  const hiddenApps = useHiddenItems('apps', profileData?.userId);
+  const hiddenShoukai = useHiddenItems('shoukai', profileData?.userId);
+  const [hideConfirm, setHideConfirm] = useState(null); // { scope: 'apps'|'shoukai', keys: string[] }
+  const [undoInfo, setUndoInfo] = useState(null); // { scope, keys, id }
+  const [appSelectMode, setAppSelectMode] = useState(false);
+  const [selectedAppKeys, setSelectedAppKeys] = useState(() => new Set());
+  const [hideUiPage, setHideUiPage] = useState(activePage);
+  if (hideUiPage !== activePage) {
+    // Leaving / entering a page resets transient selection UI
+    setHideUiPage(activePage);
+    setAppSelectMode(false);
+    setSelectedAppKeys(new Set());
+    setUndoInfo(null);
+    setHideConfirm(null);
+  }
+  const hiddenStoreFor = (scope) => (scope === 'shoukai' ? hiddenShoukai : hiddenApps);
+  const requestHide = (scope, keys) => {
+    const list = (keys || []).filter(Boolean);
+    if (list.length > 0) setHideConfirm({ scope, keys: list });
+  };
+  const exitAppSelectMode = () => {
+    setAppSelectMode(false);
+    setSelectedAppKeys(new Set());
+  };
+  const confirmHide = () => {
+    if (!hideConfirm) return;
+    const { scope, keys } = hideConfirm;
+    hiddenStoreFor(scope).hide(keys);
+    setHideConfirm(null);
+    setUndoInfo({ scope, keys, id: Date.now() });
+    if (scope === 'apps') exitAppSelectMode();
+  };
+  const undoHide = () => {
+    if (!undoInfo) return;
+    hiddenStoreFor(undoInfo.scope).unhide(undoInfo.keys);
+    setUndoInfo(null);
+  };
+  const toggleSelectApp = (key) => {
+    setSelectedAppKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
+  const renderHideOverlays = () => (
+    <>
+      <ConfirmSheet
+        open={Boolean(hideConfirm)}
+        id="hide-confirm-sheet"
+        title={hideConfirm && hideConfirm.keys.length > 1
+          ? `${t('hideSelectedTitle', '選択した項目を非表示にしますか？')} (${hideConfirm.keys.length})`
+          : t('hideConfirmTitle', 'この項目を非表示にしますか？')}
+        message={t('hideConfirmMsg', '一覧から非表示になります。応募そのものは取り消されません。')}
+        confirmLabel={t('hideAction', '非表示')}
+        cancelLabel={t('cancel', 'キャンセル')}
+        onConfirm={confirmHide}
+        onCancel={() => setHideConfirm(null)}
+      />
+      <UndoToast
+        open={Boolean(undoInfo)}
+        toastKey={undoInfo?.id}
+        message={t('hiddenToast', '非表示にしました')}
+        actionLabel={t('undoAction', '元に戻す')}
+        onAction={undoHide}
+        onClose={() => setUndoInfo(null)}
+      />
+      <SelectionBar
+        open={appSelectMode && !hideConfirm}
+        count={selectedAppKeys.size}
+        actionLabel={t('hideAction', '非表示')}
+        cancelLabel={t('cancel', 'キャンセル')}
+        onAction={() => requestHide('apps', Array.from(selectedAppKeys))}
+        onCancel={exitAppSelectMode}
+      />
+    </>
+  );
 
   const [internalNotifSound, setInternalNotifSound] = useState(() => {
     try {
@@ -403,8 +495,10 @@ function ProfileContent({
   // Hamma bo'limlar uchun bosilgan o'zgarishlar sanoqlari (badges) dynamic ravishda hisoblanadi.
 
   // 1. Foydalanuvchining shaxsiy arizalari soni (referral qilingan do'stlar arizalari hisobga olinmaydi)
-  const ownApplicationsCount = applications.filter(a => !a.isSimulatedReferral).length;
-  const ownSchoolApplicationsCount = (schoolApplications || []).filter(a => !a.isSimulatedReferral).length;
+  // Haydovchi uchun yashirilgan (非表示) arizalar sanoqqa kirmaydi.
+  const driverHiddenAppsSet = userRole !== 'company' ? hiddenApps.hiddenSet : null;
+  const ownApplicationsCount = filterHiddenApps(applications.filter(a => !a.isSimulatedReferral), driverHiddenAppsSet).length;
+  const ownSchoolApplicationsCount = filterHiddenApps((schoolApplications || []).filter(a => !a.isSimulatedReferral), driverHiddenAppsSet).length;
   const totalOwnApplications = ownApplicationsCount + (userRole !== 'company' ? ownSchoolApplicationsCount : 0);
 
   // 2. Faol bo'lgan saqlangan e'lonlar soni
@@ -415,7 +509,8 @@ function ProfileContent({
   // 3. Foydalanuvchining Shoukai takliflari soni (simulyatsiya qilingan do'stlar referral arizalari yoki haqiqiy takliflar)
   const referralsCount = userRole === 'company' 
     ? applications.filter(a => a.company === profileData.fullName && a.shoukaiId).length
-    : (applications.filter(a => a.shoukaiId === profileData.userId).length + (schoolApplications || []).filter(a => a.shoukaiId === profileData.userId).length);
+    : (filterHiddenApps(applications.filter(a => a.shoukaiId === profileData.userId), hiddenShoukai.hiddenSet).length
+      + filterHiddenApps((schoolApplications || []).filter(a => a.shoukaiId === profileData.userId), hiddenShoukai.hiddenSet).length);
 
   // 4. Kompaniyaning HR xodimlari soni
   const employeesCount = (companyEmployees || []).length;
@@ -2422,12 +2517,7 @@ const getLicenseLabel = (type) => {
               {allCount > 0 && (
                 <button 
                   className="mark-all-btn danger-clear" 
-                  onClick={() => {
-                    if (window.confirm(t('confirmClearNotifs', 'すべての通知を削除しますか？'))) {
-                      if (onClearAllNotifs) onClearAllNotifs();
-                      else setNotifications([]);
-                    }
-                  }}
+                  onClick={() => setShowClearNotifsConfirm(true)}
                   style={{ 
                     padding: '5px 10px', 
                     borderRadius: '8px', 
@@ -2446,6 +2536,19 @@ const getLicenseLabel = (type) => {
                   <span>{t('clearAllNotifs', 'すべて消去')}</span>
                 </button>
               )}
+              <ConfirmSheet
+                open={showClearNotifsConfirm}
+                id="clear-notifs-confirm-sheet"
+                title={t('confirmClearNotifs', 'すべての通知を削除しますか？')}
+                confirmLabel={t('clearAllNotifs', 'すべて消去')}
+                cancelLabel={t('cancel', 'キャンセル')}
+                onConfirm={() => {
+                  setShowClearNotifsConfirm(false);
+                  if (onClearAllNotifs) onClearAllNotifs();
+                  else setNotifications([]);
+                }}
+                onCancel={() => setShowClearNotifsConfirm(false)}
+              />
             </div>
           </div>
         </div>
@@ -3733,14 +3836,19 @@ const getLicenseLabel = (type) => {
         combinedApps.push({
           ...s,
           isSchool: true,
-          logo: s.image || 'https://via.placeholder.com/64?text=Maktab',
+          logo: s.image || '',
           company: s.schoolName,
           title: t('drivingSchoolApp'),
           status: 'submitted',
         });
       });
-      combinedApps.sort((a, b) => new Date(b.appliedDate || Date.now()) - new Date(a.appliedDate || Date.now()));
+      combinedApps.sort((a, b) => new Date(b.appliedAt || b.appliedDate || Date.now()) - new Date(a.appliedAt || a.appliedDate || Date.now()));
     }
+
+    // Driver: locally hidden (非表示) items are filtered out of the view
+    const allOwnAppsCount = combinedApps.length;
+    if (userRole !== 'company') combinedApps = filterHiddenApps(combinedApps, hiddenApps.hiddenSet);
+    const hiddenOwnAppsCount = allOwnAppsCount - combinedApps.length;
 
     // Company Funnel Filtering
     const subCount = applications.filter(a => a.status === 'submitted').length;
@@ -3774,6 +3882,26 @@ const getLicenseLabel = (type) => {
             {userRole === 'company' ? t('incomingApps', '受信した応募一覧') : t('myApplications')}
             <span className="section-header-count">({userRole === 'company' ? applications.length : totalOwnApplications})</span>
           </h2>
+          {userRole !== 'company' && allOwnAppsCount > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+              {hiddenOwnAppsCount > 0 ? (
+                <button type="button" id="apps-show-hidden-btn" style={HIDE_LINK_BTN} onClick={() => hiddenApps.unhideAll()}>
+                  {t('showHiddenItems', '非表示の項目を再表示')} ({hiddenOwnAppsCount})
+                </button>
+              ) : <span />}
+              {combinedApps.length > 0 && (
+                <button
+                  type="button"
+                  id="apps-select-toggle-btn"
+                  style={HIDE_PILL_BTN}
+                  aria-pressed={appSelectMode}
+                  onClick={() => (appSelectMode ? exitAppSelectMode() : setAppSelectMode(true))}
+                >
+                  {appSelectMode ? t('cancel', 'キャンセル') : t('selectMode', '選択')}
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Company Funnel Pipeline 2-Tier Responsive Grid Filter - Compact */}
@@ -4002,6 +4130,11 @@ const getLicenseLabel = (type) => {
                   {t('viewJobs')}
                 </button>
               )}
+              {userRole !== 'company' && hiddenOwnAppsCount > 0 && (
+                <button type="button" id="apps-empty-show-hidden-btn" style={HIDE_LINK_BTN} onClick={() => hiddenApps.unhideAll()}>
+                  {t('showHiddenItems', '非表示の項目を再表示')} ({hiddenOwnAppsCount})
+                </button>
+              )}
             </div>
           ) : (
             filteredApps.map(app => {
@@ -4012,12 +4145,43 @@ const getLicenseLabel = (type) => {
                 : rawTitle.includes('Xalqaro') || rawTitle.includes('Trailer')
                 ? '長距離トレーラードライバー (国際輸送)'
                 : rawTitle;
+              const itemKey = appItemKey(app);
+              const isSelectable = userRole !== 'company' && appSelectMode;
+              const isSelected = isSelectable && selectedAppKeys.has(itemKey);
 
               return (
-                <div key={app.id} className="application-card glass squircle" style={{ padding: '10px 14px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)' }}>
+                <div
+                  key={itemKey || app.id}
+                  className="application-card glass squircle"
+                  style={{ padding: '10px 14px', border: isSelected ? '1px solid #0A84FF' : '1px solid var(--glass-border)', background: 'var(--card-bg)', cursor: isSelectable ? 'pointer' : undefined }}
+                  {...(isSelectable ? {
+                    role: 'checkbox',
+                    'aria-checked': isSelected,
+                    tabIndex: 0,
+                    onClick: () => toggleSelectApp(itemKey),
+                    onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSelectApp(itemKey); } },
+                  } : {})}
+                >
                   {/* Header Row */}
                   <div className="app-card-header" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '6px' }}>
-                    <img src={app.logo} alt={app.company} className="app-company-logo" style={{ width: '40px', height: '40px', borderRadius: '10px' }} />
+                    {isSelectable && (
+                      isSelected
+                        ? <CheckCircle2 size={22} color="#0A84FF" aria-hidden="true" style={{ flexShrink: 0 }} />
+                        : <Circle size={22} color="#8E8E93" aria-hidden="true" style={{ flexShrink: 0 }} />
+                    )}
+                    {app.logo ? (
+                      <img
+                        src={app.logo}
+                        alt={app.company}
+                        className="app-company-logo"
+                        style={{ width: '40px', height: '40px', borderRadius: '10px' }}
+                        onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                      />
+                    ) : (
+                      <div className="app-company-logo" aria-hidden="true" style={{ width: '40px', height: '40px', borderRadius: '10px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(10, 132, 255, 0.1)', color: '#0A84FF' }}>
+                        {app.isSchool ? <GraduationCap size={20} /> : <Briefcase size={20} />}
+                      </div>
+                    )}
                     <div className="app-card-info" style={{ flex: 1 }}>
                       <h4 style={{ margin: '0 0 2px 0', fontSize: '15px', fontWeight: '700', letterSpacing: '-0.2px' }}>{appTitleJa}</h4>
                       <p style={{ margin: 0, fontSize: '12.5px', color: '#8E8E93' }}>{app.company}</p>
@@ -4271,13 +4435,42 @@ const getLicenseLabel = (type) => {
                       </button>
                     </div>
                   )}
+
+                  {/* Driver actions: hide from list (local) / withdraw (needs backend) */}
+                  {userRole !== 'company' && !appSelectMode && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px', justifyContent: 'flex-end' }}>
+                      {!app.isSchool && (
+                        <button
+                          type="button"
+                          id={`app-withdraw-${safeDomId(itemKey)}`}
+                          disabled
+                          aria-disabled="true"
+                          title={t('withdrawComingSoonHint', '応募の取り下げ機能は近日公開予定です')}
+                          style={{ ...HIDE_SMALL_BTN, opacity: 0.5, cursor: 'not-allowed' }}
+                        >
+                          <RotateCcw size={13} />
+                          <span>{t('withdrawComingSoon', '取り下げ（近日対応）')}</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        id={`app-hide-${safeDomId(itemKey)}`}
+                        style={HIDE_SMALL_BTN}
+                        onClick={() => requestHide('apps', [itemKey])}
+                      >
+                        <EyeOff size={13} />
+                        <span>{t('hideAction', '非表示')}</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })
           )}
         </div>
+        {userRole !== 'company' && renderHideOverlays()}
         {/* 86px clearance spacer yielding exact 12px gap between last item and floating BottomNav */}
-        <div style={{ height: '86px', minHeight: '86px', width: '100%', flexShrink: 0, clear: 'both' }} />
+        <div style={{ height: appSelectMode ? '150px' : '86px', minHeight: appSelectMode ? '150px' : '86px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>
     );
   }
@@ -4837,9 +5030,23 @@ const getLicenseLabel = (type) => {
       );
     }
 
-    const myJobRefs = applications.filter(a => a.shoukaiId === profileData.userId);
-    const mySchoolRefs = schoolApplications.filter(a => a.shoukaiId === profileData.userId);
+    const allJobRefs = applications.filter(a => a.shoukaiId === profileData.userId);
+    const allSchoolRefs = (schoolApplications || []).filter(a => a.shoukaiId === profileData.userId);
+    const myJobRefs = filterHiddenApps(allJobRefs, hiddenShoukai.hiddenSet);
+    const mySchoolRefs = filterHiddenApps(allSchoolRefs, hiddenShoukai.hiddenSet);
     const totalRefs = myJobRefs.length + mySchoolRefs.length;
+    const hiddenRefsCount = (allJobRefs.length + allSchoolRefs.length) - totalRefs;
+    const renderShoukaiHideBtn = (app) => {
+      const key = appItemKey(app);
+      return (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+          <button type="button" id={`shoukai-hide-${safeDomId(key)}`} style={HIDE_SMALL_BTN} onClick={() => requestHide('shoukai', [key])}>
+            <EyeOff size={13} />
+            <span>{t('hideAction', '非表示')}</span>
+          </button>
+        </div>
+      );
+    };
 
     return (
       <div className="profile-container sub-page-view fade-in">
@@ -4851,6 +5058,11 @@ const getLicenseLabel = (type) => {
             {t('myShoukai')}
             <span className="section-header-count">({totalRefs})</span>
           </h2>
+          {hiddenRefsCount > 0 && (
+            <button type="button" id="shoukai-show-hidden-btn" style={{ ...HIDE_LINK_BTN, marginTop: '4px' }} onClick={() => hiddenShoukai.unhideAll()}>
+              {t('showHiddenItems', '非表示の項目を再表示')} ({hiddenRefsCount})
+            </button>
+          )}
         </div>
         <div className="applications-list" style={{ padding: '16px' }}>
           <div className="glass squircle" style={{ padding: '16px', marginBottom: '20px' }}>
@@ -4865,7 +5077,7 @@ const getLicenseLabel = (type) => {
           ) : (
             <>
               {myJobRefs.map(app => (
-                <div key={app.id} className="glass squircle" style={{ padding: '16px', marginBottom: '12px' }}>
+                <div key={appItemKey(app) || app.id} className="glass squircle" style={{ padding: '16px', marginBottom: '12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{app.title} ({t('job')})</h4>
@@ -4881,10 +5093,11 @@ const getLicenseLabel = (type) => {
                       <span style={{ fontSize: '12px', color: '#FF9F0A' }}>⏳ {t('paymentPending')}</span>
                     )}
                   </div>
+                  {renderShoukaiHideBtn(app)}
                 </div>
               ))}
               {mySchoolRefs.map(app => (
-                <div key={app.id} className="glass squircle" style={{ padding: '16px', marginBottom: '12px' }}>
+                <div key={appItemKey(app) || app.id} className="glass squircle" style={{ padding: '16px', marginBottom: '12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{app.schoolName} ({t('school')})</h4>
@@ -4899,11 +5112,13 @@ const getLicenseLabel = (type) => {
                       <span style={{ fontSize: '12px', color: '#FF9F0A' }}>⏳ {t('paymentPending')}</span>
                     )}
                   </div>
+                  {renderShoukaiHideBtn(app)}
                 </div>
               ))}
             </>
           )}
         </div>
+        {renderHideOverlays()}
         {/* 86px clearance spacer yielding exact 12px gap between last item and floating BottomNav */}
         <div style={{ height: '86px', minHeight: '86px', width: '100%', flexShrink: 0, clear: 'both' }} />
       </div>

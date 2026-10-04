@@ -12,6 +12,7 @@ import { getAllTrainLineOptions, getStationsByLine } from '../data/japanStations
 import './DriverFeed.css';
 import { JOB_CATEGORIES } from '../data/jobCategories';
 import { submitJobToBackend, updateJobInBackend, deleteJobInBackend, fetchJobs } from '../services/michiJobsApiService';
+import ConfirmSheet from './ConfirmSheet';
 import { createSchoolInBackend } from '../services/schoolService';
 import { API_ENDPOINTS } from '../config/api';
 import { apiFetch } from '../services/apiClient';
@@ -106,6 +107,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   const currentLang = i18n.language || 'ja';
   
   const [showAddForm, setShowAddForm] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null); // { type: 'job' | 'school', id }
   const [showAdTypeSelect, setShowAdTypeSelect] = useState(false);
   const [showJobTypeSelect, setShowJobTypeSelect] = useState(false);
   const [selectedAdType, setSelectedAdType] = useState('job'); // 'job' | 'school'
@@ -737,8 +739,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     });
   };
 
-  const handleDeleteJob = async (jobId) => {
-    if (!window.confirm(t('confirmDeleteJob', 'Bu e\'lonni o\'chirmoqchimisiz?'))) return;
+  const performDeleteJob = async (jobId) => {
     try {
       await deleteJobInBackend(jobId);
       setJobs((prev) => (prev || []).filter(j => j.id !== jobId));
@@ -751,14 +752,24 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     }
   };
 
-  const handleDeleteSchool = async (schoolId) => {
-    if (!window.confirm(t('confirmDeleteSchool', 'Bu avtomaktab e\'lonini o\'chirmoqchimisiz?'))) return;
+  const performDeleteSchool = async (schoolId) => {
     try {
       await apiFetch(`${API_ENDPOINTS.SCHOOLS}/${schoolId}`, { method: 'DELETE' });
-      setSchools(schools.filter(s => s.id !== schoolId));
+      setSchools((prev) => (prev || []).filter(s => s.id !== schoolId));
     } catch (err) {
       alert(t('deleteError', 'O\'chirishda xatolik yuz berdi'));
     }
+  };
+
+  // Ask first (in-app sheet), then delete
+  const handleDeleteJob = (jobId) => setPendingDelete({ type: 'job', id: jobId });
+  const handleDeleteSchool = (schoolId) => setPendingDelete({ type: 'school', id: schoolId });
+  const confirmPendingDelete = async () => {
+    const target = pendingDelete;
+    setPendingDelete(null);
+    if (!target) return;
+    if (target.type === 'school') await performDeleteSchool(target.id);
+    else await performDeleteJob(target.id);
   };
 
   // ===== ADD NEW JOB FORM (Full Page Premium) =====
@@ -1816,6 +1827,18 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   // ===== MAIN JOB LIST =====
   return (
     <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', height: 'auto', maxHeight: 'none', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
+      <ConfirmSheet
+        open={Boolean(pendingDelete)}
+        id="delete-ad-confirm-sheet"
+        title={pendingDelete?.type === 'school'
+          ? t('confirmDeleteSchool', 'Bu avtomaktab e\'lonini o\'chirmoqchimisiz?')
+          : t('confirmDeleteJob', 'Bu e\'lonni o\'chirmoqchimisiz?')}
+        message={t('deleteAdIrreversible', '削除すると元に戻せません。')}
+        confirmLabel={t('delete', '削除')}
+        cancelLabel={t('cancel', 'キャンセル')}
+        onConfirm={confirmPendingDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
       
       {/* ADD ANNOUNCEMENT BUTTON CARD */}
       <div style={{ padding: '0 14px', marginBottom: '24px' }}>

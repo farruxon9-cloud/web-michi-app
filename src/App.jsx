@@ -21,6 +21,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ReferralModal from './components/ReferralModal';
 import { getPermanentUserId } from './utils/userIdManager';
 import { loadUserDraft, saveUserDraft, pickProfileDraft } from './utils/localDraftStore';
+import { sanitizeStoredApplications, slimApplicationsForStorage } from './utils/applicationItems';
 import { AppProvider } from './context/AppContext';
 import { submitApplicationToBackend, notifyCompanyNewApplication, notifyApplicantStatusChange } from './services/applicationService';
 import { useAuth } from './context/AuthContext';
@@ -440,8 +441,25 @@ function App() {
   const feed = useJobFeed();
   const [companyJobs, setCompanyJobs] = useState([]);
   const [schools, setSchools] = useState([]);
-  const [applications, setApplications] = useState([]);
+  // Driver's own applications are kept locally per user (backend has no driver GET yet)
+  const [applications, setApplications] = useState(() =>
+    sanitizeStoredApplications(loadUserDraft('applications', profileData.userId, []))
+  );
   const [notifications, setNotifications] = useState([]);
+
+  const handleMarkNotifRead = useCallback((id) => {
+    setNotifications(prev => prev.map(n => (n.id === id ? { ...n, read: true } : n)));
+  }, []);
+  const handleMarkAllNotifsRead = useCallback(() => {
+    setNotifications(prev => prev.map(n => (n.read ? n : { ...n, read: true })));
+  }, []);
+  const handleDeleteNotif = useCallback((id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
+  const handleClearAllNotifs = useCallback(() => setNotifications([]), []);
+  const handleShoukaiPaid = useCallback((appId) => {
+    setApplications(prev => prev.map(a => (a.id === appId ? { ...a, shoukaiPaid: true } : a)));
+  }, []);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -486,6 +504,7 @@ function App() {
       logo: job.logo,
       status: 'submitted',
       appliedDate: new Date().toLocaleDateString(),
+      appliedAt: new Date().toISOString(),
       shoukaiId: refId || null,
       shoukaiAmount: job.shoukaiAmount || null,
       shoukaiPaid: false,
@@ -555,7 +574,30 @@ function App() {
     }
   };
 
-  const [schoolApplications, setSchoolApplications] = useState([]);
+  const [schoolApplications, setSchoolApplications] = useState(() =>
+    sanitizeStoredApplications(loadUserDraft('school_applications', profileData.userId, []))
+  );
+
+  // Persist the driver's own application lists (slim copy, no embedded profile snapshot)
+  useEffect(() => {
+    if (userRole !== 'driver') return undefined;
+    const timer = setTimeout(() => {
+      saveUserDraft('applications', profileData.userId, slimApplicationsForStorage(applications));
+      saveUserDraft('school_applications', profileData.userId, slimApplicationsForStorage(schoolApplications));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [userRole, profileData.userId, applications, schoolApplications]);
+
+  // On logout clear in-memory lists so the next account never sees them
+  const prevRoleForAppsRef = useRef(userRole);
+  useEffect(() => {
+    if (prevRoleForAppsRef.current && !userRole) {
+      setApplications([]);
+      setSchoolApplications([]);
+      setNotifications([]);
+    }
+    prevRoleForAppsRef.current = userRole;
+  }, [userRole]);
 
   const handleApplySchool = useCallback(async (school) => {
     if (userRole === 'guest') {
@@ -583,6 +625,7 @@ function App() {
       shoukaiAmount: school.shoukaiAmount || null,
       paid: false,
       appliedDate: new Date().toLocaleDateString(),
+      appliedAt: new Date().toISOString(),
       applicantInfo: { ...profileData }
     };
     setSchoolApplications(prev => [...prev, newApp]);
@@ -777,6 +820,12 @@ function App() {
             schoolApplications={schoolApplications}
             onChangeAppStatus={handleChangeAppStatus}
             notifications={notifications}
+            setNotifications={setNotifications}
+            onMarkRead={handleMarkNotifRead}
+            onMarkAllRead={handleMarkAllNotifsRead}
+            onDeleteNotif={handleDeleteNotif}
+            onClearAllNotifs={handleClearAllNotifs}
+            onShoukaiPaid={handleShoukaiPaid}
             unreadCount={unreadCount}
             darkMode={darkMode}
             setDarkMode={setDarkMode}
