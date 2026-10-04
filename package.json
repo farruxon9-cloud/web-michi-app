@@ -16,7 +16,13 @@
     "impact": "node scripts/analyze_impact.mjs",
     "test": "vitest run",
     "verify": "npm run lint && npm run test && npm run build",
-    "validate": "node scripts/generate_codebase_map.js && npm run lint && npm run test && node tests/e2e.js && npm run build"
+    "validate": "node scripts/generate_codebase_map.js && npm run lint && npm run test && node tests/e2e.js && npm run build",
+    "check": "node scripts/check.mjs",
+    "check:fast": "node scripts/check.mjs --fast",
+    "map": "node scripts/gen_page_map.mjs",
+    "graph": "graphify update .",
+    "sync:web-start": "node scripts/sync_web_start.mjs",
+    "hooks": "node scripts/install_hooks.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",
