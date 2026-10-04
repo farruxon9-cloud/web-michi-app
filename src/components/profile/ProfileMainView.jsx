@@ -10,6 +10,7 @@ import ConfirmSheet from '../ConfirmSheet';
 import VehicleCard from './VehicleCard';
 import { pressable } from '../../utils/a11y';
 import { getProfileCompleteness } from '../../utils/profileCompleteness';
+import ProfileQuickActions from './ProfileQuickActions';
 
 export default function ProfileMainView(ctx) {
   const { confirmDeleteVehicle, contractStatus, editVehicleData, employeesCount, fileInputRef, getAvatarSrc, getRoleLabel, handleAvatarChange, handleClearAllVehicles, handleOpenSubPage, i18n, isVehiclePickerOpen, mainContainerRef, onLogout, onTriggerRegister, profileData, referralsCount, setContractStatus, setEditVehicleData, setIsVehiclePickerOpen, setProfileActivePageSource, setVehicleClearConfirm, setVehicleDeleteTarget, setVehicleNotice, showProfileBadges, t, totalOwnApplications, totalSavedCount, unreadCount, userRole, vehicleClearConfirm, vehicleDeleteTarget, vehicleNotice } = ctx;
@@ -116,6 +117,19 @@ export default function ProfileMainView(ctx) {
               {t('registerTitle')}
             </button>
           </div>
+        )}
+
+        {/* v1.1 F: tezkor tugmalar (faqat haydovchi) */}
+        {userRole === 'driver' && (
+          <ProfileQuickActions
+            t={t}
+            showProfileBadges={showProfileBadges}
+            totalOwnApplications={totalOwnApplications}
+            totalSavedCount={totalSavedCount}
+            referralsCount={referralsCount}
+            onOpen={handleOpenSubPage}
+            setProfileActivePageSource={setProfileActivePageSource}
+          />
         )}
 
         {/* Resume Card - Glassmorphism Sub-Group Cards */}
