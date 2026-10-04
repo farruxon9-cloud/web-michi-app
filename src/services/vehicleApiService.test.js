@@ -95,5 +95,42 @@ describe('vehicleApiService Tests', () => {
     expect(typeof mod.getThumbnailPhoto).toBe('function');
     expect(typeof mod.getHDVehiclePhoto).toBe('function');
   });
+
+  it('isRelevantWikiTitle requires the model name in the page title', async () => {
+    const { isRelevantWikiTitle } = await import('./vehicleApiService');
+    expect(isRelevantWikiTitle('Isuzu Giga', 'Isuzu', 'Giga 10t')).toBe(true);
+    expect(isRelevantWikiTitle('Toyota Land Cruiser', 'Toyota', 'Land Cruiser 300')).toBe(true);
+    expect(isRelevantWikiTitle('Toyota Motor Corporation', 'Toyota', 'Corolla')).toBe(false);
+    expect(isRelevantWikiTitle('Sedan (automobile)', 'Toyota', 'Corolla')).toBe(false);
+    expect(isRelevantWikiTitle('', 'Toyota', 'Corolla')).toBe(false);
+  });
+
+  it('rejects unrelated Wikipedia results and caches the miss (no carimagery fallback)', async () => {
+    const { getRealVehiclePhoto } = await import('./vehicleApiService');
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ query: { pages: { 1: { title: 'Toyota Motor Corporation', index: 1, thumbnail: { source: 'https://x/logo.png' } } } } }),
+    });
+    expect(await getRealVehiclePhoto('Toyota', 'Zzmodel', 400)).toBeNull();
+    const calls = globalThis.fetch.mock.calls.map((c) => String(c[0]));
+    expect(calls.every((u) => u.includes('wikipedia.org'))).toBe(true);
+    expect(calls.some((u) => u.includes('carimagery'))).toBe(false);
+
+    globalThis.fetch.mockClear();
+    expect(await getRealVehiclePhoto('Toyota', 'Zzmodel', 400)).toBeNull();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('accepts a matching page and does not cache misses on network errors', async () => {
+    const { getRealVehiclePhoto } = await import('./vehicleApiService');
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error('offline'));
+    expect(await getRealVehiclePhoto('Hino', 'Ranger', 400)).toBeNull();
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ query: { pages: { 7: { title: 'Hino Ranger', thumbnail: { source: 'https://x/ranger.jpg' } } } } }),
+    });
+    expect(await getRealVehiclePhoto('Hino', 'Ranger', 400)).toBe('https://x/ranger.jpg');
+  });
 });
 

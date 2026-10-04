@@ -4,9 +4,25 @@
  */
 
 const NHTSA_BASE_URL = 'https://vpic.nhtsa.dot.gov/api/vehicles';
-const CACHE_PREFIX = 'michi_vpic_cache_v2_';
+// v3: v2 keshida tekshirilmagan (noto'g'ri) Wikipedia rasmlari bor edi — ular qayta ishlatilmaydi
+const CACHE_PREFIX = 'michi_vpic_cache_v3_';
+const LEGACY_CACHE_PREFIXES = ['michi_vpic_cache_v2_', 'michi_vpic_cache_v1_'];
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 kun
 const inMemoryCache = new Map();
+
+(function purgeLegacyVehicleCache() {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    const stale = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && LEGACY_CACHE_PREFIXES.some((p) => k.startsWith(p))) stale.push(k);
+    }
+    stale.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    /* storage mavjud emas — e'tiborsiz */
+  }
+})();
 
 // Mashhur brendlar (Yaponiya va Global)
 export const POPULAR_GLOBAL_BRANDS = [
@@ -66,12 +82,13 @@ export function setCachedData(key, data) {
 function clearExpiredCache() {
   try {
     if (typeof localStorage === 'undefined') return;
+    // Avval yig'ib olamiz: indeks bo'yicha aylanib o'chirish har ikkinchi kalitni o'tkazib yuborardi
+    const keys = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && (k.startsWith(CACHE_PREFIX) || k.startsWith('michi_vpic_cache'))) {
-        localStorage.removeItem(k);
-      }
+      if (k && (k.startsWith(CACHE_PREFIX) || k.startsWith('michi_vpic_cache'))) keys.push(k);
     }
+    keys.forEach((k) => localStorage.removeItem(k));
   } catch (e) {}
 }
 
@@ -80,69 +97,82 @@ export function clearVehicleCache() {
   clearExpiredCache();
 }
 
+// Topilmagan modellar uchun kesh belgisi (har safar qayta so'ralmasligi uchun)
+const NO_PHOTO = '__none__';
+
+const normalizeToken = (s) => String(s || '').toLowerCase().normalize('NFKC').replace(/[^a-z0-9\u3040-\u30ff\u4e00-\u9fff]/g, '');
+
 /**
- * Wikipedia API orqali rasm qidirish
+ * Wikipedia sahifa sarlavhasi so'ralgan mashinaga tegishlimi?
+ * Model nomining birinchi so'zi sarlavhada bo'lishi SHART (marka yolg'iz yetarli emas:
+ * "Toyota" → "Toyota Motor Corporation" logotipi qaytib kelardi).
  */
-async function queryWikipediaPhoto(searchTerm, thumbSize) {
-  try {
-    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(searchTerm)}&gsrlimit=1&prop=pageimages&pithumbsize=${thumbSize}&format=json&origin=*`;
-    const res = await fetch(searchUrl, { signal: AbortSignal.timeout(3500) });
-    if (res.ok) {
-      const data = await res.json();
-      const pages = data?.query?.pages;
-      if (pages) {
-        const firstKey = Object.keys(pages)[0];
-        const photo = pages[firstKey]?.thumbnail?.source;
-        if (photo) return photo;
-      }
-    }
-  } catch (e) {}
-  return null;
+export function isRelevantWikiTitle(title, make, model) {
+  const t = normalizeToken(title);
+  const modelHead = normalizeToken(String(model || '').trim().split(/\s+/)[0]);
+  if (!t || !modelHead) return false;
+  if (modelHead.length < 2) return t.includes(normalizeToken(make)) && t.includes(modelHead);
+  return t.includes(modelHead);
 }
 
 /**
- * Avtomobilning haqiqiy HD rasmini ko'p bosqichli usulda topish
+ * Wikipedia API orqali rasm qidirish.
+ * @returns {{ photo: string|null, completed: boolean }} completed=false — tarmoq xatosi (keshlanmaydi)
+ */
+async function queryWikipediaPhoto(params, thumbSize, make, model) {
+  try {
+    const url = `https://en.wikipedia.org/w/api.php?action=query${params}&prop=pageimages&pithumbsize=${thumbSize}&format=json&origin=*`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(3500) });
+    if (!res.ok) return { photo: null, completed: false };
+    const data = await res.json();
+    const pages = Object.values(data?.query?.pages || {})
+      .filter((p) => p && !('missing' in p))
+      .sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+    for (const page of pages) {
+      const photo = page?.thumbnail?.source;
+      if (photo && isRelevantWikiTitle(page.title, make, model)) return { photo, completed: true };
+    }
+    return { photo: null, completed: true };
+  } catch {
+    return { photo: null, completed: false };
+  }
+}
+
+/**
+ * Avtomobilning haqiqiy HD rasmini topish (faqat tekshirilgan Wikipedia natijalari).
+ * 1) Aniq sarlavha: "Make Model" (redirect'lar bilan)
+ * 2) Qidiruv (3 ta natija) — sarlavhasi model nomini o'z ichiga olgani qabul qilinadi
+ * carimagery olib tashlandi: CORS sababli brauzerda ishlamaydi.
  */
 export async function getRealVehiclePhoto(make, model, size = 1280) {
   if (!make || !model) return null;
-  const cleanMake = make.trim();
-  const cleanModel = model.trim();
+  const cleanMake = String(make).trim();
+  const cleanModel = String(model).trim();
+  if (!cleanMake || !cleanModel) return null;
   const cacheKey = `photo_${size}_${cleanMake.toLowerCase()}_${cleanModel.toLowerCase()}`;
-  
+
   const cached = getCachedData(cacheKey);
+  if (cached === NO_PHOTO) return null;
   if (cached) return cached;
 
-  // 1-bosqich: Wikipedia orqali aniq maqola rasmini topish
-  const searchQueries = [
-    `${cleanMake} ${cleanModel}`,
-    `${cleanMake} ${cleanModel.split(' ')[0]}`, // Masalan: BMW 320d -> BMW 3
-    `${cleanModel} car`
+  const term = `${cleanMake} ${cleanModel}`;
+  const attempts = [
+    `&titles=${encodeURIComponent(term)}&redirects=1`,
+    `&generator=search&gsrsearch=${encodeURIComponent(term)}&gsrlimit=3`,
   ];
 
-  for (const query of searchQueries) {
-    const photoUrl = await queryWikipediaPhoto(query, size);
-    if (photoUrl) {
-      setCachedData(cacheKey, photoUrl);
-      return photoUrl;
+  let allCompleted = true;
+  for (const params of attempts) {
+    const { photo, completed } = await queryWikipediaPhoto(params, size, cleanMake, cleanModel);
+    if (photo) {
+      setCachedData(cacheKey, photo);
+      return photo;
     }
+    if (!completed) allCompleted = false;
   }
 
-  // 2-bosqich: Zaxira API (CarImagery orqali studiya rasmi)
-  try {
-    const carImageryUrl = `https://www.carimagery.com/api.asmx/GetImageUrl?searchTerm=${encodeURIComponent(`${cleanMake}${cleanModel}`)}`;
-    const res = await fetch(carImageryUrl, { signal: AbortSignal.timeout(3000) });
-    if (res.ok) {
-      const xmlText = await res.text();
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-      const imgUrl = xmlDoc.querySelector('string')?.textContent;
-      if (imgUrl && imgUrl.startsWith('http')) {
-        setCachedData(cacheKey, imgUrl);
-        return imgUrl;
-      }
-    }
-  } catch (e) {}
-
+  // Faqat javoblar haqiqatan kelgan bo'lsa "topilmadi" deb keshlaymiz (oflayn holat keshlanmaydi)
+  if (allCompleted) setCachedData(cacheKey, NO_PHOTO);
   return null;
 }
 

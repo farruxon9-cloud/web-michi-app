@@ -1,39 +1,60 @@
 /**
  * 🚗 Michi AI — Vehicle Dynamic Visual & Spec Engine
  * Avtomobil markasi, modeli va kuzov turiga qarab haqiqiy rasmlarni avtomatik render qilish.
+ *
+ * v1.1: Faqat LOKAL (bundled) rasmlar qaytariladi.
+ *  - Avval carimagery API URL'i qaytarilardi — u rasm emas, XML qaytaradi, natijada
+ *    har doim Unsplash'dagi tasodifiy sedan ko'rinardi (yuk mashinasiga ham).
+ *  - Mos lokal rasm bo'lmasa `null` qaytariladi; UI unda VehicleGradientCard ko'rsatadi.
  */
 
-// Premium toifadagi zaxira siluetlar (Unsplash Studio CDN orqali)
-const CATEGORY_FALLBACK_IMAGES = {
-  sedan: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80', // Premium sedan
-  suv: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80',   // SUV
-  wagon: 'https://images.unsplash.com/photo-1541348263662-e0c8de4259ba?auto=format&fit=crop&w=800&q=80', // Touring / Estate
-  kei: 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80',   // Kei-car / Hatchback
-  truck: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=800&q=80', // Truck / Commercial
-  default: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80'
-};
+const PRESET_BASE = '/images/presets/';
+
+// Model nomi bo'yicha aniq lokal rasmlar (tartib muhim: aniqroq nomlar oldin)
+const MODEL_PRESETS = [
+  ['profia', 'hino_profia.jpg'],
+  ['super great', 'fuso_supergreat.jpg'],
+  ['giga', 'isuzu_giga.jpg'],
+  ['harrier', 'toyota_harrier.jpg'],
+  ['skyline', 'nissan_skyline.jpg'],
+  ['hiace', 'toyota_hiace.jpg'],
+  ['probox', 'toyota_probox.jpg'],
+  ['land cruiser 300', 'toyota_landcruiser300.jpg'],
+  ['fr-s', 'toyota_scion_frs.jpg'],
+  ['scion', 'toyota_scion_frs.jpg'],
+];
+
+/** Model nomiga to'liq mos lokal rasm (yo'q bo'lsa null). */
+export function getModelPresetImage(model = '') {
+  const md = String(model || '').toLowerCase().trim();
+  if (!md) return null;
+  const hit = MODEL_PRESETS.find(([needle]) => md.includes(needle));
+  return hit ? PRESET_BASE + hit[1] : null;
+}
+
+/**
+ * Mashina uchun lokal rasm — faqat MODEL nomi mos kelsa.
+ * Tur/kuzov bo'yicha "o'xshash" rasm ataylab berilmaydi: boshqa modelning rasmi
+ * (masalan har qanday sedan uchun Skyline) — aynan tuzatilayotgan xato edi.
+ */
+export function getLocalVehicleImage(vehicle) {
+  if (!vehicle) return null;
+  return getModelPresetImage(vehicle.model);
+}
+
+/** Foydalanuvchi o'zi yuklagan rasmmi (bunday rasm hech qachon avtomatik almashtirilmaydi). */
+export function isUserUploadedPhoto(url) {
+  return typeof url === 'string' && url.startsWith('data:');
+}
 
 class VehicleImageService {
   /**
-   * Avtomobil modeli bo'yicha to'g'ridan-to'g'ri haqiqiy rasmini olish
-   * @param {Object} vehicle - { make: 'BMW', model: '320d', year: 2020, bodyType: 'sedan', color: 'white' }
-   * @returns {string} Rasm URL manzili
+   * Avtomobil uchun zaxira rasm URL'i (faqat lokal).
+   * @param {Object} vehicle - { make, model, type, bodyStyle }
+   * @returns {string|null} Lokal rasm yoki null (UI gradient karta ko'rsatadi)
    */
   getVehicleImageUrl(vehicle) {
-    if (!vehicle) return CATEGORY_FALLBACK_IMAGES.default;
-
-    const make = (vehicle.make || '').toLowerCase().trim();
-    const model = (vehicle.model || '').toLowerCase().trim();
-    const cleanModel = model.replace(/[^a-zA-Z0-9]/g, '');
-
-    // 1. CarImagery ochiq API (Marka va model asosida studiya rasmi)
-    if (make && cleanModel) {
-      return `https://www.carimagery.com/api.asmx/GetImageUrl?searchTerm=${encodeURIComponent(`${vehicle.make}${vehicle.model}`)}`;
-    }
-
-    // 2. Kuzov toifasi bo'yicha zaxira
-    const body = (vehicle.bodyType || 'sedan').toLowerCase();
-    return CATEGORY_FALLBACK_IMAGES[body] || CATEGORY_FALLBACK_IMAGES.default;
+    return getLocalVehicleImage(vehicle);
   }
 
   /**

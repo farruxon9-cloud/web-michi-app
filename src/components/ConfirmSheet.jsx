@@ -23,6 +23,7 @@ export default function ConfirmSheet({
   onConfirm,
   onCancel,
   id = 'confirm-sheet',
+  hideCancel = false,
 }) {
   return (
     <AppSheet open={open} onClose={onCancel} title={title} id={id}>
@@ -31,7 +32,8 @@ export default function ConfirmSheet({
           {message}
         </p>
       )}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: hideCancel ? '1fr' : '1fr 1fr', gap: '10px' }}>
+        {!hideCancel && (
         <button
           type="button"
           id={`${id}-cancel`}
@@ -40,6 +42,7 @@ export default function ConfirmSheet({
         >
           {cancelLabel}
         </button>
+        )}
         <button
           type="button"
           id={`${id}-confirm`}

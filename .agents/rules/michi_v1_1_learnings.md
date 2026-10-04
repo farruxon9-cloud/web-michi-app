@@ -49,8 +49,9 @@ Read this before touching the resume/PDF, profile, applications, dialogs, layout
 ## 6. Dialogs
 - ❌ `window.confirm` / `alert` (native, unstyled, blocked in some WebViews).
 - ✅ Use `ConfirmSheet` (built on `AppSheet`, portaled into `#root` via `getModalRoot()`).
-- Already converted: notification clear, company ad delete.
-- Still TODO: vehicle delete in Profile and the remaining `alert(...)` calls.
+- Already converted: notification clear, company ad delete, vehicle delete / clear-all, vehicle validation & photo errors.
+- Still TODO: the remaining `alert(...)` calls elsewhere in Profile.
+- For info-only messages use `ConfirmSheet` with `hideCancel` + `danger={false}`.
 
 ## 7. Layout / CSS
 - **Floating bars:** never center them with `transform: translateX(-50%)`.
@@ -89,6 +90,24 @@ Read this before touching the resume/PDF, profile, applications, dialogs, layout
   - Abort requests to `api.michi.jp.net` via `page.route`, so the app uses the cached session.
 - **Shell:** heredocs and `/tmp` are blocked. Write files with edit tools and use the brain `scratch/` dir.
   - zsh `--include=*.css` globbing fails; use the grep_search tool instead.
+- **Edit tools:** `view_file` shows a literal `"` inside a line as `\"`. In `TargetContent` write a plain `"`, otherwise the match fails.
+
+## 9b. Vehicles (Phase C)
+- ❌ `getVehicleImageUrl()` returned the carimagery **XML API URL** as an `<img src>` → always broken, then a random Unsplash sedan.
+  - ✅ `src/services/vehicleImageService.js` is local-only: model-matched preset or `null`. `VehiclePhoto.jsx` shows photo → preset → brand gradient card.
+- ❌ Wikipedia search took any first result (company logo, "Sedan" article) and overwrote presets/user photos.
+  - ✅ `isRelevantWikiTitle()` requires the model name in the page title; misses are cached (`NO_PHOTO`), network errors are not.
+  - ✅ Effects never fetch when `photoUrl` exists or a local preset matches (`getLocalVehicleImage`).
+- ❌ Changing make/model/type kept the old model's photo. ✅ `photoForIdentityChange()` (keeps user uploads `data:`).
+- ❌ A network request per keystroke in the model input. ✅ Handlers only set state; the constructor effect debounces.
+- ❌ Catalog picker wrote the **catalog id** over the user's vehicle id and saved immediately (duplicates, plate/color copied, Cancel did nothing).
+  - ✅ `applyCatalogSelection()` keeps the user id, stores `catalogId`, and only fills the form; saving happens on 「保存」.
+- ❌ No validation, unguarded `localStorage.setItem` (quota crash with 5 MB base64 photos).
+  - ✅ `validateVehicle()` (make/model, positive dims, duplicate plate) + `safeSetJSON()`; photos are resized before storing.
+- ❌ Legacy data: `v_2` typed `truck_2t` but named "Giga 10t" with the Giga photo; romaji `'ni'` in the hiragana list.
+  - ✅ `sanitizeVehicles()` repairs on load (dedupes ids, fixes v_2, `'ni'` → `'に'`).
+- Picker `DICT` lacked vi/ne and fell back to Uzbek → now has vi/ne and falls back to English.
+- Shared helpers live in `src/utils/vehicleUtils.js` (unit-tested in `vehicleUtils.test.js`).
 
 ## 10. Commit Checklist (every phase)
 1. `npx vitest run`: all tests pass.

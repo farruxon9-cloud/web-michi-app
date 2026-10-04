@@ -10,7 +10,12 @@ import ResumeBuilder from './ResumeBuilder';
 import AssistHeroShowcase from './AssistHeroShowcase';
 import JapaneseVehiclePickerModal from './JapaneseVehiclePickerModal';
 import { POPULAR_GLOBAL_BRANDS, getModelsForMake, getHDVehiclePhoto } from '../services/vehicleApiService';
-import { vehicleImageService } from '../services/vehicleImageService';
+import { getModelPresetImage, getLocalVehicleImage } from '../services/vehicleImageService';
+import VehiclePhoto from './VehiclePhoto';
+import {
+  VEHICLES_KEY, ACTIVE_VEHICLE_KEY, safeSetJSON, sanitizeVehicles, validateVehicle,
+  upsertVehicle, photoForIdentityChange, applyCatalogSelection, removeVehicle,
+} from '../utils/vehicleUtils';
 import { MASTER_VEHICLE_DATABASE, JAPANESE_AUTOMAKERS_MASTER } from '../data/japaneseVehiclesMaster';
 import ConfirmSheet from './ConfirmSheet';
 import { UndoToast, SelectionBar } from './UndoToast';
@@ -527,53 +532,31 @@ function ProfileContent({
   const [expandedAppId, setExpandedAppId] = useState(null);
   const [aboutTab, setAboutTab] = useState('platform');
   const [isVehiclePickerOpen, setIsVehiclePickerOpen] = useState(false);
+  // In-app sheets (window.confirm/alert o'rniga)
+  const [vehicleDeleteTarget, setVehicleDeleteTarget] = useState(null);
+  const [vehicleClearConfirm, setVehicleClearConfirm] = useState(false);
+  const [vehicleNotice, setVehicleNotice] = useState(null); // i18n kaliti
 
 
   const fileInputRef = useRef(null);
   const vehicleFileInputRef = useRef(null);
 
-  const handleVehiclePhotoUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert(i18n.language === 'ja' ? '画像サイズは5MB以下にしてください。' : 'Rasm hajmi 5MB dan oshmasligi kerak.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        const base64Url = uploadEvent.target.result;
-        setEditVehicleData(prev => ({ ...prev, photoUrl: base64Url }));
-      };
-      reader.readAsDataURL(file);
+  // Rasm ≤800px JPEG'ga siqiladi (~80–150KB): 5MB base64 localStorage'ni to'ldirardi
+  const handleVehiclePhotoUpload = async (e) => {
+    const input = e.target;
+    const file = input?.files?.[0];
+    if (input) input.value = ''; // o'sha faylni qayta tanlash mumkin bo'lsin
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) {
+      setVehicleNotice('vehiclePhotoTooLarge');
+      return;
     }
-  };
-
-  const autoMatchVehiclePhoto = (make = '', model = '', type = '', bodyStyle = '') => {
-    const mk = (make || '').toLowerCase().trim();
-    const md = (model || '').toLowerCase().trim();
-
-    // Check exact match in master database first
-    const masterMatch = MASTER_VEHICLE_DATABASE.find(
-      v => v.make.toLowerCase() === mk && v.model.toLowerCase() === md && v.photoUrl
-    );
-    if (masterMatch && masterMatch.photoUrl) {
-      return masterMatch.photoUrl;
+    try {
+      const dataUrl = await compressImage(file, 800, 800, 0.82);
+      setEditVehicleData(prev => ({ ...prev, photoUrl: dataUrl }));
+    } catch {
+      setVehicleNotice('vehiclePhotoErr');
     }
-
-    // Heavy Trucks presets
-    if (md.includes('profia')) return '/images/presets/hino_profia.jpg';
-    if (md.includes('super great')) return '/images/presets/fuso_supergreat.jpg';
-    if (md.includes('giga')) return '/images/presets/isuzu_giga.jpg';
-
-    // Specific preset matches
-    if (md.includes('harrier')) return '/images/presets/toyota_harrier.jpg';
-    if (md.includes('skyline')) return '/images/presets/nissan_skyline.jpg';
-    if (md.includes('hiace')) return '/images/presets/toyota_hiace.jpg';
-    if (md.includes('probox')) return '/images/presets/toyota_probox.jpg';
-    if (md.includes('land cruiser 300')) return '/images/presets/toyota_landcruiser300.jpg';
-    if (md.includes('fr-s') || md.includes('scion')) return '/images/presets/toyota_scion_frs.jpg';
-
-    return null; // Return null so getHDVehiclePhoto fetches real HD photo dynamically!
   };
 
   const DEFAULT_VEHICLES = [
@@ -605,9 +588,8 @@ function ProfileContent({
       id: 'v_2',
       type: 'truck_2t',
       make: 'Isuzu',
-      model: 'Giga 10t',
-      photoUrl: '/images/presets/isuzu_giga.jpg',
-      bodyStyle: 'box_truck',
+      model: 'Elf',
+      bodyStyle: 'flatbed',
       trim: 'Standard',
       year: '2023',
       color: '#30D158',
@@ -744,35 +726,38 @@ function ProfileContent({
 
   const [myVehicles, setMyVehicles] = useState(() => {
     try {
-      const savedList = localStorage.getItem('michi_user_vehicles');
+      const savedList = localStorage.getItem(VEHICLES_KEY);
       if (savedList) {
-        return JSON.parse(savedList);
+        const repaired = sanitizeVehicles(JSON.parse(savedList));
+        safeSetJSON(VEHICLES_KEY, repaired);
+        return repaired;
       }
-      localStorage.setItem('michi_user_vehicles', JSON.stringify(DEFAULT_VEHICLES));
-      return DEFAULT_VEHICLES;
     } catch {
       return DEFAULT_VEHICLES;
     }
+    safeSetJSON(VEHICLES_KEY, DEFAULT_VEHICLES);
+    return DEFAULT_VEHICLES;
   });
 
   const [myVehicle, setMyVehicle] = useState(() => {
     try {
-      const savedActive = localStorage.getItem('michi_user_vehicle');
+      const savedActive = localStorage.getItem(ACTIVE_VEHICLE_KEY);
       if (savedActive) {
-        return JSON.parse(savedActive);
+        const parsed = JSON.parse(savedActive);
+        // Ro'yxatdagi nusxa ustun (eski v_2 tuzatishi ham shu orqali keladi)
+        const fromList = parsed && myVehicles.find(v => String(v.id) === String(parsed.id));
+        return fromList || sanitizeVehicles([parsed])[0] || null;
       }
-    } catch {}
+    } catch { /* buzilgan JSON — ro'yxatdagi birinchisiga qaytamiz */ }
     
     // Fallback to first vehicle in vehicles list
-    const initial = myVehicles && myVehicles.length > 0 ? myVehicles[0] : DEFAULT_VEHICLES[0];
-    try {
-      localStorage.setItem('michi_user_vehicle', JSON.stringify(initial));
-    } catch {}
+    const initial = myVehicles && myVehicles.length > 0 ? myVehicles[0] : null;
+    if (initial) safeSetJSON(ACTIVE_VEHICLE_KEY, initial);
     return initial;
   });
 
   const [isEditingVehicle, setIsEditingVehicle] = useState(false);
-  const [editVehicleData, setEditVehicleData] = useState({ ...myVehicle });
+  const [editVehicleData, setEditVehicleData] = useState({ ...(myVehicle || {}) });
   const [dynamicModels, setDynamicModels] = useState([]);
 
   // Smooth gesture, swipe, and transition states
@@ -885,91 +870,79 @@ function ProfileContent({
     return () => { isMounted = false; };
   }, [editVehicleData.make]);
 
-  // Automatically fetch & resolve real HD photos from Wikimedia API if photoUrl is missing or fails
+  // Faol mashinada rasm UMUMAN bo'lmasa, HD rasm qidiriladi.
+  // v1.1: lokal preset (/images/presets/) va foydalanuvchi rasmi endi hech qachon almashtirilmaydi —
+  // avval Wikipedia'dagi noto'g'ri rasm tanlangan rasm ustidan yozilardi.
   React.useEffect(() => {
-    if (!myVehicle || !myVehicle.make || !myVehicle.model) return;
+    if (!myVehicle || !myVehicle.make || !myVehicle.model || myVehicle.photoUrl || getLocalVehicleImage(myVehicle)) return;
     let isMounted = true;
+    const { id, make, model } = myVehicle;
+    const patch = (v, hdUrl) =>
+      (v && String(v.id) === String(id) && !v.photoUrl && v.make === make && v.model === model)
+        ? { ...v, photoUrl: hdUrl }
+        : v;
 
-    async function autoResolveHDPhoto() {
-      const needsPhoto = !myVehicle.photoUrl || myVehicle.photoUrl.startsWith('/images/presets/');
-      if (needsPhoto) {
-        try {
-          const hdUrl = await getHDVehiclePhoto(myVehicle.make, myVehicle.model);
-          if (hdUrl && isMounted) {
-            setMyVehicle(prev => {
-              if (!prev) return null;
-              const updated = { ...prev, photoUrl: hdUrl };
-              localStorage.setItem('michi_user_vehicle', JSON.stringify(updated));
-              return updated;
-            });
-            setMyVehicles(prevList => {
-              const updatedList = (prevList || []).map(v => v.id === myVehicle.id ? { ...v, photoUrl: hdUrl } : v);
-              localStorage.setItem('michi_user_vehicles', JSON.stringify(updatedList));
-              return updatedList;
-            });
-          }
-        } catch (e) {
-          console.warn('Failed to resolve HD vehicle photo:', e);
-        }
-      }
-    }
+    getHDVehiclePhoto(make, model).then((hdUrl) => {
+      if (!hdUrl || !isMounted) return;
+      setMyVehicle(prev => {
+        const updated = patch(prev, hdUrl);
+        if (updated !== prev) safeSetJSON(ACTIVE_VEHICLE_KEY, updated);
+        return updated;
+      });
+      setMyVehicles(prevList => {
+        const updatedList = (prevList || []).map(v => patch(v, hdUrl));
+        safeSetJSON(VEHICLES_KEY, updatedList);
+        return updatedList;
+      });
+    }).catch(() => { /* tarmoq xatosi — gradient karta qoladi */ });
 
-    autoResolveHDPhoto();
     return () => { isMounted = false; };
   }, [myVehicle?.make, myVehicle?.model, myVehicle?.id, myVehicle?.photoUrl]);
 
-  // Auto-resolve photos for all vehicles in fleet list
+  // Ro'yxatdagi rasmsiz mashinalar uchun rasm qidirish (funksional yangilash: oraliqdagi tahrirlar yo'qolmaydi)
   React.useEffect(() => {
-    if (!myVehicles || myVehicles.length === 0) return;
+    const pending = (myVehicles || []).filter(v => v && !v.photoUrl && v.make && v.model && !getLocalVehicleImage(v));
+    if (pending.length === 0) return;
     let isMounted = true;
 
-    async function resolveFleetPhotos() {
-      let changed = false;
-      const newList = await Promise.all(myVehicles.map(async (v) => {
-        if ((!v.photoUrl || v.photoUrl.startsWith('/images/presets/')) && v.make && v.model) {
-          try {
-            const hdUrl = await getHDVehiclePhoto(v.make, v.model);
-            if (hdUrl) {
-              changed = true;
-              return { ...v, photoUrl: hdUrl };
-            }
-          } catch {}
-        }
-        return v;
-      }));
+    Promise.all(pending.map(async (v) => ({
+      id: String(v.id), make: v.make, model: v.model,
+      url: await getHDVehiclePhoto(v.make, v.model).catch(() => null),
+    }))).then((results) => {
+      const found = results.filter(r => r.url);
+      if (!isMounted || found.length === 0) return;
+      setMyVehicles(prevList => {
+        const updatedList = (prevList || []).map(v => {
+          const hit = found.find(r => r.id === String(v.id) && r.make === v.make && r.model === v.model);
+          return hit && !v.photoUrl ? { ...v, photoUrl: hit.url } : v;
+        });
+        safeSetJSON(VEHICLES_KEY, updatedList);
+        return updatedList;
+      });
+    });
 
-      if (changed && isMounted) {
-        setMyVehicles(newList);
-        localStorage.setItem('michi_user_vehicles', JSON.stringify(newList));
-      }
-    }
-
-    resolveFleetPhotos();
     return () => { isMounted = false; };
   }, [myVehicles?.length]);
 
-  // Auto-fetch real HD photo for constructor preview whenever make or model changes
+  // Konstruktor: marka/model o'zgarganda (rasm bo'lmasa) HD rasm — 600ms debounce, eski so'rov natijasi qo'llanmaydi
   React.useEffect(() => {
-    if (!isEditingVehicle || !editVehicleData || !editVehicleData.make || !editVehicleData.model) return;
+    if (!isEditingVehicle || !editVehicleData?.make || !editVehicleData?.model || editVehicleData.photoUrl) return;
     let isMounted = true;
+    const { make, model } = editVehicleData;
 
-    async function autoFetchConstructorPhoto() {
-      const needsPhoto = !editVehicleData.photoUrl || editVehicleData.photoUrl.startsWith('/images/presets/');
-      if (needsPhoto) {
-        try {
-          const hdUrl = await getHDVehiclePhoto(editVehicleData.make, editVehicleData.model);
-          if (hdUrl && isMounted) {
-            setEditVehicleData(prev => prev ? ({ ...prev, photoUrl: hdUrl }) : null);
-          }
-        } catch (e) {
-          console.warn('Failed to resolve constructor photo:', e);
+    const timer = setTimeout(async () => {
+      try {
+        const hdUrl = await getHDVehiclePhoto(make, model);
+        if (hdUrl && isMounted) {
+          setEditVehicleData(prev =>
+            (prev && !prev.photoUrl && prev.make === make && prev.model === model) ? { ...prev, photoUrl: hdUrl } : prev
+          );
         }
-      }
-    }
+      } catch { /* tarmoq xatosi — gradient karta qoladi */ }
+    }, 600);
 
-    autoFetchConstructorPhoto();
-    return () => { isMounted = false; };
-  }, [isEditingVehicle, editVehicleData?.make, editVehicleData?.model]);
+    return () => { isMounted = false; clearTimeout(timer); };
+  }, [isEditingVehicle, editVehicleData?.make, editVehicleData?.model, editVehicleData?.photoUrl]);
 
 
 
@@ -982,7 +955,7 @@ function ProfileContent({
   
   const JDM_HIRAGANA = [
     'あ', 'い', 'う', 'え', 'か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ',
-    'た', 'ち', 'つ', 'て', 'と', 'な', 'ni', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'ほ',
+    'た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'ほ',
     'ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ'
   ];
 
@@ -1039,24 +1012,33 @@ function ProfileContent({
   };
 
   const handleSaveVehicle = (e) => {
-    e.preventDefault();
-    setMyVehicle(editVehicleData);
-    localStorage.setItem('michi_user_vehicle', JSON.stringify(editVehicleData));
-    
-    const updatedList = myVehicles.map(v => v.id === editVehicleData.id ? editVehicleData : v);
-    if (!myVehicles.some(v => v.id === editVehicleData.id)) {
-      updatedList.push(editVehicleData);
+    e?.preventDefault?.();
+    // Validatsiya: marka/model majburiy, o'lchamlar musbat, bir xil davlat raqami takrorlanmaydi
+    const errKey = validateVehicle(editVehicleData, myVehicles);
+    if (errKey) {
+      setVehicleNotice(errKey);
+      return;
+    }
+    const toSave = {
+      ...editVehicleData,
+      make: String(editVehicleData.make).trim(),
+      model: String(editVehicleData.model).trim(),
+    };
+    const updatedList = upsertVehicle(myVehicles, toSave);
+    // Avval xotiraga yozamiz: joy tugasa holat o'zgarmaydi va tushunarli xabar chiqadi
+    if (!safeSetJSON(VEHICLES_KEY, updatedList) || !safeSetJSON(ACTIVE_VEHICLE_KEY, toSave)) {
+      setVehicleNotice('vehicleErrStorage');
+      return;
     }
     setMyVehicles(updatedList);
-    localStorage.setItem('michi_user_vehicles', JSON.stringify(updatedList));
-    
+    setMyVehicle(toSave);
     setIsEditingVehicle(false);
-    window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: editVehicleData }));
+    window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: toSave }));
   };
 
   const handleSelectActiveVehicle = (vehicle) => {
     setMyVehicle(vehicle);
-    localStorage.setItem('michi_user_vehicle', JSON.stringify(vehicle));
+    safeSetJSON(ACTIVE_VEHICLE_KEY, vehicle);
     window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: vehicle }));
   };
 
@@ -1089,31 +1071,28 @@ function ProfileContent({
     setIsEditingVehicle(true);
   };
 
+  // O'chirish: avval ilova ichidagi tasdiq oynasi (window.confirm emas)
   const handleDeleteVehicle = (id, event) => {
     if (event) event.stopPropagation();
     const targetVeh = (myVehicles || []).find(v => String(v.id) === String(id));
-    const vehicleName = targetVeh ? `${targetVeh.make} ${targetVeh.model}` : 'Vehicle';
-    const confirmMsg = i18n.language === 'ja' 
-      ? `${vehicleName}を削除しますか？` 
-      : i18n.language === 'en' 
-        ? `Are you sure you want to delete ${vehicleName}?` 
-        : `${vehicleName}ni o'chirishni tasdiqlaysizmi?`;
+    setVehicleDeleteTarget(targetVeh || { id });
+  };
 
-    if (window.confirm(confirmMsg)) {
-      const updated = (myVehicles || []).filter(v => String(v.id) !== String(id));
-      setMyVehicles(updated);
-      localStorage.setItem('michi_user_vehicles', JSON.stringify(updated));
-      
-      if (myVehicle && String(myVehicle.id) === String(id)) {
-        const nextActive = updated.length > 0 ? updated[0] : null;
-        setMyVehicle(nextActive);
-        if (nextActive) {
-          localStorage.setItem('michi_user_vehicle', JSON.stringify(nextActive));
-        } else {
-          localStorage.removeItem('michi_user_vehicle');
-        }
-        window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: nextActive }));
+  const confirmDeleteVehicle = () => {
+    const target = vehicleDeleteTarget;
+    setVehicleDeleteTarget(null);
+    if (!target) return;
+    const { list: updated, active: nextActive, activeChanged } = removeVehicle(myVehicles, myVehicle, target.id);
+    setMyVehicles(updated);
+    safeSetJSON(VEHICLES_KEY, updated);
+    if (activeChanged) {
+      setMyVehicle(nextActive);
+      if (nextActive) {
+        safeSetJSON(ACTIVE_VEHICLE_KEY, nextActive);
+      } else {
+        try { localStorage.removeItem(ACTIVE_VEHICLE_KEY); } catch { /* storage yo'q */ }
       }
+      window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: nextActive }));
     }
   };
 
@@ -1121,8 +1100,8 @@ function ProfileContent({
     setMyVehicles([]);
     setMyVehicle(null);
     setIsEditingVehicle(false);
-    localStorage.setItem('michi_user_vehicles', JSON.stringify([]));
-    localStorage.removeItem('michi_user_vehicle');
+    safeSetJSON(VEHICLES_KEY, []);
+    try { localStorage.removeItem(ACTIVE_VEHICLE_KEY); } catch { /* storage yo'q */ }
     window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: null }));
   };
 
@@ -5925,32 +5904,12 @@ const getLicenseLabel = (type) => {
                           pointerEvents: 'none',
                           zIndex: 2
                         }}></div>
-                        {myVehicle.photoUrl ? (
-                          <img 
-                            src={myVehicle.photoUrl} 
-                            alt={`${myVehicle.make || ''} ${myVehicle.model || 'Vehicle'}`}
-                            onError={async (e) => {
-                              e.currentTarget.onerror = null;
-                              const fallbackUrl = vehicleImageService.getVehicleImageUrl(myVehicle);
-                              if (fallbackUrl && fallbackUrl !== myVehicle.photoUrl) {
-                                e.currentTarget.src = fallbackUrl;
-                              } else {
-                                e.currentTarget.src = 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80';
-                              }
-                            }}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                          />
-                        ) : (
-                          <img 
-                            src={vehicleImageService.getVehicleImageUrl(myVehicle)} 
-                            alt={`${myVehicle.make || ''} ${myVehicle.model || 'Vehicle'}`}
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80';
-                            }}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                          />
-                        )}
+                        {/* v1.1: photoUrl → lokal preset → gradient karta (Unsplash'dagi tasodifiy sedan o'rniga) */}
+                        <VehiclePhoto
+                          key={`${myVehicle.id}|${myVehicle.photoUrl || ''}|${myVehicle.model || ''}`}
+                          vehicle={myVehicle}
+                          height={myVehicle.photoUrl ? 110 : 86}
+                        />
                       </div>
 
                       {/* JDM License Plate Display */}
@@ -6038,28 +5997,28 @@ const getLicenseLabel = (type) => {
                           <span style={{ fontSize: '9.5px', color: '#0A84FF', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
                             📏 {getProfileLangText('heightLabel')}
                           </span>
-                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.height} m</span>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.height || '-'} m</span>
                         </div>
 
                         <div style={{ background: 'var(--card-bg, rgba(255, 255, 255, 0.04))', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '3px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
                           <span style={{ fontSize: '9.5px', color: '#30D158', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
                             ↔️ {getProfileLangText('widthLabel')}
                           </span>
-                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.width} m</span>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.width || '-'} m</span>
                         </div>
 
                         <div style={{ background: 'var(--card-bg, rgba(255, 255, 255, 0.04))', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '3px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
                           <span style={{ fontSize: '9.5px', color: '#FF9500', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
                             🏎️ {getProfileLangText('lengthLabel')}
                           </span>
-                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.length} m</span>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.length || '-'} m</span>
                         </div>
 
                         <div style={{ background: 'var(--card-bg, rgba(255, 255, 255, 0.04))', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '3px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
                           <span style={{ fontSize: '9.5px', color: '#BF5AF2', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}>
                             ⚖️ {getProfileLangText('weightLabel')}
                           </span>
-                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.weight} t</span>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)' }}>{myVehicle.weight || '-'} t</span>
                         </div>
 
                         <div style={{ background: 'var(--card-bg, rgba(255, 255, 255, 0.04))', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '3px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
@@ -6220,6 +6179,7 @@ const getLicenseLabel = (type) => {
                                 )}
                                 {/* Visible Delete Button on EVERY vehicle tab */}
                                 <span
+                                  id={`vehicle-delete-${veh.id}`}
                                   role="button"
                                   tabIndex={0}
                                   onClick={(e) => {
@@ -6373,32 +6333,11 @@ const getLicenseLabel = (type) => {
                         overflow: 'hidden',
                         borderRadius: '14px'
                       }}>
-                        {editVehicleData.photoUrl ? (
-                          <img 
-                            src={editVehicleData.photoUrl} 
-                            alt={`${editVehicleData.make || ''} ${editVehicleData.model || 'Vehicle'}`}
-                            onError={async (e) => {
-                              e.currentTarget.onerror = null;
-                              const fallbackUrl = vehicleImageService.getVehicleImageUrl(editVehicleData);
-                              if (fallbackUrl && fallbackUrl !== editVehicleData.photoUrl) {
-                                e.currentTarget.src = fallbackUrl;
-                              } else {
-                                e.currentTarget.src = 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80';
-                              }
-                            }}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                          />
-                        ) : (
-                          <img 
-                            src={vehicleImageService.getVehicleImageUrl(editVehicleData)} 
-                            alt={`${editVehicleData.make || ''} ${editVehicleData.model || 'Vehicle'}`}
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80';
-                            }}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                          />
-                        )}
+                        <VehiclePhoto
+                          key={`${editVehicleData.id || 'new'}|${editVehicleData.photoUrl || ''}|${editVehicleData.model || ''}`}
+                          vehicle={editVehicleData}
+                          height={editVehicleData.photoUrl ? 110 : 86}
+                        />
                         <span style={{
                           position: 'absolute',
                           top: '6px',
@@ -6474,9 +6413,9 @@ const getLicenseLabel = (type) => {
 
                       <button 
                         type="button"
-                        onClick={async () => {
-                          const photo = await getHDVehiclePhoto('Isuzu', 'Giga');
-                          setEditVehicleData(prev => ({ ...prev, make: 'Isuzu', model: 'Giga', type: 'truck_10t', bodyStyle: 'wing_body', photoUrl: photo }));
+                        onClick={() => {
+                          // Lokal HD rasm darhol (tarmoqsiz) — Wikipedia natijasi bilan almashtirilmaydi
+                          setEditVehicleData(prev => ({ ...prev, make: 'Isuzu', model: 'Giga', type: 'truck_10t', bodyStyle: 'wing_body', photoUrl: getModelPresetImage('Giga'), ...getVehiclePresetDimensions('truck_10t', 'wing_body') }));
                         }}
                         style={{
                           padding: '5px 10px',
@@ -6499,9 +6438,8 @@ const getLicenseLabel = (type) => {
 
                       <button 
                         type="button"
-                        onClick={async () => {
-                          const photo = await getHDVehiclePhoto('Hino', 'Profia');
-                          setEditVehicleData(prev => ({ ...prev, make: 'Hino', model: 'Profia', type: 'truck_10t', bodyStyle: 'wing_body', photoUrl: photo }));
+                        onClick={() => {
+                          setEditVehicleData(prev => ({ ...prev, make: 'Hino', model: 'Profia', type: 'truck_10t', bodyStyle: 'wing_body', photoUrl: getModelPresetImage('Profia'), ...getVehiclePresetDimensions('truck_10t', 'wing_body') }));
                         }}
                         style={{
                           padding: '5px 10px',
@@ -6524,9 +6462,8 @@ const getLicenseLabel = (type) => {
 
                       <button 
                         type="button"
-                        onClick={async () => {
-                          const photo = await getHDVehiclePhoto('Toyota', 'Harrier');
-                          setEditVehicleData(prev => ({ ...prev, make: 'Toyota', model: 'Harrier', type: 'car', bodyStyle: 'suv', photoUrl: photo }));
+                        onClick={() => {
+                          setEditVehicleData(prev => ({ ...prev, make: 'Toyota', model: 'Harrier', type: 'car', bodyStyle: 'suv', photoUrl: getModelPresetImage('Harrier'), ...getVehiclePresetDimensions('car', 'suv') }));
                         }}
                         style={{
                           padding: '5px 10px',
@@ -6549,9 +6486,8 @@ const getLicenseLabel = (type) => {
 
                       <button 
                         type="button"
-                        onClick={async () => {
-                          const photo = await getHDVehiclePhoto('Nissan', 'Skyline');
-                          setEditVehicleData(prev => ({ ...prev, make: 'Nissan', model: 'Skyline', type: 'car', bodyStyle: 'sedan', photoUrl: photo }));
+                        onClick={() => {
+                          setEditVehicleData(prev => ({ ...prev, make: 'Nissan', model: 'Skyline', type: 'car', bodyStyle: 'sedan', photoUrl: getModelPresetImage('Skyline'), ...getVehiclePresetDimensions('car', 'sedan') }));
                         }}
                         style={{
                           padding: '5px 10px',
@@ -6599,14 +6535,11 @@ const getLicenseLabel = (type) => {
                           
                           const dims = getVehiclePresetDimensions(val, defaultStyle);
                           
-                          setEditVehicleData(prev => ({ 
-                             ...prev, 
-                             type: val,
-                             make: mk,
-                             model: md,
-                             bodyStyle: defaultStyle,
-                             ...dims
-                          }));
+                          setEditVehicleData(prev => {
+                            const next = { ...prev, type: val, make: mk, model: md, bodyStyle: defaultStyle, ...dims };
+                            // Tur o'zgarsa eski modelning rasmi qolmaydi (foydalanuvchi rasmi bundan mustasno)
+                            return { ...next, photoUrl: photoForIdentityChange(prev, next) };
+                          });
                         }}
                         style={{
                           background: 'var(--card-bg, #2c2c2e)',
@@ -6693,7 +6626,7 @@ const getLicenseLabel = (type) => {
                       label={t('vehicleMake')}
                       value={editVehicleData.make}
                       options={ALL_GLOBAL_BRANDS}
-                      onChange={async (val) => {
+                      onChange={(val) => {
                         let defaultModel = val === 'Boshqa' ? '' : 'Other';
                         let defaultBody = editVehicleData.bodyStyle || 'sedan';
                         
@@ -6704,19 +6637,11 @@ const getLicenseLabel = (type) => {
                         }
 
                         const dims = getVehiclePresetDimensions(editVehicleData.type, defaultBody);
-                        let realPhoto = preset?.photoUrl || null;
-                        if (!realPhoto && val !== 'Boshqa') {
-                          realPhoto = await getHDVehiclePhoto(val, defaultModel);
-                        }
-
-                        setEditVehicleData(prev => ({ 
-                          ...prev, 
-                          make: val, 
-                          model: defaultModel,
-                          bodyStyle: defaultBody,
-                          photoUrl: realPhoto || null,
-                          ...dims
-                        }));
+                        // Tarmoq so'rovi yo'q: rasm bo'lmasa konstruktor effekti (debounce) HD rasmni topadi
+                        setEditVehicleData(prev => {
+                          const next = { ...prev, make: val, model: defaultModel, bodyStyle: defaultBody, ...dims };
+                          return { ...next, photoUrl: preset?.photoUrl || photoForIdentityChange(prev, next) };
+                        });
                       }}
                     />
 
@@ -6727,24 +6652,16 @@ const getLicenseLabel = (type) => {
                             label={t('vehicleModel')}
                             value={editVehicleData.model}
                             options={dynamicModels.length > 0 ? dynamicModels : ['Other']}
-                            onChange={async (val) => {
+                            onChange={(val) => {
                               const preset = MASTER_VEHICLE_DATABASE.find(
                                 v => v.make.toLowerCase() === editVehicleData.make.toLowerCase() && v.model.toLowerCase() === val.toLowerCase()
                               );
                               let matchedBody = preset?.bodyStyle || editVehicleData.bodyStyle;
                               const dims = getVehiclePresetDimensions(editVehicleData.type, matchedBody);
-                              let photo = preset?.photoUrl || null;
-                              if (!photo && editVehicleData.make && val) {
-                                photo = await getHDVehiclePhoto(editVehicleData.make, val);
-                              }
-
-                              setEditVehicleData(prev => ({ 
-                                ...prev, 
-                                model: val, 
-                                bodyStyle: matchedBody,
-                                photoUrl: photo || null,
-                                ...dims
-                              }));
+                              setEditVehicleData(prev => {
+                                const next = { ...prev, model: val, bodyStyle: matchedBody, ...dims };
+                                return { ...next, photoUrl: preset?.photoUrl || photoForIdentityChange(prev, next) };
+                              });
                             }}
                           />
 
@@ -6752,17 +6669,13 @@ const getLicenseLabel = (type) => {
                             <input 
                               type="text"
                               placeholder="Model nomini kiriting (masalan: Skyline, Supra...)"
-                              onChange={async (e) => {
+                              onChange={(e) => {
                                 const customModel = e.target.value;
-                                let photo = null;
-                                if (customModel.trim().length >= 2) {
-                                  photo = await getHDVehiclePhoto(editVehicleData.make, customModel);
-                                }
-                                setEditVehicleData(prev => ({
-                                  ...prev,
-                                  model: customModel,
-                                  photoUrl: photo || null
-                                }));
+                                // Har bir harf uchun so'rov yuborilmaydi — konstruktor effekti 600ms debounce bilan qidiradi
+                                setEditVehicleData(prev => {
+                                  const next = { ...prev, model: customModel };
+                                  return { ...next, photoUrl: photoForIdentityChange(prev, next) };
+                                });
                               }}
                               style={{
                                 background: 'var(--card-bg, #ffffff)',
@@ -6786,13 +6699,12 @@ const getLicenseLabel = (type) => {
                             type="text"
                             placeholder="Model nomini kiriting..."
                             value={editVehicleData.model}
-                            onChange={async (e) => {
+                            onChange={(e) => {
                               const val = e.target.value;
-                              let photo = null;
-                              if (val.trim().length >= 2) {
-                                photo = await getHDVehiclePhoto(editVehicleData.make || 'car', val);
-                              }
-                              setEditVehicleData(prev => ({ ...prev, model: val, photoUrl: photo || null }));
+                              setEditVehicleData(prev => {
+                                const next = { ...prev, model: val };
+                                return { ...next, photoUrl: photoForIdentityChange(prev, next) };
+                              });
                             }}
                             style={{
                               background: 'var(--card-bg, #ffffff)',
@@ -6821,9 +6733,9 @@ const getLicenseLabel = (type) => {
                         {/* Hokkaido */}
                         <option value="札幌" /><option value="函館" /><option value="旭川" /><option value="室蘭" /><option value="釧路" /><option value="帯広" /><option value="北見" /><option value="小樽" /><option value="苫小牧" /><option value="知床" />
                         {/* Tohoku */}
-                        <option value="青森" /><option value="八户" /><option value="盛岡" /><option value="岩手" /><option value="平泉" /><option value="仙台" /><option value="宮城" /><option value="秋田" /><option value="山形" /><option value="庄内" /><option value="福島" /><option value="会津" /><option value="郡山" /><option value="いわき" />
+                        <option value="青森" /><option value="八戸" /><option value="盛岡" /><option value="岩手" /><option value="平泉" /><option value="仙台" /><option value="宮城" /><option value="秋田" /><option value="山形" /><option value="庄内" /><option value="福島" /><option value="会津" /><option value="郡山" /><option value="いわき" />
                         {/* Kanto */}
-                        <option value="水戸" /><option value="土浦" /><option value="つくば" /><option value="宇tsunomiya" /><option value="とちぎ" /><option value="那須" /><option value="前橋" /><option value="高崎" /><option value="群馬" /><option value="大宮" /><option value="熊谷" /><option value="川口" /><option value="所沢" /><option value="川越" /><option value="春日部" /><option value="越谷" /><option value="千葉" /><option value="成田" /><option value="習志野" /><option value="袖ヶ浦" /><option value="野田" /><option value="柏" /><option value="松戸" /><option value="市川" /><option value="船橋" /><option value="市原" /><option value="品川" /><option value="世田谷" /><option value="練馬" /><option value="杉並" /><option value="板橋" /><option value="足立" /><option value="江東" /><option value="葛飾" /><option value="八王子" /><option value="多摩" /><option value="横浜" /><option value="川崎" /><option value="相模" /><option value="湘南" /><option value="小田原" />
+                        <option value="水戸" /><option value="土浦" /><option value="つくば" /><option value="宇都宮" /><option value="とちぎ" /><option value="那須" /><option value="前橋" /><option value="高崎" /><option value="群馬" /><option value="大宮" /><option value="熊谷" /><option value="川口" /><option value="所沢" /><option value="川越" /><option value="春日部" /><option value="越谷" /><option value="千葉" /><option value="成田" /><option value="習志野" /><option value="袖ヶ浦" /><option value="野田" /><option value="柏" /><option value="松戸" /><option value="市川" /><option value="船橋" /><option value="市原" /><option value="品川" /><option value="世田谷" /><option value="練馬" /><option value="杉並" /><option value="板橋" /><option value="足立" /><option value="江東" /><option value="葛飾" /><option value="八王子" /><option value="多摩" /><option value="横浜" /><option value="川崎" /><option value="相模" /><option value="湘南" /><option value="小田原" />
                         {/* Chubu */}
                         <option value="新潟" /><option value="長岡" /><option value="上越" /><option value="富山" /><option value="金沢" /><option value="石川" /><option value="福井" /><option value="山梨" /><option value="富士山" /><option value="長野" /><option value="松本" /><option value="諏訪" /><option value="岐阜" /><option value="飛騨" /><option value="静岡" /><option value="沼津" /><option value="浜松" /><option value="伊豆" /><option value="豊橋" /><option value="岡崎" /><option value="豊田" /><option value="名古屋" /><option value="尾張小牧" /><option value="一宮" /><option value="春日井" /><option value="三河" /><option value="津" /><option value="鈴鹿" /><option value="四日市" /><option value="伊勢志摩" />
                         {/* Kinki */}
@@ -7219,11 +7131,7 @@ const getLicenseLabel = (type) => {
                           gridColumn: 'span 2',
                           marginTop: '6px'
                         }}
-                        onClick={() => {
-                          if (confirm(i18n.language === 'ja' ? '自家用車情報をすべて削除し、「自家用車なし」に設定しますか？' : i18n.language === 'en' ? 'Remove all personal vehicle info and set No Personal Vehicle?' : 'Shaxsiy transport maʻlumotlarini oʻchirib, "Shaxsiy transportim yoʻq" holatiga oʻtkazasizmi?')) {
-                            handleClearAllVehicles();
-                          }
-                        }}
+                        onClick={() => setVehicleClearConfirm(true)}
                       >
                         🗑️ {i18n.language === 'ja' ? '自家用車なしに設定 (全削除)' : i18n.language === 'en' ? 'Set No Personal Vehicle (Remove All)' : 'Shaxsiy transportim yoʻq (Umuman oʻchirish)'}
                       </button>
@@ -7270,6 +7178,7 @@ const getLicenseLabel = (type) => {
                           gap: '6px',
                           boxShadow: '0 4px 12px rgba(10, 132, 255, 0.3)'
                         }}
+                        id="vehicle-save-btn"
                         onClick={handleSaveVehicle}
                       >
                         💾 {t('save')}
@@ -7500,41 +7409,53 @@ const getLicenseLabel = (type) => {
       <JapaneseVehiclePickerModal
         isOpen={isVehiclePickerOpen}
         onClose={() => setIsVehiclePickerOpen(false)}
-        selectedVehicleId={editVehicleData?.id || myVehicle?.id}
-        onSelectVehicle={async (veh) => {
-          let resolvedPhoto = veh.photoUrl || veh._resolvedPhoto || null;
-          if (!resolvedPhoto && veh.make && veh.model) {
-            resolvedPhoto = await getHDVehiclePhoto(veh.make, veh.model);
-          }
-
-          const updated = {
-            ...(myVehicle || {}),
-            ...(editVehicleData || {}),
-            id: veh.id || editVehicleData?.id || `veh_${Date.now()}`,
-            make: veh.make,
-            model: veh.model,
-            type: veh.type || editVehicleData.type || 'car',
-            bodyStyle: veh.bodyStyle || editVehicleData.bodyStyle || 'sedan',
-            year: veh.year || editVehicleData.year || '2024',
-            photoUrl: resolvedPhoto || editVehicleData.photoUrl,
-            ...(veh.specs || {})
-          };
-          // Permanently save to active vehicle state & localStorage
-          setMyVehicle(updated);
-          setEditVehicleData(updated);
-          try {
-            localStorage.setItem('michi_user_vehicle', JSON.stringify(updated));
-            const updatedList = (myVehicles || []).map(v => v.id === updated.id ? updated : v);
-            if (!updatedList.some(v => v.id === updated.id)) {
-              updatedList.push(updated);
-            }
-            setMyVehicles(updatedList);
-            localStorage.setItem('michi_user_vehicles', JSON.stringify(updatedList));
-          } catch (e) {
-            console.warn('[Profile] LocalStorage save warning:', e);
-          }
-          window.dispatchEvent(new CustomEvent('michi-vehicle-updated', { detail: updated }));
+        selectedVehicleId={editVehicleData?.catalogId}
+        onSelectVehicle={(veh) => {
+          // v1.1: faqat tahrirlash formasini to'ldiradi. Avval katalog ID'si foydalanuvchi mashinasi
+          // ID'si o'rniga yozilib, darhol saqlanardi: dublikat paydo bo'lar, raqam/rang boshqa mashinadan
+          // ko'char va 「キャンセル」 hech narsani bekor qilmasdi. Endi saqlash faqat 「保存」 orqali.
+          const resolvedPhoto = veh.photoUrl || veh._resolvedPhoto || null;
+          setEditVehicleData(prev => applyCatalogSelection(prev, veh, resolvedPhoto));
         }}
+      />
+
+      {/* Mashinani o'chirish — ilova ichidagi tasdiq oynasi */}
+      <ConfirmSheet
+        open={Boolean(vehicleDeleteTarget)}
+        id="vehicle-delete-sheet"
+        title={t('vehicleDeleteTitle', {
+          name: `${vehicleDeleteTarget?.make || ''} ${vehicleDeleteTarget?.model || ''}`.trim(),
+          defaultValue: '{{name}}を削除しますか？',
+        })}
+        message={t('deleteAdIrreversible', 'この操作は取り消せません。')}
+        confirmLabel={t('delete', '削除')}
+        cancelLabel={t('cancel', 'キャンセル')}
+        onConfirm={confirmDeleteVehicle}
+        onCancel={() => setVehicleDeleteTarget(null)}
+      />
+
+      {/* Barcha mashinalarni o'chirish */}
+      <ConfirmSheet
+        open={vehicleClearConfirm}
+        id="vehicle-clear-sheet"
+        title={t('vehicleClearAllTitle', '自家用車をすべて削除しますか？')}
+        message={t('vehicleClearAllMsg', '自家用車情報をすべて削除し、「自家用車なし」に設定します。')}
+        confirmLabel={t('delete', '削除')}
+        cancelLabel={t('cancel', 'キャンセル')}
+        onConfirm={() => { setVehicleClearConfirm(false); handleClearAllVehicles(); }}
+        onCancel={() => setVehicleClearConfirm(false)}
+      />
+
+      {/* Xabar (alert() o'rniga): validatsiya, rasm, xotira xatolari */}
+      <ConfirmSheet
+        open={Boolean(vehicleNotice)}
+        id="vehicle-notice-sheet"
+        title={vehicleNotice ? t(vehicleNotice) : ''}
+        confirmLabel={t('closeBtn', '閉じる')}
+        danger={false}
+        hideCancel
+        onConfirm={() => setVehicleNotice(null)}
+        onCancel={() => setVehicleNotice(null)}
       />
     </div>
   );

@@ -6,26 +6,30 @@ import { MASTER_VEHICLE_DATABASE, JAPANESE_HISTORICAL_ERAS } from '../data/japan
 import LazyVehicleImage from './LazyVehicleImage';
 
 const DICT = {
-  catalogTitle: { ja: '自動車カタログ', uz: 'Avtomobil Katalogi', en: 'Vehicle Catalog', ru: 'Каталог автомобилей', zh: '汽车目录' },
-  catalogSub: { ja: '12,340+ グローバルブランド & リアルHD写真統合', uz: "12,340+ Global Brendlar & Real HD Foto Integratsiya", en: '12,340+ Global Brands & Real HD Photo Integration', ru: '12 340+ мировых брендов и HD-фото', zh: '12,340+ 全球品牌与高清图片集成' },
+  catalogTitle: { ja: '自動車カタログ', uz: 'Avtomobil Katalogi', en: 'Vehicle Catalog', ru: 'Каталог автомобилей', zh: '汽车目录', vi: 'Danh mục xe', ne: 'सवारी क्याटलग' },
+  catalogSub: { ja: '12,340+ グローバルブランド & リアルHD写真統合', uz: "12,340+ Global Brendlar & Real HD Foto Integratsiya", en: '12,340+ Global Brands & Real HD Photo Integration', ru: '12 340+ мировых брендов и HD-фото', zh: '12,340+ 全球品牌与高清图片集成', vi: '12.340+ thương hiệu toàn cầu & ảnh HD thực tế', ne: '12,340+ विश्वव्यापी ब्रान्ड र वास्तविक HD फोटो' },
   searchPlaceholder: {
     ja: (make) => `${make}のモデルを検索 (Corolla, Supra, X5)...`,
     uz: (make) => `${make} modellari boʻyicha qidiruv (Corolla, Supra, X5)...`,
     en: (make) => `Search ${make} models (Corolla, Supra, X5)...`,
     ru: (make) => `Поиск моделей ${make} (Corolla, Supra, X5)...`,
-    zh: (make) => `搜索 ${make} 车型 (Corolla, Supra, X5)...`
+    zh: (make) => `搜索 ${make} 车型 (Corolla, Supra, X5)...`,
+    vi: (make) => `Tìm mẫu xe ${make} (Corolla, Supra, X5)...`,
+    ne: (make) => `${make} मोडेल खोज्नुहोस् (Corolla, Supra, X5)...`
   },
   loadingText: {
     ja: (make) => `${make}フリートを読み込み中...`,
     uz: (make) => `${make} floti yuklanmoqda...`,
     en: (make) => `Loading ${make} fleet...`,
     ru: (make) => `Загрузка автопарка ${make}...`,
-    zh: (make) => `正在加载 ${make} 车队...`
+    zh: (make) => `正在加载 ${make} 车队...`,
+    vi: (make) => `Đang tải xe ${make}...`,
+    ne: (make) => `${make} सवारीहरू लोड हुँदैछ...`
   },
-  noVehiclesFound: { ja: '該当する車両が見つかりません。', uz: 'Ushbu filtr boʻyicha avtomobil topilmadi.', en: 'No vehicles found for this filter.', ru: 'Транспортные средства не найдены.', zh: '未找到符合条件的车辆。' },
-  modelsLoaded: { ja: 'モデル読み込み完了', uz: 'model yuklandi', en: 'models loaded', ru: 'моделей загружено', zh: '个车型已加载' },
-  closeBtn: { ja: '閉じる', uz: 'Yopish', en: 'Close', ru: 'Закрыть', zh: '关闭' },
-  clearSearch: { ja: '検索をクリア', uz: 'Qidiruvni tozalash', en: 'Clear search', ru: 'Очистить поиск', zh: '清除搜索' }
+  noVehiclesFound: { ja: '該当する車両が見つかりません。', uz: 'Ushbu filtr boʻyicha avtomobil topilmadi.', en: 'No vehicles found for this filter.', ru: 'Транспортные средства не найдены.', zh: '未找到符合条件的车辆。', vi: 'Không tìm thấy xe phù hợp.', ne: 'यो फिल्टरमा कुनै सवारी भेटिएन।' },
+  modelsLoaded: { ja: 'モデル読み込み完了', uz: 'model yuklandi', en: 'models loaded', ru: 'моделей загружено', zh: '个车型已加载', vi: 'mẫu xe đã tải', ne: 'मोडेल लोड भयो' },
+  closeBtn: { ja: '閉じる', uz: 'Yopish', en: 'Close', ru: 'Закрыть', zh: '关闭', vi: 'Đóng', ne: 'बन्द गर्नुहोस्' },
+  clearSearch: { ja: '検索をクリア', uz: 'Qidiruvni tozalash', en: 'Clear search', ru: 'Очистить поиск', zh: '清除搜索', vi: 'Xóa tìm kiếm', ne: 'खोज खाली गर्नुहोस्' }
 };
 
 export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVehicle, selectedVehicleId }) {
@@ -120,14 +124,16 @@ export default function JapaneseVehiclePickerModal({ isOpen, onClose, onSelectVe
 
   if (!isOpen) return null;
 
-  const titleText = DICT.catalogTitle[currentLang] || DICT.catalogTitle.uz;
-  const subText = DICT.catalogSub[currentLang] || DICT.catalogSub.uz;
-  const closeText = DICT.closeBtn[currentLang] || DICT.closeBtn.uz;
-  const searchPlaceholderText = (DICT.searchPlaceholder[currentLang] || DICT.searchPlaceholder.uz)(selectedMake);
-  const loadingMsg = (DICT.loadingText[currentLang] || DICT.loadingText.uz)(selectedMake);
-  const emptyMsg = DICT.noVehiclesFound[currentLang] || DICT.noVehiclesFound.uz;
-  const loadedSuffix = DICT.modelsLoaded[currentLang] || DICT.modelsLoaded.uz;
-  const clearSearchText = DICT.clearSearch[currentLang] || DICT.clearSearch.uz;
+  // vi/ne qo'shildi; noma'lum til — inglizcha (avval o'zbekcha chiqardi)
+  const pick = (entry) => entry[currentLang] || entry.en;
+  const titleText = pick(DICT.catalogTitle);
+  const subText = pick(DICT.catalogSub);
+  const closeText = pick(DICT.closeBtn);
+  const searchPlaceholderText = pick(DICT.searchPlaceholder)(selectedMake);
+  const loadingMsg = pick(DICT.loadingText)(selectedMake);
+  const emptyMsg = pick(DICT.noVehiclesFound);
+  const loadedSuffix = pick(DICT.modelsLoaded);
+  const clearSearchText = pick(DICT.clearSearch);
 
   return (
     <div 
