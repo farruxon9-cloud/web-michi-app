@@ -1,5 +1,8 @@
 # Michi App Full Codebase Audit & Architectural Rules
 
+> [!NOTE]
+> Historical audit log (2026-09). Where it conflicts with [AGENTS.md](../../AGENTS.md) or docs/PAGE_MAP.md, those win. Some file names below (e.g. `ShoukaiReferrals.jsx`, `Settings.jsx`) were later moved to `src/components/profile/*Page.jsx`.
+
 This file documents all technical, architectural, layout, component fixes, and error patterns learned during the 39-component audit and pair programming sessions.
 
 ---
@@ -27,7 +30,7 @@ This file documents all technical, architectural, layout, component fixes, and e
 - **`DriverFeed.jsx`**:
   - **Flickering Skeleton Fix**: Resolved infinite re-render loop by wrapping `filteredJobs` in `useMemo` and utilizing a module-level constant (`const EMPTY_ARRAY = []`) for default array props. Removed artificial 200ms `setLocalLoading` delay.
   - **`JobMapModal` Restoration**: Rendered via `createPortal` into `#root`. Leaflet Voyager Carto tiles (`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/...`) restored. Removed `document.body.style.overflow` mutation to prevent scroll jump.
-- **`DrivingAcademy.jsx`**: License category filters (AT, MT, Heavy Truck, Towing), school course pricing, 5-language dictionary, 64px clearance spacer.
+- **`DrivingAcademy.jsx`**: License category filters (AT, MT, Heavy Truck, Towing), school course pricing, 7-language dictionary, 92px clearance spacer.
 - **`CompanyHome.jsx`**: Multi-view layout for job posting, local vs Tokutei Ginou (SSW) international visa recruitment, driving school ad creation, and applicant overview.
 - **`Dashboard.jsx`**: Bento hero carousel slider, calendar week selector, Michi Voice AI card, 3D JDM Truck Navigation banner, lofi music player.
 
@@ -52,7 +55,7 @@ This file documents all technical, architectural, layout, component fixes, and e
 
 ### C. Profile & Employer Subcomponents
 - **`ProfileMain.jsx` & `Profile.jsx`**: Unified user profile management, vehicle Fleet picker modal integration, Shoukai referral bonus tracking, 76px trailing clearance spacer.
-- **`ShoukaiReferrals.jsx`**: 5-language dictionary (`ja`, `uz`, `en`, `ru`, `zh`), referral link copy to clipboard, QR code generator, bonus tier table.
+- **`ShoukaiReferrals.jsx`**: 7-language dictionary (`ja`, `uz`, `en`, `ru`, `zh`, `vi`, `ne`), referral link copy to clipboard, QR code generator, bonus tier table.
 - **`Settings.jsx`**: Sound & vibration haptic toggles, dark/light theme switcher, `aria-pressed` states, keyboard navigation.
 - **`SavedItems.jsx`**: Bookmarked jobs & driving school courses, bookmarkManager sync, keyboard accessibility.
 - **`Notifications.jsx`**: Read/unread status filtering, mark all read button, localized notification cards.
@@ -74,7 +77,7 @@ This file documents all technical, architectural, layout, component fixes, and e
 ---
 
 ## 4. 5-Language Localization Standard (`ja`, `uz`, `en`, `ru`, `zh`)
-- All UI text must provide 5-language coverage via dictionary objects (`DICT`) or `i18n.t()`.
+- All UI text must provide 7-language coverage via dictionary objects (`DICT`) or `i18n.t()`.
 - Always include fallback logic (`DICT[key]?.[lang] || DICT[key]?.uz || t(key, '')`).
 
 ---

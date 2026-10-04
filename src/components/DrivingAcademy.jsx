@@ -47,6 +47,9 @@ import { PREFECTURES, CITIES_BY_PREFECTURE, TRAIN_LINES_BY_PREFECTURE, getAllTra
 import CustomInlineDropdown from './CustomInlineDropdown';
 import './DrivingAcademy.css';
 import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinadi
+import { fetchSchoolsFromBackend } from '../services/schoolService';
+import { normalizeSchoolPosting } from '../utils/jobPostingNormalizer';
+
 
 
 /**
@@ -335,8 +338,34 @@ export default function DrivingAcademy({
   }, [searchQuery, selectedPrefecture, selectedCitiesList, selectedStations, selectedCourses, selectedStyles, selectedLang, selectedPriceRange, selectedFeatures]);
 
 
+  const [apiSchools, setApiSchools] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchSchoolsFromBackend()
+      .then(remoteSchools => {
+        if (!isMounted) return;
+        if (Array.isArray(remoteSchools) && remoteSchools.length > 0) {
+          const normalized = remoteSchools.map(normalizeSchoolPosting).filter(Boolean);
+          setApiSchools(normalized);
+        }
+      })
+      .catch(err => {
+        console.warn('[DrivingAcademy] GET /api/schools fetch error:', err.message);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const activeSchoolsList = React.useMemo(() => {
+    return apiSchools.length > 0 ? apiSchools : (schools || []);
+  }, [apiSchools, schools]);
+
   // Filtrlash: qidiruv, kurs, uslub, prefektura, shaharlar, til, narx va imkoniyatlar bo'yicha
-  const filteredSchools = schools.filter(school => {
+  const filteredSchools = activeSchoolsList.filter(school => {
+
     const query = (searchQuery || '').toLowerCase();
     const localizedName = t(`school_${school.id}_name`, school.name).toLowerCase();
     const localizedLocation = t(`school_${school.id}_location`, school.location).toLowerCase();
@@ -402,37 +431,22 @@ export default function DrivingAcademy({
     /** isSaved — Ushbu maktab profilning "Saqlanganlar" bo'limida bormi */
     const isSaved = profileData?.savedItems?.schools?.some(s => s.id === school.id);
 
+    const LANG_LABELS_MAP = {
+      ja: { JP: '日本語', JAPANESE: '日本語', EN: '英語', ENGLISH: '英語', UZ: 'ウズベク語', UZBEK: 'ウズベク語', RU: 'ロシア語', RUSSIAN: 'ロシア語', ZH: '中国語', CHINESE: '中国語', VN: 'ベトナム語', VIETNAMESE: 'ベトナム語', NE: 'ネパール語', NEPALI: 'ネパール語' },
+      en: { JP: 'Japanese', JAPANESE: 'Japanese', EN: 'English', ENGLISH: 'English', UZ: 'Uzbek', UZBEK: 'Uzbek', RU: 'Russian', RUSSIAN: 'Russian', ZH: 'Chinese', CHINESE: 'Chinese', VN: 'Vietnamese', VIETNAMESE: 'Vietnamese', NE: 'Nepali', NEPALI: 'Nepali' },
+      uz: { JP: 'Yapon tili', JAPANESE: 'Yapon tili', EN: 'Ingliz tili', ENGLISH: 'Ingliz tili', UZ: "O'zbek tili", UZBEK: "O'zbek tili", RU: 'Rus tili', RUSSIAN: 'Rus tili', ZH: 'Xitoy tili', CHINESE: 'Xitoy tili', VN: 'Vyetnam tili', VIETNAMESE: 'Vyetnam tili', NE: 'Nepal tili', NEPALI: 'Nepal tili' },
+      ru: { JP: 'Японский', JAPANESE: 'Японский', EN: 'Английский', ENGLISH: 'Английский', UZ: 'Узбекский', UZBEK: 'Узбекский', RU: 'Русский', RUSSIAN: 'Русский', ZH: 'Китайский', CHINESE: 'Китайский', VN: 'Вьетнамский', VIETNAMESE: 'Вьетнамский', NE: 'Непальский', NEPALI: 'Непальский' },
+      zh: { JP: '日语', JAPANESE: '日语', EN: '英语', ENGLISH: '英语', UZ: '乌兹别克语', UZBEK: '乌兹别克语', RU: '俄语', RUSSIAN: '俄语', ZH: '中文', CHINESE: '中文', VN: '越南语', VIETNAMESE: '越南语', NE: '尼泊尔语', NEPALI: '尼泊尔语' },
+      vi: { JP: 'Tiếng Nhật', JAPANESE: 'Tiếng Nhật', EN: 'Tiếng Anh', ENGLISH: 'Tiếng Anh', UZ: 'Tiếng Uzbek', UZBEK: 'Tiếng Uzbek', RU: 'Tiếng Nga', RUSSIAN: 'Tiếng Nga', ZH: 'Tiếng Trung', CHINESE: 'Tiếng Trung', VN: 'Tiếng Việt', VIETNAMESE: 'Tiếng Việt', NE: 'Tiếng Nepal', NEPALI: 'Tiếng Nepal' },
+      ne: { JP: 'जापानी', JAPANESE: 'जापानी', EN: 'अंग्रेजी', ENGLISH: 'अंग्रेजी', UZ: 'उज्बेक', UZBEK: 'उज्बेक', RU: 'रूसी', RUSSIAN: 'रूसी', ZH: 'चिनियाँ', CHINESE: 'चिनियाँ', VN: 'भियतनामी', VIETNAMESE: 'भियतनामी', NE: 'नेपाली', NEPALI: 'नेपाली' }
+    };
+
     const getLanguageLabel = (langCode) => {
       if (!langCode) return '';
       const code = String(langCode).trim().toUpperCase();
-      const currentLang = i18n.language || 'ja';
-      
-      if (currentLang === 'ja') {
-        if (code === 'JP' || code === 'JAPANESE') return '日本語';
-        if (code === 'EN' || code === 'ENGLISH') return '英語';
-        if (code === 'UZ' || code === 'UZBEK') return 'ウズベク語';
-        if (code === 'RU' || code === 'RUSSIAN') return 'ロシア語';
-        if (code === 'ZH' || code === 'CHINESE') return '中国語';
-        if (code === 'VN' || code === 'VIETNAMESE') return 'ベトナム語';
-        return code;
-      } else if (currentLang === 'en') {
-        if (code === 'JP' || code === 'JAPANESE') return 'Japanese';
-        if (code === 'EN' || code === 'ENGLISH') return 'English';
-        if (code === 'UZ' || code === 'UZBEK') return 'Uzbek';
-        if (code === 'RU' || code === 'RUSSIAN') return 'Russian';
-        if (code === 'ZH' || code === 'CHINESE') return 'Chinese';
-        if (code === 'VN' || code === 'VIETNAMESE') return 'Vietnamese';
-        return code;
-      } else {
-        // Uzbek locale default
-        if (code === 'JP' || code === 'JAPANESE') return 'Yapon tili';
-        if (code === 'EN' || code === 'ENGLISH') return 'Ingliz tili';
-        if (code === 'UZ' || code === 'UZBEK') return "O'zbek tili";
-        if (code === 'RU' || code === 'RUSSIAN') return 'Rus tili';
-        if (code === 'ZH' || code === 'CHINESE') return 'Xitoy tili';
-        if (code === 'VN' || code === 'VIETNAMESE') return 'Vyetnam tili';
-        return code;
-      }
+      const currentLang = (i18n.language || 'ja').substring(0, 2).toLowerCase();
+      const map = LANG_LABELS_MAP[currentLang] || LANG_LABELS_MAP.ja;
+      return map[code] || code;
     };
 
     const getLanguageFlag = (langCode) => {
@@ -444,6 +458,7 @@ export default function DrivingAcademy({
       if (code === 'RU' || code === 'RUSSIAN') return '🇷🇺';
       if (code === 'ZH' || code === 'CHINESE') return '🇨🇳';
       if (code === 'VN' || code === 'VIETNAMESE') return '🇻🇳';
+      if (code === 'NE' || code === 'NEPALI') return '🇳🇵';
       return '🌐';
     };
 
@@ -510,7 +525,7 @@ export default function DrivingAcademy({
               <div className="detail-section instruction-languages-section" style={{ marginBottom: '16px' }}>
                 <h4 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '800', color: 'var(--primary)', letterSpacing: '0.03em' }}>
                   <Globe size={15} color="var(--primary)" />
-                  {i18n.language === 'ja' ? '対応言語' : i18n.language === 'en' ? 'Languages Offered' : 'O\'qitish tillari'}
+                  {t('languagesOffered', '対応言語')}
                 </h4>
                 <div className="categories-row" style={{ marginTop: '8px', gap: '8px' }}>
                   {school.langs.map(lang => (

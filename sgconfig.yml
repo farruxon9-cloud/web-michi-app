@@ -1,0 +1,4 @@
+# ast-grep project config: parse .js/.jsx as TSX so JSX patterns work without --lang.
+ruleDirs: []
+languageGlobs:
+  tsx: ["*.jsx", "*.js", "*.mjs"]

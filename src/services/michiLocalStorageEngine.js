@@ -204,6 +204,10 @@ class MichiLocalStorageEngine {
     await this.dbReadyPromise;
     localStorage.removeItem('michi_chat_history');
     localStorage.removeItem('michi_ai_memory_cache');
+    localStorage.removeItem('michi_cached_jobs');
+    localStorage.removeItem('michi_cached_schools');
+    localStorage.removeItem('michi_pending_job_posts');
+    localStorage.removeItem('michi_pending_school_posts');
 
     if (this.db) {
       try {
@@ -213,6 +217,111 @@ class MichiLocalStorageEngine {
     }
     return true;
   }
+
+  // ============================================================
+  // FAZA 3: JOBS & SCHOOLS LOCAL CACHING AND OFFLINE QUEUE
+  // ============================================================
+
+  cacheJobs(jobsList) {
+    try {
+      if (Array.isArray(jobsList)) {
+        localStorage.setItem('michi_cached_jobs', JSON.stringify({
+          timestamp: Date.now(),
+          data: jobsList
+        }));
+      }
+    } catch (err) {
+      console.warn('[MichiLocalStorage] Cache jobs error:', err);
+    }
+  }
+
+  getCachedJobs() {
+    try {
+      const raw = localStorage.getItem('michi_cached_jobs');
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed.data) ? parsed.data : [];
+    } catch {
+      return [];
+    }
+  }
+
+  cacheSchools(schoolsList) {
+    try {
+      if (Array.isArray(schoolsList)) {
+        localStorage.setItem('michi_cached_schools', JSON.stringify({
+          timestamp: Date.now(),
+          data: schoolsList
+        }));
+      }
+    } catch (err) {
+      console.warn('[MichiLocalStorage] Cache schools error:', err);
+    }
+  }
+
+  getCachedSchools() {
+    try {
+      const raw = localStorage.getItem('michi_cached_schools');
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed.data) ? parsed.data : [];
+    } catch {
+      return [];
+    }
+  }
+
+  queuePendingJobPost(jobPayload) {
+    try {
+      const pending = this.getPendingJobPosts();
+      pending.push({
+        ...jobPayload,
+        _clientTimestamp: Date.now()
+      });
+      localStorage.setItem('michi_pending_job_posts', JSON.stringify(pending));
+    } catch (err) {
+      console.warn('[MichiLocalStorage] Queue job post error:', err);
+    }
+  }
+
+  getPendingJobPosts() {
+    try {
+      const raw = localStorage.getItem('michi_pending_job_posts');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  clearPendingJobPosts() {
+    localStorage.removeItem('michi_pending_job_posts');
+  }
+
+  queuePendingSchoolPost(schoolPayload) {
+    try {
+      const pending = this.getPendingSchoolPosts();
+      pending.push({
+        ...schoolPayload,
+        _clientTimestamp: Date.now()
+      });
+      localStorage.setItem('michi_pending_school_posts', JSON.stringify(pending));
+    } catch (err) {
+      console.warn('[MichiLocalStorage] Queue school post error:', err);
+    }
+  }
+
+  getPendingSchoolPosts() {
+    try {
+      const raw = localStorage.getItem('michi_pending_school_posts');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  clearPendingSchoolPosts() {
+    localStorage.removeItem('michi_pending_school_posts');
+  }
 }
 
 export const michiLocalStorageEngine = new MichiLocalStorageEngine();
+

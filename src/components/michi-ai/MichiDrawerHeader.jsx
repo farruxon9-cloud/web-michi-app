@@ -31,11 +31,34 @@ export default function MichiDrawerHeader({
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span className={`voice-drawer-status-dot ${status}`}></span>
             <span className="voice-drawer-status-text">
-              {status === 'thinking' 
-                ? (speechLang.startsWith('ja') ? '考え中...' : speechLang === 'uz' ? "O'ylamoqda..." : 'Thinking...') 
-                : status === 'speaking' 
-                ? (speechLang.startsWith('ja') ? '話し中...' : speechLang === 'uz' ? 'Gapirmoqda...' : 'Speaking...') 
-                : (speechLang.startsWith('ja') ? '準備完了' : speechLang === 'uz' ? 'Tayyor' : 'Ready')}
+              {(() => {
+                const lang = (speechLang || 'ja').substring(0, 2).toLowerCase();
+                if (status === 'thinking') {
+                  if (lang === 'ja') return '考え中...';
+                  if (lang === 'uz') return "O'ylamoqda...";
+                  if (lang === 'ru') return 'Думаю...';
+                  if (lang === 'zh') return '思考中...';
+                  if (lang === 'vi') return 'Đang suy nghĩ...';
+                  if (lang === 'ne') return 'सोच्दैछ...';
+                  return 'Thinking...';
+                }
+                if (status === 'speaking') {
+                  if (lang === 'ja') return '話し中...';
+                  if (lang === 'uz') return 'Gapirmoqda...';
+                  if (lang === 'ru') return 'Говорю...';
+                  if (lang === 'zh') return '说话中...';
+                  if (lang === 'vi') return 'Đang nói...';
+                  if (lang === 'ne') return 'बोल्दैछ...';
+                  return 'Speaking...';
+                }
+                if (lang === 'ja') return '準備完了';
+                if (lang === 'uz') return 'Tayyor';
+                if (lang === 'ru') return 'Готов';
+                if (lang === 'zh') return '准备就绪';
+                if (lang === 'vi') return 'Sẵn sàng';
+                if (lang === 'ne') return 'तयार छ';
+                return 'Ready';
+              })()}
             </span>
           </div>
         </div>

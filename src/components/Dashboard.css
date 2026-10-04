@@ -1407,7 +1407,7 @@ html.dark-mode .ambient-light {
 /* ====== DESKTOP 768PX+ COMPACT CONTAINER BOUNDS ====== */
 @media (min-width: 768px) {
   .dashboard-container {
-    max-width: 820px !important;
+    max-width: var(--app-max-w, 820px) !important;
     margin: 0 auto !important;
     width: 100% !important;
     box-sizing: border-box !important;

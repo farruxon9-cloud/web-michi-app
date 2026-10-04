@@ -144,6 +144,38 @@
 
 ---
 
+### 🔀 1.13. On-Demand Branch Merge Protocol (Strict Explicit User Command Only)
+- **Foydalanuvchi Buyrug'i**:
+  > *"endi merge qilish haqida alohida bir donagina aytaman qolgan marta qilma iltimos."*
+- **Learn Qoidasi va Yechimi**:
+  1. AI Agentlar har bir bajarilgan topshiriqdan so'ng **avtomatik ravishda boshqa branchlarga (`start-1.0`, `start-1.0a`, `b`, `web`, va h.k.) merge bajarishi QAT'IYAN TAQIQLANADI**.
+  2. Barcha ishlar faqat va faqat **`web-1`** branchida olib boriladi va saqlanadi.
+  3. Branchlarni alohida merge qilish faqat va faqat foydalanuvchi alohida xabarda **aniq "merge qilib ber"** deb buyruq bergandagina amalga oshiriladi.
+
+---
+
+### 🚛 1.14. Jobs Central API Service Protocol (`michiJobsApiService.js`)
+- **Foydalanuvchi Buyrug'i**:
+  > *"Base API URL: https://api.michi.jp.net, Headers: Content-Type: application/json, Accept: application/json. GET /api/jobs (?prefecture=Tokyo&license=oogata&minSalary=350000&q=Sagawa), POST /api/jobs, GET /api/jobs/:id"*
+- **Learn Qoidasi va Yechimi**:
+  1. `michiJobsApiService.js` xizmati `https://api.michi.jp.net` serveriga `Content-Type: application/json` va `Accept: application/json` sarlavhalari bilan ulangan.
+  2. `POST /api/jobs` e'loni serverga yuborilishidan oldin FAZA 1 dagi `validateJobPayload` middleware validatsiyasidan o'tkazilib, faqat to'g'ri e mekin e'lonlar yuboriladi. Noto'g'ri e'londa `400 Bad Request` xatoligi qaytariladi.
+  3. `GET /api/jobs` uchun `buildJobsQueryUrl` yordamida `prefecture`, `license`, `minSalary` hamda `q` parametrlari to'g'ri qidiruv qatoriga o'giriladi.
+
+---
+
+### 📄 1.15. `履歴書` Rezyume Builder (`ResumeBuilder.jsx` / `activePage === 'resume_builder'`)
+- **Foydalanuvchi Buyrug'i**:
+  > *"rezyumeni yuklab olish va yoki ko`rish tugmalari pastki menyuning tagida qolib ketmoqda. scroll qilinganda qoida va sandartlarimizdagidek 12 px oraqli masofada to`xtash kerak edi."*
+- **Yuzaga Kelgan Xatolik**:
+  `ResumeBuilder.jsx` oxirida trailing spacer yo'q edi, shuning uchun `PDFダウンロード` / `別タブで表示` tugmalari bor oxirgi `.step-content` kartasi scroll oxirida `BottomNav` ostiga 60px kirib qolardi.
+- **Learn Qoidasi va Yechimi**:
+  1. `.resume-builder-container` ichida, `.resume-builder-body` dan keyin **`72px`** trailing clearance spacer o'rnatildi (konteynerning o'z `padding: 12px` i bilan birga).
+  2. Playwright o'lchovi (oxirgi karta pastki cheti → `.bottom-nav` yuqori cheti): 390px va 1024px da **12px**, 320px da 18px.
+  3. Spacer qiymatini taxmin qilmasdan, avval haqiqiy masofani o'lchab, keyin `spacer = joriy spacer + (12 - o'lchangan gap)` formulasi bilan hisoblash shart.
+
+---
+
 ## 🛠️ 2. Bo'lajak AI Agentlar Uchun Qat'iy Ishlash Protokoli (`Agent Execution Checklist`)
 
 Har bir AI agent loyihada topshiriq bajarayotganda quyidagi ketma-ketlikni ko'r-ko'rona buzmasdan bajarishi shart:
@@ -152,5 +184,6 @@ Har bir AI agent loyihada topshiriq bajarayotganda quyidagi ketma-ketlikni ko'r-
 2. **Standard Back Button Dock Rule**: Barcha sub-sahifalar va modallardagi Orqaga qaytish tugmasi yuqoridagi 1:1 sticky container (`40px x 40px`, `borderRadius: 50%`, `backdropFilter: blur(20px)`, `boxShadow: 0 4px 14px rgba(0,0,0,0.1)`) standartida bo'lishi shart.
 3. **Clearance Math Rule**: Har bir masofa o'zgarganda `BottomNav` (76px balandlik) hamda fixed tugmalar balandligiga **12px visual gap** qo'shib spacer balandligini hisoblash.
 4. **Defensive Code Standard**: Har bir prop uchun safe default fallback funksiyalar va `localStorage` fallbacklar qo mekin.
-5. **Unit Test Verification**: Har bir o'zgarishdan so'ng `npm test -- --run` komandasini yurgizib, barcha 90/90 vitest testlari 100% PASS berishini tekshirish.
+5. **Unit Test Verification**: Har bir o'zgarishdan so'ng `npm test -- --run` komandasini yurgizib, barcha vitest testlari 100% PASS berishini tekshirish (yoki `npm run check`).
 6. **Learn Record & Map Persistence**: Yangi o'rganilgan qoidani ushbu faylga (`.agents/rules/michi-subpage-spacing-and-scope.md`), [AGENTS.md](file:///Users/kanoatovfarrux/michiappforjapan/AGENTS.md), [GEMINI.md](file:///Users/kanoatovfarrux/michiappforjapan/GEMINI.md) hamda [codebase_map.md](file:///Users/kanoatovfarrux/michiappforjapan/codebase_map.md) fayllariga yozib saqlash.
+7. **Explicit Merge Command Protocol**: Barcha ishlar va commitlar faqat `web-1` branchida bajariladi. Foydalanuvchi alohida va aniq "merge qilib ber" deb so'ramaguncha boshqa branchlarga (`start-1.0`, `b`, `web`...) avtomatik merge qilish QAT'IYAN TAQIQLANADI!

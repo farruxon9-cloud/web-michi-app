@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { getModalRoot } from '../AppSheet';
 import MichiDrawerHeader from './MichiDrawerHeader';
 import MichiQuickChips from './MichiQuickChips';
 import MichiActivationCard from './MichiActivationCard';
@@ -94,5 +95,5 @@ export default function MichiSideDrawer({
     </div>
   );
 
-  return createPortal(drawerContent, document.body);
+  return createPortal(drawerContent, getModalRoot() || document.body);
 }

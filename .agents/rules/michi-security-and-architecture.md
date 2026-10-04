@@ -11,3 +11,8 @@
 - **Sub-page Clearance Uniformity & Scope Isolation**: Ensure sub-page container variants (e.g. `.profile-container.sub-page-view`) align container CSS `padding-bottom` with JSX end-of-block inline spacers (`height: '12px'`). Always scope spacing edits strictly to the requested page (`Profile.jsx`) without altering global CSS variables or unrelated page containers.
 - **Dynamic Bounding Rect Calculations**: Calculate edge offsets dynamically using `getBoundingClientRect()` of container elements instead of hardcoded CSS calc formulas that break on resize.
 - **Defensive Prop Destructuring & State Fallbacks**: Always provide default fallback parameters in component signatures (e.g. `speechLang = 'ja'`, `drawerInput = ''`, `soundSettings = { sound: true, vibration: true }`, `onLogout = () => {}`) and create local state with `localStorage` persistence fallback for optional toggles (`notificationSound`, `showProfileBadges`) to prevent unhandled `TypeError: fn is not a function` crashes.
+
+## 3. Speech-To-Text (STT) & Input Scope Protocol
+- **Strict Input Buffering**: During WebSpeech / local STT dictation (`localSTT.startListening`), `onResult` must update ONLY the bottom text input state (`setDrawerInput`), NEVER the chat feed transcript state (`setTranscript`).
+- **Explicit Submission Guard**: `setTranscript` and AI Gateway dispatch must ONLY execute inside `handleSendText` upon explicit user interaction (clicking the active send button or pressing Enter).
+

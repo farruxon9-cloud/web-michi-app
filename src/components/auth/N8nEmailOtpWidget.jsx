@@ -83,7 +83,7 @@ export default function N8nEmailOtpWidget({
       {isEmailVerified ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#30D158', fontWeight: 'bold', fontSize: '14px', padding: '10px 14px', background: 'rgba(48, 209, 88, 0.12)', borderRadius: '12px', border: '1px solid rgba(48, 209, 88, 0.35)', boxShadow: '0 4px 12px rgba(48, 209, 88, 0.15)' }}>
           <CheckCircle2 size={20} color="#30D158" />
-          <span>{t('emailVerifiedBadge', '✅ メールアドレス認証完了')}</span>
+          <span>{t('emailVerifiedBadge', 'メール認証済み')}</span>
         </div>
       ) : (
         <div>

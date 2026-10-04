@@ -1,62 +1,60 @@
-# Michi App Workspace Guidelines & Audited Modules Summary
+# AGENTS.md — Michi App (single source of truth for AI agents)
 
-This repository represents the Michi Japan Logistics Web Application. All core components, services, sub-pages, and UI modules have been systematically audited, optimized, localized (5 languages), and tested.
+React 19 + Vite 8 + Capacitor 8 PWA. **Frontend only** — backend is `https://api.michi.jp.net` (never write backend code).
+User writes in Uzbek → answer in Uzbek, short, with clickable `file://` links.
 
-## 1. Layout, Spacing & Docking Standards
-1. **820px Desktop Web Canvas (`src/index.css`)**: The app is designed as an 820px max-width Desktop Web Canvas (`max-width: 820px; margin: 0 auto;` with ambient background blobs in light mode). NEVER narrow `#root` or `.app-layout` to a 430px mobile container.
-2. **Scrolling Contract (`src/App.css`)**: `.main-content` MUST maintain `overflow-y: auto;` and `-webkit-overflow-scrolling: touch;`. Never use `overflow: hidden` on `.main-content`.
-3. **Trailing Clearance Spacers (Clearance Math Protocol)**:
-   - **`Dashboard`**, **`DriverFeed`**, **`DrivingAcademy`**: **`92px`** spacer (`<div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />`) so bottom cards halt cleanly 12px above floating `BottomNav`.
-   - **`CompanyHome` (`マイ掲載一覧`)**: **`76px`** spacer (`<div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />`) so job posting buttons (`publishJob`/`publishSchoolAd`) halt 12px clear of floating `BottomNav`.
-   - **Profile Sub-pages (`Profile.jsx`)**: `about`, `settings`, `applications`, `my_shoukai` use **`86px`** spacers; `personalInfo` (`会社情報`) uses **`82px`** spacer; main profile view logout button uses **`86px`** spacer.
-4. **Filter Drawer Search CTA Spacer (`DriverFeed.jsx` & `DrivingAcademy.jsx`)**:
-   - Filter drawer content uses a **`160px`** trailing clearance spacer with the floating search CTA dock positioned at **`bottom: 96px`**, guaranteeing 12px visual clearance between the search button top edge and the last filter container.
-5. **AI Side Drawer Panel (`VoiceAssistant.css` & `MichiDrawerTrigger.jsx`)**:
-   - AI Hub drawer is right-aligned (`max-width: 440px; right: 0; top: 0; bottom: 0;`).
-   - Floating trigger `minY` bound is set to `110px` to clear the 56px `.global-header`.
-6. **Driver Feed Performance (`DriverFeed.jsx`)**:
-   - `filteredJobs` must be wrapped in `useMemo`.
-   - Use `const EMPTY_ARRAY = []` for default array props.
-   - Do NOT modify `document.body.style.overflow` inside Leaflet map modals.
+## 0. Token-minimal workflow (do this, in this order)
+1. **Find the owner file** — open [docs/PAGE_MAP.md](docs/PAGE_MAP.md) (screen → file, CSS, tests, spacer).
+2. **Ask the graph, not grep** — MCP `graphify` tools (`query_graph`, `get_node`, `get_neighbors`, `shortest_path`)
+   or CLI `graphify query "<question>"`, `graphify explain "<Symbol>"`, `graphify path "A" "B"`.
+3. **Read by line range only.** Files > 800 lines are listed in PAGE_MAP §3 — never read them whole.
+4. **Structural search/replace** — `ast-grep` (`sg`) instead of regex for JSX/JS (e.g. `ast-grep -p '<ResumeBuilder $$$ />' src`).
+5. **Edit only what was asked** (scope rule below). Then `npm run check` (or `npm run check:fast` while iterating).
+6. UI change → Playwright screenshot + measure (see skill `michi-change`). Commit locally.
 
-## 2. Audited & Verified Components (39 Files)
-- **Core Views**: `Dashboard.jsx`, `DriverFeed.jsx`, `DrivingAcademy.jsx`, `CompanyHome.jsx`, `JobDetail.jsx`, `RoleSelect.jsx`
-- **Michi AI Suite**: `VoiceAssistant.jsx`, `VoiceAssistant.css`, `MichiDrawerTrigger.jsx`, `MichiChatPanel.jsx`, `AssistHeroShowcase.jsx`, plus 9 specialized AI assistant cards (`CandidateMatchingCard`, `CareerAdvancementCard`, `DocumentTranslationCard`, `ExamPrepCard`, `InterviewPrepCard`, `SalaryCalculatorCard`, `TrafficRulesCard`, `VisaAssistantCard`, `WorkplaceJapaneseCard`)
-- **Profile Subpages**: `Profile.jsx`, `ProfileMain.jsx`, `ShoukaiReferrals.jsx`, `Settings.jsx`, `SavedItems.jsx`, `Notifications.jsx`, `MyAds.jsx`, `Applications.jsx`, `EmployeeManagement.jsx`
-- **JDM Fleet & Vehicle**: `JapaneseVehiclePickerModal.jsx`, `LazyVehicleImage.jsx`, `VehicleGradientCard.jsx`, `JDMNavigation.jsx`, `JDMNavigationSearch.jsx`
-- **Engine Services**: `michiApiService.js`, `authSecurityService.js`, `vehicleApiService.js`
+Full procedure: skill [.agents/skills/michi-change/SKILL.md](.agents/skills/michi-change/SKILL.md).
 
-## 3. Code Quality & AI Agent Learn Protocol
-- Maintain 100% unit test pass rate (`npm test -- --run`).
-- Local commits only on `web-1` branch. **NEVER execute `git push`**.
-- Support 5 languages: Japanese (`ja`), Uzbek (`uz`), English (`en`), Russian (`ru`), Chinese (`zh`).
-- **AI Learn & Scope Protocol**: AI agents MUST always execute strictly targeted modifications, calculate exact clearance math, document error causes in `.agents/rules/`, and map all created/modified files in `codebase_map.md`.
+## 1. Hard rules
+| Rule | Detail |
+|---|---|
+| Branch | Work on **`web-1`**. **`git push` and `git merge` only on the user's explicit command.** |
+| Scope | Change only the requested screen/component. Never touch global `src/index.css` / `src/App.css`, main colors or classNames unless asked. State every visual change explicitly. |
+| i18n | **7 locales**: `ja, uz, en, ru, zh, vi, ne` (`src/locales/*.js`). Every new key in all 7, no duplicates. `t('key', { name, defaultValue })`. |
+| Design | Keep the user's design 1:1 ([user-design-fidelity](.agents/rules/user-design-fidelity.md)). |
+| Security / API | [michi_api_security_invariants](.agents/rules/michi_api_security_invariants.md) — no secrets in bundle, all calls via `apiFetch`, no OTP bypass. |
+| Honesty | Verify before claiming done. Report numbers (tests, measured px), not adjectives. |
+| Mirror | `web-start-michi-app/` is synced automatically by the pre-commit hook. **Never edit it directly.** |
+| Comments | Preserve existing comments/docstrings unrelated to the change. |
 
-## 4. Documented Error Patterns, Anti-Patterns & Defensive Fixes
-1. **Fixed Positioning inside Centered 820px Canvas**:
-   - **Error**: `position: fixed; left: 14px;` causes floating CTA docks to align to the viewport left edge on desktop displays.
-   - **Fix**: Always use `position: fixed; left: 50%; transform: translateX(-50%); width: calc(100% - 28px); maxWidth: 792px;` so fixed elements stay dead-centered on desktop (820px) and mobile.
-2. **Floating CTA Dock & BottomNav Touch/Overlap Bug**:
-   - **Error**: CTA dock at `bottom: 84px` touches the top border of `BottomNav`.
-   - **Fix**: Set floating CTA dock at `bottom: 96px` to maintain a 12px vertical gap above `BottomNav`.
-3. **Filter Drawer CTA Search Button & Last Container Touch Bug**:
-   - **Error**: Trailing spacer of 140px caused the last filter container to collide with/overlap the fixed search CTA button when scrolled down to the end.
-   - **Fix**: Set filter drawer clearance spacer to **`160px`**, halting the last container 12px clear of the search button.
-4. **Missing Callback Prop Crashes (`TypeError: fn is not a function`)**:
-   - **Error**: Optional toggles like `notificationSound` or `showProfileBadges` crashing when parent component omits props.
-   - **Fix**: Provide default fallback parameters (`onLogout = () => {}`) and internal `useState` + `localStorage` persistence fallbacks.
-5. **Infinite Re-render & Flickering Skeleton Loop (`DriverFeed.jsx`)**:
-   - **Error**: Inline array props or un-memoized state triggering constant re-renders.
-   - **Fix**: Memoize computed lists with `useMemo` and use module-level constant arrays (`const EMPTY_ARRAY = []`).
-6. **Global `document.body` Overflow Mutation Bug (`JobMapModal`)**:
-   - **Error**: Setting `document.body.style.overflow = 'hidden'` resets page scroll position on modal close.
-   - **Fix**: Render modals via `createPortal` into `#root` and handle scroll containment strictly in CSS.
-7. **Voice Assistant Multilingual Status Localization Bug**:
-   - **Error**: When `speechLang` is set to Japanese (`ja`), STT status bubble showed hardcoded Uzbek fallback text (`Tinglanmoqda...`).
-   - **Fix**: Use `getListeningStatusText` and `getThinkingStatusText` functions in `VoiceAssistant.jsx` and `MichiDrawerHeader.jsx` to dynamically render status text matching `speechLang` (`ja`: `聞き取り中...`, `uz`: `Tinglanmoqda...`, `en`: `Listening...`).
-8. **STT Auto-Send Prevention & Explicit Send Button Protocol**:
-   - **Requirement**: Prevent accidental or incomplete spoken phrases from triggering automatic API queries.
-   - **Fix**: STT populates input text fields live. Auto-dispatch on speech completion is disabled. API requests to `michiApiService.sendChatMessage` are strictly sent only when the user clicks the explicit **Send (`Jo'natish` / `送信`)** button.
-9. **Premium Glass-Gradient User & AI Avatar Icons**:
-   - **Requirement**: Replace plain dot indicators with modern, professional 3D glass gradient avatar icons.
-   - **Fix**: Implemented 22px x 22px `.bubble-avatar` badges with Lucide icons: User (`<User size={12} />` with warm orange gradient), AI (`<Bot size={12} />` with futuristic purple-pink gradient), Listening (`<Mic size={12} />` emerald gradient with pulse), and Thinking (`<Sparkles size={12} />` cobalt gradient with 360° rotation).
+## 2. Layout contract (BottomNav clearance = 12px)
+- Canvas: 820px max-width (`src/index.css`); `.main-content` keeps `overflow-y: auto`.
+- Last element must stop **12px above the floating BottomNav**. Spacer pattern:
+  `<div aria-hidden="true" style={{ height: 'Npx', minHeight: 'Npx', width: '100%', flexShrink: 0, clear: 'both' }} />`
+- Current N per screen is in PAGE_MAP (column *Spacer*). **Never guess N: measure** the gap with Playwright, then
+  `N = current N + (12 − measured gap)`.
+- Fixed CTA docks: `left: 50%; transform: translateX(-50%)`, `bottom: 96px`. Filter drawers: 160px spacer.
+- Per-page history and user quotes: [michi-subpage-spacing-and-scope](.agents/rules/michi-subpage-spacing-and-scope.md).
+
+## 3. Commands
+| Command | What |
+|---|---|
+| `npm run check` | lint (errors) + tests + i18n + build + bundle scan + PAGE_MAP — one compact table |
+| `npm run check:fast` | same without build |
+| `npm run map` | regenerate `docs/PAGE_MAP.md` |
+| `npm run graph` | rebuild graph (AST, free). Also runs automatically after every commit |
+| `npm run sync:web-start -- --status` | how far the mirror has diverged |
+| `npm run hooks` | (re)install git hooks in a fresh clone |
+
+Commit gate (pre-commit hook, automatic): eslint on staged files blocks on errors; scope warning; mirror sync.
+
+## 4. Known pitfalls (short — details in `.agents/rules/`)
+- React-compiler lint: do not pass ref-closure handlers through helper functions; write them inline.
+- Playwright: click BottomNav via `page.mouse.click(x, y)`; menu items via `el.click()` in `page.evaluate`.
+- Default props: module-level `const EMPTY_ARRAY = []`, memoize lists (`useMemo`) — avoids re-render loops.
+- Modals: `createPortal` into `#root`; never mutate `document.body.style.overflow`.
+- Optional callbacks need safe defaults (`onLogout = () => {}`).
+- Learnings by phase: [michi_v1_1_learnings](.agents/rules/michi_v1_1_learnings.md), [michi_auth_faza_learnings](.agents/rules/michi_auth_faza_learnings.md), [michi_schema_api_learnings](.agents/rules/michi_schema_api_learnings.md).
+
+## 5. Learn protocol
+New rule from the user → add it to the matching file in `.agents/rules/` (quote the user, cause, fix).
+If it changes a hard rule above, update this file too. Old long versions: `docs/archive/`.
