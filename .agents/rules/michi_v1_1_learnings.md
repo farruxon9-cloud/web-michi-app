@@ -109,6 +109,23 @@ Read this before touching the resume/PDF, profile, applications, dialogs, layout
 - Picker `DICT` lacked vi/ne and fell back to Uzbek → now has vi/ne and falls back to English.
 - Shared helpers live in `src/utils/vehicleUtils.js` (unit-tested in `vehicleUtils.test.js`).
 
+## 9c. Refactor without visual change (Phase E)
+- Profile is split into `src/components/profile/*` (pages, `ProfileMainView`, `VehicleCard`, `profileRenderers`, `profileShared`).
+  - Pages get Profile state via one `pageCtx` object (`// PAGE_CTX_START` … `END` in Profile.jsx). New page = add its ids there.
+- **Method:** move code *verbatim* with a script, then let ESLint `no-undef` list the free identifiers to pass in. Never retype JSX by hand.
+  - Check TDZ: every ctx id must be declared before `pageCtx` (props are fine).
+  - Spread usage (`...X`) counts as a use when deciding imports.
+- ❌ My import pruner regex `import\s+([\s\S]*?)\s+from` swallowed `import './Profile.css';` with the next import → **all Profile styles vanished**.
+  - ✅ Use `[^;'"]*?` (one statement only). After any import cleanup, `grep -n "\.css'"` the file.
+- **CSS order is part of the design:** keep `import './Profile.css'` last; a module that pulls CSS (e.g. `CompanyHome` via `MyAdsPage`) must be imported where the old import was.
+- **Verification that caught the bug:** DOM snapshot alone was NOT enough (DOM identical, CSS missing). Use all of:
+  1. Normalized DOM compare (sort inline style declarations; React reorders them when it reuses vs remounts nodes).
+  2. Pixel diff of screenshots (threshold, not raw PNG bytes — bytes differ between identical runs).
+  3. `md5` of the production CSS bundle before/after (`git stash -u`, build, compare, `git stash pop`).
+  - Scripts: brain `scratch/profile_snap.mjs`, `snap_compare.mjs`, `pixel_diff.mjs`, `crop_compare.mjs`, `style_probe.mjs`.
+- `git stash -u` also stashes `scratch_e2e/`; copy the probe script to a fresh temp dir *after* stashing.
+- Known residue: About page, one text line rasterises ~0.6% differently although DOM, computed styles, rects and animations are identical (compositing-layer difference after remount). Not a design change.
+
 ## 10. Commit Checklist (every phase)
 1. `npx vitest run`: all tests pass.
 2. `npm run lint`: 0 errors.
