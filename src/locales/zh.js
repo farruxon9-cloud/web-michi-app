@@ -215,7 +215,7 @@ const translation = {
   "resendCode": "重新发送",
   "resendOtp": "重新发送验证码",
   "verifyBtn": "验证",
-  "emailVerifiedBadge": "✅ 邮箱已验证！",
+  "emailVerifiedBadge": "邮箱已验证",
   "mustVerifyEmailBeforeRegisterAlert": "完成注册前，请使用6位OTP验证码验证您的电子邮箱！",
   "otpSentSuccess": "验证码已发送至您的邮箱！",
   "emailVerifiedSuccess": "✅ 邮箱验证成功！",

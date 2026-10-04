@@ -221,7 +221,7 @@ const translation = {
   "resendCode": "Отправить повторно",
   "resendOtp": "Отправить код повторно",
   "verifyBtn": "Подтвердить",
-  "emailVerifiedBadge": "✅ Email подтвержден!",
+  "emailVerifiedBadge": "Email подтверждён",
   "mustVerifyEmailBeforeRegisterAlert": "Для завершения регистрации подтвердите ваш email с помощью 6-значного OTP-кода!",
   "otpSentSuccess": "Код подтверждения отправлен на вашу почту!",
   "emailVerifiedSuccess": "✅ Email успешно подтвержден!",

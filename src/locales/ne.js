@@ -215,7 +215,7 @@ const translation = {
   "resendCode": "पुनः पठाउनुहोस्",
   "resendOtp": "पुन: कोड पठाउनुहोस्",
   "verifyBtn": "प्रमाणित गर्नुहोस्",
-  "emailVerifiedBadge": "✅ इमेल प्रमाणित भयो!",
+  "emailVerifiedBadge": "इमेल प्रमाणित",
   "mustVerifyEmailBeforeRegisterAlert": "दर्ता पूरा गर्नु अघि कृपया ६-अङ्कको OTP कोड मार्फत आफ्नो ईमेल प्रमाणीकरण गर्नुहोस्!",
   "otpSentSuccess": "प्रमाणिकरण कोड तपाईंको इमेलमा पठाइयो!",
   "emailVerifiedSuccess": "✅ इमेल सफलतापूर्वक प्रमाणित भयो!",

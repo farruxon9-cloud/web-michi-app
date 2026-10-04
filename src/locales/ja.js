@@ -233,7 +233,7 @@ const translation = {
   "resendCode": "再送信",
   "resendOtp": "コードを再送信",
   "verifyBtn": "認証する",
-  "emailVerifiedBadge": "✅ メールアドレス認証完了",
+  "emailVerifiedBadge": "メール認証済み",
   "mustVerifyEmailBeforeRegisterAlert": "登録を完了するには、6桁のOTP認証コードでメールアドレスを認証してください。",
   "otpSentSuccess": "確認コードをメールに送信しました！",
   "emailVerifiedSuccess": "✅ メールアドレスが正常に認証されました！",

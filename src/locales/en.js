@@ -232,7 +232,7 @@ const translation = {
   "resendCode": "Resend",
   "resendOtp": "Resend Code",
   "verifyBtn": "Verify",
-  "emailVerifiedBadge": "✅ Email Verified!",
+  "emailVerifiedBadge": "Email verified",
   "mustVerifyEmailBeforeRegisterAlert": "Please verify your email via the 6-digit OTP code before completing registration!",
   "otpSentSuccess": "Verification code sent to your email!",
   "emailVerifiedSuccess": "✅ Email successfully verified!",

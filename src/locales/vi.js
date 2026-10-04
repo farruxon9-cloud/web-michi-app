@@ -215,7 +215,7 @@ const translation = {
   "resendCode": "Gửi lại",
   "resendOtp": "Gửi lại mã",
   "verifyBtn": "Xác nhận",
-  "emailVerifiedBadge": "✅ Email đã xác minh!",
+  "emailVerifiedBadge": "Email đã xác minh",
   "mustVerifyEmailBeforeRegisterAlert": "Vui lòng xác minh email bằng mã OTP 6 chữ số trước khi hoàn tất đăng ký!",
   "otpSentSuccess": "Mã xác minh đã được gửi đến email của bạn!",
   "emailVerifiedSuccess": "✅ Email đã được xác minh thành công!",

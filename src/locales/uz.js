@@ -237,7 +237,7 @@ const translation = {
   "resendCode": "Qayta yuborish",
   "resendOtp": "Kodni qayta yuborish",
   "verifyBtn": "Tasdiqlash",
-  "emailVerifiedBadge": "✅ Email tasdiqlandi!",
+  "emailVerifiedBadge": "Email tasdiqlangan",
   "mustVerifyEmailBeforeRegisterAlert": "Ro'yxatdan o'tish uchun elektron pochtangizni 6-xonali OTP kodi orqali tasdiqlashingiz shart!",
   "otpSentSuccess": "Tasdiqlash kodi pochtangizga yuborildi!",
   "emailVerifiedSuccess": "✅ Email muvaffaqiyatli tasdiqlandi!",

@@ -1,7 +1,7 @@
 // v1.1 Faza E: Profile.jsx dagi asosiy (main) ko'rinish o'zgarishsiz ko'chirildi.
 // Holat va funksiyalar Profile'dan `ctx` orqali keladi (klasslar, stil va DOM bir xil).
 import {
-  User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, Briefcase, Building2, MapPin, Phone, Users, Camera, Share2, Bookmark, Megaphone, Info, Sparkles, FileCheck, Award, GraduationCap
+  User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, BadgeCheck, Briefcase, Building2, MapPin, Phone, Users, Camera, Share2, Bookmark, Megaphone, Info, Sparkles, FileCheck, Award, GraduationCap
 } from 'lucide-react';
 import VerifiedBadge from '../VerifiedBadge';
 import JapaneseVehiclePickerModal from '../JapaneseVehiclePickerModal';
@@ -45,9 +45,9 @@ export default function ProfileMainView(ctx) {
         <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flexWrap: 'wrap' }}>
           <span>{profileData.email === 'michi@example.com' || userRole === 'guest' ? t('guestEmail', profileData.email || 'michi@example.com') : profileData.email}</span>
           {(profileData.isEmailVerified || profileData.email) && (
-            <span style={{ fontSize: '11px', background: 'rgba(48, 209, 88, 0.15)', color: '#30D158', border: '1px solid rgba(48, 209, 88, 0.3)', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-              <CheckCircle2 size={12} color="#30D158" />
-              <span>{t('emailVerifiedBadge', 'Email tasdiqlangan')}</span>
+            <span style={{ fontSize: '11px', background: 'rgba(48, 209, 88, 0.12)', color: '#30D158', border: '1px solid rgba(48, 209, 88, 0.3)', padding: '3px 9px 3px 6px', borderRadius: '999px', fontWeight: 700, letterSpacing: '0.1px', display: 'inline-flex', alignItems: 'center', gap: '4px', lineHeight: 1.2 }}>
+              <BadgeCheck size={13} strokeWidth={2.4} color="#30D158" aria-hidden="true" />
+              <span>{t('emailVerifiedBadge', 'メール認証済み')}</span>
             </span>
           )}
         </p>
