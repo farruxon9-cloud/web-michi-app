@@ -406,7 +406,7 @@ export default function DriverFeed({
 }) {
   const { t, i18n } = useTranslation();
   const currentLang = i18n?.language || 'uz';
-  const ENABLE_MAP_SEARCH = true; // Feature flag: Set to true to activate Leaflet Map Search
+  const ENABLE_MAP_SEARCH = false; // Feature flag: Set to true to activate Leaflet Map Search (off: button off-design & unreliable, v1.1)
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [mapFocusJob, setMapFocusJob] = useState(null);
