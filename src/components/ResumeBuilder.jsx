@@ -866,6 +866,8 @@ export default function ResumeBuilder({
           </div>
         </div>
       </div>
+      {/* Trailing clearance: last card stops 12px above the floating BottomNav (michi-subpage-spacing rule) */}
+      <div aria-hidden="true" style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0, clear: 'both' }} />
     </div>
   );
 }
