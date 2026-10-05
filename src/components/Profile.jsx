@@ -21,6 +21,7 @@ import PersonalInfoPage from './profile/PersonalInfoPage';
 import AboutPage from './profile/AboutPage';
 import SettingsPage from './profile/SettingsPage';
 import NotificationsPage from './profile/NotificationsPage';
+import SupportPage from './profile/SupportPage';
 import { createProfileRenderers } from './profile/profileRenderers';
 import ProfileMainView from './profile/ProfileMainView';
 import { useProfileScroll } from '../hooks/useProfileScroll';
@@ -55,7 +56,7 @@ export default function Profile(props) {
 
 function ProfileContent({ 
   onLogout = () => {}, contractStatus, setContractStatus = () => {}, profileData, userRole, 
-  onChangeLanguage = () => {}, onUpdateProfile = () => {}, applications = [], onChangeAppStatus = () => {},
+  onChangeLanguage = () => {}, onUpdateProfile = () => {}, applications = [], onChangeAppStatus = () => {}, onWithdrawApplication = async () => false,
   notifications = [], onMarkRead = () => {}, onMarkAllRead = () => {}, onDeleteNotif = () => {}, onClearAllNotifs = () => {}, unreadCount = 0,
   darkMode = false, setDarkMode = () => {}, soundSettings = { sound: true, vibration: true }, setSoundSettings = () => {},
   companyEmployees = [], onAddEmployee = () => {}, onAcceptEmployeeRequest = () => {}, setNotifications = () => {},
@@ -995,7 +996,7 @@ function ProfileContent({
     i18n, isCardFading, isEditing, isEditingVehicle, isFormOpen, isVehiclePickerOpen,
     jobToEdit, jobs, mainContainerRef, myVehicle, myVehicles, notifTab,
     notificationSound, notifications, onAcceptEmployeeRequest, onAddEmployee, onApply, onApplySchool,
-    onChangeAppStatus, onChangeLanguage, onClearAllNotifs, onDeleteNotif, onJobClick, onJobCreated,
+    onChangeAppStatus, onWithdrawApplication, onChangeLanguage, onClearAllNotifs, onDeleteNotif, onJobClick, onJobCreated,
     onLogout, onMarkAllRead, onMarkRead, onNavigate, onSchoolClick, onShoukai,
     onShoukaiPaid, onTriggerRegister, profileActivePageSource, profileData, referralsCount, removeEditAddressEntry,
     removeEditEducationEntry, renderDriverMarkBadge, renderHideOverlays, renderJDMPlateBox, requestHide, saveEditing,
@@ -1040,6 +1041,11 @@ function ProfileContent({
   // ===== SETTINGS PAGE =====
   if (activePage === 'settings') {
     return <SettingsPage {...pageCtx} />;
+  }
+
+  // ===== HELP / SUPPORT (tickets) =====
+  if (activePage === 'support') {
+    return <SupportPage t={t} handleBackToMain={handleBackToMain} />;
   }
 
   // ===== ASSIST AI SHOWCASE FULL PAGE =====

@@ -6,7 +6,9 @@ import {
   fetchCurrentUser, 
   logoutUser, 
   getStoredUser, 
-  getStoredToken 
+  getStoredToken,
+  updateCurrentUser,
+  SESSION_EXPIRED_EVENT
 } from '../services/authService';
 
 const AuthContext = createContext(null);
@@ -76,6 +78,25 @@ export function AuthProvider({ children }) {
     refreshUser();
   }, [refreshUser]);
 
+  // apiFetch fires this when the refresh token is rejected: storage is already cleared,
+  // so drop the in-memory session too (otherwise the UI would stay "logged in").
+  useEffect(() => {
+    const onExpired = () => {
+      setUser(null);
+      setUserRoleState(null);
+      try { localStorage.removeItem('michi_guest_session'); } catch {}
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
+  }, []);
+
+  /** Save profile edits on the server; the returned user replaces the cached one. */
+  const updateProfile = useCallback(async (patch) => {
+    const updated = await updateCurrentUser(patch);
+    if (updated) setUser(updated);
+    return updated;
+  }, []);
+
   const handleLogin = async (email, password) => {
     setIsLoading(true);
     try {
@@ -126,7 +147,8 @@ export function AuthProvider({ children }) {
     login: handleLogin,
     register: handleRegister,
     logout: handleLogout,
-    refreshUser
+    refreshUser,
+    updateProfile
   };
 
   return (
@@ -142,4 +164,9 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+}
+
+/** Like useAuth, but returns null outside an AuthProvider (isolated component tests / previews). */
+export function useOptionalAuth() {
+  return useContext(AuthContext);
 }

@@ -77,10 +77,10 @@ export async function fetchSchools(queryParams = {}) {
     const data = await response.json();
     const rawSchools = Array.isArray(data) ? data : (data.schools || data.data || []);
 
-    // Filter and normalize validated school records
+    // Validation only fills/normalizes known keys; keep every other server field (description, image, contacts…)
     return rawSchools.map(school => {
       const validRes = validateSchoolPayload(school);
-      return validRes.isValid ? validRes.data : school;
+      return validRes.isValid ? { ...school, ...validRes.data } : school;
     });
 
   } catch (error) {
@@ -183,7 +183,7 @@ export async function fetchSchoolById(schoolId) {
     const data = await response.json();
     const schoolRecord = data.school || data.data || data;
     const validRes = validateSchoolPayload(schoolRecord);
-    return validRes.isValid ? validRes.data : schoolRecord;
+    return validRes.isValid ? { ...schoolRecord, ...validRes.data } : schoolRecord;
 
   } catch (error) {
     if (error.name === 'AbortError') {

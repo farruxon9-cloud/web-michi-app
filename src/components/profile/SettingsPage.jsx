@@ -4,9 +4,12 @@ import {
   Bell, ChevronRight, Globe, Sun, Moon, Volume2, Vibrate, VolumeX, BellOff, ArrowLeft
 } from 'lucide-react';
 import { pressable } from '../../utils/a11y';
+import { useOptionalAuth } from '../../context/AuthContext';
+import { DeleteAccountSection } from './AccountDeletion';
 
 export default function SettingsPage(ctx) {
-  const { darkMode, handleBackToMain, handleToggleNotifSound, handleToggleShowBadges, notificationSound, onChangeLanguage, setDarkMode, setSoundSettings, showProfileBadges, soundSettings, t } = ctx;
+  const { darkMode, handleBackToMain, handleToggleNotifSound, handleToggleShowBadges, notificationSound, onChangeLanguage, setDarkMode, setSoundSettings, showProfileBadges, soundSettings, t, userRole } = ctx;
+  const auth = useOptionalAuth();
   return (
     <div className="profile-container sub-page-view fade-in">
       <div className="profile-sticky-back">
@@ -109,6 +112,11 @@ export default function SettingsPage(ctx) {
             </div>
           );
         })()}
+
+        {/* Account deletion (APPI, 30-day grace) — signed-in users only */}
+        {auth && auth.user && userRole !== 'guest' && (
+          <DeleteAccountSection t={t} user={auth.user} refreshUser={auth.refreshUser} />
+        )}
       </div>
       {/* 86px clearance spacer yielding exact 12px gap between last settings card and floating BottomNav */}
       <div style={{ height: '86px', minHeight: '86px', width: '100%', flexShrink: 0, clear: 'both' }} />

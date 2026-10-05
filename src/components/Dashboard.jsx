@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
-  Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, 
-  CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, 
-  Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck, Globe, Compass, 
-  Navigation, Truck, ShieldCheck 
+  Briefcase, GraduationCap, Wrench, Gift, 
+  CalendarClock, Rocket, 
+  Sparkles, Megaphone, FileCheck, Compass, 
+  Navigation 
 } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
+import MusicCard from './MusicCard';
+import { HomeCalendar, HomeGreeting } from './home/HomeClock';
+import { flagOn, announcementText } from '../hooks/useRemoteContent';
 import './Dashboard.css';
 
 const DICT = {
@@ -109,28 +112,21 @@ const DICT = {
   },
 
   comingSoonTag: { ja: '近日公開', uz: 'Tez orada', en: 'Coming Soon', ru: 'Скоро', zh: '即将来临', vi: 'Sắp ra mắt', ne: 'छिट्टै आउँदैछ' },
-  bentoJDMBadge1: { ja: '日本トラックマップ', uz: 'Yaponiya Xaritasi', en: 'Japan Map', ru: 'Карта Японии', zh: '日本地图', vi: 'Bản đồ Nhật Bản', ne: 'जापान नक्सा' },
-  bentoJDMBadge2: { ja: 'スマートナビ', uz: 'Aqlli Navigatsiya', en: 'Smart Navigation', ru: 'Умная навигация', zh: '智能导航', vi: 'Điều hướng thông minh', ne: 'स्मार्ट नेभिगेसन' },
-  bentoJDMTitle: { ja: '大型トラック専用スマートナビ', uz: 'Aqlli Yuk Mashinalari Navigatsiyasi', en: 'Smart Heavy Truck Navigation', ru: 'Умная навигация для грузовиков', zh: '智能重型卡车导航', vi: 'Điều hướng thông minh cho xe tải hạng nặng', ne: 'ठूला ट्रकहरूको लागि स्मार्ट नेभिगेसन' },
+  bentoJDMBadge1: { ja: '日本マップ', uz: 'Yaponiya xaritasi', en: 'Japan Map', ru: 'Карта Японии', zh: '日本地图', vi: 'Bản đồ Nhật Bản', ne: 'जापान नक्सा' },
+  bentoJDMBadge2: { ja: 'ライブ', uz: 'Jonli', en: 'Live', ru: 'Онлайн', zh: '实时', vi: 'Trực tiếp', ne: 'लाइभ' },
+  bentoJDMTitle: { ja: 'マップ・現在地', uz: 'Xarita va joylashuv', en: 'Map & My Location', ru: 'Карта и местоположение', zh: '地图与当前位置', vi: 'Bản đồ & vị trí', ne: 'नक्सा र मेरो स्थान' },
   bentoJDMSub: { 
-    ja: '車体寸法・重量制限・高さ制限を自動回避', 
-    uz: "Yaponiyadagi transport o'lchamlari va ko'prik cheklovlari xaritasi", 
-    en: 'Height, weight & dimension restriction-aware routing in Japan', 
-    ru: 'Карта ограничений по высоте, весу и габаритам в Японии', 
-    zh: '日本车身尺寸、限高、限重自动避让地图',
-    vi: 'Tự động tránh các hạn chế về chiều cao, trọng lượng và kích thước xe tại Nhật Bản',
-    ne: 'जापानमा गाडीको उचाइ, तौल र आकार सीमाहरू स्वतः छल्ने नेभिगेसन'
+    ja: '住所・施設を検索して、Google/Appleマップでナビ', 
+    uz: "Manzil va joylarni qidiring, Google/Apple Maps'da yo'l oling", 
+    en: 'Search places & addresses, navigate with Google/Apple Maps', 
+    ru: 'Ищите адреса и места, навигация через Google/Apple Maps', 
+    zh: '搜索地址和地点，用Google/Apple地图导航',
+    vi: 'Tìm địa chỉ, địa điểm và chỉ đường bằng Google/Apple Maps',
+    ne: 'ठेगाना र स्थान खोज्नुहोस्, Google/Apple Maps मार्फत जानुहोस्'
   },
-  bentoJDMSubtag1: { ja: '車両サイズ設定', uz: 'Mashina sozlamalari', en: 'Vehicle Specs', ru: 'Настройки авто', zh: '车辆规格设置', vi: 'Cài đặt kích thước xe', ne: 'गाडीको विवरण' },
-  bentoJDMSubtag2: { ja: '3.8m高さ制限回避', uz: 'Balandlik taqiqi', en: 'Height Limits', ru: 'Ограничение высоты', zh: '避开限高', vi: 'Tránh giới hạn chiều cao 3.8m', ne: 'उचाइ सीमा' },
-  bentoJDMSubtag3: { ja: '重量制限回避', uz: 'Vazn cheklovi', en: 'Weight Limits', ru: 'Ограничение веса', zh: '避开限重', vi: 'Tránh giới hạn trọng lượng', ne: 'तौल सीमा' }
-};
-
-const formatTime = (secs) => {
-  if (isNaN(secs) || secs < 0) return '0:00';
-  const m = Math.floor(secs / 60);
-  const s = Math.floor(secs % 60);
-  return `${m}:${s < 10 ? '0' : ''}${s}`;
+  bentoJDMSubtag1: { ja: '現在地', uz: 'Joylashuv', en: 'My location', ru: 'Я здесь', zh: '当前位置', vi: 'Vị trí', ne: 'मेरो स्थान' },
+  bentoJDMSubtag2: { ja: '住所検索', uz: 'Manzil qidirish', en: 'Address search', ru: 'Поиск адреса', zh: '地址搜索', vi: 'Tìm địa chỉ', ne: 'ठेगाना खोज' },
+  bentoJDMSubtag3: { ja: 'ナビ連携', uz: "Yo'l ko'rsatish", en: 'Directions', ru: 'Маршрут', zh: '导航', vi: 'Chỉ đường', ne: 'दिशा' }
 };
 
 export default function Dashboard({ 
@@ -146,15 +142,39 @@ export default function Dashboard({
   userRole, 
   onNavigateToInternational, 
   onNavigateToJDM, 
-  onOpenAssistShowcase 
+  onOpenAssistShowcase,
+  flags = {},
+  announcement = null,
+  applications = []
 }) {
   const { t, i18n } = useTranslation();
   const lang = useMemo(() => (i18n?.language || 'uz').substring(0, 2).toLowerCase(), [i18n?.language]);
   const getText = useCallback((key) => DICT[key]?.[lang] || DICT[key]?.uz || t(key, ''), [lang, t]);
+  // Admin feature flags (admin.michi.jp.net → コンテンツ・機能). Missing flag = on.
+  const musicOn = flagOn(flags, 'music');
+  const mapOn = flagOn(flags, 'map');
+  const voiceOn = flagOn(flags, 'voiceAI');
+  const jobsOn = flagOn(flags, 'jobs');
+  const academyOn = flagOn(flags, 'academy');
+  const announceText = announcementText(announcement, lang);
+  const announceLink = announcement && /^https:\/\//.test(announcement.link || '') ? announcement.link : '';
 
-  const [currentTime, setCurrentTime] = useState(new Date());
+  // Real application counts (driver: own applications; company: applications to its listings)
+  const appCounts = useMemo(() => {
+    const list = (applications || []).filter((a) => a && !a.isSimulatedReferral && a.status !== 'withdrawn');
+    return {
+      total: list.length,
+      interview: list.filter((a) => a.status === 'interview').length,
+      fresh: list.filter((a) => a.status === 'submitted').length,
+    };
+  }, [applications]);
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [hasFocus, setHasFocus] = useState(false);
+  const [toast, setToast] = useState('');
+  const [reduceMotion] = useState(() => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -182,7 +202,8 @@ export default function Dashboard({
       title: getText('heroSlide2Title'),
       desc: getText('heroSlide2Desc'),
       icon: <CalendarClock size={56} strokeWidth={1.5} color="var(--text-main)" opacity={0.8} />,
-      tab: 'service'
+      tab: 'service',
+      comingSoon: true
     },
     {
       id: 'jobs',
@@ -194,20 +215,22 @@ export default function Dashboard({
     }
   ], [getText]);
 
-  // Soat va daqiqa yangilanishi
+  // Karusel avto-slayd taymeri (pauses on touch/drag, hover and keyboard focus; off with reduced motion)
+  const autoplayStopped = isPaused || isHovered || hasFocus || reduceMotion;
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Karusel avto-slayd taymeri
-  useEffect(() => {
-    if (isPaused) return;
+    if (autoplayStopped) return;
     const slideTimer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
     }, 4500);
     return () => clearInterval(slideTimer);
-  }, [isPaused, SLIDES.length]);
+  }, [autoplayStopped, SLIDES.length]);
+
+  // "Coming soon" toast auto-hides
+  useEffect(() => {
+    if (!toast) return undefined;
+    const id = setTimeout(() => setToast(''), 2600);
+    return () => clearTimeout(id);
+  }, [toast]);
 
   // Window darajasida sichqoncha qo'yib yuborilishini nazorat qilish
   useEffect(() => {
@@ -245,504 +268,306 @@ export default function Dashboard({
     touchEndX.current = e.clientX;
   };
 
-  const handleCardClick = (tab) => {
+  const handleCardClick = (slide, e) => {
+    // keyboard activation (detail === 0) is always a click; pointer clicks must not be the end of a swipe
     const diffX = Math.abs(touchStartX.current - touchEndX.current);
-    if (diffX < 10) {
+    if (e?.detail === 0 || diffX < 10) {
       triggerSound();
-      setActiveTab(tab);
+      if (slide.comingSoon) {
+        setToast(`${getText('comingSoonTag')} · ${slide.title}`);
+        return;
+      }
+      setActiveTab(slide.tab);
     }
   };
 
-  const getDaysArray = () => {
-    const days = [];
-    for (let i = -3; i <= 3; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
-      days.push(d);
-    }
-    return days;
+  const openProfilePage = (page) => {
+    triggerSound();
+    setProfileActivePageSource?.('home');
+    setProfileActivePage?.(page);
+    setActiveTab('profile');
   };
-
-  const getDayName = (date) => {
-    const localeMap = { en: 'en-US', ja: 'ja-JP', ru: 'ru-RU', zh: 'zh-CN', uz: 'uz-UZ' };
-    return date.toLocaleDateString(localeMap[lang] || 'uz-UZ', { weekday: 'short' }).toUpperCase();
-  };
-
-  const getFormattedDate = () => {
-    const localeMap = { en: 'en-US', ja: 'ja-JP', ru: 'ru-RU', zh: 'zh-CN', uz: 'uz-UZ' };
-    return currentTime.toLocaleDateString(localeMap[lang] || 'uz-UZ', { weekday: 'long', day: 'numeric', month: 'long' });
-  };
-
-  const daysArray = useMemo(() => getDaysArray(), []);
 
   return (
     <div className="dashboard-container hide-scrollbar">
+      {announceText && (
+        announceLink ? (
+          <a id="home-announcement" className="home-announcement" href={announceLink} target="_blank" rel="noopener noreferrer" role="status">
+            <span aria-hidden="true">📣</span><span className="home-announcement-text">{announceText}</span><span aria-hidden="true">↗</span>
+          </a>
+        ) : (
+          <div id="home-announcement" className="home-announcement" role="status">
+            <span aria-hidden="true">📣</span><span className="home-announcement-text">{announceText}</span>
+          </div>
+        )
+      )}
       
       {/* Top Banner Karusel */}
-      <div 
+      <section 
         className="dash-hero-carousel-container"
+        aria-roledescription="carousel"
+        aria-label={t('homeCarouselAria')}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onMouseDown={handleMouseDown}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onFocus={() => setHasFocus(true)}
+        onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setHasFocus(false); }}
         style={{ cursor: isPaused ? 'grabbing' : 'grab' }}
       >
         <div 
           className="dash-hero-slider" 
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+          aria-live={autoplayStopped ? 'polite' : 'off'}
         >
-          {SLIDES.map((slide) => (
-            <div key={slide.id} className="dash-hero-slide-wrapper">
-              <div 
-                className="dash-hero-card" 
-                onClick={() => handleCardClick(slide.tab)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(slide.tab); } }}
-                role="button"
-                tabIndex={0}
+          {SLIDES.map((slide, index) => (
+            <div
+              key={slide.id}
+              className="dash-hero-slide-wrapper"
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${index + 1} / ${SLIDES.length}`}
+              inert={currentSlide !== index}
+            >
+              <button 
+                type="button"
+                id={`home-hero-${slide.id}`}
+                className="dash-hero-card bento-btn" 
+                onClick={(e) => handleCardClick(slide, e)}
               >
-                <div className="dash-hero-content">
+                <span className="dash-hero-content">
                   <span className="dash-badge">{slide.badge}</span>
-                  <h1 className="dash-hero-title">{slide.title}</h1>
-                  <p className="dash-hero-sub">{slide.desc}</p>
-                </div>
-                <div className="dash-hero-icon-3d">{slide.icon}</div>
-              </div>
+                  <span className="dash-hero-title">{slide.title}</span>
+                  <span className="dash-hero-sub">{slide.desc}</span>
+                </span>
+                <span className="dash-hero-icon-3d" aria-hidden="true">{slide.icon}</span>
+              </button>
             </div>
           ))}
         </div>
         
         <div className="dash-hero-footer">
           <div className="dash-hero-dots">
-            {SLIDES.map((_, index) => (
-              <span 
-                key={index}
-                className={`dot ${currentSlide === index ? 'active' : ''}`}
+            {SLIDES.map((slide, index) => (
+              <button 
+                type="button"
+                key={slide.id}
+                id={`home-hero-dot-${index + 1}`}
+                className={`dot bento-btn ${currentSlide === index ? 'active' : ''}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setCurrentSlide(index);
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    setCurrentSlide(index);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label={`Slide ${index + 1}`}
-              ></span>
+                onMouseDown={(e) => e.stopPropagation()}
+                aria-label={`${index + 1} / ${SLIDES.length}: ${slide.title}`}
+                aria-current={currentSlide === index ? 'true' : undefined}
+              />
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Taqvim qatori */}
-      <div className="calendar-row" aria-label="Taqvim kunlari">
-        {daysArray.map((d, index) => {
-          const isToday = index === 3;
-          return (
-            <div key={index} className={`calendar-day ${isToday ? 'active' : ''}`}>
-              <span className="day-name">{getDayName(d)}</span>
-              <span className="day-num">{d.getDate()}</span>
-            </div>
-          );
-        })}
-      </div>
+      {/* Taqvim qatori (rolls over at midnight) */}
+      <HomeCalendar lang={lang} ariaLabel={t('homeCalendarAria')} />
 
-      <div className="dash-greeting-row">
-        <h2 className="greeting-title">{getText('welcomeTitle')}</h2>
-        <div className="greeting-line" aria-hidden="true"></div>
-        <span className="greeting-date">{getFormattedDate()}</span>
-        <div className="greeting-line" aria-hidden="true"></div>
-        <div className="time-pill">
-          {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </div>
-      </div>
+      {/* Greeting + clock: ticks once a minute in its own component */}
+      <HomeGreeting lang={lang} title={getText('welcomeTitle')} />
 
-      {/* Premium Bento AI Voice Card */}
-      <div 
+      {toast && (
+        <div className="home-toast" role="status" aria-live="polite" id="home-toast">{toast}</div>
+      )}
+
+      {/* Premium Bento AI Voice Card — main area and switch are separate controls (no nested buttons) */}
+      {voiceOn && <div 
         className={`bento-ai-card glass squircle ${isVoiceStandby ? 'active' : ''}`} 
-        onClick={onVoiceActivate}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onVoiceActivate?.(); } }}
-        role="button"
-        tabIndex={0}
       >
-        <div className="ai-card-left">
-          <div className="ai-gradient-icon" aria-hidden="true">
+        <button type="button" id="home-voice-open" className="ai-card-left bento-btn" onClick={onVoiceActivate}>
+          <span className="ai-gradient-icon" aria-hidden="true">
             <Sparkles size={20} color="#FFF" fill="currentColor" />
-          </div>
-          <div className="ai-card-info">
-            <span className="ai-card-badge">🗣️ <span className="ai-badge-text">Michi Voice AI (テスト中)</span></span>
-            <h3 className="ai-card-title">{getText('voiceAssistantTitle')}</h3>
-            <p className="ai-card-sub">{getText('voiceAssistantDesc')}</p>
-          </div>
-        </div>
+          </span>
+          <span className="ai-card-info">
+            <span className="ai-card-badge">🗣️ <span className="ai-badge-text">Michi Voice AI ({t('voiceBetaTag')})</span></span>
+            <span className="ai-card-title">{getText('voiceAssistantTitle')}</span>
+            <span className="ai-card-sub">{getText('voiceAssistantDesc')}</span>
+          </span>
+        </button>
         <div className="ai-card-right">
           <div className="ai-card-visualizer" aria-hidden="true">
             {[1, 2, 3, 4].map((bar) => (
               <div key={bar} className={`ai-bar ai-bar-${bar} ${isVoiceStandby ? 'active' : ''} ${isVoiceActive ? 'animating' : ''}`}></div>
             ))}
           </div>
-          <div 
-            className={`ios-switch ${isVoiceStandby ? 'checked' : ''}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onVoiceToggle?.();
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.stopPropagation();
-                e.preventDefault();
-                onVoiceToggle?.();
-              }
-            }}
+          <button 
+            type="button"
+            id="home-voice-switch"
+            className={`ios-switch bento-btn ${isVoiceStandby ? 'checked' : ''}`}
+            onClick={() => onVoiceToggle?.()}
             role="switch"
-            tabIndex={0}
             aria-checked={Boolean(isVoiceStandby)}
             aria-label={getText('voiceAssistantTitle')}
           >
             <span className="ios-switch-thumb"></span>
-          </div>
+          </button>
         </div>
-      </div>
+      </div>}
 
       {/* Bento Asosiy Bo'limlar */}
       <div className="bento-icons-row">
-        <div 
-          className="bento-icon-card dark-card" 
+        {jobsOn && <button 
+          type="button"
+          id="home-card-jobs"
+          className="bento-icon-card dark-card bento-btn" 
           onClick={() => { triggerSound(); setActiveTab('jobs'); }}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerSound(); setActiveTab('jobs'); } }}
-          role="button"
-          tabIndex={0}
         >
-          <div className="bento-icon-wrap" aria-hidden="true">
+          <span className="bento-icon-wrap" aria-hidden="true">
             <Briefcase size={28} />
-          </div>
-          <div className="bento-text-wrap">
-            <h4>{getText('navJobs')}</h4>
-            <p>{getText('bentoView')}</p>
-          </div>
-        </div>
+          </span>
+          <span className="bento-text-wrap">
+            <span className="bento-title">{getText('navJobs')}</span>
+            <span className="bento-sub">{getText('bentoView')}</span>
+          </span>
+        </button>}
 
-        <div 
-          className="bento-icon-card dark-card" 
+        {academyOn && <button 
+          type="button"
+          id="home-card-academy"
+          className="bento-icon-card dark-card bento-btn" 
           onClick={() => { triggerSound(); setActiveTab('academy'); }}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerSound(); setActiveTab('academy'); } }}
-          role="button"
-          tabIndex={0}
         >
-          <div className="bento-icon-wrap" aria-hidden="true">
+          <span className="bento-icon-wrap" aria-hidden="true">
             <GraduationCap size={28} />
-          </div>
-          <div className="bento-text-wrap">
-            <h4>{getText('navAcademy')}</h4>
-            <p>{getText('bentoStudy')}</p>
-          </div>
-        </div>
+          </span>
+          <span className="bento-text-wrap">
+            <span className="bento-title">{getText('navAcademy')}</span>
+            <span className="bento-sub">{getText('bentoStudy')}</span>
+          </span>
+        </button>}
 
-        <div 
-          className="bento-icon-card light-card" 
+        <button 
+          type="button"
+          id="home-card-service"
+          className="bento-icon-card light-card bento-btn" 
           onClick={() => { triggerSound(); setActiveTab('service'); }}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerSound(); setActiveTab('service'); } }}
-          role="button"
-          tabIndex={0}
         >
-          <div className="bento-icon-wrap" aria-hidden="true">
+          <span className="bento-icon-wrap" aria-hidden="true">
             <Wrench size={26} />
-          </div>
-          <div className="bento-text-wrap">
-            <h4>{getText('navService')}</h4>
-            <p>{getText('bentoServices')}</p>
-          </div>
-        </div>
+          </span>
+          <span className="bento-text-wrap">
+            <span className="bento-title">{getText('navService')}</span>
+            <span className="bento-sub">{getText('bentoServices')}</span>
+          </span>
+        </button>
       </div>
 
       {/* Xalqaro Rekruting va Tokutei Ginou Card */}
-      <div 
-        className="bento-action-card bento-international-card squircle" 
-        onClick={onNavigateToInternational}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateToInternational?.(); } }}
-        role="button"
-        tabIndex={0}
+      {jobsOn && <button 
+        type="button"
+        id="home-card-international"
+        className="bento-action-card bento-international-card squircle bento-btn" 
+        onClick={() => onNavigateToInternational?.()}
         style={{ padding: '20px 24px', cursor: 'pointer' }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
-          <div style={{ flex: 1, paddingRight: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
+          <span style={{ display: 'block', flex: 1, paddingRight: '12px', minWidth: 0 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
               <span className="premium-live-dot" aria-hidden="true"></span>
-              <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1.5px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                🇯🇵 JAPAN RECRUITING
+              <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '1px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                🇯🇵 {t('homeJapanRecruiting')}
               </span>
-              <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--primary)' }}></span>
-              <span style={{ fontSize: '9px', fontWeight: '800', letterSpacing: '1px', color: '#AF52DE', textTransform: 'uppercase' }}>
-                SSW Visa
+              <span aria-hidden="true" style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--primary)' }}></span>
+              <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.5px', color: '#AF52DE', textTransform: 'uppercase' }}>
+                {t('homeSswVisa')}
               </span>
-            </div>
+            </span>
             
-            <h3 style={{ fontSize: '20px', fontWeight: '900', margin: '0 0 6px 0', color: 'var(--text-main)', letterSpacing: '-0.03em', lineHeight: '1.2' }}>
+            <span style={{ display: 'block', fontSize: '20px', fontWeight: '900', margin: '0 0 6px 0', color: 'var(--text-main)', letterSpacing: '-0.03em', lineHeight: '1.2' }}>
               {getText('bentoInternationalTitle')}
-            </h3>
+            </span>
             
-            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0 0 12px 0', opacity: 0.85, lineHeight: '1.4' }}>
+            <span style={{ display: 'block', fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0 0 12px 0', opacity: 0.85, lineHeight: '1.4' }}>
               {getText('bentoInternationalSub')}
-            </p>
+            </span>
             
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700' }}>
-                特定技能 (SSW)
+            <span style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700' }}>
+                {t('homeSswTag')}
               </span>
-              <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700' }}>
+              <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700' }}>
                 {getText('bentoHousingAvailable')}
               </span>
-              <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700' }}>
+              <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', fontWeight: '700' }}>
                 {getText('bentoMinN4')}
               </span>
-            </div>
-          </div>
+            </span>
+          </span>
           
-          <div className="bento-international-card-icon" aria-hidden="true">
+          <span className="bento-international-card-icon" aria-hidden="true">
             <Compass size={24} />
-          </div>
-        </div>
-      </div>
+          </span>
+        </span>
+      </button>}
 
       {/* Musiqa pleyer va Maxsus Rollar kartasi */}
       {(userRole === 'company' || userRole === 'driver') ? (
-        <div className="bento-double-cards-row">
-          <div className="bento-music-card compact-music-card glass squircle">
-            <div className="compact-music-body">
-              <div className="music-player-info">
-                <div className={`music-gradient-icon ${musicPlayer?.isPlaying ? 'playing-pulse' : ''}`} aria-hidden="true">
-                  <Music size={18} color="#FFF" />
-                </div>
-                
-                <div className="music-track-meta">
-                  <span className="music-sub-label">
-                    {musicPlayer?.isPlaying ? getText('playingBackgroundMusic') : getText('musicPaused')}
-                  </span>
-                  <div className="music-track-title-container">
-                    <h3 className="music-track-title compact-title">
-                      {musicPlayer?.currentTrack?.title || 'Lofi Radio'}
-                    </h3>
-                  </div>
-                </div>
-              </div>
-
-              <div className="compact-controls-volume">
-                <div className="music-player-controls">
-                  <button 
-                    type="button"
-                    onClick={musicPlayer?.prevTrack}
-                    className="player-control-btn btn-skip"
-                    aria-label="Oldingi qo'shiq"
-                  >
-                    <SkipBack size={18} fill="currentColor" />
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={musicPlayer?.togglePlay}
-                    className="player-control-btn btn-play-pause"
-                    aria-label={musicPlayer?.isPlaying ? "Pauza" : "Qo'yish"}
-                  >
-                    {musicPlayer?.isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" style={{ marginLeft: '2.5px' }} />}
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={musicPlayer?.nextTrack}
-                    className="player-control-btn btn-skip"
-                    aria-label="Keyingi qo'shiq"
-                  >
-                    <SkipForward size={18} fill="currentColor" />
-                  </button>
-                </div>
-
-                <div className="compact-volume-control">
-                  <button 
-                    type="button"
-                    onClick={() => musicPlayer?.setVolume?.((musicPlayer?.volume || 0) > 0 ? 0 : 0.7)}
-                    className="player-control-btn btn-vol"
-                    aria-label="Ovoz balandligi"
-                  >
-                    {(musicPlayer?.volume || 0) === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
-                  </button>
-                  <input 
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    value={musicPlayer?.volume ?? 0.7}
-                    onChange={(e) => musicPlayer?.setVolume?.(parseFloat(e.target.value))}
-                    className="volume-slider compact-slider"
-                    aria-label="Volume slider"
-                    style={{
-                      background: `linear-gradient(to right, var(--primary) ${(musicPlayer?.volume ?? 0.7) * 100}%, rgba(120, 120, 128, 0.2) ${(musicPlayer?.volume ?? 0.7) * 100}%)`
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className={`bento-double-cards-row${musicOn ? '' : ' is-single'}`}>
+          {musicOn && <MusicCard player={musicPlayer} lang={lang} variant="compact" />}
 
           {userRole === 'company' ? (
-            <div 
-              className="bento-my-ads-card glass squircle" 
-              onClick={() => {
-                triggerSound();
-                setProfileActivePageSource?.('home');
-                setProfileActivePage?.('my_ads');
-                setActiveTab('profile');
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  triggerSound();
-                  setProfileActivePageSource?.('home');
-                  setProfileActivePage?.('my_ads');
-                  setActiveTab('profile');
-                }
-              }}
-              role="button"
-              tabIndex={0}
+            <button 
+              type="button"
+              id="home-card-my-ads"
+              className="bento-my-ads-card glass squircle bento-btn" 
+              onClick={() => openProfilePage('my_ads')}
             >
-              <div className="my-ads-icon" aria-hidden="true">
+              <span className="my-ads-icon" aria-hidden="true">
                 <Megaphone size={24} color="#FFF" />
-              </div>
-              <div className="my-ads-text">
+              </span>
+              <span className="my-ads-text">
                 <span className="my-ads-sub">{getText('manageAdsSub')}</span>
-                <h3 className="my-ads-title">{getText('myAdsMenu')}</h3>
-                <p className="my-ads-desc">{getText('myAdsDesc')}</p>
-              </div>
-            </div>
+                <span className="my-ads-title">{getText('myAdsMenu')}</span>
+                {appCounts.fresh > 0 ? (
+                  <span className="my-ads-desc my-ads-count">{t('homeNewAppsLabel')}: {appCounts.fresh}</span>
+                ) : (
+                  <span className="my-ads-desc">{getText('myAdsDesc')}</span>
+                )}
+              </span>
+            </button>
           ) : (
-            <div 
-              className="bento-my-ads-card bento-my-apps-card glass squircle" 
-              onClick={() => {
-                triggerSound();
-                setProfileActivePageSource?.('home');
-                setProfileActivePage?.('applications');
-                setActiveTab('profile');
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  triggerSound();
-                  setProfileActivePageSource?.('home');
-                  setProfileActivePage?.('applications');
-                  setActiveTab('profile');
-                }
-              }}
-              role="button"
-              tabIndex={0}
+            <button 
+              type="button"
+              id="home-card-my-apps"
+              className="bento-my-ads-card bento-my-apps-card glass squircle bento-btn" 
+              onClick={() => openProfilePage('applications')}
             >
-              <div className="my-apps-icon" aria-hidden="true">
+              <span className="my-apps-icon" aria-hidden="true">
                 <FileCheck size={24} color="#FFF" />
-              </div>
-              <div className="my-ads-text">
+              </span>
+              <span className="my-ads-text">
                 <span className="my-ads-sub">{getText('manageAppsSub')}</span>
-                <h3 className="my-ads-title">{getText('myApplications')}</h3>
-                <p className="my-ads-desc">{getText('myApplicationsDesc')}</p>
-              </div>
-            </div>
+                <span className="my-ads-title">{getText('myApplications')}</span>
+                {appCounts.total > 0 ? (
+                  <span className="my-ads-desc my-ads-count">
+                    {t('homeAppsLabel')}: {appCounts.total}{appCounts.interview > 0 ? ` · ${t('homeInterviewsLabel')}: ${appCounts.interview}` : ''}
+                  </span>
+                ) : (
+                  <span className="my-ads-desc">{getText('myApplicationsDesc')}</span>
+                )}
+              </span>
+            </button>
           )}
         </div>
       ) : (
-        <div className="bento-music-card glass squircle">
-          <div className="music-player-top">
-            <div className="music-player-info">
-              <div className={`music-gradient-icon ${musicPlayer?.isPlaying ? 'playing-pulse' : ''}`} aria-hidden="true">
-                <Music size={18} color="#FFF" />
-              </div>
-              
-              <div className="music-track-meta">
-                <span className="music-sub-label">
-                  {musicPlayer?.isPlaying ? getText('playingBackgroundMusic') : getText('musicPaused')}
-                </span>
-                <h3 className="music-track-title">
-                  {musicPlayer?.currentTrack?.title || 'Lofi Radio'}
-                </h3>
-              </div>
-            </div>
-
-            <div className="music-player-controls">
-              <button 
-                type="button"
-                onClick={musicPlayer?.prevTrack}
-                className="player-control-btn btn-skip"
-                aria-label="Oldingi qo'shiq"
-              >
-                <SkipBack size={14} fill="currentColor" />
-              </button>
-              <button 
-                type="button"
-                onClick={musicPlayer?.togglePlay}
-                className="player-control-btn btn-play-pause"
-                aria-label={musicPlayer?.isPlaying ? "Pauza" : "Qo'yish"}
-              >
-                {musicPlayer?.isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" style={{ marginLeft: '2px' }} />}
-              </button>
-              <button 
-                type="button"
-                onClick={musicPlayer?.nextTrack}
-                className="player-control-btn btn-skip"
-                aria-label="Keyingi qo'shiq"
-              >
-                <SkipForward size={14} fill="currentColor" />
-              </button>
-              <div className="volume-control">
-                <button 
-                  type="button"
-                  onClick={() => musicPlayer?.setVolume?.((musicPlayer?.volume || 0) > 0 ? 0 : 0.7)}
-                  className="player-control-btn btn-vol"
-                  aria-label="Ovoz balandligi"
-                >
-                  {(musicPlayer?.volume || 0) === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                </button>
-                <input 
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  value={musicPlayer?.volume ?? 0.7}
-                  onChange={(e) => musicPlayer?.setVolume?.(parseFloat(e.target.value))}
-                  className="volume-slider"
-                  aria-label="Volume slider"
-                  style={{
-                    background: `linear-gradient(to right, var(--primary) ${(musicPlayer?.volume ?? 0.7) * 100}%, rgba(120, 120, 128, 0.2) ${(musicPlayer?.volume ?? 0.7) * 100}%)`
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="music-player-bottom">
-            <div className="player-timeline-wrapper">
-              <span className="player-time-text">
-                {formatTime(musicPlayer?.currentTime || 0)}
-              </span>
-              <input 
-                type="range"
-                min={0}
-                max={musicPlayer?.duration || 100}
-                value={musicPlayer?.currentTime || 0}
-                onChange={(e) => musicPlayer?.seek?.(parseFloat(e.target.value))}
-                className="player-timeline"
-                aria-label="Qo'shiq davomiyligi"
-              />
-              <span className="player-time-text">
-                {formatTime(musicPlayer?.duration || 0)}
-              </span>
-            </div>
-          </div>
-        </div>
+        musicOn && <MusicCard player={musicPlayer} lang={lang} variant="full" />
       )}
 
       {/* Smart Truck JDM Navigation Card */}
-      <div 
-        className="bento-action-card bento-jdm-card squircle" 
+      {mapOn && <button 
+        className="bento-action-card bento-jdm-card squircle bento-btn" 
+        type="button"
+        id="home-card-map"
         onClick={() => { triggerSound(); onNavigateToJDM?.(); }}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerSound(); onNavigateToJDM?.(); } }}
-        role="button"
-        tabIndex={0}
         style={{ 
           padding: '10px 12px', 
           cursor: 'pointer', 
@@ -755,70 +580,48 @@ export default function Dashboard({
           boxShadow: '0 3px 14px rgba(16, 185, 129, 0.06)'
         }}
       >
-        <div style={{
-          position: 'absolute',
-          top: '8px',
-          right: '8px',
-          zIndex: 5,
-          background: 'linear-gradient(135deg, #FF9500 0%, #FF2D55 100%)',
-          color: '#FFFFFF',
-          fontSize: '9px',
-          fontWeight: '900',
-          letterSpacing: '0.4px',
-          padding: '2px 7px',
-          borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(255, 149, 0, 0.35)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '3px',
-          textTransform: 'uppercase',
-          whiteSpace: 'nowrap'
-        }}>
-          <Sparkles size={10} color="#FFF" />
-          <span>{getText('comingSoonTag')}</span>
-        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, gap: '10px' }}>
-          <div style={{ flex: 1, minWidth: 0, paddingRight: '40px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-              <span style={{ fontSize: '8.5px', fontWeight: '800', letterSpacing: '0.6px', color: '#10b981', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, gap: '10px' }}>
+          <span style={{ display: 'block', flex: 1, minWidth: 0 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+              <span style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.6px', color: '#10b981', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                 {getText('bentoJDMBadge1')}
               </span>
-              <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.5)' }}></span>
-              <span style={{ fontSize: '8.5px', fontWeight: '800', letterSpacing: '0.6px', color: 'var(--text-secondary)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+              <span aria-hidden="true" style={{ width: '3px', height: '3px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.5)' }}></span>
+              <span style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.6px', color: 'var(--text-secondary)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                 {getText('bentoJDMBadge2')}
               </span>
-            </div>
+            </span>
             
-            <h3 style={{ fontSize: '13px', fontWeight: '850', margin: '0 0 2px 0', color: 'var(--text-main)', letterSpacing: '-0.2px', lineHeight: '1.2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <span style={{ display: 'block', fontSize: '13px', fontWeight: '850', margin: '0 0 2px 0', color: 'var(--text-main)', letterSpacing: '-0.2px', lineHeight: '1.2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {getText('bentoJDMTitle')}
-            </h3>
+            </span>
             
-            <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: '0 0 6px 0', opacity: 0.85, lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-secondary)', margin: '0 0 6px 0', opacity: 0.85, lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {getText('bentoJDMSub')}
-            </p>
+            </span>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', whiteSpace: 'nowrap' }}>
-              <span style={{ fontSize: '8.5px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
-                <Truck size={9} color="#10b981" />
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: '10px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
+                <Compass size={10} color="#10b981" aria-hidden="true" />
                 <span>{getText('bentoJDMSubtag1')}</span>
               </span>
-              <span style={{ fontSize: '8.5px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
-                <ShieldCheck size={9} color="#10b981" />
+              <span style={{ fontSize: '10px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
+                <Sparkles size={10} color="#10b981" aria-hidden="true" />
                 <span>{getText('bentoJDMSubtag2')}</span>
               </span>
-              <span style={{ fontSize: '8.5px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
-                <Navigation size={9} color="#10b981" />
+              <span style={{ fontSize: '10px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
+                <Navigation size={10} color="#10b981" aria-hidden="true" />
                 <span>{getText('bentoJDMSubtag3')}</span>
               </span>
-            </div>
-          </div>
+            </span>
+          </span>
           
-          <div className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 3px 10px rgba(16, 185, 129, 0.3)', width: '30px', height: '30px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 'auto' }} aria-hidden="true">
+          <span className="bento-international-card-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 3px 10px rgba(16, 185, 129, 0.3)', width: '30px', height: '30px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 'auto' }} aria-hidden="true">
             <Navigation size={14} color="#FFF" />
-          </div>
-        </div>
-      </div>
+          </span>
+        </span>
+      </button>}
 
       {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
       <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />

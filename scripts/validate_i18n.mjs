@@ -84,7 +84,8 @@ async function run() {
     for (const item of items) {
       const fullPath = join(dir, item);
       const stat = statSync(fullPath);
-      if (stat.isDirectory() && !item.startsWith('.') && item !== 'node_modules') {
+      // src/admin has its own dictionary (src/admin/i18n.js), not the app locales
+      if (stat.isDirectory() && !item.startsWith('.') && item !== 'node_modules' && item !== 'admin') {
         jsxFiles.push(...scanJsxFiles(fullPath));
       } else if (item.endsWith('.jsx')) {
         jsxFiles.push(fullPath);

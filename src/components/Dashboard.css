@@ -396,17 +396,84 @@ html.dark-mode .dashboard-container {
   box-shadow: 0 4px 12px rgba(0,0,0,0.04);
 }
 
-.bento-text-wrap h4 {
+.bento-text-wrap h4,
+.bento-text-wrap .bento-title {
+  display: block;
   margin: 0 0 4px 0;
   font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
-.bento-text-wrap p {
+.bento-text-wrap p,
+.bento-text-wrap .bento-sub {
+  display: block;
   margin: 0;
   font-size: 11px;
   opacity: 0.7;
+}
+
+/* B3: bento cards are real <button>s. Zero-specificity reset so every card class still wins. */
+:where(.bento-btn) {
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  -webkit-tap-highlight-color: transparent;
+}
+.bento-btn:focus-visible {
+  outline: 2px solid var(--primary, #0a84ff);
+  outline-offset: 3px;
+}
+.dash-hero-card.bento-btn,
+.bento-action-card.bento-btn { width: 100%; text-align: left; }
+.bento-icon-card.bento-btn,
+.bento-my-ads-card.bento-btn,
+.ai-card-left.bento-btn { text-align: left; }
+.ai-card-left.bento-btn { flex: 1; cursor: pointer; }
+.dash-hero-title,
+.dash-hero-sub,
+.my-ads-title,
+.my-ads-desc { display: block; }
+.dash-hero-sub { display: -webkit-box; }
+.bento-my-ads-card .my-ads-desc.my-ads-count { font-weight: 700; color: var(--text-main); opacity: 1; }
+
+/* Carousel dots: small visual, 24px touch target */
+.dash-hero-dots .dot.bento-btn { position: relative; cursor: pointer; transition: width 0.25s ease, background 0.25s ease; }
+.dash-hero-dots .dot.bento-btn::after { content: ''; position: absolute; inset: -9px -4px; }
+
+/* "Coming soon" toast */
+.home-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
+  transform: translateX(-50%);
+  z-index: 9000;
+  max-width: calc(100% - 48px);
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(28, 28, 30, 0.92);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: home-toast-in 0.25s ease-out;
+}
+@keyframes home-toast-in { from { opacity: 0; transform: translate(-50%, 8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-hero-slider { transition: none; }
+  .dash-hero-card, .bento-icon-card, .bento-action-card, .calendar-day, .home-toast { transition: none; animation: none; }
+  .dash-hero-card:hover, .bento-icon-card:hover, .bento-action-card:hover, .calendar-day:hover { transform: none; }
 }
 
 /* Action Card */
@@ -683,6 +750,62 @@ html.dark-mode .btn-skip {
   background: transparent;
   color: var(--text-secondary);
   border: none;
+}
+
+.player-control-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.player-control-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@keyframes music-spin {
+  to { transform: rotate(360deg); }
+}
+
+.music-spin {
+  animation: music-spin 0.9s linear infinite;
+}
+
+.music-sub-label.music-sub-error {
+  color: #FF453A;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-credit-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.music-credit-text {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.music-credit-text a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .music-spin,
+  .music-gradient-icon.playing-pulse {
+    animation: none;
+  }
 }
 
 .volume-slider {
@@ -1076,6 +1199,30 @@ html.dark-mode .ios-switch.checked {
   gap: 12px;
   margin-top: 10px;
 }
+.bento-double-cards-row.is-single { grid-template-columns: 1fr; }
+
+/* Admin announcement (admin.michi.jp.net → コンテンツ・機能) */
+.home-announcement {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.16), rgba(94, 92, 230, 0.14));
+  border: 1px solid rgba(10, 132, 255, 0.28);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text-primary, inherit);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  animation: home-announce-in 0.35s ease-out;
+}
+.home-announcement-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+a.home-announcement:hover { border-color: rgba(10, 132, 255, 0.55); }
+@keyframes home-announce-in { from { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .home-announcement { animation: none; } }
 
 /* Compact music card overrides */
 .bento-music-card.compact-music-card {
@@ -1413,4 +1560,5 @@ html.dark-mode .ambient-light {
     box-sizing: border-box !important;
   }
 }
+
 

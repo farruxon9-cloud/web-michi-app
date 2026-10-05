@@ -2,6 +2,7 @@
 import { API_ENDPOINTS } from '../config/api';
 import { apiFetch } from './apiClient';
 import { clearAllUserDrafts } from '../utils/localDraftStore';
+import { isViewAs, getViewAsToken, getViewAsUser, setViewAsUser, endViewAs } from './viewAsSession';
 
 const TOKEN_KEY = 'michi_jwt_token';
 const REFRESH_TOKEN_KEY = 'michi_refresh_token';
@@ -9,6 +10,8 @@ const USER_KEY = 'michi_user_session';
 const AUTH_USER_KEY = 'michi_auth_user';
 
 export const getStoredToken = () => {
+  // Admin 'view as user' tab: in-memory read-only token wins and never touches localStorage
+  if (isViewAs()) return getViewAsToken();
   try {
     return localStorage.getItem(TOKEN_KEY);
   } catch {
@@ -17,6 +20,7 @@ export const getStoredToken = () => {
 };
 
 export const setStoredToken = (token) => {
+  if (isViewAs()) return;
   try {
     if (token) {
       localStorage.setItem(TOKEN_KEY, token);
@@ -29,6 +33,7 @@ export const setStoredToken = (token) => {
 };
 
 export const getStoredRefreshToken = () => {
+  if (isViewAs()) return null; // never refresh with the admin's own session
   try {
     return localStorage.getItem(REFRESH_TOKEN_KEY);
   } catch {
@@ -37,6 +42,7 @@ export const getStoredRefreshToken = () => {
 };
 
 export const setStoredRefreshToken = (refreshToken) => {
+  if (isViewAs()) return;
   try {
     if (refreshToken) {
       localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
@@ -49,6 +55,7 @@ export const setStoredRefreshToken = (refreshToken) => {
 };
 
 export const getStoredUser = () => {
+  if (isViewAs()) return getViewAsUser();
   try {
     const data = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem(USER_KEY);
     return data ? JSON.parse(data) : null;
@@ -58,6 +65,7 @@ export const getStoredUser = () => {
 };
 
 export const setStoredUser = (user) => {
+  if (isViewAs()) { setViewAsUser(user); return; }
   try {
     if (user) {
       const safeUser = { ...user };
@@ -86,7 +94,12 @@ export const loginUser = async (email, password) => {
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'Login muvaffaqiyatsiz bo\'ldi');
+      const err = new Error(data.message || data.error || 'Login muvaffaqiyatsiz bo\'ldi');
+      // 403 { code: 'SUSPENDED', until, reason } → RoleSelect shows the suspension notice
+      err.status = response.status;
+      if (data.code) err.code = data.code;
+      if (data.code === 'SUSPENDED') { err.until = data.until || null; err.reason = data.reason || ''; }
+      throw err;
     }
 
     const accessToken = data.token || data.accessToken;
@@ -152,8 +165,10 @@ export const fetchCurrentUser = async () => {
     });
 
     if (response.status === 401 || response.status === 403) {
-      // Token rejected (apiFetch already tried a refresh): drop the cached session
-      // so a stale role (e.g. admin) is never trusted.
+      // apiFetch already tried a refresh. If the server rejected the session it cleared the
+      // token; if the refresh only failed transiently (offline/5xx) keep the cached session.
+      // 403 is an explicit refusal (blocked account) — always sign out.
+      if (response.status === 401 && getStoredToken()) return getStoredUser();
       logoutUser();
       return null;
     }
@@ -176,6 +191,10 @@ export const fetchCurrentUser = async () => {
 
 export const getMe = fetchCurrentUser;
 
+/**
+ * @returns {Promise<true|false|null>} true = new token stored; false = server rejected the
+ *   session (log out); null = transient failure (offline, 5xx, 429) — keep the session.
+ */
 export const refreshAccessToken = async () => {
   const refreshToken = getStoredRefreshToken();
   if (!refreshToken) return false;
@@ -198,15 +217,57 @@ export const refreshAccessToken = async () => {
         }
         return true;
       }
+      return false;
     }
-    return false;
+    if (response.status === 400 || response.status === 401 || response.status === 403) return false;
+    return null;
   } catch (err) {
     console.warn('Refresh token error:', err);
-    return false;
+    return null;
   }
 };
 
+/**
+ * PATCH /api/auth/me — save profile edits on the server.
+ * @param {{ fullName?: string, phone?: string, profileData?: object }} patch
+ * @returns {Promise<object|null>} the updated public user (also written to storage)
+ */
+export const updateCurrentUser = async (patch) => {
+  const response = await apiFetch(API_ENDPOINTS.ME, { method: 'PATCH', body: JSON.stringify(patch || {}) });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const err = new Error(data.error || data.message || `Profile save failed (${response.status})`);
+    err.status = response.status;
+    throw err;
+  }
+  const user = data.user || null;
+  if (user) setStoredUser(user);
+  return user;
+};
+
+/**
+ * POST /api/auth/me/verification — company asks Michi admins for the ⭐ "verified partner" badge.
+ * The request lands in the admin panel queue (admin.michi.jp.net → 企業認証).
+ * @param {{ note?: string, docs?: string[] }} [payload] up to 3 document images (data: URLs)
+ * @returns {Promise<object|null>} the updated public user (verification.status === 'pending')
+ */
+export const requestCompanyVerification = async (payload = {}) => {
+  const response = await apiFetch(`${API_ENDPOINTS.ME}/verification`, { method: 'POST', body: JSON.stringify(payload) });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const err = new Error(data.error || data.message || `Verification request failed (${response.status})`);
+    err.status = response.status;
+    err.code = data.code;
+    err.data = data;
+    throw err;
+  }
+  const user = data.user || null;
+  if (user) setStoredUser(user);
+  return user;
+};
+
 export const logoutUser = () => {
+  if (isViewAs()) { endViewAs(); return; }
   const refreshToken = getStoredRefreshToken();
   if (refreshToken) {
     try {
@@ -223,6 +284,9 @@ export const logoutUser = () => {
   // Remove locally kept resume/application drafts so personal data doesn't linger on shared devices
   clearAllUserDrafts();
 };
+
+/** Fired when the server rejects the session; AuthContext listens and resets the UI to signed-out. */
+export const SESSION_EXPIRED_EVENT = 'michi:session-expired';
 
 export const checkEmailExists = async (email) => {
   if (!email || !email.includes('@')) return false;

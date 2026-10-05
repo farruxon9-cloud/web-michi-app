@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "dev:admin": "vite --config vite.admin.config.js",
+    "build:admin": "vite build --config vite.admin.config.js",
     "build:mobile": "vite build && npx cap sync",
     "lint": "eslint src",
     "preview": "vite preview",
@@ -37,6 +39,7 @@
     "lucide-react": "^1.46.0",
     "maplibre-gl": "^6.10.0",
     "pdfmake": "^0.3.11",
+    "qrcode": "^1.5.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-i18next": "^17.0.14",

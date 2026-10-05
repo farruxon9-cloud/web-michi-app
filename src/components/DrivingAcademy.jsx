@@ -49,6 +49,8 @@ import './DrivingAcademy.css';
 import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinadi
 import { fetchSchoolsFromBackend } from '../services/schoolService';
 import { normalizeSchoolPosting } from '../utils/jobPostingNormalizer';
+import { hasActiveApplication } from '../utils/applicationMapper';
+import ReportButton from './ReportButton';
 
 
 
@@ -84,7 +86,7 @@ export const MOCK_SCHOOLS = [
     discount: "¥20,000",
     shoukai: "¥10,000",
     image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "Tokyo, Futako-Tamagawa",
     prefecture: "Tokyo",
     fullAddress: "〒158-0094 Tokyo, Setagaya City, Tamagawa 3-1-1",
@@ -106,7 +108,7 @@ export const MOCK_SCHOOLS = [
     discount: "¥15,000",
     shoukai: "¥5,000",
     image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "Saitama, Omiya",
     prefecture: "Saitama",
     fullAddress: "〒330-0854 Saitama, Omiya-ku, Sakuragicho 2-1",
@@ -150,7 +152,7 @@ export const MOCK_SCHOOLS = [
     discount: "¥5,000",
     shoukai: "¥3,000",
     image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "Kanagawa, Yokohama",
     prefecture: "Kanagawa",
     fullAddress: "〒231-0023 Kanagawa, Yokohama, Naka-ku 4-12",
@@ -172,7 +174,7 @@ export const MOCK_SCHOOLS = [
     discount: "¥30,000",
     shoukai: "¥15,000",
     image: "https://images.unsplash.com/photo-1587293852726-70cdb56c28ea?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "Osaka, Namba",
     prefecture: "Osaka",
     fullAddress: "〒542-0076 Osaka, Chuo Ward, Namba 1-1",
@@ -194,7 +196,7 @@ export const MOCK_SCHOOLS = [
     discount: "¥18,000",
     shoukai: "¥8,000",
     image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "Aichi, Nagoya",
     prefecture: "Aichi",
     fullAddress: "〒453-0015 Aichi, Nagoya, Nakamura-ku 5-8",
@@ -219,7 +221,6 @@ export const MOCK_SCHOOLS = [
  * 
  * PROPS (Tashqaridan olinadigan ma'lumotlar):
  * 
- * @param {boolean} isContractActive     — Kompaniya shartnomasi faolmi (verified badge uchun)
  * @param {function} onApplySchool       — Maktabga ariza topshirish funksiyasi (school, referrerName)
  * @param {Array} schoolApplications     — Topshirilgan arizalar ro'yxati
  * @param {function} onShoukaiPaid       — Shoukai to'lovi tasdiqlash funksiyasi
@@ -234,7 +235,7 @@ export const MOCK_SCHOOLS = [
  * ==========================================================================
  */
 export default function DrivingAcademy({ 
-  isContractActive, onApplySchool, schoolApplications = [], onShoukaiPaid, 
+  onApplySchool, schoolApplications = [], onShoukaiPaid, 
   profileData, onShoukai, verifiedCompanies = [], onToggleSave, userRole,
   selectedSchool, setSelectedSchool, onBackPress, schools = MOCK_SCHOOLS, setSchools,
   onEditJob, searchQuery = '', setSearchQuery
@@ -424,8 +425,9 @@ export default function DrivingAcademy({
      * existingApp — Foydalanuvchining ushbu maktabga topshirgan arizasini topadi.
      * isSimulatedReferral — Simulyatsiya tavsiyalarini hisobga olmaydi,
      * faqat foydalanuvchining o'z arizalarini tekshiradi.
+     * Withdrawn (取り下げ) arizalar qayta topshirishga to'sqinlik qilmaydi.
      */
-    const existingApp = schoolApplications.find(a => a.schoolId === school.id && !a.isSimulatedReferral);
+    const existingApp = (schoolApplications || []).find(a => String(a.schoolId) === String(school.id) && !a.isSimulatedReferral && a.status !== 'withdrawn');
     const hasApplied = !!existingApp;
     
     /** isSaved — Ushbu maktab profilning "Saqlanganlar" bo'limida bormi */
@@ -512,7 +514,7 @@ export default function DrivingAcademy({
             {/* ------- SARLAVHA: Nom + Verified Badge ------- */}
             <div className="school-header-row" style={{ marginBottom: '4px' }}>
               <h2 className="school-name" style={{ fontSize: '22px' }}>{t(`school_${school.id}_name`, school.name)}</h2>
-              {(school.verified || isContractActive) && <VerifiedBadge size={20} />}
+              {(school.verified === true) && <VerifiedBadge size={20} verifiedAt={school.verifiedAt} />}
             </div>
             
             {/* ------- JOYLASHUV ------- */}
@@ -619,7 +621,7 @@ export default function DrivingAcademy({
                 <div style={{ marginTop: '12px', fontSize: '13px', color: 'var(--text-secondary)', background: 'rgba(255,159,10,0.06)', border: '1px solid rgba(255,159,10,0.15)', padding: '12px', borderRadius: '12px', lineHeight: '1.4' }}>
                   <strong style={{ color: 'var(--text-main)', display: 'block', marginBottom: '4px' }}>{t('shoukaiConditionsTitle', 'Shoukai shartlari va izohlari')}:</strong>
                   <div style={{ whiteSpace: 'pre-wrap', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
-                    {school.shoukaiConditions || t('defaultSchoolShoukaiConditions', 'Sinov/O\'qish boshlash muddatidan so\'ng tavsiya qiluvchiga mukofot to\'lanadi.')}
+                    {school.shoukaiConditions || t('notProvided')}
                   </div>
                 </div>
 
@@ -679,6 +681,13 @@ export default function DrivingAcademy({
               </div>
             )}
           </div>
+
+            {/* Shikoyat (通報) — faqat serverdagi, o'zimizniki bo'lmagan maktablar */}
+            {school.authorId && !school.isMine && String(profileData?.accountId || '') !== String(school.authorId) && (
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <ReportButton targetType="school" targetId={school.id} />
+              </div>
+            )}
 
             {/* ============================================================
                 PASTKI TUGMALAR PANELI (PILL SHAKL)
@@ -1872,7 +1881,7 @@ export default function DrivingAcademy({
       <div className="jobs-list hide-scrollbar">
         {filteredSchools.slice(0, visibleCount).map(school => {
           /** showVerified — Maktab tasdiqlangan YOKI shartnoma faol bo'lsa badge ko'rsatiladi */
-          const showVerified = school.verified || isContractActive;
+          const showVerified = school.verified === true;
           return (
             <div key={school.id} className="job-card-hz glass" onClick={() => setSelectedSchool(school)}>
               <div className="job-card-main-layout">
@@ -1894,7 +1903,7 @@ export default function DrivingAcademy({
                   {/* Maktab nomi + Verified badge */}
                   <div className="job-card-company">
                     <span>{t(`school_${school.id}_name`, school.name)}</span>
-                    {showVerified && <VerifiedBadge size={14} />}
+                    {showVerified && <VerifiedBadge size={14} verifiedAt={school.verifiedAt} />}
                   </div>
 
                   {/* Toifa turi */}
@@ -1956,7 +1965,7 @@ export default function DrivingAcademy({
                   )
                 ) : (
                   (() => {
-                    const alreadyApplied = (schoolApplications || []).some(a => a.schoolId === school.id && !a.isSimulatedReferral);
+                    const alreadyApplied = hasActiveApplication(schoolApplications, { schoolId: school.id });
                     return alreadyApplied ? (
                       <button 
                         className="job-card-btn btn-apply applied" 

@@ -12,34 +12,37 @@ import JobDetail from './components/JobDetail';
 import DrivingAcademy from './components/DrivingAcademy';
 import ServiceComingSoon from './components/ServiceComingSoon';
 import Profile from './components/Profile';
-import AdminDashboard from './components/AdminDashboard';
 import VoiceAssistant from './components/VoiceAssistant';
 import RobotAvatar from './components/RobotAvatar';
-import JDMNavigation from './components/JDMNavigation';
+// Real map page (stage 1). Lazy so maplibre (~800KB) loads only when the map is opened.
+const MichiMap = React.lazy(() => import('./components/map/MichiMap'));
 import AssistHeroShowcase from './components/AssistHeroShowcase';
 import ErrorBoundary from './components/ErrorBoundary';
 import ReferralModal from './components/ReferralModal';
 import { getPermanentUserId } from './utils/userIdManager';
-import { loadUserDraft, saveUserDraft, pickProfileDraft } from './utils/localDraftStore';
+import { loadUserDraft, saveUserDraft, removeUserDraft, pickProfileDraft } from './utils/localDraftStore';
+import { buildProfilePatch, profileFingerprint } from './utils/profileSync';
 import { sanitizeStoredApplications, slimApplicationsForStorage } from './utils/applicationItems';
 import { AppProvider } from './context/AppContext';
-import { submitApplicationToBackend, notifyCompanyNewApplication, notifyApplicantStatusChange } from './services/applicationService';
+import { submitApplicationToBackend, fetchApplications, updateApplicationStatus, notifyCompanyNewApplication, notifyApplicantStatusChange } from './services/applicationService';
+import { splitApplications, findStatusChanges, hasActiveApplication } from './utils/applicationMapper';
 import { useAuth } from './context/AuthContext';
-import { API_ENDPOINTS } from './config/api';
-import { apiFetch } from './services/apiClient';
+import { requestCompanyVerification } from './services/authService';
+import { isViewAs } from './services/viewAsSession';
+import ViewAsBanner from './components/ViewAsBanner';
+import { useRemoteContent, broadcastStore } from './hooks/useRemoteContent';
+import { markNotificationRead, markAllNotificationsRead } from './services/accountApi';
+import './components/trust.css';
+import MaintenanceScreen from './components/MaintenanceScreen';
 import { fetchSchools } from './services/michiSchoolsApiService';
 import { normalizeSchoolPosting } from './utils/jobPostingNormalizer';
 import { isProfileCompleteData } from './utils/profileCompleteness';
 import { useJobFeed } from './hooks/useJobFeed';
+import { useMusicPlayer } from './hooks/useMusicPlayer';
+import { MUSIC_TRACKS } from './data/musicTracks';
 
 
 
-const TRACKS = [
-  { id: 1, title: 'Tokyo Rain (東京の雨)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/chill-lofi-background-music-331434.mp3' },
-  { id: 2, title: 'Kyoto Sunset (京都の夕日)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/lofi-chill-background-music-313055.mp3' },
-  { id: 3, title: 'Shibuya Midnight (渋谷の夜中)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/piano-and-beat-120539.mp3' },
-  { id: 4, title: 'Osaka Neon (大阪のネオン)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/bell-fi-broadcasts-181511.mp3' }
-];
 
 const mockIncomingApplications = [];
 
@@ -85,7 +88,7 @@ function App() {
       return false;
     }
   });
-  const { user, userRole, setUserRole, logout } = useAuth();
+  const { user, userRole, setUserRole, logout, updateProfile, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [showJDMNavigation, setShowJDMNavigation] = useState(false);
   const [showAssistHeroShowcase, setShowAssistHeroShowcase] = useState(false);
@@ -114,17 +117,39 @@ function App() {
     if (showJDMNavigation) setHasOpenedJDM(true);
   }, [showJDMNavigation]);
 
-  // Sync profileData when user object from AuthContext updates
+  // Map overlay ↔ browser history: hardware/browser Back closes the map instead of leaving the app
+  useEffect(() => {
+    if (!showJDMNavigation) return undefined;
+    window.history.pushState({ michiMap: true }, '');
+    const onPop = () => setShowJDMNavigation(false);
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      // Closed from inside the app (tab switch etc.) → drop our history entry
+      if (window.history.state?.michiMap) window.history.back();
+    };
+  }, [showJDMNavigation]);
+
+  // true while profile edits are not yet saved on the server (persisted so a reload keeps them)
+  const [initialProfilePending] = useState(() => Boolean(loadUserDraft('profile_sync_pending', getPermanentUserId(), false)));
+  const profileDirtyRef = useRef(initialProfilePending);
+
+  // Sync profileData when user object from AuthContext updates.
+  // accountId = server user id (jobs.authorId); never sent with applications.
+  // While local edits are not yet saved on the server, keep them (don't overwrite with the
+  // older server snapshot) — see the profile sync effect below.
   useEffect(() => {
     if (user) {
-      if (user.profileData || user.fullName) {
-        setProfileData(prev => ({
+      setProfileData(prev => (profileDirtyRef.current
+        ? { ...prev, accountId: user.id || prev.accountId || null }
+        : {
           ...prev,
           ...(user.profileData || {}),
           fullName: user.fullName || user.profileData?.fullName || prev.fullName,
-          email: user.email || user.profileData?.email || prev.email
+          email: user.email || user.profileData?.email || prev.email,
+          phone: user.phone || user.profileData?.phone || prev.phone,
+          accountId: user.id || prev.accountId || null
         }));
-      }
     }
   }, [user]);
 
@@ -199,60 +224,9 @@ function App() {
     });
   }, []);
 
-  // 🎵 Radio Player Integratsiyasi
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [volume, setVolume] = useState(0.7);
-  const audioRef = useRef(null);
+  // 🎵 Background music (one player for home card, voice commands and macOS home)
+  const musicPlayer = useMusicPlayer(MUSIC_TRACKS);
   const mainContentRef = useRef(null);
-
-  useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio(TRACKS[currentTrackIndex].url);
-      audioRef.current.volume = volume;
-      audioRef.current.onended = () => {
-        setCurrentTrackIndex(prev => (prev + 1) % TRACKS.length);
-      };
-    }
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.src = TRACKS[currentTrackIndex].url;
-      if (isPlaying) {
-        audioRef.current.play().catch(() => setIsPlaying(false));
-      }
-    }
-  }, [currentTrackIndex]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.play().catch(() => setIsPlaying(false));
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [isPlaying]);
-
-  const musicPlayer = useMemo(() => ({
-    play: () => setIsPlaying(true),
-    pause: () => setIsPlaying(false),
-    next: () => setCurrentTrackIndex(prev => (prev + 1) % TRACKS.length),
-    previous: () => setCurrentTrackIndex(prev => (prev - 1 + TRACKS.length) % TRACKS.length),
-    setVolume: (v) => {
-      setVolume(v);
-      if (audioRef.current) audioRef.current.volume = v;
-    },
-    isPlaying,
-    currentTrack: TRACKS[currentTrackIndex]
-  }), [isPlaying, currentTrackIndex]);
 
   // Tab almashganda tepaga skroll va dinamik SEO Title o'rnatish
   useEffect(() => {
@@ -290,13 +264,16 @@ function App() {
   const [minSalary, setMinSalary] = useState(0);
   const [selectedPrefecture, setSelectedPrefecture] = useState('all');
 
-  const [contractStatus, setContractStatus] = useState('none');
-  const [verifiedCompanies, setVerifiedCompanies] = useState(['Sagawa Express', 'Yamato Transport']);
-
-  const handleToggleVerify = (companyId) => {
-    setVerifiedCompanies(prev => 
-      prev.includes(companyId) ? prev.filter(id => id !== companyId) : [...prev, companyId]
-    );
+  // Company ⭐ badge status comes from the server (approved in admin.michi.jp.net → 企業認証).
+  // UI vocabulary: 'none' | 'pending' | 'active' (verified) | 'rejected'
+  const verificationStatus = user?.verification?.status;
+  const contractStatus = verificationStatus === 'verified' ? 'active'
+    : verificationStatus === 'pending' ? 'pending'
+      : verificationStatus === 'rejected' ? 'rejected' : 'none';
+  const setContractStatus = async (next) => {
+    if (next !== 'pending') return;
+    await requestCompanyVerification({});
+    await refreshUser();
   };
 
   const handleSchoolClick = (school) => {
@@ -405,7 +382,8 @@ function App() {
           ...base,
           ...profile,
           fullName: user.fullName || profile.fullName || base.fullName,
-          email: user.email || profile.email || base.email
+          email: user.email || profile.email || base.email,
+          accountId: user.id || null
         };
       }
     } catch {}
@@ -421,6 +399,7 @@ function App() {
   useEffect(() => {
     if (prevRoleRef.current && !userRole) {
       skipNextDraftSaveRef.current = true;
+      profileDirtyRef.current = false;
       setProfileData(createBaseProfile());
     }
     prevRoleRef.current = userRole;
@@ -439,25 +418,96 @@ function App() {
     return () => clearTimeout(timer);
   }, [profileData]);
 
+  // ---- Server profile sync (PATCH /api/auth/me) ----
+  // Edits go through handleUpdateProfile → marked unsynced → saved ~1.5s after the last change.
+  // Transient failures (offline/5xx/429) retry on reconnect / when the tab becomes visible;
+  // invalid input (400/413) shows one alert and waits for the next edit.
+  const [profileSyncTick, setProfileSyncTick] = useState(0);
+  const profileDataRef = useRef(profileData);
+  useEffect(() => { profileDataRef.current = profileData; }, [profileData]);
+  const markProfileDirty = useCallback(() => {
+    profileDirtyRef.current = true;
+    saveUserDraft('profile_sync_pending', getPermanentUserId(), true);
+  }, []);
+  const handleUpdateProfile = useCallback((newData) => {
+    setProfileData(prev => ({ ...prev, ...newData }));
+    markProfileDirty();
+  }, [markProfileDirty, setProfileData]);
+
+  useEffect(() => {
+    if (!profileDirtyRef.current || !user || (userRole !== 'driver' && userRole !== 'company')) return undefined;
+    const timer = setTimeout(async () => {
+      const sent = profileDataRef.current;
+      const fp = profileFingerprint(sent);
+      try {
+        await updateProfile(buildProfilePatch(sent));
+        if (profileFingerprint(profileDataRef.current) === fp) {
+          profileDirtyRef.current = false;
+          removeUserDraft('profile_sync_pending', getPermanentUserId());
+        } else {
+          setProfileSyncTick(n => n + 1); // edited while saving → save again
+        }
+      } catch (err) {
+        console.warn('[App] profile save failed:', err.message);
+        if (err.status === 400 || err.status === 413) {
+          profileDirtyRef.current = false;
+          removeUserDraft('profile_sync_pending', getPermanentUserId());
+          alert(t('profileSaveError', 'プロフィールをサーバーに保存できませんでした。'));
+        }
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [profileData, profileSyncTick, user, userRole, updateProfile, t]);
+
+  useEffect(() => {
+    const retry = () => { if (profileDirtyRef.current && document.visibilityState !== 'hidden') setProfileSyncTick(n => n + 1); };
+    window.addEventListener('online', retry);
+    document.addEventListener('visibilitychange', retry);
+    return () => {
+      window.removeEventListener('online', retry);
+      document.removeEventListener('visibilitychange', retry);
+    };
+  }, []);
+
   const feed = useJobFeed();
   const [companyJobs, setCompanyJobs] = useState([]);
   const [schools, setSchools] = useState([]);
-  // Driver's own applications are kept locally per user (backend has no driver GET yet)
+  // Driver: own applications (server is the source of truth; a slim local copy is kept for
+  // offline start-up). Company: applications to its own listings, loaded from the server.
   const [applications, setApplications] = useState(() =>
     sanitizeStoredApplications(loadUserDraft('applications', profileData.userId, []))
   );
   const [notifications, setNotifications] = useState([]);
+  // Admin-managed feature flags, home announcement and broadcasts (admin.michi.jp.net), applied within ~60 s
+  const remote = useRemoteContent({ lang: i18n.language, role: userRole, setNotifications });
+  const jobsOn = remote.isOn('jobs');
+  const academyOn = remote.isOn('academy');
+  useEffect(() => {
+    // A tab switched off in the admin panel → go home instead of showing a hidden section
+    if ((activeTab === 'jobs' && !jobsOn) || (activeTab === 'academy' && !academyOn)) setActiveTab('home');
+  }, [activeTab, jobsOn, academyOn]);
 
+  // Broadcast (admin) notifications remember read/dismissed state across reloads (broadcastStore)
+  // Personal notifications (type 'personal') also tell the server: POST /api/notifications/:id/read | read-all
+  const notificationsRef = useRef(notifications);
+  useEffect(() => { notificationsRef.current = notifications; }, [notifications]);
   const handleMarkNotifRead = useCallback((id) => {
+    broadcastStore.markRead([id]);
+    const target = notificationsRef.current.find(n => n.id === id);
+    if (target && target.type === 'personal' && !target.read) markNotificationRead(id).catch(() => {});
     setNotifications(prev => prev.map(n => (n.id === id ? { ...n, read: true } : n)));
   }, []);
   const handleMarkAllNotifsRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => (n.read ? n : { ...n, read: true })));
+    if (notificationsRef.current.some(n => n.type === 'personal' && !n.read)) markAllNotificationsRead().catch(() => {});
+    setNotifications(prev => { broadcastStore.markRead(prev.map(n => n.id)); return prev.map(n => (n.read ? n : { ...n, read: true })); });
   }, []);
   const handleDeleteNotif = useCallback((id) => {
+    broadcastStore.dismiss([id]);
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
-  const handleClearAllNotifs = useCallback(() => setNotifications([]), []);
+  const handleClearAllNotifs = useCallback(() => {
+    setNotifications(prev => { broadcastStore.dismiss(prev.map(n => n.id)); return []; });
+  }, []);
   const handleShoukaiPaid = useCallback((appId) => {
     setApplications(prev => prev.map(a => (a.id === appId ? { ...a, shoukaiPaid: true } : a)));
   }, []);
@@ -484,13 +534,14 @@ function App() {
       return;
     }
 
-    const exists = applications.find(a => a.jobId === job.id && !a.isSimulatedReferral);
+    const exists = hasActiveApplication(applications, { jobId: job.id });
     if (exists) return;
 
     const refId = await openReferralModal(job, 'job');
 
+    const tempId = `local_${Date.now()}`;
     const newApp = {
-      id: Date.now(),
+      id: tempId,
       jobId: job.id,
       company: job.company,
       title: job.title,
@@ -509,11 +560,16 @@ function App() {
 
     // Send application to central backend server (https://api.michi.jp.net/api/applications)
     try {
-      await submitApplicationToBackend(job.id, profileData, branchId);
+      const result = await submitApplicationToBackend(job.id, profileData, branchId, { branchName, referrerId: refId || null });
+      // Swap the optimistic entry for the server record (real id → status updates work)
+      const saved = result && result.mapped;
+      setApplications(prev => prev.map(a => (a.id === tempId
+        ? { ...newApp, ...(saved || {}), title: (saved && saved.title) || newApp.title, company: (saved && saved.company) || newApp.company, logo: (saved && saved.logo) || newApp.logo, shoukaiAmount: (saved && saved.shoukaiAmount) || newApp.shoukaiAmount }
+        : a)));
     } catch (err) {
       console.error('Application submit to backend error:', err);
       // Roll back the optimistic entry so the user can retry
-      setApplications(prev => prev.filter(a => a.id !== newApp.id));
+      setApplications(prev => prev.filter(a => a.id !== tempId));
       alert(t('applySubmitError', '応募の送信に失敗しました。通信環境を確認して再度お試しください。'));
       return;
     }
@@ -534,42 +590,62 @@ function App() {
     }
   }, [userRole, applications, profileData, isProfileComplete, openReferralModal, t]);
 
-  const handleChangeAppStatus = (appId, newStatus) => {
-    const targetApp = applications.find(a => a.id === appId);
+  /** Company moves an application (PATCH /api/applications/:id); optimistic with rollback. */
+  const handleChangeAppStatus = useCallback(async (appId, newStatus) => {
+    const inJobs = applications.find(a => a.id === appId);
+    const targetApp = inJobs || schoolApplicationsRef.current.find(a => a.id === appId);
     if (!targetApp || targetApp.status === newStatus) return;
+    const setList = inJobs ? setApplications : setSchoolApplications;
+    const prevStatus = targetApp.status;
 
-    setApplications(prev => prev.map(a => 
-      a.id === appId ? { ...a, status: newStatus } : a
-    ));
+    setList(prev => prev.map(a => (a.id === appId ? { ...a, status: newStatus } : a)));
+    try {
+      const saved = await updateApplicationStatus(targetApp.serverId || appId, newStatus);
+      if (saved) setList(prev => prev.map(a => (a.id === appId ? { ...a, status: saved.status, updatedAt: saved.updatedAt } : a)));
+    } catch (err) {
+      console.error('Application status update error:', err);
+      setList(prev => prev.map(a => (a.id === appId ? { ...a, status: prevStatus } : a)));
+      alert(t('appStatusUpdateError', 'ステータスを更新できませんでした。通信環境を確認して再度お試しください。'));
+      return;
+    }
 
     if (['accepted', 'interview', 'reviewed', 'rejected'].includes(newStatus)) {
-      const notif = {
-        id: Date.now(),
-        type: newStatus,
-        company: targetApp.company,
-        title: targetApp.title,
-        date: new Date().toLocaleString(),
-        read: false,
-      };
-      setNotifications(prev => [notif, ...prev]);
-
-      // Notify candidate via email webhook proxy
-      const candidateEmail = targetApp.applicantInfo?.email || targetApp.email || profileData?.email;
+      // Notify candidate via email webhook proxy (best effort)
+      const candidateEmail = targetApp.applicantInfo?.email || targetApp.email;
       if (candidateEmail) {
         notifyApplicantStatusChange({
           applicantEmail: candidateEmail,
-          applicantName: targetApp.applicantInfo?.fullName || targetApp.applicantInfo?.name || profileData?.fullName || 'Haydovchi',
+          applicantName: targetApp.applicantInfo?.fullName || targetApp.applicantInfo?.name || 'Haydovchi',
           companyName: targetApp.company,
-          jobTitle: targetApp.title,
+          jobTitle: targetApp.title || targetApp.schoolName,
           newStatus
         }).catch(err => console.warn('[App] Applicant email notification warning:', err.message));
       }
     }
-  };
+  }, [applications, t]);
+
+  /** Driver withdraws own application (job or school). Returns true on success. */
+  const handleWithdrawApplication = useCallback(async (app) => {
+    if (!app) return false;
+    const setList = app.isSchool ? setSchoolApplications : setApplications;
+    const prevStatus = app.status;
+    setList(prev => prev.map(a => (a.id === app.id ? { ...a, status: 'withdrawn' } : a)));
+    try {
+      await updateApplicationStatus(app.serverId || app.id, 'withdrawn');
+      return true;
+    } catch (err) {
+      console.error('Application withdraw error:', err);
+      setList(prev => prev.map(a => (a.id === app.id ? { ...a, status: prevStatus } : a)));
+      alert(t('withdrawError', '応募を取り下げられませんでした。通信環境を確認して再度お試しください。'));
+      return false;
+    }
+  }, [t]);
 
   const [schoolApplications, setSchoolApplications] = useState(() =>
     sanitizeStoredApplications(loadUserDraft('school_applications', profileData.userId, []))
   );
+  const schoolApplicationsRef = useRef(schoolApplications);
+  useEffect(() => { schoolApplicationsRef.current = schoolApplications; }, [schoolApplications]);
 
   // Persist the driver's own application lists (slim copy, no embedded profile snapshot)
   useEffect(() => {
@@ -605,15 +681,18 @@ function App() {
       return;
     }
 
-    const exists = schoolApplications.find(a => a.schoolId === school.id && !a.isSimulatedReferral);
+    const exists = hasActiveApplication(schoolApplications, { schoolId: school.id });
     if (exists) return;
 
     const refId = await openReferralModal(school, 'school');
 
+    const tempId = `local_${Date.now()}`;
     const newApp = {
-      id: Date.now(),
+      id: tempId,
+      isSchool: true,
       schoolId: school.id,
       schoolName: school.name,
+      status: 'submitted',
       shoukaiId: refId || null,
       shoukaiAmount: school.shoukaiAmount || null,
       paid: false,
@@ -622,24 +701,73 @@ function App() {
       applicantInfo: { ...profileData }
     };
     setSchoolApplications(prev => [...prev, newApp]);
-  }, [userRole, schoolApplications, profileData, isProfileComplete, openReferralModal]);
+
+    try {
+      const result = await submitApplicationToBackend(school.id, profileData, null, { type: 'school', referrerId: refId || null });
+      const saved = result && result.mapped;
+      setSchoolApplications(prev => prev.map(a => (a.id === tempId
+        ? { ...newApp, ...(saved || {}), schoolName: (saved && saved.schoolName) || newApp.schoolName, company: (saved && saved.company) || newApp.schoolName }
+        : a)));
+    } catch (err) {
+      console.error('School application submit error:', err);
+      setSchoolApplications(prev => prev.filter(a => a.id !== tempId));
+      alert(t('applySubmitError', '応募の送信に失敗しました。通信環境を確認して再度お試しください。'));
+    }
+  }, [userRole, schoolApplications, profileData, isProfileComplete, openReferralModal, t]);
+
+  // Load applications from the server (driver: own; company: to its listings).
+  const applicationsRef = useRef(applications);
+  useEffect(() => { applicationsRef.current = applications; }, [applications]);
+  const refreshApplications = useCallback(async () => {
+    if (userRole !== 'driver' && userRole !== 'company') return;
+    try {
+      const mapped = await fetchApplications();
+      const { jobs, schools: schoolApps } = splitApplications(mapped);
+      if (userRole === 'driver') {
+        // Raise in-app notifications for status changes made by companies since last load
+        const changed = findStatusChanges([...applicationsRef.current, ...schoolApplicationsRef.current], mapped);
+        if (changed.length) {
+          setNotifications(prev => [
+            ...changed.map((a, i) => ({
+              id: `${a.serverId}:${a.status}:${Date.now() + i}`,
+              type: a.status,
+              company: a.company,
+              title: a.title || a.schoolName,
+              date: new Date(a.updatedAt || Date.now()).toLocaleString(),
+              read: false,
+            })),
+            ...prev,
+          ]);
+        }
+      }
+      // Keep optimistic entries that are still being submitted (temp ids, not on the server yet)
+      const keepPending = (serverList, key) => (prev) => [
+        ...serverList,
+        ...prev.filter(a => String(a.id).startsWith('local_') && !serverList.some(s => String(s[key]) === String(a[key]))),
+      ];
+      setApplications(keepPending(jobs, 'jobId'));
+      setSchoolApplications(keepPending(schoolApps, 'schoolId'));
+    } catch (err) {
+      // Keep what we have (offline / server busy); company starts empty rather than stale
+      console.warn('[App] fetchApplications warning:', err.message);
+      if (userRole === 'company' && err.status === 401) { setApplications([]); setSchoolApplications([]); }
+    }
+  }, [userRole, setApplications, setSchoolApplications, setNotifications]);
 
   useEffect(() => {
-    if (userRole === 'company') {
-      let isMounted = true;
-      apiFetch(API_ENDPOINTS.APPLICATIONS)
-        .then(res => res.json())
-        .then(data => {
-          if (isMounted) {
-            setApplications(data.applications || data.data || []);
-          }
-        })
-        .catch(() => {
-          if (isMounted) setApplications([]);
-        });
-      return () => { isMounted = false; };
-    }
-  }, [userRole]);
+    refreshApplications();
+  }, [refreshApplications]);
+
+  // Re-sync when the profile tab is opened and when the app comes back to the foreground
+  useEffect(() => {
+    if (activeTab === 'profile') refreshApplications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === 'visible') refreshApplications(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [refreshApplications]);
 
   useEffect(() => {
     let isMounted = true;
@@ -657,15 +785,7 @@ function App() {
 
   const handleRoleSelection = async (role, data) => {
     setUserRole(role);
-    if (role === 'company') {
-      try {
-        const realApps = await apiFetch(API_ENDPOINTS.APPLICATIONS);
-        const resData = await realApps.json();
-        setApplications(resData.applications || resData.data || []);
-      } catch {
-        setApplications([]);
-      }
-    }
+    // Applications for the new role are loaded by refreshApplications (runs on role change)
     if (data) {
       setProfileData(prev => ({
         ...prev,
@@ -730,7 +850,6 @@ function App() {
   if (showSplash) return <ErrorBoundary><Splash onFinish={() => setShowSplash(false)} /></ErrorBoundary>;
   if (!languageSelected) return <ErrorBoundary><LanguageSelect onFinish={() => setLanguageSelected(true)} /></ErrorBoundary>;
   if (!userRole) return <ErrorBoundary><RoleSelect onSelectRole={handleRoleSelection} onGuest={() => handleRoleSelection('guest')} initialStep={authInitialStep} /></ErrorBoundary>;
-  if (userRole === 'admin') return <ErrorBoundary><AdminDashboard verifiedCompanies={verifiedCompanies} onToggleVerify={handleToggleVerify} onLogout={() => logout()} contractStatus={contractStatus} setContractStatus={setContractStatus} profileData={profileData} /></ErrorBoundary>;
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -749,6 +868,10 @@ function App() {
             onNavigateToInternational={handleNavigateToInternationalJobs}
             onNavigateToJDM={() => setShowJDMNavigation(true)}
             onOpenAssistShowcase={() => setShowAssistHeroShowcase(true)}
+            musicPlayer={musicPlayer}
+            flags={remote.flags}
+            announcement={remote.announcement}
+            applications={applications}
           />
         );
       case 'jobs':
@@ -757,8 +880,6 @@ function App() {
             onJobClick={setSelectedJob} 
             jobs={feed.jobs} 
             feed={feed}
-            isContractActive={contractStatus === 'active'} 
-            verifiedCompanies={verifiedCompanies} 
             onShoukai={handleShoukai} 
             onApply={handleApplyJob}
             applications={applications}
@@ -773,12 +894,10 @@ function App() {
       case 'academy':
         return (
           <DrivingAcademy 
-            isContractActive={contractStatus === 'active'} 
             onApplySchool={handleApplySchool}
             schoolApplications={schoolApplications}
             profileData={profileData}
             onShoukai={handleShoukai}
-            verifiedCompanies={verifiedCompanies}
             onToggleSave={handleToggleSave}
             userRole={userRole}
             selectedSchool={selectedSchool}
@@ -805,13 +924,14 @@ function App() {
             isVoiceStandby={isVoiceStandby}
             setIsVoiceStandby={setIsVoiceStandby}
             onChangeLanguage={() => setLanguageSelected(false)}
-            onUpdateProfile={(newData) => setProfileData(prev => ({ ...prev, ...newData }))}
+            onUpdateProfile={handleUpdateProfile}
             onApply={handleApplyJob}
             onApplySchool={handleApplySchool}
             onShoukai={handleShoukai}
             applications={applications}
             schoolApplications={schoolApplications}
             onChangeAppStatus={handleChangeAppStatus}
+            onWithdrawApplication={handleWithdrawApplication}
             notifications={notifications}
             setNotifications={setNotifications}
             onMarkRead={handleMarkNotifRead}
@@ -838,7 +958,7 @@ function App() {
           />
         );
       default:
-        return <DriverFeed onJobClick={setSelectedJob} jobs={feed.jobs} feed={feed} verifiedCompanies={verifiedCompanies} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={feed.jobs} feed={feed} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
     }
   };
 
@@ -846,6 +966,8 @@ function App() {
     <ErrorBoundary>
       <AppProvider value={{ userRole, setUserRole, profileData, darkMode, setDarkMode, activeTab, setActiveTab }}>
         <div className="app-layout">
+          {isViewAs() && <ViewAsBanner name={user?.fullName || ''} />}
+          {remote.isOn('maintenance') && !isViewAs() && <MaintenanceScreen />}
           <div className="glass-blob blob-1"></div>
           <div className="glass-blob blob-2"></div>
           <div className="glass-blob blob-3"></div>
@@ -883,11 +1005,11 @@ function App() {
             </div>
 
             <div className="header-robot-right">
-              <RobotAvatar 
+              {remote.isOn('voiceAI') && <RobotAvatar 
                 isVoiceActive={isVoiceActive || isVoiceStandby} 
                 voiceStatus={isVoiceActive ? voiceStatus : 'idle'} 
                 onClick={handleVoiceToggle} 
-              />
+              />}
             </div>
           </header>
 
@@ -931,11 +1053,13 @@ function App() {
               }}
             >
               <ChunkErrorBoundary>
-                <JDMNavigation 
-                  onBack={() => setShowJDMNavigation(false)} 
-                  showJDMNavigation={showJDMNavigation} 
-                  darkMode={darkMode} 
-                />
+                <React.Suspense fallback={null}>
+                  <MichiMap
+                    onBack={() => setShowJDMNavigation(false)}
+                    isOpen={showJDMNavigation}
+                    darkMode={darkMode}
+                  />
+                </React.Suspense>
               </ChunkErrorBoundary>
             </div>
           )}
@@ -985,10 +1109,11 @@ function App() {
             isVoiceStandby={isVoiceStandby} 
             isVoiceActive={isVoiceActive} 
             voiceStatus={voiceStatus} 
+            hiddenTabs={[!remote.isOn('jobs') && 'jobs', !remote.isOn('academy') && 'academy'].filter(Boolean)}
           />
 
           {/* Markaziy Ovozli Yordamchi Orchestrator */}
-          <VoiceAssistant 
+          {remote.isOn('voiceAI') && <VoiceAssistant 
             isActive={isVoiceActive} 
             onClose={() => {
               setIsVoiceActive(false);
@@ -1026,7 +1151,7 @@ function App() {
             selectedPrefecture={selectedPrefecture}
             setSelectedPrefecture={setSelectedPrefecture}
             setApplications={setApplications}
-          />
+          />}
 
           {/* Shoukai Taklif Kodi Modali */}
           <ReferralModal 

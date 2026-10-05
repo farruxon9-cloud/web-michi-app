@@ -1,34 +1,42 @@
 // v1.1 Faza E: Profile.jsx dagi `activePage === 'applications'` sahifasi o'zgarishsiz ko'chirildi.
 // Holat va funksiyalar Profile'dan `ctx` orqali keladi (klasslar, stil va DOM bir xil).
-import { FileText, CheckCircle2, Briefcase, Share2, ArrowLeft, RotateCcw, UserCheck, UserX, FileCheck, Calendar, GraduationCap, EyeOff, Circle } from 'lucide-react';
+import { FileText, CheckCircle2, Briefcase, Share2, ArrowLeft, RotateCcw, UserCheck, UserX, FileCheck, Calendar, GraduationCap, EyeOff, Circle, BadgeCheck } from 'lucide-react';
 import { appItemKey, filterHiddenApps } from '../../utils/applicationItems';
+import { WITHDRAWABLE_STATUSES } from '../../utils/applicationMapper';
 import { STATUS_PIPELINE, STATUS_COLORS, HIDE_LINK_BTN, HIDE_PILL_BTN, HIDE_SMALL_BTN, safeDomId } from './profileShared';
 import { formatRelativeTime } from '../../utils/relativeTime';
 import { useState } from 'react';
 import ConfirmSheet from '../ConfirmSheet';
 import ApplicationStageTimeline from './ApplicationStageTimeline';
+import VerifiedBadge from '../VerifiedBadge';
+import { licenseTypeLabel } from '../../utils/trustHelpers';
+import '../trust.css';
 
 export default function ApplicationsPage(ctx) {
-  const { appPipelineTab, appSelectMode, applications, exitAppSelectMode, expandedAppId, hiddenApps, i18n, onChangeAppStatus, onNavigate, onShoukaiPaid, profileActivePageSource, renderHideOverlays, requestHide, schoolApplications, selectedAppKeys, setActivePage, setAppPipelineTab, setAppSelectMode, setExpandedAppId, t, toggleSelectApp, totalOwnApplications, userRole } = ctx;
+  const { appPipelineTab, appSelectMode, applications, exitAppSelectMode, expandedAppId, hiddenApps, i18n, onChangeAppStatus, onNavigate, onShoukaiPaid, onWithdrawApplication, profileActivePageSource, renderHideOverlays, requestHide, schoolApplications, selectedAppKeys, setActivePage, setAppPipelineTab, setAppSelectMode, setExpandedAppId, t, toggleSelectApp, totalOwnApplications, userRole } = ctx;
   // In-app notice after hiring (replaces window.alert)
   const [hiredName, setHiredName] = useState(null);
+  // Driver: application waiting for withdraw confirmation
+  const [withdrawTarget, setWithdrawTarget] = useState(null);
   const notProvided = t('notProvided', '未入力');
-  // Combine job and school applications for driver view
+  const asSchoolItem = (s) => ({
+    ...s,
+    isSchool: true,
+    logo: s.logo || s.image || '',
+    company: s.schoolName || s.company,
+    title: s.title || t('drivingSchoolApp'),
+    status: s.status || 'submitted',
+  });
+  // Combine job and school applications (both roles)
   let combinedApps = [];
   if (userRole === 'company') {
-    combinedApps = [...applications];
+    combinedApps = [...applications, ...(schoolApplications || []).map(asSchoolItem)];
+    combinedApps.sort((a, b) => new Date(b.appliedAt || 0) - new Date(a.appliedAt || 0));
   } else {
     // Driver or guest only sees their own applications (no simulated friend referrals)
     combinedApps = [...applications].filter(a => !a.isSimulatedReferral);
     (schoolApplications || []).filter(s => !s.isSimulatedReferral).forEach(s => {
-      combinedApps.push({
-        ...s,
-        isSchool: true,
-        logo: s.image || '',
-        company: s.schoolName,
-        title: t('drivingSchoolApp'),
-        status: 'submitted',
-      });
+      combinedApps.push(asSchoolItem(s));
     });
     combinedApps.sort((a, b) => new Date(b.appliedAt || b.appliedDate || Date.now()) - new Date(a.appliedAt || a.appliedDate || Date.now()));
   }
@@ -39,10 +47,11 @@ export default function ApplicationsPage(ctx) {
   const hiddenOwnAppsCount = allOwnAppsCount - combinedApps.length;
 
   // Company Funnel Filtering
-  const subCount = applications.filter(a => a.status === 'submitted').length;
-  const procCount = applications.filter(a => a.status === 'reviewed' || a.status === 'interview').length;
-  const accCount = applications.filter(a => a.status === 'accepted').length;
-  const rejCount = applications.filter(a => a.status === 'rejected').length;
+  const companyAll = userRole === 'company' ? combinedApps : applications;
+  const subCount = companyAll.filter(a => a.status === 'submitted').length;
+  const procCount = companyAll.filter(a => a.status === 'reviewed' || a.status === 'interview').length;
+  const accCount = companyAll.filter(a => a.status === 'accepted').length;
+  const rejCount = companyAll.filter(a => a.status === 'rejected').length;
 
   let filteredApps = combinedApps;
   if (userRole === 'company') {
@@ -68,7 +77,7 @@ export default function ApplicationsPage(ctx) {
       <div className="sub-page-header" style={{ paddingTop: '61px', paddingBottom: '5px' }}>
         <h2>
           {userRole === 'company' ? t('incomingApps', '受信した応募一覧') : t('myApplications')}
-          <span className="section-header-count">({userRole === 'company' ? applications.length : totalOwnApplications})</span>
+          <span className="section-header-count">({userRole === 'company' ? companyAll.length : totalOwnApplications})</span>
         </h2>
         {userRole !== 'company' && allOwnAppsCount > 0 && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
@@ -294,7 +303,7 @@ export default function ApplicationsPage(ctx) {
                 fontSize: '10px',
                 fontWeight: '800'
               }}>
-                {applications.length}
+                {companyAll.length}
               </span>
             </button>
           </div>
@@ -343,10 +352,13 @@ export default function ApplicationsPage(ctx) {
               ? 'ルート配送ドライバー (地場デリバリー)'
               : rawTitle.includes('Xalqaro') || rawTitle.includes('Trailer')
               ? '長距離トレーラードライバー (国際輸送)'
-              : rawTitle;
+              : (rawTitle || notProvided);
             const itemKey = appItemKey(app);
             const isSelectable = userRole !== 'company' && appSelectMode;
             const isSelected = isSelectable && selectedAppKeys.has(itemKey);
+            const isWithdrawn = app.status === 'withdrawn';
+            const canWithdraw = userRole !== 'company' && !String(app.id).startsWith('local_')
+              && WITHDRAWABLE_STATUSES.includes(app.status);
 
             return (
               <div
@@ -383,9 +395,17 @@ export default function ApplicationsPage(ctx) {
                   )}
                   <div className="app-card-info" style={{ flex: 1 }}>
                     <h4 style={{ margin: '0 0 2px 0', fontSize: '15px', fontWeight: '700', letterSpacing: '-0.2px' }}>{appTitleJa}</h4>
-                    <p style={{ margin: 0, fontSize: '12.5px', color: '#8E8E93' }}>{app.company}</p>
+                    <p style={{ margin: 0, fontSize: '12.5px', color: '#8E8E93', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>{app.company || notProvided}</span>
+                      {app.authorVerified === true && <VerifiedBadge size={13} verifiedAt={app.authorVerifiedAt} />}
+                    </p>
+                    {userRole === 'company' && app.applicantLicense && app.applicantLicense.status === 'verified' && (
+                      <span className="trust-chip ok" data-testid="applicant-license-chip" style={{ marginTop: '4px', width: 'fit-content' }}>
+                        <BadgeCheck size={11} /> {t('licenseVerifiedChip', '免許確認済み')}{licenseTypeLabel(app.applicantLicense.type) ? ` · ${licenseTypeLabel(app.applicantLicense.type)}` : ''}
+                      </span>
+                    )}
                     <span className="app-date" style={{ fontSize: '11.5px', color: '#8E8E93', marginTop: '1px', display: 'block' }}>
-                      応募日: {app.appliedDate}
+                      応募日: {app.appliedDate || notProvided}
                       {userRole !== 'company' && app.appliedAt && formatRelativeTime(app.appliedAt, i18n?.language) && (
                         <time dateTime={app.appliedAt}> · {formatRelativeTime(app.appliedAt, i18n?.language)}</time>
                       )}
@@ -461,6 +481,10 @@ export default function ApplicationsPage(ctx) {
                       <ApplicationStageTimeline status={app.status} t={t} />
                     </div>
                   </div>
+                ) : isWithdrawn ? (
+                  <div className="status-withdrawn" style={{ margin: '6px 0', padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, color: STATUS_COLORS.withdrawn, background: 'rgba(142, 142, 147, 0.12)' }}>
+                    {t('statusWithdrawn', '取り下げ済み')} — {t('withdrawnByApplicant', '応募者が応募を取り下げました')}
+                  </div>
                 ) : (
                   <div className="status-pipeline" style={{ margin: '6px 0 6px 0' }}>
                     {STATUS_PIPELINE.map(status => (
@@ -534,7 +558,7 @@ export default function ApplicationsPage(ctx) {
                 )}
 
                 {/* Company Recruitment Action Buttons */}
-                {userRole === 'company' && (
+                {userRole === 'company' && !isWithdrawn && (
                   <div className="demo-status-btns" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '6px' }}>
                     {/* Step 1: 審査完了にする */}
                     <button 
@@ -642,20 +666,18 @@ export default function ApplicationsPage(ctx) {
                   </div>
                 )}
 
-                {/* Driver actions: hide from list (local) / withdraw (needs backend) */}
+                {/* Driver actions: withdraw (server) / hide from list (local) */}
                 {userRole !== 'company' && !appSelectMode && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px', justifyContent: 'flex-end' }}>
-                    {!app.isSchool && (
+                    {canWithdraw && (
                       <button
                         type="button"
                         id={`app-withdraw-${safeDomId(itemKey)}`}
-                        disabled
-                        aria-disabled="true"
-                        title={t('withdrawComingSoonHint', '応募の取り下げ機能は近日公開予定です')}
-                        style={{ ...HIDE_SMALL_BTN, opacity: 0.5, cursor: 'not-allowed' }}
+                        style={HIDE_SMALL_BTN}
+                        onClick={() => setWithdrawTarget(app)}
                       >
                         <RotateCcw size={13} />
-                        <span>{t('withdrawComingSoon', '取り下げ（近日対応）')}</span>
+                        <span>{t('withdrawAction', '応募を取り下げる')}</span>
                       </button>
                     )}
                     <button
@@ -687,6 +709,20 @@ export default function ApplicationsPage(ctx) {
         hideCancel
         onConfirm={() => setHiredName(null)}
         onCancel={() => setHiredName(null)}
+      />
+      <ConfirmSheet
+        open={withdrawTarget !== null}
+        id="withdraw-confirm-sheet"
+        title={t('withdrawConfirmTitle', '応募を取り下げますか？')}
+        message={t('withdrawConfirmMessage', '企業には「取り下げ済み」と表示されます。この操作は元に戻せません。')}
+        confirmLabel={t('withdrawAction', '応募を取り下げる')}
+        danger
+        onConfirm={() => {
+          const target = withdrawTarget;
+          setWithdrawTarget(null);
+          if (target && onWithdrawApplication) onWithdrawApplication(target);
+        }}
+        onCancel={() => setWithdrawTarget(null)}
       />
       {/* 86px clearance spacer yielding exact 12px gap between last item and floating BottomNav */}
       <div style={{ height: appSelectMode ? '150px' : '86px', minHeight: appSelectMode ? '150px' : '86px', width: '100%', flexShrink: 0, clear: 'both' }} />

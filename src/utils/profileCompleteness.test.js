@@ -35,9 +35,9 @@ describe('getProfileCompleteness', () => {
     expect(r.complete).toBe(false);
   });
 
-  it('admin emails are always complete', () => {
-    expect(isProfileCompleteData({ email: 'admin@driver.jp' })).toBe(true);
-    expect(isProfileCompleteData({ email: 'admin@sagawa.jp' })).toBe(true);
+  it('no hardcoded email bypass (admins are managed on the server)', () => {
+    expect(isProfileCompleteData({ email: 'admin@driver.jp' })).toBe(false);
+    expect(isProfileCompleteData({ email: 'admin@sagawa.jp' })).toBe(false);
   });
 
   it('non-string values do not throw', () => {

@@ -1,7 +1,8 @@
 // v1.1 Faza E: Profile.jsx dagi `activePage === 'notifications'` sahifasi o'zgarishsiz ko'chirildi.
 // Holat va funksiyalar Profile'dan `ctx` orqali keladi (klasslar, stil va DOM bir xil).
-import { Bell, Building2, ArrowLeft, Trash2, UserCheck, UserX, FileCheck, Calendar, Gift } from 'lucide-react';
+import { Bell, Building2, ArrowLeft, Trash2, UserCheck, UserX, FileCheck, Calendar, Gift, Megaphone, ShieldCheck } from 'lucide-react';
 import ConfirmSheet from '../ConfirmSheet';
+import { notifKindKey, notifParams } from '../../utils/trustHelpers';
 
 export default function NotificationsPage(ctx) {
   const { handleBackToMain, notifTab, notifications, onAcceptEmployeeRequest, onClearAllNotifs, onDeleteNotif, onMarkAllRead, onMarkRead, setNotifTab, setNotifications, setShowClearNotifsConfirm, showClearNotifsConfirm, t } = ctx;
@@ -20,7 +21,8 @@ export default function NotificationsPage(ctx) {
   });
 
   // 3. Strict Chronological Sorting (Newest at top, Oldest at bottom)
-  const sortedNotifs = [...filteredNotifs].sort((a, b) => Number(b.id) - Number(a.id));
+  const sortKey = (n) => (Number.isFinite(Number(n.id)) ? Number(n.id) : Number(n.ts) || 0);
+  const sortedNotifs = [...filteredNotifs].sort((a, b) => sortKey(b) - sortKey(a));
 
   return (
     <div className="profile-container sub-page-view fade-in">
@@ -295,7 +297,13 @@ export default function NotificationsPage(ctx) {
               ? '#AF52DE'
               : notif.type === 'rejected'
               ? '#FF3B30'
+              : notif.type === 'personal'
+              ? (/rejected|revoked|expired|suspended|deletion/.test(notif.kind || '') ? '#FF9500' : '#5E5CE6')
               : '#0A84FF';
+            // Personal (server) notifications: text = t('notifKind_<kind with . → _>', params)
+            const personalText = notif.type === 'personal'
+              ? t(notifKindKey(notif.kind), { ...notifParams(notif.params), defaultValue: t('personalNotifFallback', 'Michiからのお知らせ') })
+              : '';
 
             return (
               <div 
@@ -333,9 +341,11 @@ export default function NotificationsPage(ctx) {
                         {notif.type === 'rejected' && <UserX size={12} />}
                         {notif.type === 'shoukai_paid' && <Gift size={12} />}
                         {notif.type === 'employee_request' && <Building2 size={12} />}
+                        {notif.type === 'broadcast' && <Megaphone size={12} />}
+                        {notif.type === 'personal' && <ShieldCheck size={12} />}
                         
                         <span>
-                          {notif.type === 'interview' ? '面接招待' : notif.type === 'accepted' ? '採用決定' : notif.type === 'reviewed' ? '審査完了' : notif.type === 'rejected' ? '不採用' : notif.type === 'shoukai_paid' ? '紹介報酬' : 'お知らせ'}
+                          {notif.type === 'broadcast' ? t('broadcastLabel') : notif.type === 'personal' ? t('personalNotifLabel', 'Michi') : notif.type === 'interview' ? '面接招待' : notif.type === 'accepted' ? '採用決定' : notif.type === 'reviewed' ? '審査完了' : notif.type === 'rejected' ? '不採用' : notif.type === 'shoukai_paid' ? '紹介報酬' : 'お知らせ'}
                         </span>
                       </span>
 
@@ -345,7 +355,7 @@ export default function NotificationsPage(ctx) {
                         {notif.type === 'reviewed' && t('reviewedNotifTitle')}
                         {notif.type === 'rejected' && t('rejectedNotifTitle')}
                         {notif.type === 'shoukai_paid' && t('shoukaiPaidNotif')}
-                        {notif.type === 'employee_request' && notif.title}
+                        {(notif.type === 'employee_request' || notif.type === 'broadcast') && notif.title}
                       </span>
                       
                       {!notif.read && <span className="notif-new-badge" style={{ fontSize: '9.5px', padding: '1px 5px' }}>{t('newNotification')}</span>}
@@ -389,6 +399,8 @@ export default function NotificationsPage(ctx) {
                     {notif.type === 'rejected' && `${t('rejectedNotifMsg')} ${notif.company}`}
                     {notif.type === 'shoukai_paid' && `${notif.company} ${t('shoukaiPaidMsg')} ${notif.title}`}
                     {notif.type === 'employee_request' && `${notif.company} ${t('employeeRequestMsg')}`}
+                    {notif.type === 'broadcast' && notif.body}
+                    {notif.type === 'personal' && personalText}
                   </p>
 
                   {notif.type === 'employee_request' && !notif.accepted && (

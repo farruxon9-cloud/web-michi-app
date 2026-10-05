@@ -8,10 +8,14 @@ import VerifiedBadge from './VerifiedBadge';
 import CustomMobilePickerModal from './CustomMobilePickerModal';
 import NewJobsPill from './NewJobsPill';
 import './DriverFeed.css';
+import './trust.css';
 import { REGIONS, PREFECTURES, CITIES_BY_PREFECTURE, TRAIN_LINES_BY_PREFECTURE, getAllTrainLines, getAllCities } from '../data/japanLocationDB';
 import { JOB_CATEGORIES } from '../data/jobCategories';
 import { JOB_FEATURES } from '../data/jobFeatures';
 import { compareJobs } from '../utils/jobOrdering';
+import { hasActiveApplication } from '../utils/applicationMapper';
+import { jobValueLabel, isOwnJob } from '../utils/jobPostingNormalizer';
+import { isVerifiedListing, listingVerifiedAt } from '../utils/trustHelpers';
 
 const EMPTY_ARRAY = [];
 
@@ -132,7 +136,7 @@ export const MOCK_JOBS = [
     shoukai: "¥50,000",
     shoukaiAmount: "¥50,000",
     image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "東京都江東区 (Tokyo, Koto-ku)",
     prefecture: "Tokyo",
     city: "東京23区",
@@ -171,7 +175,7 @@ export const MOCK_JOBS = [
     shoukai: "¥100,000",
     shoukaiAmount: "¥100,000",
     image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "神奈川県横浜市 (Kanagawa, Yokohama)",
     prefecture: "Kanagawa",
     city: "横浜市",
@@ -211,7 +215,7 @@ export const MOCK_JOBS = [
     shoukai: "¥80,000",
     shoukaiAmount: "¥80,000",
     image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "埼玉県さいたま市 (Saitama, Omiya)",
     prefecture: "Saitama",
     city: "さいたま市",
@@ -289,7 +293,7 @@ export const MOCK_JOBS = [
     shoukai: "¥30,000",
     shoukaiAmount: "¥30,000",
     image: "https://images.unsplash.com/photo-1587293852726-70cdb56c28ea?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "愛知県名古屋市 (Aichi, Nagoya)",
     prefecture: "Aichi",
     city: "名古屋市",
@@ -329,7 +333,7 @@ export const MOCK_JOBS = [
     shoukai: "¥20,000",
     shoukaiAmount: "¥20,000",
     image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "宮城県仙台市 (Miyagi, Sendai, Aoba-ku)",
     prefecture: "Miyagi",
     city: "仙台市",
@@ -391,7 +395,7 @@ export function SkeletonCard() {
 // Har bir kartochkada: chapda rasm, o'ngda ma'lumotlar, pastda ikonkali chiplar
 // ============================================================
 export default function DriverFeed({ 
-  onJobClick, isContractActive, verifiedCompanies = EMPTY_ARRAY, onShoukai, 
+  onJobClick, verifiedCompanies = EMPTY_ARRAY, onShoukai, 
   jobs = MOCK_JOBS, feed, userRole, profileData, onEditJob, onApply, applications = EMPTY_ARRAY,
   searchQuery = '', setSearchQuery, activeSegment = 'all', setActiveSegment,
   selectedLicenses = EMPTY_ARRAY, setSelectedLicenses,
@@ -454,6 +458,8 @@ export default function DriverFeed({
   const [selectedTimeSlots, setSelectedTimeSlots] = useState([]);
   const [selectedFeatures, setSelectedFeatures] = useState([]);
   const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'salary_high' | 'salary_low'
+  // ⭐ "Verified companies only" (client-side: listing.authorVerified → normalized `verified`)
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
 
   const [expandedJobCats, setExpandedJobCats] = useState({});
   const [isLocationSectionOpen, setIsLocationSectionOpen] = useState(false);
@@ -491,7 +497,7 @@ export default function DriverFeed({
     selectedPrefecture, selectedCity, stationQuery, onlyNearStation,
     locationTab, selectedRadius, selectedStations, selectedCitiesList,
     selectedJobCategories, selectedEmploymentTypes, selectedDurations,
-    selectedTimeSlots, selectedFeatures, sortBy
+    selectedTimeSlots, selectedFeatures, sortBy, verifiedOnly
   ]);
 
   const showLoading = isLoading || (feed?.status === "loading" && (jobs || []).length === 0);
@@ -556,6 +562,7 @@ export default function DriverFeed({
     return (activeJobsList || []).filter(job => {
 
       if (!job) return false;
+      if (verifiedOnly && !isVerifiedListing(job)) return false;
 
       const matchSegment = !activeSegment || activeSegment === 'all' 
         || (activeSegment === 'international' && job.isInternational === true)
@@ -729,7 +736,7 @@ export default function DriverFeed({
     selectedBenefits, minSalary, selectedPrefecture, selectedCity,
     stationQuery, onlyNearStation, selectedStations, selectedCitiesList,
     selectedJobCategories, selectedSubcategories, selectedEmploymentTypes,
-    selectedDurations, selectedTimeSlots, selectedFeatures, selectedRadius, sortBy, userCoords
+    selectedDurations, selectedTimeSlots, selectedFeatures, selectedRadius, sortBy, userCoords, verifiedOnly
   ]);
 
   const getJobCategoryLabel = (catId) => {
@@ -1696,6 +1703,16 @@ export default function DriverFeed({
         {/* Sort & Results Bar */}
         <div className="sort-results-bar">
           <span className="result-count">{t('jobsCountResult', '{{count}} 件の求人', { count: filteredJobs.length })}</span>
+          <button
+            type="button"
+            id="verified-only-toggle"
+            className={`verified-only-toggle ${verifiedOnly ? 'active' : ''}`}
+            aria-pressed={verifiedOnly}
+            onClick={() => setVerifiedOnly(v => !v)}
+          >
+            <VerifiedBadge size={13} />
+            <span>{t('verifiedOnlyFilter', '認証企業のみ')}</span>
+          </button>
           <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="sort-select">
             <option value="newest">{t('newest', '新着順')}</option>
             <option value="salary_high">{t('salary_high', '給与が高い順')}</option>
@@ -1721,7 +1738,8 @@ export default function DriverFeed({
           </div>
         ) : (
           filteredJobs.slice(0, visibleCount).map(job => {
-            const showVerified = (verifiedCompanies || []).includes(job.company) || isContractActive;
+            // ⭐ = company verified by a Michi admin (server sets authorVerified); a viewer's own contract never badges others
+            const showVerified = isVerifiedListing(job);
             return (
               <div key={job.id} className={`job-card-hz glass ${job.isInternational ? 'job-card-international' : ''}`} onClick={() => onJobClick({...job, verified: showVerified})}>
                 <div className="job-card-main-layout">
@@ -1760,7 +1778,7 @@ export default function DriverFeed({
                     <div className="job-card-company">
                       <img src={job.logo} alt={job.company} className="job-card-company-logo" />
                       <span>{job.company}</span>
-                      {showVerified && <VerifiedBadge size={14} />}
+                      {showVerified && <VerifiedBadge size={14} verifiedAt={listingVerifiedAt(job)} />}
                     </div>
 
                     {/* E'lon sarlavhasi */}
@@ -1769,7 +1787,7 @@ export default function DriverFeed({
                     {/* Maosh — eng muhim ma'lumot */}
                     <div className="job-card-salary">
                       <Banknote size={15} />
-                      <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', '月給')}`) : ''}</span>
+                      <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', '月給')}`) : t('notProvided', '未入力')}</span>
                     </div>
 
                     {/* Qisqa ma'lumot chiplari (minimalistik ikonkalar bilan) */}
@@ -1788,7 +1806,7 @@ export default function DriverFeed({
                       </span>
                       <span className="job-chip">
                         <Clock size={12} />
-                        {job.hours === 'shift' ? t('shiftWork', 'シフト制') : (job.hours ? t(job.hours, job.hours) : '')}
+                        {jobValueLabel(t, job.hours)}
                       </span>
                       {job.foreigners && job.foreigners !== 'foreigners_none' && (
                         <span className="job-chip chip-highlight">
@@ -1804,7 +1822,7 @@ export default function DriverFeed({
                       )}
                       {(job.hasShoukai || job.shoukaiFee > 0 || (job.shoukai && job.shoukai !== '0')) && (
                         <span className="job-chip chip-gold" style={{ background: 'rgba(255, 215, 0, 0.15)', color: '#D4AF37', borderColor: 'rgba(255, 215, 0, 0.4)', fontWeight: '700' }}>
-                          🎁 {t('signonBonusBadgeLabel', '入社祝い金')} {job.shoukaiFee ? `¥${Number(job.shoukaiFee).toLocaleString()}` : (job.shoukaiAmount || job.shoukai || '¥50,000')}
+                          🎁 {t('signonBonusBadgeLabel', '入社祝い金')} {job.shoukaiFee ? `¥${Number(job.shoukaiFee).toLocaleString()}` : (job.shoukaiAmount || (job.shoukai !== '0' ? job.shoukai : '') || '')}
                         </span>
                       )}
                     </div>
@@ -1815,7 +1833,7 @@ export default function DriverFeed({
                 <div className="job-card-actions">
                   {userRole === 'company' ? (
                     // KOMPANIYA: O'z e'lonlarida "Tahrirlash", boshqalarda "Tel" va "Shoukai"
-                    profileData?.fullName === job.company ? (
+                    isOwnJob(job, profileData) ? (
                       <button 
                         className="job-card-btn btn-apply"
                         onClick={(e) => {
@@ -1830,10 +1848,11 @@ export default function DriverFeed({
                     ) : (
                       <>
                         <a 
-                          href={`tel:${job.phone || '+81 90-1234-5678'}`}
+                          href={job.phone ? `tel:${job.phone}` : undefined}
+                          aria-disabled={!job.phone}
                           className="job-card-btn btn-apply"
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', fontWeight: '700' }}
+                          onClick={(e) => { e.stopPropagation(); if (!job.phone) e.preventDefault(); }}
+                          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', fontWeight: '700', opacity: job.phone ? 1 : 0.5 }}
                         >
                           <Phone size={13} />
                           {t('callSchool', "電話する")}
@@ -1857,7 +1876,7 @@ export default function DriverFeed({
                     // HAYDOVCHI / MEHMON: Ariza topshirish + Shoukai
                     <>
                   {(() => {
-                    const alreadyApplied = (applications || []).some(a => a.jobId === job.id && !a.isSimulatedReferral);
+                    const alreadyApplied = hasActiveApplication(applications, { jobId: job.id });
                     if (alreadyApplied) {
                       return (
                         <button 

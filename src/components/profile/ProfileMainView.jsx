@@ -1,9 +1,11 @@
 // v1.1 Faza E: Profile.jsx dagi asosiy (main) ko'rinish o'zgarishsiz ko'chirildi.
 // Holat va funksiyalar Profile'dan `ctx` orqali keladi (klasslar, stil va DOM bir xil).
 import {
-  User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, BadgeCheck, Briefcase, Building2, MapPin, Phone, Users, Camera, Share2, Bookmark, Megaphone, Info, Sparkles, FileCheck, Award, GraduationCap
+  User, Settings, FileText, Bell, LogOut, ChevronRight, CheckCircle2, BadgeCheck, Briefcase, Building2, MapPin, Phone, Users, Camera, Share2, Bookmark, Megaphone, Info, Sparkles, FileCheck, Award, GraduationCap, LifeBuoy
 } from 'lucide-react';
-import VerifiedBadge from '../VerifiedBadge';
+import VerificationCard from './VerificationCard';
+import DriverLicenseCard from './DriverLicenseCard';
+import { DeletionBanner } from './AccountDeletion';
 import JapaneseVehiclePickerModal from '../JapaneseVehiclePickerModal';
 import { applyCatalogSelection } from '../../utils/vehicleUtils';
 import ConfirmSheet from '../ConfirmSheet';
@@ -11,11 +13,15 @@ import VehicleCard from './VehicleCard';
 import { pressable } from '../../utils/a11y';
 import { getProfileCompleteness } from '../../utils/profileCompleteness';
 import ProfileQuickActions from './ProfileQuickActions';
+import { useAuth } from '../../context/AuthContext';
+
+const ADMIN_PANEL_URL = 'https://admin.michi.jp.net/';
 
 export default function ProfileMainView(ctx) {
-  const { confirmDeleteVehicle, contractStatus, editVehicleData, employeesCount, fileInputRef, getAvatarSrc, getRoleLabel, handleAvatarChange, handleClearAllVehicles, handleOpenSubPage, i18n, isVehiclePickerOpen, mainContainerRef, onLogout, onTriggerRegister, profileData, referralsCount, setContractStatus, setEditVehicleData, setIsVehiclePickerOpen, setProfileActivePageSource, setVehicleClearConfirm, setVehicleDeleteTarget, setVehicleNotice, showProfileBadges, t, totalOwnApplications, totalSavedCount, unreadCount, userRole, vehicleClearConfirm, vehicleDeleteTarget, vehicleNotice } = ctx;
+  const { confirmDeleteVehicle, editVehicleData, employeesCount, fileInputRef, getAvatarSrc, getRoleLabel, handleAvatarChange, handleClearAllVehicles, handleOpenSubPage, i18n, isVehiclePickerOpen, mainContainerRef, onLogout, onTriggerRegister, profileData, referralsCount, setEditVehicleData, setIsVehiclePickerOpen, setProfileActivePageSource, setVehicleClearConfirm, setVehicleDeleteTarget, setVehicleNotice, showProfileBadges, t, totalOwnApplications, totalSavedCount, unreadCount, userRole, vehicleClearConfirm, vehicleDeleteTarget, vehicleNotice } = ctx;
   const displayName = profileData.fullName === 'Mehmon' || userRole === 'guest' || !profileData.fullName ? t('roleGuest', 'Mehmon') : profileData.fullName;
   const completeness = userRole === 'driver' ? getProfileCompleteness(profileData) : null;
+  const { user, refreshUser } = useAuth();
   return (
     <div className="profile-container sub-page-view fade-in" ref={mainContainerRef}>
       <div className="profile-header">
@@ -79,6 +85,9 @@ export default function ProfileMainView(ctx) {
       </div>
 
       <div className="profile-menu">
+        {/* Scheduled account deletion (30-day grace) */}
+        {user && <DeletionBanner t={t} user={user} refreshUser={refreshUser} />}
+
         {/* Guest Register Banner */}
         {userRole === 'guest' && (
           <div className="guest-register-banner glass squircle" style={{
@@ -327,6 +336,13 @@ export default function ProfileMainView(ctx) {
           </div>
         )}
 
+        {/* Driver licence check (photo reviewed by Michi, deleted after review) */}
+        {userRole === 'driver' && user && (
+          <div style={{ width: '100%', marginBottom: '4px' }}>
+            <DriverLicenseCard t={t} refreshUser={refreshUser} />
+          </div>
+        )}
+
         {/* Mening Mashinam (My Vehicle) Card */}
         {(userRole === 'driver' || userRole === 'guest') && (
           <VehicleCard {...ctx} />
@@ -394,44 +410,13 @@ export default function ProfileMainView(ctx) {
           </div>
         )}
 
-        {/* Contract */}
-        {userRole === 'company' && (
-          <div className="menu-group glass squircle partner-card">
-            <div className="partner-header">
-              <h3>{t('partnerContract')}</h3>
-              <p className="partner-desc">
-                {t('contractMainDesc')} <VerifiedBadge size={16} />
-              </p>
-            </div>
-            <div className="contract-status-row">
-              <span>{t('contractStatus')}</span>
-              <span className={`status-badge ${contractStatus === 'active' ? 'active' : contractStatus === 'pending' ? 'pending' : 'inactive'}`} style={{ color: contractStatus === 'pending' ? '#FF9500' : '' }}>
-                {contractStatus === 'active' ? (
-                  <><CheckCircle2 size={14} /> {t('contractSigned')}</>
-                ) : contractStatus === 'pending' ? (
-                  <>⏳ {t('contractPending')}</>
-                ) : (
-                  t('contractInactive')
-                )}
-              </span>
-            </div>
-            {contractStatus === 'none' && (
-              <button 
-                className="contract-btn squircle"
-                onClick={() => setContractStatus('pending')}
-              >
-                {t('signContract')}
-              </button>
-            )}
-            {contractStatus === 'pending' && (
-              <button 
-                className="contract-btn squircle"
-                disabled
-                style={{ opacity: 0.7, cursor: 'not-allowed', background: 'rgba(255, 149, 0, 0.2)', color: '#FF9500', border: '1px solid rgba(255, 149, 0, 0.4)' }}
-              >
-                {t('contractAwaitingApproval')}
-              </button>
-            )}
+        {/* Company ⭐ verification (no documents; profile complete + ≥1 listing; valid 12 months) */}
+        {userRole === 'company' && user && (
+          <div style={{ width: '100%', marginBottom: '12px' }}>
+            <VerificationCard t={t} user={user} refreshUser={refreshUser} onOpenPage={(page) => {
+              if (page === 'my_ads' && setProfileActivePageSource) setProfileActivePageSource('profile');
+              handleOpenSubPage(page);
+            }} />
           </div>
         )}
 
@@ -535,7 +520,24 @@ export default function ProfileMainView(ctx) {
             <span>{t('aboutApp')}</span>
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
+          {user && userRole !== 'guest' && (
+            <>
+              <div className="menu-divider"></div>
+              <div className="menu-item" id="profile-support-menu" {...pressable(() => handleOpenSubPage('support'))}>
+                <div className="menu-icon"><LifeBuoy size={20} /></div>
+                <span>{t('supportTitle', 'ヘルプ・サポート')}</span>
+                <ChevronRight size={20} color="#8E8E93" className="chevron" />
+              </div>
+            </>
+          )}
         </div>
+
+        {user && user.isAdmin && (
+          <a className="logout-btn glass" href={ADMIN_PANEL_URL} target="_blank" rel="noopener noreferrer" style={{ marginTop: '12px', textDecoration: 'none' }}>
+            <Settings size={20} />
+            <span>{t('openAdminPanel')} ↗</span>
+          </a>
+        )}
 
         <button className="logout-btn glass" onClick={onLogout} style={{ marginTop: '12px' }}>
           <LogOut size={20} />
