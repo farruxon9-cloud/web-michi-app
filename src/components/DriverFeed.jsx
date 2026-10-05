@@ -12,6 +12,7 @@ import { REGIONS, PREFECTURES, CITIES_BY_PREFECTURE, TRAIN_LINES_BY_PREFECTURE, 
 import { JOB_CATEGORIES } from '../data/jobCategories';
 import { JOB_FEATURES } from '../data/jobFeatures';
 import { compareJobs } from '../utils/jobOrdering';
+import { hasActiveApplication } from '../utils/applicationMapper';
 
 const EMPTY_ARRAY = [];
 
@@ -1857,7 +1858,7 @@ export default function DriverFeed({
                     // HAYDOVCHI / MEHMON: Ariza topshirish + Shoukai
                     <>
                   {(() => {
-                    const alreadyApplied = (applications || []).some(a => a.jobId === job.id && !a.isSimulatedReferral);
+                    const alreadyApplied = hasActiveApplication(applications, { jobId: job.id });
                     if (alreadyApplied) {
                       return (
                         <button 

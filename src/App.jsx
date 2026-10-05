@@ -23,10 +23,9 @@ import { getPermanentUserId } from './utils/userIdManager';
 import { loadUserDraft, saveUserDraft, pickProfileDraft } from './utils/localDraftStore';
 import { sanitizeStoredApplications, slimApplicationsForStorage } from './utils/applicationItems';
 import { AppProvider } from './context/AppContext';
-import { submitApplicationToBackend, notifyCompanyNewApplication, notifyApplicantStatusChange } from './services/applicationService';
+import { submitApplicationToBackend, fetchApplications, updateApplicationStatus, notifyCompanyNewApplication, notifyApplicantStatusChange } from './services/applicationService';
+import { splitApplications, findStatusChanges, hasActiveApplication } from './utils/applicationMapper';
 import { useAuth } from './context/AuthContext';
-import { API_ENDPOINTS } from './config/api';
-import { apiFetch } from './services/apiClient';
 import { fetchSchools } from './services/michiSchoolsApiService';
 import { normalizeSchoolPosting } from './utils/jobPostingNormalizer';
 import { isProfileCompleteData } from './utils/profileCompleteness';
@@ -442,7 +441,8 @@ function App() {
   const feed = useJobFeed();
   const [companyJobs, setCompanyJobs] = useState([]);
   const [schools, setSchools] = useState([]);
-  // Driver's own applications are kept locally per user (backend has no driver GET yet)
+  // Driver: own applications (server is the source of truth; a slim local copy is kept for
+  // offline start-up). Company: applications to its own listings, loaded from the server.
   const [applications, setApplications] = useState(() =>
     sanitizeStoredApplications(loadUserDraft('applications', profileData.userId, []))
   );
@@ -484,13 +484,14 @@ function App() {
       return;
     }
 
-    const exists = applications.find(a => a.jobId === job.id && !a.isSimulatedReferral);
+    const exists = hasActiveApplication(applications, { jobId: job.id });
     if (exists) return;
 
     const refId = await openReferralModal(job, 'job');
 
+    const tempId = `local_${Date.now()}`;
     const newApp = {
-      id: Date.now(),
+      id: tempId,
       jobId: job.id,
       company: job.company,
       title: job.title,
@@ -509,11 +510,16 @@ function App() {
 
     // Send application to central backend server (https://api.michi.jp.net/api/applications)
     try {
-      await submitApplicationToBackend(job.id, profileData, branchId);
+      const result = await submitApplicationToBackend(job.id, profileData, branchId, { branchName, referrerId: refId || null });
+      // Swap the optimistic entry for the server record (real id → status updates work)
+      const saved = result && result.mapped;
+      setApplications(prev => prev.map(a => (a.id === tempId
+        ? { ...newApp, ...(saved || {}), title: (saved && saved.title) || newApp.title, company: (saved && saved.company) || newApp.company, logo: (saved && saved.logo) || newApp.logo, shoukaiAmount: (saved && saved.shoukaiAmount) || newApp.shoukaiAmount }
+        : a)));
     } catch (err) {
       console.error('Application submit to backend error:', err);
       // Roll back the optimistic entry so the user can retry
-      setApplications(prev => prev.filter(a => a.id !== newApp.id));
+      setApplications(prev => prev.filter(a => a.id !== tempId));
       alert(t('applySubmitError', '応募の送信に失敗しました。通信環境を確認して再度お試しください。'));
       return;
     }
@@ -534,42 +540,62 @@ function App() {
     }
   }, [userRole, applications, profileData, isProfileComplete, openReferralModal, t]);
 
-  const handleChangeAppStatus = (appId, newStatus) => {
-    const targetApp = applications.find(a => a.id === appId);
+  /** Company moves an application (PATCH /api/applications/:id); optimistic with rollback. */
+  const handleChangeAppStatus = useCallback(async (appId, newStatus) => {
+    const inJobs = applications.find(a => a.id === appId);
+    const targetApp = inJobs || schoolApplicationsRef.current.find(a => a.id === appId);
     if (!targetApp || targetApp.status === newStatus) return;
+    const setList = inJobs ? setApplications : setSchoolApplications;
+    const prevStatus = targetApp.status;
 
-    setApplications(prev => prev.map(a => 
-      a.id === appId ? { ...a, status: newStatus } : a
-    ));
+    setList(prev => prev.map(a => (a.id === appId ? { ...a, status: newStatus } : a)));
+    try {
+      const saved = await updateApplicationStatus(targetApp.serverId || appId, newStatus);
+      if (saved) setList(prev => prev.map(a => (a.id === appId ? { ...a, status: saved.status, updatedAt: saved.updatedAt } : a)));
+    } catch (err) {
+      console.error('Application status update error:', err);
+      setList(prev => prev.map(a => (a.id === appId ? { ...a, status: prevStatus } : a)));
+      alert(t('appStatusUpdateError', 'ステータスを更新できませんでした。通信環境を確認して再度お試しください。'));
+      return;
+    }
 
     if (['accepted', 'interview', 'reviewed', 'rejected'].includes(newStatus)) {
-      const notif = {
-        id: Date.now(),
-        type: newStatus,
-        company: targetApp.company,
-        title: targetApp.title,
-        date: new Date().toLocaleString(),
-        read: false,
-      };
-      setNotifications(prev => [notif, ...prev]);
-
-      // Notify candidate via email webhook proxy
-      const candidateEmail = targetApp.applicantInfo?.email || targetApp.email || profileData?.email;
+      // Notify candidate via email webhook proxy (best effort)
+      const candidateEmail = targetApp.applicantInfo?.email || targetApp.email;
       if (candidateEmail) {
         notifyApplicantStatusChange({
           applicantEmail: candidateEmail,
-          applicantName: targetApp.applicantInfo?.fullName || targetApp.applicantInfo?.name || profileData?.fullName || 'Haydovchi',
+          applicantName: targetApp.applicantInfo?.fullName || targetApp.applicantInfo?.name || 'Haydovchi',
           companyName: targetApp.company,
-          jobTitle: targetApp.title,
+          jobTitle: targetApp.title || targetApp.schoolName,
           newStatus
         }).catch(err => console.warn('[App] Applicant email notification warning:', err.message));
       }
     }
-  };
+  }, [applications, t]);
+
+  /** Driver withdraws own application (job or school). Returns true on success. */
+  const handleWithdrawApplication = useCallback(async (app) => {
+    if (!app) return false;
+    const setList = app.isSchool ? setSchoolApplications : setApplications;
+    const prevStatus = app.status;
+    setList(prev => prev.map(a => (a.id === app.id ? { ...a, status: 'withdrawn' } : a)));
+    try {
+      await updateApplicationStatus(app.serverId || app.id, 'withdrawn');
+      return true;
+    } catch (err) {
+      console.error('Application withdraw error:', err);
+      setList(prev => prev.map(a => (a.id === app.id ? { ...a, status: prevStatus } : a)));
+      alert(t('withdrawError', '応募を取り下げられませんでした。通信環境を確認して再度お試しください。'));
+      return false;
+    }
+  }, [t]);
 
   const [schoolApplications, setSchoolApplications] = useState(() =>
     sanitizeStoredApplications(loadUserDraft('school_applications', profileData.userId, []))
   );
+  const schoolApplicationsRef = useRef(schoolApplications);
+  useEffect(() => { schoolApplicationsRef.current = schoolApplications; }, [schoolApplications]);
 
   // Persist the driver's own application lists (slim copy, no embedded profile snapshot)
   useEffect(() => {
@@ -605,15 +631,18 @@ function App() {
       return;
     }
 
-    const exists = schoolApplications.find(a => a.schoolId === school.id && !a.isSimulatedReferral);
+    const exists = hasActiveApplication(schoolApplications, { schoolId: school.id });
     if (exists) return;
 
     const refId = await openReferralModal(school, 'school');
 
+    const tempId = `local_${Date.now()}`;
     const newApp = {
-      id: Date.now(),
+      id: tempId,
+      isSchool: true,
       schoolId: school.id,
       schoolName: school.name,
+      status: 'submitted',
       shoukaiId: refId || null,
       shoukaiAmount: school.shoukaiAmount || null,
       paid: false,
@@ -622,24 +651,73 @@ function App() {
       applicantInfo: { ...profileData }
     };
     setSchoolApplications(prev => [...prev, newApp]);
-  }, [userRole, schoolApplications, profileData, isProfileComplete, openReferralModal]);
+
+    try {
+      const result = await submitApplicationToBackend(school.id, profileData, null, { type: 'school', referrerId: refId || null });
+      const saved = result && result.mapped;
+      setSchoolApplications(prev => prev.map(a => (a.id === tempId
+        ? { ...newApp, ...(saved || {}), schoolName: (saved && saved.schoolName) || newApp.schoolName, company: (saved && saved.company) || newApp.schoolName }
+        : a)));
+    } catch (err) {
+      console.error('School application submit error:', err);
+      setSchoolApplications(prev => prev.filter(a => a.id !== tempId));
+      alert(t('applySubmitError', '応募の送信に失敗しました。通信環境を確認して再度お試しください。'));
+    }
+  }, [userRole, schoolApplications, profileData, isProfileComplete, openReferralModal, t]);
+
+  // Load applications from the server (driver: own; company: to its listings).
+  const applicationsRef = useRef(applications);
+  useEffect(() => { applicationsRef.current = applications; }, [applications]);
+  const refreshApplications = useCallback(async () => {
+    if (userRole !== 'driver' && userRole !== 'company') return;
+    try {
+      const mapped = await fetchApplications();
+      const { jobs, schools: schoolApps } = splitApplications(mapped);
+      if (userRole === 'driver') {
+        // Raise in-app notifications for status changes made by companies since last load
+        const changed = findStatusChanges([...applicationsRef.current, ...schoolApplicationsRef.current], mapped);
+        if (changed.length) {
+          setNotifications(prev => [
+            ...changed.map((a, i) => ({
+              id: `${a.serverId}:${a.status}:${Date.now() + i}`,
+              type: a.status,
+              company: a.company,
+              title: a.title || a.schoolName,
+              date: new Date(a.updatedAt || Date.now()).toLocaleString(),
+              read: false,
+            })),
+            ...prev,
+          ]);
+        }
+      }
+      // Keep optimistic entries that are still being submitted (temp ids, not on the server yet)
+      const keepPending = (serverList, key) => (prev) => [
+        ...serverList,
+        ...prev.filter(a => String(a.id).startsWith('local_') && !serverList.some(s => String(s[key]) === String(a[key]))),
+      ];
+      setApplications(keepPending(jobs, 'jobId'));
+      setSchoolApplications(keepPending(schoolApps, 'schoolId'));
+    } catch (err) {
+      // Keep what we have (offline / server busy); company starts empty rather than stale
+      console.warn('[App] fetchApplications warning:', err.message);
+      if (userRole === 'company' && err.status === 401) { setApplications([]); setSchoolApplications([]); }
+    }
+  }, [userRole, setApplications, setSchoolApplications, setNotifications]);
 
   useEffect(() => {
-    if (userRole === 'company') {
-      let isMounted = true;
-      apiFetch(API_ENDPOINTS.APPLICATIONS)
-        .then(res => res.json())
-        .then(data => {
-          if (isMounted) {
-            setApplications(data.applications || data.data || []);
-          }
-        })
-        .catch(() => {
-          if (isMounted) setApplications([]);
-        });
-      return () => { isMounted = false; };
-    }
-  }, [userRole]);
+    refreshApplications();
+  }, [refreshApplications]);
+
+  // Re-sync when the profile tab is opened and when the app comes back to the foreground
+  useEffect(() => {
+    if (activeTab === 'profile') refreshApplications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === 'visible') refreshApplications(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [refreshApplications]);
 
   useEffect(() => {
     let isMounted = true;
@@ -657,15 +735,7 @@ function App() {
 
   const handleRoleSelection = async (role, data) => {
     setUserRole(role);
-    if (role === 'company') {
-      try {
-        const realApps = await apiFetch(API_ENDPOINTS.APPLICATIONS);
-        const resData = await realApps.json();
-        setApplications(resData.applications || resData.data || []);
-      } catch {
-        setApplications([]);
-      }
-    }
+    // Applications for the new role are loaded by refreshApplications (runs on role change)
     if (data) {
       setProfileData(prev => ({
         ...prev,
@@ -812,6 +882,7 @@ function App() {
             applications={applications}
             schoolApplications={schoolApplications}
             onChangeAppStatus={handleChangeAppStatus}
+            onWithdrawApplication={handleWithdrawApplication}
             notifications={notifications}
             setNotifications={setNotifications}
             onMarkRead={handleMarkNotifRead}

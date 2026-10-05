@@ -55,7 +55,7 @@ export default function Profile(props) {
 
 function ProfileContent({ 
   onLogout = () => {}, contractStatus, setContractStatus = () => {}, profileData, userRole, 
-  onChangeLanguage = () => {}, onUpdateProfile = () => {}, applications = [], onChangeAppStatus = () => {},
+  onChangeLanguage = () => {}, onUpdateProfile = () => {}, applications = [], onChangeAppStatus = () => {}, onWithdrawApplication = async () => false,
   notifications = [], onMarkRead = () => {}, onMarkAllRead = () => {}, onDeleteNotif = () => {}, onClearAllNotifs = () => {}, unreadCount = 0,
   darkMode = false, setDarkMode = () => {}, soundSettings = { sound: true, vibration: true }, setSoundSettings = () => {},
   companyEmployees = [], onAddEmployee = () => {}, onAcceptEmployeeRequest = () => {}, setNotifications = () => {},
@@ -995,7 +995,7 @@ function ProfileContent({
     i18n, isCardFading, isEditing, isEditingVehicle, isFormOpen, isVehiclePickerOpen,
     jobToEdit, jobs, mainContainerRef, myVehicle, myVehicles, notifTab,
     notificationSound, notifications, onAcceptEmployeeRequest, onAddEmployee, onApply, onApplySchool,
-    onChangeAppStatus, onChangeLanguage, onClearAllNotifs, onDeleteNotif, onJobClick, onJobCreated,
+    onChangeAppStatus, onWithdrawApplication, onChangeLanguage, onClearAllNotifs, onDeleteNotif, onJobClick, onJobCreated,
     onLogout, onMarkAllRead, onMarkRead, onNavigate, onSchoolClick, onShoukai,
     onShoukaiPaid, onTriggerRegister, profileActivePageSource, profileData, referralsCount, removeEditAddressEntry,
     removeEditEducationEntry, renderDriverMarkBadge, renderHideOverlays, renderJDMPlateBox, requestHide, saveEditing,

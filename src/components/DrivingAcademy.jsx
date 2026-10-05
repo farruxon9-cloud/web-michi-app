@@ -49,6 +49,7 @@ import './DrivingAcademy.css';
 import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinadi
 import { fetchSchoolsFromBackend } from '../services/schoolService';
 import { normalizeSchoolPosting } from '../utils/jobPostingNormalizer';
+import { hasActiveApplication } from '../utils/applicationMapper';
 
 
 
@@ -424,8 +425,9 @@ export default function DrivingAcademy({
      * existingApp — Foydalanuvchining ushbu maktabga topshirgan arizasini topadi.
      * isSimulatedReferral — Simulyatsiya tavsiyalarini hisobga olmaydi,
      * faqat foydalanuvchining o'z arizalarini tekshiradi.
+     * Withdrawn (取り下げ) arizalar qayta topshirishga to'sqinlik qilmaydi.
      */
-    const existingApp = schoolApplications.find(a => a.schoolId === school.id && !a.isSimulatedReferral);
+    const existingApp = (schoolApplications || []).find(a => String(a.schoolId) === String(school.id) && !a.isSimulatedReferral && a.status !== 'withdrawn');
     const hasApplied = !!existingApp;
     
     /** isSaved — Ushbu maktab profilning "Saqlanganlar" bo'limida bormi */
@@ -1956,7 +1958,7 @@ export default function DrivingAcademy({
                   )
                 ) : (
                   (() => {
-                    const alreadyApplied = (schoolApplications || []).some(a => a.schoolId === school.id && !a.isSimulatedReferral);
+                    const alreadyApplied = hasActiveApplication(schoolApplications, { schoolId: school.id });
                     return alreadyApplied ? (
                       <button 
                         className="job-card-btn btn-apply applied" 

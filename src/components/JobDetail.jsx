@@ -5,6 +5,7 @@ import { ArrowLeft, Bookmark, Map as MapIcon, Calendar, Clock, Banknote, Share2,
 import VerifiedBadge from './VerifiedBadge';
 import AppSheet from './AppSheet';
 import { formatBranchAddress, branchMapsUrl, publicBranchPhone, HIDDEN_PHONE_TEXT } from '../utils/branchUtils';
+import { hasActiveApplication } from '../utils/applicationMapper';
 import './JobDetail.css';
 
 // ============================================================
@@ -29,10 +30,12 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
     return fullAddress + ` (${t('addressMaskedNotice')})`;
   };
 
-  const alreadyApplied = applications.some(a => a.jobId === job.id && !a.isSimulatedReferral);
+  // Withdrawn applications do not block applying again.
+  const alreadyApplied = hasActiveApplication(applications, { jobId: job.id });
   const isSaved = profileData?.savedItems?.jobs?.some(j => j.id === job.id);
 
-  const myApplication = applications.find(a => a.jobId === job.id && !a.isSimulatedReferral);
+  const ownApps = (applications || []).filter(a => String(a.jobId) === String(job.id) && !a.isSimulatedReferral);
+  const myApplication = ownApps.find(a => a.status !== 'withdrawn') || ownApps[0];
   const appStatus = myApplication ? myApplication.status : null;
   const isInterviewReady = appStatus === 'interview' || appStatus === 'accepted';
   // Never fall back to a fake number: without a phone there is nothing to call.
