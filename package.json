@@ -36,7 +36,7 @@
     "i18next": "^26.4.2",
     "leaflet": "^1.9.4",
     "lottie-react": "^3.1.2",
-    "lucide-react": "^1.46.0",
+    "lucide-react": "^1.49.0",
     "maplibre-gl": "^6.10.0",
     "pdfmake": "^0.3.11",
     "qrcode": "^1.5.4",
