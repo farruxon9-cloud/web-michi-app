@@ -3,11 +3,12 @@
  *
  * Tier 0: Mahalliy kesh (0ms hit)
  * Tier 1: Asosiy VPS AI Gateway (api.michi.jp.net/api/chat)
- * Tier 2: Avtonom Web Qidiruv (Jonli ma'lumotlar uchun)
- * Tier 3: Favqulodda zaxira (Pollinations GET Fallback)
+ *
+ * Privacy: the browser never sends the user's text to third-party AI/proxy services
+ * (the former Pollinations and allorigins fallbacks were removed). Web search and all
+ * provider fallbacks run on the gateway, behind PII masking and rate limits.
  */
 
-import { autonomousWebSearchEngine } from './autonomousWebSearchEngine.js';
 import { michiCacheEngine } from './michiCacheEngine.js';
 
 class MultiAiMeshEngine {
@@ -44,32 +45,6 @@ class MultiAiMeshEngine {
       }
     } catch (e) {
       console.warn('[MultiAiMesh] Tier 1 VPS Gateway xatosi:', e.message);
-    }
-
-    // Tier 2: Avtonom veb-qidiruv (Ob-havo, yangiliklar, tirbandliklar)
-    try {
-      console.log('[MultiAiMesh] 🌐 Tier 2: Veb-qidiruv bajarilmoqda...');
-      const webResult = await autonomousWebSearchEngine.searchWebFreeSources(prompt, cleanLang);
-      if (webResult?.success && webResult?.answer && webResult.answer.length > 30) {
-        console.log(`[MultiAiMesh] ✅ Tier 2 (Web Scraper) orqali topildi: ${webResult.source}`);
-        michiCacheEngine.set(prompt, webResult.answer, cleanLang);
-        return { text: webResult.answer, provider: `Live Web (${webResult.source})` };
-      }
-    } catch (e) {
-      console.warn('[MultiAiMesh] Tier 2 Web Scraper xatosi:', e.message);
-    }
-
-    // Tier 3: Favqulodda bepul fallback (Agar VPS to'liq javob bermasa)
-    try {
-      console.log('[MultiAiMesh] ⚡ Tier 3: Favqulodda zaxira (Pollinations GET)...');
-      const pollRes = await this.fetchPollinationsGet(prompt, cleanLang);
-      if (pollRes) {
-        console.log('[MultiAiMesh] ✅ Tier 3 (Pollinations GET) javob berdi!');
-        michiCacheEngine.set(prompt, pollRes, cleanLang);
-        return { text: pollRes, provider: 'Pollinations AI' };
-      }
-    } catch (e) {
-      console.warn('[MultiAiMesh] Tier 3 zaxira xatosi:', e.message);
     }
 
     // Yakuniy holat: Aloqa uzilganligi haqida xabar
@@ -126,27 +101,6 @@ class MultiAiMeshEngine {
       clearTimeout(timeoutId);
       throw err;
     }
-  }
-
-  /**
-   * Zaxira Pollinations GET so'rovi (API kalitsiz)
-   */
-  async fetchPollinationsGet(prompt, lang) {
-    const sysPrompt = `You are Michi AI assistant. Answer directly and politely in ${lang === 'uz' ? 'Uzbek' : lang === 'ja' ? 'Japanese' : 'English'}.`;
-    const sys = encodeURIComponent(sysPrompt);
-    const q = encodeURIComponent(prompt);
-
-    const res = await fetch(`https://text.pollinations.ai/${q}?system=${sys}`, {
-      signal: AbortSignal.timeout(8000)
-    });
-
-    if (res.ok) {
-      const text = await res.text();
-      if (text && text.trim().length > 5 && !text.toLowerCase().includes('rate limit')) {
-        return text.trim();
-      }
-    }
-    return null;
   }
 }
 
