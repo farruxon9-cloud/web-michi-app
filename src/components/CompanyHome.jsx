@@ -121,7 +121,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     if (!accountId) return undefined;
     const loadCompanyJobs = async () => {
       try {
-        const myJobs = await fetchJobs({ authorId: String(accountId) });
+        // mine: the server also returns own hidden/rejected jobs with the moderator's reason
+        const myJobs = await fetchJobs({ authorId: String(accountId), mine: true });
         if (cancelled) return;
         if (Array.isArray(myJobs) && typeof setJobs === 'function') {
           // Own dashboard keeps private branch phones (normalizeOwnJobPosting)
@@ -1930,6 +1931,14 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                     </div>
 
                     <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
+
+                    {isMine && job.status && job.status !== 'active' && (
+                      <div className="moderation-notice" role="status">
+                        <strong>{t(job.status === 'rejected' ? 'moderationRejected' : job.status === 'pending' ? 'moderationPending' : 'moderationHidden')}</strong>
+                        {job.moderation && job.moderation.reason && <span>{t('moderationReasonLabel')}: {job.moderation.reason}</span>}
+                        <span className="moderation-notice-hint">{t('moderationFixHint')}</span>
+                      </div>
+                    )}
 
                     <div className="job-card-salary">
                       <Banknote size={15} />

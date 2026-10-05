@@ -182,6 +182,9 @@ export function normalizeJobPosting(rawJob) {
     updatedAt: rawJob.updatedAt || null,
     companyId: rawJob.companyId ? String(rawJob.companyId) : (rawJob.company_id ? String(rawJob.company_id) : (rawJob.authorId ? String(rawJob.authorId) : null)),
     authorId: rawJob.authorId ? String(rawJob.authorId) : null,
+    // Moderation (owner view via ?mine=1): 'active' | 'hidden' | 'rejected' | 'pending' + moderator reason
+    status: s(rawJob.status) || 'active',
+    moderation: rawJob.moderation && typeof rawJob.moderation === 'object' ? rawJob.moderation : null,
     company: s(rawJob.company) || 'Kompaniya',
     title: s(rawJob.title) || 'Ish o\'rni',
     salary: salaryDisplay,
@@ -201,7 +204,8 @@ export function normalizeJobPosting(rawJob) {
     hasShoukai,
     shoukaiConditions: s(rawJob.shoukaiConditions || rawJob.shoukai_conditions),
     image: rawJob.image || 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800',
-    verified: rawJob.verified === true,
+    // ⭐ only for companies verified by an admin (set by the server, never by the posting company)
+    verified: rawJob.authorVerified === true,
     location: typeof rawJob.location === 'string' ? rawJob.location : fullAddr,
     prefecture,
     city,
@@ -340,7 +344,10 @@ export function normalizeSchoolPosting(rawSchool) {
     shoukaiAmount: s(rawSchool.shoukaiAmount) || (shoukaiFee > 0 ? String(shoukaiFee) : ''),
     authorId,
     companyId: authorId,
-    verified: rawSchool.verified !== undefined ? Boolean(rawSchool.verified) : Boolean(authorId),
+    // ⭐ only for companies verified by an admin (set by the server, never by the posting company)
+    verified: rawSchool.authorVerified === true,
+    status: s(rawSchool.status) || 'active',
+    moderation: rawSchool.moderation && typeof rawSchool.moderation === 'object' ? rawSchool.moderation : null,
     hasAccommodation: rawSchool.hasAccommodation !== undefined ? rawSchool.hasAccommodation : false,
     isActive: rawSchool.isActive !== false,
     ...(rawSchool.isMine ? { isMine: true } : {})

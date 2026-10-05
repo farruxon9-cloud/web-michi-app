@@ -11,11 +11,26 @@ import VehicleCard from './VehicleCard';
 import { pressable } from '../../utils/a11y';
 import { getProfileCompleteness } from '../../utils/profileCompleteness';
 import ProfileQuickActions from './ProfileQuickActions';
+import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+
+const ADMIN_PANEL_URL = 'https://admin.michi.jp.net/';
 
 export default function ProfileMainView(ctx) {
   const { confirmDeleteVehicle, contractStatus, editVehicleData, employeesCount, fileInputRef, getAvatarSrc, getRoleLabel, handleAvatarChange, handleClearAllVehicles, handleOpenSubPage, i18n, isVehiclePickerOpen, mainContainerRef, onLogout, onTriggerRegister, profileData, referralsCount, setContractStatus, setEditVehicleData, setIsVehiclePickerOpen, setProfileActivePageSource, setVehicleClearConfirm, setVehicleDeleteTarget, setVehicleNotice, showProfileBadges, t, totalOwnApplications, totalSavedCount, unreadCount, userRole, vehicleClearConfirm, vehicleDeleteTarget, vehicleNotice } = ctx;
   const displayName = profileData.fullName === 'Mehmon' || userRole === 'guest' || !profileData.fullName ? t('roleGuest', 'Mehmon') : profileData.fullName;
   const completeness = userRole === 'driver' ? getProfileCompleteness(profileData) : null;
+  const { user } = useAuth();
+  const [verifyBusy, setVerifyBusy] = useState(false);
+  const [verifyError, setVerifyError] = useState('');
+  const verifyNote = user && user.verification && user.verification.status === 'rejected' ? user.verification.note : '';
+  const requestVerification = async () => {
+    if (verifyBusy) return;
+    setVerifyBusy(true);
+    setVerifyError('');
+    try { await setContractStatus('pending'); } catch (e) { setVerifyError((e && e.message) || t('verifyRequestFailed')); }
+    setVerifyBusy(false);
+  };
   return (
     <div className="profile-container sub-page-view fade-in" ref={mainContainerRef}>
       <div className="profile-header">
@@ -415,14 +430,22 @@ export default function ProfileMainView(ctx) {
                 )}
               </span>
             </div>
-            {contractStatus === 'none' && (
+            {contractStatus === 'rejected' && (
+              <div className="moderation-notice" role="status">
+                <strong>{t('verifyRejectedNote')}</strong>
+                {verifyNote && <span>{t('moderationReasonLabel')}: {verifyNote}</span>}
+              </div>
+            )}
+            {(contractStatus === 'none' || contractStatus === 'rejected') && (
               <button 
                 className="contract-btn squircle"
-                onClick={() => setContractStatus('pending')}
+                onClick={requestVerification}
+                disabled={verifyBusy}
               >
-                {t('signContract')}
+                {contractStatus === 'rejected' ? t('verifyRequestAgain') : t('signContract')}
               </button>
             )}
+            {verifyError && <p className="moderation-notice" role="alert">{verifyError}</p>}
             {contractStatus === 'pending' && (
               <button 
                 className="contract-btn squircle"
@@ -536,6 +559,13 @@ export default function ProfileMainView(ctx) {
             <ChevronRight size={20} color="#8E8E93" className="chevron" />
           </div>
         </div>
+
+        {user && user.isAdmin && (
+          <a className="logout-btn glass" href={ADMIN_PANEL_URL} target="_blank" rel="noopener noreferrer" style={{ marginTop: '12px', textDecoration: 'none' }}>
+            <Settings size={20} />
+            <span>{t('openAdminPanel')} ↗</span>
+          </a>
+        )}
 
         <button className="logout-btn glass" onClick={onLogout} style={{ marginTop: '12px' }}>
           <LogOut size={20} />

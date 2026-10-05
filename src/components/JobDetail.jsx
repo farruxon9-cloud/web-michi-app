@@ -8,6 +8,7 @@ import { formatBranchAddress, branchMapsUrl, publicBranchPhone, HIDDEN_PHONE_TEX
 import { hasActiveApplication } from '../utils/applicationMapper';
 import { jobValueLabel, isOwnJob } from '../utils/jobPostingNormalizer';
 import './JobDetail.css';
+import ReportButton from './ReportButton';
 
 // ============================================================
 // JobDetail — Ish e'lonining to'liq batafsil sahifasi
@@ -352,6 +353,13 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           </div>
         )}
         
+        {/* ====== SHIKOYAT (通報) — faqat serverdagi, o'zimizniki bo'lmagan e'lonlar ====== */}
+        {job.authorId && !isOwnJob(job, profileData) && (
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <ReportButton targetType="job" targetId={job.id} />
+          </div>
+        )}
+
         {/* ====== PASTKI TUGMALAR (STICKY) ====== */}
         <div className="sticky-action glass">
           {userRole === 'company' ? (

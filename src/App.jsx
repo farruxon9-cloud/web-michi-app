@@ -12,7 +12,6 @@ import JobDetail from './components/JobDetail';
 import DrivingAcademy from './components/DrivingAcademy';
 import ServiceComingSoon from './components/ServiceComingSoon';
 import Profile from './components/Profile';
-import AdminDashboard from './components/AdminDashboard';
 import VoiceAssistant from './components/VoiceAssistant';
 import RobotAvatar from './components/RobotAvatar';
 // Real map page (stage 1). Lazy so maplibre (~800KB) loads only when the map is opened.
@@ -28,6 +27,7 @@ import { AppProvider } from './context/AppContext';
 import { submitApplicationToBackend, fetchApplications, updateApplicationStatus, notifyCompanyNewApplication, notifyApplicantStatusChange } from './services/applicationService';
 import { splitApplications, findStatusChanges, hasActiveApplication } from './utils/applicationMapper';
 import { useAuth } from './context/AuthContext';
+import { requestCompanyVerification } from './services/authService';
 import { fetchSchools } from './services/michiSchoolsApiService';
 import { normalizeSchoolPosting } from './utils/jobPostingNormalizer';
 import { isProfileCompleteData } from './utils/profileCompleteness';
@@ -82,7 +82,7 @@ function App() {
       return false;
     }
   });
-  const { user, userRole, setUserRole, logout, updateProfile } = useAuth();
+  const { user, userRole, setUserRole, logout, updateProfile, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [showJDMNavigation, setShowJDMNavigation] = useState(false);
   const [showAssistHeroShowcase, setShowAssistHeroShowcase] = useState(false);
@@ -258,13 +258,16 @@ function App() {
   const [minSalary, setMinSalary] = useState(0);
   const [selectedPrefecture, setSelectedPrefecture] = useState('all');
 
-  const [contractStatus, setContractStatus] = useState('none');
-  const [verifiedCompanies, setVerifiedCompanies] = useState(['Sagawa Express', 'Yamato Transport']);
-
-  const handleToggleVerify = (companyId) => {
-    setVerifiedCompanies(prev => 
-      prev.includes(companyId) ? prev.filter(id => id !== companyId) : [...prev, companyId]
-    );
+  // Company ⭐ badge status comes from the server (approved in admin.michi.jp.net → 企業認証).
+  // UI vocabulary: 'none' | 'pending' | 'active' (verified) | 'rejected'
+  const verificationStatus = user?.verification?.status;
+  const contractStatus = verificationStatus === 'verified' ? 'active'
+    : verificationStatus === 'pending' ? 'pending'
+      : verificationStatus === 'rejected' ? 'rejected' : 'none';
+  const setContractStatus = async (next) => {
+    if (next !== 'pending') return;
+    await requestCompanyVerification({});
+    await refreshUser();
   };
 
   const handleSchoolClick = (school) => {
@@ -822,7 +825,6 @@ function App() {
   if (showSplash) return <ErrorBoundary><Splash onFinish={() => setShowSplash(false)} /></ErrorBoundary>;
   if (!languageSelected) return <ErrorBoundary><LanguageSelect onFinish={() => setLanguageSelected(true)} /></ErrorBoundary>;
   if (!userRole) return <ErrorBoundary><RoleSelect onSelectRole={handleRoleSelection} onGuest={() => handleRoleSelection('guest')} initialStep={authInitialStep} /></ErrorBoundary>;
-  if (userRole === 'admin') return <ErrorBoundary><AdminDashboard verifiedCompanies={verifiedCompanies} onToggleVerify={handleToggleVerify} onLogout={() => logout()} contractStatus={contractStatus} setContractStatus={setContractStatus} profileData={profileData} /></ErrorBoundary>;
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -850,8 +852,6 @@ function App() {
             onJobClick={setSelectedJob} 
             jobs={feed.jobs} 
             feed={feed}
-            isContractActive={contractStatus === 'active'} 
-            verifiedCompanies={verifiedCompanies} 
             onShoukai={handleShoukai} 
             onApply={handleApplyJob}
             applications={applications}
@@ -866,12 +866,10 @@ function App() {
       case 'academy':
         return (
           <DrivingAcademy 
-            isContractActive={contractStatus === 'active'} 
             onApplySchool={handleApplySchool}
             schoolApplications={schoolApplications}
             profileData={profileData}
             onShoukai={handleShoukai}
-            verifiedCompanies={verifiedCompanies}
             onToggleSave={handleToggleSave}
             userRole={userRole}
             selectedSchool={selectedSchool}
@@ -932,7 +930,7 @@ function App() {
           />
         );
       default:
-        return <DriverFeed onJobClick={setSelectedJob} jobs={feed.jobs} feed={feed} verifiedCompanies={verifiedCompanies} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={feed.jobs} feed={feed} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
     }
   };
 

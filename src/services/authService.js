@@ -232,6 +232,25 @@ export const updateCurrentUser = async (patch) => {
   return user;
 };
 
+/**
+ * POST /api/auth/me/verification — company asks Michi admins for the ⭐ "verified partner" badge.
+ * The request lands in the admin panel queue (admin.michi.jp.net → 企業認証).
+ * @param {{ note?: string, docs?: string[] }} [payload] up to 3 document images (data: URLs)
+ * @returns {Promise<object|null>} the updated public user (verification.status === 'pending')
+ */
+export const requestCompanyVerification = async (payload = {}) => {
+  const response = await apiFetch(`${API_ENDPOINTS.ME}/verification`, { method: 'POST', body: JSON.stringify(payload) });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const err = new Error(data.error || data.message || `Verification request failed (${response.status})`);
+    err.status = response.status;
+    throw err;
+  }
+  const user = data.user || null;
+  if (user) setStoredUser(user);
+  return user;
+};
+
 export const logoutUser = () => {
   const refreshToken = getStoredRefreshToken();
   if (refreshToken) {

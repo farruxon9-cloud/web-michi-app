@@ -50,6 +50,7 @@ import './DriverFeed.css'; // job-card stillarini ishlatish uchun import qilinad
 import { fetchSchoolsFromBackend } from '../services/schoolService';
 import { normalizeSchoolPosting } from '../utils/jobPostingNormalizer';
 import { hasActiveApplication } from '../utils/applicationMapper';
+import ReportButton from './ReportButton';
 
 
 
@@ -220,7 +221,6 @@ export const MOCK_SCHOOLS = [
  * 
  * PROPS (Tashqaridan olinadigan ma'lumotlar):
  * 
- * @param {boolean} isContractActive     — Kompaniya shartnomasi faolmi (verified badge uchun)
  * @param {function} onApplySchool       — Maktabga ariza topshirish funksiyasi (school, referrerName)
  * @param {Array} schoolApplications     — Topshirilgan arizalar ro'yxati
  * @param {function} onShoukaiPaid       — Shoukai to'lovi tasdiqlash funksiyasi
@@ -235,7 +235,7 @@ export const MOCK_SCHOOLS = [
  * ==========================================================================
  */
 export default function DrivingAcademy({ 
-  isContractActive, onApplySchool, schoolApplications = [], onShoukaiPaid, 
+  onApplySchool, schoolApplications = [], onShoukaiPaid, 
   profileData, onShoukai, verifiedCompanies = [], onToggleSave, userRole,
   selectedSchool, setSelectedSchool, onBackPress, schools = MOCK_SCHOOLS, setSchools,
   onEditJob, searchQuery = '', setSearchQuery
@@ -514,7 +514,7 @@ export default function DrivingAcademy({
             {/* ------- SARLAVHA: Nom + Verified Badge ------- */}
             <div className="school-header-row" style={{ marginBottom: '4px' }}>
               <h2 className="school-name" style={{ fontSize: '22px' }}>{t(`school_${school.id}_name`, school.name)}</h2>
-              {(school.verified || isContractActive) && <VerifiedBadge size={20} />}
+              {(school.verified === true) && <VerifiedBadge size={20} />}
             </div>
             
             {/* ------- JOYLASHUV ------- */}
@@ -681,6 +681,13 @@ export default function DrivingAcademy({
               </div>
             )}
           </div>
+
+            {/* Shikoyat (通報) — faqat serverdagi, o'zimizniki bo'lmagan maktablar */}
+            {school.authorId && !school.isMine && String(profileData?.accountId || '') !== String(school.authorId) && (
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <ReportButton targetType="school" targetId={school.id} />
+              </div>
+            )}
 
             {/* ============================================================
                 PASTKI TUGMALAR PANELI (PILL SHAKL)
@@ -1874,7 +1881,7 @@ export default function DrivingAcademy({
       <div className="jobs-list hide-scrollbar">
         {filteredSchools.slice(0, visibleCount).map(school => {
           /** showVerified — Maktab tasdiqlangan YOKI shartnoma faol bo'lsa badge ko'rsatiladi */
-          const showVerified = school.verified || isContractActive;
+          const showVerified = school.verified === true;
           return (
             <div key={school.id} className="job-card-hz glass" onClick={() => setSelectedSchool(school)}>
               <div className="job-card-main-layout">

@@ -393,7 +393,7 @@ export function SkeletonCard() {
 // Har bir kartochkada: chapda rasm, o'ngda ma'lumotlar, pastda ikonkali chiplar
 // ============================================================
 export default function DriverFeed({ 
-  onJobClick, isContractActive, verifiedCompanies = EMPTY_ARRAY, onShoukai, 
+  onJobClick, verifiedCompanies = EMPTY_ARRAY, onShoukai, 
   jobs = MOCK_JOBS, feed, userRole, profileData, onEditJob, onApply, applications = EMPTY_ARRAY,
   searchQuery = '', setSearchQuery, activeSegment = 'all', setActiveSegment,
   selectedLicenses = EMPTY_ARRAY, setSelectedLicenses,
@@ -1723,7 +1723,8 @@ export default function DriverFeed({
           </div>
         ) : (
           filteredJobs.slice(0, visibleCount).map(job => {
-            const showVerified = (verifiedCompanies || []).includes(job.company) || isContractActive;
+            // ⭐ = company verified by a Michi admin (server sets authorVerified); a viewer's own contract never badges others
+            const showVerified = job.verified === true || (verifiedCompanies || []).includes(job.company);
             return (
               <div key={job.id} className={`job-card-hz glass ${job.isInternational ? 'job-card-international' : ''}`} onClick={() => onJobClick({...job, verified: showVerified})}>
                 <div className="job-card-main-layout">

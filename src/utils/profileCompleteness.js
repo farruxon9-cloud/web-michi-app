@@ -1,8 +1,6 @@
 // Profile completeness — single source of truth for the 5 required fields
 // used by App.isProfileComplete (apply gate) and the profile header pill.
 
-export const ADMIN_EMAILS = ['admin@driver.jp', 'admin@sagawa.jp'];
-
 const str = (v) => (typeof v === 'string' ? v.trim() : '');
 
 export const PROFILE_REQUIRED_FIELDS = [
@@ -19,9 +17,6 @@ export const PROFILE_REQUIRED_FIELDS = [
  */
 export function getProfileCompleteness(profile) {
   const p = profile || {};
-  if (ADMIN_EMAILS.includes(p.email)) {
-    return { percent: 100, missing: [], complete: true };
-  }
   const missing = PROFILE_REQUIRED_FIELDS.filter((f) => !f.check(p)).map((f) => f.key);
   const total = PROFILE_REQUIRED_FIELDS.length;
   const percent = Math.round(((total - missing.length) / total) * 100);

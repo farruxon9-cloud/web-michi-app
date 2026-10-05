@@ -160,4 +160,18 @@ describe('Job & School Posting Normalizer Tests', () => {
     expect(normalized.prefecture).toBe('Tokyo');
     expect(normalized.courses).toEqual(['oogata', 'futsu']);
   });
+
+  it('⭐ verified comes only from the server-set authorVerified flag', () => {
+    expect(normalizeJobPosting({ id: 'j1', authorVerified: true }).verified).toBe(true);
+    expect(normalizeJobPosting({ id: 'j2', verified: true }).verified).toBe(false);
+    expect(normalizeSchoolPosting({ id: 's1', authorId: 'u1' }).verified).toBe(false);
+    expect(normalizeSchoolPosting({ id: 's2', authorId: 'u1', authorVerified: true }).verified).toBe(true);
+  });
+
+  it('keeps moderation status and reason for the owner view', () => {
+    const j = normalizeJobPosting({ id: 'j3', status: 'hidden', moderation: { status: 'hidden', reason: 'phone missing' } });
+    expect(j.status).toBe('hidden');
+    expect(j.moderation.reason).toBe('phone missing');
+    expect(normalizeJobPosting({ id: 'j4' }).status).toBe('active');
+  });
 });

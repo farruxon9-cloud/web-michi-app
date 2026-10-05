@@ -46,6 +46,11 @@ export function buildJobsQueryUrl(params = {}) {
     url.searchParams.append('authorId', params.authorId.trim());
   }
 
+  // Owner view: with a token the server returns own jobs in every moderation status (+ reason)
+  if (params.mine) {
+    url.searchParams.append('mine', '1');
+  }
+
   const companyQuery = params.company || params.companyId;
   if (!params.authorId && companyQuery && typeof companyQuery === 'string' && companyQuery.trim()) {
     url.searchParams.append('company', companyQuery.trim());
@@ -98,7 +103,11 @@ export async function fetchJobs(queryParams = {}) {
     // Filter and normalize validated job records
     return rawJobs.map(job => {
       const validRes = validateJobPayload(job);
-      return validRes.isValid ? validRes.data : job;
+      if (!validRes.isValid) return job;
+      // Keep server-trusted metadata the schema validator does not know about
+      const meta = {};
+      for (const k of ['authorId', 'authorVerified', 'status', 'moderation']) if (job && job[k] !== undefined) meta[k] = job[k];
+      return { ...validRes.data, ...meta };
     });
 
   } catch (error) {
