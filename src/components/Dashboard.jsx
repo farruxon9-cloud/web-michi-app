@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
-  Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift, 
-  CalendarClock, Rocket, MapPin, Bell, Play, Pause, SkipForward, SkipBack, 
-  Music, Volume2, VolumeX, Sparkles, X, Megaphone, FileCheck, Globe, Compass, 
+  Briefcase, GraduationCap, Wrench, Gift, 
+  CalendarClock, Rocket, 
+  Sparkles, Megaphone, FileCheck, Compass, 
   Navigation, Truck, ShieldCheck 
 } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
+import MusicCard from './MusicCard';
 import './Dashboard.css';
 
 const DICT = {
@@ -124,13 +125,6 @@ const DICT = {
   bentoJDMSubtag1: { ja: '車両サイズ設定', uz: 'Mashina sozlamalari', en: 'Vehicle Specs', ru: 'Настройки авто', zh: '车辆规格设置', vi: 'Cài đặt kích thước xe', ne: 'गाडीको विवरण' },
   bentoJDMSubtag2: { ja: '3.8m高さ制限回避', uz: 'Balandlik taqiqi', en: 'Height Limits', ru: 'Ограничение высоты', zh: '避开限高', vi: 'Tránh giới hạn chiều cao 3.8m', ne: 'उचाइ सीमा' },
   bentoJDMSubtag3: { ja: '重量制限回避', uz: 'Vazn cheklovi', en: 'Weight Limits', ru: 'Ограничение веса', zh: '避开限重', vi: 'Tránh giới hạn trọng lượng', ne: 'तौल सीमा' }
-};
-
-const formatTime = (secs) => {
-  if (isNaN(secs) || secs < 0) return '0:00';
-  const m = Math.floor(secs / 60);
-  const s = Math.floor(secs % 60);
-  return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
 
 export default function Dashboard({ 
@@ -510,79 +504,7 @@ export default function Dashboard({
       {/* Musiqa pleyer va Maxsus Rollar kartasi */}
       {(userRole === 'company' || userRole === 'driver') ? (
         <div className="bento-double-cards-row">
-          <div className="bento-music-card compact-music-card glass squircle">
-            <div className="compact-music-body">
-              <div className="music-player-info">
-                <div className={`music-gradient-icon ${musicPlayer?.isPlaying ? 'playing-pulse' : ''}`} aria-hidden="true">
-                  <Music size={18} color="#FFF" />
-                </div>
-                
-                <div className="music-track-meta">
-                  <span className="music-sub-label">
-                    {musicPlayer?.isPlaying ? getText('playingBackgroundMusic') : getText('musicPaused')}
-                  </span>
-                  <div className="music-track-title-container">
-                    <h3 className="music-track-title compact-title">
-                      {musicPlayer?.currentTrack?.title || 'Lofi Radio'}
-                    </h3>
-                  </div>
-                </div>
-              </div>
-
-              <div className="compact-controls-volume">
-                <div className="music-player-controls">
-                  <button 
-                    type="button"
-                    onClick={musicPlayer?.prevTrack}
-                    className="player-control-btn btn-skip"
-                    aria-label="Oldingi qo'shiq"
-                  >
-                    <SkipBack size={18} fill="currentColor" />
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={musicPlayer?.togglePlay}
-                    className="player-control-btn btn-play-pause"
-                    aria-label={musicPlayer?.isPlaying ? "Pauza" : "Qo'yish"}
-                  >
-                    {musicPlayer?.isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" style={{ marginLeft: '2.5px' }} />}
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={musicPlayer?.nextTrack}
-                    className="player-control-btn btn-skip"
-                    aria-label="Keyingi qo'shiq"
-                  >
-                    <SkipForward size={18} fill="currentColor" />
-                  </button>
-                </div>
-
-                <div className="compact-volume-control">
-                  <button 
-                    type="button"
-                    onClick={() => musicPlayer?.setVolume?.((musicPlayer?.volume || 0) > 0 ? 0 : 0.7)}
-                    className="player-control-btn btn-vol"
-                    aria-label="Ovoz balandligi"
-                  >
-                    {(musicPlayer?.volume || 0) === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
-                  </button>
-                  <input 
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    value={musicPlayer?.volume ?? 0.7}
-                    onChange={(e) => musicPlayer?.setVolume?.(parseFloat(e.target.value))}
-                    className="volume-slider compact-slider"
-                    aria-label="Volume slider"
-                    style={{
-                      background: `linear-gradient(to right, var(--primary) ${(musicPlayer?.volume ?? 0.7) * 100}%, rgba(120, 120, 128, 0.2) ${(musicPlayer?.volume ?? 0.7) * 100}%)`
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          <MusicCard player={musicPlayer} lang={lang} variant="compact" />
 
           {userRole === 'company' ? (
             <div 
@@ -647,93 +569,7 @@ export default function Dashboard({
           )}
         </div>
       ) : (
-        <div className="bento-music-card glass squircle">
-          <div className="music-player-top">
-            <div className="music-player-info">
-              <div className={`music-gradient-icon ${musicPlayer?.isPlaying ? 'playing-pulse' : ''}`} aria-hidden="true">
-                <Music size={18} color="#FFF" />
-              </div>
-              
-              <div className="music-track-meta">
-                <span className="music-sub-label">
-                  {musicPlayer?.isPlaying ? getText('playingBackgroundMusic') : getText('musicPaused')}
-                </span>
-                <h3 className="music-track-title">
-                  {musicPlayer?.currentTrack?.title || 'Lofi Radio'}
-                </h3>
-              </div>
-            </div>
-
-            <div className="music-player-controls">
-              <button 
-                type="button"
-                onClick={musicPlayer?.prevTrack}
-                className="player-control-btn btn-skip"
-                aria-label="Oldingi qo'shiq"
-              >
-                <SkipBack size={14} fill="currentColor" />
-              </button>
-              <button 
-                type="button"
-                onClick={musicPlayer?.togglePlay}
-                className="player-control-btn btn-play-pause"
-                aria-label={musicPlayer?.isPlaying ? "Pauza" : "Qo'yish"}
-              >
-                {musicPlayer?.isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" style={{ marginLeft: '2px' }} />}
-              </button>
-              <button 
-                type="button"
-                onClick={musicPlayer?.nextTrack}
-                className="player-control-btn btn-skip"
-                aria-label="Keyingi qo'shiq"
-              >
-                <SkipForward size={14} fill="currentColor" />
-              </button>
-              <div className="volume-control">
-                <button 
-                  type="button"
-                  onClick={() => musicPlayer?.setVolume?.((musicPlayer?.volume || 0) > 0 ? 0 : 0.7)}
-                  className="player-control-btn btn-vol"
-                  aria-label="Ovoz balandligi"
-                >
-                  {(musicPlayer?.volume || 0) === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                </button>
-                <input 
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  value={musicPlayer?.volume ?? 0.7}
-                  onChange={(e) => musicPlayer?.setVolume?.(parseFloat(e.target.value))}
-                  className="volume-slider"
-                  aria-label="Volume slider"
-                  style={{
-                    background: `linear-gradient(to right, var(--primary) ${(musicPlayer?.volume ?? 0.7) * 100}%, rgba(120, 120, 128, 0.2) ${(musicPlayer?.volume ?? 0.7) * 100}%)`
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="music-player-bottom">
-            <div className="player-timeline-wrapper">
-              <span className="player-time-text">
-                {formatTime(musicPlayer?.currentTime || 0)}
-              </span>
-              <input 
-                type="range"
-                min={0}
-                max={musicPlayer?.duration || 100}
-                value={musicPlayer?.currentTime || 0}
-                onChange={(e) => musicPlayer?.seek?.(parseFloat(e.target.value))}
-                className="player-timeline"
-                aria-label="Qo'shiq davomiyligi"
-              />
-              <span className="player-time-text">
-                {formatTime(musicPlayer?.duration || 0)}
-              </span>
-            </div>
-          </div>
-        </div>
+        <MusicCard player={musicPlayer} lang={lang} variant="full" />
       )}
 
       {/* Smart Truck JDM Navigation Card */}

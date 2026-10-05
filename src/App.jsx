@@ -31,15 +31,11 @@ import { fetchSchools } from './services/michiSchoolsApiService';
 import { normalizeSchoolPosting } from './utils/jobPostingNormalizer';
 import { isProfileCompleteData } from './utils/profileCompleteness';
 import { useJobFeed } from './hooks/useJobFeed';
+import { useMusicPlayer } from './hooks/useMusicPlayer';
+import { MUSIC_TRACKS } from './data/musicTracks';
 
 
 
-const TRACKS = [
-  { id: 1, title: 'Tokyo Rain (東京の雨)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/chill-lofi-background-music-331434.mp3' },
-  { id: 2, title: 'Kyoto Sunset (京都の夕日)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/lofi-chill-background-music-313055.mp3' },
-  { id: 3, title: 'Shibuya Midnight (渋谷の夜中)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/piano-and-beat-120539.mp3' },
-  { id: 4, title: 'Osaka Neon (大阪のネオン)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/bell-fi-broadcasts-181511.mp3' }
-];
 
 const mockIncomingApplications = [];
 
@@ -208,60 +204,9 @@ function App() {
     });
   }, []);
 
-  // 🎵 Radio Player Integratsiyasi
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [volume, setVolume] = useState(0.7);
-  const audioRef = useRef(null);
+  // 🎵 Background music (one player for home card, voice commands and macOS home)
+  const musicPlayer = useMusicPlayer(MUSIC_TRACKS);
   const mainContentRef = useRef(null);
-
-  useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio(TRACKS[currentTrackIndex].url);
-      audioRef.current.volume = volume;
-      audioRef.current.onended = () => {
-        setCurrentTrackIndex(prev => (prev + 1) % TRACKS.length);
-      };
-    }
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.src = TRACKS[currentTrackIndex].url;
-      if (isPlaying) {
-        audioRef.current.play().catch(() => setIsPlaying(false));
-      }
-    }
-  }, [currentTrackIndex]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.play().catch(() => setIsPlaying(false));
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [isPlaying]);
-
-  const musicPlayer = useMemo(() => ({
-    play: () => setIsPlaying(true),
-    pause: () => setIsPlaying(false),
-    next: () => setCurrentTrackIndex(prev => (prev + 1) % TRACKS.length),
-    previous: () => setCurrentTrackIndex(prev => (prev - 1 + TRACKS.length) % TRACKS.length),
-    setVolume: (v) => {
-      setVolume(v);
-      if (audioRef.current) audioRef.current.volume = v;
-    },
-    isPlaying,
-    currentTrack: TRACKS[currentTrackIndex]
-  }), [isPlaying, currentTrackIndex]);
 
   // Tab almashganda tepaga skroll va dinamik SEO Title o'rnatish
   useEffect(() => {
@@ -882,6 +827,7 @@ function App() {
             onNavigateToInternational={handleNavigateToInternationalJobs}
             onNavigateToJDM={() => setShowJDMNavigation(true)}
             onOpenAssistShowcase={() => setShowAssistHeroShowcase(true)}
+            musicPlayer={musicPlayer}
           />
         );
       case 'jobs':
