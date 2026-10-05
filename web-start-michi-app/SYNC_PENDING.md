@@ -97,3 +97,5 @@ Auto-written by scripts/sync_web_start.mjs. The mirror diverged here, so the pat
 - [ ] 2026-10-05 04:50 `src/locales/uz.js`
 - [ ] 2026-10-05 04:50 `src/locales/vi.js`
 - [ ] 2026-10-05 04:50 `src/locales/zh.js`
+- [ ] 2026-10-05 04:50 `src/App.jsx`
+- [ ] 2026-10-05 04:50 `src/components/Dashboard.jsx`

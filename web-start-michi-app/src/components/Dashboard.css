@@ -404,17 +404,84 @@ html.dark-mode .dashboard-container {
   box-shadow: 0 4px 12px rgba(0,0,0,0.04);
 }
 
-.bento-text-wrap h4 {
+.bento-text-wrap h4,
+.bento-text-wrap .bento-title {
+  display: block;
   margin: 0 0 4px 0;
   font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
-.bento-text-wrap p {
+.bento-text-wrap p,
+.bento-text-wrap .bento-sub {
+  display: block;
   margin: 0;
   font-size: 11px;
   opacity: 0.7;
+}
+
+/* B3: bento cards are real <button>s. Zero-specificity reset so every card class still wins. */
+:where(.bento-btn) {
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  -webkit-tap-highlight-color: transparent;
+}
+.bento-btn:focus-visible {
+  outline: 2px solid var(--primary, #0a84ff);
+  outline-offset: 3px;
+}
+.dash-hero-card.bento-btn,
+.bento-action-card.bento-btn { width: 100%; text-align: left; }
+.bento-icon-card.bento-btn,
+.bento-my-ads-card.bento-btn,
+.ai-card-left.bento-btn { text-align: left; }
+.ai-card-left.bento-btn { flex: 1; cursor: pointer; }
+.dash-hero-title,
+.dash-hero-sub,
+.my-ads-title,
+.my-ads-desc { display: block; }
+.dash-hero-sub { display: -webkit-box; }
+.bento-my-ads-card .my-ads-desc.my-ads-count { font-weight: 700; color: var(--text-main); opacity: 1; }
+
+/* Carousel dots: small visual, 24px touch target */
+.dash-hero-dots .dot.bento-btn { position: relative; cursor: pointer; transition: width 0.25s ease, background 0.25s ease; }
+.dash-hero-dots .dot.bento-btn::after { content: ''; position: absolute; inset: -9px -4px; }
+
+/* "Coming soon" toast */
+.home-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
+  transform: translateX(-50%);
+  z-index: 9000;
+  max-width: calc(100% - 48px);
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(28, 28, 30, 0.92);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: home-toast-in 0.25s ease-out;
+}
+@keyframes home-toast-in { from { opacity: 0; transform: translate(-50%, 8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-hero-slider { transition: none; }
+  .dash-hero-card, .bento-icon-card, .bento-action-card, .calendar-day, .home-toast { transition: none; animation: none; }
+  .dash-hero-card:hover, .bento-icon-card:hover, .bento-action-card:hover, .calendar-day:hover { transform: none; }
 }
 
 /* Action Card */

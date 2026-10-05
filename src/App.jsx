@@ -863,6 +863,7 @@ function App() {
             musicPlayer={musicPlayer}
             flags={remote.flags}
             announcement={remote.announcement}
+            applications={applications}
           />
         );
       case 'jobs':
