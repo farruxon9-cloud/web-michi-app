@@ -99,3 +99,8 @@ Auto-written by scripts/sync_web_start.mjs. The mirror diverged here, so the pat
 - [ ] 2026-10-05 04:50 `src/locales/zh.js`
 - [ ] 2026-10-05 04:50 `src/App.jsx`
 - [ ] 2026-10-05 04:50 `src/components/Dashboard.jsx`
+- [ ] 2026-10-05 05:36 `public/apple-touch-icon.png`
+- [ ] 2026-10-05 05:36 `public/favicon.ico`
+- [ ] 2026-10-05 05:36 `public/pwa-192x192.png`
+- [ ] 2026-10-05 05:36 `public/pwa-512x512.png`
+- [ ] 2026-10-05 05:36 `vite.config.js`
