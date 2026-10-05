@@ -16,20 +16,21 @@ import ConfirmSheet from './ConfirmSheet';
 import { createSchoolInBackend } from '../services/schoolService';
 import { API_ENDPOINTS } from '../config/api';
 import { apiFetch } from '../services/apiClient';
-import { normalizeOwnJobPosting } from '../utils/jobPostingNormalizer';
+import { normalizeOwnJobPosting, jobValueLabel } from '../utils/jobPostingNormalizer';
 import { validateBranch } from '../utils/branchUtils';
 
+// Single figure → max = 0 ("not given"); unparseable → 0/0. The typed text is still sent as `salary`.
 export function parseSalaryRange(salaryStr) {
-  if (!salaryStr) return { min: 250000, max: 450000 };
+  if (!salaryStr) return { min: 0, max: 0 };
 
   if (typeof salaryStr === 'object' && salaryStr !== null) {
     const min = Number(salaryStr.min) || 0;
-    const max = Number(salaryStr.max) || min * 1.5 || 0;
+    const max = Number(salaryStr.max) || 0;
     return { min, max };
   }
 
   if (typeof salaryStr === 'number') {
-    return { min: salaryStr, max: Math.round(salaryStr * 1.5) };
+    return { min: salaryStr, max: 0 };
   }
 
   const str = String(salaryStr).replace(/,/g, '');
@@ -40,7 +41,7 @@ export function parseSalaryRange(salaryStr) {
     if (numbers.length >= 2) {
       return { min: Math.min(...numbers), max: Math.max(...numbers) };
     } else if (numbers.length === 1) {
-      return { min: numbers[0], max: Math.round(numbers[0] * 1.5) };
+      return { min: numbers[0], max: 0 };
     }
   }
 
@@ -50,11 +51,11 @@ export function parseSalaryRange(salaryStr) {
     if (numbers.length >= 2) {
       return { min: Math.min(...numbers), max: Math.max(...numbers) };
     } else if (numbers.length === 1) {
-      return { min: numbers[0], max: Math.round(numbers[0] * 1.5) };
+      return { min: numbers[0], max: 0 };
     }
   }
 
-  return { min: 250000, max: 450000 };
+  return { min: 0, max: 0 };
 }
 
 
@@ -117,16 +118,16 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
   useEffect(() => {
     let cancelled = false;
+    const accountId = profileData?.accountId;
+    // Own jobs are matched by the server account id (jobs.authorId), never by the company name.
+    if (!accountId) return undefined;
     const loadCompanyJobs = async () => {
       try {
-        const myJobs = await fetchJobs({ 
-          company: profileData?.fullName,
-          companyId: profileData?.id || profileData?.companyId
-        });
+        const myJobs = await fetchJobs({ authorId: String(accountId) });
         if (cancelled) return;
-        if (Array.isArray(myJobs) && myJobs.length > 0 && typeof setJobs === 'function') {
+        if (Array.isArray(myJobs) && typeof setJobs === 'function') {
           // Own dashboard keeps private branch phones (normalizeOwnJobPosting)
-          setJobs(myJobs.map((j) => normalizeOwnJobPosting(j)).filter(Boolean));
+          setJobs(myJobs.map((j) => normalizeOwnJobPosting(j)).filter(Boolean).map((j) => ({ ...j, isMine: true })));
         }
       } catch (err) {
         console.error('Failed to load company jobs:', err);
@@ -134,7 +135,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     };
     loadCompanyJobs();
     return () => { cancelled = true; };
-  }, [profileData?.fullName, profileData?.id, profileData?.companyId, setJobs]);
+  }, [profileData?.accountId, setJobs]);
 
   // Address lookup state
   const [isFetchingAddress, setIsFetchingAddress] = useState(false);
@@ -386,7 +387,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   const isMyJob = (job) => {
     if (!job) return false;
     if (job.isMine) return true;
-    const myId = profileData?.companyId || profileData?.id;
+    const myId = profileData?.accountId || profileData?.companyId || profileData?.id;
     if (myId && job.companyId) return String(job.companyId) === String(myId);
     // Legacy records without companyId: fall back to an exact, non-empty company name match.
     const myName = (profileData?.fullName || '').trim();
@@ -628,7 +629,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         walkTime: newJob.walkTime ? Number(newJob.walkTime) : '',
         hiringScope: newJob.hiringScope === 'branch' ? 'branch' : 'headquarters',
         branches: newJob.hiringScope === 'branch' ? (newJob.branches || []) : [],
-        companyId: profileData?.companyId || profileData?.id || null,
+        companyId: profileData?.accountId || profileData?.companyId || profileData?.id || null,
         isMine: true
       };
 
@@ -659,6 +660,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         phone: job.phone,
         email: job.email,
         image: job.image,
+        logo: profileData?.avatar || '',
         description: job.description,
         hasShoukai: job.hasShoukai,
         shoukaiAmount: job.shoukaiFee,
@@ -670,18 +672,17 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       if (savingJobRef.current) return; // prevent double submit while awaiting the API
       savingJobRef.current = true;
       try {
+        const parsedSalary = parseSalaryRange(newJob.salary);
+        const payload = { ...backendPayload, minSalary: parsedSalary.min, maxSalary: parsedSalary.max };
         if (newJob.id) {
-          await updateJobInBackend(newJob.id, { ...job, ...backendPayload });
-          setJobs((prev) => (prev || []).map(j => j.id === newJob.id ? job : j));
+          const result = await updateJobInBackend(newJob.id, payload);
+          const savedRaw = result && (result.job || result.data);
+          const saved = savedRaw && savedRaw.id ? normalizeOwnJobPosting({ ...job, ...savedRaw }) : null;
+          setJobs((prev) => (prev || []).map(j => j.id === newJob.id ? (saved ? { ...saved, isMine: true } : job) : j));
         } else {
           // 3-BOSQICH: Send job payload to VPS backend (POST /api/jobs) — awaited, so the feed
           // refresh below sees the new job and a failure keeps the form open.
-          const parsedSalary = parseSalaryRange(newJob.salary);
-          const result = await submitJobToBackend({
-            ...backendPayload,
-            minSalary: parsedSalary.min,
-            maxSalary: parsedSalary.max
-          });
+          const result = await submitJobToBackend(payload);
           const savedRaw = result && (result.job || result.data || result);
           const saved = savedRaw && savedRaw.id ? normalizeOwnJobPosting({ ...job, ...savedRaw }) : null;
           setJobs((prev) => [saved ? { ...saved, isMine: true } : job, ...(prev || [])]);
@@ -1925,7 +1926,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
                     <div className="job-card-salary">
                       <Banknote size={15} />
-                      <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth')}`) : ''}</span>
+                      <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth')}`) : t('notProvided', '未入力')}</span>
                     </div>
 
                     <div className="job-card-chips">
@@ -1933,12 +1934,10 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                         <MapPin size={12} />
                         {t(`job_${job.id}_location`, job.location)}
                       </span>
-                      {job.hours && (
-                        <span className="job-chip">
-                          <Clock size={12} />
-                          {job.hours === 'shift' ? t('shiftWork') : t(job.hours, job.hours)}
-                        </span>
-                      )}
+                      <span className="job-chip">
+                        <Clock size={12} />
+                        {jobValueLabel(t, job.hours)}
+                      </span>
                       {job.shoukaiFee > 0 && (
                         <span className="job-chip chip-highlight">
                           <Share2 size={10} />
@@ -1981,11 +1980,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                   ) : userRole === 'company' ? (
                     <button 
                       className="job-card-btn btn-apply"
+                      disabled={!job.phone}
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.location.href = `tel:${job.phone || '03-1234-5678'}`;
+                        if (job.phone) window.location.href = `tel:${job.phone}`;
                       }}
-                      style={{ flex: 1, background: '#505759', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
+                      style={{ flex: 1, background: '#505759', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', opacity: job.phone ? 1 : 0.5 }}
                     >
                       <Phone size={13} />
                       <span>{t('callCompany', '電話する')}</span>

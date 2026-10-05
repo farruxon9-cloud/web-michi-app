@@ -6,7 +6,7 @@
 const s = (v) => (typeof v === 'string' ? v.trim() : '');
 
 export function formatSalaryJPY(val) {
-  if (!val) return '¥250,000 / oyiga';
+  if (!val) return ''; // never invent a salary — the UI shows 未入力
   if (typeof val === 'number') {
     return `¥${val.toLocaleString('ja-JP')} / oyiga`;
   }
@@ -51,9 +51,68 @@ export function normalizeBranch(raw, idx = 0, { keepPrivatePhone = false } = {})
   };
 }
 
+// Backend employmentType may be a key ('fulltime') or legacy Japanese text ('正社員').
+const EMPLOYMENT_TYPE_ALIASES = {
+  '正社員': 'fulltime', '契約社員': 'contract', 'アルバイト': 'parttime', 'パート': 'parttime',
+  'アルバイト・パート': 'parttime', '業務委託': 'outsourcing', '派遣': 'dispatch', '派遣社員': 'dispatch', 'インターン': 'intern',
+};
+const PHONE_MODE_ALIASES = { '一般公開': 'public' };
+
+/**
+ * Stored form values whose translation key differs from the value itself
+ * (e.g. the insurance chip stores 'insurance_employment' but the label key is 'ins_koyo').
+ */
+const VALUE_LABEL_KEYS = {
+  insurance_employment: 'ins_koyo',
+  insurance_none: 'ins_none',
+  housing_rent: 'hou_rent',
+  housing_move: 'hou_move',
+  lic_none: 'lic_none_opt',
+};
+
+/**
+ * Display label for a stored job condition value. Empty → 未入力 (`notProvided`).
+ * Unknown free text (custom bonus etc.) is shown as typed.
+ */
+export function jobValueLabel(t, value) {
+  if (value === null || value === undefined || value === '') return t('notProvided', '未入力');
+  const v = String(value);
+  if (v === 'shift') return t('shiftWork', 'シフト制');
+  const key = VALUE_LABEL_KEYS[v] || v;
+  return t(key, v);
+}
+
+/**
+ * True when the job belongs to the signed-in company. Uses the server account id
+ * (jobs.authorId); exact company-name match only for legacy records without an author.
+ */
+export function isOwnJob(job, profile) {
+  if (!job || !profile) return false;
+  if (job.isMine) return true;
+  const myId = profile.accountId;
+  if (myId && job.companyId) return String(job.companyId) === String(myId);
+  const myName = (profile.fullName || '').trim();
+  if (!myName || myName === 'Mehmon') return false;
+  return !job.companyId && job.company === myName;
+}
+
+const firstStr = (...vals) => {
+  for (const v of vals) {
+    const out = s(v);
+    if (out) return out;
+  }
+  return '';
+};
+
+const yenLabel = (n) => (Number(n) > 0 ? `¥${Number(n).toLocaleString('ja-JP')}` : '');
+
 export function normalizeJobPosting(rawJob) {
   if (!rawJob || !rawJob.id) return null;
   const jobId = String(rawJob.id);
+  const loc = typeof rawJob.location === 'object' && rawJob.location !== null ? rawJob.location : null;
+  const cond = rawJob.conditions && typeof rawJob.conditions === 'object' ? rawJob.conditions : {};
+  const contact = rawJob.contact && typeof rawJob.contact === 'object' ? rawJob.contact : {};
+  const shoukaiObj = rawJob.shoukai && typeof rawJob.shoukai === 'object' ? rawJob.shoukai : null;
 
   // Extract prefecture, city, ward, and address parts
   let fullAddr = '';
@@ -63,11 +122,11 @@ export function normalizeJobPosting(rawJob) {
   let lat = rawJob.lat;
   let lng = rawJob.lng;
 
-  if (typeof rawJob.location === 'object' && rawJob.location !== null) {
-    prefecture = prefecture || rawJob.location.prefecture || '';
-    city = city || rawJob.location.city || '';
-    lat = lat !== undefined ? lat : rawJob.location.lat;
-    lng = lng !== undefined ? lng : rawJob.location.lng;
+  if (loc) {
+    prefecture = prefecture || loc.prefecture || '';
+    city = city || loc.city || '';
+    lat = lat !== undefined ? lat : loc.lat;
+    lng = lng !== undefined ? lng : loc.lng;
     fullAddr = [prefecture, city].filter(Boolean).join(', ');
   } else {
     fullAddr = typeof rawJob.fullAddress === 'string' ? rawJob.fullAddress : (typeof rawJob.location === 'string' ? rawJob.location : '');
@@ -89,49 +148,57 @@ export function normalizeJobPosting(rawJob) {
   }
 
   // Ensure licenses is array
-  let licenses = Array.isArray(rawJob.licenses) ? rawJob.licenses : [];
+  let licenses = Array.isArray(rawJob.licenses) ? rawJob.licenses.filter(Boolean) : [];
   if (licenses.length === 0 && rawJob.license) {
-    licenses = [rawJob.license];
+    licenses = Array.isArray(rawJob.license) ? rawJob.license.filter(Boolean) : [rawJob.license];
   }
 
-  // Normalize salary
-  let rawSalaryVal = rawJob.salary;
-  let salaryMin = 250000;
-  let salaryMax = 450000;
-
-  if (typeof rawJob.salary === 'object' && rawJob.salary !== null) {
-    salaryMin = rawJob.salary.min || 250000;
-    salaryMax = rawJob.salary.max || salaryMin * 1.5;
-    rawSalaryVal = salaryMin;
-  } else if (typeof rawJob.salaryMin === 'number') {
-    salaryMin = rawJob.salaryMin;
-    salaryMax = rawJob.salaryMax || salaryMin * 1.5;
+  // Salary: only what the company entered — never a made-up range.
+  const salaryObj = typeof rawJob.salary === 'object' && rawJob.salary !== null ? rawJob.salary : null;
+  const salaryMin = numOrNull(salaryObj ? salaryObj.min : (rawJob.minSalary ?? rawJob.salaryMin)) || null;
+  const salaryMax = numOrNull(salaryObj ? salaryObj.max : (rawJob.maxSalary ?? rawJob.salaryMax)) || null;
+  const salaryText = salaryObj ? '' : s(typeof rawJob.salary === 'number' ? String(rawJob.salary) : rawJob.salary);
+  let salaryDisplay = salaryText ? formatSalaryJPY(salaryText) : '';
+  if (!salaryDisplay && salaryMin) {
+    salaryDisplay = `${yenLabel(salaryMin)}${salaryMax && salaryMax !== salaryMin ? `〜${yenLabel(salaryMax)}` : ''}`;
   }
 
-  const salaryDisplay = formatSalaryJPY(rawSalaryVal);
+  // 紹介 (referral bonus): flat legacy fields or backend `shoukai{enabled,amount}`
+  const shoukaiFee = Number(rawJob.shoukaiFee) > 0 ? Number(rawJob.shoukaiFee) : (shoukaiObj && Number(shoukaiObj.amount) > 0 ? Number(shoukaiObj.amount) : 0);
+  const hasShoukai = rawJob.hasShoukai === true || rawJob.has_shoukai === true || Boolean(shoukaiObj && shoukaiObj.enabled) || shoukaiFee > 0;
+  const shoukaiLabel = shoukaiFee > 0 ? yenLabel(shoukaiFee) : '';
+  const legacyShoukai = typeof rawJob.shoukai === 'string' ? s(rawJob.shoukai) : '';
+
+  const employmentRaw = firstStr(rawJob.type, rawJob.employmentType);
+  const walkRaw = numOrNull(rawJob.walkTime ?? rawJob.walkMinutes ?? (loc ? loc.walkMinutes : null));
+  const foreignerList = Array.isArray(rawJob.foreignerSupport) ? rawJob.foreignerSupport.filter(Boolean) : [];
+  const phoneModeRaw = firstStr(rawJob.phoneMode, rawJob.callReceptionStyle, contact.callReceptionStyle);
   const parsedLat = Number(lat);
   const parsedLng = Number(lng);
 
   return {
     id: jobId,
     publishedAt: rawJob.publishedAt || rawJob.published_at || rawJob.createdAt || rawJob.created_at || null,
-    companyId: rawJob.companyId ? String(rawJob.companyId) : (rawJob.company_id ? String(rawJob.company_id) : null),
+    updatedAt: rawJob.updatedAt || null,
+    companyId: rawJob.companyId ? String(rawJob.companyId) : (rawJob.company_id ? String(rawJob.company_id) : (rawJob.authorId ? String(rawJob.authorId) : null)),
+    authorId: rawJob.authorId ? String(rawJob.authorId) : null,
     company: s(rawJob.company) || 'Kompaniya',
     title: s(rawJob.title) || 'Ish o\'rni',
     salary: salaryDisplay,
     salaryMin,
     salaryMax,
-    type: rawJob.type || 'fulltime', // fulltime | parttime | contract | dispatch
+    type: EMPLOYMENT_TYPE_ALIASES[employmentRaw] || employmentRaw || 'fulltime', // fulltime | parttime | contract | dispatch
     category: rawJob.category || 'delivery_driver',
     subcategory: rawJob.subcategory || 'delivery_local',
-    payType: rawJob.payType || (String(salaryDisplay).includes('soat') ? 'hourly' : 'monthly'),
+    payType: rawJob.payType || (/soat|時給/.test(salaryDisplay) ? 'hourly' : /日給/.test(salaryDisplay) ? 'daily' : 'monthly'),
     duration: rawJob.duration || 'long', // long | short_1m | short_1w | single_day
-    startTime: rawJob.startTime || '8',
-    transportPaid: rawJob.transportPaid !== undefined ? rawJob.transportPaid : true,
-    noExperienceOk: rawJob.noExperienceOk !== undefined ? rawJob.noExperienceOk : true,
-    shoukai: s(rawJob.shoukai),
-    shoukaiAmount: s(rawJob.shoukaiAmount),
-    hasShoukai: rawJob.hasShoukai === true || rawJob.has_shoukai === true,
+    startTime: rawJob.startTime || null,
+    transportPaid: rawJob.transportPaid === true,
+    noExperienceOk: rawJob.noExperienceOk === true,
+    shoukai: shoukaiLabel || legacyShoukai || (hasShoukai ? '' : '0'),
+    shoukaiAmount: shoukaiLabel || s(rawJob.shoukaiAmount),
+    shoukaiFee,
+    hasShoukai,
     shoukaiConditions: s(rawJob.shoukaiConditions || rawJob.shoukai_conditions),
     image: rawJob.image || 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800',
     verified: rawJob.verified === true,
@@ -139,26 +206,34 @@ export function normalizeJobPosting(rawJob) {
     prefecture,
     city,
     ward,
+    // Structured address parts (used by the company edit form)
+    postalCode: firstStr(rawJob.postalCode, loc && loc.postalCode),
+    detailAddress: firstStr(rawJob.detailAddress, city),
+    townAddress: firstStr(rawJob.townAddress, rawJob.addressLine, loc && loc.addressLine),
+    buildingAddress: firstStr(rawJob.buildingAddress, rawJob.building, loc && loc.building),
+    trainLine: s(rawJob.trainLine),
     lat: Number.isFinite(parsedLat) ? parsedLat : null,
     lng: Number.isFinite(parsedLng) ? parsedLng : null,
     fullAddress: fullAddr,
-    nearestStation: s(rawJob.nearestStation || rawJob.nearest_station),
-    walkTime: Number.isFinite(+rawJob.walkTime) ? +rawJob.walkTime : null,
-    hours: rawJob.hours || '08:00 - 17:00',
-    dayOff: rawJob.dayOff || 'shanba_yakshanba',
-    bonus: rawJob.bonus || 'bonus_2',
-    insurance: rawJob.insurance || 'insurance_full',
-    foreigners: rawJob.foreigners || 'foreigners_visa',
-    housing: rawJob.housing || 'housing_none',
-    license: rawJob.license || (licenses[0] || 'lic_futsu'),
+    nearestStation: firstStr(rawJob.nearestStation, rawJob.nearest_station, loc && loc.nearestStation),
+    walkTime: walkRaw && walkRaw > 0 ? walkRaw : null,
+    // Conditions: '' when the company left them empty (UI shows 未入力)
+    hours: firstStr(rawJob.hours, rawJob.workShift, cond.workShift, rawJob.workHours),
+    dayOff: firstStr(rawJob.dayOff, rawJob.holidayType, cond.holidayType),
+    bonus: firstStr(rawJob.bonus, rawJob.bonusPrivilege),
+    insurance: firstStr(rawJob.insurance, rawJob.socialInsurance, cond.socialInsurance),
+    foreigners: firstStr(typeof rawJob.foreigners === 'string' ? rawJob.foreigners : '', foreignerList[0]),
+    foreignerSupport: foreignerList,
+    housing: firstStr(rawJob.housing, rawJob.dormitorySupport, cond.dormitorySupport),
+    license: (typeof rawJob.license === 'string' && rawJob.license) || licenses[0] || '',
     licenses,
     tags: Array.isArray(rawJob.tags) ? rawJob.tags : [],
     description: s(rawJob.description),
     logo: rawJob.logo || 'https://ui-avatars.com/api/?name=Company&background=0D8ABC&color=fff&size=100',
-    phone: s(rawJob.phone),
-    email: s(rawJob.email),
-    phoneMode: rawJob.phoneMode || 'public',
-    isInternational: rawJob.isInternational !== undefined ? rawJob.isInternational : false,
+    phone: firstStr(rawJob.phone, contact.phone),
+    email: firstStr(rawJob.email, contact.email),
+    phoneMode: PHONE_MODE_ALIASES[phoneModeRaw] || phoneModeRaw || 'public',
+    isInternational: rawJob.isInternational === true,
     isActive: rawJob.isActive !== undefined ? rawJob.isActive : true,
     hiringScope: rawJob.hiringScope || rawJob.hiring_scope || 'headquarters',
     branches: (Array.isArray(rawJob.branches) ? rawJob.branches : [])

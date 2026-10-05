@@ -19,3 +19,11 @@ Auto-written by scripts/sync_web_start.mjs. The mirror diverged here, so the pat
 - [ ] 2026-10-05 01:33 `src/locales/zh.js`
 - [ ] 2026-10-05 01:33 `src/services/applicationService.js`
 - [ ] 2026-10-05 01:33 `src/services/applicationService.test.js`
+- [ ] 2026-10-05 01:42 `src/App.jsx`
+- [ ] 2026-10-05 01:42 `src/components/CompanyHome.jsx`
+- [ ] 2026-10-05 01:42 `src/components/DriverFeed.jsx`
+- [ ] 2026-10-05 01:42 `src/components/JobDetail.jsx`
+- [ ] 2026-10-05 01:42 `src/services/michiJobsApiService.js`
+- [ ] 2026-10-05 01:42 `src/services/michiJobsApiService.submit.test.js`
+- [ ] 2026-10-05 01:42 `src/utils/jobPostingNormalizer.js`
+- [ ] 2026-10-05 01:42 `src/utils/jobPostingNormalizer.test.js`

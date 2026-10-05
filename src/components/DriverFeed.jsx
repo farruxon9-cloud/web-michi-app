@@ -13,6 +13,7 @@ import { JOB_CATEGORIES } from '../data/jobCategories';
 import { JOB_FEATURES } from '../data/jobFeatures';
 import { compareJobs } from '../utils/jobOrdering';
 import { hasActiveApplication } from '../utils/applicationMapper';
+import { jobValueLabel, isOwnJob } from '../utils/jobPostingNormalizer';
 
 const EMPTY_ARRAY = [];
 
@@ -1770,7 +1771,7 @@ export default function DriverFeed({
                     {/* Maosh — eng muhim ma'lumot */}
                     <div className="job-card-salary">
                       <Banknote size={15} />
-                      <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', '月給')}`) : ''}</span>
+                      <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', '月給')}`) : t('notProvided', '未入力')}</span>
                     </div>
 
                     {/* Qisqa ma'lumot chiplari (minimalistik ikonkalar bilan) */}
@@ -1789,7 +1790,7 @@ export default function DriverFeed({
                       </span>
                       <span className="job-chip">
                         <Clock size={12} />
-                        {job.hours === 'shift' ? t('shiftWork', 'シフト制') : (job.hours ? t(job.hours, job.hours) : '')}
+                        {jobValueLabel(t, job.hours)}
                       </span>
                       {job.foreigners && job.foreigners !== 'foreigners_none' && (
                         <span className="job-chip chip-highlight">
@@ -1805,7 +1806,7 @@ export default function DriverFeed({
                       )}
                       {(job.hasShoukai || job.shoukaiFee > 0 || (job.shoukai && job.shoukai !== '0')) && (
                         <span className="job-chip chip-gold" style={{ background: 'rgba(255, 215, 0, 0.15)', color: '#D4AF37', borderColor: 'rgba(255, 215, 0, 0.4)', fontWeight: '700' }}>
-                          🎁 {t('signonBonusBadgeLabel', '入社祝い金')} {job.shoukaiFee ? `¥${Number(job.shoukaiFee).toLocaleString()}` : (job.shoukaiAmount || job.shoukai || '¥50,000')}
+                          🎁 {t('signonBonusBadgeLabel', '入社祝い金')} {job.shoukaiFee ? `¥${Number(job.shoukaiFee).toLocaleString()}` : (job.shoukaiAmount || (job.shoukai !== '0' ? job.shoukai : '') || '')}
                         </span>
                       )}
                     </div>
@@ -1816,7 +1817,7 @@ export default function DriverFeed({
                 <div className="job-card-actions">
                   {userRole === 'company' ? (
                     // KOMPANIYA: O'z e'lonlarida "Tahrirlash", boshqalarda "Tel" va "Shoukai"
-                    profileData?.fullName === job.company ? (
+                    isOwnJob(job, profileData) ? (
                       <button 
                         className="job-card-btn btn-apply"
                         onClick={(e) => {
@@ -1831,10 +1832,11 @@ export default function DriverFeed({
                     ) : (
                       <>
                         <a 
-                          href={`tel:${job.phone || '+81 90-1234-5678'}`}
+                          href={job.phone ? `tel:${job.phone}` : undefined}
+                          aria-disabled={!job.phone}
                           className="job-card-btn btn-apply"
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', fontWeight: '700' }}
+                          onClick={(e) => { e.stopPropagation(); if (!job.phone) e.preventDefault(); }}
+                          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none', fontWeight: '700', opacity: job.phone ? 1 : 0.5 }}
                         >
                           <Phone size={13} />
                           {t('callSchool', "電話する")}

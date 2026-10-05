@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { submitJobToBackend, notifyJobCreatedConfirmation } from './michiJobsApiService';
+import { submitJobToBackend, notifyJobCreatedConfirmation, updateJobInBackend, buildJobPayload, buildJobsQueryUrl } from './michiJobsApiService';
 import { API_ENDPOINTS } from '../config/api';
 
 globalThis.fetch = vi.fn();
@@ -75,5 +75,39 @@ describe('3-BOSQICH: submitJobToBackend API Integration Tests', () => {
     }));
 
     expect(res).toEqual({ success: true, message: 'Job notification sent' });
+  });
+
+  it('PUT sends the same nested payload as POST (conditions, contact, logo)', async () => {
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ success: true, job: { id: 'job_1' } }) });
+    const form = {
+      title: 'T', company: 'C', salary: '月給30万円', minSalary: 300000, hours: 'wh_day', dayOff: 'do_weekend',
+      insurance: 'insurance_full', housing: 'housing_dorm', foreigners: 'foreigners_ok', phone: '090', email: 'a@b.jp',
+      phoneMode: 'public', hasShoukai: true, shoukaiFee: 20000, logo: 'https://x/logo.png', license: 'lic_futsu',
+    };
+    await updateJobInBackend('job_1', form);
+    const [url, opts] = fetch.mock.calls[0];
+    expect(url).toBe(`${API_ENDPOINTS.JOBS}/job_1`);
+    expect(opts.method).toBe('PUT');
+    const body = JSON.parse(opts.body);
+    expect(body).toEqual(buildJobPayload(form));
+    expect(body.conditions).toEqual({ workShift: 'wh_day', holidayType: 'do_weekend', socialInsurance: 'insurance_full', dormitorySupport: 'housing_dorm' });
+    expect(body.contact).toMatchObject({ phone: '090', email: 'a@b.jp' });
+    expect(body.logo).toBe('https://x/logo.png');
+    expect(body.licenses).toEqual(['lic_futsu']);
+    expect(body.shoukaiAmount).toBe(20000);
+  });
+
+  it('buildJobPayload invents nothing for empty optional fields', () => {
+    const p = buildJobPayload({ title: 'T', company: 'C' });
+    expect(p.salary).toBe('');
+    expect(p.licenses).toEqual([]);
+    expect(p.employmentType).toBe('');
+    expect(p).not.toHaveProperty('logo');
+  });
+
+  it('buildJobsQueryUrl filters by authorId instead of company name', () => {
+    const url = new URL(buildJobsQueryUrl({ authorId: 'u_1', company: 'ABC' }));
+    expect(url.searchParams.get('authorId')).toBe('u_1');
+    expect(url.searchParams.get('company')).toBeNull();
   });
 });

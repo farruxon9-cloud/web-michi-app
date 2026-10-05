@@ -6,6 +6,7 @@ import VerifiedBadge from './VerifiedBadge';
 import AppSheet from './AppSheet';
 import { formatBranchAddress, branchMapsUrl, publicBranchPhone, HIDDEN_PHONE_TEXT } from '../utils/branchUtils';
 import { hasActiveApplication } from '../utils/applicationMapper';
+import { jobValueLabel, isOwnJob } from '../utils/jobPostingNormalizer';
 import './JobDetail.css';
 
 // ============================================================
@@ -145,8 +146,8 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
         {/* ====== PREMIUM DASHBOARD GRUPPALARI ====== */}
         <div className="job-dashboard-layout">
           
-          {/* 1. MOLIYAVIY SHAROIT (SALARY FEATURE CARD) */}
-          {job.salary && (
+          {/* 1. MOLIYAVIY SHAROIT (SALARY FEATURE CARD) — always shown; empty → 未入力 */}
+          {(
             <div className="db-salary-card glass squircle fade-in">
               <div className="db-salary-icon">
                 <Banknote size={24} color="#30D158" />
@@ -155,14 +156,14 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
                 <div className="db-salary-text">
                   <span className="db-label">{t('salary', 'Maosh')}</span>
                   <h3 className="db-salary-value">
-                    {job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`)}
+                    {job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth', 'oyiga')}`) : t('notProvided', '未入力')}
                   </h3>
                 </div>
-                {job.bonus && job.bonus !== 'bonus_none' && (
+                {job.bonus !== 'bonus_none' && (
                   <div className="db-salary-text">
                     <span className="db-label">{t('bonusDetail', 'Bonus')}</span>
-                    <h3 className="db-salary-value" style={{ color: '#FF9F0A' }}>
-                      {t(job.bonus, job.bonus)}
+                    <h3 className="db-salary-value" style={{ color: job.bonus ? '#FF9F0A' : undefined }}>
+                      {jobValueLabel(t, job.bonus)}
                     </h3>
                   </div>
                 )}
@@ -171,29 +172,21 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
           )}
 
           {/* 2. ISH GRAFIKI (SCHEDULE CARD GROUP) */}
-          {(job.hours || job.dayOff) && (
+          {(
             <div className="db-group-card glass squircle">
               <div className="db-group-title">
                 <Clock size={16} color="#0A84FF" />
                 <span>{t('workHours', 'Ish tartibi')}</span>
               </div>
               <div className="db-schedule-grid">
-                {job.hours && (
-                  <div className="db-sub-cell">
-                    <span className="db-sub-label">{t('workHours', 'Ish vaqti')}</span>
-                    <strong className="db-sub-value">
-                      {job.hours === 'shift' ? t('shiftWork', 'Smenali') : (job.hours ? t(job.hours, job.hours) : '')}
-                    </strong>
-                  </div>
-                )}
-                {job.dayOff && (
-                  <div className="db-sub-cell">
-                    <span className="db-sub-label">{t('dayOff', 'Dam olish')}</span>
-                    <strong className="db-sub-value">
-                      {t(job.dayOff, job.dayOff)}
-                    </strong>
-                  </div>
-                )}
+                <div className="db-sub-cell">
+                  <span className="db-sub-label">{t('workHours', 'Ish vaqti')}</span>
+                  <strong className="db-sub-value">{jobValueLabel(t, job.hours)}</strong>
+                </div>
+                <div className="db-sub-cell">
+                  <span className="db-sub-label">{t('dayOff', 'Dam olish')}</span>
+                  <strong className="db-sub-value">{jobValueLabel(t, job.dayOff)}</strong>
+                </div>
               </div>
             </div>
           )}
@@ -207,20 +200,18 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
             
             <div className="db-list-rows">
               {/* Sug'urta Row */}
-              {job.insurance && (
-                <div className="db-list-row">
-                  <div className="db-row-left">
-                    <div className="db-row-icon icon-insurance">
-                      <Shield size={16} color="#5E5CE6" />
-                    </div>
-                    <span className="db-row-label">{t('insurance', "Sug'urta")}</span>
+              <div className="db-list-row">
+                <div className="db-row-left">
+                  <div className="db-row-icon icon-insurance">
+                    <Shield size={16} color="#5E5CE6" />
                   </div>
-                  <strong className="db-row-value">{t(job.insurance, job.insurance)}</strong>
+                  <span className="db-row-label">{t('insurance', "Sug'urta")}</span>
                 </div>
-              )}
+                <strong className="db-row-value">{jobValueLabel(t, job.insurance)}</strong>
+              </div>
 
               {/* Chet elliklar Row */}
-              {job.foreigners && job.foreigners !== 'foreigners_none' && (
+              {job.foreigners !== 'foreigners_none' && (
                 <div className="db-list-row">
                   <div className="db-row-left">
                     <div className="db-row-icon icon-globe">
@@ -228,51 +219,45 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
                     </div>
                     <span className="db-row-label">{t('foreignersLabel', 'Chet elliklar')}</span>
                   </div>
-                  <strong className="db-row-value">{t(job.foreigners, job.foreigners)}</strong>
+                  <strong className="db-row-value">{jobValueLabel(t, job.foreigners)}</strong>
                 </div>
               )}
 
               {/* Uy-joy Row */}
-              {job.housing && job.housing !== 'housing_none' && (
-                <div className="db-list-row">
-                  <div className="db-row-left">
-                    <div className="db-row-icon icon-home">
-                      <Home size={16} color="#34C759" />
-                    </div>
-                    <span className="db-row-label">{t('housingLabel', 'Uy-joy')}</span>
+              <div className="db-list-row">
+                <div className="db-row-left">
+                  <div className="db-row-icon icon-home">
+                    <Home size={16} color="#34C759" />
                   </div>
-                  <strong className="db-row-value">{t(job.housing, job.housing)}</strong>
+                  <span className="db-row-label">{t('housingLabel', 'Uy-joy')}</span>
                 </div>
-              )}
+                <strong className="db-row-value">{jobValueLabel(t, job.housing)}</strong>
+              </div>
 
               {/* Metro/Bekat Row */}
-              {job.nearestStation && (
-                <div className="db-list-row">
-                  <div className="db-row-left">
-                    <div className="db-row-icon icon-subway">
-                      <Train size={16} color="#AF52DE" />
-                    </div>
-                    <span className="db-row-label">{t('nearestStationLabel', 'Metro / Bekat')}</span>
+              <div className="db-list-row">
+                <div className="db-row-left">
+                  <div className="db-row-icon icon-subway">
+                    <Train size={16} color="#AF52DE" />
                   </div>
-                  <strong className="db-row-value">
-                    {job.nearestStation}
-                    {job.walkTime ? ` (🚶‍♂️ ${job.walkTime} ${t('minutesUnit', 'daqiqa')})` : ''}
-                  </strong>
+                  <span className="db-row-label">{t('nearestStationLabel', 'Metro / Bekat')}</span>
                 </div>
-              )}
+                <strong className="db-row-value">
+                  {job.nearestStation || t('notProvided', '未入力')}
+                  {job.nearestStation && job.walkTime ? ` (🚶‍♂️ ${job.walkTime} ${t('minutesUnit', 'daqiqa')})` : ''}
+                </strong>
+              </div>
 
               {/* Litsenziya Row */}
-              {job.license && (
-                <div className="db-list-row">
-                  <div className="db-row-left">
-                    <div className="db-row-icon icon-license">
-                      <Car size={16} color="#E63946" />
-                    </div>
-                    <span className="db-row-label">{t('licenseRequired', 'Litsenziya')}</span>
+              <div className="db-list-row">
+                <div className="db-row-left">
+                  <div className="db-row-icon icon-license">
+                    <Car size={16} color="#E63946" />
                   </div>
-                  <strong className="db-row-value">{t(job.license, job.license)}</strong>
+                  <span className="db-row-label">{t('licenseRequired', 'Litsenziya')}</span>
                 </div>
-              )}
+                <strong className="db-row-value">{jobValueLabel(t, job.license)}</strong>
+              </div>
             </div>
           </div>
         </div>
@@ -355,7 +340,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
               {t('shoukaiDesc', "Do'stingizni taklif qiling va mukofot oling")}
             </p>
             <div className="shoukai-detail-amount" style={{ color: '#FF9F0A', fontWeight: 'bold' }}>
-              🎉 {t('shoukaiAvailable', 'Shoukai puli bor')}
+              🎉 {t('shoukaiAvailable', 'Shoukai puli bor')}{job.shoukaiFee > 0 ? ` ¥${Number(job.shoukaiFee).toLocaleString()}` : (job.shoukaiAmount && job.shoukaiAmount !== '0' ? ` ${job.shoukaiAmount}` : '')}
             </div>
             
             <div style={{ marginTop: '12px', fontSize: '13px', color: 'var(--text-secondary)', background: 'rgba(255,159,10,0.06)', border: '1px solid rgba(255,159,10,0.15)', padding: '12px', borderRadius: '12px', lineHeight: '1.4' }}>
@@ -370,7 +355,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
         {/* ====== PASTKI TUGMALAR (STICKY) ====== */}
         <div className="sticky-action glass">
           {userRole === 'company' ? (
-            profileData?.fullName === job.company ? (
+            isOwnJob(job, profileData) ? (
               <button 
                 className="apply-btn"
                 style={{ width: '100%', background: '#1c1c1e', color: '#fff', fontSize: '16px', fontWeight: 'bold' }}

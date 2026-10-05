@@ -113,17 +113,18 @@ function App() {
     if (showJDMNavigation) setHasOpenedJDM(true);
   }, [showJDMNavigation]);
 
-  // Sync profileData when user object from AuthContext updates
+  // Sync profileData when user object from AuthContext updates.
+  // accountId = server user id (jobs.authorId); never sent with applications.
   useEffect(() => {
     if (user) {
-      if (user.profileData || user.fullName) {
-        setProfileData(prev => ({
-          ...prev,
-          ...(user.profileData || {}),
-          fullName: user.fullName || user.profileData?.fullName || prev.fullName,
-          email: user.email || user.profileData?.email || prev.email
-        }));
-      }
+      setProfileData(prev => ({
+        ...prev,
+        ...(user.profileData || {}),
+        fullName: user.fullName || user.profileData?.fullName || prev.fullName,
+        email: user.email || user.profileData?.email || prev.email,
+        phone: user.phone || user.profileData?.phone || prev.phone,
+        accountId: user.id || prev.accountId || null
+      }));
     }
   }, [user]);
 
@@ -404,7 +405,8 @@ function App() {
           ...base,
           ...profile,
           fullName: user.fullName || profile.fullName || base.fullName,
-          email: user.email || profile.email || base.email
+          email: user.email || profile.email || base.email,
+          accountId: user.id || null
         };
       }
     } catch {}

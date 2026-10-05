@@ -42,8 +42,12 @@ export function buildJobsQueryUrl(params = {}) {
     url.searchParams.append('minSalary', String(params.minSalary));
   }
 
+  if (params.authorId && typeof params.authorId === 'string' && params.authorId.trim()) {
+    url.searchParams.append('authorId', params.authorId.trim());
+  }
+
   const companyQuery = params.company || params.companyId;
-  if (companyQuery && typeof companyQuery === 'string' && companyQuery.trim()) {
+  if (!params.authorId && companyQuery && typeof companyQuery === 'string' && companyQuery.trim()) {
     url.searchParams.append('company', companyQuery.trim());
   }
 
@@ -209,14 +213,23 @@ export async function fetchJobById(jobId) {
   }
 }
 
-export const submitJobToBackend = async (formData) => {
+/**
+ * One payload shape for POST and PUT /api/jobs (the backend stores nested
+ * `conditions` / `contact` and flat salary/location fields).
+ */
+export function buildJobPayload(formData = {}) {
+  const minSalary = Number(formData.minSalary) || 0;
+  const maxSalary = Number(formData.maxSalary) || 0;
+  const licenses = (Array.isArray(formData.licenses) ? formData.licenses
+    : Array.isArray(formData.license) ? formData.license : [formData.license]).filter(Boolean);
+  const phoneMode = formData.callReceptionStyle || formData.phoneMode || 'public';
   const payload = {
     title: formData.title,
     company: formData.company,
-    minSalary: Number(formData.minSalary) || 0,
-    maxSalary: Number(formData.maxSalary) || 0,
-    salary: formData.salary || `¥${Number(formData.minSalary).toLocaleString()}`,
-    employmentType: formData.employmentType || formData.type || '正社員',
+    minSalary,
+    maxSalary,
+    salary: formData.salary || (minSalary ? `¥${minSalary.toLocaleString()}` : ''),
+    employmentType: formData.employmentType || formData.type || '',
     bonusPrivilege: formData.bonusPrivilege || formData.bonus || '',
     postalCode: formData.postalCode || '',
     prefecture: formData.prefecture || 'Tokyo',
@@ -228,7 +241,7 @@ export const submitJobToBackend = async (formData) => {
     walkMinutes: Number(formData.walkMinutes || formData.walkTime) || 0,
     lat: Number(formData.lat) || 35.6812,
     lng: Number(formData.lng) || 139.7671,
-    licenses: Array.isArray(formData.licenses) ? formData.licenses : [formData.license || 'Heavy'],
+    licenses,
     category: formData.category || 'delivery_driver',
     subcategory: formData.subcategory || 'delivery_local',
     image: formData.image || '',
@@ -238,20 +251,29 @@ export const submitJobToBackend = async (formData) => {
       socialInsurance: formData.socialInsurance || formData.insurance || '',
       dormitorySupport: formData.dormitorySupport || formData.housing || ''
     },
-    foreignerSupport: Array.isArray(formData.foreignerSupport) ? formData.foreignerSupport : (formData.foreigners ? [formData.foreigners] : []),
+    foreignerSupport: (Array.isArray(formData.foreignerSupport) ? formData.foreignerSupport : [formData.foreigners]).filter(Boolean),
     contact: {
       phone: formData.phone || '',
       email: formData.email || '',
-      callReceptionStyle: formData.callReceptionStyle || formData.phoneMode || '一般公開'
+      callReceptionStyle: phoneMode
     },
+    phoneMode,
+    isInternational: Boolean(formData.isInternational),
     description: formData.description || '',
     hasShoukai: Boolean(formData.hasShoukai),
     shoukaiAmount: Number(formData.shoukaiAmount || formData.shoukaiFee) || 0,
+    shoukaiConditions: formData.shoukaiConditions || '',
     hiringScope: formData.hiringScope === 'branch' ? 'branch' : 'headquarters',
     branches: formData.hiringScope === 'branch'
       ? (Array.isArray(formData.branches) ? formData.branches : []).map((b, i) => normalizeBranch(b, i, { keepPrivatePhone: true })).filter(Boolean)
       : []
   };
+  if (formData.logo) payload.logo = formData.logo;
+  return payload;
+}
+
+export const submitJobToBackend = async (formData) => {
+  const payload = buildJobPayload(formData);
 
   const response = await apiFetch(API_ENDPOINTS.JOBS, {
     method: 'POST',
@@ -305,14 +327,7 @@ export const postJob = createJob;
  */
 export const updateJobInBackend = async (jobId, formData) => {
   if (!jobId) throw new Error('Job ID is required for update');
-  const hiringScope = formData?.hiringScope === 'branch' ? 'branch' : 'headquarters';
-  const body = {
-    ...formData,
-    hiringScope,
-    branches: hiringScope === 'branch'
-      ? (Array.isArray(formData?.branches) ? formData.branches : []).map((b, i) => normalizeBranch(b, i, { keepPrivatePhone: true })).filter(Boolean)
-      : []
-  };
+  const body = buildJobPayload(formData || {});
   const response = await apiFetch(`${API_ENDPOINTS.JOBS}/${jobId}`, {
     method: 'PUT',
     body: JSON.stringify(body)
