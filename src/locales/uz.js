@@ -1167,7 +1167,20 @@ const translation = {
   "deleteAccountConfirmMsg": "30 kundan so'ng hisobingiz, e'lonlar, arizalar va boshqa ma'lumotlar butunlay o'chiriladi. 30 kun ichida istalgan vaqtda bekor qilishingiz mumkin.",
   "loginSuspendedUntil": "Bu hisob {{date}} gacha to'xtatilgan.",
   "loginSuspendedPermanent": "Bu hisob to'xtatilgan.",
-  "loginSuspendedHelp": "Savollar bo'lsa: support@michi.jp.net"
+  "loginSuspendedHelp": "Savollar bo'lsa: support@michi.jp.net",
+  "aiListening": "Eshitmoqdaman…",
+  "aiListeningHint": "Savolingizni ayting",
+  "aiThinking": "Michi AI o‘ylamoqda",
+  "aiSend": "Jo‘natish",
+  "aiEditPlaceholder": "Savolni tekshiring yoki tahrirlang…",
+  "aiClose": "Yopish",
+  "aiSpeechLang": "Ovoz tili",
+  "aiMicDenied": "Mikrofonga ruxsat berilmagan. Brauzer sozlamalarida ruxsat bering.",
+  "aiSttUnsupported": "Bu brauzer ovozli kiritishni qo‘llab-quvvatlamaydi. Matn yozib yuboring.",
+  "aiMicError": "Ovozingizni eshita olmadim. Qayta urinib ko‘ring.",
+  "aiErrorOccurred": "So‘rovni bajarishda xatolik yuz berdi. Qayta urinib ko‘ring.",
+  "actionExecuted": "Buyruq bajarildi.",
+  "aiDisclaimer": "※ Michi AI sun’iy intellektdan foydalanadi, shuning uchun ma’lumotlarda noaniqliklar bo‘lishi mumkin. Muhim qarorlarda rasmiy manbalarni tekshiring."
 };
 
 export default { translation };

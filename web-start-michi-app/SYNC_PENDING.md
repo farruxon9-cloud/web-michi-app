@@ -127,3 +127,16 @@ Auto-written by scripts/sync_web_start.mjs. The mirror diverged here, so the pat
 - [ ] 2026-10-05 10:01 `src/services/authService.js`
 - [ ] 2026-10-05 10:01 `src/utils/jobPostingNormalizer.js`
 - [ ] 2026-10-05 10:47 `src/services/multiAiMeshEngine.js`
+- [ ] 2026-10-05 21:32 `index.html`
+- [ ] 2026-10-05 21:32 `public/masked-icon.svg`
+- [ ] 2026-10-05 21:32 `src/components/VoiceAssistant.css`
+- [ ] 2026-10-05 21:32 `src/components/VoiceAssistant.jsx`
+- [ ] 2026-10-05 21:32 `src/components/michi-ai/MichiChatFeed.jsx`
+- [ ] 2026-10-05 21:32 `src/components/michi-ai/MichiChatMessageItem.jsx`
+- [ ] 2026-10-05 21:32 `src/locales/en.js`
+- [ ] 2026-10-05 21:32 `src/locales/ja.js`
+- [ ] 2026-10-05 21:32 `src/locales/ne.js`
+- [ ] 2026-10-05 21:32 `src/locales/ru.js`
+- [ ] 2026-10-05 21:32 `src/locales/uz.js`
+- [ ] 2026-10-05 21:32 `src/locales/vi.js`
+- [ ] 2026-10-05 21:32 `src/locales/zh.js`

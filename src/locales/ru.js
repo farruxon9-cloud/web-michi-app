@@ -1125,7 +1125,20 @@ const translation = {
   "deleteAccountConfirmMsg": "Через 30 дней аккаунт, объявления, отклики и другие данные будут удалены навсегда. В течение 30 дней удаление можно отменить.",
   "loginSuspendedUntil": "Аккаунт приостановлен до {{date}}.",
   "loginSuspendedPermanent": "Этот аккаунт заблокирован.",
-  "loginSuspendedHelp": "Вопросы? Напишите на support@michi.jp.net."
+  "loginSuspendedHelp": "Вопросы? Напишите на support@michi.jp.net.",
+  "aiListening": "Слушаю…",
+  "aiListeningHint": "Задайте вопрос",
+  "aiThinking": "Michi AI думает",
+  "aiSend": "Отправить",
+  "aiEditPlaceholder": "Проверьте или измените вопрос…",
+  "aiClose": "Закрыть",
+  "aiSpeechLang": "Язык речи",
+  "aiMicDenied": "Доступ к микрофону запрещён. Разрешите его в настройках браузера.",
+  "aiSttUnsupported": "Этот браузер не поддерживает голосовой ввод. Введите текст.",
+  "aiMicError": "Не удалось распознать речь. Попробуйте ещё раз.",
+  "aiErrorOccurred": "Произошла ошибка. Попробуйте ещё раз.",
+  "actionExecuted": "Готово.",
+  "aiDisclaimer": "※ Michi AI использует ИИ и может ошибаться. Для важных решений проверяйте официальные источники."
 };
 
 export default { translation };

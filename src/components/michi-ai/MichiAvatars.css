@@ -1,0 +1,144 @@
+/* ===== Michi AI shared avatars + typing dots ===== */
+
+.michi-ai-avatar,
+.michi-user-avatar {
+  --av-size: 28px;
+  position: relative;
+  width: var(--av-size);
+  height: var(--av-size);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+/* --- AI orb --- */
+.michi-ai-avatar {
+  --glow-a: #5E5CE6;
+  --glow-b: #8B5CF6;
+}
+.michi-ai-avatar.is-listening { --glow-a: #14B8A6; --glow-b: #22C55E; }
+.michi-ai-avatar.is-thinking  { --glow-a: #8B5CF6; --glow-b: #EC4899; }
+.michi-ai-avatar.is-error     { --glow-a: #F43F5E; --glow-b: #F97316; }
+
+.michi-ai-avatar__core {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--glow-a) 45%, transparent),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.michi-ai-avatar__ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--glow-a), var(--glow-b), transparent 70%, var(--glow-a));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+}
+
+.michi-ai-avatar.is-listening .michi-ai-avatar__ring {
+  opacity: 1;
+  background: radial-gradient(circle, transparent 55%, var(--glow-a) 56%);
+  -webkit-mask: none;
+  mask: none;
+  animation: michi-av-breathe 1.6s ease-in-out infinite;
+}
+.michi-ai-avatar.is-thinking .michi-ai-avatar__ring {
+  opacity: 1;
+  animation: michi-av-spin 1.1s linear infinite;
+}
+.michi-ai-avatar.is-thinking .michi-ai-avatar__spark {
+  transform-origin: 16px 14px;
+  animation: michi-av-twinkle 1.1s ease-in-out infinite;
+}
+.michi-ai-avatar.is-error .michi-ai-avatar__core {
+  filter: hue-rotate(115deg) saturate(1.3);
+}
+
+@keyframes michi-av-spin { to { transform: rotate(360deg); } }
+@keyframes michi-av-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.55; }
+  50% { transform: scale(1.22); opacity: 0; }
+}
+@keyframes michi-av-twinkle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.78); }
+}
+
+/* --- User avatar --- */
+.michi-user-avatar {
+  overflow: hidden;
+  background: linear-gradient(140deg, #FFB86B 0%, #FF7A59 55%, #F0567A 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(255, 122, 89, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+.michi-user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.michi-user-avatar__initial {
+  font-size: calc(var(--av-size) * 0.46);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+.michi-user-avatar__glyph {
+  width: 62%;
+  height: 62%;
+  margin-top: 8%;
+  opacity: 0.95;
+}
+
+/* --- 3 bouncing dots --- */
+.michi-dots {
+  --dot: 9px;
+  --c1: #5E5CE6;
+  --c2: #8B5CF6;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--dot) * 0.6);
+  height: calc(var(--dot) * 2.4);
+  padding: 0 4px;
+}
+.michi-dots.tone-listening { --c1: #14B8A6; --c2: #22C55E; }
+.michi-dots.tone-thinking  { --c1: #8B5CF6; --c2: #EC4899; }
+.michi-dots.tone-user      { --c1: #FF9F5A; --c2: #F0567A; }
+
+.michi-dots i {
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--c1) 45%, transparent);
+  animation: michi-dot-bounce 1.15s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+.michi-dots i:nth-child(2) { animation-delay: 0.16s; }
+.michi-dots i:nth-child(3) { animation-delay: 0.32s; }
+
+.michi-dots.tone-listening i { animation-name: michi-dot-breathe; animation-duration: 1.4s; }
+
+@keyframes michi-dot-bounce {
+  0%, 70%, 100% { transform: translateY(0) scale(1); opacity: 0.55; }
+  35% { transform: translateY(calc(var(--dot) * -0.85)) scale(1.08); opacity: 1; }
+}
+@keyframes michi-dot-breathe {
+  0%, 100% { transform: scale(0.7); opacity: 0.45; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .michi-ai-avatar__ring,
+  .michi-ai-avatar__spark,
+  .michi-dots i {
+    animation-duration: 3s !important;
+  }
+}

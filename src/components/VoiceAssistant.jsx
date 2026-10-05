@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { User, Sparkles, Mic, Bot } from 'lucide-react';
+import { SendHorizontal, X, Globe } from 'lucide-react';
+import { MichiAiAvatar, MichiUserAvatar, MichiTypingDots } from './michi-ai/MichiAvatars';
 import './VoiceAssistant.css';
 import { matchLexiconCommand } from '../utils/voiceLexicon';
 import { actionRegistry } from '../services/actionRegistry';
@@ -61,6 +62,12 @@ const getNextSpeechLang = (current) => {
   return SUPPORTED_SPEECH_LANGS[nextIdx].code;
 };
 
+// Typewriter: reveal the answer quickly (whole answer in ~1.2s max) so long replies never feel slow.
+const TYPE_TICK_MS = 16;
+const TYPE_MAX_MS = 1200;
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
 export default function VoiceAssistant({ 
   isActive, 
   onClose, 
@@ -107,12 +114,50 @@ export default function VoiceAssistant({
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const [drawerInput, setDrawerInput] = useState('');
   const [bubbleTimerMs, setBubbleTimerMs] = useState(8000);
+  const [notice, setNotice] = useState(''); // mic/STT problem shown inside the bubble
 
   const chatEndRef = useRef(null);
   const speechContentRef = useRef(null);
   const statusRef = useRef(status);
   useEffect(() => { statusRef.current = status; }, [status]);
   const readingTimeoutRef = useRef(null);
+  const errorTimeoutRef = useRef(null);
+  const noticeTimeoutRef = useRef(null);
+
+  // Clear every pending timer when the assistant unmounts (e.g. voiceAI flag switched off).
+  useEffect(() => () => {
+    clearTimeout(readingTimeoutRef.current);
+    clearTimeout(errorTimeoutRef.current);
+    clearTimeout(noticeTimeoutRef.current);
+  }, []);
+
+  // Fast typewriter for the AI answer.
+  useEffect(() => {
+    const full = aiResponseText || '';
+    const chars = Array.from(full);
+    const step = prefersReducedMotion() ? chars.length : Math.max(1, Math.ceil(chars.length / (TYPE_MAX_MS / TYPE_TICK_MS)));
+    let shown = 0;
+    const id = setInterval(() => {
+      shown = Math.min(chars.length, shown + step);
+      setDisplayedAiText(chars.slice(0, shown).join(''));
+      if (shown >= chars.length) clearInterval(id);
+    }, full ? TYPE_TICK_MS : 0);
+    return () => clearInterval(id);
+  }, [aiResponseText]);
+
+  // Turn STT failures into a clear message instead of silently going idle.
+  const handleSttError = useCallback((err) => {
+    const code = err?.error || err?.message || '';
+    let msg = '';
+    if (code === 'not-allowed' || code === 'service-not-allowed') msg = t('aiMicDenied');
+    else if (code === 'STT_NOT_SUPPORTED') msg = t('aiSttUnsupported');
+    else if (code === 'no-speech' || code === 'audio-capture' || code === 'network') msg = t('aiMicError');
+    setStatus('idle');
+    if (!msg) return;
+    setNotice(msg);
+    clearTimeout(noticeTimeoutRef.current);
+    noticeTimeoutRef.current = setTimeout(() => setNotice(''), 6000);
+  }, [t]);
 
   // App Context obyekti - actionRegistry harakatlari uchun
   const actionContext = {
@@ -166,7 +211,7 @@ export default function VoiceAssistant({
           }
           // Jo'natish tugmasi bosilgandagina API so'rovi yuboriladi
         },
-        onError: () => setStatus('idle'),
+        onError: handleSttError,
         onEnd: () => {
           if (statusRef.current === 'listening') setStatus('idle');
         }
@@ -175,14 +220,10 @@ export default function VoiceAssistant({
       localSTT.stopListening();
       if (statusRef.current === 'listening') setStatus('idle');
     }
-  }, [isActive, speechLang]);
+  }, [isActive, speechLang, handleSttError]);
 
   // 2. Ovozli o'qib berish o'chirildi - Faqat matnli javob beriladi
-  const speakText = useCallback(() => {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
-  }, []);
+  // (TTS o'chirilgan: drawerdagi "tinglash" tugmasi ham yashirildi, shuning uchun speakText olib tashlandi)
 
   // 3. Chat tarixini xavfsiz tozalash
   const clearChatHistory = async () => {
@@ -201,8 +242,10 @@ export default function VoiceAssistant({
     setTranscript(text);
     setAiResponseText('');
     setDisplayedAiText('');
+    setNotice('');
 
     if (readingTimeoutRef.current) clearTimeout(readingTimeoutRef.current);
+    clearTimeout(errorTimeoutRef.current);
 
     try {
       // BOSQICH 1: Lokal Buyruqlar Registri (Intent Match)
@@ -212,7 +255,6 @@ export default function VoiceAssistant({
         const actionResponse = actionRegistry.getResponse(matchedCommand, speechLang) || t('actionExecuted', 'Buyruq bajarildi.');
 
         setAiResponseText(actionResponse);
-        setDisplayedAiText(actionResponse);
         setStatus('idle');
 
         // Tarixga saqlash (Michi AI Hub uchun)
@@ -263,7 +305,6 @@ export default function VoiceAssistant({
         : replyText;
 
       setAiResponseText(polishedReply);
-      setDisplayedAiText(polishedReply);
       setStatus('idle');
 
       // BOSQICH 4: Tarixga saqlash (Michi AI Hub da ko'rish va o'chirish imkoniyati bilan)
@@ -291,37 +332,13 @@ export default function VoiceAssistant({
       setStatus('error');
       const errText = t('aiErrorOccurred', "So'rovni bajarishda xatolik yuz berdi. Qayta urinib ko'ring.");
       setAiResponseText(errText);
-      setDisplayedAiText(errText);
-      setTimeout(() => {
+      errorTimeoutRef.current = setTimeout(() => {
         setStatus('idle');
         setTranscript('');
         setAiResponseText('');
         setDisplayedAiText('');
       }, 5000);
     }
-  };
-
-  // Dynamic status text helper functions based on selected speech language across all 7 supported locales
-  const getListeningStatusText = () => {
-    const lang = (speechLang || i18n?.language || 'ja').substring(0, 2).toLowerCase();
-    if (lang === 'ja') return '聞き取り中... (音声で話しかけてください)';
-    if (lang === 'uz') return 'Tinglanmoqda... (Ovozingizni ayting)';
-    if (lang === 'ru') return 'Слушаю... (Произнесите команду)';
-    if (lang === 'zh') return '正在聆听... (请说话)';
-    if (lang === 'vi') return 'Đang lắng nghe... (Hãy nói)';
-    if (lang === 'ne') return 'सुन्दैछ... (कृपया बोल्नुहोस्)';
-    return 'Listening... (Speak now)';
-  };
-
-  const getThinkingStatusText = () => {
-    const lang = (speechLang || i18n?.language || 'ja').substring(0, 2).toLowerCase();
-    if (lang === 'ja') return '考え中...';
-    if (lang === 'uz') return 'O\'ylamoqda...';
-    if (lang === 'ru') return 'Думаю...';
-    if (lang === 'zh') return '思考中...';
-    if (lang === 'vi') return 'Đang suy nghĩ...';
-    if (lang === 'ne') return 'सोच्दैछ...';
-    return 'Thinking...';
   };
 
   useEffect(() => {
@@ -333,123 +350,144 @@ export default function VoiceAssistant({
     }
   }, [i18n?.language]);
 
-  const showBubble = (status === 'listening' || status === 'thinking' || transcript || aiResponseText) && !isSideDrawerOpen;
+  const showBubble = (status === 'listening' || status === 'thinking' || transcript || aiResponseText || notice) && !isSideDrawerOpen;
+  const liveText = drawerInput || transcript;
+  const showEditBar = Boolean(liveText) && status !== 'thinking' && !aiResponseText;
+  const isTyping = Boolean(aiResponseText) && displayedAiText.length < aiResponseText.length;
+  const aiState = status === 'error' ? 'error' : status === 'thinking' ? 'thinking' : status === 'listening' ? 'listening' : 'answer';
+  const speechLangLabel = SUPPORTED_SPEECH_LANGS.find(l => l.code === (speechLang || 'ja').substring(0, 2))?.label || '日本語';
+
+  const closeBubble = () => {
+    localSTT.stopListening(true);
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    clearTimeout(readingTimeoutRef.current);
+    clearTimeout(errorTimeoutRef.current);
+    setStatus('idle');
+    setTranscript('');
+    setAiResponseText('');
+    setDisplayedAiText('');
+    setNotice('');
+    if (onClose) onClose();
+  };
 
   return (
     <>
       {/* Top-Right Floating Robot Speech Bubble when active/listening/thinking/speaking and drawer closed */}
       {showBubble && (
-        <div className="voice-robot-speech-bubble animate-slide-in">
+        <div className={`voice-robot-speech-bubble animate-slide-in is-${aiState}`}>
           <div className="speech-bubble-pointer" />
-          <div className="speech-bubble-content">
-            {transcript && (
-              <div className="bubble-row">
-                <div className="bubble-avatar user-avatar" title="Foydalanuvchi">
-                  <User size={12} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
-                </div>
-                <p className="bubble-text">{transcript}</p>
+          <div className="speech-bubble-content" role="log" aria-live="polite" aria-atomic="false">
+            {/* User question (sent) */}
+            {transcript && (status === 'thinking' || aiResponseText) && (
+              <div className="bubble-row is-user">
+                <MichiUserAvatar profile={profileData} size={26} title={t('youLabel', 'You')} />
+                <p className="bubble-text bubble-text--user">{transcript}</p>
               </div>
             )}
-            {status === 'listening' && !transcript && (
+
+            {/* Listening */}
+            {status === 'listening' && (
               <div className="bubble-row">
-                <div className="bubble-avatar listening-avatar" title="Eshitmoqda">
-                  <Mic size={12} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
+                <MichiAiAvatar state="listening" size={26} />
+                <div className="bubble-status">
+                  <span className="bubble-status__title">{t('aiListening')}</span>
+                  {!liveText && <span className="bubble-status__hint">{t('aiListeningHint')}</span>}
                 </div>
-                <p className="bubble-text" style={{ fontStyle: 'italic', opacity: 0.8 }}>
-                  {getListeningStatusText()}
-                </p>
+                <MichiTypingDots tone="listening" label={t('aiListening')} />
               </div>
             )}
+
+            {/* Thinking */}
             {status === 'thinking' && (
               <div className="bubble-row">
-                <div className="bubble-avatar thinking-avatar" title="O'ylamoqda">
-                  <Sparkles size={12} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
+                <MichiAiAvatar state="thinking" size={26} />
+                <div className="bubble-status">
+                  <span className="bubble-status__title">{t('aiThinking')}</span>
                 </div>
-                <p className="bubble-text" style={{ fontStyle: 'italic', opacity: 0.8 }}>
-                  {getThinkingStatusText()}
+                <MichiTypingDots tone="thinking" label={t('aiThinking')} />
+              </div>
+            )}
+
+            {/* Answer (typewriter) */}
+            {aiResponseText && (
+              <div className="bubble-row">
+                <MichiAiAvatar state={aiState} size={26} />
+                <p className={`bubble-text ${speechLang.startsWith('ja') ? 'ja-text' : ''}`}>
+                  {displayedAiText}
+                  {isTyping && <span className="typewriter-cursor" aria-hidden="true">▍</span>}
                 </p>
               </div>
             )}
-            {(displayedAiText || aiResponseText) && (
-              <div className="bubble-row">
-                <div className="bubble-avatar ai-avatar" title="Michi AI">
-                  <Bot size={12} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
-                </div>
-                <p className={`bubble-text ${speechLang.startsWith('ja') ? 'ja-text' : ''}`}>
-                  {displayedAiText || aiResponseText}
-                </p>
+
+            {/* Mic / STT problem */}
+            {notice && (
+              <div className="bubble-row" role="alert">
+                <MichiAiAvatar state="error" size={26} />
+                <p className="bubble-text bubble-text--notice">{notice}</p>
               </div>
             )}
           </div>
 
-          {/* Send Bar for floating bubble: allows reviewing/editing text and explicit Send button click */}
-          {(transcript || drawerInput) && status !== 'thinking' && !aiResponseText && (
-            <div className="bubble-send-bar" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '6px 0 2px 0' }}>
-              <input 
-                type="text" 
-                value={drawerInput || transcript} 
+          {/* Live transcript: review/edit, then send explicitly */}
+          {showEditBar && (
+            <form
+              className="bubble-send-bar"
+              onSubmit={(e) => {
+                e.preventDefault();
+                localSTT.stopListening();
+                handleSendText(liveText);
+              }}
+            >
+              <MichiUserAvatar profile={profileData} size={26} title={t('youLabel', 'You')} />
+              <input
+                type="text"
+                className="bubble-send-input"
+                value={liveText}
                 onChange={(e) => {
                   setTranscript(e.target.value);
                   setDrawerInput(e.target.value);
                 }}
-                placeholder={speechLang.startsWith('ja') ? '質問を確認・編集...' : speechLang === 'uz' ? 'Savolni tahrirlash...' : 'Edit question...'}
-                style={{
-                  flex: 1, height: '30px', borderRadius: '8px', border: '1px solid rgba(94, 92, 230, 0.2)',
-                  padding: '0 8px', fontSize: '11.5px', background: 'rgba(255, 255, 255, 0.95)', color: 'var(--text-main)', outline: 'none'
-                }}
+                placeholder={t('aiEditPlaceholder')}
+                aria-label={t('aiEditPlaceholder')}
               />
-              <button
-                type="button"
-                onClick={() => {
-                  localSTT.stopListening();
-                  handleSendText(drawerInput || transcript);
-                }}
-                style={{
-                  height: '30px', padding: '0 10px', borderRadius: '8px', border: 'none',
-                  background: 'var(--primary, #5e5ce6)', color: '#fff', fontSize: '11px', fontWeight: '700',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0
-                }}
-              >
-                <span>{speechLang.startsWith('ja') ? '送信' : speechLang === 'uz' ? "Jo'natish" : 'Send'}</span> ➔
+              <button type="submit" className="bubble-send-btn" aria-label={t('aiSend')} title={t('aiSend')}>
+                <SendHorizontal size={15} strokeWidth={2.4} aria-hidden="true" />
               </button>
-            </div>
+            </form>
           )}
 
           {/* Dynamic timer progress bar indicating remaining reading duration */}
-          {(transcript || aiResponseText) && (
-            <div 
-              className="speech-bubble-timer-bar" 
-              style={{ animationDuration: `${bubbleTimerMs}ms` }} 
+          {aiResponseText && !isTyping && (
+            <div
+              key={aiResponseText}
+              className="speech-bubble-timer-bar"
+              style={{ animationDuration: `${bubbleTimerMs}ms` }}
             />
           )}
 
           <div className="bubble-footer-actions">
-            <button 
+            <button
+              type="button"
               className="voice-lang-toggle-bubble"
+              aria-label={`${t('aiSpeechLang')}: ${speechLangLabel}`}
               onClick={() => {
                 const nextLang = getNextSpeechLang(speechLang);
                 setSpeechLang(nextLang);
                 localStorage.setItem('michi_speech_lang', nextLang);
               }}
             >
-              🌐 {SUPPORTED_SPEECH_LANGS.find(l => l.code === (speechLang || 'ja').substring(0, 2))?.label || '日本語'}
+              <Globe size={13} aria-hidden="true" /> {speechLangLabel}
             </button>
-            <button 
+            <button
+              type="button"
               className="voice-bubble-close-btn"
-              onClick={() => {
-                localSTT.stopListening(true);
-                if (typeof window !== 'undefined' && window.speechSynthesis) {
-                  window.speechSynthesis.cancel();
-                }
-                setStatus('idle');
-                setTranscript('');
-                setAiResponseText('');
-                setDisplayedAiText('');
-                if (onClose) onClose();
-              }}
-              title="Yopish"
+              onClick={closeBubble}
+              title={t('aiClose')}
+              aria-label={t('aiClose')}
             >
-              ✕
+              <X size={14} strokeWidth={2.6} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -478,6 +516,7 @@ export default function VoiceAssistant({
         status={status}
         speechLang={speechLang}
         chatHistoryList={chatHistoryList}
+        profileData={profileData}
         transcript={transcript}
         aiResponseText={aiResponseText}
         displayedAiText={displayedAiText}
@@ -509,7 +548,7 @@ export default function VoiceAssistant({
                   setDrawerInput(res.cleanText || res.rawText);
                 }
               },
-              onError: () => setStatus('idle'),
+              onError: handleSttError,
               onEnd: () => {
                 if (statusRef.current === 'listening') setStatus('idle');
               }
@@ -517,7 +556,6 @@ export default function VoiceAssistant({
           }
         }}
         onClearHistory={clearChatHistory}
-        onSpeakResponse={(textToRead) => speakText(textToRead, speechLang)}
         speechContentRef={speechContentRef}
         chatEndRef={chatEndRef}
       />

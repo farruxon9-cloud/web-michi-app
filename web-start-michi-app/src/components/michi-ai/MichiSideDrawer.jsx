@@ -23,7 +23,7 @@ export default function MichiSideDrawer({
   onDeactivateAI,
   onMicToggle,
   onClearHistory,
-  onSpeakResponse,
+  profileData,
   speechContentRef,
   chatEndRef
 }) {
@@ -33,7 +33,7 @@ export default function MichiSideDrawer({
 
   const handleCopy = (text, idKey) => {
     if (!text) return;
-    navigator.clipboard.writeText(text);
+    navigator.clipboard?.writeText(text).catch(() => {});
     setCopiedId(idKey);
     setTimeout(() => {
       setCopiedId(null);
@@ -71,7 +71,7 @@ export default function MichiSideDrawer({
           displayedAiText={displayedAiText}
           copiedId={copiedId}
           onCopy={handleCopy}
-          onSpeakResponse={onSpeakResponse}
+          profileData={profileData}
           speechLang={speechLang}
           speechContentRef={speechContentRef}
           chatEndRef={chatEndRef}

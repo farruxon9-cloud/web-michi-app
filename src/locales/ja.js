@@ -1007,7 +1007,7 @@ const translation = {
   "step3": "ページを再読み込みするか、下のボタンを押してください。",
   "checkPermissionBtn": "権限を再確認",
   "userSaid": "あなた",
-  "aiThinking": "AIが回答を作成中...",
+  "aiThinking": "Michi AIが考えています",
   "loginAttemptsLeft": "パスワードが正しくありません。残り試行回数: {{count}}回",
   "accountLockedTitle": "セキュリティのためアカウントが一時制限されています",
   "accountLockedDesc": "連続失敗のためアカウント保護のためロックされています。メール認証コードで即時解除できます。",
@@ -1205,7 +1205,19 @@ const translation = {
   "deleteAccountConfirmMsg": "30日後にアカウント・求人・応募などのデータが完全に削除されます。30日以内ならいつでも取り消せます。",
   "loginSuspendedUntil": "このアカウントは {{date}} まで利用停止中です。",
   "loginSuspendedPermanent": "このアカウントは利用停止されています。",
-  "loginSuspendedHelp": "ご不明な点は support@michi.jp.net までお問い合わせください。"
+  "loginSuspendedHelp": "ご不明な点は support@michi.jp.net までお問い合わせください。",
+  "aiListening": "聞いています…",
+  "aiListeningHint": "質問を話してください",
+  "aiSend": "送信",
+  "aiEditPlaceholder": "質問を確認・編集…",
+  "aiClose": "閉じる",
+  "aiSpeechLang": "音声の言語",
+  "aiMicDenied": "マイクの使用が許可されていません。ブラウザの設定で許可してください。",
+  "aiSttUnsupported": "このブラウザは音声入力に対応していません。文字で入力してください。",
+  "aiMicError": "音声を認識できませんでした。もう一度お試しください。",
+  "aiErrorOccurred": "処理中にエラーが発生しました。もう一度お試しください。",
+  "actionExecuted": "実行しました。",
+  "aiDisclaimer": "※ Michi AIはAI技術を活用しているため、誤った情報を生成する可能性があります。重要な決定や専門的な手続きの際は公式情報をご確認ください。"
 };
 
 export default { translation };
