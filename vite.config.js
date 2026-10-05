@@ -66,115 +66,13 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 5000000,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/basemaps\.cartocdn\.com\/.*/i,
-            handler: 'CacheFirst',
+            // OpenFreeMap vector tiles / styles / fonts (free, OSM data). Tiles change rarely.
+            urlPattern: /^https:\/\/tiles\.openfreemap\.org\/.*/i,
+            handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'carto-tiles-cache',
-              expiration: {
-                maxEntries: 1000,
-                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/.*\.tile\.openstreetmap\.org\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'osm-tiles-cache',
-              expiration: {
-                maxEntries: 1000,
-                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/tile\.openstreetmap\.jp\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'osm-jp-tiles-cache',
-              expiration: {
-                maxEntries: 1000,
-                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/router\.project-osrm\.org\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'osrm-routing-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 7 * 24 * 60 * 60 // 7 Days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/valhalla1\.openstreetmap\.de\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'valhalla-routing-cache',
-              expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/s3\.amazonaws\.com\/elevation-tiles-prod\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'aws-terrain-cache',
-              expiration: {
-                maxEntries: 2000,
-                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/server\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'esri-satellite-cache',
-              expiration: {
-                maxEntries: 2000,
-                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/overpass-api\.de\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'overpass-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 7 * 24 * 60 * 60 // 7 Days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
+              cacheName: 'openfreemap-cache',
+              expiration: { maxEntries: 600, maxAgeSeconds: 14 * 24 * 60 * 60 },
+              cacheableResponse: { statuses: [0, 200] }
             }
           }
         ]

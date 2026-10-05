@@ -4,7 +4,7 @@ import {
   Briefcase, GraduationCap, Wrench, Gift, 
   CalendarClock, Rocket, 
   Sparkles, Megaphone, FileCheck, Compass, 
-  Navigation, Truck, ShieldCheck 
+  Navigation 
 } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import MusicCard from './MusicCard';
@@ -110,21 +110,21 @@ const DICT = {
   },
 
   comingSoonTag: { ja: '近日公開', uz: 'Tez orada', en: 'Coming Soon', ru: 'Скоро', zh: '即将来临', vi: 'Sắp ra mắt', ne: 'छिट्टै आउँदैछ' },
-  bentoJDMBadge1: { ja: '日本トラックマップ', uz: 'Yaponiya Xaritasi', en: 'Japan Map', ru: 'Карта Японии', zh: '日本地图', vi: 'Bản đồ Nhật Bản', ne: 'जापान नक्सा' },
-  bentoJDMBadge2: { ja: 'スマートナビ', uz: 'Aqlli Navigatsiya', en: 'Smart Navigation', ru: 'Умная навигация', zh: '智能导航', vi: 'Điều hướng thông minh', ne: 'स्मार्ट नेभिगेसन' },
-  bentoJDMTitle: { ja: '大型トラック専用スマートナビ', uz: 'Aqlli Yuk Mashinalari Navigatsiyasi', en: 'Smart Heavy Truck Navigation', ru: 'Умная навигация для грузовиков', zh: '智能重型卡车导航', vi: 'Điều hướng thông minh cho xe tải hạng nặng', ne: 'ठूला ट्रकहरूको लागि स्मार्ट नेभिगेसन' },
+  bentoJDMBadge1: { ja: '日本マップ', uz: 'Yaponiya xaritasi', en: 'Japan Map', ru: 'Карта Японии', zh: '日本地图', vi: 'Bản đồ Nhật Bản', ne: 'जापान नक्सा' },
+  bentoJDMBadge2: { ja: 'ライブ', uz: 'Jonli', en: 'Live', ru: 'Онлайн', zh: '实时', vi: 'Trực tiếp', ne: 'लाइभ' },
+  bentoJDMTitle: { ja: 'マップ・現在地', uz: 'Xarita va joylashuv', en: 'Map & My Location', ru: 'Карта и местоположение', zh: '地图与当前位置', vi: 'Bản đồ & vị trí', ne: 'नक्सा र मेरो स्थान' },
   bentoJDMSub: { 
-    ja: '車体寸法・重量制限・高さ制限を自動回避', 
-    uz: "Yaponiyadagi transport o'lchamlari va ko'prik cheklovlari xaritasi", 
-    en: 'Height, weight & dimension restriction-aware routing in Japan', 
-    ru: 'Карта ограничений по высоте, весу и габаритам в Японии', 
-    zh: '日本车身尺寸、限高、限重自动避让地图',
-    vi: 'Tự động tránh các hạn chế về chiều cao, trọng lượng và kích thước xe tại Nhật Bản',
-    ne: 'जापानमा गाडीको उचाइ, तौल र आकार सीमाहरू स्वतः छल्ने नेभिगेसन'
+    ja: '住所・施設を検索して、Google/Appleマップでナビ', 
+    uz: "Manzil va joylarni qidiring, Google/Apple Maps'da yo'l oling", 
+    en: 'Search places & addresses, navigate with Google/Apple Maps', 
+    ru: 'Ищите адреса и места, навигация через Google/Apple Maps', 
+    zh: '搜索地址和地点，用Google/Apple地图导航',
+    vi: 'Tìm địa chỉ, địa điểm và chỉ đường bằng Google/Apple Maps',
+    ne: 'ठेगाना र स्थान खोज्नुहोस्, Google/Apple Maps मार्फत जानुहोस्'
   },
-  bentoJDMSubtag1: { ja: '車両サイズ設定', uz: 'Mashina sozlamalari', en: 'Vehicle Specs', ru: 'Настройки авто', zh: '车辆规格设置', vi: 'Cài đặt kích thước xe', ne: 'गाडीको विवरण' },
-  bentoJDMSubtag2: { ja: '3.8m高さ制限回避', uz: 'Balandlik taqiqi', en: 'Height Limits', ru: 'Ограничение высоты', zh: '避开限高', vi: 'Tránh giới hạn chiều cao 3.8m', ne: 'उचाइ सीमा' },
-  bentoJDMSubtag3: { ja: '重量制限回避', uz: 'Vazn cheklovi', en: 'Weight Limits', ru: 'Ограничение веса', zh: '避开限重', vi: 'Tránh giới hạn trọng lượng', ne: 'तौल सीमा' }
+  bentoJDMSubtag1: { ja: '現在地', uz: 'Joylashuv', en: 'My location', ru: 'Я здесь', zh: '当前位置', vi: 'Vị trí', ne: 'मेरो स्थान' },
+  bentoJDMSubtag2: { ja: '住所検索', uz: 'Manzil qidirish', en: 'Address search', ru: 'Поиск адреса', zh: '地址搜索', vi: 'Tìm địa chỉ', ne: 'ठेगाना खोज' },
+  bentoJDMSubtag3: { ja: 'ナビ連携', uz: "Yo'l ko'rsatish", en: 'Directions', ru: 'Маршрут', zh: '导航', vi: 'Chỉ đường', ne: 'दिशा' }
 };
 
 export default function Dashboard({ 
@@ -591,31 +591,9 @@ export default function Dashboard({
           boxShadow: '0 3px 14px rgba(16, 185, 129, 0.06)'
         }}
       >
-        <div style={{
-          position: 'absolute',
-          top: '8px',
-          right: '8px',
-          zIndex: 5,
-          background: 'linear-gradient(135deg, #FF9500 0%, #FF2D55 100%)',
-          color: '#FFFFFF',
-          fontSize: '9px',
-          fontWeight: '900',
-          letterSpacing: '0.4px',
-          padding: '2px 7px',
-          borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(255, 149, 0, 0.35)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '3px',
-          textTransform: 'uppercase',
-          whiteSpace: 'nowrap'
-        }}>
-          <Sparkles size={10} color="#FFF" />
-          <span>{getText('comingSoonTag')}</span>
-        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, gap: '10px' }}>
-          <div style={{ flex: 1, minWidth: 0, paddingRight: '40px' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
               <span style={{ fontSize: '8.5px', fontWeight: '800', letterSpacing: '0.6px', color: '#10b981', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                 {getText('bentoJDMBadge1')}
@@ -636,11 +614,11 @@ export default function Dashboard({
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', whiteSpace: 'nowrap' }}>
               <span style={{ fontSize: '8.5px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
-                <Truck size={9} color="#10b981" />
+                <Compass size={9} color="#10b981" />
                 <span>{getText('bentoJDMSubtag1')}</span>
               </span>
               <span style={{ fontSize: '8.5px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
-                <ShieldCheck size={9} color="#10b981" />
+                <Sparkles size={9} color="#10b981" />
                 <span>{getText('bentoJDMSubtag2')}</span>
               </span>
               <span style={{ fontSize: '8.5px', padding: '2px 5px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.22)', color: '#10b981', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>

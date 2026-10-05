@@ -15,7 +15,8 @@ import Profile from './components/Profile';
 import AdminDashboard from './components/AdminDashboard';
 import VoiceAssistant from './components/VoiceAssistant';
 import RobotAvatar from './components/RobotAvatar';
-import JDMNavigation from './components/JDMNavigation';
+// Real map page (stage 1). Lazy so maplibre (~800KB) loads only when the map is opened.
+const MichiMap = React.lazy(() => import('./components/map/MichiMap'));
 import AssistHeroShowcase from './components/AssistHeroShowcase';
 import ErrorBoundary from './components/ErrorBoundary';
 import ReferralModal from './components/ReferralModal';
@@ -108,6 +109,19 @@ function App() {
 
   useEffect(() => {
     if (showJDMNavigation) setHasOpenedJDM(true);
+  }, [showJDMNavigation]);
+
+  // Map overlay ↔ browser history: hardware/browser Back closes the map instead of leaving the app
+  useEffect(() => {
+    if (!showJDMNavigation) return undefined;
+    window.history.pushState({ michiMap: true }, '');
+    const onPop = () => setShowJDMNavigation(false);
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      // Closed from inside the app (tab switch etc.) → drop our history entry
+      if (window.history.state?.michiMap) window.history.back();
+    };
   }, [showJDMNavigation]);
 
   // true while profile edits are not yet saved on the server (persisted so a reload keeps them)
@@ -1011,11 +1025,13 @@ function App() {
               }}
             >
               <ChunkErrorBoundary>
-                <JDMNavigation 
-                  onBack={() => setShowJDMNavigation(false)} 
-                  showJDMNavigation={showJDMNavigation} 
-                  darkMode={darkMode} 
-                />
+                <React.Suspense fallback={null}>
+                  <MichiMap
+                    onBack={() => setShowJDMNavigation(false)}
+                    isOpen={showJDMNavigation}
+                    darkMode={darkMode}
+                  />
+                </React.Suspense>
               </ChunkErrorBoundary>
             </div>
           )}
