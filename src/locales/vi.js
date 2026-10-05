@@ -709,6 +709,8 @@ const translation = {
   "withdrawnByApplicant": "Ứng viên đã rút đơn",
   "appStatusUpdateError": "Không thể cập nhật trạng thái. Vui lòng kiểm tra kết nối và thử lại.",
   "applySubmitError": "Không thể gửi đơn. Vui lòng kiểm tra kết nối và thử lại.",
+  "profileSaveError": "Không thể lưu hồ sơ lên máy chủ. Vui lòng kiểm tra thông tin đã nhập (ví dụ: kích thước ảnh).",
+  "schoolSaveError": "Không thể lưu thông tin trường lái. Vui lòng kiểm tra kết nối và thử lại.",
   "confirmDeleteJob": "Xóa tin tuyển dụng này?",
   "confirmDeleteSchool": "Xóa tin trường lái xe này?",
   "delete": "Xóa",

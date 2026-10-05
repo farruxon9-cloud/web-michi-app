@@ -264,12 +264,14 @@ export function normalizeSchoolPosting(rawSchool) {
   let prefecture = rawSchool.prefecture || '';
   let lat = rawSchool.lat;
   let lng = rawSchool.lng;
+  const locObj = typeof rawSchool.location === 'object' && rawSchool.location !== null ? rawSchool.location : {};
+  const city = s(rawSchool.city || locObj.city || rawSchool.detailAddress);
 
   if (typeof rawSchool.location === 'object' && rawSchool.location !== null) {
     prefecture = prefecture || rawSchool.location.prefecture || '';
     lat = lat !== undefined ? lat : rawSchool.location.lat;
     lng = lng !== undefined ? lng : rawSchool.location.lng;
-    fullAddr = prefecture;
+    fullAddr = [prefecture, city].filter(Boolean).join(', ');
   } else {
     fullAddr = typeof rawSchool.fullAddress === 'string' ? rawSchool.fullAddress : (typeof rawSchool.location === 'string' ? rawSchool.location : '');
   }
@@ -295,20 +297,52 @@ export function normalizeSchoolPosting(rawSchool) {
     ? (typeof rawSchool.price === 'number' ? `¥${rawSchool.price.toLocaleString('ja-JP')}` : String(rawSchool.price))
     : undefined;
 
+  const shoukaiObj = rawSchool.shoukai && typeof rawSchool.shoukai === 'object' ? rawSchool.shoukai : null;
+  const shoukaiFee = shoukaiObj
+    ? (shoukaiObj.enabled ? Number(shoukaiObj.amount) || 0 : 0)
+    : Number(rawSchool.shoukaiFee ?? rawSchool.shoukaiAmount) || 0;
+  const authorId = rawSchool.authorId != null ? String(rawSchool.authorId) : (rawSchool.companyId != null ? String(rawSchool.companyId) : '');
+  const postalCode = s(rawSchool.postalCode || locObj.postalCode);
+  const townAddress = s(rawSchool.addressLine || rawSchool.townAddress);
+  const buildingAddress = s(rawSchool.building || rawSchool.buildingAddress);
+  const fullAddress = typeof rawSchool.fullAddress === 'string' && rawSchool.fullAddress
+    ? rawSchool.fullAddress
+    : [postalCode ? `〒${postalCode}` : '', `${prefecture}${city}${townAddress}`, buildingAddress].filter(Boolean).join(' ');
+
   return {
     id: schoolId,
     name: s(rawSchool.name) || 'Avtomaktab',
     price: formattedPrice,
     prefecture,
+    city,
     location: fullAddr,
+    fullAddress,
+    postalCode,
+    detailAddress: city,
+    townAddress,
+    buildingAddress,
     image: rawSchool.image || 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=800',
+    logo: s(rawSchool.logo),
     lat: Number.isFinite(parsedLat) ? parsedLat : null,
     lng: Number.isFinite(parsedLng) ? parsedLng : null,
     courses: Array.isArray(rawSchool.courses) ? rawSchool.courses : [],
     licenses: Array.isArray(rawSchool.licenses) ? rawSchool.licenses : [],
     tags: Array.isArray(rawSchool.tags) ? rawSchool.tags : [],
-    shoukaiAmount: s(rawSchool.shoukaiAmount),
+    langs: Array.isArray(rawSchool.languages) ? rawSchool.languages : (Array.isArray(rawSchool.langs) ? rawSchool.langs : []),
+    description: s(rawSchool.description),
+    type: s(rawSchool.type),
+    discount: s(rawSchool.discount),
+    phone: s(rawSchool.phone),
+    email: s(rawSchool.email),
+    shoukaiFee,
+    shoukai: shoukaiFee > 0 ? `¥${shoukaiFee.toLocaleString('ja-JP')}` : '0',
+    shoukaiConditions: s(rawSchool.shoukaiConditions),
+    shoukaiAmount: s(rawSchool.shoukaiAmount) || (shoukaiFee > 0 ? String(shoukaiFee) : ''),
+    authorId,
+    companyId: authorId,
+    verified: rawSchool.verified !== undefined ? Boolean(rawSchool.verified) : Boolean(authorId),
     hasAccommodation: rawSchool.hasAccommodation !== undefined ? rawSchool.hasAccommodation : false,
-    isActive: rawSchool.isActive !== false
+    isActive: rawSchool.isActive !== false,
+    ...(rawSchool.isMine ? { isMine: true } : {})
   };
 }

@@ -739,6 +739,8 @@ const translation = {
   "withdrawnByApplicant": "Nomzod arizani qaytarib oldi",
   "appStatusUpdateError": "Holatni yangilab bo‘lmadi. Internetni tekshirib, qayta urinib ko‘ring.",
   "applySubmitError": "Arizani yuborib bo‘lmadi. Internetni tekshirib, qayta urinib ko‘ring.",
+  "profileSaveError": "Profil serverga saqlanmadi. Kiritilgan ma’lumotlarni (masalan, rasm hajmini) tekshiring.",
+  "schoolSaveError": "Maktab e’loni saqlanmadi. Internet aloqasini tekshirib, qayta urinib ko‘ring.",
   "confirmDeleteJob": "Bu e'lonni o'chirmoqchimisiz?",
   "confirmDeleteSchool": "Bu avtomaktab e'lonini o'chirmoqchimisiz?",
   "delete": "O'chirish",

@@ -734,6 +734,8 @@ const translation = {
   "withdrawnByApplicant": "The applicant withdrew this application",
   "appStatusUpdateError": "Could not update the status. Check your connection and try again.",
   "applySubmitError": "Could not send your application. Check your connection and try again.",
+  "profileSaveError": "Your profile could not be saved to the server. Please check your input (e.g. photo size).",
+  "schoolSaveError": "The school listing could not be saved. Please check your connection and try again.",
   "confirmDeleteJob": "Delete this job posting?",
   "confirmDeleteSchool": "Delete this driving school posting?",
   "delete": "Delete",

@@ -152,8 +152,10 @@ export const fetchCurrentUser = async () => {
     });
 
     if (response.status === 401 || response.status === 403) {
-      // Token rejected (apiFetch already tried a refresh): drop the cached session
-      // so a stale role (e.g. admin) is never trusted.
+      // apiFetch already tried a refresh. If the server rejected the session it cleared the
+      // token; if the refresh only failed transiently (offline/5xx) keep the cached session.
+      // 403 is an explicit refusal (blocked account) — always sign out.
+      if (response.status === 401 && getStoredToken()) return getStoredUser();
       logoutUser();
       return null;
     }
@@ -176,6 +178,10 @@ export const fetchCurrentUser = async () => {
 
 export const getMe = fetchCurrentUser;
 
+/**
+ * @returns {Promise<true|false|null>} true = new token stored; false = server rejected the
+ *   session (log out); null = transient failure (offline, 5xx, 429) — keep the session.
+ */
 export const refreshAccessToken = async () => {
   const refreshToken = getStoredRefreshToken();
   if (!refreshToken) return false;
@@ -198,12 +204,32 @@ export const refreshAccessToken = async () => {
         }
         return true;
       }
+      return false;
     }
-    return false;
+    if (response.status === 400 || response.status === 401 || response.status === 403) return false;
+    return null;
   } catch (err) {
     console.warn('Refresh token error:', err);
-    return false;
+    return null;
   }
+};
+
+/**
+ * PATCH /api/auth/me — save profile edits on the server.
+ * @param {{ fullName?: string, phone?: string, profileData?: object }} patch
+ * @returns {Promise<object|null>} the updated public user (also written to storage)
+ */
+export const updateCurrentUser = async (patch) => {
+  const response = await apiFetch(API_ENDPOINTS.ME, { method: 'PATCH', body: JSON.stringify(patch || {}) });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const err = new Error(data.error || data.message || `Profile save failed (${response.status})`);
+    err.status = response.status;
+    throw err;
+  }
+  const user = data.user || null;
+  if (user) setStoredUser(user);
+  return user;
 };
 
 export const logoutUser = () => {
@@ -223,6 +249,9 @@ export const logoutUser = () => {
   // Remove locally kept resume/application drafts so personal data doesn't linger on shared devices
   clearAllUserDrafts();
 };
+
+/** Fired when the server rejects the session; AuthContext listens and resets the UI to signed-out. */
+export const SESSION_EXPIRED_EVENT = 'michi:session-expired';
 
 export const checkEmailExists = async (email) => {
   if (!email || !email.includes('@')) return false;

@@ -17,10 +17,17 @@ describe('fetchCurrentUser — session safety', () => {
   });
 
   it('clears the cached session when the server rejects the token (401)', async () => {
-    apiFetch.mockResolvedValue(res(401));
+    // Real apiFetch clears the token after the refresh is rejected, then returns the 401
+    apiFetch.mockImplementation(async () => { localStorage.removeItem('michi_jwt_token'); return res(401); });
     expect(await fetchCurrentUser()).toBeNull();
     expect(getStoredToken()).toBeNull();
     expect(getStoredUser()).toBeNull();
+  });
+
+  it('keeps the session on 401 when the refresh failed only transiently (token kept)', async () => {
+    apiFetch.mockResolvedValue(res(401));
+    expect((await fetchCurrentUser()).email).toBe('a@michi.jp');
+    expect(getStoredToken()).toBe('tok');
   });
 
   it('clears the cached session on 403', async () => {

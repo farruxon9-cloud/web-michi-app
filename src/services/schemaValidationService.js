@@ -242,7 +242,8 @@ export function validateSchoolPayload(payload) {
   const normalizedCourses = courses.map((c, index) => {
     const cName = typeof c === 'object' && c.name ? c.name.trim() : `Course ${index + 1}`;
     const cLicense = typeof c === 'object' && c.license ? c.license.trim() : (typeof c === 'string' ? c.trim() : 'AT');
-    const cPrice = typeof c === 'object' ? parseNumericValue(c.price) || 250000 : 250000;
+    // Missing price stays null (UI shows 未入力) — never invent a figure
+    const cPrice = typeof c === 'object' ? (parseNumericValue(c.price) || null) : null;
     return { name: cName, license: cLicense, price: cPrice };
   });
 

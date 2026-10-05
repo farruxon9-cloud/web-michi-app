@@ -13,10 +13,8 @@ import './DriverFeed.css';
 import { JOB_CATEGORIES } from '../data/jobCategories';
 import { submitJobToBackend, updateJobInBackend, deleteJobInBackend, fetchJobs } from '../services/michiJobsApiService';
 import ConfirmSheet from './ConfirmSheet';
-import { createSchoolInBackend } from '../services/schoolService';
-import { API_ENDPOINTS } from '../config/api';
-import { apiFetch } from '../services/apiClient';
-import { normalizeOwnJobPosting, jobValueLabel } from '../utils/jobPostingNormalizer';
+import { createSchoolInBackend, updateSchoolInBackend, deleteSchoolInBackend } from '../services/schoolService';
+import { normalizeOwnJobPosting, normalizeSchoolPosting, jobValueLabel } from '../utils/jobPostingNormalizer';
 import { validateBranch } from '../utils/branchUtils';
 
 // Single figure → max = 0 ("not given"); unparseable → 0/0. The typed text is still sent as `salary`.
@@ -248,7 +246,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           email: jobToEdit.email || '',
           description: jobToEdit.description || '',
           langs: jobToEdit.langs || ['UZ', 'JP'],
-          courses: jobToEdit.courses || ['Oogata', 'Chugata', 'Futsu'],
+          courses: Array.isArray(jobToEdit.courses)
+            ? jobToEdit.courses.map((c) => (typeof c === 'string' ? c : (c?.license || c?.name || ''))).filter(Boolean)
+            : ['Oogata', 'Chugata', 'Futsu'],
           hasShoukai: (jobToEdit.shoukaiFee > 0 || jobToEdit.hasShoukai === 'yes' || jobToEdit.hasShoukai === true) ? 'yes' : 'no',
           shoukaiFee: jobToEdit.shoukaiFee ? String(jobToEdit.shoukaiFee) : '',
           shoukaiConditions: jobToEdit.shoukaiConditions || '',
@@ -396,9 +396,14 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   };
 
   const isMySchool = (school) => {
+    if (!school) return false;
+    if (school.isMine) return true;
+    const myId = profileData?.accountId != null ? String(profileData.accountId) : '';
+    const ownerId = school.authorId || school.companyId;
+    if (ownerId) return Boolean(myId) && String(ownerId) === myId;
+    // Legacy local-only records without an owner: exact name match only
     const myName = profileData?.fullName;
-    if (!myName || myName === 'Mehmon') return true;
-    return school.name === myName || (myName === 'Koyama Driving School' && school.name === 'Koyama Driving School') || Boolean(school.isMine);
+    return Boolean(myName) && myName !== 'Mehmon' && school.name === myName;
   };
 
   const handleImageChange = async (e) => {
@@ -549,7 +554,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         name: profileData?.fullName || "Koyama Driving School",
         type: newJob.title,
         price: newJob.salary,
-        discount: newJob.bonus || "¥10,000",
+        discount: newJob.bonus || '',
+        ...(profileData?.avatar ? { logo: profileData.avatar } : {}),
         image: jobImage || "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
         verified: true,
         location: generatedLocation,
@@ -569,22 +575,23 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         shoukai: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : '0'
       };
 
+      // Persist first (POST new / PUT edit); local list changes only after the server confirms.
+      let saved;
+      try {
+        saved = newJob.id
+          ? await updateSchoolInBackend(newJob.id, school)
+          : await createSchoolInBackend(school);
+      } catch (err) {
+        console.warn('[CompanyHome] School save failed:', err?.message);
+        alert(t('schoolSaveError'));
+        return;
+      }
+      const merged = normalizeSchoolPosting({ ...school, ...(saved && typeof saved === 'object' ? saved : {}), id: saved?.id || newJob.id }) || school;
+      const savedSchool = { ...merged, isMine: true };
       if (newJob.id) {
-        setSchools(schools.map(s => s.id === newJob.id ? school : s));
+        setSchools((prev) => (prev || []).map(s => String(s.id) === String(newJob.id) ? savedSchool : s));
       } else {
-        setSchools([school, ...schools]);
-        // Send driving school payload to VPS backend (POST /api/schools)
-        createSchoolInBackend({
-          name: school.name,
-          prefecture: school.prefecture || 'Tokyo',
-          city: school.detailAddress || '',
-          lat: 35.6686,
-          lng: 139.4776,
-          courses: Array.isArray(school.courses) ? school.courses.map(c => ({ name: typeof c === 'string' ? c : (c.name || 'Course'), license: 'Heavy', price: 300000 })) : [{ name: school.type || 'Course', license: 'Heavy', price: 300000 }],
-          tags: school.langs || []
-        }).catch(err => {
-          console.warn('[CompanyHome] Backend school post warning:', err.message);
-        });
+        setSchools((prev) => [savedSchool, ...(prev || []).filter(s => String(s.id) !== String(savedSchool.id))]);
       }
     } else {
 
@@ -755,8 +762,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
   const performDeleteSchool = async (schoolId) => {
     try {
-      await apiFetch(`${API_ENDPOINTS.SCHOOLS}/${schoolId}`, { method: 'DELETE' });
-      setSchools((prev) => (prev || []).filter(s => s.id !== schoolId));
+      await deleteSchoolInBackend(schoolId);
+      setSchools((prev) => (prev || []).filter(s => String(s.id) !== String(schoolId)));
     } catch (err) {
       alert(t('deleteError', 'O\'chirishda xatolik yuz berdi'));
     }
@@ -2049,7 +2056,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                           onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
                         />
                         <div className="job-type-badge type-fulltime">
-                          {school.langs ? school.langs.join(', ') : 'UZ, JP'}
+                          {Array.isArray(school.langs) && school.langs.length ? school.langs.join(', ') : t('notProvided')}
                         </div>
                       </div>
 
@@ -2063,7 +2070,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
                         <div className="job-card-salary">
                           <Banknote size={15} color="#30D158" />
-                          <span>{school.price}</span>
+                          <span>{school.price || t('notProvided')}</span>
                           {school.discount && (
                             <span className="discount-tag" style={{ marginLeft: '4px', fontSize: '9px', padding: '1.5px 4px' }}>
                               -{school.discount}

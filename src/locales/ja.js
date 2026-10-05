@@ -735,6 +735,8 @@ const translation = {
   "withdrawnByApplicant": "応募者が応募を取り下げました",
   "appStatusUpdateError": "ステータスを更新できませんでした。通信環境を確認して再度お試しください。",
   "applySubmitError": "応募の送信に失敗しました。通信環境を確認して再度お試しください。",
+  "profileSaveError": "プロフィールをサーバーに保存できませんでした。入力内容（写真のサイズなど）を確認してください。",
+  "schoolSaveError": "教習所の情報を保存できませんでした。通信環境を確認して再度お試しください。",
   "confirmDeleteJob": "この求人を削除しますか？",
   "confirmDeleteSchool": "この教習所の掲載を削除しますか？",
   "delete": "削除",

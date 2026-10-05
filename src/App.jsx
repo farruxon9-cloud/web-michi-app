@@ -20,7 +20,8 @@ import AssistHeroShowcase from './components/AssistHeroShowcase';
 import ErrorBoundary from './components/ErrorBoundary';
 import ReferralModal from './components/ReferralModal';
 import { getPermanentUserId } from './utils/userIdManager';
-import { loadUserDraft, saveUserDraft, pickProfileDraft } from './utils/localDraftStore';
+import { loadUserDraft, saveUserDraft, removeUserDraft, pickProfileDraft } from './utils/localDraftStore';
+import { buildProfilePatch, profileFingerprint } from './utils/profileSync';
 import { sanitizeStoredApplications, slimApplicationsForStorage } from './utils/applicationItems';
 import { AppProvider } from './context/AppContext';
 import { submitApplicationToBackend, fetchApplications, updateApplicationStatus, notifyCompanyNewApplication, notifyApplicantStatusChange } from './services/applicationService';
@@ -84,7 +85,7 @@ function App() {
       return false;
     }
   });
-  const { user, userRole, setUserRole, logout } = useAuth();
+  const { user, userRole, setUserRole, logout, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [showJDMNavigation, setShowJDMNavigation] = useState(false);
   const [showAssistHeroShowcase, setShowAssistHeroShowcase] = useState(false);
@@ -113,18 +114,26 @@ function App() {
     if (showJDMNavigation) setHasOpenedJDM(true);
   }, [showJDMNavigation]);
 
+  // true while profile edits are not yet saved on the server (persisted so a reload keeps them)
+  const [initialProfilePending] = useState(() => Boolean(loadUserDraft('profile_sync_pending', getPermanentUserId(), false)));
+  const profileDirtyRef = useRef(initialProfilePending);
+
   // Sync profileData when user object from AuthContext updates.
   // accountId = server user id (jobs.authorId); never sent with applications.
+  // While local edits are not yet saved on the server, keep them (don't overwrite with the
+  // older server snapshot) — see the profile sync effect below.
   useEffect(() => {
     if (user) {
-      setProfileData(prev => ({
-        ...prev,
-        ...(user.profileData || {}),
-        fullName: user.fullName || user.profileData?.fullName || prev.fullName,
-        email: user.email || user.profileData?.email || prev.email,
-        phone: user.phone || user.profileData?.phone || prev.phone,
-        accountId: user.id || prev.accountId || null
-      }));
+      setProfileData(prev => (profileDirtyRef.current
+        ? { ...prev, accountId: user.id || prev.accountId || null }
+        : {
+          ...prev,
+          ...(user.profileData || {}),
+          fullName: user.fullName || user.profileData?.fullName || prev.fullName,
+          email: user.email || user.profileData?.email || prev.email,
+          phone: user.phone || user.profileData?.phone || prev.phone,
+          accountId: user.id || prev.accountId || null
+        }));
     }
   }, [user]);
 
@@ -422,6 +431,7 @@ function App() {
   useEffect(() => {
     if (prevRoleRef.current && !userRole) {
       skipNextDraftSaveRef.current = true;
+      profileDirtyRef.current = false;
       setProfileData(createBaseProfile());
     }
     prevRoleRef.current = userRole;
@@ -439,6 +449,57 @@ function App() {
     }, 500);
     return () => clearTimeout(timer);
   }, [profileData]);
+
+  // ---- Server profile sync (PATCH /api/auth/me) ----
+  // Edits go through handleUpdateProfile → marked unsynced → saved ~1.5s after the last change.
+  // Transient failures (offline/5xx/429) retry on reconnect / when the tab becomes visible;
+  // invalid input (400/413) shows one alert and waits for the next edit.
+  const [profileSyncTick, setProfileSyncTick] = useState(0);
+  const profileDataRef = useRef(profileData);
+  useEffect(() => { profileDataRef.current = profileData; }, [profileData]);
+  const markProfileDirty = useCallback(() => {
+    profileDirtyRef.current = true;
+    saveUserDraft('profile_sync_pending', getPermanentUserId(), true);
+  }, []);
+  const handleUpdateProfile = useCallback((newData) => {
+    setProfileData(prev => ({ ...prev, ...newData }));
+    markProfileDirty();
+  }, [markProfileDirty, setProfileData]);
+
+  useEffect(() => {
+    if (!profileDirtyRef.current || !user || (userRole !== 'driver' && userRole !== 'company')) return undefined;
+    const timer = setTimeout(async () => {
+      const sent = profileDataRef.current;
+      const fp = profileFingerprint(sent);
+      try {
+        await updateProfile(buildProfilePatch(sent));
+        if (profileFingerprint(profileDataRef.current) === fp) {
+          profileDirtyRef.current = false;
+          removeUserDraft('profile_sync_pending', getPermanentUserId());
+        } else {
+          setProfileSyncTick(n => n + 1); // edited while saving → save again
+        }
+      } catch (err) {
+        console.warn('[App] profile save failed:', err.message);
+        if (err.status === 400 || err.status === 413) {
+          profileDirtyRef.current = false;
+          removeUserDraft('profile_sync_pending', getPermanentUserId());
+          alert(t('profileSaveError', 'プロフィールをサーバーに保存できませんでした。'));
+        }
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [profileData, profileSyncTick, user, userRole, updateProfile, t]);
+
+  useEffect(() => {
+    const retry = () => { if (profileDirtyRef.current && document.visibilityState !== 'hidden') setProfileSyncTick(n => n + 1); };
+    window.addEventListener('online', retry);
+    document.addEventListener('visibilitychange', retry);
+    return () => {
+      window.removeEventListener('online', retry);
+      document.removeEventListener('visibilitychange', retry);
+    };
+  }, []);
 
   const feed = useJobFeed();
   const [companyJobs, setCompanyJobs] = useState([]);
@@ -877,7 +938,7 @@ function App() {
             isVoiceStandby={isVoiceStandby}
             setIsVoiceStandby={setIsVoiceStandby}
             onChangeLanguage={() => setLanguageSelected(false)}
-            onUpdateProfile={(newData) => setProfileData(prev => ({ ...prev, ...newData }))}
+            onUpdateProfile={handleUpdateProfile}
             onApply={handleApplyJob}
             onApplySchool={handleApplySchool}
             onShoukai={handleShoukai}

@@ -1,5 +1,5 @@
 // src/services/apiClient.js
-import { getStoredToken, refreshAccessToken, logoutUser } from './authService';
+import { getStoredToken, refreshAccessToken, logoutUser, SESSION_EXPIRED_EVENT } from './authService';
 
 let isRefreshing = false;
 let failedQueue = [];
@@ -13,6 +13,12 @@ const processQueue = (error, token = null) => {
     }
   });
   failedQueue = [];
+};
+
+const notifySessionExpired = () => {
+  try {
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+  } catch { /* non-browser env */ }
 };
 
 export async function apiFetch(url, options = {}) {
@@ -56,7 +62,7 @@ export async function apiFetch(url, options = {}) {
 
       try {
         const refreshed = await refreshAccessToken();
-        if (refreshed) {
+        if (refreshed === true) {
           const newToken = getStoredToken();
           isRefreshing = false;
           processQueue(null, newToken);
@@ -66,16 +72,19 @@ export async function apiFetch(url, options = {}) {
             'Authorization': `Bearer ${newToken}`
           };
           return await fetch(url, { ...config, headers: retryHeaders });
-        } else {
-          isRefreshing = false;
-          processQueue(new Error('Token refresh failed'), null);
-          logoutUser();
-          return response;
         }
+        isRefreshing = false;
+        processQueue(new Error('Token refresh failed'), null);
+        if (refreshed === false) {
+          // Server rejected the session: clear it and tell the UI (AuthContext) to sign out.
+          logoutUser();
+          notifySessionExpired();
+        }
+        // refreshed === null → offline / server busy: keep the session, caller sees the 401.
+        return response;
       } catch (refreshErr) {
         isRefreshing = false;
         processQueue(refreshErr, null);
-        logoutUser();
         throw refreshErr;
       }
     }

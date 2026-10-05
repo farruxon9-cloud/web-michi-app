@@ -710,6 +710,8 @@ const translation = {
   "withdrawnByApplicant": "申请人已撤回申请",
   "appStatusUpdateError": "无法更新状态。请检查网络后重试。",
   "applySubmitError": "申请发送失败。请检查网络后重试。",
+  "profileSaveError": "无法将个人资料保存到服务器。请检查输入内容（例如照片大小）。",
+  "schoolSaveError": "无法保存驾校信息。请检查网络连接后重试。",
   "confirmDeleteJob": "要删除此招聘信息吗？",
   "confirmDeleteSchool": "要删除此驾校信息吗？",
   "delete": "删除",
