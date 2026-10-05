@@ -90,3 +90,10 @@ Auto-written by scripts/sync_web_start.mjs. The mirror diverged here, so the pat
 - [ ] 2026-10-05 04:37 `src/locales/zh.js`
 - [ ] 2026-10-05 04:37 `src/services/apiClient.js`
 - [ ] 2026-10-05 04:37 `src/services/authService.js`
+- [ ] 2026-10-05 04:50 `src/locales/en.js`
+- [ ] 2026-10-05 04:50 `src/locales/ja.js`
+- [ ] 2026-10-05 04:50 `src/locales/ne.js`
+- [ ] 2026-10-05 04:50 `src/locales/ru.js`
+- [ ] 2026-10-05 04:50 `src/locales/uz.js`
+- [ ] 2026-10-05 04:50 `src/locales/vi.js`
+- [ ] 2026-10-05 04:50 `src/locales/zh.js`

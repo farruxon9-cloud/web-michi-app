@@ -1013,10 +1013,7 @@ const translation = {
   "referralPlaceholder": "e.g. #Michi-A1B2 (optional)",
   "referralOptional": "* You can apply even without entering an ID",
   "otpInputPlaceholder": "6-digit OTP code",
-  "invalidCodeWithRemaining": "Invalid code! Remaining attempts: {{count}}"
-};
-
-export default { translation,
+  "invalidCodeWithRemaining": "Invalid code! Remaining attempts: {{count}}",
   "newJobsPill": "{{count}} new jobs",
   "offlineBanner": "Offline — showing saved jobs",
   "branchesSectionTitle": "Work locations (branches)",
@@ -1056,5 +1053,16 @@ export default { translation,
   "maintenanceTitle": "Under maintenance",
   "maintenanceBody": "We are updating the system. Please try again in a little while.",
   "maintenanceReload": "Reload",
-  "broadcastLabel": "Announcement"
+  "broadcastLabel": "Announcement",
+  "homeCalendarAria": "This week's calendar",
+  "homeCarouselAria": "Highlights",
+  "voiceBetaTag": "beta",
+  "homeJapanRecruiting": "Japan recruiting",
+  "homeSswVisa": "SSW visa",
+  "homeSswTag": "Specified Skilled Worker (SSW)",
+  "homeAppsLabel": "Applications",
+  "homeInterviewsLabel": "Interviews",
+  "homeNewAppsLabel": "New applications"
 };
+
+export default { translation };

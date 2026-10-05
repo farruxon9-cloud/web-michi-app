@@ -971,10 +971,7 @@ const translation = {
   "invalidCode": "Неверный код подтверждения",
   "invalidCodeWithRemaining": "Неверный код! Осталось попыток: {{count}}",
   "otpExpired": "Срок действия кода истек. Запросите новый.",
-  "otpMaxAttemptsExceeded": "Превышено максимальное количество попыток. Запросите новый код."
-};
-
-export default { translation,
+  "otpMaxAttemptsExceeded": "Превышено максимальное количество попыток. Запросите новый код.",
   "newJobsPill": "Новых вакансий: {{count}}",
   "offlineBanner": "Нет сети — показаны сохранённые вакансии",
   "branchesSectionTitle": "Места работы (филиалы)",
@@ -1014,5 +1011,16 @@ export default { translation,
   "maintenanceTitle": "Идут технические работы",
   "maintenanceBody": "Мы обновляем систему. Пожалуйста, попробуйте чуть позже.",
   "maintenanceReload": "Обновить",
-  "broadcastLabel": "Объявление"
+  "broadcastLabel": "Объявление",
+  "homeCalendarAria": "Календарь недели",
+  "homeCarouselAria": "Рекомендации",
+  "voiceBetaTag": "бета",
+  "homeJapanRecruiting": "Работа в Японии",
+  "homeSswVisa": "Виза SSW",
+  "homeSswTag": "Токутэй Гино (SSW)",
+  "homeAppsLabel": "Заявки",
+  "homeInterviewsLabel": "Собеседования",
+  "homeNewAppsLabel": "Новые заявки"
 };
+
+export default { translation };

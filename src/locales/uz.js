@@ -1013,10 +1013,7 @@ const translation = {
   "referralPlaceholder": "Masalan: #Michi-A1B2 (ixtiyoriy)",
   "referralOptional": "* ID kiritmasangiz ham ariza yuborishingiz mumkin",
   "otpInputPlaceholder": "6-xonali OTP kod",
-  "invalidCodeWithRemaining": "Noto'g'ri kod! Qolgan urinishlar: {{count}} ta"
-};
-
-export default { translation,
+  "invalidCodeWithRemaining": "Noto'g'ri kod! Qolgan urinishlar: {{count}} ta",
   "newJobsPill": "{{count}} ta yangi e'lon",
   "offlineBanner": "Internet yo'q — saqlangan e'lonlar ko'rsatilmoqda",
   "branchesSectionTitle": "Ish joylari (filiallar)",
@@ -1056,5 +1053,16 @@ export default { translation,
   "maintenanceTitle": "Texnik ishlar olib borilmoqda",
   "maintenanceBody": "Tizim yangilanmoqda. Birozdan keyin qayta urinib ko‘ring.",
   "maintenanceReload": "Qayta yuklash",
-  "broadcastLabel": "E’lon"
+  "broadcastLabel": "E’lon",
+  "homeCalendarAria": "Hafta taqvimi",
+  "homeCarouselAria": "Tavsiyalar",
+  "voiceBetaTag": "sinovda",
+  "homeJapanRecruiting": "Yaponiyada ish",
+  "homeSswVisa": "SSW viza",
+  "homeSswTag": "Tokutei Ginou (SSW)",
+  "homeAppsLabel": "Arizalar",
+  "homeInterviewsLabel": "Suhbat",
+  "homeNewAppsLabel": "Yangi arizalar"
 };
+
+export default { translation };

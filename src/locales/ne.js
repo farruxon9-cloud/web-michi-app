@@ -954,10 +954,7 @@ const translation = {
   "changeBtn": "परिवर्तन गर्नुहोस्",
   "for_visa_renew": "भिसा नविकरण सहयोग",
   "for_n4": "जापानी भाषा N4 स्तर",
-  "for_n2": "जापानी भाषा N2 स्तर"
-};
-
-export default { translation,
+  "for_n2": "जापानी भाषा N2 स्तर",
   "newJobsPill": "{{count}} नयाँ जागिर",
   "offlineBanner": "अफलाइन — सुरक्षित जागिरहरू देखाउँदै",
   "branchesSectionTitle": "कार्यस्थल (शाखाहरू)",
@@ -997,5 +994,16 @@ export default { translation,
   "maintenanceTitle": "मर्मत भइरहेको छ",
   "maintenanceBody": "हामी प्रणाली अद्यावधिक गर्दैछौं। कृपया केही समयपछि फेरि प्रयास गर्नुहोस्।",
   "maintenanceReload": "पुनः लोड",
-  "broadcastLabel": "सूचना"
+  "broadcastLabel": "सूचना",
+  "homeCalendarAria": "यो हप्ताको पात्रो",
+  "homeCarouselAria": "मुख्य कुराहरू",
+  "voiceBetaTag": "परीक्षणमा",
+  "homeJapanRecruiting": "जापान भर्ती",
+  "homeSswVisa": "SSW भिसा",
+  "homeSswTag": "निर्दिष्ट कुशल कामदार (SSW)",
+  "homeAppsLabel": "आवेदन",
+  "homeInterviewsLabel": "अन्तर्वार्ता",
+  "homeNewAppsLabel": "नयाँ आवेदन"
 };
+
+export default { translation };

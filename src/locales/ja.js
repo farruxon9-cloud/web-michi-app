@@ -1051,10 +1051,7 @@ const translation = {
   "referralPlaceholder": "例: #Michi-A1B2 (任意)",
   "referralOptional": "※ IDを入力しなくても応募可能です",
   "otpInputPlaceholder": "6桁の認証コード",
-  "invalidCodeWithRemaining": "認証コードが正しくありません。残り試行回数: {{count}}回"
-};
-
-export default { translation,
+  "invalidCodeWithRemaining": "認証コードが正しくありません。残り試行回数: {{count}}回",
   "newJobsPill": "{{count}}件の新着求人",
   "offlineBanner": "オフライン — 保存済みの求人を表示中",
   "branchesSectionTitle": "募集勤務地（支店・営業所）",
@@ -1094,5 +1091,16 @@ export default { translation,
   "maintenanceTitle": "メンテナンス中です",
   "maintenanceBody": "ただいまシステムを更新しています。しばらくしてから再度お試しください。",
   "maintenanceReload": "再読み込み",
-  "broadcastLabel": "お知らせ"
+  "broadcastLabel": "お知らせ",
+  "homeCalendarAria": "今週のカレンダー",
+  "homeCarouselAria": "おすすめ",
+  "voiceBetaTag": "テスト中",
+  "homeJapanRecruiting": "日本の求人",
+  "homeSswVisa": "特定技能ビザ",
+  "homeSswTag": "特定技能 (SSW)",
+  "homeAppsLabel": "応募",
+  "homeInterviewsLabel": "面接",
+  "homeNewAppsLabel": "新しい応募"
 };
+
+export default { translation };

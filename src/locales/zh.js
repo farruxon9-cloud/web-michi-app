@@ -955,10 +955,7 @@ const translation = {
   "changeBtn": "更改",
   "for_visa_renew": "提供签证续签支持",
   "for_n4": "日语 N4 水平",
-  "for_n2": "日语 N2 水平"
-};
-
-export default { translation,
+  "for_n2": "日语 N2 水平",
   "newJobsPill": "{{count}}条新职位",
   "offlineBanner": "离线 — 正在显示已保存的职位",
   "branchesSectionTitle": "工作地点（分店・营业所）",
@@ -998,5 +995,16 @@ export default { translation,
   "maintenanceTitle": "系统维护中",
   "maintenanceBody": "系统正在更新，请稍后再试。",
   "maintenanceReload": "重新加载",
-  "broadcastLabel": "公告"
+  "broadcastLabel": "公告",
+  "homeCalendarAria": "本周日历",
+  "homeCarouselAria": "推荐",
+  "voiceBetaTag": "测试中",
+  "homeJapanRecruiting": "日本招聘",
+  "homeSswVisa": "特定技能签证",
+  "homeSswTag": "特定技能 (SSW)",
+  "homeAppsLabel": "申请",
+  "homeInterviewsLabel": "面试",
+  "homeNewAppsLabel": "新申请"
 };
+
+export default { translation };

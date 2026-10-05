@@ -954,10 +954,7 @@ const translation = {
   "changeBtn": "Thay đổi",
   "for_visa_renew": "Hỗ trợ gia hạn visa",
   "for_n4": "Trình độ tiếng Nhật N4",
-  "for_n2": "Trình độ tiếng Nhật N2"
-};
-
-export default { translation,
+  "for_n2": "Trình độ tiếng Nhật N2",
   "newJobsPill": "{{count}} việc làm mới",
   "offlineBanner": "Ngoại tuyến — đang hiển thị việc làm đã lưu",
   "branchesSectionTitle": "Nơi làm việc (chi nhánh)",
@@ -997,5 +994,16 @@ export default { translation,
   "maintenanceTitle": "Đang bảo trì",
   "maintenanceBody": "Hệ thống đang được cập nhật. Vui lòng thử lại sau ít phút.",
   "maintenanceReload": "Tải lại",
-  "broadcastLabel": "Thông báo"
+  "broadcastLabel": "Thông báo",
+  "homeCalendarAria": "Lịch tuần này",
+  "homeCarouselAria": "Nổi bật",
+  "voiceBetaTag": "thử nghiệm",
+  "homeJapanRecruiting": "Tuyển dụng Nhật Bản",
+  "homeSswVisa": "Visa SSW",
+  "homeSswTag": "Kỹ năng đặc định (SSW)",
+  "homeAppsLabel": "Đơn ứng tuyển",
+  "homeInterviewsLabel": "Phỏng vấn",
+  "homeNewAppsLabel": "Đơn mới"
 };
+
+export default { translation };
