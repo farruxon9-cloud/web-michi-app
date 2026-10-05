@@ -406,7 +406,8 @@ export default function DriverFeed({
 }) {
   const { t, i18n } = useTranslation();
   const currentLang = i18n?.language || 'uz';
-  const ENABLE_MAP_SEARCH = false; // Feature flag: Set to true to activate Leaflet Map Search (off: button off-design & unreliable, v1.1)
+  const ENABLE_MAP_SEARCH = false; // Feature flag: header 📍 map-search button (off: off-design & unreliable, v1.1)
+  const ENABLE_JOB_LOCATION_MAP = true; // Job-card location chip opens the map focused on that job
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [mapFocusJob, setMapFocusJob] = useState(null);
@@ -1774,9 +1775,9 @@ export default function DriverFeed({
                     {/* Qisqa ma'lumot chiplari (minimalistik ikonkalar bilan) */}
                     <div className="job-card-chips">
                       <span 
-                        className={`job-chip ${ENABLE_MAP_SEARCH ? 'job-location-chip-clickable' : ''}`}
+                        className={`job-chip ${ENABLE_JOB_LOCATION_MAP ? 'job-location-chip-clickable' : ''}`}
                         onClick={(e) => {
-                          if (!ENABLE_MAP_SEARCH) return;
+                          if (!ENABLE_JOB_LOCATION_MAP) return;
                           e.stopPropagation();
                           setMapFocusJob(job);
                           setIsMapModalOpen(true);
@@ -1938,8 +1939,8 @@ export default function DriverFeed({
       {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
       <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />
 
-      {/* ====== REAL LEAFLET MAP MODAL (Behind ENABLE_MAP_SEARCH feature flag) ====== */}
-      {ENABLE_MAP_SEARCH && (
+      {/* ====== REAL LEAFLET MAP MODAL (header button and/or job location chip) ====== */}
+      {(ENABLE_MAP_SEARCH || ENABLE_JOB_LOCATION_MAP) && (
         <JobMapModal 
           isOpen={isMapModalOpen} 
           onClose={() => { setIsMapModalOpen(false); setMapFocusJob(null); }} 
@@ -1985,10 +1986,12 @@ function JobMapModal({ isOpen, onClose, jobs = [], focusJob = null, onSelectJob,
             zoomControl: false
           });
 
-          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19,
-            subdomains: 'abcd',
-            attribution: '© OpenStreetMap © CARTO'
+          // Carto raster tiles now require an API key (they serve an "API KEY REQUIRED" image),
+          // so use 国土地理院 淡色地図 — free, keyless, Japanese labels; attribution is required.
+          L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            minZoom: 5,
+            attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener noreferrer">地理院タイル</a>'
           }).addTo(map);
 
           mapInstanceRef.current = map;
