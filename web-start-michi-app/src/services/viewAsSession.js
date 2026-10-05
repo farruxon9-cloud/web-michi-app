@@ -1,6 +1,6 @@
 // src/services/viewAsSession.js
 // "View as user" (read-only) — opened from the admin panel (admin.michi.jp.net → Users → 👁).
-// The admin panel opens  https://michi.jp.net/#michi_view_as=<15-min JWT, scope=impersonate>.
+// The admin panel opens  https://web.michi.jp.net/#michi_view_as=<15-min JWT, scope=impersonate>.
 // - The token lives in memory + sessionStorage of THIS tab only (never localStorage), so the admin's
 //   own session in other tabs is never overwritten.
 // - The URL fragment is removed immediately (never sent to servers, not kept in history).

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useT } from '../i18n';
 import { PageHead, Seg } from '../components/ui';
 
-const APP_URL = 'https://michi.jp.net/';
+const APP_URL = 'https://web.michi.jp.net/'; // the web app (web-michi-app repo), not the michi.jp.net home page
 const DEVICES = { phone: [390, 844], small: [320, 640], tablet: [768, 1024], desktop: [1280, 800] };
 
 export default function Preview() {
