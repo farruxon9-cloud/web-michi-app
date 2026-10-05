@@ -991,5 +991,12 @@ export default { translation,
   "reportSubmit": "提交",
   "reportSent": "感谢，我们会尽快审核。",
   "reportLoginRequired": "请登录后举报",
-  "reportFailed": "发送失败"
+  "reportFailed": "发送失败",
+  "viewAsTitle": "管理员预览",
+  "viewAsReadOnly": "只读",
+  "viewAsExit": "退出",
+  "maintenanceTitle": "系统维护中",
+  "maintenanceBody": "系统正在更新，请稍后再试。",
+  "maintenanceReload": "重新加载",
+  "broadcastLabel": "公告"
 };

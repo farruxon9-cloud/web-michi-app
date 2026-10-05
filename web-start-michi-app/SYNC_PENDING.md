@@ -76,3 +76,17 @@ Auto-written by scripts/sync_web_start.mjs. The mirror diverged here, so the pat
 - [ ] 2026-10-05 04:27 `src/utils/jobPostingNormalizer.test.js`
 - [ ] 2026-10-05 04:27 `src/utils/profileCompleteness.js`
 - [ ] 2026-10-05 04:27 `src/utils/profileCompleteness.test.js`
+- [ ] 2026-10-05 04:37 `public/_headers`
+- [ ] 2026-10-05 04:37 `src/App.jsx`
+- [ ] 2026-10-05 04:37 `src/components/BottomNav.jsx`
+- [ ] 2026-10-05 04:37 `src/components/Dashboard.jsx`
+- [ ] 2026-10-05 04:37 `src/components/profile/NotificationsPage.jsx`
+- [ ] 2026-10-05 04:37 `src/locales/en.js`
+- [ ] 2026-10-05 04:37 `src/locales/ja.js`
+- [ ] 2026-10-05 04:37 `src/locales/ne.js`
+- [ ] 2026-10-05 04:37 `src/locales/ru.js`
+- [ ] 2026-10-05 04:37 `src/locales/uz.js`
+- [ ] 2026-10-05 04:37 `src/locales/vi.js`
+- [ ] 2026-10-05 04:37 `src/locales/zh.js`
+- [ ] 2026-10-05 04:37 `src/services/apiClient.js`
+- [ ] 2026-10-05 04:37 `src/services/authService.js`

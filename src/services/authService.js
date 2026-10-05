@@ -2,6 +2,7 @@
 import { API_ENDPOINTS } from '../config/api';
 import { apiFetch } from './apiClient';
 import { clearAllUserDrafts } from '../utils/localDraftStore';
+import { isViewAs, getViewAsToken, getViewAsUser, setViewAsUser, endViewAs } from './viewAsSession';
 
 const TOKEN_KEY = 'michi_jwt_token';
 const REFRESH_TOKEN_KEY = 'michi_refresh_token';
@@ -9,6 +10,8 @@ const USER_KEY = 'michi_user_session';
 const AUTH_USER_KEY = 'michi_auth_user';
 
 export const getStoredToken = () => {
+  // Admin 'view as user' tab: in-memory read-only token wins and never touches localStorage
+  if (isViewAs()) return getViewAsToken();
   try {
     return localStorage.getItem(TOKEN_KEY);
   } catch {
@@ -17,6 +20,7 @@ export const getStoredToken = () => {
 };
 
 export const setStoredToken = (token) => {
+  if (isViewAs()) return;
   try {
     if (token) {
       localStorage.setItem(TOKEN_KEY, token);
@@ -29,6 +33,7 @@ export const setStoredToken = (token) => {
 };
 
 export const getStoredRefreshToken = () => {
+  if (isViewAs()) return null; // never refresh with the admin's own session
   try {
     return localStorage.getItem(REFRESH_TOKEN_KEY);
   } catch {
@@ -37,6 +42,7 @@ export const getStoredRefreshToken = () => {
 };
 
 export const setStoredRefreshToken = (refreshToken) => {
+  if (isViewAs()) return;
   try {
     if (refreshToken) {
       localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
@@ -49,6 +55,7 @@ export const setStoredRefreshToken = (refreshToken) => {
 };
 
 export const getStoredUser = () => {
+  if (isViewAs()) return getViewAsUser();
   try {
     const data = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem(USER_KEY);
     return data ? JSON.parse(data) : null;
@@ -58,6 +65,7 @@ export const getStoredUser = () => {
 };
 
 export const setStoredUser = (user) => {
+  if (isViewAs()) { setViewAsUser(user); return; }
   try {
     if (user) {
       const safeUser = { ...user };
@@ -252,6 +260,7 @@ export const requestCompanyVerification = async (payload = {}) => {
 };
 
 export const logoutUser = () => {
+  if (isViewAs()) { endViewAs(); return; }
   const refreshToken = getStoredRefreshToken();
   if (refreshToken) {
     try {

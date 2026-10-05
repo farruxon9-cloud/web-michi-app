@@ -4,7 +4,7 @@ import { Home, Briefcase, GraduationCap, Wrench, User } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import './BottomNav.css';
 
-export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, userRole, isVoiceStandby, isVoiceActive, voiceStatus }) {
+export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, userRole, isVoiceStandby, isVoiceActive, voiceStatus, hiddenTabs = [] }) {
   const { t } = useTranslation();
   
   const navItems = [
@@ -13,7 +13,8 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
     { id: 'service', icon: Wrench, label: t('navService', '整備') },
     { id: 'academy', icon: GraduationCap, label: t('navAcademy', '教習所') },
     { id: 'profile', icon: User, label: t('navProfile', 'マイページ') },
-  ];
+  ].filter((item) => !hiddenTabs.includes(item.id)); // tabs switched off in the admin panel
+  const count = navItems.length;
 
   const handleTabClick = (tabId) => {
     try {
@@ -52,7 +53,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
     
     if (trackRef.current && indicatorRef.current) {
       const trackWidth = trackRef.current.getBoundingClientRect().width;
-      const tabWidth = trackWidth / 5;
+      const tabWidth = trackWidth / count;
       startOffset.current = activeIndex * tabWidth;
       
       indicatorRef.current.style.transition = 'none';
@@ -80,7 +81,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
     
     if (trackRef.current && indicatorRef.current) {
       const trackWidth = trackRef.current.getBoundingClientRect().width;
-      const tabWidth = trackWidth / 5;
+      const tabWidth = trackWidth / count;
       
       let newOffset = startOffset.current + deltaX;
       
@@ -103,14 +104,14 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
     
     if (trackRef.current && indicatorRef.current) {
       const trackWidth = trackRef.current.getBoundingClientRect().width;
-      const tabWidth = trackWidth / 5;
+      const tabWidth = trackWidth / count;
       
       indicatorRef.current.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.4, 1)';
       
       const matrix = new DOMMatrix(window.getComputedStyle(indicatorRef.current).transform);
       const currentTranslateX = matrix.m41;
       
-      const closestIndex = Math.max(0, Math.min(4, Math.round(currentTranslateX / tabWidth)));
+      const closestIndex = Math.max(0, Math.min(count - 1, Math.round(currentTranslateX / tabWidth)));
       
       if (dragDistance.current > 12) {
         handleTabClick(navItems[closestIndex].id);
@@ -138,6 +139,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
             ref={indicatorRef}
             className="bottom-nav-indicator" 
             style={{ 
+              width: `${100 / count}%`,
               transform: `translateX(${activeIndex * 100}%)`,
               '--active-index': activeIndex
             }}

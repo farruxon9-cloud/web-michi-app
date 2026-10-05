@@ -28,6 +28,10 @@ import { submitApplicationToBackend, fetchApplications, updateApplicationStatus,
 import { splitApplications, findStatusChanges, hasActiveApplication } from './utils/applicationMapper';
 import { useAuth } from './context/AuthContext';
 import { requestCompanyVerification } from './services/authService';
+import { isViewAs } from './services/viewAsSession';
+import ViewAsBanner from './components/ViewAsBanner';
+import { useRemoteContent, broadcastStore } from './hooks/useRemoteContent';
+import MaintenanceScreen from './components/MaintenanceScreen';
 import { fetchSchools } from './services/michiSchoolsApiService';
 import { normalizeSchoolPosting } from './utils/jobPostingNormalizer';
 import { isProfileCompleteData } from './utils/profileCompleteness';
@@ -472,17 +476,30 @@ function App() {
     sanitizeStoredApplications(loadUserDraft('applications', profileData.userId, []))
   );
   const [notifications, setNotifications] = useState([]);
+  // Admin-managed feature flags, home announcement and broadcasts (admin.michi.jp.net), applied within ~60 s
+  const remote = useRemoteContent({ lang: i18n.language, role: userRole, setNotifications });
+  const jobsOn = remote.isOn('jobs');
+  const academyOn = remote.isOn('academy');
+  useEffect(() => {
+    // A tab switched off in the admin panel → go home instead of showing a hidden section
+    if ((activeTab === 'jobs' && !jobsOn) || (activeTab === 'academy' && !academyOn)) setActiveTab('home');
+  }, [activeTab, jobsOn, academyOn]);
 
+  // Broadcast (admin) notifications remember read/dismissed state across reloads (broadcastStore)
   const handleMarkNotifRead = useCallback((id) => {
+    broadcastStore.markRead([id]);
     setNotifications(prev => prev.map(n => (n.id === id ? { ...n, read: true } : n)));
   }, []);
   const handleMarkAllNotifsRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => (n.read ? n : { ...n, read: true })));
+    setNotifications(prev => { broadcastStore.markRead(prev.map(n => n.id)); return prev.map(n => (n.read ? n : { ...n, read: true })); });
   }, []);
   const handleDeleteNotif = useCallback((id) => {
+    broadcastStore.dismiss([id]);
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
-  const handleClearAllNotifs = useCallback(() => setNotifications([]), []);
+  const handleClearAllNotifs = useCallback(() => {
+    setNotifications(prev => { broadcastStore.dismiss(prev.map(n => n.id)); return []; });
+  }, []);
   const handleShoukaiPaid = useCallback((appId) => {
     setApplications(prev => prev.map(a => (a.id === appId ? { ...a, shoukaiPaid: true } : a)));
   }, []);
@@ -844,6 +861,8 @@ function App() {
             onNavigateToJDM={() => setShowJDMNavigation(true)}
             onOpenAssistShowcase={() => setShowAssistHeroShowcase(true)}
             musicPlayer={musicPlayer}
+            flags={remote.flags}
+            announcement={remote.announcement}
           />
         );
       case 'jobs':
@@ -938,6 +957,8 @@ function App() {
     <ErrorBoundary>
       <AppProvider value={{ userRole, setUserRole, profileData, darkMode, setDarkMode, activeTab, setActiveTab }}>
         <div className="app-layout">
+          {isViewAs() && <ViewAsBanner name={user?.fullName || ''} />}
+          {remote.isOn('maintenance') && !isViewAs() && <MaintenanceScreen />}
           <div className="glass-blob blob-1"></div>
           <div className="glass-blob blob-2"></div>
           <div className="glass-blob blob-3"></div>
@@ -975,11 +996,11 @@ function App() {
             </div>
 
             <div className="header-robot-right">
-              <RobotAvatar 
+              {remote.isOn('voiceAI') && <RobotAvatar 
                 isVoiceActive={isVoiceActive || isVoiceStandby} 
                 voiceStatus={isVoiceActive ? voiceStatus : 'idle'} 
                 onClick={handleVoiceToggle} 
-              />
+              />}
             </div>
           </header>
 
@@ -1079,10 +1100,11 @@ function App() {
             isVoiceStandby={isVoiceStandby} 
             isVoiceActive={isVoiceActive} 
             voiceStatus={voiceStatus} 
+            hiddenTabs={[!remote.isOn('jobs') && 'jobs', !remote.isOn('academy') && 'academy'].filter(Boolean)}
           />
 
           {/* Markaziy Ovozli Yordamchi Orchestrator */}
-          <VoiceAssistant 
+          {remote.isOn('voiceAI') && <VoiceAssistant 
             isActive={isVoiceActive} 
             onClose={() => {
               setIsVoiceActive(false);
@@ -1120,7 +1142,7 @@ function App() {
             selectedPrefecture={selectedPrefecture}
             setSelectedPrefecture={setSelectedPrefecture}
             setApplications={setApplications}
-          />
+          />}
 
           {/* Shoukai Taklif Kodi Modali */}
           <ReferralModal 

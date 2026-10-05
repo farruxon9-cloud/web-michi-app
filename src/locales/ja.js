@@ -1087,5 +1087,12 @@ export default { translation,
   "reportSubmit": "送信",
   "reportSent": "通報を受け付けました。担当者が確認します。",
   "reportLoginRequired": "通報するにはログインしてください",
-  "reportFailed": "送信できませんでした"
+  "reportFailed": "送信できませんでした",
+  "viewAsTitle": "管理者プレビュー",
+  "viewAsReadOnly": "閲覧のみ",
+  "viewAsExit": "終了",
+  "maintenanceTitle": "メンテナンス中です",
+  "maintenanceBody": "ただいまシステムを更新しています。しばらくしてから再度お試しください。",
+  "maintenanceReload": "再読み込み",
+  "broadcastLabel": "お知らせ"
 };

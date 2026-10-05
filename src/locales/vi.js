@@ -990,5 +990,12 @@ export default { translation,
   "reportSubmit": "Gửi",
   "reportSent": "Cảm ơn — đội ngũ sẽ xem xét.",
   "reportLoginRequired": "Vui lòng đăng nhập để báo cáo",
-  "reportFailed": "Không gửi được"
+  "reportFailed": "Không gửi được",
+  "viewAsTitle": "Xem trước của quản trị",
+  "viewAsReadOnly": "chỉ xem",
+  "viewAsExit": "Thoát",
+  "maintenanceTitle": "Đang bảo trì",
+  "maintenanceBody": "Hệ thống đang được cập nhật. Vui lòng thử lại sau ít phút.",
+  "maintenanceReload": "Tải lại",
+  "broadcastLabel": "Thông báo"
 };

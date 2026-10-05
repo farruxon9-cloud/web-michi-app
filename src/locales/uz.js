@@ -1049,5 +1049,12 @@ export default { translation,
   "reportSubmit": "Yuborish",
   "reportSent": "Rahmat — jamoamiz ko‘rib chiqadi.",
   "reportLoginRequired": "Shikoyat uchun tizimga kiring",
-  "reportFailed": "Yuborib bo‘lmadi"
+  "reportFailed": "Yuborib bo‘lmadi",
+  "viewAsTitle": "Admin ko‘rinishi",
+  "viewAsReadOnly": "faqat o‘qish",
+  "viewAsExit": "Chiqish",
+  "maintenanceTitle": "Texnik ishlar olib borilmoqda",
+  "maintenanceBody": "Tizim yangilanmoqda. Birozdan keyin qayta urinib ko‘ring.",
+  "maintenanceReload": "Qayta yuklash",
+  "broadcastLabel": "E’lon"
 };

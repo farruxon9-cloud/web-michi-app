@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import MusicCard from './MusicCard';
+import { flagOn, announcementText } from '../hooks/useRemoteContent';
 import './Dashboard.css';
 
 const DICT = {
@@ -140,11 +141,19 @@ export default function Dashboard({
   userRole, 
   onNavigateToInternational, 
   onNavigateToJDM, 
-  onOpenAssistShowcase 
+  onOpenAssistShowcase,
+  flags = {},
+  announcement = null
 }) {
   const { t, i18n } = useTranslation();
   const lang = useMemo(() => (i18n?.language || 'uz').substring(0, 2).toLowerCase(), [i18n?.language]);
   const getText = useCallback((key) => DICT[key]?.[lang] || DICT[key]?.uz || t(key, ''), [lang, t]);
+  // Admin feature flags (admin.michi.jp.net → コンテンツ・機能). Missing flag = on.
+  const musicOn = flagOn(flags, 'music');
+  const mapOn = flagOn(flags, 'map');
+  const voiceOn = flagOn(flags, 'voiceAI');
+  const announceText = announcementText(announcement, lang);
+  const announceLink = announcement && /^https:\/\//.test(announcement.link || '') ? announcement.link : '';
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -271,6 +280,17 @@ export default function Dashboard({
 
   return (
     <div className="dashboard-container hide-scrollbar">
+      {announceText && (
+        announceLink ? (
+          <a id="home-announcement" className="home-announcement" href={announceLink} target="_blank" rel="noopener noreferrer" role="status">
+            <span aria-hidden="true">📣</span><span className="home-announcement-text">{announceText}</span><span aria-hidden="true">↗</span>
+          </a>
+        ) : (
+          <div id="home-announcement" className="home-announcement" role="status">
+            <span aria-hidden="true">📣</span><span className="home-announcement-text">{announceText}</span>
+          </div>
+        )
+      )}
       
       {/* Top Banner Karusel */}
       <div 
@@ -355,7 +375,7 @@ export default function Dashboard({
       </div>
 
       {/* Premium Bento AI Voice Card */}
-      <div 
+      {voiceOn && <div 
         className={`bento-ai-card glass squircle ${isVoiceStandby ? 'active' : ''}`} 
         onClick={onVoiceActivate}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onVoiceActivate?.(); } }}
@@ -399,7 +419,7 @@ export default function Dashboard({
             <span className="ios-switch-thumb"></span>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Bento Asosiy Bo'limlar */}
       <div className="bento-icons-row">
@@ -503,8 +523,8 @@ export default function Dashboard({
 
       {/* Musiqa pleyer va Maxsus Rollar kartasi */}
       {(userRole === 'company' || userRole === 'driver') ? (
-        <div className="bento-double-cards-row">
-          <MusicCard player={musicPlayer} lang={lang} variant="compact" />
+        <div className={`bento-double-cards-row${musicOn ? '' : ' is-single'}`}>
+          {musicOn && <MusicCard player={musicPlayer} lang={lang} variant="compact" />}
 
           {userRole === 'company' ? (
             <div 
@@ -569,11 +589,11 @@ export default function Dashboard({
           )}
         </div>
       ) : (
-        <MusicCard player={musicPlayer} lang={lang} variant="full" />
+        musicOn && <MusicCard player={musicPlayer} lang={lang} variant="full" />
       )}
 
       {/* Smart Truck JDM Navigation Card */}
-      <div 
+      {mapOn && <div 
         className="bento-action-card bento-jdm-card squircle" 
         onClick={() => { triggerSound(); onNavigateToJDM?.(); }}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerSound(); onNavigateToJDM?.(); } }}
@@ -632,7 +652,7 @@ export default function Dashboard({
             <Navigation size={14} color="#FFF" />
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* 92px clearance spacer yielding exact visual clearance above floating BottomNav */}
       <div style={{ height: '92px', minHeight: '92px', width: '100%', flexShrink: 0, clear: 'both' }} />

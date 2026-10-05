@@ -1049,5 +1049,12 @@ export default { translation,
   "reportSubmit": "Send",
   "reportSent": "Thanks — our team will review it.",
   "reportLoginRequired": "Please sign in to report",
-  "reportFailed": "Could not send"
+  "reportFailed": "Could not send",
+  "viewAsTitle": "Admin preview",
+  "viewAsReadOnly": "read-only",
+  "viewAsExit": "Exit",
+  "maintenanceTitle": "Under maintenance",
+  "maintenanceBody": "We are updating the system. Please try again in a little while.",
+  "maintenanceReload": "Reload",
+  "broadcastLabel": "Announcement"
 };

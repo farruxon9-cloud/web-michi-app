@@ -990,5 +990,12 @@ export default { translation,
   "reportSubmit": "पठाउनुहोस्",
   "reportSent": "धन्यवाद — हाम्रो टोलीले हेर्नेछ।",
   "reportLoginRequired": "रिपोर्ट गर्न लगइन गर्नुहोस्",
-  "reportFailed": "पठाउन सकिएन"
+  "reportFailed": "पठाउन सकिएन",
+  "viewAsTitle": "प्रशासक पूर्वावलोकन",
+  "viewAsReadOnly": "पढ्न मात्र",
+  "viewAsExit": "बाहिर",
+  "maintenanceTitle": "मर्मत भइरहेको छ",
+  "maintenanceBody": "हामी प्रणाली अद्यावधिक गर्दैछौं। कृपया केही समयपछि फेरि प्रयास गर्नुहोस्।",
+  "maintenanceReload": "पुनः लोड",
+  "broadcastLabel": "सूचना"
 };

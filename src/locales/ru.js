@@ -1007,5 +1007,12 @@ export default { translation,
   "reportSubmit": "Отправить",
   "reportSent": "Спасибо — команда проверит.",
   "reportLoginRequired": "Войдите, чтобы пожаловаться",
-  "reportFailed": "Не удалось отправить"
+  "reportFailed": "Не удалось отправить",
+  "viewAsTitle": "Просмотр администратора",
+  "viewAsReadOnly": "только просмотр",
+  "viewAsExit": "Выйти",
+  "maintenanceTitle": "Идут технические работы",
+  "maintenanceBody": "Мы обновляем систему. Пожалуйста, попробуйте чуть позже.",
+  "maintenanceReload": "Обновить",
+  "broadcastLabel": "Объявление"
 };

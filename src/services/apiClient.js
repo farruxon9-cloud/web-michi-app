@@ -1,5 +1,6 @@
 // src/services/apiClient.js
 import { getStoredToken, refreshAccessToken, logoutUser, SESSION_EXPIRED_EVENT } from './authService';
+import { isViewAs, readOnlyResponse } from './viewAsSession';
 
 let isRefreshing = false;
 let failedQueue = [];
@@ -22,6 +23,10 @@ const notifySessionExpired = () => {
 };
 
 export async function apiFetch(url, options = {}) {
+  // Admin 'view as user' is read-only: answer writes locally (the server refuses them too)
+  if (isViewAs() && options.method && !['GET', 'HEAD', 'OPTIONS'].includes(String(options.method).toUpperCase())) {
+    return readOnlyResponse();
+  }
   const customHeaders = options.headers || {};
   const config = {
     ...options,
