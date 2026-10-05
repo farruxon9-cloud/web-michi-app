@@ -307,7 +307,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
         {/* ====== TAVSIF ====== */}
         <div className="description-block">
           <h3>{t('jobConditions', 'Ish sharoitlari')}</h3>
-          <p>{t(`job_${job.id}_description`, job.description || t('jobDesc'))}</p>
+          <p>{t(`job_${job.id}_description`, job.description || t('notProvided'))}</p>
         </div>
 
         {/* ====== MANZIL ====== */}
@@ -346,7 +346,7 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
             <div style={{ marginTop: '12px', fontSize: '13px', color: 'var(--text-secondary)', background: 'rgba(255,159,10,0.06)', border: '1px solid rgba(255,159,10,0.15)', padding: '12px', borderRadius: '12px', lineHeight: '1.4' }}>
               <strong style={{ color: 'var(--text-main)', display: 'block', marginBottom: '4px' }}>{t('shoukaiConditionsTitle', 'Shoukai shartlari va izohlari')}:</strong>
               <div style={{ whiteSpace: 'pre-wrap', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
-                {job.shoukaiConditions || t('defaultJobShoukaiConditions', 'Tavsiya qilingan nomzod ishga qabul qilinib, kamida 3 oy ishlasa shoukai puli to\'lab beriladi.')}
+                {job.shoukaiConditions || t('notProvided')}
               </div>
             </div>
           </div>

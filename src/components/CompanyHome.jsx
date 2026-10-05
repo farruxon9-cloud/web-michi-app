@@ -571,7 +571,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         email: newJob.email,
         langs: newJob.langs,
         shoukaiFee: newJob.hasShoukai === 'yes' ? Number(newJob.shoukaiFee) : 0,
-        shoukaiConditions: newJob.shoukaiConditions || t('defaultSchoolShoukaiConditions'),
+        shoukaiConditions: newJob.shoukaiConditions || '',
         shoukai: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : '0'
       };
 
@@ -625,7 +625,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         shoukaiFee: newJob.hasShoukai === 'yes' ? Number(newJob.shoukaiFee) : 0,
         shoukaiAmount: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : "0",
         shoukai: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : "0",
-        shoukaiConditions: newJob.shoukaiConditions || t('defaultJobShoukaiConditions'),
+        shoukaiConditions: newJob.shoukaiConditions || '',
         phoneMode: newJob.phoneMode || 'public',
         isInternational: newJob.isInternational || false,
         category: 'delivery_driver',

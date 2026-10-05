@@ -45,3 +45,6 @@ Auto-written by scripts/sync_web_start.mjs. The mirror diverged here, so the pat
 - [ ] 2026-10-05 01:59 `src/services/schoolService.js`
 - [ ] 2026-10-05 01:59 `src/services/schoolService.test.js`
 - [ ] 2026-10-05 01:59 `src/utils/jobPostingNormalizer.js`
+- [ ] 2026-10-05 02:05 `src/components/DrivingAcademy.jsx`
+- [ ] 2026-10-05 02:05 `src/components/JobDetail.jsx`
+- [ ] 2026-10-05 02:05 `src/utils/jobPostingNormalizer.js`

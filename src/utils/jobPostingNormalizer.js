@@ -218,7 +218,7 @@ export function normalizeJobPosting(rawJob) {
     nearestStation: firstStr(rawJob.nearestStation, rawJob.nearest_station, loc && loc.nearestStation),
     walkTime: walkRaw && walkRaw > 0 ? walkRaw : null,
     // Conditions: '' when the company left them empty (UI shows 未入力)
-    hours: firstStr(rawJob.hours, rawJob.workShift, cond.workShift, rawJob.workHours),
+    hours: firstStr(rawJob.hours, rawJob.workShift, cond.workShift, rawJob.workHours, cond.workHours),
     dayOff: firstStr(rawJob.dayOff, rawJob.holidayType, cond.holidayType),
     bonus: firstStr(rawJob.bonus, rawJob.bonusPrivilege),
     insurance: firstStr(rawJob.insurance, rawJob.socialInsurance, cond.socialInsurance),
