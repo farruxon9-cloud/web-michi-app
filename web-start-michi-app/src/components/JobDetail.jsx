@@ -104,9 +104,9 @@ export default function JobDetail({ job, onBack, onApply, onShoukai, application
               <h2 className="detail-title">{t(`job_${job.id}_title`, job.title)}</h2>
               <div className="company-name-row">
                 <span>{job.company}</span>
-                {job.verified && (
+                {job.verified === true && (
                   <span className="verified-tag">
-                    <VerifiedBadge size={14} /> {t('trustedPartner')}
+                    <VerifiedBadge size={14} verifiedAt={job.verifiedAt || job.authorVerifiedAt} /> {t('trustedPartner')}
                   </span>
                 )}
               </div>

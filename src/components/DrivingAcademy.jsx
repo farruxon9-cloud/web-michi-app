@@ -86,7 +86,7 @@ export const MOCK_SCHOOLS = [
     discount: "¥20,000",
     shoukai: "¥10,000",
     image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "Tokyo, Futako-Tamagawa",
     prefecture: "Tokyo",
     fullAddress: "〒158-0094 Tokyo, Setagaya City, Tamagawa 3-1-1",
@@ -108,7 +108,7 @@ export const MOCK_SCHOOLS = [
     discount: "¥15,000",
     shoukai: "¥5,000",
     image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "Saitama, Omiya",
     prefecture: "Saitama",
     fullAddress: "〒330-0854 Saitama, Omiya-ku, Sakuragicho 2-1",
@@ -152,7 +152,7 @@ export const MOCK_SCHOOLS = [
     discount: "¥5,000",
     shoukai: "¥3,000",
     image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "Kanagawa, Yokohama",
     prefecture: "Kanagawa",
     fullAddress: "〒231-0023 Kanagawa, Yokohama, Naka-ku 4-12",
@@ -174,7 +174,7 @@ export const MOCK_SCHOOLS = [
     discount: "¥30,000",
     shoukai: "¥15,000",
     image: "https://images.unsplash.com/photo-1587293852726-70cdb56c28ea?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "Osaka, Namba",
     prefecture: "Osaka",
     fullAddress: "〒542-0076 Osaka, Chuo Ward, Namba 1-1",
@@ -196,7 +196,7 @@ export const MOCK_SCHOOLS = [
     discount: "¥18,000",
     shoukai: "¥8,000",
     image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800",
-    verified: true,
+    verified: false, // sample data never shows the ⭐ (only server-verified authors do)
     location: "Aichi, Nagoya",
     prefecture: "Aichi",
     fullAddress: "〒453-0015 Aichi, Nagoya, Nakamura-ku 5-8",
@@ -514,7 +514,7 @@ export default function DrivingAcademy({
             {/* ------- SARLAVHA: Nom + Verified Badge ------- */}
             <div className="school-header-row" style={{ marginBottom: '4px' }}>
               <h2 className="school-name" style={{ fontSize: '22px' }}>{t(`school_${school.id}_name`, school.name)}</h2>
-              {(school.verified === true) && <VerifiedBadge size={20} />}
+              {(school.verified === true) && <VerifiedBadge size={20} verifiedAt={school.verifiedAt} />}
             </div>
             
             {/* ------- JOYLASHUV ------- */}
@@ -1903,7 +1903,7 @@ export default function DrivingAcademy({
                   {/* Maktab nomi + Verified badge */}
                   <div className="job-card-company">
                     <span>{t(`school_${school.id}_name`, school.name)}</span>
-                    {showVerified && <VerifiedBadge size={14} />}
+                    {showVerified && <VerifiedBadge size={14} verifiedAt={school.verifiedAt} />}
                   </div>
 
                   {/* Toifa turi */}

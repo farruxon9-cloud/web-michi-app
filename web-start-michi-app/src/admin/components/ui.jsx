@@ -5,18 +5,25 @@ import { api, ApiError } from '../api';
 // ---------- toasts ----------
 const ToastCtx = createContext(() => {});
 export const useToast = () => useContext(ToastCtx);
+/** push(msg, kind = 'ok', { ms, action: { label, onClick } }) — an action toast stays `ms` (default 4.2 s). */
 export function ToastProvider({ children }) {
   const [items, setItems] = useState([]);
-  const push = useCallback((msg, kind = 'ok') => {
+  const drop = useCallback((id) => setItems((x) => x.filter((i) => i.id !== id)), []);
+  const push = useCallback((msg, kind = 'ok', opts = {}) => {
     const id = Math.random().toString(36).slice(2);
-    setItems((x) => [...x, { id, msg, kind }]);
-    setTimeout(() => setItems((x) => x.filter((i) => i.id !== id)), 4200);
-  }, []);
+    setItems((x) => [...x, { id, msg, kind, action: opts.action || null }]);
+    setTimeout(() => drop(id), opts.ms || 4200);
+  }, [drop]);
   return (
     <ToastCtx.Provider value={push}>
       {children}
       <div className="toast-stack" role="status" aria-live="polite">
-        {items.map((i) => <div key={i.id} className={`toast is-${i.kind}`}>{i.msg}</div>)}
+        {items.map((i) => (
+          <div key={i.id} className={`toast is-${i.kind}${i.action ? ' has-action' : ''}`}>
+            <span>{i.msg}</span>
+            {i.action && <button type="button" className="toast-action" onClick={() => { drop(i.id); i.action.onClick(); }}>{i.action.label}</button>}
+          </div>
+        ))}
       </div>
     </ToastCtx.Provider>
   );
@@ -66,6 +73,37 @@ export function ErrorBox({ error, onRetry }) {
 export function Empty({ children }) {
   const { t } = useT();
   return <div className="empty">{children || t('empty')}</div>;
+}
+
+/** The endpoint is not deployed yet (backend rolls out separately) → 404. */
+export const isMissing = (e) => e instanceof ApiError && e.status === 404;
+
+export function Unavailable() {
+  const { t } = useT();
+  return (
+    <div className="empty unavailable">
+      <div className="unavailable-icon" aria-hidden="true">⏳</div>
+      <strong>{t('notAvailable')}</strong>
+      <div className="small">{t('notAvailableSub')}</div>
+    </div>
+  );
+}
+
+/** Load error for list pages: 404 → "not available yet", anything else → error box with retry. */
+export function LoadError({ error, onRetry }) {
+  if (!error) return null;
+  return isMissing(error) ? <Unavailable /> : <ErrorBox error={error} onRetry={onRetry} />;
+}
+
+/** setInterval that always calls the latest `fn`; pauses while the tab is hidden. */
+export function useInterval(fn, ms) {
+  const ref = useRef(fn);
+  useEffect(() => { ref.current = fn; });
+  useEffect(() => {
+    if (!ms) return undefined;
+    const id = setInterval(() => { if (!document.hidden) ref.current(); }, ms);
+    return () => clearInterval(id);
+  }, [ms]);
 }
 
 // ---------- layout bits ----------
@@ -137,7 +175,7 @@ export function Badge({ kind = '', children }) {
   return <span className={`badge${kind ? ` badge-${kind}` : ''}`}>{children}</span>;
 }
 
-const STATUS_KIND = { active: 'ok', verified: 'ok', paid: 'ok', closed: '', hidden: 'warn', pending: 'warn', open: 'bad', in_progress: 'accent', eligible: 'accent', rejected: 'bad', disabled: 'bad', cancelled: '', none: '' };
+const STATUS_KIND = { active: 'ok', verified: 'ok', paid: 'ok', closed: '', hidden: 'warn', pending: 'warn', open: 'bad', in_progress: 'accent', eligible: 'accent', rejected: 'bad', disabled: 'bad', cancelled: '', none: '', expired: 'warn', answered: 'accent', dismissed: '', actioned: 'ok', scheduled: 'warn' };
 export function StatusBadge({ value, label }) {
   return <Badge kind={STATUS_KIND[value] ?? ''}>{label || value}</Badge>;
 }

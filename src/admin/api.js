@@ -91,6 +91,16 @@ export async function download(path, filename) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
+/** Fetch a private binary (e.g. licence image) with auth; one refresh retry on 401. Caller revokes the URL. */
+export async function fetchBlobUrl(path) {
+  if (!access) await refresh();
+  const get = () => fetch(`/api/admin${path}`, { headers: { Authorization: `Bearer ${access}` }, cache: 'no-store', credentials: 'omit' });
+  let res = await get();
+  if (res.status === 401) { await refresh(); res = await get(); }
+  if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => null));
+  return URL.createObjectURL(await res.blob());
+}
+
 // Unauthenticated steps of the login flow
 export const auth = {
   login: (email, password) => raw('POST', '/api/admin/auth/login', { email, password }),

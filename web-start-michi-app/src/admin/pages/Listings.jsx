@@ -115,7 +115,7 @@ export default function Listings({ admin }) {
         <SearchBox id="listings-search" value={q} onChange={(v) => { setQ(v); setPage(1); }} placeholder={`${t('search')}: ${t('title')} / ID`} />
         <Seg label={t('type')} value={type} onChange={(v) => { setType(v); setPage(1); }} options={[['all', t('all')], ['jobs', t('jobs')], ['schools', t('schools')]]} />
         <Seg label={t('status')} value={status} onChange={(v) => { setStatus(v); setPage(1); }}
-          options={[['all', t('all')], ['reported', t('st_reported')], ['flagged', t('st_flagged')], ['active', t('st_active')], ['hidden', t('st_hidden')], ['rejected', t('st_rejected')]]} />
+          options={[['all', t('all')], ['reported', t('st_reported')], ['flagged', t('st_flagged')], ['active', t('st_active')], ['expired', t('st_expired')], ['hidden', t('st_hidden')], ['rejected', t('st_rejected')]]} />
       </div>
       {error && <ErrorBox error={error} onRetry={reload} />}
       {loading && !data ? <Loading /> : data && (

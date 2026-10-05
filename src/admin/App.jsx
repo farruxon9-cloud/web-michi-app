@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, auth, clearSession, hasSession, setLogoutHandler } from './api';
 import { I18nCtx, makeT, LANGS, useT } from './i18n';
-import { ToastProvider, Loading } from './components/ui';
+import { ToastProvider, Loading, isMissing, useInterval } from './components/ui';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
@@ -12,23 +12,40 @@ import Referrals from './pages/Referrals';
 import { Notifications, Content } from './pages/Content';
 import Preview from './pages/Preview';
 import { System, Admins } from './pages/System';
+import Tickets from './pages/Tickets';
+import Fraud from './pages/Fraud';
+import Analytics from './pages/Analytics';
+import Licenses from './pages/Licenses';
+import AiMonitor from './pages/AiMonitor';
+import Deletions from './pages/Deletions';
+import Templates from './pages/Templates';
 
 /** Pages, the permission that unlocks each, and its icon. Order = sidebar order. */
 const PAGES = [
   ['dashboard', 'dashboard.view', '◎', Dashboard],
+  ['analytics', 'dashboard.view', '📈', Analytics],
   ['users', 'users.read', '👥', Users],
   ['companies', 'companies.verify', '⭐', Companies],
+  ['licenses', 'licenses.review', '🪪', Licenses],
   ['listings', 'listings.moderate', '🗂', Listings],
   ['applications', 'applications.read', '📨', Applications],
   ['reports', 'reports.handle', '🚩', Reports],
+  ['fraud', 'fraud.review', '🕵', Fraud],
+  ['tickets', 'support.handle', '💬', Tickets],
   ['referrals', 'referrals.read', '¥', Referrals],
   ['notifications', 'notify.broadcast', '📣', Notifications],
   ['content', 'content.edit', '🎛', Content],
+  ['templates', 'content.edit', '✉', Templates],
   ['preview', 'dashboard.view', '📱', Preview],
+  ['deletions', 'users.read', '🗑', Deletions],
   ['audit', 'audit.read', '🧾', Audit],
+  ['ai', 'system.health', '🤖', AiMonitor],
   ['system', 'system.health', '🖥', System],
   ['admins', 'admins.manage', '🔐', Admins],
 ];
+
+/** GET /badges field → sidebar page key. */
+const BADGE_KEYS = { companiesPending: 'companies', reportsOpen: 'reports', ticketsOpen: 'tickets', fraudOpen: 'fraud', licensesPending: 'licenses', listingsPending: 'listings', deletionsScheduled: 'deletions' };
 
 const readHash = () => (window.location.hash.replace(/^#\/?/, '').split('?')[0] || 'dashboard');
 
@@ -44,10 +61,22 @@ function Shell({ admin, onLogout }) {
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
-  useEffect(() => {
+  const badgesMissing = useRef(false);
+  const loadCounts = useCallback(() => {
     if (!admin.perms.includes('dashboard.view')) return;
-    api('GET', '/stats').then((s) => setCounts({ reports: s.reports.open, companies: s.users.pendingVerification })).catch(() => {});
-  }, [admin, page]);
+    const fromStats = () => api('GET', '/stats').then((s) => setCounts({ reports: s.reports.open, companies: s.users.pendingVerification })).catch(() => {});
+    if (badgesMissing.current) { fromStats(); return; }
+    api('GET', '/badges')
+      .then((b) => setCounts(Object.fromEntries(Object.entries(BADGE_KEYS).map(([f, k]) => [k, Number(b[f]) || 0]))))
+      .catch((e) => { if (isMissing(e)) { badgesMissing.current = true; fromStats(); } });
+  }, [admin]);
+  useEffect(() => { loadCounts(); }, [loadCounts, page]);
+  useInterval(loadCounts, 60000);
+  useEffect(() => {
+    const onFocus = () => loadCounts();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [loadCounts]);
 
   const current = allowed.find(([k]) => k === page) || allowed[0];
   const Page = current ? current[3] : null;

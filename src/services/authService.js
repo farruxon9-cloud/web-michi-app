@@ -94,7 +94,12 @@ export const loginUser = async (email, password) => {
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'Login muvaffaqiyatsiz bo\'ldi');
+      const err = new Error(data.message || data.error || 'Login muvaffaqiyatsiz bo\'ldi');
+      // 403 { code: 'SUSPENDED', until, reason } → RoleSelect shows the suspension notice
+      err.status = response.status;
+      if (data.code) err.code = data.code;
+      if (data.code === 'SUSPENDED') { err.until = data.until || null; err.reason = data.reason || ''; }
+      throw err;
     }
 
     const accessToken = data.token || data.accessToken;
@@ -252,6 +257,8 @@ export const requestCompanyVerification = async (payload = {}) => {
   if (!response.ok) {
     const err = new Error(data.error || data.message || `Verification request failed (${response.status})`);
     err.status = response.status;
+    err.code = data.code;
+    err.data = data;
     throw err;
   }
   const user = data.user || null;

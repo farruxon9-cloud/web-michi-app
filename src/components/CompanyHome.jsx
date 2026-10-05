@@ -16,6 +16,10 @@ import ConfirmSheet from './ConfirmSheet';
 import { createSchoolInBackend, updateSchoolInBackend, deleteSchoolInBackend } from '../services/schoolService';
 import { normalizeOwnJobPosting, normalizeSchoolPosting, jobValueLabel } from '../utils/jobPostingNormalizer';
 import { validateBranch } from '../utils/branchUtils';
+import { useOptionalAuth } from '../context/AuthContext';
+import { listingExpiryInfo, normalizeVerification, listingVerifiedAt } from '../utils/trustHelpers';
+import { renewListing } from '../services/accountApi';
+import './trust.css';
 
 // Single figure → max = 0 ("not given"); unparseable → 0/0. The typed text is still sent as `salary`.
 export function parseSalaryRange(salaryStr) {
@@ -113,6 +117,52 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   const [jobImage, setJobImage] = useState(null);
   const fileInputRef = useRef(null);
   const savingJobRef = useRef(false);
+  // Own ⭐ status (header strip) comes from the signed-in user's server record
+  const auth = useOptionalAuth();
+  const ownVerification = normalizeVerification(auth && auth.user ? auth.user.verification : null);
+  const [renewingId, setRenewingId] = useState(null);
+  const [renewError, setRenewError] = useState('');
+
+  /** POST /api/listings/:id/renew → { expiresAt }; works for jobs and schools (same listings route). */
+  const handleRenewListing = async (item, kind) => {
+    if (!item || renewingId) return;
+    setRenewingId(item.id);
+    setRenewError('');
+    try {
+      const res = await renewListing(item.id);
+      const patch = (x) => (String(x.id) === String(item.id)
+        ? { ...x, expiresAt: (res && res.expiresAt) || x.expiresAt, status: x.status === 'expired' ? 'active' : x.status }
+        : x);
+      if (kind === 'school') setSchools?.((prev) => (prev || []).map(patch));
+      else setJobs?.((prev) => (prev || []).map(patch));
+    } catch (err) {
+      setRenewError(err && err.status === 404 ? t('featureUnavailable', 'この機能はまだ利用できません') : t('renewFailed', '更新できませんでした'));
+    }
+    setRenewingId(null);
+  };
+
+  const renderExpiry = (item, kind) => {
+    const info = listingExpiryInfo(item);
+    if (info.state === 'none') return null;
+    return (
+      <div className="listing-expiry-row" onClick={(e) => e.stopPropagation()}>
+        <span className={`trust-chip ${info.state === 'expired' ? 'bad' : info.state === 'soon' ? 'warn' : 'muted'}`} data-testid="listing-expiry">
+          {info.state === 'expired' ? t('listingExpired', '掲載期限切れ') : t('listingExpiresIn', { count: info.days, defaultValue: 'あと{{count}}日で掲載終了' })}
+        </span>
+        {(info.state === 'expired' || info.state === 'soon') && (
+          <button
+            type="button"
+            className="trust-btn"
+            id={`renew-listing-${item.id}`}
+            disabled={renewingId === item.id}
+            onClick={() => handleRenewListing(item, kind)}
+          >
+            {renewingId === item.id ? t('renewing', '更新中…') : t('renewListing', '掲載を更新')}
+          </button>
+        )}
+      </div>
+    );
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -558,7 +608,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         discount: newJob.bonus || '',
         ...(profileData?.avatar ? { logo: profileData.avatar } : {}),
         image: jobImage || "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
-        verified: true,
+        verified: false, // ⭐ comes only from the server (authorVerified)
         location: generatedLocation,
         fullAddress: generatedFullAddress,
         postalCode: newJob.postalCode,
@@ -620,7 +670,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         description: newJob.description,
         dayOff: newJob.dayOff,
         image: jobImage || "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
-        verified: true,
+        verified: false, // ⭐ comes only from the server (authorVerified)
         logo: profileData?.avatar || "https://ui-avatars.com/api/?name=Company&background=0D8ABC&color=fff&size=100",
         hasShoukai: newJob.hasShoukai === 'yes',
         shoukaiFee: newJob.hasShoukai === 'yes' ? Number(newJob.shoukaiFee) : 0,
@@ -1849,6 +1899,22 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         onCancel={() => setPendingDelete(null)}
       />
       
+      {/* OWN ⭐ STATUS STRIP */}
+      {userRole === 'company' && auth && auth.user && (
+        <div style={{ padding: '0 14px', marginBottom: '14px' }}>
+          <div className="trust-card" style={{ flexDirection: 'row', alignItems: 'center', padding: '12px 14px', gap: '10px' }} data-testid="company-own-status">
+            <strong style={{ fontSize: '15px', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+              {profileData?.companyName || profileData?.fullName || ''}
+            </strong>
+            {ownVerification.status === 'verified' && <VerifiedBadge size={16} verifiedAt={ownVerification.verifiedAt} />}
+            <span style={{ marginLeft: 'auto' }} className={`trust-chip ${ownVerification.status === 'verified' ? 'info' : ownVerification.status === 'pending' ? 'warn' : ownVerification.status === 'none' ? 'muted' : 'bad'}`}>
+              {t(`verifyStatus_${ownVerification.status}`)}
+            </span>
+          </div>
+          {renewError && <p className="trust-notice bad" role="alert" style={{ marginTop: '8px' }}>{renewError}</p>}
+        </div>
+      )}
+
       {/* ADD ANNOUNCEMENT BUTTON CARD */}
       <div style={{ padding: '0 14px', marginBottom: '24px' }}>
         <div 
@@ -1927,12 +1993,13 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                     <div className="job-card-company">
                       <img src={job.logo} alt={job.company} className="job-card-company-logo" />
                       <span>{job.company}</span>
-                      {job.verified && <VerifiedBadge size={14} />}
+                      {job.verified === true && <VerifiedBadge size={14} verifiedAt={listingVerifiedAt(job)} />}
                     </div>
 
                     <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
+                    {isMine && renderExpiry(job, 'job')}
 
-                    {isMine && job.status && job.status !== 'active' && (
+                    {isMine && job.status && job.status !== 'active' && job.status !== 'expired' && (
                       <div className="moderation-notice" role="status">
                         <strong>{t(job.status === 'rejected' ? 'moderationRejected' : job.status === 'pending' ? 'moderationPending' : 'moderationHidden')}</strong>
                         {job.moderation && job.moderation.reason && <span>{t('moderationReasonLabel')}: {job.moderation.reason}</span>}
@@ -2072,10 +2139,11 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                       <div className="job-card-body">
                         <div className="job-card-company">
                           <span>{t(`school_${school.id}_name`, school.name)}</span>
-                          <VerifiedBadge size={14} />
+                          {school.verified === true && <VerifiedBadge size={14} verifiedAt={listingVerifiedAt(school)} />}
                         </div>
 
                         <h3 className="job-card-title">{t(`school_${school.id}_type`, school.type)}</h3>
+                        {isMine && renderExpiry(school, 'school')}
 
                         <div className="job-card-salary">
                           <Banknote size={15} color="#30D158" />

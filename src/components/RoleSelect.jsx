@@ -15,6 +15,7 @@ import { sendEmailOtpViaN8n, verifyEmailOtpCodeViaN8n } from '../services/n8nEma
 import { checkEmailExists } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import { API_ENDPOINTS } from '../config/api';
+import { suspensionInfo, formatDate } from '../utils/trustHelpers';
 import './RoleSelect.css';
 
 
@@ -53,6 +54,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
   const [userCaptchaAns, setUserCaptchaAns] = useState('');
   const [captchaError, setCaptchaError] = useState(false);
   const [loginErrorMessage, setLoginErrorMessage] = useState('');
+  const [suspended, setSuspended] = useState(null); // { until, reason } from 403 SUSPENDED
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 6-Digit OTP UI States
@@ -202,6 +204,14 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
       } catch (apiErr) {
         console.warn("Backend Login Error:", apiErr);
         setIsSubmitting(false);
+        // Suspended account: explain why instead of counting it as a wrong password
+        const susp = suspensionInfo(apiErr);
+        if (susp) {
+          setLoginErrorMessage('');
+          setSuspended(susp);
+          return;
+        }
+        setSuspended(null);
         const failRes = recordFailedAttempt(sanitizedEmail);
         if (failRes.isLocked) {
           setLockoutState(checkLockout(sanitizedEmail));
@@ -877,6 +887,24 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
                 }}>
                   <ShieldAlert size={16} style={{ flexShrink: 0 }} />
                   <span>{t(loginErrorMessage, t('invalidLoginCredentials', 'メールアドレスまたはパスワードが正しくありません。'))}</span>
+                </div>
+              )}
+
+              {/* Suspended account (403 SUSPENDED) */}
+              {suspended && (
+                <div role="alert" id="login-suspended-notice" style={{
+                  background: 'rgba(255, 149, 0, 0.08)', border: '1px solid rgba(255, 149, 0, 0.3)',
+                  borderRadius: '12px', padding: '10px 12px', color: '#FF9500', fontSize: '12.5px',
+                  fontWeight: '700', display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px'
+                }}>
+                  <ShieldAlert size={16} style={{ flexShrink: 0, marginTop: '1px' }} />
+                  <span style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <span>{suspended.until
+                      ? t('loginSuspendedUntil', { date: formatDate(suspended.until), defaultValue: 'このアカウントは {{date}} まで利用停止中です。' })
+                      : t('loginSuspendedPermanent', 'このアカウントは利用停止されています。')}</span>
+                    {suspended.reason && <span style={{ fontWeight: 600 }}>{t('moderationReasonLabel')}: {suspended.reason}</span>}
+                    <span style={{ fontWeight: 600, opacity: 0.85 }}>{t('loginSuspendedHelp', 'ご不明な点は support@michi.jp.net までお問い合わせください。')}</span>
+                  </span>
                 </div>
               )}
 

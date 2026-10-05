@@ -21,6 +21,7 @@ import PersonalInfoPage from './profile/PersonalInfoPage';
 import AboutPage from './profile/AboutPage';
 import SettingsPage from './profile/SettingsPage';
 import NotificationsPage from './profile/NotificationsPage';
+import SupportPage from './profile/SupportPage';
 import { createProfileRenderers } from './profile/profileRenderers';
 import ProfileMainView from './profile/ProfileMainView';
 import { useProfileScroll } from '../hooks/useProfileScroll';
@@ -1040,6 +1041,11 @@ function ProfileContent({
   // ===== SETTINGS PAGE =====
   if (activePage === 'settings') {
     return <SettingsPage {...pageCtx} />;
+  }
+
+  // ===== HELP / SUPPORT (tickets) =====
+  if (activePage === 'support') {
+    return <SupportPage t={t} handleBackToMain={handleBackToMain} />;
   }
 
   // ===== ASSIST AI SHOWCASE FULL PAGE =====

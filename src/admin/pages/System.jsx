@@ -1,23 +1,58 @@
 import { Fragment, useState } from 'react';
 import { useT } from '../i18n';
 import { api } from '../api';
-import { useApi, Loading, ErrorBox, Empty, PageHead, fmtDate, Badge, StatusBadge, ConfirmAction } from '../components/ui';
+import { useApi, Loading, ErrorBox, Empty, PageHead, fmtDate, Badge, StatusBadge, ConfirmAction, useToast, errText, isMissing } from '../components/ui';
 
 const fmtUptime = (s) => {
   const d = Math.floor(s / 86400); const h = Math.floor((s % 86400) / 3600); const m = Math.floor((s % 3600) / 60);
   return `${d ? `${d}d ` : ''}${h}h ${m}m`;
 };
 
+const fmtBytes = (n) => {
+  const v = Number(n);
+  if (!Number.isFinite(v) || v < 0) return '—';
+  const u = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let i = 0; let x = v;
+  while (x >= 1024 && i < u.length - 1) { x /= 1024; i += 1; }
+  return `${x.toFixed(x >= 100 || i === 0 ? 0 : 1)} ${u[i]}`;
+};
+
+function ConfiguredBadge({ on }) {
+  const { t } = useT();
+  if (on === undefined) return <Badge>—</Badge>;
+  return on ? <Badge kind="ok">✓ {t('configured')}</Badge> : <Badge kind="warn">{t('notConfigured')}</Badge>;
+}
+
 export function System({ admin }) {
   const { t } = useT();
+  const toast = useToast();
   const { data, error, loading, reload } = useApi('/system');
   const [dialog, setDialog] = useState(null);
+  const [tgBusy, setTgBusy] = useState(false);
+  const canBackup = admin.perms.includes('system.backup');
+
+  const telegramTest = async () => {
+    setTgBusy(true);
+    try {
+      const r = await api('POST', '/system/telegram-test', {});
+      if (r && r.ok === false) toast(t('telegramFail'), 'bad'); else toast(t('telegramSent'));
+    } catch (e) {
+      toast(isMissing(e) ? t('notAvailable') : errText(e, t), 'bad');
+    }
+    setTgBusy(false);
+  };
+
   if (loading && !data) return <Loading />;
+  // Backups: legacy array of files, or the new summary object.
+  const list = data && Array.isArray(data.backups) ? data.backups : (data && data.backups && Array.isArray(data.backups.items) ? data.backups.items : []);
+  const sum = data && data.backups && !Array.isArray(data.backups) ? data.backups : null;
+  const disk = data && data.disk;
+  const diskPct = disk && disk.totalBytes ? Math.round((1 - disk.freeBytes / disk.totalBytes) * 100) : null;
   return (
     <>
       <PageHead title={t('nav_system')}>
         <button type="button" className="btn" onClick={reload}>↻ {t('reload')}</button>
-        {admin.perms.includes('system.backup') && (
+        {canBackup && (
           <button id="backup-now" type="button" className="btn btn-primary" onClick={() => setDialog({ title: t('backupNow'), needReason: false, needTotp: true, run: ({ totp }) => api('POST', '/system/backup', { totp }) })}>💾 {t('backupNow')}</button>
         )}
       </PageHead>
@@ -26,23 +61,59 @@ export function System({ admin }) {
         <>
           <div className="grid grid-kpi" style={{ marginBottom: 14 }}>
             <div className="card kpi"><div className="kpi-label">{t('status')}</div><div className="kpi-value" style={{ fontSize: 20 }}>{data.dbOk ? <Badge kind="ok">{t('dbOk')}</Badge> : <Badge kind="bad">DB ✕</Badge>}</div><div className="kpi-sub">Node {data.node}</div></div>
-            <div className="card kpi"><div className="kpi-label">{t('uptime')}</div><div className="kpi-value">{fmtUptime(data.uptimeSec)}</div></div>
-            <div className="card kpi"><div className="kpi-label">{t('memory')}</div><div className="kpi-value">{data.rssMb} MB</div><div className="kpi-sub">heap {data.heapMb} MB</div></div>
+            <div className="card kpi"><div className="kpi-label">{t('uptime')}</div><div className="kpi-value">{fmtUptime(data.uptimeSec || 0)}</div></div>
+            <div className="card kpi"><div className="kpi-label">{t('memory')}</div><div className="kpi-value">{data.rssMb ?? '—'} MB</div><div className="kpi-sub">heap {data.heapMb ?? '—'} MB</div></div>
+            {disk && (
+              <div className="card kpi">
+                <div className="kpi-label">{t('disk')}</div>
+                <div className="kpi-value">{fmtBytes(disk.freeBytes)}</div>
+                <div className="kpi-sub">{t('diskFree')} / {fmtBytes(disk.totalBytes)}</div>
+                {diskPct !== null && <div className="meter" aria-label={`${diskPct}%`}><i className={diskPct > 90 ? 'is-bad' : diskPct > 75 ? 'is-warn' : ''} style={{ width: `${diskPct}%` }} /></div>}
+              </div>
+            )}
+            {data.errors24h !== undefined && (
+              <div className="card kpi"><div className="kpi-label">{t('errors24h')}</div><div className={`kpi-value${data.errors24h > 0 ? ' text-bad' : ''}`}>{data.errors24h}</div></div>
+            )}
           </div>
           <div className="grid grid-2">
             <section className="card">
-              <h2>{t('records')}</h2>
-              <dl className="kv">
-                {Object.entries(data.records).filter(([k]) => !/token|otp|session/i.test(k)).map(([k, v]) => <Fragment key={k}><dt>{k}</dt><dd className="mono">{v}</dd></Fragment>)}
-              </dl>
+              <h2>{t('integrations')}</h2>
+              <div className="flag-row">
+                <div><strong>Telegram</strong><div className="small muted">{t('telegramSub')}</div></div>
+                <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  <ConfiguredBadge on={data.telegram ? Boolean(data.telegram.configured) : undefined} />
+                  {canBackup && (
+                    <button id="telegram-test" type="button" className="btn btn-sm" disabled={tgBusy || (data.telegram && !data.telegram.configured)} onClick={telegramTest}>
+                      {tgBusy && <span className="spinner" style={{ width: 12, height: 12 }} aria-hidden="true" />}✈ {t('telegramTest')}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="flag-row">
+                <div><strong>{t('mailer')}</strong><div className="small muted">{t('mailerSub')}</div></div>
+                <ConfiguredBadge on={data.mailer ? Boolean(data.mailer.configured) : undefined} />
+              </div>
             </section>
             <section className="card">
               <h2>{t('backups')}</h2>
-              {data.backups.length === 0 ? <Empty /> : (
-                <div className="feed">{data.backups.map((b) => (
-                  <div key={b.name} className="feed-item row-between"><span className="mono small">{b.name}</span><span className="small muted">{b.sizeKb} KB · {fmtDate(b.at)}</span></div>
+              {sum && (
+                <dl className="kv" style={{ marginBottom: list.length ? 10 : 0 }}>
+                  <dt>{t('backupLatest')}</dt><dd>{fmtDate(sum.latestAt)}</dd>
+                  <dt>{t('backupSize')}</dt><dd>{fmtBytes(sum.latestSizeBytes)}</dd>
+                  <dt>{t('backupCount')}</dt><dd>{sum.count ?? '—'}</dd>
+                </dl>
+              )}
+              {!sum && list.length === 0 ? <Empty /> : list.length > 0 && (
+                <div className="feed">{list.map((b) => (
+                  <div key={b.name} className="feed-item row-between"><span className="mono small">{b.name}</span><span className="small muted">{b.sizeKb ?? Math.round((b.sizeBytes || 0) / 1024)} KB · {fmtDate(b.at)}</span></div>
                 ))}</div>
               )}
+            </section>
+            <section className="card">
+              <h2>{t('records')}</h2>
+              <dl className="kv">
+                {Object.entries(data.records || {}).filter(([k]) => !/token|otp|session/i.test(k)).map(([k, v]) => <Fragment key={k}><dt>{k}</dt><dd className="mono">{v}</dd></Fragment>)}
+              </dl>
             </section>
           </div>
         </>

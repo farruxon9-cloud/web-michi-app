@@ -31,6 +31,8 @@ import { requestCompanyVerification } from './services/authService';
 import { isViewAs } from './services/viewAsSession';
 import ViewAsBanner from './components/ViewAsBanner';
 import { useRemoteContent, broadcastStore } from './hooks/useRemoteContent';
+import { markNotificationRead, markAllNotificationsRead } from './services/accountApi';
+import './components/trust.css';
 import MaintenanceScreen from './components/MaintenanceScreen';
 import { fetchSchools } from './services/michiSchoolsApiService';
 import { normalizeSchoolPosting } from './utils/jobPostingNormalizer';
@@ -486,11 +488,17 @@ function App() {
   }, [activeTab, jobsOn, academyOn]);
 
   // Broadcast (admin) notifications remember read/dismissed state across reloads (broadcastStore)
+  // Personal notifications (type 'personal') also tell the server: POST /api/notifications/:id/read | read-all
+  const notificationsRef = useRef(notifications);
+  useEffect(() => { notificationsRef.current = notifications; }, [notifications]);
   const handleMarkNotifRead = useCallback((id) => {
     broadcastStore.markRead([id]);
+    const target = notificationsRef.current.find(n => n.id === id);
+    if (target && target.type === 'personal' && !target.read) markNotificationRead(id).catch(() => {});
     setNotifications(prev => prev.map(n => (n.id === id ? { ...n, read: true } : n)));
   }, []);
   const handleMarkAllNotifsRead = useCallback(() => {
+    if (notificationsRef.current.some(n => n.type === 'personal' && !n.read)) markAllNotificationsRead().catch(() => {});
     setNotifications(prev => { broadcastStore.markRead(prev.map(n => n.id)); return prev.map(n => (n.read ? n : { ...n, read: true })); });
   }, []);
   const handleDeleteNotif = useCallback((id) => {

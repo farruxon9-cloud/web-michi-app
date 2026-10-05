@@ -5,7 +5,32 @@ import { useApi, Loading, ErrorBox, Empty, PageHead, Seg, SearchBox, Pager, fmtD
 
 const can = (admin, p) => admin.perms.includes(p);
 
-function UserDrawer({ id, admin, onClose, onChanged }) {
+/** YYYY-MM-DD for tomorrow (local) — the earliest selectable suspension end. */
+const tomorrow = () => { const d = new Date(Date.now() + 864e5); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+
+/** Suspend: reason + optional end date (empty = permanent). `until` = end of that day, Japan time. */
+function SuspendDialog({ id, onClose }) {
+  const { t } = useT();
+  const [until, setUntil] = useState('');
+  return (
+    <ConfirmAction
+      title={t('suspend')}
+      sub={t('suspendSub')}
+      danger
+      confirmLabel={t('suspend')}
+      onClose={onClose}
+      run={({ reason }) => api('POST', `/users/${id}/disable`, { reason, ...(until ? { until: new Date(`${until}T23:59:59+09:00`).toISOString() } : {}) })}
+    >
+      <div className="field">
+        <label htmlFor="suspend-until">{t('suspendUntil')}</label>
+        <input id="suspend-until" className="input" type="date" min={tomorrow()} value={until} onChange={(e) => setUntil(e.target.value)} />
+        <span className="small muted">{until ? `${t('suspendUntil')}: ${until} 23:59 JST` : t('permanent')}</span>
+      </div>
+    </ConfirmAction>
+  );
+}
+
+export function UserDrawer({ id, admin, onClose, onChanged }) {
   const { t } = useT();
   const toast = useToast();
   const { data, error, loading, reload } = useApi(`/users/${id}`);
@@ -16,7 +41,6 @@ function UserDrawer({ id, admin, onClose, onChanged }) {
 
   const dialogs = {
     reveal: { title: t('reveal'), run: async ({ reason }) => setContact(await api('POST', `/users/${id}/reveal`, { reason })) },
-    disable: { title: t('disable'), danger: true, run: ({ reason }) => api('POST', `/users/${id}/disable`, { reason }) },
     enable: { title: t('enable'), run: ({ reason }) => api('POST', `/users/${id}/enable`, { reason }) },
     sessions: { title: t('revokeSessions'), danger: true, run: ({ reason }) => api('POST', `/users/${id}/revoke-sessions`, { reason }) },
     impersonate: {
@@ -42,7 +66,12 @@ function UserDrawer({ id, admin, onClose, onChanged }) {
             {u.disabled ? <StatusBadge value="disabled" label={t('disabled')} /> : <StatusBadge value="active" label={t('active')} />}
             {u.verification && <StatusBadge value={u.verification.status} label={t(`vStatus_${u.verification.status}`)} />}
           </div>
-          {u.disabled && u.disabledReason && <div className="alert alert-bad">{u.disabledReason}</div>}
+          {u.disabled && (
+            <div className="alert alert-bad">
+              {u.disabledReason && <div>{u.disabledReason}</div>}
+              <div className="small">{t('suspendUntil')}: {u.disabledUntil ? fmtDate(u.disabledUntil) : t('permanent')}</div>
+            </div>
+          )}
           <dl className="kv">
             <dt>ID</dt><dd className="mono">{u.id}</dd>
             <dt>{t('email')}</dt><dd>{contact ? contact.email : u.email} {u.emailVerified && <Badge kind="ok">✓</Badge>}</dd>
@@ -61,7 +90,7 @@ function UserDrawer({ id, admin, onClose, onChanged }) {
             {can(admin, 'users.sessions.revoke') && u.id !== admin.id && <button type="button" className="btn btn-sm" onClick={() => setDialog('sessions')}>{t('revokeSessions')}</button>}
             {can(admin, 'users.disable') && u.id !== admin.id && (u.disabled
               ? <button type="button" className="btn btn-sm btn-ok" onClick={() => setDialog('enable')}>{t('enable')}</button>
-              : <button type="button" className="btn btn-sm btn-danger" onClick={() => setDialog('disable')}>{t('disable')}</button>)}
+              : <button id="user-suspend" type="button" className="btn btn-sm btn-danger" onClick={() => setDialog('disable')}>{t('suspend')}</button>)}
             {can(admin, 'users.delete') && !u.adminRole && u.id !== admin.id && <button type="button" className="btn btn-sm btn-danger" onClick={() => setDialog('delete')}>{t('deleteUser')}</button>}
           </div>
 
@@ -93,7 +122,8 @@ function UserDrawer({ id, admin, onClose, onChanged }) {
           )}
         </>
       )}
-      {dialog && <ConfirmAction {...dialogs[dialog]} onClose={done} />}
+      {dialog === 'disable' && <SuspendDialog id={id} onClose={done} />}
+      {dialog && dialog !== 'disable' && <ConfirmAction {...dialogs[dialog]} onClose={done} />}
     </Drawer>
   );
 }
@@ -129,6 +159,7 @@ export default function Users({ admin }) {
                     <td><div className="cell-main">{u.fullName || '—'}</div><div className="cell-sub">{u.email}</div></td>
                     <td><Badge kind="accent">{t(u.role)}</Badge> {u.adminRole && <Badge kind="warn">{u.adminRole}</Badge>}</td>
                     <td>{u.disabled ? <StatusBadge value="disabled" label={t('disabled')} /> : <StatusBadge value="active" label={t('active')} />}
+                      {u.disabled && u.disabledUntil && <div className="cell-sub">→ {fmtDate(u.disabledUntil)}</div>}
                       {u.verification && u.verification.status !== 'none' && <> <StatusBadge value={u.verification.status} label={t(`vStatus_${u.verification.status}`)} /></>}</td>
                     <td className="small">{fmtDate(u.createdAt)}</td>
                     <td className="small">{fmtDate(u.lastLoginAt)}</td>

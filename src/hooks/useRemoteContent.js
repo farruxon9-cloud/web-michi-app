@@ -36,29 +36,54 @@ const writeSet = (key, set) => {
   try { localStorage.setItem(key, JSON.stringify([...set].slice(-300))); } catch { /* quota / private mode */ }
 };
 
-/** Persist read / dismissed state of broadcast notifications (ids start with "ntf"). */
+/** Persist read / dismissed state of server notifications (broadcast ids start with "ntf", personal with "unt"). */
+const isServerNotifId = (id) => /^(ntf|unt)/.test(String(id));
 export const broadcastStore = {
-  markRead(ids) { const s = readSet(READ_KEY); ids.filter((id) => String(id).startsWith('ntf')).forEach((id) => s.add(id)); writeSet(READ_KEY, s); },
-  dismiss(ids) { const s = readSet(DISMISS_KEY); ids.filter((id) => String(id).startsWith('ntf')).forEach((id) => s.add(id)); writeSet(DISMISS_KEY, s); },
+  markRead(ids) { const s = readSet(READ_KEY); ids.filter(isServerNotifId).forEach((id) => s.add(id)); writeSet(READ_KEY, s); },
+  dismiss(ids) { const s = readSet(DISMISS_KEY); ids.filter(isServerNotifId).forEach((id) => s.add(id)); writeSet(DISMISS_KEY, s); },
 };
 
+const SERVER_TYPES = new Set(['broadcast', 'personal']);
+
 /**
- * Merge server broadcasts into the app's notification list (pure; exported for tests).
- * - keeps non-broadcast notifications untouched;
- * - drops broadcasts the admin withdrew (no longer returned) or the user dismissed;
- * - remembers read state across reloads.
+ * Merge server notifications into the app's notification list (pure; exported for tests).
+ * - keeps local (non-server) notifications untouched;
+ * - broadcasts: drops ones the admin withdrew (no longer returned) or the user dismissed;
+ *   remembers read state across reloads;
+ * - personal (type 'personal', { kind, params }): read state comes from the server
+ *   (read / readAt), a local optimistic "read" is never undone; dismiss is local only.
  */
 export function mergeBroadcasts(prev, items, { lang, read, dismissed }) {
   const base = String(lang || '').slice(0, 2);
-  const live = (items || []).filter((n) => n && n.id && (!n.lang || n.lang === 'all' || n.lang === base) && !dismissed.has(n.id));
-  const liveIds = new Set(live.map((n) => n.id));
-  const kept = (prev || []).filter((n) => n.type !== 'broadcast' || liveIds.has(n.id));
+  const live = (items || []).filter((n) => n && n.id && !dismissed.has(n.id)
+    && (n.type === 'personal' || !n.lang || n.lang === 'all' || n.lang === base));
+  const liveById = new Map(live.map((n) => [n.id, n]));
+  let changed = false;
+  const kept = [];
+  for (const n of prev || []) {
+    if (!SERVER_TYPES.has(n.type)) { kept.push(n); continue; }
+    const srv = liveById.get(n.id);
+    if (!srv) { changed = true; continue; }
+    if (n.type === 'personal' && !n.read && (srv.read === true || Boolean(srv.readAt))) {
+      kept.push({ ...n, read: true });
+      changed = true;
+    } else {
+      kept.push(n);
+    }
+  }
   const have = new Set(kept.map((n) => n.id));
-  const added = live.filter((n) => !have.has(n.id)).map((n) => ({
-    id: n.id, type: 'broadcast', title: n.title, body: n.body, ts: Date.parse(n.createdAt) || 0,
-    date: n.createdAt ? new Date(n.createdAt).toLocaleString() : '', read: read.has(n.id),
-  }));
-  if (!added.length && kept.length === (prev || []).length) return prev;
+  const added = live.filter((n) => !have.has(n.id)).map((n) => {
+    const ts = Date.parse(n.createdAt) || 0;
+    const date = n.createdAt ? new Date(n.createdAt).toLocaleString() : '';
+    if (n.type === 'personal') {
+      return {
+        id: n.id, type: 'personal', kind: String(n.kind || ''), params: n.params && typeof n.params === 'object' ? n.params : {},
+        ts, date, read: n.read === true || Boolean(n.readAt) || read.has(n.id),
+      };
+    }
+    return { id: n.id, type: 'broadcast', title: n.title, body: n.body, ts, date, read: read.has(n.id) };
+  });
+  if (!added.length && !changed) return prev;
   return [...added, ...kept];
 }
 

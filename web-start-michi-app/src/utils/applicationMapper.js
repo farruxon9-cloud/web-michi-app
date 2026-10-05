@@ -80,6 +80,11 @@ export function mapServerApplication(a) {
     logo: target.logo || '',
     targetRemoved: !a.target || target.status === 'deleted',
     applicantInfo,
+    // ⭐ only when the server marks the listing's author verified; licence check for company views
+    ...(target.authorVerified === true ? { authorVerified: true, authorVerifiedAt: target.authorVerifiedAt || null } : {}),
+    ...(a.applicantLicense && typeof a.applicantLicense === 'object' && a.applicantLicense.type
+      ? { applicantLicense: { type: String(a.applicantLicense.type), status: String(a.applicantLicense.status || '') } }
+      : {}),
   };
   if (isSchool) {
     return { ...base, isSchool: true, schoolId: a.targetId, schoolName: target.name || '', company: target.name || '', title: '' };

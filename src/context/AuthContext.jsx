@@ -165,3 +165,8 @@ export function useAuth() {
   }
   return context;
 }
+
+/** Like useAuth, but returns null outside an AuthProvider (isolated component tests / previews). */
+export function useOptionalAuth() {
+  return useContext(AuthContext);
+}

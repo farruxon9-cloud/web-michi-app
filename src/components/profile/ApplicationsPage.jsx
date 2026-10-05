@@ -1,6 +1,6 @@
 // v1.1 Faza E: Profile.jsx dagi `activePage === 'applications'` sahifasi o'zgarishsiz ko'chirildi.
 // Holat va funksiyalar Profile'dan `ctx` orqali keladi (klasslar, stil va DOM bir xil).
-import { FileText, CheckCircle2, Briefcase, Share2, ArrowLeft, RotateCcw, UserCheck, UserX, FileCheck, Calendar, GraduationCap, EyeOff, Circle } from 'lucide-react';
+import { FileText, CheckCircle2, Briefcase, Share2, ArrowLeft, RotateCcw, UserCheck, UserX, FileCheck, Calendar, GraduationCap, EyeOff, Circle, BadgeCheck } from 'lucide-react';
 import { appItemKey, filterHiddenApps } from '../../utils/applicationItems';
 import { WITHDRAWABLE_STATUSES } from '../../utils/applicationMapper';
 import { STATUS_PIPELINE, STATUS_COLORS, HIDE_LINK_BTN, HIDE_PILL_BTN, HIDE_SMALL_BTN, safeDomId } from './profileShared';
@@ -8,6 +8,9 @@ import { formatRelativeTime } from '../../utils/relativeTime';
 import { useState } from 'react';
 import ConfirmSheet from '../ConfirmSheet';
 import ApplicationStageTimeline from './ApplicationStageTimeline';
+import VerifiedBadge from '../VerifiedBadge';
+import { licenseTypeLabel } from '../../utils/trustHelpers';
+import '../trust.css';
 
 export default function ApplicationsPage(ctx) {
   const { appPipelineTab, appSelectMode, applications, exitAppSelectMode, expandedAppId, hiddenApps, i18n, onChangeAppStatus, onNavigate, onShoukaiPaid, onWithdrawApplication, profileActivePageSource, renderHideOverlays, requestHide, schoolApplications, selectedAppKeys, setActivePage, setAppPipelineTab, setAppSelectMode, setExpandedAppId, t, toggleSelectApp, totalOwnApplications, userRole } = ctx;
@@ -392,7 +395,15 @@ export default function ApplicationsPage(ctx) {
                   )}
                   <div className="app-card-info" style={{ flex: 1 }}>
                     <h4 style={{ margin: '0 0 2px 0', fontSize: '15px', fontWeight: '700', letterSpacing: '-0.2px' }}>{appTitleJa}</h4>
-                    <p style={{ margin: 0, fontSize: '12.5px', color: '#8E8E93' }}>{app.company || notProvided}</p>
+                    <p style={{ margin: 0, fontSize: '12.5px', color: '#8E8E93', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>{app.company || notProvided}</span>
+                      {app.authorVerified === true && <VerifiedBadge size={13} verifiedAt={app.authorVerifiedAt} />}
+                    </p>
+                    {userRole === 'company' && app.applicantLicense && app.applicantLicense.status === 'verified' && (
+                      <span className="trust-chip ok" data-testid="applicant-license-chip" style={{ marginTop: '4px', width: 'fit-content' }}>
+                        <BadgeCheck size={11} /> {t('licenseVerifiedChip', '免許確認済み')}{licenseTypeLabel(app.applicantLicense.type) ? ` · ${licenseTypeLabel(app.applicantLicense.type)}` : ''}
+                      </span>
+                    )}
                     <span className="app-date" style={{ fontSize: '11.5px', color: '#8E8E93', marginTop: '1px', display: 'block' }}>
                       応募日: {app.appliedDate || notProvided}
                       {userRole !== 'company' && app.appliedAt && formatRelativeTime(app.appliedAt, i18n?.language) && (

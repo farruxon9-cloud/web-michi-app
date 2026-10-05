@@ -206,6 +206,9 @@ export function normalizeJobPosting(rawJob) {
     image: rawJob.image || 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800',
     // ⭐ only for companies verified by an admin (set by the server, never by the posting company)
     verified: rawJob.authorVerified === true,
+    verifiedAt: rawJob.authorVerified === true ? (rawJob.authorVerifiedAt || null) : null,
+    // Listing expiry (server: createdAt + LISTING_TTL_DAYS); owner view gets status 'expired' when passed
+    expiresAt: rawJob.expiresAt || null,
     location: typeof rawJob.location === 'string' ? rawJob.location : fullAddr,
     prefecture,
     city,
@@ -346,6 +349,8 @@ export function normalizeSchoolPosting(rawSchool) {
     companyId: authorId,
     // ⭐ only for companies verified by an admin (set by the server, never by the posting company)
     verified: rawSchool.authorVerified === true,
+    verifiedAt: rawSchool.authorVerified === true ? (rawSchool.authorVerifiedAt || null) : null,
+    expiresAt: rawSchool.expiresAt || null,
     status: s(rawSchool.status) || 'active',
     moderation: rawSchool.moderation && typeof rawSchool.moderation === 'object' ? rawSchool.moderation : null,
     hasAccommodation: rawSchool.hasAccommodation !== undefined ? rawSchool.hasAccommodation : false,
