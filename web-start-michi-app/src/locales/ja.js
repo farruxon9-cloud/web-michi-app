@@ -1219,7 +1219,11 @@ const translation = {
   "aiMicError": "音声を認識できませんでした。もう一度お試しください。",
   "aiErrorOccurred": "処理中にエラーが発生しました。もう一度お試しください。",
   "actionExecuted": "実行しました。",
-  "aiDisclaimer": "※ Michi AIはAI技術を活用しているため、誤った情報を生成する可能性があります。重要な決定や専門的な手続きの際は公式情報をご確認ください。"
+  "aiDisclaimer": "※ Michi AIはAI技術を活用しているため、誤った情報を生成する可能性があります。重要な決定や専門的な手続きの際は公式情報をご確認ください。",
+  "filterStationSub": "路線名・最寄り駅の指定",
+  "filterRadiusSub": "指定半径・周辺エリア",
+  "filterCategorySub": "トラック・ドライバー種別",
+  "filterFeatureSub": "雇用形態・給与・設備条件"
 };
 
 export default { translation };

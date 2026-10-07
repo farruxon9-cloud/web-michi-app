@@ -71,17 +71,17 @@ export const FIELD_HELP = {
       'Say the name of the last school you finished. High school or university is fine.',
       'Назовите последнее учебное заведение. Подойдёт школа или вуз.'),
     examples: [
-      { label: '高等学校', value: '高等学校', sub: L('高等学校', 'Maktab / litsey', 'High school', 'Школа / лицей') },
-      { label: '専門学校', value: '専門学校', sub: L('専門学校', 'Kollej', 'Vocational school', 'Колледж') },
-      { label: '大学', value: '大学', sub: L('大学', 'Universitet', 'University', 'Университет') }
+      { label: '高等学校', value: '高等学校', sub: L('高等学校', 'Maktab / litsey', 'High school', 'Школа / лицей', '高中', 'Trường THPT', 'उच्च माध्यमिक विद्यालय') },
+      { label: '専門学校', value: '専門学校', sub: L('専門学校', 'Kollej', 'Vocational school', 'Колледж', '专科学校', 'Trường dạy nghề', 'व्यावसायिक विद्यालय') },
+      { label: '大学', value: '大学', sub: L('大学', 'Universitet', 'University', 'Университет', '大学', 'Đại học', 'विश्वविद्यालय') }
     ]
   },
   eduMajor: {
     why: L('学校で勉強したことを言ってください。', "Nimani o'qiganingizni ayting.", 'Say what you studied.', 'Скажите, что вы изучали.'),
     examples: [
-      { label: '普通科', value: '普通科', sub: L('普通科', 'Umumiy ta\'lim', 'General studies', 'Общее образование') },
-      { label: '機械工学', value: '機械工学', sub: L('機械工学', 'Mexanika', 'Mechanical engineering', 'Механика') },
-      { label: '経済学', value: '経済学', sub: L('経済学', 'Iqtisodiyot', 'Economics', 'Экономика') }
+      { label: '普通科', value: '普通科', sub: L('普通科', 'Umumiy ta\'lim', 'General studies', 'Общее образование', '普通科', 'Giáo dục phổ thông', 'सामान्य शिक्षा') },
+      { label: '機械工学', value: '機械工学', sub: L('機械工学', 'Mexanika', 'Mechanical engineering', 'Механика', '机械工程', 'Kỹ thuật cơ khí', 'मेकानिकल इन्जिनियरिङ') },
+      { label: '経済学', value: '経済学', sub: L('経済学', 'Iqtisodiyot', 'Economics', 'Экономика', '经济学', 'Kinh tế học', 'अर्थशास्त्र') }
     ]
   },
   workCompany: {
@@ -94,9 +94,9 @@ export const FIELD_HELP = {
   workPosition: {
     why: L('その会社でどんな仕事をしましたか？', "U yerda qanday ish qilgansiz?", 'What was your job there?', 'Кем вы там работали?'),
     examples: [
-      { label: 'ドライバー', value: 'ドライバー', sub: L('ドライバー', 'Haydovchi', 'Driver', 'Водитель') },
-      { label: '配送スタッフ', value: '配送スタッフ', sub: L('配送スタッフ', 'Yetkazib beruvchi', 'Delivery staff', 'Курьер') },
-      { label: '倉庫作業員', value: '倉庫作業員', sub: L('倉庫作業員', 'Ombor xodimi', 'Warehouse worker', 'Складской работник') }
+      { label: 'ドライバー', value: 'ドライバー', sub: L('ドライバー', 'Haydovchi', 'Driver', 'Водитель', '司机', 'Tài xế', 'चालक') },
+      { label: '配送スタッフ', value: '配送スタッフ', sub: L('配送スタッフ', 'Yetkazib beruvchi', 'Delivery staff', 'Курьер', '配送员', 'Nhân viên giao hàng', 'डेलिभरी कर्मचारी') },
+      { label: '倉庫作業員', value: '倉庫作業員', sub: L('倉庫作業員', 'Ombor xodimi', 'Warehouse worker', 'Складской работник', '仓库工作人员', 'Nhân viên kho', 'गोदाम कामदार') }
     ]
   },
   licenses: {
@@ -106,8 +106,8 @@ export const FIELD_HELP = {
       'Назовите тип японских прав. Если нет — «наси».'),
     examples: [
       { label: '普通', value: ['futsu'], sub: L('普通', 'Oddiy (B)', 'Regular car', 'Обычные (B)') },
-      { label: '中型', value: ['chugata'], sub: L('中型', "O'rta yuk mashinasi", 'Medium truck', 'Средний грузовик') },
-      { label: '大型', value: ['oogata'], sub: L('大型', 'Katta yuk mashinasi', 'Large truck', 'Большой грузовик') }
+      { label: '中型', value: ['chugata'], sub: L('中型', "O'rta yuk mashinasi", 'Medium truck', 'Средний грузовик', '中型卡车', 'Xe tải cỡ trung', 'मझौला ट्रक') },
+      { label: '大型', value: ['oogata'], sub: L('大型', 'Katta yuk mashinasi', 'Large truck', 'Большой грузовик', '大型卡车', 'Xe tải lớn', 'ठूलो ट्रक') }
     ]
   },
   jlpt: {
@@ -116,9 +116,9 @@ export const FIELD_HELP = {
       'Your JLPT level. N5 is the easiest, N1 the hardest.',
       'Уровень JLPT. N5 — самый простой, N1 — самый сложный.'),
     examples: [
-      { label: 'N3', value: 'N3', sub: L('N3', "N3 — kundalik suhbat", 'N3 — daily conversation', 'N3 — бытовой разговор') },
-      { label: 'N4', value: 'N4', sub: L('N4', "N4 — oddiy suhbat", 'N4 — basic conversation', 'N4 — простой разговор') },
-      { label: 'なし', value: 'none', sub: L('なし', "Yo'q", 'None', 'Нет') }
+      { label: 'N3', value: 'N3', sub: L('N3', "N3 — kundalik suhbat", 'N3 — daily conversation', 'N3 — бытовой разговор', 'N3 — 日常会话', 'N3 — giao tiếp hằng ngày', 'N3 — दैनिक कुराकानी') },
+      { label: 'N4', value: 'N4', sub: L('N4', "N4 — oddiy suhbat", 'N4 — basic conversation', 'N4 — простой разговор', 'N4 — 基础会话', 'N4 — giao tiếp cơ bản', 'N4 — आधारभूत कुराकानी') },
+      { label: 'なし', value: 'none', sub: L('なし', "Yo'q", 'None', 'Нет', '无', 'Không có', 'छैन') }
     ]
   },
   motReason: {
@@ -127,17 +127,17 @@ export const FIELD_HELP = {
       'Pick your reason for working in Japan, or say it in your own words.',
       'Выберите причину работы в Японии или скажите своими словами.'),
     examples: [
-      { label: '日本で長く働きたい', value: 'longTerm', sub: L('', "Yaponiyada uzoq ishlamoqchiman", 'I want to work in Japan long-term', 'Хочу долго работать в Японии') },
-      { label: '運転の仕事が好き', value: 'loveDriving', sub: L('', "Haydovchilik ishini yaxshi ko'raman", 'I love driving work', 'Люблю работу водителем') },
-      { label: '家族を支えたい', value: 'family', sub: L('', "Oilamni qo'llab-quvvatlamoqchiman", 'I want to support my family', 'Хочу поддержать семью') }
+      { label: '日本で長く働きたい', value: 'longTerm', sub: L('', "Yaponiyada uzoq ishlamoqchiman", 'I want to work in Japan long-term', 'Хочу долго работать в Японии', '想在日本长期工作', 'Tôi muốn làm việc lâu dài ở Nhật', 'म जापानमा लामो समय काम गर्न चाहन्छु') },
+      { label: '運転の仕事が好き', value: 'loveDriving', sub: L('', "Haydovchilik ishini yaxshi ko'raman", 'I love driving work', 'Люблю работу водителем', '我喜欢驾驶工作', 'Tôi thích công việc lái xe', 'मलाई ड्राइभिङको काम मन पर्छ') },
+      { label: '家族を支えたい', value: 'family', sub: L('', "Oilamni qo'llab-quvvatlamoqchiman", 'I want to support my family', 'Хочу поддержать семью', '想养活家人', 'Tôi muốn hỗ trợ gia đình', 'म परिवारलाई सहयोग गर्न चाहन्छु') }
     ]
   },
   motStrength: {
     why: L('あなたのいいところを、一つ選んでください。', "Kuchli tomoningizni tanlang.", 'Pick one of your strengths.', 'Выберите вашу сильную сторону.'),
     examples: [
-      { label: 'まじめ', value: 'serious', sub: L('', "Mas'uliyatli", 'Hard-working', 'Ответственный') },
-      { label: '時間を守る', value: 'punctual', sub: L('', "Vaqtga rioya qilaman", 'Punctual', 'Пунктуальный') },
-      { label: '安全運転', value: 'safety', sub: L('', 'Xavfsiz haydayman', 'Safe driver', 'Безопасное вождение') }
+      { label: 'まじめ', value: 'serious', sub: L('', "Mas'uliyatli", 'Hard-working', 'Ответственный', '认真负责', 'Chăm chỉ', 'मेहनती') },
+      { label: '時間を守る', value: 'punctual', sub: L('', "Vaqtga rioya qilaman", 'Punctual', 'Пунктуальный', '守时', 'Đúng giờ', 'समयपालन गर्ने') },
+      { label: '安全運転', value: 'safety', sub: L('', 'Xavfsiz haydayman', 'Safe driver', 'Безопасное вождение', '安全驾驶', 'Lái xe an toàn', 'सुरक्षित चालक') }
     ]
   },
   motYears: {
@@ -146,9 +146,9 @@ export const FIELD_HELP = {
       'How many years of driving experience? If none, say “nashi”.',
       'Сколько лет стажа вождения? Если нет — «наси».'),
     examples: [
-      { label: '1年', value: 1, sub: L('', '1 yil', '1 year', '1 год') },
-      { label: '3年', value: 3, sub: L('', '3 yil', '3 years', '3 года') },
-      { label: 'なし', value: 0, sub: L('', "Yo'q", 'None', 'Нет') }
+      { label: '1年', value: 1, sub: L('', '1 yil', '1 year', '1 год', '1年', '1 năm', '१ वर्ष') },
+      { label: '3年', value: 3, sub: L('', '3 yil', '3 years', '3 года', '3年', '3 năm', '३ वर्ष') },
+      { label: 'なし', value: 0, sub: L('', "Yo'q", 'None', 'Нет', '无', 'Không có', 'छैन') }
     ]
   }
 };
