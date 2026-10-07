@@ -78,7 +78,7 @@ export function chunkText(text, max = 160) {
 /* ------------------------------------------------------------------ */
 
 export class ResumeVoiceIO {
-  constructor({ lang = 'uz', onInterim, onFinal, onListeningChange, onSpeakingChange, onLevel, onError } = {}) {
+  constructor({ lang = 'ja', onInterim, onFinal, onListeningChange, onSpeakingChange, onLevel, onError } = {}) {
     this.lang = lang;
     this.cb = { onInterim, onFinal, onListeningChange, onSpeakingChange, onLevel, onError };
     this.recognition = null;
@@ -242,7 +242,8 @@ export class ResumeVoiceIO {
           const alts = [];
           for (let a = 0; a < res.length; a++) {
             const tr = (res[a]?.transcript || '').trim();
-            if (tr && !alts.includes(tr)) alts.push(tr);
+            const conf = typeof res[a]?.confidence === 'number' ? res[a].confidence : null;
+            if (tr && !alts.some(x => x.text === tr)) alts.push({ text: tr, confidence: conf });
           }
           if (alts.length) this.buffer.push(alts);
         } else {
@@ -287,17 +288,28 @@ export class ResumeVoiceIO {
   }
 
   currentText() {
-    const finals = this.buffer.map(alts => alts[0]).join(' ');
+    const finals = this.buffer.map(alts => alts[0].text).join(' ');
     return `${finals} ${this.interim}`.replace(/\s+/g, ' ').trim();
   }
 
-  /** Builds up to 3 full-answer alternatives: best phrase chain + variants of the last phrase. */
+  /**
+   * Builds up to 3 full-answer alternatives: best phrase chain + variants of the last phrase.
+   * Each is { text, confidence } — confidence is the weakest known phrase confidence (null = unknown).
+   */
   answerAlternatives() {
-    if (!this.buffer.length) return this.interim ? [this.interim] : [];
-    const head = this.buffer.slice(0, -1).map(a => a[0]).join(' ');
+    if (!this.buffer.length) return this.interim ? [{ text: this.interim, confidence: null }] : [];
+    const headPhrases = this.buffer.slice(0, -1).map(a => a[0]);
+    const head = headPhrases.map(a => a.text).join(' ');
+    const headConf = headPhrases.map(a => a.confidence).filter(c => typeof c === 'number' && c > 0);
     const last = this.buffer[this.buffer.length - 1];
     const tail = this.interim ? ` ${this.interim}` : '';
-    return last.map(alt => `${head} ${alt}${tail}`.replace(/\s+/g, ' ').trim());
+    return last.map(alt => {
+      const confs = [...headConf, ...(typeof alt.confidence === 'number' && alt.confidence > 0 ? [alt.confidence] : [])];
+      return {
+        text: `${head} ${alt.text}${tail}`.replace(/\s+/g, ' ').trim(),
+        confidence: confs.length ? Math.min(...confs) : null
+      };
+    });
   }
 
   armSilence() {
