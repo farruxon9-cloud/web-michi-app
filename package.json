@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "ship": "node scripts/ship.mjs",
     "dev:admin": "vite --config vite.admin.config.js",
     "build:admin": "vite build --config vite.admin.config.js",
     "build:mobile": "vite build && npx cap sync",
