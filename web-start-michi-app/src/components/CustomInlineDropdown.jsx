@@ -1,6 +1,12 @@
 import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { pickText } from '../utils/localize';
+
+const SEARCH_PH = { ja: '🔍 検索...', uz: '🔍 Qidirish...', en: '🔍 Search...', ru: '🔍 Поиск...', zh: '🔍 搜索...', vi: '🔍 Tìm kiếm...', ne: '🔍 खोज्नुहोस्...' };
+const SELECT_PH = { ja: '-- 選択してください --', uz: '-- Tanlang --', en: '-- Select --', ru: '-- Выберите --', zh: '-- 请选择 --', vi: '-- Chọn --', ne: '-- छान्नुहोस् --' };
+const CUSTOM_PH = { ja: 'その他...', uz: 'Boshqa variant...', en: 'Other...', ru: 'Другое...', zh: '其他...', vi: 'Khác...', ne: 'अन्य...' };
 
 /**
  * CustomInlineDropdown — Mobile-bounded inline custom select component.
@@ -18,12 +24,16 @@ export default function CustomInlineDropdown({
   required = false,
   value,
   options = [],
-  placeholder = '-- Tanlang --',
+  placeholder: placeholderProp,
   onChange,
   error = null,
   allowCustom = false,
-  customPlaceholder = 'Boshqa variant...'
+  customPlaceholder: customPlaceholderProp
 }) {
+  const { i18n } = useTranslation();
+  const lang = i18n?.language;
+  const placeholder = placeholderProp ?? pickText(lang, SELECT_PH);
+  const customPlaceholder = customPlaceholderProp ?? pickText(lang, CUSTOM_PH);
   const [isOpen, setIsOpen] = useState(false);
   const [customText, setCustomText] = useState('');
   const [dropUp, setDropUp] = useState(false);
@@ -185,7 +195,7 @@ export default function CustomInlineDropdown({
                 type="text"
                 value={filterQuery}
                 onChange={e => setFilterQuery(e.target.value)}
-                placeholder="🔍 Qidirish / 検索..."
+                placeholder={pickText(lang, SEARCH_PH)}
                 className="auth-input"
                 style={{
                   fontSize: '12.5px',

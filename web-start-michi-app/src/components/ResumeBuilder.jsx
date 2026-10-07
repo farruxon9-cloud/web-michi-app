@@ -8,7 +8,27 @@ import {
 import { Capacitor } from '@capacitor/core';
 import { generateRirekishoBlob } from '../utils/resumeGenerator';
 import { saveResumeBlob, safeResumeFilename, isMobileDevice } from '../utils/resumeDownload';
+import { pickText } from '../utils/localize';
 import './ResumeBuilder.css';
+
+// Example placeholders shown inside empty inputs — always in the selected UI language.
+const EG = { ja: '例：', uz: 'Masalan: ', en: 'e.g. ', ru: 'Напр.: ', zh: '例如：', vi: 'Ví dụ: ', ne: 'उदाहरण: ' };
+const ADDRESS_EG = {
+  ja: '東京都新宿区西新宿2-8-1',
+  zh: '東京都新宿区西新宿2-8-1',
+  en: 'Tokyo-to, Shinjuku-ku, Nishi-Shinjuku 2-8-1',
+};
+const resumePlaceholder = (lang, field) => {
+  const eg = pickText(lang, EG);
+  switch (field) {
+    case 'fullName': return `${eg}ALIMOV ANVAR`;
+    case 'furigana': return `${eg}アリモフ アンバル`;
+    case 'postalCode': return `${eg}160-0023`;
+    case 'address': return `${eg}${pickText(lang, ADDRESS_EG)}`;
+    case 'phone': return `${eg}080-1234-5678`;
+    default: return '';
+  }
+};
 
 // The voice interviewer (engine + knowledge pack) is only downloaded when AI VOICE is switched on
 const ResumeVoiceAgent = lazy(() => import('./resume/ResumeVoiceAgent'));
@@ -725,7 +745,7 @@ export default function ResumeBuilder({
               name="fullName" 
               value={formData.fullName} 
               onChange={handleChange}
-              placeholder="Masalan: ALIMOV ANVAR"
+              placeholder={resumePlaceholder(i18n.language, 'fullName')}
               className="glass-input"
             />
           </div>
@@ -738,7 +758,7 @@ export default function ResumeBuilder({
               name="furigana" 
               value={formData.furigana} 
               onChange={handleChange}
-              placeholder="Masalan: アリモフ アンバル"
+              placeholder={resumePlaceholder(i18n.language, 'furigana')}
               className="glass-input"
             />
           </div>
@@ -771,7 +791,7 @@ export default function ResumeBuilder({
                   type="text" 
                   id="dob-day"
                   inputMode="numeric"
-                  placeholder="DD"
+                  placeholder="15"
                   value={selectedDay} 
                   onChange={(e) => handleDayInput(e.target.value)}
                   className="glass-input dob-num-input"
@@ -784,7 +804,7 @@ export default function ResumeBuilder({
                   type="text" 
                   id="dob-month"
                   inputMode="numeric"
-                  placeholder="MM"
+                  placeholder="04"
                   value={selectedMonth} 
                   onChange={(e) => handleMonthInput(e.target.value)}
                   className="glass-input dob-num-input"
@@ -797,7 +817,7 @@ export default function ResumeBuilder({
                   type="text" 
                   id="dob-year"
                   inputMode="numeric"
-                  placeholder="YYYY"
+                  placeholder="1995"
                   value={selectedYear} 
                   onChange={(e) => handleYearInput(e.target.value)}
                   className="glass-input dob-num-input"
@@ -829,7 +849,7 @@ export default function ResumeBuilder({
               name="postalCode" 
               value={formData.postalCode} 
               onChange={handleChange}
-              placeholder="160-0023"
+              placeholder={resumePlaceholder(i18n.language, 'postalCode')}
               className="glass-input"
             />
           </div>
@@ -842,7 +862,7 @@ export default function ResumeBuilder({
               name="address" 
               value={formData.address} 
               onChange={handleChange}
-              placeholder="Tokyo-to, Shinjuku-ku..."
+              placeholder={resumePlaceholder(i18n.language, 'address')}
               className="glass-input"
             />
           </div>
@@ -855,7 +875,7 @@ export default function ResumeBuilder({
               name="phone" 
               value={formData.phone} 
               onChange={handleChange}
-              placeholder="080-1234-5678"
+              placeholder={resumePlaceholder(i18n.language, 'phone')}
               className="glass-input"
             />
           </div>

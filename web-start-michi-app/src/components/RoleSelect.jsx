@@ -17,6 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import { API_ENDPOINTS } from '../config/api';
 import { suspensionInfo, formatDate } from '../utils/trustHelpers';
 import './RoleSelect.css';
+import { pickText } from '../utils/localize';
 
 
 const DRIVER_LICENSES = [
@@ -30,7 +31,7 @@ const TECH_CERTS = [
 ];
 
 export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role' }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { login, register } = useAuth();
   
   // Auth flow states: 'role' -> 'login' -> 'register' -> 'verify'
@@ -924,7 +925,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
                   <input 
                     type="number" 
                     className="auth-input" 
-                    placeholder="Javob"
+                    placeholder={pickText(i18n.language, { ja: '答え', uz: 'Javob', en: 'Answer', ru: 'Ответ', zh: '答案', vi: 'Trả lời', ne: 'उत्तर' })}
                     value={userCaptchaAns}
                     onChange={(e) => setUserCaptchaAns(e.target.value)}
                     style={{ fontSize: '16px', textAlign: 'center', padding: '8px', borderRadius: '10px' }}

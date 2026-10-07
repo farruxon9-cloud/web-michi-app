@@ -40,3 +40,36 @@ describe('locale completeness for keys used in code', () => {
     expect(missing).toEqual([]);
   });
 });
+
+// Guard: a key used in user-facing code but missing from en.js (and other locales) silently renders the
+// hardcoded inline default (often Japanese/Uzbek) for EVERY user. src/admin has its own i18n, so it is excluded.
+describe('every statically used key exists in all locales (non-admin code)', () => {
+  const srcDir = path.resolve(process.cwd(), 'src');
+  const used = new Map(); // key -> first file using it
+  const walk = (dir) => {
+    for (const name of fs.readdirSync(dir)) {
+      const p = path.join(dir, name);
+      if (fs.statSync(p).isDirectory()) {
+        if (!['locales', 'node_modules', 'admin'].includes(name)) walk(p);
+      } else if (/\.(jsx?|tsx?)$/.test(name) && !/\.test\./.test(name)) {
+        const s = fs.readFileSync(p, 'utf8');
+        for (const m of s.matchAll(/\bt\(\s*(['"`])([A-Za-z0-9_.-]+)\1/g)) {
+          if (!used.has(m[2])) used.set(m[2], path.relative(srcDir, p));
+        }
+      }
+    }
+  };
+  walk(srcDir);
+
+  it('finds used keys', () => {
+    expect(used.size).toBeGreaterThan(100);
+  });
+
+  it.each(Object.keys(resources))('%s defines every key used via t() in non-admin src', (lang) => {
+    const dict = resources[lang].translation;
+    const missing = [...used.entries()]
+      .filter(([k]) => !Object.prototype.hasOwnProperty.call(dict, k))
+      .map(([k, f]) => `${k} (${f})`);
+    expect(missing).toEqual([]);
+  });
+});
