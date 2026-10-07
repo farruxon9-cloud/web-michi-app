@@ -7,7 +7,8 @@ import ReactMap from 'react-map-gl/maplibre';
 const { Marker } = maplibregl;
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './JDMNavigation.css';
-import { checkClearanceLimits, MLIT_RESTRICTIONS } from '../utils/mlitRestrictions';
+import { checkClearanceLimits, MLIT_RESTRICTIONS, getRestrictionMessage } from '../utils/mlitRestrictions';
+import { pickText } from '../utils/localize';
 import { parseOSRMSteps, parseValhallaSteps, decodePolyline6, getRemainingMetrics, getCountdownText, formatDistanceJa } from '../utils/turnInstructions';
 import { fetchOverpassRestrictions, checkOverpassRestrictions, mergeRestrictionResults } from '../utils/overpassRestrictions';
 import { downloadRegionTiles, isRegionCached, getPrefectureTilePresets } from '../utils/offlineTileDownloader';
@@ -210,88 +211,118 @@ const getPoiDetails = (coord, language) => {
   
   let brand = '';
   let color = '#5E5CE6'; // Default iOS Indigo
-  let categoryLabel = language === 'uz' ? 'Belgilangan joy' : (language === 'ja' ? '登録地点' : 'Marked Location');
+  const L = (texts) => pickText(language, texts);
+  const HOURS_24 = { ja: '24時間営業', en: '24 Hours', uz: '24 soat', ru: 'Круглосуточно', zh: '24小时营业', vi: 'Mở cửa 24 giờ', ne: '२४ घण्टा खुला' };
+  let categoryLabel = L({ ja: '登録地点', en: 'Marked Location', uz: 'Belgilangan joy', ru: 'Отмеченное место', zh: '标记地点', vi: 'Vị trí đã đánh dấu', ne: 'चिन्हित स्थान' });
   let isHGVFriendly = false;
   let amenities = [];
   let phone = coord.phone || '03-5555-0199'; // Mock local Tokyo phone number
   let hours = coord.openingHours || '08:00 - 22:00';
 
   if (coord.type === 'convenience') {
-    categoryLabel = language === 'uz' ? 'Do`kon (Konbini)' : (language === 'ja' ? 'コンビニ' : 'Convenience Store');
+    categoryLabel = L({ ja: 'コンビニ', en: 'Convenience Store', uz: 'Do`kon (Konbini)', ru: 'Магазин (конбини)', zh: '便利店', vi: 'Cửa hàng tiện lợi', ne: 'कन्भिनियन्स स्टोर' });
     isHGVFriendly = true;
-    hours = language === 'ja' ? '24時間営業' : (language === 'uz' ? '24 soat' : '24 Hours');
+    hours = L(HOURS_24);
     if (nameLower.includes('7-eleven') || nameLower.includes('seven-eleven') || nameLower.includes('セブン')) {
       brand = language === 'ja' ? 'セブン-イレブン' : '7-Eleven';
       color = '#34c759'; // Success green
-      amenities = language === 'uz' 
-        ? ['Katta yuk mashinalari to`xtash joyi (3 ta joy)', '24/7 bankomat', 'Issiq ovqatlar', 'Yumshoq ichimliklar']
-        : (language === 'ja' 
-          ? ['大型車駐車場 (3台)', '24時間ATM', 'お弁当・惣菜', 'ホットスナック']
-          : ['HGV Dedicated Parking (3 spaces)', '24/7 ATM', 'Hot Meals & Bento', 'Beverages & Coffee']);
+      amenities = L({
+        ja: ['大型車駐車場 (3台)', '24時間ATM', 'お弁当・惣菜', 'ホットスナック'],
+        en: ['HGV Dedicated Parking (3 spaces)', '24/7 ATM', 'Hot Meals & Bento', 'Beverages & Coffee'],
+        uz: ['Katta yuk mashinalari to`xtash joyi (3 ta joy)', '24/7 bankomat', 'Issiq ovqatlar', 'Yumshoq ichimliklar'],
+        ru: ['Парковка для грузовиков (3 места)', 'Круглосуточный банкомат', 'Горячая еда и бенто', 'Напитки и кофе'],
+        zh: ['大型车专用停车位 (3个)', '24小时ATM', '热食与便当', '饮料与咖啡'],
+        vi: ['Bãi đỗ riêng cho xe tải lớn (3 chỗ)', 'ATM 24/7', 'Món nóng & cơm hộp', 'Đồ uống & cà phê'],
+        ne: ['ठूला सवारीका लागि पार्किङ (३ स्थान)', '२४/७ एटीएम', 'तातो खाना र बेन्टो', 'पेय र कफी'],
+      });
     } else if (nameLower.includes('lawson') || nameLower.includes('ローソン')) {
       brand = language === 'ja' ? 'ローソン' : 'Lawson';
       color = '#007aff'; // Premium Blue
-      amenities = language === 'uz'
-        ? ['Yuk mashinasi uchun to`xtash joyi', 'Machi Cafe kofesi', 'Kopiya/Faks xizmati']
-        : (language === 'ja'
-          ? ['大型車駐車スペース完備', 'マチカフェコーヒー', 'マルチコピー機']
-          : ['HGV Parking Space', 'Machi Cafe Coffee', 'Multi-copy Machine']);
+      amenities = L({
+        ja: ['大型車駐車スペース完備', 'マチカフェコーヒー', 'マルチコピー機'],
+        en: ['HGV Parking Space', 'Machi Cafe Coffee', 'Multi-copy Machine'],
+        uz: ['Yuk mashinasi uchun to`xtash joyi', 'Machi Cafe kofesi', 'Kopiya/Faks xizmati'],
+        ru: ['Парковка для грузовиков', 'Кофе Machi Cafe', 'Многофункциональный копировальный аппарат'],
+        zh: ['大型车停车位', 'Machi Cafe 咖啡', '多功能复印机'],
+        vi: ['Chỗ đỗ xe tải lớn', 'Cà phê Machi Cafe', 'Máy photocopy đa năng'],
+        ne: ['ठूला सवारी पार्किङ', 'Machi Cafe कफी', 'बहु-कपी मेसिन'],
+      });
     } else {
       brand = language === 'ja' ? 'ファミリーマート' : 'FamilyMart';
       color = '#30d158'; // Green
-      amenities = language === 'uz'
-        ? ['Yuk mashinalari to`xtash joyi', 'FamiPort to`lovlar', 'Issiq gazaklar']
-        : (language === 'ja'
-          ? ['大型車対応駐車場', 'ファミポートサービス', 'ホットスナック']
-          : ['HGV Compatible Parking', 'FamiPort Services', 'Hot Fried Chicken']);
+      amenities = L({
+        ja: ['大型車対応駐車場', 'ファミポートサービス', 'ホットスナック'],
+        en: ['HGV Compatible Parking', 'FamiPort Services', 'Hot Fried Chicken'],
+        uz: ['Yuk mashinalari to`xtash joyi', 'FamiPort to`lovlar', 'Issiq gazaklar'],
+        ru: ['Парковка для грузовиков', 'Услуги FamiPort', 'Горячие закуски'],
+        zh: ['可停大型车', 'FamiPort 服务', '热小吃'],
+        vi: ['Bãi đỗ phù hợp xe tải lớn', 'Dịch vụ FamiPort', 'Đồ ăn nhanh nóng'],
+        ne: ['ठूला सवारी मिल्ने पार्किङ', 'FamiPort सेवा', 'तातो खाजा'],
+      });
     }
   } else if (coord.type === 'fuel') {
-    categoryLabel = language === 'uz' ? 'Yoqilg`i quyish shoxobchasi' : (language === 'ja' ? 'ガソリンスタンド' : 'Gas Station');
+    categoryLabel = L({ ja: 'ガソリンスタンド', en: 'Gas Station', uz: 'Yoqilg`i quyish shoxobchasi', ru: 'АЗС', zh: '加油站', vi: 'Trạm xăng', ne: 'पेट्रोल पम्प' });
     isHGVFriendly = true;
-    hours = language === 'ja' ? '24時間営業' : (language === 'uz' ? '24 soat' : '24 Hours');
+    hours = L(HOURS_24);
     brand = coord.brand || name.split(' ')[0] || 'ENEOS';
     if (brand.toLowerCase().includes('eneos') || nameLower.includes('エネオス')) {
-      brand = language === 'ja' ? 'ENEOS' : 'ENEOS';
+      brand = 'ENEOS';
     } else if (brand.toLowerCase().includes('cosmo') || nameLower.includes('コスモ')) {
       brand = language === 'ja' ? 'コスモ石油' : 'Cosmo Oil';
     } else if (brand.toLowerCase().includes('apollostation') || nameLower.includes('apollostation') || nameLower.includes('出光')) {
-      brand = language === 'ja' ? 'apollostation' : 'apollostation';
+      brand = 'apollostation';
     }
     color = '#ff9f0a'; // Warning Orange
-    amenities = language === 'uz'
-      ? ['Yuqori oqimli dizel dispenserlari', 'Yuk mashinasi kirish qulayligi', 'AdBlue sotuvi']
-      : (language === 'ja'
-        ? ['高流量トラック用軽油計量機', '大型トラック進入可能', 'AdBlue販売あり']
-        : ['High-flow Diesel Nozzles', 'HGV Clearance & Access', 'AdBlue Available']);
+    amenities = L({
+      ja: ['高流量トラック用軽油計量機', '大型トラック進入可能', 'AdBlue販売あり'],
+      en: ['High-flow Diesel Nozzles', 'HGV Clearance & Access', 'AdBlue Available'],
+      uz: ['Yuqori oqimli dizel dispenserlari', 'Yuk mashinasi kirish qulayligi', 'AdBlue sotuvi'],
+      ru: ['Дизельные колонки высокой пропускной способности', 'Удобный заезд для грузовиков', 'Есть AdBlue'],
+      zh: ['大流量卡车柴油加油机', '大型卡车可驶入', '有售 AdBlue'],
+      vi: ['Vòi bơm dầu diesel lưu lượng cao', 'Xe tải lớn ra vào được', 'Có bán AdBlue'],
+      ne: ['उच्च प्रवाह डिजेल नोजल', 'ठूला ट्रक प्रवेश सम्भव', 'AdBlue उपलब्ध'],
+    });
   } else if (coord.type === 'rest_area') {
-    categoryLabel = language === 'uz' ? 'Dam olish maskani (SA/PA)' : (language === 'ja' ? 'SA/PA・道の駅' : 'Rest Area (SA/PA)');
+    categoryLabel = L({ ja: 'SA/PA・道の駅', en: 'Rest Area (SA/PA)', uz: 'Dam olish maskani (SA/PA)', ru: 'Зона отдыха (SA/PA)', zh: '服务区/停车区 (SA/PA)・公路驿站', vi: 'Trạm dừng nghỉ (SA/PA)', ne: 'विश्राम क्षेत्र (SA/PA)' });
     isHGVFriendly = true;
-    hours = language === 'ja' ? '24時間営業' : (language === 'uz' ? '24 soat' : '24 Hours');
+    hours = L(HOURS_24);
     brand = coord.brand || name.split(' ')[0] || 'NEXCO';
     color = '#5e5ce6'; // Indigo
-    amenities = language === 'uz'
-      ? ['Katta yuk mashinalari uchun maxsus hudud (15+ joy)', 'Dush xonalari mavjud', 'Tungi yoritish tizimi', 'Restoran & Do`konlar']
-      : (language === 'ja'
-        ? ['大型車専用駐車エリア (15台以上)', 'シャワー室完備', '夜間照明・防犯カメラ', 'フードコート・売店']
-        : ['HGV Dedicated Spots (15+ spaces)', 'Shower Rooms Available', 'Nighttime Illumination', 'Food Court & Shops']);
+    amenities = L({
+      ja: ['大型車専用駐車エリア (15台以上)', 'シャワー室完備', '夜間照明・防犯カメラ', 'フードコート・売店'],
+      en: ['HGV Dedicated Spots (15+ spaces)', 'Shower Rooms Available', 'Nighttime Illumination', 'Food Court & Shops'],
+      uz: ['Katta yuk mashinalari uchun maxsus hudud (15+ joy)', 'Dush xonalari mavjud', 'Tungi yoritish tizimi', 'Restoran & Do`konlar'],
+      ru: ['Отдельная зона для грузовиков (15+ мест)', 'Есть душевые', 'Ночное освещение', 'Фуд-корт и магазины'],
+      zh: ['大型车专用停车区 (15个以上)', '设有淋浴室', '夜间照明・监控摄像头', '美食广场・商店'],
+      vi: ['Khu đỗ riêng cho xe tải lớn (15+ chỗ)', 'Có phòng tắm', 'Chiếu sáng ban đêm', 'Khu ẩm thực & cửa hàng'],
+      ne: ['ठूला सवारीका लागि छुट्टै क्षेत्र (१५+ स्थान)', 'नुहाउने कोठा उपलब्ध', 'रातिको बत्ती', 'फुड कोर्ट र पसलहरू'],
+    });
   } else if (coord.type === 'station') {
-    categoryLabel = language === 'uz' ? 'Temir yo`l stansiyasi' : (language === 'ja' ? '駅' : 'Railway Station');
+    categoryLabel = L({ ja: '駅', en: 'Railway Station', uz: 'Temir yo`l stansiyasi', ru: 'Железнодорожная станция', zh: '车站', vi: 'Ga tàu', ne: 'रेल स्टेसन' });
     brand = name.split(' ')[0] || 'Station';
     color = '#64d2ff'; // Light Blue
-    amenities = language === 'uz'
-      ? ['Yo`lovchilarni tushirish hududi', 'Taksilar to`xtash joyi', 'Yaqin atrofda qulay do`konlar']
-      : (language === 'ja'
-        ? ['乗降スペース', 'タクシー乗り場', '駅構内コンビニ']
-        : ['Passenger Drop-off Area', 'Taxi Stand', 'Station Convenience Store']);
+    amenities = L({
+      ja: ['乗降スペース', 'タクシー乗り場', '駅構内コンビニ'],
+      en: ['Passenger Drop-off Area', 'Taxi Stand', 'Station Convenience Store'],
+      uz: ['Yo`lovchilarni tushirish hududi', 'Taksilar to`xtash joyi', 'Yaqin atrofda qulay do`konlar'],
+      ru: ['Зона посадки и высадки', 'Стоянка такси', 'Магазин на станции'],
+      zh: ['上下车区', '出租车乘车处', '站内便利店'],
+      vi: ['Khu đón trả khách', 'Bến taxi', 'Cửa hàng tiện lợi trong ga'],
+      ne: ['यात्रु उठाउने/झार्ने क्षेत्र', 'ट्याक्सी स्ट्यान्ड', 'स्टेसनभित्रको कन्भिनियन्स स्टोर'],
+    });
   } else if (coord.type === 'park') {
-    categoryLabel = language === 'uz' ? 'Istirohat bog`i' : (language === 'ja' ? '公園' : 'Park');
+    categoryLabel = L({ ja: '公園', en: 'Park', uz: 'Istirohat bog`i', ru: 'Парк', zh: '公园', vi: 'Công viên', ne: 'पार्क' });
     color = '#30d158'; // Green
-    hours = language === 'ja' ? '24時間開放' : (language === 'uz' ? '24 soat ochiq' : 'Open 24 hours');
-    amenities = language === 'uz'
-      ? ['Piyodalar yo`lakchalari', 'Jamoat hojatxonasi', 'Dam olish o`rindiqlari']
-      : (language === 'ja'
-        ? ['遊歩道', '公衆トイレ', 'ベンチ・休憩所']
-        : ['Walking Paths', 'Public Restrooms', 'Benches & Seating Area']);
+    hours = L({ ja: '24時間開放', en: 'Open 24 hours', uz: '24 soat ochiq', ru: 'Открыто круглосуточно', zh: '24小时开放', vi: 'Mở cửa 24 giờ', ne: '२४ घण्टा खुला' });
+    amenities = L({
+      ja: ['遊歩道', '公衆トイレ', 'ベンチ・休憩所'],
+      en: ['Walking Paths', 'Public Restrooms', 'Benches & Seating Area'],
+      uz: ['Piyodalar yo`lakchalari', 'Jamoat hojatxonasi', 'Dam olish o`rindiqlari'],
+      ru: ['Пешеходные дорожки', 'Общественный туалет', 'Скамейки и места отдыха'],
+      zh: ['步道', '公共厕所', '长椅・休息区'],
+      vi: ['Lối đi bộ', 'Nhà vệ sinh công cộng', 'Ghế đá & khu nghỉ'],
+      ne: ['पैदल मार्ग', 'सार्वजनिक शौचालय', 'बेन्च र विश्राम स्थल'],
+    });
   }
 
   return { brand, color, categoryLabel, isHGVFriendly, amenities, phone, hours };
@@ -476,12 +507,12 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'uz';
 
+  // UI til → ingliz → yapon (src/utils/localize.js qoidasi). Ilgari
+  // ru/zh/vi/ne foydalanuvchilariga o'zbekcha matn tushib qolardi.
   const localize = (strings) => {
     if (!strings || typeof strings !== 'object') return '';
-    return strings[currentLang]
+    return pickText(currentLang, strings)
       || strings.uz
-      || strings.en
-      || strings.ja
       || strings.vi
       || strings.zh
       || strings.ne
@@ -489,15 +520,8 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   };
 
   const localizePair = (jaText, uzText, enText, viText = '', zhText = '', neText = '', fallback = '') => {
-    switch (currentLang) {
-      case 'ja': return jaText || uzText || enText || viText || zhText || neText || fallback;
-      case 'uz': return uzText || enText || jaText || viText || zhText || neText || fallback;
-      case 'en': return enText || uzText || jaText || viText || zhText || neText || fallback;
-      case 'vi': return viText || enText || uzText || jaText || zhText || neText || fallback;
-      case 'zh': return zhText || enText || uzText || jaText || viText || neText || fallback;
-      case 'ne': return neText || enText || uzText || jaText || viText || zhText || fallback;
-      default: return uzText || enText || jaText || viText || zhText || neText || fallback;
-    }
+    return pickText(currentLang, { ja: jaText, uz: uzText, en: enText, vi: viText, zh: zhText, ne: neText })
+      || uzText || viText || zhText || neText || fallback;
   };
 
   const tr = (key, fallback) => t(key, fallback);
@@ -885,114 +909,114 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   // Translations
   const getNavText = (key) => {
     const dict = {
-      title: { uz: 'Aqlli JDM Navigatsiyasi', ja: 'JDMトラックスマートナビ', en: 'JDM Smart Route Map', vi: 'Định vị thông minh JDM', zh: 'JDM 智能导航', ne: 'JDM स्मार्ट मार्ग नक्सा' },
-      subtitle: { uz: 'Cheklovlar va taqiqlar xaritasi', ja: '大型・一般車両規制対応ルート検索', en: 'Offline Traffic Restrictions Router', vi: 'Bản đồ hạn chế giao thông ngoại tuyến', zh: '离线交通限制与避堵路网规划', ne: 'अफ्ライン ट्राफिक प्रतिबन्ध राउटर' },
-      vehicleHUD: { uz: 'Transport Parametrlari', ja: '車両寸法・カテゴリー', en: 'Vehicle Settings', vi: 'Cài đặt phương tiện', zh: '车辆尺寸与规格设置', ne: 'सवारी साधन सेटअप' },
-      routeSettings: { uz: 'Yo\'nalish Sharoitlari', ja: 'ルート検索条件', en: 'Route Settings', vi: 'Cài đặt tuyến đường', zh: '路线规划条件', ne: 'मार्ग सेटिङ्हरू' },
-      startLabel: { uz: 'Boshlang\'ich manzil', ja: '出発地（例: 新宿、まいばすけっと）', en: 'Start Location', vi: 'Điểm xuất phát', zh: '起点', ne: 'प्रारम्भिक स्थान' },
-      destLabel: { uz: 'Boradigan manzil', ja: '目的地（例: 横浜港、お台場）', en: 'Destination Location', vi: 'Điểm đến', zh: '终点', ne: 'गन्तव्य' },
-      startPlaceholder: { uz: 'Boshlang\'ich manzilni kiriting...', ja: '出発地を入力してください...', en: 'Enter start location...', vi: 'Nhập điểm xuất phát...', zh: '输入起点...', ne: 'प्रस्थान बिन्दु...' },
-      destPlaceholder: { uz: 'Boradigan manzilni kiriting...', ja: '目的地を入力してください...', en: 'Enter destination...', vi: 'Nhập điểm đến...', zh: '输入终点...', ne: 'गन्तavy biन्दु...' },
-      height: { uz: 'Balandlik', ja: '車高 (高さ)', en: 'Height', vi: 'Chiều cao', zh: '高度', ne: 'उचाइ' },
-      width: { uz: 'Eni', ja: '車幅 (幅)', en: 'Width', vi: 'Chiều rộng', zh: '宽度', ne: 'चौडाइ' },
-      weight: { uz: 'Vazni', ja: '総重量', en: 'Weight', vi: 'Trọng lượng', zh: '总重量', ne: 'वजन' },
-      safeStatus: { uz: 'Xavfsiz marshrut (Taqiqlar yo\'q)', ja: '安全ルート確認 (規制なし)', en: 'Safe Route (No restrictions)', vi: 'Tuyến đường an toàn (Không hạn chế)', zh: '安全路线 (无限制)', ne: 'सुरक्षित मार्ग (कुनै प्रतिबन्ध छैन)' },
-      warningStatus: { uz: 'Chetlab o\'tish marshruti faol', ja: '規制回避迂回ルート案内中', en: 'Detour Route Active', vi: 'Đang hoạt động tuyến đường vòng', zh: '避堵绕行路线激活', ne: 'घुमाуро मार्ग सक्रिय' },
-      blockedStatus: { uz: 'Yo\'l to\'siq! Harakatlanish imkonsiz', ja: '運行不可・通行止め', en: 'Route Blocked', vi: 'Tuyến đường bị chặn', zh: '路线封锁', ne: 'मार्ग bised / nayaँ track prtibandh' },
-      distance: { uz: 'Masofa', ja: '総走行距離', en: 'Distance', vi: 'Khoảng cách', zh: '距离', ne: 'duri' },
-      time: { uz: 'Vaqt', ja: '所要時間', en: 'Est. Time', vi: 'Thời gian ước tính', zh: '预计时间', ne: 'अनुमानित समय' },
-      addStop: { uz: 'Manzil qo\'shish', ja: '経由地を追加', en: 'Add Stop', vi: 'Thêm điểm dừng', zh: '添加途经点', ne: 'बिन्दु थप्नुहोस्' },
-      saveRoute: { uz: '💾 Marshrutni Saqlash', ja: '💾 ルートを保存', en: '💾 Save Route', vi: '💾 Lưu tuyến đường', zh: '💾 保存路线', ne: '💾 मार्ग सुरक्षित गर्नुहोस्' },
-      savedRoutesTitle: { uz: '📂 Saqlangan Marshrutlar', ja: '📂 保存済みルート', en: '📂 Saved Routes', vi: '📂 Tuyến đường đã lưu', zh: '📂 已保存路线', ne: '📂 सुरक्षित मार्गहरू' },
-      enterRouteName: { uz: 'Marshrut nomini kiriting', ja: 'ルートの別名・ラベルを入力', en: 'Enter Route Label', vi: 'Nhập nhãn tuyến đường', zh: '输入路线标签', ne: 'मार्गको नाम प्रविष्ट गर्नुहोस्' },
-      saveLabel: { uz: 'Saqlash', ja: '保存する', en: 'Save', vi: 'Lưu', zh: '保存', ne: 'बचत गर्नुहोस्' },
-      unsave: { uz: 'Saqlashni bekor qilish', ja: '削除', en: 'Unsave', vi: 'Bỏ lưu', zh: '取消保存', ne: 'रद्द गर्नुहोस्' },
-      cancelLabel: { uz: 'Bekor qilish', ja: 'キャンセル', en: 'Cancel', vi: 'Hủy', zh: '取消', ne: 'रद्द गर्नुहोस्' },
-      voiceLanguage: { uz: 'Sayohat tili', ja: '案内言語', en: 'Voice Language', vi: 'Ngôn ngữ giọng nói', zh: '语音语言', ne: 'आवाज भाषा' },
-      departure: { uz: 'Boshlash nuqtasi', ja: '出発地', en: 'Departure', vi: 'Nơi khởi hành', zh: '出发地', ne: 'प्रस्थान' },
-      destination: { uz: 'Yakuniy manzil', ja: '目的地', en: 'Destination', vi: 'Điểm đến', zh: '目的地', ne: 'गन्तव्य' },
-      arrivalCompleted: { uz: 'Manzilga yetib kelingan', ja: '目的地に到着しました', en: 'Arrived at destination', vi: 'Đã đến đích', zh: '已到达目的地', ne: 'गन्तव्यमा पुगियो' },
-      activeRoute: { uz: 'Faol marshrut', ja: 'ルート進行中', en: 'Active Route', vi: 'Tuyến đường đang hoạt động', zh: '行进路线', ne: 'सक्रिय मार्ग' },
-      next: { uz: 'Keyingi', ja: '進む', en: 'Next', vi: 'Tiếp theo', zh: '下一步', ne: 'अर्को' },
-      endRoute: { uz: 'Marshrutni yakunlash', ja: 'ルート終了', en: 'End Route', vi: 'Kết thúc tuyến đường', zh: '结束路线', ne: 'मार्ग समाप्त गर्नुहोस्' },
-      mapSearchPlaceholder: { uz: 'Xaritada qidirish...', ja: 'マップで検索...', en: 'Map search...', vi: 'Tìm trên bản đồ...', zh: '地图搜索...', ne: 'नक्सामा खोजी...' },
-      back: { uz: 'Orqaga', ja: '戻る', en: 'Back', vi: 'Quay lại', zh: '戻る', ne: 'फिर्ता' },
-      mapLayers: { uz: 'Xarita qatlamlari', ja: '地図レイヤー', en: 'Map Layers', vi: 'Lớp bản đồ', zh: '地图图层', ne: 'नक्सा तहहरू' },
-      mapType: { uz: 'Xarita turi', ja: '地図の種類', en: 'Map Type', vi: 'Loại bản đồ', zh: '地图类型', ne: 'नक्साको प्रकार' },
-      routeLabel: { uz: 'Yo\'nalish', ja: 'ルート', en: 'Route', vi: 'Tuyến đường', zh: '路线', ne: 'मार्ग' },
-      defaultHubName: { uz: 'Matsudo Hub', ja: '松戸物流センター', en: 'Matsudo Hub', vi: 'Trung tâm Matsudo', zh: '松户物流中心', ne: 'मात्सुदो हब' },
-      avoidTolls: { uz: 'To`lovsiz yo`lni tanlash', ja: '料金所を避ける', en: 'Avoid Tolls', vi: 'Tránh phí cầu đường', zh: '避免收费公路', ne: 'टोलबाट बच्नुहोस्' },
-      avoidHighways: { uz: 'Avtomagistraldan chetlanish', ja: '高速道路を避ける', en: 'Avoid Highways', vi: 'Tránh xa đường cao tốc', zh: '避免高速公路', ne: 'हाइवेबाट बच्नुहोस्' },
-      routeSpecsVoiceOptions: { uz: 'Yo\'nalish va ovoz variantlari', ja: 'ルート仕様と音声', en: 'Route / Voice Options', vi: 'Tùy chọn tuyến đường / giọng nói', zh: '路线/语音选项', ne: 'मार्ग / आवाज विकल्प' },
-      vehicleHeight: { uz: 'Balandlik', ja: '高さ', en: 'Height', vi: 'Chiều cao', zh: '高度', ne: 'उचाइ' },
-      vehicleWidth: { uz: 'Eni', ja: '幅', en: 'Width', vi: 'Chiều rộng', zh: '宽度', ne: 'चौडाइ' },
-      vehicleWeight: { uz: 'Og\'irligi', ja: '重量', en: 'Weight', vi: 'Trọng lượng', zh: '重量', ne: 'तौल' },
-      stopPlaceholder: { uz: 'To`xtash joyini kiriting...', ja: '経由地を入力してください...', en: 'Enter stop location...', vi: 'Nhập điểm dừng...', zh: '途经点を入力してください...', ne: 'स्टप स्थान प्रविष्ट गर्नुहोस्...' },
-      now: { uz: 'Hozir', ja: '今', en: 'Now', vi: 'Bây giờ', zh: '现在', ne: 'अब' },
-      tunnelMode: { uz: 'Tunnel Mode', ja: 'トンネルモード', en: 'Tunnel Mode', vi: 'Chế độ đường hầm', zh: '隧道模式', ne: 'टनल मोड' },
-      gpsLost: { uz: 'GPS signali yo\'qoldi', ja: 'GPS信号が途切れました', en: 'GPS signal lost', vi: 'Mất tín hiệu GPS', zh: 'GPS 信号丢失', ne: 'GPS संकेत हरायो' },
-      routeLimitAlert: { uz: 'Marshrutga faqat 5 ta to\'xtash joyi qo\'shish mumkin.', ja: '経由地は最大5か所まで追加できます。', en: 'You can only add up to 5 stops on a route.', vi: 'Chỉ có thể thêm tối đa 5 điểm dừng trên tuyến đường.', zh: '路线最多只能添加 5 个途经点。', ne: 'मार्गमा अधिकतम ५ स्टपहरू मात्र थप्न सकिन्छ।' },
-      currentLocationLabel: { uz: '📍 Hozirgi joylashuv (GPS)', ja: '📍 現在地 (GPS)', en: '📍 Current Location (GPS)', vi: '📍 Vị trí hiện tại (GPS)', zh: '📍 当前所在地 (GPS)', ne: '📍 हालको स्थान (GPS)' },
-      turnDirection: { uz: 'Yo\'nalishni almashtirish', ja: '入れ替え', en: 'Swap', vi: 'Hoán đổi', zh: '切换', ne: 'स्वैप' },
-      arrivalLabel: { uz: 'Yetib borish', ja: '到着予定', en: 'Arrival', vi: 'Đến nơi', zh: '到达', ne: 'आगमन' },
-      minutesLabel: { uz: 'min', ja: '分', en: 'min', vi: 'phút', zh: '分', ne: 'मि' },
-      kmLabel: { uz: 'km', ja: 'km', en: 'km', vi: 'km', zh: 'km', ne: 'किमि' },
-      shareETA: { uz: 'Kutilayotgan vaqtni ulashish', ja: '到着予定を共有', en: 'Share ETA', vi: 'Chia sẻ ETA', zh: '分享预计到达时间', ne: 'ETA शेयर गर्नुहोस्' },
-      gpsReconnect: { uz: 'GPS qayta ulash', ja: 'GPS信号回復', en: 'GPS Re-connect', vi: 'Kết nối lại GPS', zh: '重新连接 GPS', ne: 'GPS पुनः जडान' },
-      reportGpsLoss: { uz: 'GPS yo\'qolgani haqida xabar berish', ja: 'GPSロストを報告', en: 'Report GPS Loss', vi: 'Báo cáo mất GPS', zh: '报告 GPS 丢失', ne: 'GPS हराउने रिपोर्ट गर्नुहोस्' },
-      vehicleSettings: { uz: 'Ulov sozlamalari', ja: '車両クラス設定', en: 'Vehicle Settings', vi: 'Cài đặt phương tiện', zh: '车辆设置', ne: 'सवारी साधन सेटिङहरू' },
-      bookmarks: { uz: '📌 Bookmarks', ja: '📌 お気に入り', en: '📌 Bookmarks', vi: '📌 Dấu trang', zh: '📌 书签', ne: '📌 बुकमार्कहरू' },
-      all: { uz: 'Hammasi', ja: 'すべて', en: 'All', vi: 'Tất cả', zh: '全部', ne: 'सबै' },
-      noBookmarks: { uz: 'Saqlangan belgilangan joylar yo\'q', ja: 'お気に入りがありません', en: 'No bookmarks saved', vi: 'Chưa có dấu trang', zh: '没有保存的书签', ne: 'कुनै बुकमार्कहरू सुरक्षित छैनन्' },
-      addCurrentLocationToBookmarks: { uz: 'Hozirgi joyni belgilangan joylarga qo\'shish', ja: '現在地をお気に入りに追加', en: 'Add current location to bookmarks', vi: 'Thêm vị trí hiện tại vào dấu trang', zh: '将当前位置添加到书签', ne: 'वर्तमान स्थानलाई बुकमार्कमा थप्नुहोस्' },
-      nearbyCategories: { uz: 'Atrofdagi kategoriyalar', ja: '周辺のカテゴリ', en: 'Find Nearby', vi: 'Tìm gần đây', zh: '附近类别', ne: 'नजिकका श्रेणीहरू' },
-      convenience: { uz: 'Do\'kon (Konbini)', ja: 'コンビニ', en: 'Convenience', vi: 'Tiện lợi', zh: '便利店', ne: 'सुविधा' },
-      logisticsHubs: { uz: 'Logistika markazlari', ja: '主要物流センター', en: 'Logistics Hubs', vi: 'Hubs hậu cần', zh: '物流枢纽', ne: 'लजिस्टिक हब' },
-      compassNorth: { uz: 'Shimolni tepaga tekislash', ja: '北を上にする', en: 'North Up', vi: 'Bắc lên trên', zh: '向北', ne: 'उत्तर माथि' },
-      savedPoint: { uz: 'Saqlangan joy', ja: '保存地点', en: 'Saved Point', vi: 'Điểm đã lưu', zh: '已保存地点', ne: 'सेभ गरिएको स्थान' },
-      dinner: { uz: 'Ovqat', ja: '食事処', en: 'Dinner', vi: 'Ăn tối', zh: '晚餐', ne: 'डिनर' },
-      gas: { uz: 'Yoqilg\'i', ja: '給油所', en: 'Gas', vi: 'Xăng', zh: '加油站', ne: 'इन्धन' },
-      parking: { uz: 'Avtoturargoh', ja: '駐車場', en: 'Parking', vi: 'Đỗ xe', zh: '停车场', ne: 'पार्किङ' },
-      transitStation: { uz: 'Poezd stansiyasi', ja: '駅・交通機関', en: 'Transit Station', vi: 'Trạm giao thông', zh: '交通枢纽', ne: 'ट्रान्ジット स्टेशन' },
-      hospital: { uz: 'Kasalxona', ja: '病院', en: 'Hospital', vi: 'Bệnh viện', zh: '医院', ne: 'अस्पताल' },
-      atm: { uz: 'ATM', ja: 'ATM', en: 'ATM', vi: 'ATM', zh: 'ATM', ne: 'एटीएम' },
-      markedLocation: { uz: 'Belgilangan joy', ja: '指定された場所', en: 'Marked Location', vi: 'Vị trí đã ghim', zh: '固定位置', ne: 'चिन्हित स्थान' },
-      searching: { uz: 'Qidirilmoqda...', ja: '検索中...', en: 'Searching...', vi: 'Đang tìm...', zh: '搜索中...', ne: 'खोज्दै...' },
-      searchNoResults: { uz: 'Natija yo\'q — xaritani siljitib qayta qidiring', ja: '結果なし — 地図を移動して再検索', en: 'No results — move map and search again', vi: 'Không có kết quả — di chuyển bản đồ và tìm lại', zh: '没有结果 — 移动地图重新搜索', ne: 'परिणाम छैन — नक्सा सारेर पुन: खोज्नुहोस्' },
-      openSourceLicenses: { uz: 'Open Source Litsenziyalar', ja: 'オープンソースライセンス', en: 'Open Source Licenses', vi: 'Giấy phép nguồn mở', zh: '开源许可证', ne: 'ओपन सोर्स अनुमति पत्र' },
-      developer: { uz: 'Developer', ja: '開発者', en: 'Developer', vi: 'Nhà phát triển', zh: '开发者', ne: 'डेभलपर' },
-      close: { uz: 'Yopish', ja: '閉じる', en: 'Close', vi: 'Đóng', zh: '关闭', ne: 'बन्द गर्नुहोस्' },
-      gpsConsentTitle: { uz: 'Geolokatsiyadan foydalanish ruxsati', ja: '位置情報の使用許可', en: 'Location Permission', vi: 'Cho phép vị trí', zh: '位置权限', ne: 'स्थान अनुमति' },
-      gpsConsentDescription: { uz: 'Michi ilovasi joriy joylashuvingizni aniqlash, optimal marshrutni chizish va real-vaqt rejimida tezlik cheklovlarini ogohlantirish uchun qurilmangizning GPS ma\'lumotlaridan foydalanadi. Bu ma\'lumotlar saqlanmaydi va uchinchi shaxslarga berilmaydi.', ja: 'Michiナビは、現在地の特定、最適なルート計算、リアルタイム速度制限警告の提供のために、お使いの端末の位置情報（GPS）を使用します。位置情報は他の目的で保存または共有されることはありません。', en: 'Michi uses your device GPS location to calculate routes, show your current position and provide real-time speed alerts. Location data is not stored or shared externally.', vi: 'Michi sử dụng GPS thiết bị của bạn để định tuyến, hiển thị vị trí hiện tại và cảnh báo tốc độ theo thời gian thực. Dữ liệu vị trí không được lưu hoặc chia sẻ bên ngoài.', zh: 'Michi 使用您的设备 GPS 定位来计算路线、显示当前位置并提供实时速度警报。位置数据不会被存储或外部共享。', ne: 'Michi ले मार्ग गणना गर्न, वर्तमान स्थान देखाउन र वास्तविक-समय गति चेतावनीहरू प्रदान गर्न तपाइन्डको उपकरणको GPS प्रयोग गर्दछ। स्थान डेटा बाह्य रूपमा भण्डारण वा साझा गरिँदैन।' },
-      decline: { uz: 'Rad etish', ja: '拒否する', en: 'Decline', vi: 'Từ chối', zh: '拒绝', ne: 'अस्वीकार गर्नुहोस्' },
-      allow: { uz: 'Ruxsat berish', ja: '許可する', en: 'Allow', vi: 'Cho phép', zh: '允许', ne: 'अनुमति दिनुहोस्' },
-      share: { uz: 'Ulashish', ja: '共有', en: 'Share', vi: 'Chia sẻ', zh: '分享', ne: 'शेयर गर्नुहोस्' },
-      placeDetails: { uz: 'Joy tafsilotlari', ja: '場所の詳細', en: 'Place Details', vi: 'Chi tiết địa điểm', zh: '地点详情', ne: 'स्थान विवरण' },
-      address: { uz: 'Manzil', ja: '住所', en: 'Address', vi: 'Địa chỉ', zh: '地址', ne: 'ठेगाना' },
-      coordinates: { uz: 'Kordinatalar', ja: '座標', en: 'Coordinates', vi: 'Tọa độ', zh: '坐标', ne: 'निर्देशन' },
-      warningOnly: { uz: 'Faqat ogohlantirishlar', ja: '警告のみ', en: 'Warning Only', vi: 'Chỉ cảnh báo', zh: '仅警告', ne: 'केवल चेतावनी' },
-      valhallaRoutingActive: { uz: '🗺️ Valhalla marshruti hisoblandi.', ja: '🗺️【Valhallaエンジン】 yuk mashinasi marshruti hisoblandi.', en: '🗺️ Route computed using Valhalla commercial truck routing.', vi: '🗺️ Lộ trình được tính bằng định tuyến Valhalla cho xe thương mại.', zh: '🗺️ 路线已使用 Valhalla 商业卡车路由计算。', ne: '🗺️ Valhalla व्यापारिक ट्रक मार्गनिर्देशन प्रयोग गरेर मार्ग गणना गरियो।' },
-      detourApplied: { uz: '🛡️ Detour Applied: Safely bypassed OSRM clearance limits.', ja: '🛡️【迂回ルート適用】OSRM高さ/重量制限エリアを自動回避しました。', en: '🛡️ Detour Applied: Safely bypassed OSRM clearance limits.', vi: '🛡️ Đã áp dụng đường vòng an toàn, tránh giới hạn tải trọng OSRM.', zh: '🛡️ 已应用绕行，安全绕过 OSRM 限制。', ne: '🛡️ रूट परिवर्तन गरियो: OSRM सीमा सुरक्षित रूपमा बाइपास गरियो।' },
-      offlineFallback: { uz: 'Offline rejim: Zaxira yo\'li ko\'rsatilyapti.', ja: '【オフライン】直接ルートを表示中。', en: 'Offline Mode: Displaying fallback direct route.', vi: 'Chế độ ngoại tuyến: Hiển thị đường dự phòng.', zh: '离线模式：显示备用直接路线。', ne: 'अफलाइन मोड: प्रत्यक्ष फallback मार्ग देखाइएको छ।' },
-      setStartDestAlert: { uz: 'Boshlang\'ich va yakuniy manzilni kiriting.', ja: '出発地と目的地を設定してください。', en: 'Please set both a start and destination.', vi: 'Vui lòng đặt điểm bắt đầu và điểm đến.', zh: '出発地と目的地を設定してください。', ne: 'कृपया आरम्भ र गन्तव्य दुबै सेट गर्नुहोस्।' },
-      searchPlaceholder: { uz: 'Qidiruv bering...', ja: '目的地を検索...', en: 'Search here...', vi: 'Tìm kiếm...', zh: '搜索...', ne: 'खोजी...' },
-      searchSheetTitle: { uz: 'Manzilni qidirish', ja: '目的地を検索', en: 'Search', vi: 'Tìm kiếm', zh: '搜索', ne: 'खोजी' },
-      recents: { uz: 'Yaqinda qidirilganlar', ja: '最近の検索履歴', en: 'Recents', vi: 'Gần đây', zh: '最近', ne: 'हालै' },
-      logisticsHubs: { uz: 'Logistika markazlari', ja: '主要物流センター', en: 'Logistics Hubs', vi: 'Hubs hậu cần', zh: '物流枢纽', ne: 'लजिस्टिक हब' },
-      nearbyCategories: { uz: 'Atrofdagi kategoriyalar', ja: '周辺のカテゴリ', en: 'Find Nearby', vi: 'Tìm gần đây', zh: '附近类别', ne: 'नजिकका श्रेणीहरू' },
-      convenience: { uz: 'Quyidagi do\'kon', ja: 'コンビニ', en: 'Convenience', vi: 'Tiện lợi', zh: '便利店', ne: 'सुविधा' },
-      dinner: { uz: 'Ovqat', ja: '食事処', en: 'Dinner', vi: 'Ăn tối', zh: '晚餐', ne: 'डिनर' },
-      gas: { uz: 'Yoqilg\'i', ja: '給油所', en: 'Gas', vi: 'Xăng', zh: '加油站', ne: 'इन्धन' },
-      parking: { uz: 'Avtoturargoh', ja: '駐車場', en: 'Parking', vi: 'Đỗ xe', zh: '停车场', ne: 'पार्किङ' },
-      transitStation: { uz: 'Poezd stansiyasi', ja: '駅・交通機関', en: 'Transit Station', vi: 'Trạm giao thông', zh: '交通枢纽', ne: 'ट्रान्जिट स्टेशन' },
-      markedLocation: { uz: 'Belgilangan joy', ja: '指定された場所', en: 'Marked Location', vi: 'Vị trí đã ghim', zh: '固定位置', ne: 'चिन्हित स्थान' },
-      compassNorth: { uz: 'Shimolni tepaga tekislash', ja: '北を上にする', en: 'North Up', vi: 'Bắc lên trên', zh: '向北', ne: 'उत्तर माथि' },
-      savedPoint: { uz: 'Saqlangan joy', ja: '保存地点', en: 'Saved Point', vi: 'Điểm đã lưu', zh: '已保存地点', ne: 'सेभ गरिएको स्थान' },
-      shareTextNavigating: { uz: 'Michi Navigatsiya - Manzil: {dest}. Qolgan masofa: {distance}, Qolgan vaqt: {time}.', ja: 'Michiナビ - 目的地: {dest}。残り距離: {distance}、残り時間: {time}。', en: 'Michi Navigation - Destination: {dest}. Remaining distance: {distance}, remaining time: {time}.', vi: 'Michi Điều hướng - Điểm đến: {dest}. Khoảng cách còn lại: {distance}, thời gian còn lại: {time}.', zh: 'Michi 导航 - 目的地: {dest}。剩余距离: {distance}，剩余时间: {time}。', ne: 'Michi नेभिगेसन - गन्तव्य: {dest}। बाँकी दूरी: {distance}, बाँकी समय: {time}।' },
-      shareTextDestination: { uz: 'Michi Navigatsiya - Manzil: {dest}. Koordinatalar: {lat}, {lng}', ja: 'Michiナビ - 目的地: {dest}。座標: {lat}, {lng}', en: 'Michi Navigation - Destination: {dest}. Coordinates: {lat}, {lng}', vi: 'Michi Điều hướng - Điểm đến: {dest}. Tọa độ: {lat}, {lng}', zh: 'Michi 导航 - 目的地: {dest}。坐标: {lat}, {lng}', ne: 'Michi नेभिगेसन - गन्तव्य: {dest}। निर्देशांक: {lat}, {lng}' },
-      shareTextDefault: { uz: 'Michi Navigatsiya', ja: 'Michiナビ', en: 'Michi Navigation', vi: 'Michi Điều hướng', zh: 'Michi 导航', ne: 'Michi नेभिगेसन' }
+      title: { uz: 'Aqlli JDM Navigatsiyasi', ja: 'JDMトラックスマートナビ', en: 'JDM Smart Route Map', ru: 'Умная навигация JDM', vi: 'Định vị thông minh JDM', zh: 'JDM 智能导航', ne: 'JDM स्मार्ट मार्ग नक्सा' },
+      subtitle: { uz: 'Cheklovlar va taqiqlar xaritasi', ja: '大型・一般車両規制対応ルート検索', en: 'Offline Traffic Restrictions Router', ru: 'Офлайн-маршрутизация с учётом ограничений движения', vi: 'Bản đồ hạn chế giao thông ngoại tuyến', zh: '离线交通限制与避堵路网规划', ne: 'अफलाइन ट्राफिक प्रतिबन्ध राउटर' },
+      vehicleHUD: { uz: 'Transport Parametrlari', ja: '車両寸法・カテゴリー', en: 'Vehicle Settings', ru: 'Параметры транспорта', vi: 'Cài đặt phương tiện', zh: '车辆尺寸与规格设置', ne: 'सवारी साधन सेटअप' },
+      routeSettings: { uz: 'Yo\'nalish Sharoitlari', ja: 'ルート検索条件', en: 'Route Settings', ru: 'Настройки маршрута', vi: 'Cài đặt tuyến đường', zh: '路线规划条件', ne: 'मार्ग सेटिङ्हरू' },
+      startLabel: { uz: 'Boshlang\'ich manzil', ja: '出発地（例: 新宿、まいばすけっと）', en: 'Start Location', ru: 'Пункт отправления', vi: 'Điểm xuất phát', zh: '起点', ne: 'प्रारम्भिक स्थान' },
+      destLabel: { uz: 'Boradigan manzil', ja: '目的地（例: 横浜港、お台場）', en: 'Destination Location', ru: 'Пункт назначения', vi: 'Điểm đến', zh: '终点', ne: 'गन्तव्य' },
+      startPlaceholder: { uz: 'Boshlang\'ich manzilni kiriting...', ja: '出発地を入力してください...', en: 'Enter start location...', ru: 'Введите пункт отправления...', vi: 'Nhập điểm xuất phát...', zh: '输入起点...', ne: 'प्रस्थान बिन्दु...' },
+      destPlaceholder: { uz: 'Boradigan manzilni kiriting...', ja: '目的地を入力してください...', en: 'Enter destination...', ru: 'Введите пункт назначения...', vi: 'Nhập điểm đến...', zh: '输入终点...', ne: 'गन्तव्य प्रविष्ट गर्नुहोस्...' },
+      height: { uz: 'Balandlik', ja: '車高 (高さ)', en: 'Height', ru: 'Высота', vi: 'Chiều cao', zh: '高度', ne: 'उचाइ' },
+      width: { uz: 'Eni', ja: '車幅 (幅)', en: 'Width', ru: 'Ширина', vi: 'Chiều rộng', zh: '宽度', ne: 'चौडाइ' },
+      weight: { uz: 'Vazni', ja: '総重量', en: 'Weight', ru: 'Масса', vi: 'Trọng lượng', zh: '总重量', ne: 'वजन' },
+      safeStatus: { uz: 'Xavfsiz marshrut (Taqiqlar yo\'q)', ja: '安全ルート確認 (規制なし)', en: 'Safe Route (No restrictions)', ru: 'Безопасный маршрут (без ограничений)', vi: 'Tuyến đường an toàn (Không hạn chế)', zh: '安全路线 (无限制)', ne: 'सुरक्षित मार्ग (कुनै प्रतिबन्ध छैन)' },
+      warningStatus: { uz: 'Chetlab o\'tish marshruti faol', ja: '規制回避迂回ルート案内中', en: 'Detour Route Active', ru: 'Активен маршрут объезда', vi: 'Đang hoạt động tuyến đường vòng', zh: '避堵绕行路线激活', ne: 'घुमाउरो मार्ग सक्रिय' },
+      blockedStatus: { uz: 'Yo\'l to\'siq! Harakatlanish imkonsiz', ja: '運行不可・通行止め', en: 'Route Blocked', ru: 'Маршрут перекрыт', vi: 'Tuyến đường bị chặn', zh: '路线封锁', ne: 'मार्ग अवरुद्ध' },
+      distance: { uz: 'Masofa', ja: '総走行距離', en: 'Distance', ru: 'Расстояние', vi: 'Khoảng cách', zh: '距离', ne: 'दूरी' },
+      time: { uz: 'Vaqt', ja: '所要時間', en: 'Est. Time', ru: 'Время в пути', vi: 'Thời gian ước tính', zh: '预计时间', ne: 'अनुमानित समय' },
+      addStop: { uz: 'Manzil qo\'shish', ja: '経由地を追加', en: 'Add Stop', ru: 'Добавить остановку', vi: 'Thêm điểm dừng', zh: '添加途经点', ne: 'बिन्दु थप्नुहोस्' },
+      saveRoute: { uz: '💾 Marshrutni Saqlash', ja: '💾 ルートを保存', en: '💾 Save Route', ru: '💾 Сохранить маршрут', vi: '💾 Lưu tuyến đường', zh: '💾 保存路线', ne: '💾 मार्ग सुरक्षित गर्नुहोस्' },
+      savedRoutesTitle: { uz: '📂 Saqlangan Marshrutlar', ja: '📂 保存済みルート', en: '📂 Saved Routes', ru: '📂 Сохранённые маршруты', vi: '📂 Tuyến đường đã lưu', zh: '📂 已保存路线', ne: '📂 सुरक्षित मार्गहरू' },
+      enterRouteName: { uz: 'Marshrut nomini kiriting', ja: 'ルートの別名・ラベルを入力', en: 'Enter Route Label', ru: 'Введите название маршрута', vi: 'Nhập nhãn tuyến đường', zh: '输入路线标签', ne: 'मार्गको नाम प्रविष्ट गर्नुहोस्' },
+      saveLabel: { uz: 'Saqlash', ja: '保存する', en: 'Save', ru: 'Сохранить', vi: 'Lưu', zh: '保存', ne: 'बचत गर्नुहोस्' },
+      unsave: { uz: 'Saqlashni bekor qilish', ja: '削除', en: 'Unsave', ru: 'Удалить из сохранённых', vi: 'Bỏ lưu', zh: '取消保存', ne: 'रद्द गर्नुहोस्' },
+      cancelLabel: { uz: 'Bekor qilish', ja: 'キャンセル', en: 'Cancel', ru: 'Отмена', vi: 'Hủy', zh: '取消', ne: 'रद्द गर्नुहोस्' },
+      voiceLanguage: { uz: 'Sayohat tili', ja: '案内言語', en: 'Voice Language', ru: 'Язык голоса', vi: 'Ngôn ngữ giọng nói', zh: '语音语言', ne: 'आवाज भाषा' },
+      departure: { uz: 'Boshlash nuqtasi', ja: '出発地', en: 'Departure', ru: 'Отправление', vi: 'Nơi khởi hành', zh: '出发地', ne: 'प्रस्थान' },
+      destination: { uz: 'Yakuniy manzil', ja: '目的地', en: 'Destination', ru: 'Пункт назначения', vi: 'Điểm đến', zh: '目的地', ne: 'गन्तव्य' },
+      arrivalCompleted: { uz: 'Manzilga yetib kelingan', ja: '目的地に到着しました', en: 'Arrived at destination', ru: 'Вы прибыли в пункт назначения', vi: 'Đã đến đích', zh: '已到达目的地', ne: 'गन्तव्यमा पुगियो' },
+      activeRoute: { uz: 'Faol marshrut', ja: 'ルート進行中', en: 'Active Route', ru: 'Активный маршрут', vi: 'Tuyến đường đang hoạt động', zh: '行进路线', ne: 'सक्रिय मार्ग' },
+      next: { uz: 'Keyingi', ja: '進む', en: 'Next', ru: 'Далее', vi: 'Tiếp theo', zh: '下一步', ne: 'अर्को' },
+      endRoute: { uz: 'Marshrutni yakunlash', ja: 'ルート終了', en: 'End Route', ru: 'Завершить маршрут', vi: 'Kết thúc tuyến đường', zh: '结束路线', ne: 'मार्ग समाप्त गर्नुहोस्' },
+      mapSearchPlaceholder: { uz: 'Xaritada qidirish...', ja: 'マップで検索...', en: 'Map search...', ru: 'Поиск на карте...', vi: 'Tìm trên bản đồ...', zh: '地图搜索...', ne: 'नक्सामा खोजी...' },
+      back: { uz: 'Orqaga', ja: '戻る', en: 'Back', ru: 'Назад', vi: 'Quay lại', zh: '返回', ne: 'फिर्ता' },
+      mapLayers: { uz: 'Xarita qatlamlari', ja: '地図レイヤー', en: 'Map Layers', ru: 'Слои карты', vi: 'Lớp bản đồ', zh: '地图图层', ne: 'नक्सा तहहरू' },
+      mapType: { uz: 'Xarita turi', ja: '地図の種類', en: 'Map Type', ru: 'Тип карты', vi: 'Loại bản đồ', zh: '地图类型', ne: 'नक्साको प्रकार' },
+      routeLabel: { uz: 'Yo\'nalish', ja: 'ルート', en: 'Route', ru: 'Маршрут', vi: 'Tuyến đường', zh: '路线', ne: 'मार्ग' },
+      defaultHubName: { uz: 'Matsudo Hub', ja: '松戸物流センター', en: 'Matsudo Hub', ru: 'Хаб Мацудо', vi: 'Trung tâm Matsudo', zh: '松户物流中心', ne: 'मात्सुदो हब' },
+      avoidTolls: { uz: 'To`lovsiz yo`lni tanlash', ja: '料金所を避ける', en: 'Avoid Tolls', ru: 'Избегать платных дорог', vi: 'Tránh phí cầu đường', zh: '避免收费公路', ne: 'टोलबाट बच्नुहोस्' },
+      avoidHighways: { uz: 'Avtomagistraldan chetlanish', ja: '高速道路を避ける', en: 'Avoid Highways', ru: 'Избегать автомагистралей', vi: 'Tránh xa đường cao tốc', zh: '避免高速公路', ne: 'हाइवेबाट बच्नुहोस्' },
+      routeSpecsVoiceOptions: { uz: 'Yo\'nalish va ovoz variantlari', ja: 'ルート仕様と音声', en: 'Route / Voice Options', ru: 'Параметры маршрута и голоса', vi: 'Tùy chọn tuyến đường / giọng nói', zh: '路线/语音选项', ne: 'मार्ग / आवाज विकल्प' },
+      vehicleHeight: { uz: 'Balandlik', ja: '高さ', en: 'Height', ru: 'Высота', vi: 'Chiều cao', zh: '高度', ne: 'उचाइ' },
+      vehicleWidth: { uz: 'Eni', ja: '幅', en: 'Width', ru: 'Ширина', vi: 'Chiều rộng', zh: '宽度', ne: 'चौडाइ' },
+      vehicleWeight: { uz: 'Og\'irligi', ja: '重量', en: 'Weight', ru: 'Масса', vi: 'Trọng lượng', zh: '重量', ne: 'तौल' },
+      stopPlaceholder: { uz: 'To`xtash joyini kiriting...', ja: '経由地を入力してください...', en: 'Enter stop location...', ru: 'Введите остановку...', vi: 'Nhập điểm dừng...', zh: '输入途经点...', ne: 'स्टप स्थान प्रविष्ट गर्नुहोस्...' },
+      now: { uz: 'Hozir', ja: '今', en: 'Now', ru: 'Сейчас', vi: 'Bây giờ', zh: '现在', ne: 'अब' },
+      tunnelMode: { uz: 'Tunnel Mode', ja: 'トンネルモード', en: 'Tunnel Mode', ru: 'Режим туннеля', vi: 'Chế độ đường hầm', zh: '隧道模式', ne: 'टनल मोड' },
+      gpsLost: { uz: 'GPS signali yo\'qoldi', ja: 'GPS信号が途切れました', en: 'GPS signal lost', ru: 'Сигнал GPS потерян', vi: 'Mất tín hiệu GPS', zh: 'GPS 信号丢失', ne: 'GPS संकेत हरायो' },
+      routeLimitAlert: { uz: 'Marshrutga faqat 5 ta to\'xtash joyi qo\'shish mumkin.', ja: '経由地は最大5か所まで追加できます。', en: 'You can only add up to 5 stops on a route.', ru: 'В маршрут можно добавить не более 5 остановок.', vi: 'Chỉ có thể thêm tối đa 5 điểm dừng trên tuyến đường.', zh: '路线最多只能添加 5 个途经点。', ne: 'मार्गमा अधिकतम ५ स्टपहरू मात्र थप्न सकिन्छ।' },
+      currentLocationLabel: { uz: '📍 Hozirgi joylashuv (GPS)', ja: '📍 現在地 (GPS)', en: '📍 Current Location (GPS)', ru: '📍 Текущее местоположение (GPS)', vi: '📍 Vị trí hiện tại (GPS)', zh: '📍 当前所在地 (GPS)', ne: '📍 हालको स्थान (GPS)' },
+      turnDirection: { uz: 'Yo\'nalishni almashtirish', ja: '入れ替え', en: 'Swap', ru: 'Поменять местами', vi: 'Hoán đổi', zh: '切换', ne: 'स्वैप' },
+      arrivalLabel: { uz: 'Yetib borish', ja: '到着予定', en: 'Arrival', ru: 'Прибытие', vi: 'Đến nơi', zh: '到达', ne: 'आगमन' },
+      minutesLabel: { uz: 'min', ja: '分', en: 'min', ru: 'мин', vi: 'phút', zh: '分', ne: 'मि' },
+      kmLabel: { uz: 'km', ja: 'km', en: 'km', ru: 'км', vi: 'km', zh: 'km', ne: 'किमि' },
+      shareETA: { uz: 'Kutilayotgan vaqtni ulashish', ja: '到着予定を共有', en: 'Share ETA', ru: 'Поделиться временем прибытия', vi: 'Chia sẻ ETA', zh: '分享预计到达时间', ne: 'ETA शेयर गर्नुहोस्' },
+      gpsReconnect: { uz: 'GPS qayta ulash', ja: 'GPS信号回復', en: 'GPS Re-connect', ru: 'Переподключить GPS', vi: 'Kết nối lại GPS', zh: '重新连接 GPS', ne: 'GPS पुनः जडान' },
+      reportGpsLoss: { uz: 'GPS yo\'qolgani haqida xabar berish', ja: 'GPSロストを報告', en: 'Report GPS Loss', ru: 'Сообщить о потере GPS', vi: 'Báo cáo mất GPS', zh: '报告 GPS 丢失', ne: 'GPS हराउने रिपोर्ट गर्नुहोस्' },
+      vehicleSettings: { uz: 'Ulov sozlamalari', ja: '車両クラス設定', en: 'Vehicle Settings', ru: 'Настройки транспорта', vi: 'Cài đặt phương tiện', zh: '车辆设置', ne: 'सवारी साधन सेटिङहरू' },
+      bookmarks: { uz: '📌 Bookmarks', ja: '📌 お気に入り', en: '📌 Bookmarks', ru: '📌 Закладки', vi: '📌 Dấu trang', zh: '📌 书签', ne: '📌 बुकमार्कहरू' },
+      all: { uz: 'Hammasi', ja: 'すべて', en: 'All', ru: 'Все', vi: 'Tất cả', zh: '全部', ne: 'सबै' },
+      noBookmarks: { uz: 'Saqlangan belgilangan joylar yo\'q', ja: 'お気に入りがありません', en: 'No bookmarks saved', ru: 'Нет сохранённых закладок', vi: 'Chưa có dấu trang', zh: '没有保存的书签', ne: 'कुनै बुकमार्कहरू सुरक्षित छैनन्' },
+      addCurrentLocationToBookmarks: { uz: 'Hozirgi joyni belgilangan joylarga qo\'shish', ja: '現在地をお気に入りに追加', en: 'Add current location to bookmarks', ru: 'Добавить текущее местоположение в закладки', vi: 'Thêm vị trí hiện tại vào dấu trang', zh: '将当前位置添加到书签', ne: 'वर्तमान स्थानलाई बुकमार्कमा थप्नुहोस्' },
+      nearbyCategories: { uz: 'Atrofdagi kategoriyalar', ja: '周辺のカテゴリ', en: 'Find Nearby', ru: 'Найти поблизости', vi: 'Tìm gần đây', zh: '附近类别', ne: 'नजिकका श्रेणीहरू' },
+      convenience: { uz: 'Do\'kon (Konbini)', ja: 'コンビニ', en: 'Convenience', ru: 'Магазин (конбини)', vi: 'Tiện lợi', zh: '便利店', ne: 'सुविधा' },
+      logisticsHubs: { uz: 'Logistika markazlari', ja: '主要物流センター', en: 'Logistics Hubs', ru: 'Логистические центры', vi: 'Hubs hậu cần', zh: '物流枢纽', ne: 'लजिस्टिक हब' },
+      compassNorth: { uz: 'Shimolni tepaga tekislash', ja: '北を上にする', en: 'North Up', ru: 'Север вверху', vi: 'Bắc lên trên', zh: '向北', ne: 'उत्तर माथि' },
+      savedPoint: { uz: 'Saqlangan joy', ja: '保存地点', en: 'Saved Point', ru: 'Сохранённое место', vi: 'Điểm đã lưu', zh: '已保存地点', ne: 'सेभ गरिएको स्थान' },
+      dinner: { uz: 'Ovqat', ja: '食事処', en: 'Dinner', ru: 'Еда', vi: 'Ăn tối', zh: '晚餐', ne: 'डिनर' },
+      gas: { uz: 'Yoqilg\'i', ja: '給油所', en: 'Gas', ru: 'АЗС', vi: 'Xăng', zh: '加油站', ne: 'इन्धन' },
+      parking: { uz: 'Avtoturargoh', ja: '駐車場', en: 'Parking', ru: 'Парковка', vi: 'Đỗ xe', zh: '停车场', ne: 'पार्किङ' },
+      transitStation: { uz: 'Poezd stansiyasi', ja: '駅・交通機関', en: 'Transit Station', ru: 'Станция', vi: 'Trạm giao thông', zh: '交通枢纽', ne: 'ट्रान्जिट स्टेशन' },
+      hospital: { uz: 'Kasalxona', ja: '病院', en: 'Hospital', ru: 'Больница', vi: 'Bệnh viện', zh: '医院', ne: 'अस्पताल' },
+      atm: { uz: 'ATM', ja: 'ATM', en: 'ATM', ru: 'Банкомат', vi: 'ATM', zh: 'ATM', ne: 'एटीएम' },
+      markedLocation: { uz: 'Belgilangan joy', ja: '指定された場所', en: 'Marked Location', ru: 'Отмеченное место', vi: 'Vị trí đã ghim', zh: '固定位置', ne: 'चिन्हित स्थान' },
+      searching: { uz: 'Qidirilmoqda...', ja: '検索中...', en: 'Searching...', ru: 'Поиск...', vi: 'Đang tìm...', zh: '搜索中...', ne: 'खोज्दै...' },
+      searchNoResults: { uz: 'Natija yo\'q — xaritani siljitib qayta qidiring', ja: '結果なし — 地図を移動して再検索', en: 'No results — move map and search again', ru: 'Ничего не найдено — сдвиньте карту и повторите поиск', vi: 'Không có kết quả — di chuyển bản đồ và tìm lại', zh: '没有结果 — 移动地图重新搜索', ne: 'परिणाम छैन — नक्सा सारेर पुन: खोज्नुहोस्' },
+      openSourceLicenses: { uz: 'Open Source Litsenziyalar', ja: 'オープンソースライセンス', en: 'Open Source Licenses', ru: 'Лицензии открытого ПО', vi: 'Giấy phép nguồn mở', zh: '开源许可证', ne: 'ओपन सोर्स अनुमति पत्र' },
+      developer: { uz: 'Developer', ja: '開発者', en: 'Developer', ru: 'Разработчик', vi: 'Nhà phát triển', zh: '开发者', ne: 'डेभलपर' },
+      close: { uz: 'Yopish', ja: '閉じる', en: 'Close', ru: 'Закрыть', vi: 'Đóng', zh: '关闭', ne: 'बन्द गर्नुहोस्' },
+      gpsConsentTitle: { uz: 'Geolokatsiyadan foydalanish ruxsati', ja: '位置情報の使用許可', en: 'Location Permission', ru: 'Разрешение на геолокацию', vi: 'Cho phép vị trí', zh: '位置权限', ne: 'स्थान अनुमति' },
+      gpsConsentDescription: { uz: 'Michi ilovasi joriy joylashuvingizni aniqlash, optimal marshrutni chizish va real-vaqt rejimida tezlik cheklovlarini ogohlantirish uchun qurilmangizning GPS ma\'lumotlaridan foydalanadi. Bu ma\'lumotlar saqlanmaydi va uchinchi shaxslarga berilmaydi.', ja: 'Michiナビは、現在地の特定、最適なルート計算、リアルタイム速度制限警告の提供のために、お使いの端末の位置情報（GPS）を使用します。位置情報は他の目的で保存または共有されることはありません。', en: 'Michi uses your device GPS location to calculate routes, show your current position and provide real-time speed alerts. Location data is not stored or shared externally.', ru: 'Michi использует GPS вашего устройства, чтобы прокладывать маршруты, показывать ваше местоположение и предупреждать об ограничениях скорости в реальном времени. Данные о местоположении не сохраняются и не передаются третьим лицам.', vi: 'Michi sử dụng GPS thiết bị của bạn để định tuyến, hiển thị vị trí hiện tại và cảnh báo tốc độ theo thời gian thực. Dữ liệu vị trí không được lưu hoặc chia sẻ bên ngoài.', zh: 'Michi 使用您的设备 GPS 定位来计算路线、显示当前位置并提供实时速度警报。位置数据不会被存储或外部共享。', ne: 'Michi ले मार्ग गणना गर्न, वर्तमान स्थान देखाउन र वास्तविक-समय गति चेतावनीहरू प्रदान गर्न तपाईंको उपकरणको GPS प्रयोग गर्दछ। स्थान डेटा बाह्य रूपमा भण्डारण वा साझा गरिँदैन।' },
+      decline: { uz: 'Rad etish', ja: '拒否する', en: 'Decline', ru: 'Отклонить', vi: 'Từ chối', zh: '拒绝', ne: 'अस्वीकार गर्नुहोस्' },
+      allow: { uz: 'Ruxsat berish', ja: '許可する', en: 'Allow', ru: 'Разрешить', vi: 'Cho phép', zh: '允许', ne: 'अनुमति दिनुहोस्' },
+      share: { uz: 'Ulashish', ja: '共有', en: 'Share', ru: 'Поделиться', vi: 'Chia sẻ', zh: '分享', ne: 'शेयर गर्नुहोस्' },
+      placeDetails: { uz: 'Joy tafsilotlari', ja: '場所の詳細', en: 'Place Details', ru: 'Сведения о месте', vi: 'Chi tiết địa điểm', zh: '地点详情', ne: 'स्थान विवरण' },
+      address: { uz: 'Manzil', ja: '住所', en: 'Address', ru: 'Адрес', vi: 'Địa chỉ', zh: '地址', ne: 'ठेगाना' },
+      coordinates: { uz: 'Kordinatalar', ja: '座標', en: 'Coordinates', ru: 'Координаты', vi: 'Tọa độ', zh: '坐标', ne: 'निर्देशन' },
+      warningOnly: { uz: 'Faqat ogohlantirishlar', ja: '警告のみ', en: 'Warning Only', ru: 'Только предупреждения', vi: 'Chỉ cảnh báo', zh: '仅警告', ne: 'केवल चेतावनी' },
+      valhallaRoutingActive: { uz: '🗺️ Valhalla marshruti hisoblandi.', ja: '🗺️【Valhallaエンジン】 yuk mashinasi marshruti hisoblandi.', en: '🗺️ Route computed using Valhalla commercial truck routing.', ru: '🗺️ Маршрут рассчитан с помощью грузовой маршрутизации Valhalla.', vi: '🗺️ Lộ trình được tính bằng định tuyến Valhalla cho xe thương mại.', zh: '🗺️ 路线已使用 Valhalla 商业卡车路由计算。', ne: '🗺️ Valhalla व्यापारिक ट्रक मार्गनिर्देशन प्रयोग गरेर मार्ग गणना गरियो।' },
+      detourApplied: { uz: '🛡️ Detour Applied: Safely bypassed OSRM clearance limits.', ja: '🛡️【迂回ルート適用】OSRM高さ/重量制限エリアを自動回避しました。', en: '🛡️ Detour Applied: Safely bypassed OSRM clearance limits.', ru: '🛡️ Применён объезд: ограничения OSRM по габаритам безопасно обойдены.', vi: '🛡️ Đã áp dụng đường vòng an toàn, tránh giới hạn tải trọng OSRM.', zh: '🛡️ 已应用绕行，安全绕过 OSRM 限制。', ne: '🛡️ रूट परिवर्तन गरियो: OSRM सीमा सुरक्षित रूपमा बाइपास गरियो।' },
+      offlineFallback: { uz: 'Offline rejim: Zaxira yo\'li ko\'rsatilyapti.', ja: '【オフライン】直接ルートを表示中。', en: 'Offline Mode: Displaying fallback direct route.', ru: 'Офлайн-режим: показан резервный прямой маршрут.', vi: 'Chế độ ngoại tuyến: Hiển thị đường dự phòng.', zh: '离线模式：显示备用直接路线。', ne: 'अफलाइन मोड: वैकल्पिक प्रत्यक्ष मार्ग देखाइएको छ।' },
+      setStartDestAlert: { uz: 'Boshlang\'ich va yakuniy manzilni kiriting.', ja: '出発地と目的地を設定してください。', en: 'Please set both a start and destination.', ru: 'Укажите пункт отправления и пункт назначения.', vi: 'Vui lòng đặt điểm bắt đầu và điểm đến.', zh: '请设置起点和终点。', ne: 'कृपया आरम्भ र गन्तव्य दुबै सेट गर्नुहोस्।' },
+      searchPlaceholder: { uz: 'Qidiruv bering...', ja: '目的地を検索...', en: 'Search here...', ru: 'Поиск...', vi: 'Tìm kiếm...', zh: '搜索...', ne: 'खोजी...' },
+      searchSheetTitle: { uz: 'Manzilni qidirish', ja: '目的地を検索', en: 'Search', ru: 'Поиск', vi: 'Tìm kiếm', zh: '搜索', ne: 'खोजी' },
+      recents: { uz: 'Yaqinda qidirilganlar', ja: '最近の検索履歴', en: 'Recents', ru: 'Недавние', vi: 'Gần đây', zh: '最近', ne: 'हालै' },
+      logisticsHubs: { uz: 'Logistika markazlari', ja: '主要物流センター', en: 'Logistics Hubs', ru: 'Логистические центры', vi: 'Hubs hậu cần', zh: '物流枢纽', ne: 'लजिस्टिक हब' },
+      nearbyCategories: { uz: 'Atrofdagi kategoriyalar', ja: '周辺のカテゴリ', en: 'Find Nearby', ru: 'Найти поблизости', vi: 'Tìm gần đây', zh: '附近类别', ne: 'नजिकका श्रेणीहरू' },
+      convenience: { uz: 'Quyidagi do\'kon', ja: 'コンビニ', en: 'Convenience', ru: 'Магазин (конбини)', vi: 'Tiện lợi', zh: '便利店', ne: 'सुविधा' },
+      dinner: { uz: 'Ovqat', ja: '食事処', en: 'Dinner', ru: 'Еда', vi: 'Ăn tối', zh: '晚餐', ne: 'डिनर' },
+      gas: { uz: 'Yoqilg\'i', ja: '給油所', en: 'Gas', ru: 'АЗС', vi: 'Xăng', zh: '加油站', ne: 'इन्धन' },
+      parking: { uz: 'Avtoturargoh', ja: '駐車場', en: 'Parking', ru: 'Парковка', vi: 'Đỗ xe', zh: '停车场', ne: 'पार्किङ' },
+      transitStation: { uz: 'Poezd stansiyasi', ja: '駅・交通機関', en: 'Transit Station', ru: 'Станция', vi: 'Trạm giao thông', zh: '交通枢纽', ne: 'ट्रान्जिट स्टेशन' },
+      markedLocation: { uz: 'Belgilangan joy', ja: '指定された場所', en: 'Marked Location', ru: 'Отмеченное место', vi: 'Vị trí đã ghim', zh: '固定位置', ne: 'चिन्हित स्थान' },
+      compassNorth: { uz: 'Shimolni tepaga tekislash', ja: '北を上にする', en: 'North Up', ru: 'Север вверху', vi: 'Bắc lên trên', zh: '向北', ne: 'उत्तर माथि' },
+      savedPoint: { uz: 'Saqlangan joy', ja: '保存地点', en: 'Saved Point', ru: 'Сохранённое место', vi: 'Điểm đã lưu', zh: '已保存地点', ne: 'सेभ गरिएको स्थान' },
+      shareTextNavigating: { uz: 'Michi Navigatsiya - Manzil: {dest}. Qolgan masofa: {distance}, Qolgan vaqt: {time}.', ja: 'Michiナビ - 目的地: {dest}。残り距離: {distance}、残り時間: {time}。', en: 'Michi Navigation - Destination: {dest}. Remaining distance: {distance}, remaining time: {time}.', ru: 'Michi Навигация — пункт назначения: {dest}. Осталось: {distance}, время в пути: {time}.', vi: 'Michi Điều hướng - Điểm đến: {dest}. Khoảng cách còn lại: {distance}, thời gian còn lại: {time}.', zh: 'Michi 导航 - 目的地: {dest}。剩余距离: {distance}，剩余时间: {time}。', ne: 'Michi नेभिगेसन - गन्तव्य: {dest}। बाँकी दूरी: {distance}, बाँकी समय: {time}।' },
+      shareTextDestination: { uz: 'Michi Navigatsiya - Manzil: {dest}. Koordinatalar: {lat}, {lng}', ja: 'Michiナビ - 目的地: {dest}。座標: {lat}, {lng}', en: 'Michi Navigation - Destination: {dest}. Coordinates: {lat}, {lng}', ru: 'Michi Навигация — пункт назначения: {dest}. Координаты: {lat}, {lng}', vi: 'Michi Điều hướng - Điểm đến: {dest}. Tọa độ: {lat}, {lng}', zh: 'Michi 导航 - 目的地: {dest}。坐标: {lat}, {lng}', ne: 'Michi नेभिगेसन - गन्तव्य: {dest}। निर्देशांक: {lat}, {lng}' },
+      shareTextDefault: { uz: 'Michi Navigatsiya', ja: 'Michiナビ', en: 'Michi Navigation', ru: 'Michi Навигация', vi: 'Michi Điều hướng', zh: 'Michi 导航', ne: 'Michi नेभिगेसन' }
     };
-    return dict[key]?.[currentLang] || dict[key]?.['uz'] || '';
+    return pickText(currentLang, dict[key]) || dict[key]?.['uz'] || '';
   };
 
   // Cleanup map instance on unmount
@@ -1102,7 +1126,11 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
     alert(localize({
       ja: 'GPS位置情報が拒否されたため、デモモード（松戸）が有効になります。',
       uz: 'GPS rad etilganligi sababli, demo rejim (Matsudo) faollashadi.',
-      en: 'GPS access denied — demo mode enabled (Matsudo).'
+      en: 'GPS access denied — demo mode enabled (Matsudo).',
+      ru: 'Доступ к GPS запрещён — включён демо-режим (Мацудо).',
+      zh: 'GPS 定位被拒绝，已启用演示模式（松户）。',
+      vi: 'Quyền truy cập GPS bị từ chối — đã bật chế độ demo (Matsudo).',
+      ne: 'GPS अनुमति अस्वीकार गरियो — डेमो मोड (मात्सुदो) सक्रिय भयो।'
     }));
     const fallback = { lat: 35.6841, lng: 139.7741, name: '⛩️ Nihonbashi Center' };
     setStartCoord(fallback);
@@ -1220,14 +1248,22 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
             name: localize({
               ja: '📍 現在地 (GPS)',
               uz: '📍 Hozirgi joylashuv (GPS)',
-              en: '📍 Current location (GPS)'
+              en: '📍 Current location (GPS)',
+              ru: '📍 Текущее местоположение (GPS)',
+              zh: '📍 当前位置 (GPS)',
+              vi: '📍 Vị trí hiện tại (GPS)',
+              ne: '📍 हालको स्थान (GPS)'
             })
           };
           setStartCoord(newCoord);
           setStartQuery(localize({
             ja: '現在地 (GPS)',
             uz: 'Hozirgi joylashuv (GPS)',
-            en: 'Current location (GPS)'
+            en: 'Current location (GPS)',
+            ru: 'Текущее местоположение (GPS)',
+            zh: '当前位置 (GPS)',
+            vi: 'Vị trí hiện tại (GPS)',
+            ne: 'हालको स्थान (GPS)'
           }));
           if (mapInstanceRef.current && !destCoord) {
             mapInstanceRef.current.easeTo({ center: [longitude, latitude], zoom: 15, duration: 800 });
@@ -1834,10 +1870,9 @@ export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
           }
           el.innerHTML = `<span>${labelText}</span>`;
 
-          let msg = currentLang === 'ja' ? restriction.messageJa : restriction.messageEn;
-          if (currentLang === 'uz') {
-            msg = translateWarningToUz(msg);
-          }
+          // Xarita belgisi: UI tilida (ilgari uz uchun inglizcha matn
+          // translateWarningToUz dan o'tkazilardi va o'zgarmay qolardi).
+          const msg = getRestrictionMessage(restriction, currentLang);
           el.title = `${restriction.name}\n${msg}`;
 
           el.addEventListener('click', () => {
@@ -2890,11 +2925,15 @@ const formatText = (template, vars = {}) => {
             </span>
           </div>
           <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0, opacity: 0.9, lineHeight: '1.35', wordBreak: 'break-word' }}>
-            {localizePair(
-              '全車種対応ナビゲーションシステム（普通車・大型トラック）は現在開発中です。現在は現在地マップをご利用いただけます。',
-              'Barcha mashinalar (yengil va yuk) uchun aqlli navigatsiya tizimi tayyorlanmoqda. Hozirda joriy joylashuv xaritasidan foydalanishingiz mumkin.',
-              'All-Vehicle Navigation System (Cars & Trucks) is under development. Current location map is active.'
-            )}
+            {localize({
+              ja: '全車種対応ナビゲーションシステム（普通車・大型トラック）は現在開発中です。現在は現在地マップをご利用いただけます。',
+              uz: 'Barcha mashinalar (yengil va yuk) uchun aqlli navigatsiya tizimi tayyorlanmoqda. Hozirda joriy joylashuv xaritasidan foydalanishingiz mumkin.',
+              en: 'All-Vehicle Navigation System (Cars & Trucks) is under development. Current location map is active.',
+              ru: 'Навигация для всех типов транспорта (легковые и грузовики) в разработке. Сейчас доступна карта текущего местоположения.',
+              zh: '全车型导航系统（小型车・大型卡车）正在开发中。目前可使用当前位置地图。',
+              vi: 'Hệ thống dẫn đường cho mọi loại xe (xe con & xe tải) đang được phát triển. Hiện bạn có thể dùng bản đồ vị trí hiện tại.',
+              ne: 'सबै सवारी (कार र ट्रक) का लागि नेभिगेसन प्रणाली विकासको क्रममा छ। हाल हालको स्थानको नक्सा प्रयोग गर्न सकिन्छ।'
+            })}
           </p>
         </div>
       </div>
@@ -3164,7 +3203,7 @@ const formatText = (template, vars = {}) => {
               }}
             >
               <div className="layer-preview vector-light"></div>
-              <span>{localize({ ja: '標準', uz: 'Standart', en: 'Standard' })}</span>
+              <span>{localize({ ja: '標準', uz: 'Standart', en: 'Standard', ru: 'Стандартная', zh: '标准', vi: 'Tiêu chuẩn', ne: 'मानक' })}</span>
             </div>
             <div 
               className={`layer-option-card ${mapStyleMode === 'vector' && showTrafficLayer ? 'selected' : ''}`}
@@ -3175,7 +3214,7 @@ const formatText = (template, vars = {}) => {
               }}
             >
               <div className="layer-preview vector-traffic"></div>
-              <span>{localize({ ja: '交通状況', uz: 'Tirbandlik', en: 'Traffic' })}</span>
+              <span>{localize({ ja: '交通状況', uz: 'Tirbandlik', en: 'Traffic', ru: 'Пробки', zh: '路况', vi: 'Giao thông', ne: 'ट्राफिक' })}</span>
             </div>
             <div 
               className={`layer-option-card ${mapStyleMode === 'satellite' ? 'selected' : ''}`}
@@ -3185,7 +3224,7 @@ const formatText = (template, vars = {}) => {
               }}
             >
               <div className="layer-preview satellite-hybrid"></div>
-              <span>{localize({ ja: '航空写真', uz: 'Yo\'ldosh (Hybrid)', en: 'Satellite' })}</span>
+              <span>{localize({ ja: '航空写真', uz: 'Yo\'ldosh (Hybrid)', en: 'Satellite', ru: 'Спутник', zh: '卫星', vi: 'Vệ tinh', ne: 'सैटेलाइट' })}</span>
             </div>
           </div>
         </div>
@@ -3312,7 +3351,7 @@ const formatText = (template, vars = {}) => {
               <div className="am-sheet-scroll-body">
                 {/* Header Row */}
                 <div className="am-sheet-header">
-                  <span className="am-sheet-title">{localize({ ja: '経路', uz: 'Direktlar', en: 'Directions' })}</span>
+                  <span className="am-sheet-title">{localize({ ja: '経路', uz: 'Direktlar', en: 'Directions', ru: 'Маршрут', zh: '路线', vi: 'Chỉ đường', ne: 'दिशानिर्देश' })}</span>
               <button 
                 type="button" 
                 className="am-close-circle-btn"
@@ -3941,7 +3980,7 @@ const formatText = (template, vars = {}) => {
                     <div style={{ marginBottom: '16px' }}>
                       <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--sheet-text)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span>🚚</span>
-                        <span>{currentLang === 'uz' ? 'Yuk mashinasi uchun qulayliklar' : (currentLang === 'ja' ? '大型車向け設備・サービス' : 'HGV Amenities & Services')}</span>
+                        <span>{pickText(currentLang, { ja: '大型車向け設備・サービス', en: 'HGV Amenities & Services', uz: 'Yuk mashinasi uchun qulayliklar', ru: 'Удобства и услуги для грузовиков', zh: '大型车配套设施与服务', vi: 'Tiện ích & dịch vụ cho xe tải lớn', ne: 'ठूला सवारीका लागि सुविधा र सेवा' })}</span>
                       </div>
                       <div style={{ 
                         background: 'var(--sheet-row-border)', 
@@ -3971,11 +4010,11 @@ const formatText = (template, vars = {}) => {
                       <div className="am-meta-value">{destCoord.name}</div>
                     </div>
                     <div className="am-meta-row">
-                      <div className="am-meta-label">{currentLang === 'uz' ? 'Ish vaqti' : (currentLang === 'ja' ? '営業時間' : 'Hours')}</div>
+                      <div className="am-meta-label">{pickText(currentLang, { ja: '営業時間', en: 'Hours', uz: 'Ish vaqti', ru: 'Часы работы', zh: '营业时间', vi: 'Giờ mở cửa', ne: 'खुल्ने समय' })}</div>
                       <div className="am-meta-value">{poiDetails.hours}</div>
                     </div>
                     <div className="am-meta-row">
-                      <div className="am-meta-label">{currentLang === 'uz' ? 'Telefon' : (currentLang === 'ja' ? '電話番号' : 'Phone')}</div>
+                      <div className="am-meta-label">{pickText(currentLang, { ja: '電話番号', en: 'Phone', uz: 'Telefon', ru: 'Телефон', zh: '电话', vi: 'Điện thoại', ne: 'फोन' })}</div>
                       <div className="am-meta-value">
                         <a href={`tel:${poiDetails.phone}`} style={{ color: '#007aff', textDecoration: 'none', fontWeight: 600 }}>
                           {poiDetails.phone}

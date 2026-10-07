@@ -16,6 +16,7 @@ import { compareJobs } from '../utils/jobOrdering';
 import { hasActiveApplication } from '../utils/applicationMapper';
 import { jobValueLabel, isOwnJob } from '../utils/jobPostingNormalizer';
 import { isVerifiedListing, listingVerifiedAt } from '../utils/trustHelpers';
+import { pickField } from '../utils/localize';
 
 const EMPTY_ARRAY = [];
 
@@ -104,14 +105,14 @@ export const JAPAN_CITIES = [
 ];
 
 export const RADIUS_OPTIONS = [
-  { value: 1, label: '1km以内', labelUz: '1km radiusda', labelEn: 'Within 1km', sublabel: '徒歩15分くらい', sublabelUz: '15 daqiqa piyoda', sublabelEn: '~15 mins walk' },
-  { value: 2, label: '2km以内', labelUz: '2km radiusda', labelEn: 'Within 2km', sublabel: '徒歩30分くらい', sublabelUz: '30 daqiqa piyoda', sublabelEn: '~30 mins walk' },
-  { value: 3, label: '3km以内', labelUz: '3km radiusda', labelEn: 'Within 3km', sublabel: '車10分くらい', sublabelUz: 'Moshinada 10 daqiqa', sublabelEn: '~10 mins by car' },
-  { value: 5, label: '5km以内', labelUz: '5km radiusda', labelEn: 'Within 5km', sublabel: '車15分くらい', sublabelUz: 'Moshinada 15 daqiqa', sublabelEn: '~15 mins by car' },
-  { value: 7, label: '7km以内', labelUz: '7km radiusda', labelEn: 'Within 7km', sublabel: '車20分くらい', sublabelUz: 'Moshinada 20 daqiqa', sublabelEn: '~20 mins by car' },
-  { value: 10, label: '10km以内', labelUz: '10km radiusda', labelEn: 'Within 10km', sublabel: '車30分くらい', sublabelUz: 'Moshinada 30 daqiqa', sublabelEn: '~30 mins by car' },
-  { value: 15, label: '15km以内', labelUz: '15km radiusda', labelEn: 'Within 15km', sublabel: '車45分くらい', sublabelUz: 'Moshinada 45 daqiqa', sublabelEn: '~45 mins by car' },
-  { value: 20, label: '20km以内', labelUz: '20km radiusda', labelEn: 'Within 20km', sublabel: '車1時間くらい', sublabelUz: 'Moshinada 1 soat', sublabelEn: '~1 hour by car' }
+  { value: 1, label: '1km以内', labelUz: '1km radiusda', labelEn: 'Within 1km', labelRu: 'В радиусе 1 км', labelZh: '1公里以内', labelVi: 'Trong vòng 1km', labelNe: '१ किमीभित्र', sublabel: '徒歩15分くらい', sublabelUz: '15 daqiqa piyoda', sublabelEn: '~15 mins walk', sublabelRu: '~15 мин пешком', sublabelZh: '步行约15分钟', sublabelVi: 'Đi bộ ~15 phút', sublabelNe: 'हिँडेर ~१५ मिनेट' },
+  { value: 2, label: '2km以内', labelUz: '2km radiusda', labelEn: 'Within 2km', labelRu: 'В радиусе 2 км', labelZh: '2公里以内', labelVi: 'Trong vòng 2km', labelNe: '२ किमीभित्र', sublabel: '徒歩30分くらい', sublabelUz: '30 daqiqa piyoda', sublabelEn: '~30 mins walk', sublabelRu: '~30 мин пешком', sublabelZh: '步行约30分钟', sublabelVi: 'Đi bộ ~30 phút', sublabelNe: 'हिँडेर ~३० मिनेट' },
+  { value: 3, label: '3km以内', labelUz: '3km radiusda', labelEn: 'Within 3km', labelRu: 'В радиусе 3 км', labelZh: '3公里以内', labelVi: 'Trong vòng 3km', labelNe: '३ किमीभित्र', sublabel: '車10分くらい', sublabelUz: 'Moshinada 10 daqiqa', sublabelEn: '~10 mins by car', sublabelRu: '~10 мин на машине', sublabelZh: '开车约10分钟', sublabelVi: 'Ô tô ~10 phút', sublabelNe: 'गाडीमा ~१० मिनेट' },
+  { value: 5, label: '5km以内', labelUz: '5km radiusda', labelEn: 'Within 5km', labelRu: 'В радиусе 5 км', labelZh: '5公里以内', labelVi: 'Trong vòng 5km', labelNe: '५ किमीभित्र', sublabel: '車15分くらい', sublabelUz: 'Moshinada 15 daqiqa', sublabelEn: '~15 mins by car', sublabelRu: '~15 мин на машине', sublabelZh: '开车约15分钟', sublabelVi: 'Ô tô ~15 phút', sublabelNe: 'गाडीमा ~१५ मिनेट' },
+  { value: 7, label: '7km以内', labelUz: '7km radiusda', labelEn: 'Within 7km', labelRu: 'В радиусе 7 км', labelZh: '7公里以内', labelVi: 'Trong vòng 7km', labelNe: '७ किमीभित्र', sublabel: '車20分くらい', sublabelUz: 'Moshinada 20 daqiqa', sublabelEn: '~20 mins by car', sublabelRu: '~20 мин на машине', sublabelZh: '开车约20分钟', sublabelVi: 'Ô tô ~20 phút', sublabelNe: 'गाडीमा ~२० मिनेट' },
+  { value: 10, label: '10km以内', labelUz: '10km radiusda', labelEn: 'Within 10km', labelRu: 'В радиусе 10 км', labelZh: '10公里以内', labelVi: 'Trong vòng 10km', labelNe: '१० किमीभित्र', sublabel: '車30分くらい', sublabelUz: 'Moshinada 30 daqiqa', sublabelEn: '~30 mins by car', sublabelRu: '~30 мин на машине', sublabelZh: '开车约30分钟', sublabelVi: 'Ô tô ~30 phút', sublabelNe: 'गाडीमा ~३० मिनेट' },
+  { value: 15, label: '15km以内', labelUz: '15km radiusda', labelEn: 'Within 15km', labelRu: 'В радиусе 15 км', labelZh: '15公里以内', labelVi: 'Trong vòng 15km', labelNe: '१५ किमीभित्र', sublabel: '車45分くらい', sublabelUz: 'Moshinada 45 daqiqa', sublabelEn: '~45 mins by car', sublabelRu: '~45 мин на машине', sublabelZh: '开车约45分钟', sublabelVi: 'Ô tô ~45 phút', sublabelNe: 'गाडीमा ~४५ मिनेट' },
+  { value: 20, label: '20km以内', labelUz: '20km radiusda', labelEn: 'Within 20km', labelRu: 'В радиусе 20 км', labelZh: '20公里以内', labelVi: 'Trong vòng 20km', labelNe: '२० किमीभित्र', sublabel: '車1時間くらい', sublabelUz: 'Moshinada 1 soat', sublabelEn: '~1 hour by car', sublabelRu: '~1 час на машине', sublabelZh: '开车约1小时', sublabelVi: 'Ô tô ~1 giờ', sublabelNe: 'गाडीमा ~१ घण्टा' }
 ];
 
 // ============================================================
@@ -742,15 +743,11 @@ export default function DriverFeed({
   const getJobCategoryLabel = (catId) => {
     for (const cat of JOB_CATEGORIES) {
       if (cat.id === catId) {
-        if (currentLang === 'uz') return cat.nameUz || cat.name;
-        if (currentLang === 'en') return cat.nameEn || cat.name;
-        return cat.name;
+        return pickField(cat, 'name', currentLang);
       }
       for (const sub of cat.subcategories) {
         if (sub.id === catId) {
-          if (currentLang === 'uz') return sub.nameUz || sub.name;
-          if (currentLang === 'en') return sub.nameEn || sub.name;
-          return sub.name;
+          return pickField(sub, 'name', currentLang);
         }
       }
     }
@@ -760,25 +757,19 @@ export default function DriverFeed({
   const getEmploymentLabel = (empId) => {
     const item = JOB_FEATURES.employment.options.find(opt => opt.id === empId);
     if (!item) return empId;
-    if (currentLang === 'uz') return item.nameUz || item.name;
-    if (currentLang === 'en') return item.nameEn || item.name;
-    return item.name;
+    return pickField(item, 'name', currentLang);
   };
 
   const getDurationLabel = (durId) => {
     const item = JOB_FEATURES.duration?.options?.find(opt => opt.id === durId);
     if (!item) return durId;
-    if (currentLang === 'uz') return item.nameUz || item.name;
-    if (currentLang === 'en') return item.nameEn || item.name;
-    return item.name;
+    return pickField(item, 'name', currentLang);
   };
 
   const getTimeSlotLabel = (tsId) => {
     const item = JOB_FEATURES.timeSlot?.options?.find(opt => opt.id === tsId);
     if (!item) return tsId;
-    if (currentLang === 'uz') return item.nameUz || item.name;
-    if (currentLang === 'en') return item.nameEn || item.name;
-    return item.name;
+    return pickField(item, 'name', currentLang);
   };
 
   const getFeatureLabel = (fId) => {
@@ -787,9 +778,7 @@ export default function DriverFeed({
       if (Array.isArray(options)) {
         const item = options.find(opt => opt.id === fId);
         if (item) {
-          if (currentLang === 'uz') return item.nameUz || item.name;
-          if (currentLang === 'en') return item.nameEn || item.name;
-          return item.name;
+          return pickField(item, 'name', currentLang);
         }
       }
     }
@@ -1222,10 +1211,10 @@ export default function DriverFeed({
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-main)' }}>
-                            {currentLang === 'uz' ? opt.labelUz : currentLang === 'en' ? opt.labelEn : opt.label}
+                            {pickField(opt, 'label', currentLang)}
                           </span>
                           <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
-                            {currentLang === 'uz' ? opt.sublabelUz : currentLang === 'en' ? opt.sublabelEn : opt.sublabel}
+                            {pickField(opt, 'sublabel', currentLang)}
                           </span>
                         </div>
                       </div>
@@ -1299,7 +1288,7 @@ export default function DriverFeed({
                         style={{ cursor: 'pointer' }}
                       >
                         <label className="townwork-checkbox-label" style={{ cursor: 'pointer' }}>
-                          <span>{cat.icon} {currentLang === 'uz' ? (cat.nameUz || cat.name) : cat.name}</span>
+                          <span>{cat.icon} {pickField(cat, 'name', currentLang)}</span>
                         </label>
                         {cat.subcategories && cat.subcategories.length > 0 && (
                           <div 
@@ -1327,7 +1316,7 @@ export default function DriverFeed({
                                 <div className={`townwork-square-checkbox ${isSubChecked ? 'checked' : ''}`} style={{ width: '16px', height: '16px' }}>
                                   {isSubChecked && <Check size={11} color="#FFF" />}
                                 </div>
-                                <span>{currentLang === 'uz' ? (sub.nameUz || sub.name) : sub.name}</span>
+                                <span>{pickField(sub, 'name', currentLang)}</span>
                               </div>
                             );
                           })}
@@ -1391,7 +1380,7 @@ export default function DriverFeed({
               <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
                 <div className="filter-section">
                   <h4 style={{ margin: '0 0 10px 0', fontSize: '13.5px', fontWeight: '800', color: 'var(--text-main)' }}>
-                    {JOB_FEATURES.employment.icon} {currentLang === 'uz' ? (JOB_FEATURES.employment.titleUz || JOB_FEATURES.employment.title) : JOB_FEATURES.employment.title}
+                    {JOB_FEATURES.employment.icon} {pickField(JOB_FEATURES.employment, 'title', currentLang)}
                   </h4>
                   <div className="filter-tags">
                     {JOB_FEATURES.employment.options.map(item => {
@@ -1407,7 +1396,7 @@ export default function DriverFeed({
                             );
                           }}
                         >
-                          {currentLang === 'uz' ? (item.nameUz || item.name) : item.name}
+                          {pickField(item, 'name', currentLang)}
                         </button>
                       );
                     })}
@@ -1417,7 +1406,7 @@ export default function DriverFeed({
                 {[JOB_FEATURES.shift, JOB_FEATURES.holiday, JOB_FEATURES.truckEquip, JOB_FEATURES.loading, JOB_FEATURES.highway].map(cat => cat && (
                   <div key={cat.title} className="filter-section">
                     <h4 style={{ margin: '0 0 10px 0', fontSize: '13.5px', fontWeight: '800', color: 'var(--text-main)' }}>
-                      {cat.icon} {currentLang === 'uz' ? (cat.titleUz || cat.title) : currentLang === 'en' ? (cat.titleEn || cat.title) : cat.title}
+                      {cat.icon} {pickField(cat, 'title', currentLang)}
                     </h4>
                     <div className="filter-tags">
                       {cat.options.map(item => {
@@ -1433,7 +1422,7 @@ export default function DriverFeed({
                               );
                             }}
                           >
-                            {currentLang === 'uz' ? (item.nameUz || item.name) : currentLang === 'en' ? (item.nameEn || item.name) : item.name}
+                            {pickField(item, 'name', currentLang)}
                           </button>
                         );
                       })}

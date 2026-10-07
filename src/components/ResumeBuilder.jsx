@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   ArrowLeft, User, Phone, Briefcase, GraduationCap, 
@@ -8,7 +8,66 @@ import {
 import { Capacitor } from '@capacitor/core';
 import { generateRirekishoBlob } from '../utils/resumeGenerator';
 import { saveResumeBlob, safeResumeFilename, isMobileDevice } from '../utils/resumeDownload';
+import { pickText } from '../utils/localize';
 import './ResumeBuilder.css';
+
+// Example placeholders shown inside empty inputs — always in the selected UI language.
+const EG = { ja: '例：', uz: 'Masalan: ', en: 'e.g. ', ru: 'Напр.: ', zh: '例如：', vi: 'Ví dụ: ', ne: 'उदाहरण: ' };
+const ADDRESS_EG = {
+  ja: '東京都新宿区西新宿2-8-1',
+  zh: '東京都新宿区西新宿2-8-1',
+  en: 'Tokyo-to, Shinjuku-ku, Nishi-Shinjuku 2-8-1',
+};
+const resumePlaceholder = (lang, field) => {
+  const eg = pickText(lang, EG);
+  switch (field) {
+    case 'fullName': return `${eg}ALIMOV ANVAR`;
+    case 'furigana': return `${eg}アリモフ アンバル`;
+    case 'postalCode': return `${eg}160-0023`;
+    case 'address': return `${eg}${pickText(lang, ADDRESS_EG)}`;
+    case 'phone': return `${eg}080-1234-5678`;
+    default: return '';
+  }
+};
+
+// The voice interviewer (engine + knowledge pack) is only downloaded when AI VOICE is switched on
+const ResumeVoiceAgent = lazy(() => import('./resume/ResumeVoiceAgent'));
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+// Typewriter speed: short values are typed visibly, long texts faster so it never feels slow
+const typeDelay = (len) => (len <= 16 ? 60 : len <= 60 ? 34 : len <= 200 ? 16 : 12);
+// Long texts are typed in chunks: at most ~120 repaints, so phones never heat up
+const TYPE_MAX_STEPS = 120;
+const POLISH_TIMEOUT_MS = 8000;
+const POLISH_LABELS = {
+  ja: ['AIで整える', '整えています…', '今は使えません。元の文章のままです。'],
+  uz: ['AI bilan silliqlash', 'Silliqlanmoqda…', "Hozir ishlamadi. Asl matn saqlandi."],
+  en: ['Polish with AI', 'Polishing…', 'Not available right now. Your text was kept.'],
+  ru: ['Улучшить с AI', 'Улучшаю…', 'Сейчас недоступно. Текст сохранён.'],
+  zh: ['AI润色', '正在润色…', '暂时不可用，已保留原文。'],
+  vi: ['AI chỉnh sửa', 'Đang chỉnh sửa…', 'Hiện không dùng được. Đã giữ văn bản gốc.'],
+  ne: ['AI ले सुधार', 'सुधार हुँदैछ…', 'अहिले उपलब्ध छैन। मूल पाठ राखियो।']
+};
+
+const withTimeout = (promise, ms) => Promise.race([
+  Promise.resolve(promise),
+  new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+]);
+
+/** Form keys touched by one voice write effect (used to undo exactly that write). */
+const effectKeys = (effect) => {
+  if (!effect) return [];
+  switch (effect.type) {
+    case 'text': return [effect.field];
+    case 'birthDate': return ['birthDate'];
+    case 'gender': return ['gender'];
+    case 'licenses': return ['driverLicenses'];
+    case 'jlpt': return ['jlptStatus'];
+    case 'list': return [effect.list];
+    case 'multi': return effect.effects.flatMap(effectKeys);
+    default: return [];
+  }
+};
 
 const JLPT_LEVELS = ['N1', 'N2', 'N3', 'N4', 'N5'];
 
@@ -44,7 +103,10 @@ export default function ResumeBuilder({
   isVoiceStandby,
   setIsVoiceStandby
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  // Dedicated resume interviewer (independent from the global AI bento assistant)
+  const [isAgentOn, setIsAgentOn] = useState(false);
+  const typingTokenRef = useRef(0);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -152,9 +214,14 @@ export default function ResumeBuilder({
 
     setIsHydrated(true);
 
+    // The global AI bento assistant must stay quiet here: the resume interviewer owns the microphone
+    if (setIsVoiceActive) setIsVoiceActive(false);
+    if (setIsVoiceStandby) setIsVoiceStandby(false);
+
     // PDF is generated on demand (preview / download buttons), not on every mount or keystroke.
 
     return () => {
+      typingTokenRef.current += 1; // finish any running typewriter instantly
       if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
       if (previousUrlRef.current && previousUrlRef.current.startsWith('blob:')) {
         URL.revokeObjectURL(previousUrlRef.current);
@@ -184,8 +251,8 @@ export default function ResumeBuilder({
         setTimeout(() => {
           const inputEl = document.getElementById(field);
           if (inputEl) {
+            // No focus(): focusing would pop up the on-screen keyboard on phones
             inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            inputEl.focus();
             inputEl.classList.add('voice-highlight');
             setTimeout(() => inputEl.classList.remove('voice-highlight'), 2500);
           }
@@ -413,8 +480,201 @@ export default function ResumeBuilder({
     });
   };
 
+  /* ===== Resume Voice AI: writes on the user's behalf with a typewriter effect ===== */
+
+  // Latest values for the undo snapshot (the agent calls back asynchronously)
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
+  const dobRef = useRef({ y: '', m: '', d: '' });
+  dobRef.current = { y: selectedYear, m: selectedMonth, d: selectedDay };
+  const [polishing, setPolishing] = useState(null);
+  const [polishMsg, setPolishMsg] = useState(null);
+  const polishLabels = POLISH_LABELS[String(i18n.language || 'uz').slice(0, 2)] || POLISH_LABELS.en;
+
+  // Types `value` into the element `id`. The field is read-only and never focused while typing,
+  // so the on-screen keyboard does not appear. Long texts are typed in chunks.
+  const typeInto = async (id, value, setValue) => {
+    const token = typingTokenRef.current;
+    if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
+    let el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.readOnly = true;
+      el.classList.add('rva-typing');
+    }
+    await sleep(380);
+    const chars = Array.from(String(value ?? ''));
+    const delay = typeDelay(chars.length);
+    const step = Math.max(1, Math.ceil(chars.length / TYPE_MAX_STEPS));
+    for (let i = step; i < chars.length + step; i += step) {
+      if (token !== typingTokenRef.current) break;
+      setValue(chars.slice(0, Math.min(i, chars.length)).join(''));
+      if (el && el.tagName === 'TEXTAREA') el.scrollTop = el.scrollHeight;
+      await sleep(delay);
+    }
+    setValue(String(value ?? ''));
+    el = document.getElementById(id) || el;
+    if (el) {
+      el.readOnly = false;
+      el.classList.remove('rva-typing');
+      el.classList.add('rva-written');
+      setTimeout(() => el.classList.remove('rva-written'), 1700);
+    }
+  };
+
+  const flashElement = async (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('rva-written');
+      setTimeout(() => el.classList.remove('rva-written'), 1700);
+    }
+    await sleep(700);
+  };
+
+  const applyVoiceEffect = async (effect) => {
+    if (!effect) return;
+    switch (effect.type) {
+      case 'multi':
+        for (const sub of effect.effects || []) await applyVoiceEffect(sub);
+        break;
+      case 'text': {
+        const { field, value } = effect;
+        await typeInto(field, value, v => setFormData(prev => ({ ...prev, [field]: v })));
+        break;
+      }
+      case 'birthDate': {
+        const [y, m, d] = effect.value.split('-');
+        await typeInto('dob-day', String(parseInt(d, 10)), setSelectedDay);
+        await typeInto('dob-month', String(parseInt(m, 10)), setSelectedMonth);
+        await typeInto('dob-year', y, setSelectedYear);
+        setFormData(prev => ({ ...prev, birthDate: effect.value }));
+        break;
+      }
+      case 'gender':
+        setFormData(prev => ({ ...prev, gender: effect.value }));
+        await flashElement('gender-group');
+        break;
+      case 'licenses':
+        setFormData(prev => ({ ...prev, driverLicenses: Array.from(new Set([...(prev.driverLicenses || []), ...effect.value])) }));
+        await flashElement('license-group');
+        break;
+      case 'jlpt':
+        setFormData(prev => ({
+          ...prev,
+          jlptStatus: effect.value ? { level: effect.value, selfDeclared: true, date: new Date().toISOString().split('T')[0] } : null
+        }));
+        await flashElement('jlpt-group');
+        break;
+      case 'list': {
+        const { list, index, key, value } = effect;
+        const template = list === 'educationHistory'
+          ? { school: '', major: '', startDate: '', endDate: '' }
+          : { company: '', position: '', startDate: '', endDate: '', isCurrent: false };
+        setFormData(prev => {
+          const arr = [...(prev[list] || [])];
+          while (arr.length <= index) arr.push({ ...template });
+          return { ...prev, [list]: arr };
+        });
+        await sleep(90); // let the new card render before typing into it
+        const prefix = list === 'educationHistory' ? 'edu' : 'work';
+        await typeInto(`${prefix}-${index}-${key}`, value, v => setFormData(prev => {
+          const arr = [...(prev[list] || [])];
+          while (arr.length <= index) arr.push({ ...template });
+          arr[index] = { ...arr[index], [key]: v };
+          return { ...prev, [list]: arr };
+        }));
+        break;
+      }
+      default:
+        break;
+    }
+  };
+
+  /** Writes one voice effect and returns a function that undoes exactly that write (「ちがう」). */
+  const handleVoiceWrite = async (effect) => {
+    if (!effect) return null;
+    const before = formDataRef.current;
+    const dob = { ...dobRef.current };
+    const keys = effectKeys(effect);
+    await applyVoiceEffect(effect);
+    return async () => {
+      typingTokenRef.current += 1;
+      setFormData(prev => {
+        const restored = { ...prev };
+        keys.forEach(k => { restored[k] = before[k]; });
+        return restored;
+      });
+      if (keys.includes('birthDate')) {
+        setSelectedYear(dob.y);
+        setSelectedMonth(dob.m);
+        setSelectedDay(dob.d);
+      }
+      const first = effect.type === 'multi' ? effect.effects[0] : effect;
+      const focusId = first?.type === 'text' ? first.field
+        : first?.type === 'birthDate' ? 'dob-day'
+          : first?.type === 'gender' ? 'gender-group'
+            : first?.type === 'licenses' ? 'license-group'
+              : first?.type === 'jlpt' ? 'jlpt-group'
+                : first?.type === 'list' ? `${first.list === 'educationHistory' ? 'edu' : 'work'}-${first.index}-${first.key}` : null;
+      if (focusId) await flashElement(focusId);
+    };
+  };
+
+  /** Optional polish of 志望動機 / 自己PR — only when the user taps the button (no background token use). */
+  const handlePolish = async (field) => {
+    const original = String(formData[field] || '').trim();
+    if (!original || polishing) return;
+    setPolishing(field);
+    setPolishMsg(null);
+    try {
+      const { michiApiService } = await import('../services/michiApiService');
+      const section = field === 'motivation' ? '志望動機' : '自己PR';
+      const prompt = `次の文章を、日本の履歴書の「${section}」欄に書く自然で丁寧な日本語（です・ます調、200〜300字）に整えてください。内容は変えず、整えた文章のみを出力してください。\n\n${original}`;
+      const reply = await withTimeout(michiApiService.sendChatMessage({ message: prompt }), POLISH_TIMEOUT_MS);
+      const clean = String(reply?.text ?? reply?.reply ?? reply ?? '').replace(/^["「『]|["」』]$/g, '').trim();
+      const jpRatio = (clean.match(/[\u3040-\u30ff\u4e00-\u9fff]/g) || []).length / Math.max(clean.length, 1);
+      if (!clean || clean.length > 1500 || jpRatio < 0.3) throw new Error('bad reply');
+      typingTokenRef.current += 1;
+      await typeInto(field, clean, v => setFormData(prev => ({ ...prev, [field]: v })));
+    } catch {
+      setPolishMsg({ field, text: polishLabels[2] });
+      setTimeout(() => setPolishMsg(m => (m?.field === field ? null : m)), 4000);
+    } finally {
+      setPolishing(null);
+    }
+  };
+
+  const renderPolish = (field) => (
+    String(formData[field] || '').trim() ? (
+      <div className="rb-polish-row">
+        <button
+          type="button"
+          id={`polish-${field}-btn`}
+          className="rb-polish-btn"
+          onClick={() => handlePolish(field)}
+          disabled={Boolean(polishing)}
+        >
+          {polishing === field ? <Loader2 size={13} className="spin" /> : <Sparkles size={13} />}
+          {polishing === field ? polishLabels[1] : polishLabels[0]}
+        </button>
+        {polishMsg?.field === field && <span className="rb-polish-msg" role="status">{polishMsg.text}</span>}
+      </div>
+    ) : null
+  );
+
+  const voiceLabels = {
+    male: t('male', 'Erkak'),
+    female: t('female', 'Ayol'),
+    none: t('jlptNone', 'Yo\'q'),
+    lic_futsu: t('lic_futsu', '普通'),
+    lic_junchugata: t('lic_junchugata', '準中型'),
+    lic_chugata: t('lic_chugata', '中型'),
+    lic_oogata: t('lic_oogata', '大型')
+  };
+
   return (
-    <div className="resume-builder-container fade-in">
+    <div className={`resume-builder-container fade-in ${isAgentOn ? 'rva-on' : ''}`}>
       {/* Yuqori orqaga qaytish va ovozli panel */}
       <div className="resume-builder-sticky-back" style={{ display: 'flex', width: '92%', justifyContent: 'space-between', alignItems: 'center' }}>
         <button 
@@ -429,31 +689,42 @@ export default function ResumeBuilder({
           <ArrowLeft size={20} />
         </button>
 
-        {setIsVoiceActive && setIsVoiceStandby && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>AI VOICE</span>
-            <button
-              type="button"
-              className="theme-toggle-btn"
-              onClick={() => {
-                const nextVal = !isVoiceStandby;
-                if (nextVal) {
-                  window.dispatchEvent(new CustomEvent('michi-voice-resume-start'));
-                }
-                setIsVoiceStandby(nextVal);
-                setIsVoiceActive(nextVal);
-              }}
-              aria-label="AI Voice"
-            >
-              <div className={`theme-toggle-track ${isVoiceStandby ? 'dark' : 'light'}`} style={{ width: '48px', height: '24px', borderRadius: '12px' }}>
-                <div className="theme-toggle-thumb" style={{ width: '18px', height: '18px', left: isVoiceStandby ? 'calc(100% - 20px)' : '2px', top: '2px' }}>
-                  <Sparkles size={10} color="#ffffff" />
-                </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>AI VOICE</span>
+          <button
+            type="button"
+            id="resume-ai-voice-toggle"
+            className="theme-toggle-btn"
+            onClick={() => {
+              typingTokenRef.current += 1;
+              setIsAgentOn(v => !v);
+            }}
+            aria-label="AI Voice"
+            aria-pressed={isAgentOn}
+          >
+            <div className={`theme-toggle-track ${isAgentOn ? 'dark' : 'light'}`} style={{ width: '48px', height: '24px', borderRadius: '12px' }}>
+              <div className="theme-toggle-thumb" style={{ width: '18px', height: '18px', left: isAgentOn ? 'calc(100% - 20px)' : '2px', top: '2px' }}>
+                <Sparkles size={10} color="#ffffff" />
               </div>
-            </button>
-          </div>
-        )}
+            </div>
+          </button>
+        </div>
       </div>
+
+      {isAgentOn && (
+        <Suspense fallback={null}>
+          <ResumeVoiceAgent
+            formData={formData}
+            lang={i18n.language}
+            labels={voiceLabels}
+            onWrite={handleVoiceWrite}
+            onClose={() => {
+              typingTokenRef.current += 1;
+              setIsAgentOn(false);
+            }}
+          />
+        </Suspense>
+      )}
 
       <div className="resume-builder-body">
         <h2 className="resume-builder-title">{t('resumeBuilderTitle', 'Yapon Rezyumesi (履歴書)')}</h2>
@@ -474,7 +745,7 @@ export default function ResumeBuilder({
               name="fullName" 
               value={formData.fullName} 
               onChange={handleChange}
-              placeholder="Masalan: ALIMOV ANVAR"
+              placeholder={resumePlaceholder(i18n.language, 'fullName')}
               className="glass-input"
             />
           </div>
@@ -487,14 +758,14 @@ export default function ResumeBuilder({
               name="furigana" 
               value={formData.furigana} 
               onChange={handleChange}
-              placeholder="Masalan: アリモフ アンバル"
+              placeholder={resumePlaceholder(i18n.language, 'furigana')}
               className="glass-input"
             />
           </div>
 
           <div className="form-group">
             <label>{t('genderLabel', 'Jins')}</label>
-            <div className="gender-select-row">
+            <div className="gender-select-row" id="gender-group">
               <button
                 type="button"
                 className={`gender-select-btn male ${formData.gender === 'male' ? 'active' : ''}`}
@@ -518,8 +789,9 @@ export default function ResumeBuilder({
               <div className="dob-input-wrapper">
                 <input 
                   type="text" 
+                  id="dob-day"
                   inputMode="numeric"
-                  placeholder="DD"
+                  placeholder="15"
                   value={selectedDay} 
                   onChange={(e) => handleDayInput(e.target.value)}
                   className="glass-input dob-num-input"
@@ -530,8 +802,9 @@ export default function ResumeBuilder({
               <div className="dob-input-wrapper">
                 <input 
                   type="text" 
+                  id="dob-month"
                   inputMode="numeric"
-                  placeholder="MM"
+                  placeholder="04"
                   value={selectedMonth} 
                   onChange={(e) => handleMonthInput(e.target.value)}
                   className="glass-input dob-num-input"
@@ -542,8 +815,9 @@ export default function ResumeBuilder({
               <div className="dob-input-wrapper year-wrapper">
                 <input 
                   type="text" 
+                  id="dob-year"
                   inputMode="numeric"
-                  placeholder="YYYY"
+                  placeholder="1995"
                   value={selectedYear} 
                   onChange={(e) => handleYearInput(e.target.value)}
                   className="glass-input dob-num-input"
@@ -575,7 +849,7 @@ export default function ResumeBuilder({
               name="postalCode" 
               value={formData.postalCode} 
               onChange={handleChange}
-              placeholder="160-0023"
+              placeholder={resumePlaceholder(i18n.language, 'postalCode')}
               className="glass-input"
             />
           </div>
@@ -588,7 +862,7 @@ export default function ResumeBuilder({
               name="address" 
               value={formData.address} 
               onChange={handleChange}
-              placeholder="Tokyo-to, Shinjuku-ku..."
+              placeholder={resumePlaceholder(i18n.language, 'address')}
               className="glass-input"
             />
           </div>
@@ -601,7 +875,7 @@ export default function ResumeBuilder({
               name="phone" 
               value={formData.phone} 
               onChange={handleChange}
-              placeholder="080-1234-5678"
+              placeholder={resumePlaceholder(i18n.language, 'phone')}
               className="glass-input"
             />
           </div>
@@ -638,6 +912,7 @@ export default function ResumeBuilder({
                 <div className="form-group">
                   <input 
                     type="text" 
+                    id={`edu-${idx}-school`}
                     placeholder={t('schoolName', 'Muassasa nomi')}
                     value={edu.school} 
                     onChange={(e) => handleEduChange(idx, 'school', e.target.value)}
@@ -647,6 +922,7 @@ export default function ResumeBuilder({
                 <div className="form-group">
                   <input 
                     type="text" 
+                    id={`edu-${idx}-major`}
                     placeholder={t('degree', 'Mutaxassislik')}
                     value={edu.major} 
                     onChange={(e) => handleEduChange(idx, 'major', e.target.value)}
@@ -681,6 +957,7 @@ export default function ResumeBuilder({
                 <div className="form-group">
                   <input 
                     type="text" 
+                    id={`work-${idx}-company`}
                     placeholder={t('companyName', 'Kompaniya nomi')}
                     value={work.company} 
                     onChange={(e) => handleWorkChange(idx, 'company', e.target.value)}
@@ -690,6 +967,7 @@ export default function ResumeBuilder({
                 <div className="form-group">
                   <input 
                     type="text" 
+                    id={`work-${idx}-position`}
                     placeholder={t('position', 'Lavozim')}
                     value={work.position} 
                     onChange={(e) => handleWorkChange(idx, 'position', e.target.value)}
@@ -710,7 +988,7 @@ export default function ResumeBuilder({
             <h3>{t('licensesQualifications', 'Guvohnoma va Sertifikatlar')}</h3>
           </div>
           
-          <div className="badges-select-group">
+          <div className="badges-select-group" id="license-group">
             {['futsu', 'junchugata', 'chugata', 'oogata'].map(lic => (
               <button 
                 key={lic}
@@ -729,7 +1007,7 @@ export default function ResumeBuilder({
             <h3>{t('jlptLevelLabel', 'Yapon tili darajasi (JLPT)')}</h3>
             <p>{t('jlptSelfDeclaredHint', 'O\'zingiz tanlaysiz (自己申告). Sertifikat suhbat paytida tekshiriladi.')}</p>
           </div>
-          <div className="badges-select-group" role="radiogroup" aria-label="JLPT">
+          <div className="badges-select-group" id="jlpt-group" role="radiogroup" aria-label="JLPT">
             {JLPT_LEVELS.map(level => (
               <button
                 key={level}
@@ -777,6 +1055,7 @@ export default function ResumeBuilder({
               rows={3}
               className="glass-input"
             />
+            {renderPolish('motivation')}
           </div>
 
           <div className="form-group">
@@ -789,6 +1068,7 @@ export default function ResumeBuilder({
               rows={3}
               className="glass-input"
             />
+            {renderPolish('selfPR')}
           </div>
         </div>
 

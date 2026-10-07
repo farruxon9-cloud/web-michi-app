@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SendHorizontal, X, Globe } from 'lucide-react';
-import { MichiAiAvatar, MichiUserAvatar, MichiTypingDots } from './michi-ai/MichiAvatars';
+import { SendHorizontal, X, Globe, User, Sparkles, Bot } from 'lucide-react';
 import './VoiceAssistant.css';
 import { matchLexiconCommand } from '../utils/voiceLexicon';
 import { actionRegistry } from '../services/actionRegistry';
@@ -65,8 +64,22 @@ const getNextSpeechLang = (current) => {
 // Typewriter: reveal the answer quickly (whole answer in ~1.2s max) so long replies never feel slow.
 const TYPE_TICK_MS = 16;
 const TYPE_MAX_MS = 1200;
+// Jo'natilmagan ovozli matn shuncha vaqt yangi ovoz/jo'natishsiz tursa, pufakcha o'zi yopiladi (juda sekin)
+const PENDING_AUTO_CLOSE_MS = 45000;
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+// Taymer chizig'i: kechikish faqat paydo bo'lganda bir marta hisoblanadi.
+// Shu bilan pufakcha yashirinib qayta chiqsa ham, chiziq boshidan emas, haqiqiy o'tgan vaqtdan davom etadi.
+function TimerBar({ durationMs, startedAt }) {
+  const [delayMs] = useState(() => Math.min(durationMs, Math.max(0, Date.now() - (startedAt || Date.now()))));
+  return (
+    <div
+      className="speech-bubble-timer-bar vb-timer-bar"
+      style={{ animationDuration: `${durationMs}ms`, animationDelay: `-${delayMs}ms` }}
+    />
+  );
+}
 
 export default function VoiceAssistant({ 
   isActive, 
@@ -114,7 +127,10 @@ export default function VoiceAssistant({
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const [drawerInput, setDrawerInput] = useState('');
   const [bubbleTimerMs, setBubbleTimerMs] = useState(8000);
+  const [readingStartAt, setReadingStartAt] = useState(0); // javob taymeri boshlangan aniq vaqt
   const [notice, setNotice] = useState(''); // mic/STT problem shown inside the bubble
+  // Har safar yangi ovoz eshitilganda oshadi — sekin avto-yopilish taymerini qaytadan boshlash uchun
+  const [pendingTick, setPendingTick] = useState(0);
 
   const chatEndRef = useRef(null);
   const speechContentRef = useRef(null);
@@ -123,12 +139,14 @@ export default function VoiceAssistant({
   const readingTimeoutRef = useRef(null);
   const errorTimeoutRef = useRef(null);
   const noticeTimeoutRef = useRef(null);
+  const pendingTimeoutRef = useRef(null);
 
   // Clear every pending timer when the assistant unmounts (e.g. voiceAI flag switched off).
   useEffect(() => () => {
     clearTimeout(readingTimeoutRef.current);
     clearTimeout(errorTimeoutRef.current);
     clearTimeout(noticeTimeoutRef.current);
+    clearTimeout(pendingTimeoutRef.current);
   }, []);
 
   // Fast typewriter for the AI answer.
@@ -145,14 +163,19 @@ export default function VoiceAssistant({
     return () => clearInterval(id);
   }, [aiResponseText]);
 
+  // Mikrofonga ruxsat berilmagan / qo'llab-quvvatlanmasa qayta urinmaymiz (cheksiz sikl bo'lmasin)
+  const micBlockedRef = useRef(false);
+  const isActiveRef = useRef(isActive);
+  useEffect(() => { isActiveRef.current = isActive; }, [isActive]);
+
   // Turn STT failures into a clear message instead of silently going idle.
   const handleSttError = useCallback((err) => {
     const code = err?.error || err?.message || '';
     let msg = '';
-    if (code === 'not-allowed' || code === 'service-not-allowed') msg = t('aiMicDenied');
-    else if (code === 'STT_NOT_SUPPORTED') msg = t('aiSttUnsupported');
-    else if (code === 'no-speech' || code === 'audio-capture' || code === 'network') msg = t('aiMicError');
-    setStatus('idle');
+    if (code === 'not-allowed' || code === 'service-not-allowed') { msg = t('aiMicDenied'); micBlockedRef.current = true; }
+    else if (code === 'STT_NOT_SUPPORTED') { msg = t('aiSttUnsupported'); micBlockedRef.current = true; }
+    else if (code === 'audio-capture' || code === 'network') msg = t('aiMicError');
+    if (statusRef.current === 'listening') setStatus('idle');
     if (!msg) return;
     setNotice(msg);
     clearTimeout(noticeTimeoutRef.current);
@@ -194,32 +217,66 @@ export default function VoiceAssistant({
     if (isSideDrawerOpen) reloadChatHistory();
   }, [isSideDrawerOpen, reloadChatHistory]);
 
+  // Bento karta yoniq va mikrofon ishlayotgan bo'lsa, "idle" o'rniga "listening" ko'rsatiladi
+  const effectiveStatus = status === 'idle' && isActive && !micBlockedRef.current ? 'listening' : status;
+
   // Status o'zgarishini ota komponentga xabar qilish
   useEffect(() => {
-    onStatusChange?.(status);
-  }, [status, onStatusChange]);
+    onStatusChange?.(effectiveStatus);
+  }, [effectiveStatus, onStatusChange]);
 
-  // 1. Voice AI Bento kartasi yoki Robot faollashganda STT mikrofon va ovoz tinglashni yoqish (Faqat matnga yozadi, avto-jo'natmaydi)
+  // 1. Voice AI Bento kartasi yoniq ekan, mikrofon CHEKSIZ tinglaydi (faqat matnga yozadi, avto-jo'natmaydi).
+  // Brauzer sessiyani tugatsa (gap tugashi, jo'natish, avto-yopilish) — avtomatik qayta yoqiladi.
   useEffect(() => {
-    if (isActive) {
-      setStatus('listening');
+    if (!isActive) {
+      localSTT.stopListening();
+      if (statusRef.current === 'listening') setStatus('idle');
+      return undefined;
+    }
+
+    let cancelled = false;
+    let restartTimer = null;
+    micBlockedRef.current = false;
+
+    const startMic = () => {
+      if (cancelled || !isActiveRef.current || micBlockedRef.current) return;
       localSTT.startListening({
         lang: getSttLangCode(speechLang),
+        continuous: true,
         onResult: (res) => {
-          if (res.cleanText || res.rawText) {
-            setDrawerInput(res.cleanText || res.rawText);
+          const heard = res.cleanText || res.rawText;
+          if (!heard) return;
+          if (statusRef.current !== 'thinking') {
+            // Yangi savol: eski javobni yopib, yangi matnni jo'natishga tayyorlaymiz
+            clearTimeout(readingTimeoutRef.current);
+            setTranscript('');
+            setAiResponseText('');
+            setDisplayedAiText('');
           }
+          setDrawerInput(heard);
+          setPendingTick(n => n + 1); // sekin taymer qaytadan boshlanadi
           // Jo'natish tugmasi bosilgandagina API so'rovi yuboriladi
         },
         onError: handleSttError,
         onEnd: () => {
-          if (statusRef.current === 'listening') setStatus('idle');
+          if (cancelled || !isActiveRef.current || micBlockedRef.current) {
+            if (statusRef.current === 'listening') setStatus('idle');
+            return;
+          }
+          clearTimeout(restartTimer);
+          restartTimer = setTimeout(startMic, 350);
         }
       });
-    } else {
+    };
+
+    setStatus('listening');
+    startMic();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(restartTimer);
       localSTT.stopListening();
-      if (statusRef.current === 'listening') setStatus('idle');
-    }
+    };
   }, [isActive, speechLang, handleSttError]);
 
   // 2. Ovozli o'qib berish o'chirildi - Faqat matnli javob beriladi
@@ -237,6 +294,7 @@ export default function VoiceAssistant({
     const text = (textToSend || drawerInput || '').trim();
     if (!text) return;
 
+    clearTimeout(pendingTimeoutRef.current);
     setDrawerInput('');
     setStatus('thinking');
     setTranscript(text);
@@ -269,6 +327,7 @@ export default function VoiceAssistant({
         // Sekinroq o'qiydiganlar uchun hisoblangan avto-yo'qolish vaqti
         const duration = calculateReadingDuration(text, actionResponse, speechLang);
         setBubbleTimerMs(duration);
+        setReadingStartAt(Date.now());
 
         if (readingTimeoutRef.current) clearTimeout(readingTimeoutRef.current);
         readingTimeoutRef.current = setTimeout(() => {
@@ -319,6 +378,7 @@ export default function VoiceAssistant({
       // Sekin o'qiydigan foydalanuvchilar o'qib tugatishi uchun dynamic timer
       const duration = calculateReadingDuration(text, polishedReply, speechLang);
       setBubbleTimerMs(duration);
+      setReadingStartAt(Date.now());
 
       if (readingTimeoutRef.current) clearTimeout(readingTimeoutRef.current);
       readingTimeoutRef.current = setTimeout(() => {
@@ -350,12 +410,46 @@ export default function VoiceAssistant({
     }
   }, [i18n?.language]);
 
-  const showBubble = (status === 'listening' || status === 'thinking' || transcript || aiResponseText || notice) && !isSideDrawerOpen;
   const liveText = drawerInput || transcript;
-  const showEditBar = Boolean(liveText) && status !== 'thinking' && !aiResponseText;
+  // Pufakcha faqat foydalanuvchi gapirgandan keyin (matn paydo bo'lganda) chiqadi
+  const showBubble = (Boolean(liveText) || status === 'thinking' || aiResponseText || notice) && !isSideDrawerOpen;
+  // Yangi savol javob ko'rinib turgan paytda aytilsa ham jo'natish maydoni chiqadi
+  const showEditBar = Boolean(liveText) && status !== 'thinking' && (!aiResponseText || Boolean(drawerInput));
+
+  // Jo'natilmagan matn uchun juda sekin avto-yopilish taymeri.
+  // Yangi ovoz eshitilsa (pendingTick o'zgarsa) yoki matn tahrirlansa qaytadan boshlanadi.
+  const [pendingSecondsLeft, setPendingSecondsLeft] = useState(Math.round(PENDING_AUTO_CLOSE_MS / 1000));
+  // Taymer boshlangan aniq vaqt: pufakcha yashirinib (AI Hub ochilsa) qayta chiqsa ham davomidan ketadi
+  const [pendingStartAt, setPendingStartAt] = useState(0);
+  useEffect(() => {
+    clearTimeout(pendingTimeoutRef.current);
+    if (!showEditBar) return undefined;
+    const startAt = Date.now();
+    const deadline = startAt + PENDING_AUTO_CLOSE_MS;
+    setPendingStartAt(startAt);
+    setPendingSecondsLeft(Math.round(PENDING_AUTO_CLOSE_MS / 1000));
+    const tickId = setInterval(() => {
+      setPendingSecondsLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+    }, 1000);
+    pendingTimeoutRef.current = setTimeout(() => {
+      setDrawerInput('');
+      setTranscript('');
+    }, PENDING_AUTO_CLOSE_MS);
+    return () => {
+      clearInterval(tickId);
+      clearTimeout(pendingTimeoutRef.current);
+    };
+  }, [showEditBar, pendingTick]);
   const isTyping = Boolean(aiResponseText) && displayedAiText.length < aiResponseText.length;
-  const aiState = status === 'error' ? 'error' : status === 'thinking' ? 'thinking' : status === 'listening' ? 'listening' : 'answer';
   const speechLangLabel = SUPPORTED_SPEECH_LANGS.find(l => l.code === (speechLang || 'ja').substring(0, 2))?.label || '日本語';
+  // Sarlavhadagi holat chipi
+  const statusChip = status === 'thinking'
+    ? { tone: 'thinking', label: t('aiThinking') }
+    : effectiveStatus === 'listening'
+      ? { tone: 'listening', label: t('aiListening') }
+      : status === 'error' || notice
+        ? { tone: 'error', label: t('aiErrorShort', 'Error') }
+        : null;
 
   const closeBubble = () => {
     localSTT.stopListening(true);
@@ -364,6 +458,8 @@ export default function VoiceAssistant({
     }
     clearTimeout(readingTimeoutRef.current);
     clearTimeout(errorTimeoutRef.current);
+    clearTimeout(pendingTimeoutRef.current);
+    setDrawerInput('');
     setStatus('idle');
     setTranscript('');
     setAiResponseText('');
@@ -374,122 +470,146 @@ export default function VoiceAssistant({
 
   return (
     <>
-      {/* Top-Right Floating Robot Speech Bubble when active/listening/thinking/speaking and drawer closed */}
+      {/* Michi AI ovozli pufakchasi (v3, premium) — faqat gapirilgandan keyin paydo bo'ladi */}
       {showBubble && (
-        <div className={`voice-robot-speech-bubble animate-slide-in is-${aiState}`}>
+        <div className={`voice-robot-speech-bubble vb animate-slide-in${statusChip ? ` is-${statusChip.tone}` : ''}`}>
           <div className="speech-bubble-pointer" />
-          <div className="speech-bubble-content" role="log" aria-live="polite" aria-atomic="false">
-            {/* User question (sent) */}
+
+          {/* Sarlavha: Michi AI + holat chipi + til + yopish */}
+          <header className="vb-header">
+            <div className="bubble-avatar ai-avatar vb-avatar" aria-hidden="true">
+              <Bot size={13} color="#FFF" strokeWidth={2.5} />
+            </div>
+            <span className="vb-title">Michi AI</span>
+            {statusChip && (
+              <span className={`vb-chip tone-${statusChip.tone}`}>
+                <i className="vb-chip__dot" aria-hidden="true" />
+                <span className="vb-chip__label">{statusChip.label}</span>
+              </span>
+            )}
+            <div className="vb-header__actions">
+              <button
+                type="button"
+                className="vb-lang"
+                aria-label={`${t('aiSpeechLang')}: ${speechLangLabel}`}
+                title={t('aiSpeechLang')}
+                onClick={() => {
+                  const nextLang = getNextSpeechLang(speechLang);
+                  setSpeechLang(nextLang);
+                  localStorage.setItem('michi_speech_lang', nextLang);
+                }}
+              >
+                <Globe size={12} aria-hidden="true" />
+                <span>{speechLangLabel}</span>
+              </button>
+              <button
+                type="button"
+                className="vb-close"
+                onClick={closeBubble}
+                title={t('aiClose')}
+                aria-label={t('aiClose')}
+              >
+                <X size={13} strokeWidth={2.6} aria-hidden="true" />
+              </button>
+            </div>
+          </header>
+
+          <div className="speech-bubble-content vb-body" role="log" aria-live="polite" aria-atomic="false">
+            {/* Jo'natilgan savol */}
             {transcript && (status === 'thinking' || aiResponseText) && (
-              <div className="bubble-row is-user">
-                <MichiUserAvatar profile={profileData} size={26} title={t('youLabel', 'You')} />
+              <div className="bubble-row is-user vb-row">
+                <div className="bubble-avatar user-avatar vb-avatar" title={t('youLabel', 'You')}>
+                  <User size={13} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
+                </div>
                 <p className="bubble-text bubble-text--user">{transcript}</p>
               </div>
             )}
 
-            {/* Listening */}
-            {status === 'listening' && (
-              <div className="bubble-row">
-                <MichiAiAvatar state="listening" size={26} />
-                <div className="bubble-status">
-                  <span className="bubble-status__title">{t('aiListening')}</span>
-                  {!liveText && <span className="bubble-status__hint">{t('aiListeningHint')}</span>}
-                </div>
-                <MichiTypingDots tone="listening" label={t('aiListening')} />
-              </div>
-            )}
-
-            {/* Thinking */}
+            {/* O'ylamoqda (joy tejash uchun uch nuqtasiz) */}
             {status === 'thinking' && (
-              <div className="bubble-row">
-                <MichiAiAvatar state="thinking" size={26} />
-                <div className="bubble-status">
-                  <span className="bubble-status__title">{t('aiThinking')}</span>
+              <div className="bubble-row vb-row vb-status-row">
+                <div className="bubble-avatar thinking-avatar vb-avatar" aria-hidden="true">
+                  <Sparkles size={13} color="#FFF" strokeWidth={2.5} />
                 </div>
-                <MichiTypingDots tone="thinking" label={t('aiThinking')} />
+                <span className="vb-status-text" role="status">{t('aiThinking')}</span>
               </div>
             )}
 
-            {/* Answer (typewriter) */}
+            {/* Javob (typewriter) */}
             {aiResponseText && (
-              <div className="bubble-row">
-                <MichiAiAvatar state={aiState} size={26} />
-                <p className={`bubble-text ${speechLang.startsWith('ja') ? 'ja-text' : ''}`}>
+              <div className="bubble-row vb-row vb-answer">
+                <div className="bubble-avatar ai-avatar vb-avatar" title="Michi AI">
+                  <Bot size={13} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
+                </div>
+                <p className={`bubble-text vb-answer__text ${speechLang.startsWith('ja') ? 'ja-text' : ''}`}>
                   {displayedAiText}
                   {isTyping && <span className="typewriter-cursor" aria-hidden="true">▍</span>}
                 </p>
               </div>
             )}
 
-            {/* Mic / STT problem */}
+            {/* Mikrofon / STT muammosi */}
             {notice && (
-              <div className="bubble-row" role="alert">
-                <MichiAiAvatar state="error" size={26} />
+              <div className="bubble-row vb-row" role="alert">
+                <div className="bubble-avatar ai-avatar vb-avatar" aria-hidden="true">
+                  <Bot size={13} color="#FFF" strokeWidth={2.5} />
+                </div>
                 <p className="bubble-text bubble-text--notice">{notice}</p>
               </div>
             )}
           </div>
 
-          {/* Live transcript: review/edit, then send explicitly */}
+          {/* Gapirilgan matn: ko'rib chiqish/tahrirlash, keyin faqat tugma bilan jo'natish */}
           {showEditBar && (
             <form
-              className="bubble-send-bar"
+              className="vb-compose"
               onSubmit={(e) => {
                 e.preventDefault();
-                localSTT.stopListening();
+                // Mikrofon o'chirilmaydi: bento karta yoniq ekan keyingi savollar ham eshitiladi
                 handleSendText(liveText);
               }}
             >
-              <MichiUserAvatar profile={profileData} size={26} title={t('youLabel', 'You')} />
+              <div className="bubble-avatar user-avatar vb-avatar" title={t('youLabel', 'You')}>
+                <User size={13} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
+              </div>
               <input
                 type="text"
-                className="bubble-send-input"
+                className="vb-compose__input"
                 value={liveText}
                 onChange={(e) => {
                   setTranscript(e.target.value);
                   setDrawerInput(e.target.value);
+                  setPendingTick(n => n + 1); // tahrirlanayotganda ham taymer qaytadan boshlanadi
                 }}
                 placeholder={t('aiEditPlaceholder')}
                 aria-label={t('aiEditPlaceholder')}
               />
-              <button type="submit" className="bubble-send-btn" aria-label={t('aiSend')} title={t('aiSend')}>
-                <SendHorizontal size={15} strokeWidth={2.4} aria-hidden="true" />
+              <button
+                type="submit"
+                className="vb-send"
+                aria-label={t('aiSend')}
+                title={t('aiSend')}
+                disabled={!liveText.trim()}
+              >
+                <SendHorizontal size={16} strokeWidth={2.4} aria-hidden="true" />
               </button>
             </form>
           )}
 
-          {/* Dynamic timer progress bar indicating remaining reading duration */}
-          {aiResponseText && !isTyping && (
-            <div
-              key={aiResponseText}
-              className="speech-bubble-timer-bar"
-              style={{ animationDuration: `${bubbleTimerMs}ms` }}
-            />
+          {/* Juda sekin avto-yopilish: izoh + chiziq (yangi ovozda qaytadan boshlanadi) */}
+          {showEditBar && (
+            <>
+              <p className="vb-timer-caption" aria-live="off">
+                {t('aiAutoCloseIn', { s: pendingSecondsLeft })}
+              </p>
+              <TimerBar key={`pending-${pendingTick}-${pendingStartAt}`} durationMs={PENDING_AUTO_CLOSE_MS} startedAt={pendingStartAt} />
+            </>
           )}
 
-          <div className="bubble-footer-actions">
-            <button
-              type="button"
-              className="voice-lang-toggle-bubble"
-              aria-label={`${t('aiSpeechLang')}: ${speechLangLabel}`}
-              onClick={() => {
-                const nextLang = getNextSpeechLang(speechLang);
-                setSpeechLang(nextLang);
-                localStorage.setItem('michi_speech_lang', nextLang);
-              }}
-            >
-              <Globe size={13} aria-hidden="true" /> {speechLangLabel}
-            </button>
-            <button
-              type="button"
-              className="voice-bubble-close-btn"
-              onClick={closeBubble}
-              title={t('aiClose')}
-              aria-label={t('aiClose')}
-            >
-              <X size={14} strokeWidth={2.6} aria-hidden="true" />
-            </button>
-          </div>
+          {/* Javobni o'qish vaqti chizig'i */}
+          {aiResponseText && !isTyping && (
+            <TimerBar key={`${aiResponseText}-${readingStartAt}`} durationMs={bubbleTimerMs} startedAt={readingStartAt} />
+          )}
         </div>
       )}
 

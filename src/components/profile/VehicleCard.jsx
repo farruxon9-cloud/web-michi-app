@@ -7,9 +7,20 @@ import VehiclePhoto from '../VehiclePhoto';
 import { photoForIdentityChange } from '../../utils/vehicleUtils';
 import { MASTER_VEHICLE_DATABASE } from '../../data/japaneseVehiclesMaster';
 import { ALL_GLOBAL_BRANDS, InlineCustomSelect } from './profileShared';
+import { pickText } from '../../utils/localize';
+
+// Inglizcha tartib qo'shimchasi: 2 → 2nd, 3 → 3rd, 4 → 4th, 11 → 11th
+const enOrdinal = (n) => {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+  return `${n}${({ 1: 'st', 2: 'nd', 3: 'rd' })[n % 10] || 'th'}`;
+};
 
 export default function VehicleCard(ctx) {
   const { JDM_HIRAGANA, dynamicModels, editVehicleData, fleetTabsRef, getProfileLangText, getVehiclePresetDimensions, handleAddNewVehicle, handleCardTouchEnd, handleCardTouchStart, handleDeleteVehicle, handleSaveVehicle, handleSelectActiveVehicleSmooth, handleVehiclePhotoUpload, i18n, isCardFading, isEditingVehicle, myVehicle, myVehicles, renderDriverMarkBadge, renderJDMPlateBox, setEditVehicleData, setIsEditingVehicle, setIsVehiclePickerOpen, setVehicleClearConfirm, t, vehicleFileInputRef } = ctx;
+  const tx = (map) => pickText(i18n?.language, map);
+  const addVehicleLabel = tx({ ja: '車両を追加', en: 'Add Vehicle', uz: "Avtomobil qo'shish", ru: 'Добавить автомобиль', zh: '添加车辆', vi: 'Thêm xe', ne: 'सवारी थप्नुहोस्' });
+  const modelInputPlaceholder = tx({ ja: 'モデル名を入力...', en: 'Enter model name...', uz: 'Model nomini kiriting...', ru: 'Введите название модели...', zh: '请输入车型名称...', vi: 'Nhập tên mẫu xe...', ne: 'मोडेलको नाम प्रविष्ट गर्नुहोस्...' });
   return (
     <div className="profile-subcard glass squircle" style={{ marginBottom: '4px' }}>
       <div className="profile-subcard-header" style={{ justifyContent: 'space-between', width: '100%' }}>
@@ -66,7 +77,7 @@ export default function VehicleCard(ctx) {
               });
               setIsEditingVehicle(true);
             }}
-            title={i18n.language === 'ja' ? '車両情報を編集' : i18n.language === 'en' ? 'Edit Vehicle Info' : 'Avtomobil maʼlumotlarini tahrirlash'}
+            title={tx({ ja: '車両情報を編集', en: 'Edit Vehicle Info', uz: 'Avtomobil maʼlumotlarini tahrirlash', ru: 'Редактировать данные автомобиля', zh: '编辑车辆信息', vi: 'Chỉnh sửa thông tin xe', ne: 'सवारीको जानकारी सम्पादन गर्नुहोस्' })}
           >
             <Edit3 size={13} strokeWidth={2.5} color="#30D158" />
             <span style={{ letterSpacing: '-0.2px' }}>{getProfileLangText('editVehicle')}</span>
@@ -107,10 +118,26 @@ export default function VehicleCard(ctx) {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-main)' }}>
-                  {i18n.language === 'ja' ? '自家用車なし (徒歩 / 会社車両利用)' : i18n.language === 'en' ? 'No Personal Vehicle (Pedestrian / Company Transport)' : 'Shaxsiy Avtomobil Yoʻq (Piyoda / Kompaniya Transporti)'}
+                  {tx({
+                    ja: '自家用車なし (徒歩 / 会社車両利用)',
+                    en: 'No Personal Vehicle (Pedestrian / Company Transport)',
+                    uz: 'Shaxsiy Avtomobil Yoʻq (Piyoda / Kompaniya Transporti)',
+                    ru: 'Нет личного автомобиля (пешком / транспорт компании)',
+                    zh: '无私家车（步行 / 使用公司车辆）',
+                    vi: 'Không có xe cá nhân (Đi bộ / Xe công ty)',
+                    ne: 'व्यक्तिगत सवारी छैन (पैदल / कम्पनीको सवारी)'
+                  })}
                 </span>
                 <span style={{ fontSize: '11px', color: 'var(--text-secondary)', maxWidth: '300px', lineHeight: '1.4' }}>
-                  {i18n.language === 'ja' ? '登録された車両はありません。仕事では会社車両や公共交通機関を利用します。' : i18n.language === 'en' ? 'No personal vehicle registered. You use company transport or public transit.' : 'Sizda shaxsiy transport roʻyxatdan oʻtkazilmagan. Ishga kompaniya transportida yoki jamoat transportida qatnaysiz.'}
+                  {tx({
+                    ja: '登録された車両はありません。仕事では会社車両や公共交通機関を利用します。',
+                    en: 'No personal vehicle registered. You use company transport or public transit.',
+                    uz: 'Sizda shaxsiy transport roʻyxatdan oʻtkazilmagan. Ishga kompaniya transportida yoki jamoat transportida qatnaysiz.',
+                    ru: 'Личный автомобиль не зарегистрирован. На работу вы ездите на транспорте компании или общественном транспорте.',
+                    zh: '未登记私家车。工作中使用公司车辆或公共交通。',
+                    vi: 'Chưa đăng ký xe cá nhân. Bạn đi làm bằng xe công ty hoặc phương tiện công cộng.',
+                    ne: 'कुनै व्यक्तिगत सवारी दर्ता गरिएको छैन। तपाईं काममा कम्पनीको सवारी वा सार्वजनिक यातायात प्रयोग गर्नुहुन्छ।'
+                  })}
                 </span>
               </div>
 
@@ -133,7 +160,7 @@ export default function VehicleCard(ctx) {
                   marginTop: '4px'
                 }}
               >
-                <Plus size={14} /> {i18n.language === 'ja' ? '車両を登録・追加する' : i18n.language === 'en' ? 'Add Vehicle' : 'Avtomobil Qoʻshish'}
+                <Plus size={14} /> {tx({ ja: '車両を登録・追加する', en: 'Add Vehicle', uz: 'Avtomobil Qoʻshish', ru: 'Добавить автомобиль', zh: '登记并添加车辆', vi: 'Đăng ký / Thêm xe', ne: 'सवारी दर्ता / थप्नुहोस्' })}
               </button>
             </div>
           ) : (
@@ -272,7 +299,7 @@ export default function VehicleCard(ctx) {
                     boxShadow: '0 2px 6px rgba(48, 209, 88, 0.25)'
                   }}>
                     <CheckCircle2 size={11} strokeWidth={2.5} />
-                    <span>{i18n.language === 'ja' ? '自動設定済み' : i18n.language === 'en' ? 'AUTO-CONFIGURED' : 'AVTO-SOZLANGAN'}</span>
+                    <span>{tx({ ja: '自動設定済み', en: 'AUTO-CONFIGURED', uz: 'AVTO-SOZLANGAN', ru: 'НАСТРОЕНО АВТОМАТИЧЕСКИ', zh: '已自动设置', vi: 'ĐÃ TỰ ĐỘNG CÀI ĐẶT', ne: 'स्वचालित रूपमा सेट गरिएको' })}</span>
                   </span>
                 </span>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', width: '100%' }}>
@@ -339,7 +366,7 @@ export default function VehicleCard(ctx) {
                     <Car size={13} strokeWidth={2.2} color="#0084FF" />
                   </div>
                   <span style={{ fontSize: '13px', fontWeight: '850', color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
-                    {i18n.language === 'ja' ? '登録車両タブ' : i18n.language === 'en' ? 'Vehicle Tabs' : 'Garaj Tablari'}
+                    {tx({ ja: '登録車両タブ', en: 'Vehicle Tabs', uz: 'Garaj Tablari', ru: 'Мои автомобили', zh: '已登记车辆', vi: 'Xe đã đăng ký', ne: 'दर्ता गरिएका सवारीहरू' })}
                   </span>
                   <span style={{ fontSize: '10px', background: 'rgba(0, 132, 255, 0.15)', color: '#0084FF', padding: '1px 8px', borderRadius: '10px', fontWeight: '800' }}>
                     {myVehicles.length}
@@ -361,7 +388,7 @@ export default function VehicleCard(ctx) {
                       alignItems: 'center',
                       gap: '4px'
                     }}>
-                      👈 {i18n.language === 'ja' ? '横スワイプ' : i18n.language === 'en' ? 'Swipe ↔️' : 'Surish ↔️'}
+                      👈 {tx({ ja: '横スワイプ', en: 'Swipe ↔️', uz: 'Surish ↔️', ru: 'Листайте ↔️', zh: '左右滑动 ↔️', vi: 'Vuốt ↔️', ne: 'स्वाइप गर्नुहोस् ↔️' })}
                     </span>
                   )}
 
@@ -383,7 +410,7 @@ export default function VehicleCard(ctx) {
                       boxShadow: '0 4px 12px rgba(0, 132, 255, 0.3)'
                     }}
                   >
-                    <Plus size={13} /> {i18n.language === 'ja' ? '新規追加' : i18n.language === 'en' ? 'Add New' : 'Yangi Qoʻshish'}
+                    <Plus size={13} /> {tx({ ja: '新規追加', en: 'Add New', uz: 'Yangi Qoʻshish', ru: 'Добавить', zh: '新增', vi: 'Thêm mới', ne: 'नयाँ थप्नुहोस्' })}
                   </button>
                 </div>
               </div>
@@ -453,7 +480,7 @@ export default function VehicleCard(ctx) {
                           </span>
                           {isActive ? (
                             <span style={{ fontSize: '8.5px', fontWeight: '800', background: 'rgba(0, 0, 0, 0.85)', color: '#30D158', padding: '1px 4px', borderRadius: '4px', flexShrink: 0 }}>
-                              ⚡ {i18n.language === 'ja' ? '選択中' : i18n.language === 'en' ? 'ACTIVE' : 'FAOL'}
+                              ⚡ {tx({ ja: '選択中', en: 'ACTIVE', uz: 'FAOL', ru: 'АКТИВНЫЙ', zh: '使用中', vi: 'ĐANG CHỌN', ne: 'सक्रिय' })}
                             </span>
                           ) : (
                             <span style={{ fontSize: '8.5px', opacity: 0.7, background: 'rgba(0,0,0,0.15)', padding: '1px 4px', borderRadius: '4px', fontWeight: '800', flexShrink: 0 }}>
@@ -486,7 +513,7 @@ export default function VehicleCard(ctx) {
                               transition: 'all 0.2s ease',
                               boxShadow: isActive ? '0 1px 4px rgba(0,0,0,0.2)' : 'none'
                             }}
-                            title={i18n.language === 'ja' ? '車両を削除' : i18n.language === 'en' ? 'Delete Vehicle' : "Avtomobilni o'chirish"}
+                            title={tx({ ja: '車両を削除', en: 'Delete Vehicle', uz: "Avtomobilni o'chirish", ru: 'Удалить автомобиль', zh: '删除车辆', vi: 'Xóa xe', ne: 'सवारी हटाउनुहोस्' })}
                           >
                             ✕
                           </span>
@@ -521,15 +548,19 @@ export default function VehicleCard(ctx) {
                       scrollSnapAlign: 'start',
                       transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                     }}
-                    title={i18n.language === 'ja' ? '車両を追加' : i18n.language === 'en' ? 'Add Vehicle' : "Avtomobil qo'shish"}
+                    title={addVehicleLabel}
                   >
                     <Plus size={12} strokeWidth={2.5} style={{ flexShrink: 0 }} />
                     <span style={{ fontSize: '11.5px', fontWeight: '800', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1 }}>
-                      {i18n.language === 'ja' 
-                        ? `${myVehicles.length + 1}台目を追加` 
-                        : i18n.language === 'en' 
-                          ? `Add ${myVehicles.length + 1}${myVehicles.length + 1 === 2 ? 'nd' : 'rd'} Car` 
-                          : `${myVehicles.length + 1}-mashina qo'shish`}
+                      {tx({
+                        ja: `${myVehicles.length + 1}台目を追加`,
+                        en: `Add ${enOrdinal(myVehicles.length + 1)} Car`,
+                        uz: `${myVehicles.length + 1}-mashina qo'shish`,
+                        ru: `Добавить ${myVehicles.length + 1}-й автомобиль`,
+                        zh: `添加第 ${myVehicles.length + 1} 辆车`,
+                        vi: `Thêm xe thứ ${myVehicles.length + 1}`,
+                        ne: `${myVehicles.length + 1}औं सवारी थप्नुहोस्`
+                      })}
                     </span>
                   </button>
                 </div>
@@ -669,7 +700,7 @@ export default function VehicleCard(ctx) {
                   }}
                 >
                   <Globe size={12} />
-                  <span>{i18n.language === 'ja' ? '全日本車カタログ' : i18n.language === 'en' ? 'Japanese Fleet Catalog' : 'Barcha Yapon Moshinalari'}</span>
+                  <span>{tx({ ja: '全日本車カタログ', en: 'Japanese Fleet Catalog', uz: 'Barcha Yapon Moshinalari', ru: 'Каталог японских авто', zh: '日本车全车型目录', vi: 'Danh mục xe Nhật Bản', ne: 'जापानी सवारी क्याटलग' })}</span>
                 </button>
 
                 <button 
@@ -691,7 +722,7 @@ export default function VehicleCard(ctx) {
                   }}
                 >
                   <Camera size={12} />
-                  <span>{i18n.language === 'ja' ? '写真アップロード' : i18n.language === 'en' ? 'Upload Photo' : 'Rasm Yuklash'}</span>
+                  <span>{tx({ ja: '写真アップロード', en: 'Upload Photo', uz: 'Rasm Yuklash', ru: 'Загрузить фото', zh: '上传照片', vi: 'Tải ảnh lên', ne: 'फोटो अपलोड गर्नुहोस्' })}</span>
                 </button>
 
                 <button 
@@ -951,7 +982,7 @@ export default function VehicleCard(ctx) {
                     {editVehicleData.model === 'Other' && (
                       <input 
                         type="text"
-                        placeholder="Model nomini kiriting (masalan: Skyline, Supra...)"
+                        placeholder={tx({ ja: 'モデル名を入力 (例: スカイライン, スープラ...)', en: 'Enter model name (e.g. Skyline, Supra...)', uz: 'Model nomini kiriting (masalan: Skyline, Supra...)', ru: 'Введите название модели (например: Skyline, Supra...)', zh: '请输入车型名称（例如：Skyline、Supra...）', vi: 'Nhập tên mẫu xe (ví dụ: Skyline, Supra...)', ne: 'मोडेलको नाम प्रविष्ट गर्नुहोस् (उदाहरण: Skyline, Supra...)' })}
                         onChange={(e) => {
                           const customModel = e.target.value;
                           // Har bir harf uchun so'rov yuborilmaydi — konstruktor effekti 600ms debounce bilan qidiradi
@@ -980,7 +1011,7 @@ export default function VehicleCard(ctx) {
                     <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{t('vehicleModel')}</label>
                     <input 
                       type="text"
-                      placeholder="Model nomini kiriting..."
+                      placeholder={modelInputPlaceholder}
                       value={editVehicleData.model}
                       onChange={(e) => {
                         const val = e.target.value;
@@ -1416,7 +1447,7 @@ export default function VehicleCard(ctx) {
                   }}
                   onClick={() => setVehicleClearConfirm(true)}
                 >
-                  🗑️ {i18n.language === 'ja' ? '自家用車なしに設定 (全削除)' : i18n.language === 'en' ? 'Set No Personal Vehicle (Remove All)' : 'Shaxsiy transportim yoʻq (Umuman oʻchirish)'}
+                  🗑️ {tx({ ja: '自家用車なしに設定 (全削除)', en: 'Set No Personal Vehicle (Remove All)', uz: 'Shaxsiy transportim yoʻq (Umuman oʻchirish)', ru: 'Указать «нет личного авто» (удалить все)', zh: '设为无私家车（全部删除）', vi: 'Đặt là không có xe cá nhân (Xóa tất cả)', ne: 'व्यक्तिगत सवारी छैन भनी सेट गर्नुहोस् (सबै हटाउनुहोस्)' })}
                 </button>
               </div>
 

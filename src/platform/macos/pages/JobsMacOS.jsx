@@ -4,6 +4,7 @@ import { Search, SlidersHorizontal, Briefcase, Sparkles, Filter, CheckCircle2, T
 import DriverFeed from '../../../components/DriverFeed';
 import { AppleLogoIcon } from './HomeMacOS';
 import './JobsMacOS.css';
+import { pickText } from '../../../utils/localize';
 
 export default function JobsMacOS(props) {
   const { t, i18n } = useTranslation();
@@ -54,7 +55,7 @@ export default function JobsMacOS(props) {
         <aside className="macos-jobs-sidebar">
           <div className="macos-sidebar-section-title">
             <Filter size={14} />
-            <span>{currentLang === 'uz' ? 'Tezkor Filtrlar' : currentLang === 'en' ? 'Quick Filters' : 'クイック条件'}</span>
+            <span>{pickText(currentLang, { ja: 'クイック条件', uz: 'Tezkor Filtrlar', en: 'Quick Filters', ru: 'Быстрые фильтры', zh: '快速筛选', vi: 'Bộ lọc nhanh', ne: 'द्रुत फिल्टर' })}</span>
           </div>
 
           <div className="macos-sidebar-filter-list">

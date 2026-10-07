@@ -18,6 +18,7 @@ import { normalizeOwnJobPosting, normalizeSchoolPosting, jobValueLabel } from '.
 import { validateBranch } from '../utils/branchUtils';
 import { useOptionalAuth } from '../context/AuthContext';
 import { listingExpiryInfo, normalizeVerification, listingVerifiedAt } from '../utils/trustHelpers';
+import { pickField } from '../utils/localize';
 import { renewListing } from '../services/accountApi';
 import './trust.css';
 
@@ -1131,7 +1132,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 error={errors.subcategory}
                 options={JOB_CATEGORIES[0]?.subcategories.map(sub => ({
                   id: sub.id,
-                  name: currentLang === 'uz' ? sub.nameUz : currentLang === 'en' ? (sub.nameEn || sub.name) : sub.name
+                  name: pickField(sub, 'name', currentLang)
                 })) || []}
                 onChange={(val) => {
                   setNewJob({ ...newJob, subcategory: val });
