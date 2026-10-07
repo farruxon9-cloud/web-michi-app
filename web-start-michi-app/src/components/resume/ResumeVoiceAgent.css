@@ -365,24 +365,90 @@ body.dark-mode .rva,
   transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* ---------- typewriter target in the form ---------- */
-.rva-typing {
-  border-color: #10b981 !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18), 0 0 18px rgba(16, 185, 129, 0.35) !important;
-  background: rgba(16, 185, 129, 0.05) !important;
-  caret-color: transparent;
-  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+/* ---------- subtitle (UI language) ---------- */
+.rva-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--rva-sub);
+  animation: rva-fade 0.3s ease 0.05s both;
 }
-.rva-written {
-  animation: rva-written 1.6s ease both;
+
+/* ---------- example cards ---------- */
+.rva-examples {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
 }
-@keyframes rva-written {
-  0% { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35); }
-  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+.rva-example {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--rva-border);
+  background: var(--rva-card);
+  color: var(--rva-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  animation: rva-fade 0.32s ease both;
+  transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.rva-example:hover { border-color: rgba(16, 185, 129, 0.55); }
+.rva-example:active { transform: scale(0.97); }
+.rva-example-num {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, var(--rva-a), var(--rva-b));
+  box-shadow: 0 6px 14px -6px rgba(5, 150, 105, 0.8);
+}
+.rva-example-body { display: flex; flex-direction: column; min-width: 0; }
+.rva-example-label { font-size: 15px; font-weight: 800; line-height: 1.3; }
+.rva-example-sub { font-size: 11.5px; color: var(--rva-sub); line-height: 1.3; }
+
+/* ---------- big buttons for kids-simple use ---------- */
+.rva-btn.big { min-height: 54px; font-size: 18px; border-radius: 18px; }
+.rva-btn.undo {
+  position: relative;
+  overflow: hidden;
+  flex: 1.3;
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.55);
+  background: rgba(254, 243, 199, 0.75);
+  animation: rva-fade 0.25s ease both;
+}
+.dark-mode .rva-btn.undo, [data-theme="dark"] .rva-btn.undo { color: #fcd34d; background: rgba(245, 158, 11, 0.14); }
+.rva-undo-timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: #f59e0b;
+  transform-origin: left center;
+  animation: rva-countdown linear forwards;
+}
+@keyframes rva-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+.rva-wake { width: 100%; margin-top: 12px; min-height: 54px; font-size: 16px; }
+
+@media (max-width: 380px) {
+  .rva-actions { flex-wrap: wrap; }
+  .rva-btn { flex: 1 1 40%; }
 }
 
 /* Leave room so the panel never covers the last form card */
-.resume-builder-container.rva-on { padding-bottom: 340px; }
+.resume-builder-container.rva-on { padding-bottom: 380px; }
 
 @media (prefers-reduced-motion: reduce) {
   .rva, .rva * { animation: none !important; transition: none !important; }

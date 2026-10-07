@@ -367,9 +367,98 @@ const SCRIPTS = {
   }
 };
 
+/**
+ * Resume AI 2.0 additions. The interviewer always SPEAKS Japanese (ja); the other languages are
+ * only used for the small subtitle line. zh / vi / ne fall back to English for these keys.
+ */
+const EXTRA = {
+  ja: {
+    q: {
+      fullName: 'パスポートと同じお名前を、ゆっくり言ってください。',
+      motReason: '日本で働きたい理由は何ですか？',
+      motStrength: 'あなたのいいところは何ですか？',
+      motYears: '運転の経験は何年ですか？'
+    },
+    confirm: '「{{value}}」でいいですか？',
+    wrote: '{{value}}、書きました。',
+    wroteShort: '書きました。',
+    noted: 'わかりました。',
+    undone: '消しました。もう一度お願いします。',
+    examplesIntro: '例です。',
+    pickHint: '「1番」のように番号でも選べます。',
+    composed: '志望動機と自己PRを書きました。',
+    sleep: 'マイクを止めました。タップで再開します。',
+    hint: '「ちがう」で消せます。「わからない」で例を出します。',
+    ui: { wrong: 'ちがう', yesOnly: 'はい', repeat: 'もう一度', polish: 'AIで整える', polishing: '整えています…', sleep: 'タップで再開', examples: '例', written: '書きました' }
+  },
+  uz: {
+    q: {
+      fullName: 'Pasportdagi ism-familiyangizni sekin ayting.',
+      motReason: 'Yaponiyada nega ishlamoqchisiz?',
+      motStrength: 'Sizning yaxshi tomoningiz nima?',
+      motYears: 'Necha yillik haydovchilik tajribangiz bor?'
+    },
+    wrote: '{{value}} — yozdim.',
+    wroteShort: 'Yozdim.',
+    noted: 'Tushunarli.',
+    undone: "O'chirdim. Yana bir bor ayting.",
+    examplesIntro: 'Misollar:',
+    pickHint: '«1-ban» (ichiban) deb raqam bilan ham tanlash mumkin.',
+    composed: "Motivatsiya va o'zingiz haqingizda matnni yozdim.",
+    sleep: "Mikrofonni o'chirdim. Davom etish uchun bosing.",
+    hint: '«Chigau» — o‘chiradi. «Wakaranai» — misollar beradi.',
+    ui: { wrong: "Xato (ちがう)", yesOnly: 'Ha (はい)', repeat: 'Takrorlash', polish: 'AI bilan silliqlash', polishing: 'Silliqlanmoqda…', sleep: 'Davom etish uchun bosing', examples: 'Misollar', written: 'Yozildi' }
+  },
+  en: {
+    q: {
+      fullName: 'Please say your name exactly as in your passport, slowly.',
+      motReason: 'Why do you want to work in Japan?',
+      motStrength: 'What is your best quality?',
+      motYears: 'How many years of driving experience do you have?'
+    },
+    wrote: 'Wrote: {{value}}.',
+    wroteShort: 'Written.',
+    noted: 'Got it.',
+    undone: 'Deleted. Please say it again.',
+    examplesIntro: 'Examples:',
+    pickHint: 'You can also pick by number, e.g. “ichiban” (No. 1).',
+    composed: 'I wrote your motivation and self-PR.',
+    sleep: 'Microphone off. Tap to continue.',
+    hint: '“Chigau” deletes. “Wakaranai” shows examples.',
+    ui: { wrong: 'Wrong (ちがう)', yesOnly: 'Yes (はい)', repeat: 'Repeat', polish: 'Polish with AI', polishing: 'Polishing…', sleep: 'Tap to continue', examples: 'Examples', written: 'Written' }
+  },
+  ru: {
+    q: {
+      fullName: 'Медленно назовите имя и фамилию как в паспорте.',
+      motReason: 'Почему вы хотите работать в Японии?',
+      motStrength: 'Какая ваша сильная сторона?',
+      motYears: 'Сколько лет у вас стаж вождения?'
+    },
+    wrote: 'Записал: {{value}}.',
+    wroteShort: 'Записал.',
+    noted: 'Понял.',
+    undone: 'Удалил. Скажите ещё раз.',
+    examplesIntro: 'Примеры:',
+    pickHint: 'Можно выбрать номером, например «итибан» (№1).',
+    composed: 'Я написал мотивацию и самопрезентацию.',
+    sleep: 'Микрофон выключен. Нажмите, чтобы продолжить.',
+    hint: '«Тигау» — удалить. «Вакаранай» — примеры.',
+    ui: { wrong: 'Ошибка (ちがう)', yesOnly: 'Да (はい)', repeat: 'Повторить', polish: 'Улучшить с AI', polishing: 'Улучшаю…', sleep: 'Нажмите, чтобы продолжить', examples: 'Примеры', written: 'Записано' }
+  }
+};
+
+const merged = {};
+
 export function getScript(lang) {
-  const key = String(lang || 'uz').slice(0, 2).toLowerCase();
-  return SCRIPTS[key] || SCRIPTS.en;
+  const key = getScriptLang(lang);
+  if (merged[key]) return merged[key];
+  const base = SCRIPTS[key];
+  const own = EXTRA[key];
+  const extra = own || EXTRA.en;
+  merged[key] = own
+    ? { ...base, ...extra, q: { ...base.q, ...extra.q }, ui: { ...base.ui, ...extra.ui } }
+    : { ...extra, ...base, q: { ...extra.q, ...base.q }, ui: { ...extra.ui, ...base.ui } };
+  return merged[key];
 }
 
 export function getScriptLang(lang) {

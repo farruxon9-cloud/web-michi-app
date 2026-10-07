@@ -1,17 +1,19 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, Pause, Play, RotateCcw, SkipForward, X, PenLine, Languages } from 'lucide-react';
+import { Check, Pause, Play, RotateCcw, SkipForward, X, PenLine, Undo2, Lightbulb, Mic } from 'lucide-react';
 import { ResumeInterview } from '../../services/resumeInterviewEngine';
 import { ResumeVoiceIO } from '../../services/resumeVoiceIO';
 import { getScript, getScriptLang, fill } from '../../services/resumeInterviewScript';
-import { michiApiService } from '../../services/michiApiService';
 import './ResumeVoiceAgent.css';
 
 const SKIPPED_KEY = 'michi_resume_voice_skipped';
 const GREETED_KEY = 'michi_resume_voice_greeted';
-const NO_ANSWER_MS = { short: 15000, long: 26000 };
-const WRITE_TIMEOUT_MS = 20000;
-const TRANSLATE_TIMEOUT_MS = 8000;
+const SILENCE_HELP_MS = 7000;     // 1st silence → help with examples / gentle nudge
+const SILENCE_PAUSE_MS = 16000;   // 2nd silence → quiet pause, mic still open
+const SLEEP_MS = 120000;          // 2 min with nothing → mic fully off (battery / heat)
+const UNDO_VISIBLE_MS = 8000;
+const WRITE_TIMEOUT_MS = 30000;
+const SPEECH_LANG = 'ja';         // the interviewer always speaks and listens in Japanese
 
 const readSession = (key, fallback) => {
   try { const v = sessionStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
@@ -25,51 +27,78 @@ const withTimeout = (promise, ms) => Promise.race([
   new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
 ]);
 
-/** Optional polish: free text → polite Japanese for the 履歴書. Falls back to the original on any problem. */
-async function translateToJapanese(text, field) {
-  const section = field === 'motivation' ? '志望動機' : '自己PR';
-  const prompt = `次の文章を、日本の履歴書の「${section}」欄に書く自然で丁寧な日本語（です・ます調）に翻訳してください。翻訳文のみを出力し、説明は書かないでください。\n\n${text}`;
-  const reply = await withTimeout(michiApiService.sendChatMessage({ message: prompt }), TRANSLATE_TIMEOUT_MS);
-  const clean = String(reply || '').replace(/^["「『]|["」』]$/g, '').trim();
-  const jpRatio = (clean.match(/[\u3040-\u30ff\u4e00-\u9fff]/g) || []).length / Math.max(clean.length, 1);
-  if (!clean || clean.length > 1500 || jpRatio < 0.3) throw new Error('bad translation');
-  return clean;
-}
-
 /**
- * 🎙️ Resume Voice Agent — the AI interviews the user and fills the 履歴書 on their behalf.
- * Mounted only while the resume builder is open with AI VOICE on; unmounting stops everything.
+ * 🎙️ Resume Voice Agent 2.0 — the AI interviews the user in Japanese and fills the 履歴書 on their behalf.
+ * Mounted (lazy-loaded) only while the resume builder is open with AI VOICE on; unmounting stops everything.
+ *
+ * onWrite(effect) → Promise<restoreFn>: writes with a typewriter and returns a function that undoes it.
  */
 export default function ResumeVoiceAgent({ formData, lang = 'uz', labels = {}, onWrite, onClose }) {
-  const scriptLang = getScriptLang(lang);
-  const s = getScript(scriptLang);
+  const uiLang = getScriptLang(lang);
+  const s = getScript(uiLang);
   const ui = s.ui;
 
-  const [status, setStatus] = useState('speaking'); // speaking | listening | confirm | thinking | writing | paused | done | error
+  const [status, setStatus] = useState('speaking'); // speaking | listening | confirm | writing | paused | sleep | done | error
   const [aiText, setAiText] = useState('');
+  const [subText, setSubText] = useState('');
   const [liveText, setLiveText] = useState('');
   const [pending, setPending] = useState(null);
+  const [examples, setExamples] = useState([]);
   const [progress, setProgress] = useState({ n: 1, total: 1 });
   const [errorText, setErrorText] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [translating, setTranslating] = useState(false);
+  const [undoVisible, setUndoVisible] = useState(false);
 
   const engineRef = useRef(null);
   const ioRef = useRef(null);
   const flowRef = useRef(0);            // increments on every new flow; stale async steps bail out
   const aliveRef = useRef(true);
-  const pausedRef = useRef(false);
-  const noAnswerTimerRef = useRef(null);
-  const noAnswerCountRef = useRef(0);
+  const silenceTimerRef = useRef(null);
+  const sleepTimerRef = useRef(null);
+  const undoTimerRef = useRef(null);
+  const silenceCountRef = useRef(0);
   const hiddenPauseRef = useRef(false);
+  const restoreRef = useRef(null);      // undo function for the last write
+  const examplesStepRef = useRef(null);
+  const liveRef = useRef({ text: '', raf: 0 });
   const onWriteRef = useRef(onWrite);
   useEffect(() => { onWriteRef.current = onWrite; }, [onWrite]);
 
-  const clearNoAnswer = () => clearTimeout(noAnswerTimerRef.current);
+  const clearSilence = () => clearTimeout(silenceTimerRef.current);
+  const clearSleep = () => clearTimeout(sleepTimerRef.current);
+
+  // Interim text arrives many times per second — repaint at most once per frame
+  const pushLive = (text) => {
+    liveRef.current.text = text;
+    if (liveRef.current.raf) return;
+    liveRef.current.raf = requestAnimationFrame(() => {
+      liveRef.current.raf = 0;
+      setLiveText(liveRef.current.text);
+    });
+  };
 
   const syncProgress = () => {
     const eng = engineRef.current;
     if (eng) setProgress(eng.progress());
+  };
+
+  const showUndo = () => {
+    clearTimeout(undoTimerRef.current);
+    setUndoVisible(true);
+    undoTimerRef.current = setTimeout(() => setUndoVisible(false), UNDO_VISIBLE_MS);
+  };
+  const hideUndo = () => { clearTimeout(undoTimerRef.current); setUndoVisible(false); };
+
+  const goToSleep = () => {
+    const io = ioRef.current;
+    if (!io) return;
+    flowRef.current += 1;
+    clearSilence();
+    io.cancelSpeech();
+    io.stopListening();
+    setStatus('sleep');
+    setAiText(getScript(SPEECH_LANG).sleep);
+    setSubText(uiLang === 'ja' ? '' : s.sleep);
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,37 +108,60 @@ export default function ResumeVoiceAgent({ formData, lang = 'uz', labels = {}, o
     if (!result || !eng || !io || !aliveRef.current) return;
     const flow = ++flowRef.current;
     const stale = () => flow !== flowRef.current || !aliveRef.current;
-    clearNoAnswer();
+    clearSilence();
+    clearSleep();
     syncProgress();
 
     if (result.type === 'write') {
       setStatus('writing');
       setLiveText('');
+      setExamples([]);
+      setPending(null);
       io.stopListening();
-      try {
-        await withTimeout(onWriteRef.current?.(result.effect), WRITE_TIMEOUT_MS);
-      } catch { /* the value is already in state even if the animation was interrupted */ }
+      let restore = null;
+      if (result.effect) {
+        try {
+          restore = await withTimeout(onWriteRef.current?.(result.effect), WRITE_TIMEOUT_MS);
+        } catch { /* the value is already in state even if the animation was interrupted */ }
+      }
       writeSession(SKIPPED_KEY, eng.getSkipped());
       if (stale()) return;
-      setPending(null);
+      restoreRef.current = typeof restore === 'function' ? restore : null;
+      if (result.undoable) showUndo();
+      run(result.next);
+      return;
+    }
+
+    if (result.type === 'undo') {
+      hideUndo();
+      setStatus('writing');
+      io.cancelSpeech();
+      io.stopListening();
+      const restore = restoreRef.current;
+      restoreRef.current = null;
+      try { await withTimeout(restore?.(), 5000); } catch { /* best effort */ }
+      if (stale()) return;
       run(result.next);
       return;
     }
 
     if (result.type === 'pause') {
       setAiText(result.say);
+      setSubText(result.sub || '');
       setStatus('speaking');
       await io.speak(result.say);
       if (stale()) return;
-      pausedRef.current = true;
       setStatus('paused');
       io.stopListening();
+      sleepTimerRef.current = setTimeout(() => { if (!stale()) goToSleep(); }, SLEEP_MS);
       return;
     }
 
     if (result.type === 'done') {
       setPending(null);
+      setExamples([]);
       setAiText(result.say);
+      setSubText(result.sub || '');
       setStatus('speaking');
       io.stopListening();
       writeSession(SKIPPED_KEY, eng.getSkipped());
@@ -119,55 +171,42 @@ export default function ResumeVoiceAgent({ formData, lang = 'uz', labels = {}, o
       return;
     }
 
-    // ask | confirm | retry
-    if (result.type === 'skip' || result.type === 'ask' || result.type === 'retry') writeSession(SKIPPED_KEY, eng.getSkipped());
+    // ask | confirm | retry | help
+    writeSession(SKIPPED_KEY, eng.getSkipped());
+    if (result.type === 'help') {
+      setExamples(result.examples || []);
+      examplesStepRef.current = result.stepId;
+    } else if (result.stepId !== examplesStepRef.current) {
+      setExamples([]);
+      examplesStepRef.current = null;
+    }
     setAiText(result.say);
-    setPending(result.pending || null);
+    setSubText(result.sub || '');
+    setPending(eng.phase === 'confirm' ? (result.pending || null) : null);
     setLiveText('');
     setStatus('speaking');
 
-    // Translate long answers to Japanese in parallel with the read-back
-    let translation = null;
-    const p = result.pending;
-    if (result.type === 'confirm' && p?.translatable && !p.translated) {
-      const field = eng.current?.field;
-      setTranslating(true);
-      translation = translateToJapanese(p.original || p.value, field)
-        .then(jp => {
-          if (stale() || eng.pending !== p) return;
-          const next = eng.setPendingWriteValue(jp);
-          if (next) { next.translated = true; setPending({ ...next }); }
-        })
-        .catch(() => { /* keep original text */ })
-        .finally(() => setTranslating(false));
-    }
-
     await io.speak(result.say);
     if (stale()) return;
-    if (translation) {
-      setStatus('thinking');
-      await translation;
-      if (stale()) return;
-    }
 
-    pausedRef.current = false;
-    const longAnswer = eng.phase === 'ask' && eng.current?.kind === 'long';
-    io.setAnswerMode(longAnswer ? 'long' : 'short');
+    io.setAnswerMode('short');
     io.listen();
     setStatus(eng.phase === 'confirm' ? 'confirm' : 'listening');
 
-    noAnswerTimerRef.current = setTimeout(() => {
-      if (stale()) return;
-      noAnswerCountRef.current += 1;
-      if (noAnswerCountRef.current <= 1) {
-        run(eng.noAnswer());
-      } else {
-        // Stay quiet but keep the microphone open: any answer resumes the interview
-        pausedRef.current = true;
-        setStatus('paused');
-        setAiText(s.paused);
-      }
-    }, longAnswer ? NO_ANSWER_MS.long : NO_ANSWER_MS.short);
+    const armSilence = (ms) => {
+      silenceTimerRef.current = setTimeout(() => {
+        if (stale()) return;
+        silenceCountRef.current += 1;
+        if (silenceCountRef.current <= 1) {
+          run(eng.onSilence());
+        } else {
+          // Stay quiet but keep the microphone open: any answer resumes the interview
+          setStatus('paused');
+          sleepTimerRef.current = setTimeout(() => { if (!stale()) goToSleep(); }, SLEEP_MS);
+        }
+      }, ms);
+    };
+    armSilence(silenceCountRef.current === 0 ? SILENCE_HELP_MS : SILENCE_PAUSE_MS);
   }, []);
 
   /* ------------------------------ mount ------------------------------ */
@@ -175,25 +214,27 @@ export default function ResumeVoiceAgent({ formData, lang = 'uz', labels = {}, o
     aliveRef.current = true;
     const engine = new ResumeInterview({
       formData,
-      lang: scriptLang,
+      lang: uiLang,
       labels,
       skipped: readSession(SKIPPED_KEY, [])
     });
     engineRef.current = engine;
 
     const io = new ResumeVoiceIO({
-      lang: scriptLang,
+      lang: SPEECH_LANG,
       onInterim: (text) => {
-        setLiveText(text);
+        pushLive(text);
         if (text) {
-          clearNoAnswer();
-          noAnswerCountRef.current = 0;
+          clearSilence();
+          clearSleep();
+          silenceCountRef.current = 0;
         }
       },
       onFinal: (alts) => {
-        clearNoAnswer();
-        noAnswerCountRef.current = 0;
-        setLiveText(alts[0] || '');
+        clearSilence();
+        clearSleep();
+        silenceCountRef.current = 0;
+        pushLive(alts[0]?.text || '');
         const res = engineRef.current?.handleAnswer(alts);
         if (res) run(res);
       },
@@ -220,22 +261,28 @@ export default function ResumeVoiceAgent({ formData, lang = 'uz', labels = {}, o
       if (document.hidden) {
         hiddenPauseRef.current = true;
         flowRef.current += 1;
-        clearNoAnswer();
+        clearSilence();
+        clearSleep();
         io.cancelSpeech();
         io.stopListening();
         setStatus('paused');
       } else if (hiddenPauseRef.current) {
         hiddenPauseRef.current = false;
+        silenceCountRef.current = 0;
         run(engineRef.current.restate());
       }
     };
     document.addEventListener('visibilitychange', onVisibility);
+    const live = liveRef.current;
 
     return () => {
       // Leaving the resume page (or turning AI VOICE off) → everything stops immediately
       aliveRef.current = false;
       flowRef.current += 1;
-      clearNoAnswer();
+      clearSilence();
+      clearSleep();
+      clearTimeout(undoTimerRef.current);
+      if (live.raf) cancelAnimationFrame(live.raf);
       document.removeEventListener('visibilitychange', onVisibility);
       io.destroy();
       ioRef.current = null;
@@ -247,44 +294,55 @@ export default function ResumeVoiceAgent({ formData, lang = 'uz', labels = {}, o
 
   /* ------------------------------ actions ------------------------------ */
   const eng = () => engineRef.current;
+  const busy = status === 'writing';
 
   const handleYes = () => { if (eng()?.phase === 'confirm') run(eng().confirm()); };
-  const handleAgain = () => { if (eng()) run(eng().phase === 'confirm' ? eng().reject() : eng().restate()); };
+  const handleNo = () => { if (eng()?.phase === 'confirm') run(eng().reject()); };
+  const handleRepeat = () => { if (eng()) { silenceCountRef.current = 0; run(eng().restate()); } };
   const handleSkip = () => { if (eng() && !eng().isDone) run(eng().skip()); };
+  const handleHelp = () => { if (eng() && !eng().isDone) run(eng().help()); };
+  const handleUndo = () => { if (eng()?.canUndo) run(eng().undoResult()); };
+  const handlePick = (i) => { const res = eng()?.pickExample(i); if (res) run(res); };
+  const handleWake = () => { if (eng()) { silenceCountRef.current = 0; run(eng().restate()); } };
   const handlePauseToggle = () => {
     const io = ioRef.current;
     if (!io || !eng()) return;
-    if (status === 'paused') {
-      noAnswerCountRef.current = 0;
-      run(eng().restate());
+    if (status === 'paused' || status === 'sleep') {
+      handleWake();
     } else {
       flowRef.current += 1;
-      clearNoAnswer();
+      clearSilence();
       io.cancelSpeech();
       io.stopListening();
-      pausedRef.current = true;
       setStatus('paused');
+      clearSleep();
+      sleepTimerRef.current = setTimeout(goToSleep, SLEEP_MS);
     }
   };
-  const handleTapSpeech = () => { if (status === 'speaking') ioRef.current?.cancelSpeech(); };
+  const handleTapSpeech = () => {
+    if (status === 'speaking') ioRef.current?.cancelSpeech();
+    else if (status === 'sleep') handleWake();
+  };
 
   const statusLabel = {
     speaking: ui.speaking,
     listening: ui.listening,
     confirm: ui.confirm,
-    thinking: s.translating,
     writing: ui.writing,
     paused: ui.paused,
+    sleep: ui.sleep,
     done: ui.done,
     error: '!'
   }[status];
 
-  const visualState = status === 'listening' || status === 'confirm' ? (isListening ? 'listening' : 'idle') : status;
+  const visualState = status === 'listening' || status === 'confirm' ? (isListening ? 'listening' : 'idle') : (status === 'sleep' ? 'paused' : status);
   const pct = Math.round(((progress.n - 1) / Math.max(progress.total, 1)) * 100);
   const isDone = status === 'done';
+  const showLive = status === 'listening' || status === 'confirm' || status === 'paused';
+  const showExamples = examples.length > 0 && !busy && !isDone && status !== 'sleep' && status !== 'error';
 
   const panel = (
-    <section className={`rva rva--${visualState}`} role="dialog" aria-live="polite" aria-label={s.persona} id="resume-voice-agent">
+    <section className={`rva rva--${visualState}`} role="dialog" aria-live="polite" aria-label={s.persona} id="resume-voice-agent" lang="ja">
       <div className="rva-aura" aria-hidden="true" />
 
       <header className="rva-head">
@@ -294,7 +352,7 @@ export default function ResumeVoiceAgent({ formData, lang = 'uz', labels = {}, o
           <span className="rva-orb-ring r2" />
         </div>
         <div className="rva-title">
-          <strong>{s.persona}</strong>
+          <strong>{getScript(SPEECH_LANG).persona}</strong>
           <span className={`rva-chip rva-chip-${status}`}>
             <i className="rva-chip-dot" />{statusLabel}
           </span>
@@ -303,8 +361,8 @@ export default function ResumeVoiceAgent({ formData, lang = 'uz', labels = {}, o
           <span className="rva-progress-num">{fill(ui.progress, progress)}</span>
         )}
         {status !== 'error' && !isDone && (
-          <button type="button" id="rva-pause-btn" className="rva-icon-btn" onClick={handlePauseToggle} aria-label={status === 'paused' ? ui.resume : ui.pause}>
-            {status === 'paused' ? <Play size={16} /> : <Pause size={16} />}
+          <button type="button" id="rva-pause-btn" className="rva-icon-btn" onClick={handlePauseToggle} aria-label={status === 'paused' || status === 'sleep' ? ui.resume : ui.pause}>
+            {status === 'paused' || status === 'sleep' ? <Play size={16} /> : <Pause size={16} />}
           </button>
         )}
         <button type="button" id="rva-close-btn" className="rva-icon-btn" onClick={onClose} aria-label={ui.close}>
@@ -315,51 +373,84 @@ export default function ResumeVoiceAgent({ formData, lang = 'uz', labels = {}, o
       <button type="button" className="rva-say" onClick={handleTapSpeech} id="rva-question">
         {status === 'error' ? errorText : aiText}
       </button>
+      {subText && status !== 'error' && (
+        <p className="rva-sub" id="rva-subtitle" lang={uiLang}>{subText}</p>
+      )}
 
-      {(status === 'listening' || status === 'confirm' || status === 'paused') && (
+      {status === 'sleep' && (
+        <button type="button" id="rva-wake-btn" className="rva-btn primary rva-wake" onClick={handleWake}>
+          <Mic size={18} /> {ui.sleep}
+        </button>
+      )}
+
+      {showLive && (
         <div className="rva-live">
           <div className={`rva-wave ${isListening ? 'on' : ''}`} aria-hidden="true">
             {Array.from({ length: 5 }).map((_, i) => <span key={i} style={{ animationDelay: `${i * 0.12}s` }} />)}
           </div>
           <span className={`rva-live-text ${liveText ? '' : 'placeholder'}`}>
-            {liveText || ui.listening + '…'}
+            {liveText || `${ui.listening}…`}
           </span>
         </div>
       )}
 
-      {pending && (status === 'confirm' || status === 'speaking' || status === 'thinking') && (
+      {showExamples && (
+        <div className="rva-examples" id="rva-examples" role="list">
+          {examples.map((ex, i) => (
+            <button
+              type="button"
+              key={`${ex.label}-${i}`}
+              id={`rva-example-${i + 1}`}
+              role="listitem"
+              className="rva-example"
+              style={{ animationDelay: `${i * 70}ms` }}
+              onClick={() => handlePick(i)}
+            >
+              <span className="rva-example-num">{i + 1}</span>
+              <span className="rva-example-body">
+                <span className="rva-example-label">{ex.label}</span>
+                {ex.sub && ex.sub !== ex.label && <span className="rva-example-sub" lang={uiLang}>{ex.sub}</span>}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {pending && (status === 'confirm' || status === 'speaking') && (
         <div className="rva-confirm">
           <div className="rva-confirm-label"><PenLine size={13} /> {ui.willWrite}</div>
           <div className="rva-confirm-value" id="rva-pending-value">{pending.display}</div>
-          {pending.translated && pending.original && (
-            <div className="rva-confirm-original"><Languages size={12} /> {pending.original}</div>
-          )}
-          {translating && <div className="rva-confirm-original rva-shimmer">{s.translating}</div>}
         </div>
       )}
 
-      {status === 'writing' && (
+      {busy && (
         <div className="rva-writing"><PenLine size={14} /> {ui.writing}<span className="rva-caret" /></div>
       )}
 
-      {!isDone && status !== 'error' && (
+      {!isDone && status !== 'error' && status !== 'sleep' && (
         <div className="rva-actions">
           {pending && status === 'confirm' ? (
             <>
-              <button type="button" id="rva-yes-btn" className="rva-btn primary" onClick={handleYes}><Check size={16} /> {ui.yes}</button>
-              <button type="button" id="rva-again-btn" className="rva-btn" onClick={handleAgain}><RotateCcw size={15} /> {ui.again}</button>
-              <button type="button" id="rva-skip-btn" className="rva-btn ghost" onClick={handleSkip}><SkipForward size={15} /> {ui.skip}</button>
+              <button type="button" id="rva-yes-btn" className="rva-btn primary big" onClick={handleYes}><Check size={20} /> {ui.yesOnly}</button>
+              <button type="button" id="rva-no-btn" className="rva-btn" onClick={handleNo}><RotateCcw size={15} /> {ui.wrong}</button>
             </>
           ) : (
             <>
-              <button type="button" id="rva-repeat-btn" className="rva-btn" onClick={handleAgain} disabled={status === 'writing'}><RotateCcw size={15} /> {ui.again}</button>
-              <button type="button" id="rva-skip-btn" className="rva-btn ghost" onClick={handleSkip} disabled={status === 'writing'}><SkipForward size={15} /> {ui.skip}</button>
+              {undoVisible && (
+                <button type="button" id="rva-undo-btn" className="rva-btn undo" onClick={handleUndo} disabled={busy}>
+                  <Undo2 size={16} /> {ui.wrong}
+                  <i className="rva-undo-timer" style={{ animationDuration: `${UNDO_VISIBLE_MS}ms` }} />
+                </button>
+              )}
+              <button type="button" id="rva-help-btn" className="rva-btn" onClick={handleHelp} disabled={busy}><Lightbulb size={15} /> {ui.examples}</button>
+              <button type="button" id="rva-repeat-btn" className="rva-btn" onClick={handleRepeat} disabled={busy}><RotateCcw size={15} /> {ui.repeat}</button>
+              <button type="button" id="rva-skip-btn" className="rva-btn ghost" onClick={handleSkip} disabled={busy}><SkipForward size={15} /> {ui.skip}</button>
             </>
           )}
         </div>
       )}
 
-      {!isDone && status !== 'error' && <p className="rva-hint">{s.hint}</p>}
+      {!isDone && status !== 'error' && <p className="rva-hint" lang={uiLang}>{s.hint}</p>}
 
       <div className="rva-track" aria-hidden="true"><span style={{ width: `${isDone ? 100 : pct}%` }} /></div>
     </section>

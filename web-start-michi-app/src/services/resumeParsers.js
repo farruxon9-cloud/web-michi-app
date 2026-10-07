@@ -52,13 +52,30 @@ export const COMMAND_PHRASES = {
     'होइन', 'गलत', 'फेरि'
   ],
   skip: [
-    "o'tkazib yubor", "o'tkazib yuboring", "o'tkaz", 'otkaz', 'otkazib yubor', 'keyingi', 'keyingisi', 'kerak emas', 'bilmayman', 'tashla', 'tashlab ket',
-    'skip', 'next', 'pass', "don't know", 'i don\'t know', 'skip it', 'next question',
-    'пропусти', 'пропустить', 'дальше', 'следующий', 'не знаю', 'далее',
-    'スキップ', '次', '次へ', '飛ばして', 'パス', 'わからない', 'わかりません',
-    '跳过', '下一个', '不知道',
-    'bỏ qua', 'tiếp', 'tiếp theo', 'không biết',
-    'छोड्नुहोस्', 'अर्को', 'थाहा छैन'
+    "o'tkazib yubor", "o'tkazib yuboring", "o'tkaz", 'otkaz', 'otkazib yubor', 'keyingi', 'keyingisi', 'kerak emas', 'tashla', 'tashlab ket', 'skip',
+    'skip', 'next', 'pass', 'skip it', 'next question',
+    'пропусти', 'пропустить', 'дальше', 'следующий', 'далее',
+    'スキップ', '次', '次へ', '飛ばして', 'パス', 'すきっぷ',
+    '跳过', '下一个',
+    'bỏ qua', 'tiếp', 'tiếp theo',
+    'छोड्नुहोस्', 'अर्को'
+  ],
+  help: [
+    'bilmayman', 'bilmadim', 'qanday', 'qanday aytaman', 'misol', 'misol ber', 'yordam', 'yordam ber',
+    "don't know", "i don't know", 'help', 'example', 'examples', 'hint', 'what should i say',
+    'не знаю', 'помоги', 'пример', 'подскажи',
+    'わからない', 'わかりません', '分からない', '分かりません', 'どう言えばいい', '例', '例えば', '例は', 'ヒント', '助けて', '教えて', 'これは何',
+    '不知道', '例子', '帮助',
+    'không biết', 'ví dụ', 'giúp',
+    'थाहा छैन', 'उदाहरण'
+  ],
+  undo: [
+    "noto'g'ri", 'notogri', 'xato', 'xato yozding', 'wrong', 'undo', 'that is wrong',
+    'неправильно', 'не так', 'ошибка', 'отмена',
+    'ちがう', '違う', '違います', 'ちがいます', '間違い', 'まちがい', '取り消し', 'とりけし', 'やり直し', '違うよ',
+    '不对', '错了', '撤销',
+    'sai', 'sai rồi',
+    'गलत'
   ],
   back: [
     'orqaga', 'oldingi', 'oldingisi', 'orqaga qayt',
@@ -138,14 +155,26 @@ const WORD_TO_DIGIT = new Map();
 Object.entries(DIGIT_WORDS).forEach(([d, words]) => words.forEach(w => WORD_TO_DIGIT.set(w, d)));
 const DEVANAGARI_DIGITS = '०१२३४५६७८९';
 
+// Japanese digits spoken in kana are glued together (「ゼロキューゼロ」) — longest readings first
+const KANA_DIGITS = [
+  ['キュウ', '9'], ['キュー', '9'], ['きゅう', '9'], ['きゅー', '9'],
+  ['ゼロ', '0'], ['ぜろ', '0'], ['レイ', '0'], ['れい', '0'], ['マル', '0'],
+  ['イチ', '1'], ['いち', '1'], ['ニー', '2'], ['にー', '2'], ['サン', '3'], ['さん', '3'],
+  ['ヨン', '4'], ['よん', '4'], ['ゴー', '5'], ['ごー', '5'], ['ロク', '6'], ['ろく', '6'],
+  ['ナナ', '7'], ['なな', '7'], ['ハチ', '8'], ['はち', '8'], ['ニ', '2'], ['に', '2'], ['ゴ', '5'], ['ご', '5']
+];
+
 /** Converts spoken digit words + any digit script into a pure ASCII digit string. */
 export function extractDigits(text) {
   if (!text) return '';
   let s = String(text).normalize('NFKC').replace(APOSTROPHES, "'").toLowerCase();
   s = s.replace(/[०-९]/g, ch => String(DEVANAGARI_DIGITS.indexOf(ch)));
+  if (/[\u3040-\u30ff]/.test(s)) {
+    for (const [kana, d] of KANA_DIGITS) s = s.split(kana).join(` ${d} `);
+  }
   // CJK digit characters can be glued together ("〇九〇") — split them first
   s = s.replace(/([〇零一二三四五六七八九])/g, ' $1 ');
-  const tokens = s.split(/[\s,.\-–—/()]+/).filter(Boolean);
+  const tokens = s.split(/[\s,.\-–—/()のー]+/).filter(Boolean);
   let out = '';
   for (const tok of tokens) {
     if (/^\+?\d+$/.test(tok)) { out += tok.replace('+', ''); continue; }
@@ -189,10 +218,14 @@ const EMAIL_TLDS = ['co.jp', 'ne.jp', 'or.jp', 'com', 'net', 'org', 'jp', 'ru', 
 export function parseEmail(text) {
   if (!text) return null;
   let s = ` ${String(text).normalize('NFKC').toLowerCase()} `;
-  for (const w of EMAIL_AT_WORDS) s = s.split(` ${w} `).join('@');
-  for (const w of EMAIL_DOT_WORDS) s = s.split(` ${w} `).join('.');
-  s = s.replace(/\s*(underscore|pastki chiziq|подчеркивание|アンダーバー)\s*/g, '_');
+  const isCjk = (w) => /[\u3040-\u9fff]/.test(w);
+  // Japanese STT glues words together (「aliceアットマークgmailドットcom」) — replace CJK words anywhere
+  for (const w of EMAIL_AT_WORDS) s = isCjk(w) ? s.split(w).join('@') : s.split(` ${w} `).join('@');
+  for (const w of EMAIL_DOT_WORDS) s = isCjk(w) ? s.split(w).join('.') : s.split(` ${w} `).join('.');
+  s = s.replace(/\s*(underscore|pastki chiziq|подчеркивание|アンダーバー|アンダースコア)\s*/g, '_');
   s = s.replace(/\s*(defis|tire|dash|hyphen|дефис|ハイフン)\s*/g, '-');
+  s = s.replace(/(ジーメール|じーめーる)/g, 'gmail').replace(/(ヤフー|やふー)/g, 'yahoo').replace(/(ドコモ|どこも)/g, 'docomo')
+    .replace(/(コム|こむ)/g, 'com').replace(/(ジェーピー|じぇーぴー)/g, 'jp').replace(/(シーオー|しーおー)/g, 'co');
   s = s.replace(/\s+/g, '').replace(/[,。、]/g, '').replace(/\.+$/, '');
   const at = s.indexOf('@');
   if (at > 0 && !s.slice(at).includes('.')) {
@@ -245,10 +278,44 @@ const validDate = (y, m, d) => {
   return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 };
 
+const KANJI_DIGIT = { 〇: 0, 零: 0, 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
+
+/** 「千九百九十五」→ 1995, 「一九九五」→ 1995, 「十二」→ 12 */
+export function kanjiToNumber(str) {
+  if (!str) return null;
+  if (!/[千百十]/.test(str)) {
+    const digits = str.split('').map(c => KANJI_DIGIT[c]);
+    return digits.every(d => d !== undefined) ? parseInt(digits.join(''), 10) : null;
+  }
+  let total = 0;
+  let cur = 0;
+  for (const c of str) {
+    if (c in KANJI_DIGIT) cur = KANJI_DIGIT[c];
+    else if (c === '十') { total += (cur || 1) * 10; cur = 0; }
+    else if (c === '百') { total += (cur || 1) * 100; cur = 0; }
+    else if (c === '千') { total += (cur || 1) * 1000; cur = 0; }
+    else return null;
+  }
+  return total + cur;
+}
+
+const ERA_START = { 令和: 2019, 平成: 1989, 昭和: 1926, れいわ: 2019, へいせい: 1989, しょうわ: 1926 };
+
 /** Parses a spoken birth date → 'YYYY-MM-DD' or null. */
 export function parseSpokenDate(text) {
   if (!text) return null;
-  const s = String(text).normalize('NFKC').toLowerCase().replace(APOSTROPHES, "'");
+  let s = String(text).normalize('NFKC').toLowerCase().replace(APOSTROPHES, "'");
+  s = s.replace(/[〇零一二三四五六七八九十百千]+/g, (m) => {
+    const n = kanjiToNumber(m);
+    return n === null ? m : String(n);
+  });
+
+  // Japanese era: 平成7年5月12日 / 令和元年…
+  const era = s.match(/(令和|平成|昭和|れいわ|へいせい|しょうわ)\s*(元|\d{1,2})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日?/);
+  if (era) {
+    const y = ERA_START[era[1]] + (era[2] === '元' ? 1 : +era[2]) - 1;
+    return validDate(y, +era[3], +era[4]);
+  }
 
   // 1998年3月5日 / 1998 년...
   const cjk = s.match(/(\d{2,4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日?/);
@@ -294,14 +361,17 @@ export function parseSpokenDate(text) {
 /* ------------------------------------------------------------------ */
 
 const NONE_WORDS = ["yo'q", 'yoq', 'none', 'no', 'nothing', 'нет', 'никакой', 'ない', 'なし', 'ありません', '没有', '无', 'không', 'không có', 'छैन'];
+// Japanese answers have no spaces: 「持っていません」「なしです」
+const NONE_CJK = ['なし', '無し', 'ありません', '持っていません', 'もっていません', '持ってない', 'もってない', 'ないです', '無いです', 'いいえ', '没有'];
 
-const isNoneAnswer = (n) => NONE_WORDS.some(w => n === w || n.startsWith(`${w} `) || n.endsWith(` ${w}`));
+const isNoneAnswer = (n) => NONE_WORDS.some(w => n === w || n.startsWith(`${w} `) || n.endsWith(` ${w}`))
+  || NONE_CJK.some(w => n.includes(w));
 
 export function parseGender(text) {
   const n = normalizeUtterance(text);
   if (!n) return null;
-  if (/(ayol|qiz|female|woman|girl|женск|женщин|девушк|女|nữ|महिला)/.test(n)) return 'female';
-  if (/(erkak|o'g'il|ogil|male|man|boy|мужск|мужчин|парень|男|nam|पुरुष)/.test(n)) return 'male';
+  if (/(ayol|qiz|female|woman|girl|женск|женщин|девушк|女|おんな|じょせい|nữ|महिला)/.test(n)) return 'female';
+  if (/(erkak|o'g'il|ogil|male|man|boy|мужск|мужчин|парень|男|おとこ|だんせい|nam|पुरुष)/.test(n)) return 'male';
   return null;
 }
 
@@ -319,6 +389,11 @@ export function parseJlpt(text) {
   if (!n) return null;
   const direct = n.match(/(?:^|[^a-z])(?:n|эн|ен|エヌ|えぬ)\s*-?\s*([1-5])(?!\d)/);
   if (direct) return `N${direct[1]}`;
+  const kanaLevel = n.match(/(?:エヌ|えぬ|n)\s*(ワン|ツー|スリー|フォー|ファイブ|いち|イチ|に|ニ|さん|サン|よん|ヨン|ご|ゴ|一|二|三|四|五)/);
+  if (kanaLevel) {
+    const map = { ワン: 1, いち: 1, イチ: 1, 一: 1, ツー: 2, に: 2, ニ: 2, 二: 2, スリー: 3, さん: 3, サン: 3, 三: 3, フォー: 4, よん: 4, ヨン: 4, 四: 4, ファイブ: 5, ご: 5, ゴ: 5, 五: 5 };
+    return `N${map[kanaLevel[1]]}`;
+  }
   const kyu = n.match(/([1-5一二三四五])\s*(級|级|kyu|daraja|darajasi|уровень|level|cấp)/);
   if (kyu) {
     const map = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5 };
@@ -337,10 +412,10 @@ export function parseJlpt(text) {
 }
 
 const LICENSE_PATTERNS = [
-  ['junchugata', /(準中型|junchu|jun chu|semi.?medium|yarim o'rta|o'rta.?kichik|полусредн|bán trung)/],
-  ['oogata', /(大型|oogata|ogata|large|big truck|katta|og'ir|грузов|больш|категори[яи] c|xe tải lớn)/],
-  ['chugata', /(中型|chugata|medium|o'rta|средн|trung)/],
-  ['futsu', /(普通|futsu|futsuu|oddiy|yengil|regular|normal|standard|ordinary|car|обычн|легков|категори[яи] b|phổ thông|सामान्य)/]
+  ['junchugata', /(準中型|じゅんちゅうがた|ジュンチュウガタ|junchu|jun chu|semi.?medium|yarim o'rta|o'rta.?kichik|полусредн|bán trung)/],
+  ['oogata', /(大型|おおがた|オオガタ|oogata|ogata|large|big truck|katta|og'ir|грузов|больш|категори[яи] c|xe tải lớn)/],
+  ['chugata', /(中型|ちゅうがた|チュウガタ|chugata|medium|o'rta|средн|trung)/],
+  ['futsu', /(普通|ふつう|フツウ|futsu|futsuu|oddiy|yengil|regular|normal|standard|ordinary|car|обычн|легков|категори[яи] b|phổ thông|सामान्य)/]
 ];
 
 /** → array of licence keys ([] = none) or null when not understood */
@@ -507,10 +582,70 @@ function wordToKatakana(word) {
   return out;
 }
 
+/** Hiragana → Katakana (「ありもふ」→「アリモフ」). Other characters are kept. */
+export function hiraganaToKatakana(text) {
+  return String(text || '').replace(/[\u3041-\u3096]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0x60));
+}
+
+/** True when the text is only kana (hiragana/katakana) + spaces — i.e. a usable reading. */
+export const isKanaOnly = (text) => /^[\u3040-\u30ff\s・ー　]+$/.test(String(text || '').trim()) && String(text || '').trim().length > 0;
+
+/* ------------------------------------------------------------------ */
+/* Ordinals ("1番", "いちばん", "birinchi", "first") → 0-based index    */
+/* ------------------------------------------------------------------ */
+
+const ORDINAL_WORDS = [
+  ['いちばん', 0], ['一番', 0], ['1番', 0], ['ひとつめ', 0], ['一つ目', 0], ['1つ目', 0], ['最初', 0],
+  ['にばん', 1], ['二番', 1], ['2番', 1], ['ふたつめ', 1], ['二つ目', 1], ['2つ目', 1],
+  ['さんばん', 2], ['三番', 2], ['3番', 2], ['みっつめ', 2], ['三つ目', 2], ['3つ目', 2], ['最後', 2]
+];
+const ORDINAL_LATIN = [
+  [0, ['birinchi', 'birinchisi', 'first', 'one', 'number one', 'первый', 'первое', 'первая', 'один', 'bir']],
+  [1, ['ikkinchi', 'ikkinchisi', 'second', 'two', 'number two', 'второй', 'второе', 'вторая', 'два', 'ikki']],
+  [2, ['uchinchi', 'uchinchisi', 'third', 'three', 'number three', 'третий', 'третье', 'третья', 'три', 'uch']]
+];
+
+/** → 0, 1, 2 or null. Only short utterances count, so a long answer never becomes a pick. */
+export function parseOrdinal(text, max = 3) {
+  const raw = String(text || '').normalize('NFKC').trim();
+  if (!raw || raw.length > 10 || /(番地|番号|丁目)/.test(raw)) return null;
+  for (const [w, i] of ORDINAL_WORDS) if (raw.includes(w) && i < max) return i;
+  const n = normalizeUtterance(raw).replace(/(番目?|です|で|をお願いします|お願いします)$/u, '').trim();
+  if (/^[1-9]$/.test(n)) return +n - 1 < max ? +n - 1 : null;
+  for (const [i, words] of ORDINAL_LATIN) if (words.includes(n) && i < max) return i;
+  return null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Address clean-up                                                    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Fixes a spoken Japanese address: prefecture written in kana → kanji, kana digits → numbers.
+ * @param {string} text
+ * @param {Array<[string,string]>} prefectures  [kanji, hiragana] pairs (from the knowledge pack)
+ */
+export function correctAddress(text, prefectures = []) {
+  let s = String(text || '').normalize('NFKC').replace(/\s+/g, ' ').trim();
+  if (!s) return s;
+  for (const [kanji, reading] of prefectures) {
+    const kata = hiraganaToKatakana(reading);
+    const shortReading = reading.replace(/(けん|ふ|と)$/u, '');
+    const shortKata = hiraganaToKatakana(shortReading);
+    if (s.startsWith(reading) || s.startsWith(kata)) { s = kanji + s.slice(reading.length); break; }
+    if (shortReading.length >= 2 && (s.startsWith(shortReading) || s.startsWith(shortKata))) {
+      s = kanji + s.slice(shortReading.length);
+      break;
+    }
+  }
+  return /[\u3040-\u30ff\u4e00-\u9fff]/.test(s) ? s.replace(/\s+/g, '') : s;
+}
+
 /** "Alimov Anvar" → "アリモフ アンバル". Japanese input is returned unchanged. */
 export function toKatakana(name) {
   if (!name) return '';
   const s = String(name).trim();
+  if (isKanaOnly(s)) return hiraganaToKatakana(s);
   if (/^[\u30a0-\u30ff\s・ー]+$/.test(s)) return s;
   const latin = /[а-яё]/i.test(s) ? cyrillicToLatin(s) : s;
   return latin.split(/\s+/).map(wordToKatakana).filter(Boolean).join(' ');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   ArrowLeft, User, Phone, Briefcase, GraduationCap, 
@@ -8,12 +8,46 @@ import {
 import { Capacitor } from '@capacitor/core';
 import { generateRirekishoBlob } from '../utils/resumeGenerator';
 import { saveResumeBlob, safeResumeFilename, isMobileDevice } from '../utils/resumeDownload';
-import ResumeVoiceAgent from './resume/ResumeVoiceAgent';
 import './ResumeBuilder.css';
+
+// The voice interviewer (engine + knowledge pack) is only downloaded when AI VOICE is switched on
+const ResumeVoiceAgent = lazy(() => import('./resume/ResumeVoiceAgent'));
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // Typewriter speed: short values are typed visibly, long texts faster so it never feels slow
-const typeDelay = (len) => (len <= 16 ? 60 : len <= 60 ? 34 : len <= 200 ? 16 : 7);
+const typeDelay = (len) => (len <= 16 ? 60 : len <= 60 ? 34 : len <= 200 ? 16 : 12);
+// Long texts are typed in chunks: at most ~120 repaints, so phones never heat up
+const TYPE_MAX_STEPS = 120;
+const POLISH_TIMEOUT_MS = 8000;
+const POLISH_LABELS = {
+  ja: ['AIで整える', '整えています…', '今は使えません。元の文章のままです。'],
+  uz: ['AI bilan silliqlash', 'Silliqlanmoqda…', "Hozir ishlamadi. Asl matn saqlandi."],
+  en: ['Polish with AI', 'Polishing…', 'Not available right now. Your text was kept.'],
+  ru: ['Улучшить с AI', 'Улучшаю…', 'Сейчас недоступно. Текст сохранён.'],
+  zh: ['AI润色', '正在润色…', '暂时不可用，已保留原文。'],
+  vi: ['AI chỉnh sửa', 'Đang chỉnh sửa…', 'Hiện không dùng được. Đã giữ văn bản gốc.'],
+  ne: ['AI ले सुधार', 'सुधार हुँदैछ…', 'अहिले उपलब्ध छैन। मूल पाठ राखियो।']
+};
+
+const withTimeout = (promise, ms) => Promise.race([
+  Promise.resolve(promise),
+  new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+]);
+
+/** Form keys touched by one voice write effect (used to undo exactly that write). */
+const effectKeys = (effect) => {
+  if (!effect) return [];
+  switch (effect.type) {
+    case 'text': return [effect.field];
+    case 'birthDate': return ['birthDate'];
+    case 'gender': return ['gender'];
+    case 'licenses': return ['driverLicenses'];
+    case 'jlpt': return ['jlptStatus'];
+    case 'list': return [effect.list];
+    case 'multi': return effect.effects.flatMap(effectKeys);
+    default: return [];
+  }
+};
 
 const JLPT_LEVELS = ['N1', 'N2', 'N3', 'N4', 'N5'];
 
@@ -428,8 +462,17 @@ export default function ResumeBuilder({
 
   /* ===== Resume Voice AI: writes on the user's behalf with a typewriter effect ===== */
 
-  // Types `value` into the element `id` character by character. The field is read-only and never
-  // focused while typing, so the on-screen keyboard does not appear.
+  // Latest values for the undo snapshot (the agent calls back asynchronously)
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
+  const dobRef = useRef({ y: '', m: '', d: '' });
+  dobRef.current = { y: selectedYear, m: selectedMonth, d: selectedDay };
+  const [polishing, setPolishing] = useState(null);
+  const [polishMsg, setPolishMsg] = useState(null);
+  const polishLabels = POLISH_LABELS[String(i18n.language || 'uz').slice(0, 2)] || POLISH_LABELS.en;
+
+  // Types `value` into the element `id`. The field is read-only and never focused while typing,
+  // so the on-screen keyboard does not appear. Long texts are typed in chunks.
   const typeInto = async (id, value, setValue) => {
     const token = typingTokenRef.current;
     if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
@@ -442,9 +485,10 @@ export default function ResumeBuilder({
     await sleep(380);
     const chars = Array.from(String(value ?? ''));
     const delay = typeDelay(chars.length);
-    for (let i = 1; i <= chars.length; i++) {
+    const step = Math.max(1, Math.ceil(chars.length / TYPE_MAX_STEPS));
+    for (let i = step; i < chars.length + step; i += step) {
       if (token !== typingTokenRef.current) break;
-      setValue(chars.slice(0, i).join(''));
+      setValue(chars.slice(0, Math.min(i, chars.length)).join(''));
       if (el && el.tagName === 'TEXTAREA') el.scrollTop = el.scrollHeight;
       await sleep(delay);
     }
@@ -468,9 +512,12 @@ export default function ResumeBuilder({
     await sleep(700);
   };
 
-  const handleVoiceWrite = async (effect) => {
+  const applyVoiceEffect = async (effect) => {
     if (!effect) return;
     switch (effect.type) {
+      case 'multi':
+        for (const sub of effect.effects || []) await applyVoiceEffect(sub);
+        break;
       case 'text': {
         const { field, value } = effect;
         await typeInto(field, value, v => setFormData(prev => ({ ...prev, [field]: v })));
@@ -524,6 +571,78 @@ export default function ResumeBuilder({
     }
   };
 
+  /** Writes one voice effect and returns a function that undoes exactly that write (「ちがう」). */
+  const handleVoiceWrite = async (effect) => {
+    if (!effect) return null;
+    const before = formDataRef.current;
+    const dob = { ...dobRef.current };
+    const keys = effectKeys(effect);
+    await applyVoiceEffect(effect);
+    return async () => {
+      typingTokenRef.current += 1;
+      setFormData(prev => {
+        const restored = { ...prev };
+        keys.forEach(k => { restored[k] = before[k]; });
+        return restored;
+      });
+      if (keys.includes('birthDate')) {
+        setSelectedYear(dob.y);
+        setSelectedMonth(dob.m);
+        setSelectedDay(dob.d);
+      }
+      const first = effect.type === 'multi' ? effect.effects[0] : effect;
+      const focusId = first?.type === 'text' ? first.field
+        : first?.type === 'birthDate' ? 'dob-day'
+          : first?.type === 'gender' ? 'gender-group'
+            : first?.type === 'licenses' ? 'license-group'
+              : first?.type === 'jlpt' ? 'jlpt-group'
+                : first?.type === 'list' ? `${first.list === 'educationHistory' ? 'edu' : 'work'}-${first.index}-${first.key}` : null;
+      if (focusId) await flashElement(focusId);
+    };
+  };
+
+  /** Optional polish of 志望動機 / 自己PR — only when the user taps the button (no background token use). */
+  const handlePolish = async (field) => {
+    const original = String(formData[field] || '').trim();
+    if (!original || polishing) return;
+    setPolishing(field);
+    setPolishMsg(null);
+    try {
+      const { michiApiService } = await import('../services/michiApiService');
+      const section = field === 'motivation' ? '志望動機' : '自己PR';
+      const prompt = `次の文章を、日本の履歴書の「${section}」欄に書く自然で丁寧な日本語（です・ます調、200〜300字）に整えてください。内容は変えず、整えた文章のみを出力してください。\n\n${original}`;
+      const reply = await withTimeout(michiApiService.sendChatMessage({ message: prompt }), POLISH_TIMEOUT_MS);
+      const clean = String(reply?.text ?? reply?.reply ?? reply ?? '').replace(/^["「『]|["」』]$/g, '').trim();
+      const jpRatio = (clean.match(/[\u3040-\u30ff\u4e00-\u9fff]/g) || []).length / Math.max(clean.length, 1);
+      if (!clean || clean.length > 1500 || jpRatio < 0.3) throw new Error('bad reply');
+      typingTokenRef.current += 1;
+      await typeInto(field, clean, v => setFormData(prev => ({ ...prev, [field]: v })));
+    } catch {
+      setPolishMsg({ field, text: polishLabels[2] });
+      setTimeout(() => setPolishMsg(m => (m?.field === field ? null : m)), 4000);
+    } finally {
+      setPolishing(null);
+    }
+  };
+
+  const renderPolish = (field) => (
+    String(formData[field] || '').trim() ? (
+      <div className="rb-polish-row">
+        <button
+          type="button"
+          id={`polish-${field}-btn`}
+          className="rb-polish-btn"
+          onClick={() => handlePolish(field)}
+          disabled={Boolean(polishing)}
+        >
+          {polishing === field ? <Loader2 size={13} className="spin" /> : <Sparkles size={13} />}
+          {polishing === field ? polishLabels[1] : polishLabels[0]}
+        </button>
+        {polishMsg?.field === field && <span className="rb-polish-msg" role="status">{polishMsg.text}</span>}
+      </div>
+    ) : null
+  );
+
   const voiceLabels = {
     male: t('male', 'Erkak'),
     female: t('female', 'Ayol'),
@@ -573,16 +692,18 @@ export default function ResumeBuilder({
       </div>
 
       {isAgentOn && (
-        <ResumeVoiceAgent
-          formData={formData}
-          lang={i18n.language}
-          labels={voiceLabels}
-          onWrite={handleVoiceWrite}
-          onClose={() => {
-            typingTokenRef.current += 1;
-            setIsAgentOn(false);
-          }}
-        />
+        <Suspense fallback={null}>
+          <ResumeVoiceAgent
+            formData={formData}
+            lang={i18n.language}
+            labels={voiceLabels}
+            onWrite={handleVoiceWrite}
+            onClose={() => {
+              typingTokenRef.current += 1;
+              setIsAgentOn(false);
+            }}
+          />
+        </Suspense>
       )}
 
       <div className="resume-builder-body">
@@ -914,6 +1035,7 @@ export default function ResumeBuilder({
               rows={3}
               className="glass-input"
             />
+            {renderPolish('motivation')}
           </div>
 
           <div className="form-group">
@@ -926,6 +1048,7 @@ export default function ResumeBuilder({
               rows={3}
               className="glass-input"
             />
+            {renderPolish('selfPR')}
           </div>
         </div>
 
