@@ -1,8 +1,0 @@
-/* Admin maintenance mode overlay */
-.maintenance-screen { position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 24px; background: radial-gradient(circle at 30% 20%, rgba(10, 132, 255, 0.25), transparent 60%), rgba(8, 10, 18, 0.92); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); color: #fff; }
-.maintenance-card { max-width: 360px; width: 100%; text-align: center; padding: 28px 22px; border-radius: 24px; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.14); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45); }
-.maintenance-icon { font-size: 44px; margin-bottom: 10px; }
-.maintenance-card h2 { margin: 0 0 8px; font-size: 20px; font-weight: 800; }
-.maintenance-card p { margin: 0 0 18px; font-size: 14px; line-height: 1.5; color: rgba(255, 255, 255, 0.75); }
-.maintenance-reload { border: none; border-radius: 999px; padding: 10px 22px; font-size: 14px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #0a84ff, #5e5ce6); cursor: pointer; }
-.maintenance-reload:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }

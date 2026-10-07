@@ -1,3 +1,47 @@
+/* ---------- AI typewriter target (voice AI + polish button) ---------- */
+.rva-typing {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18), 0 0 18px rgba(16, 185, 129, 0.35) !important;
+  background: rgba(16, 185, 129, 0.05) !important;
+  caret-color: transparent;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.rva-written { animation: rva-written 1.6s ease both; }
+@keyframes rva-written {
+  0% { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* ---------- ✨ AIで整える ---------- */
+.rb-polish-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+.rb-polish-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(16, 185, 129, 0.10));
+  color: var(--text-primary, #4c1d95);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.rb-polish-btn:hover { box-shadow: 0 6px 16px -8px rgba(139, 92, 246, 0.7); }
+.rb-polish-btn:active { transform: scale(0.96); }
+.rb-polish-btn:disabled { opacity: 0.6; cursor: default; }
+.rb-polish-btn .spin { animation: rb-spin 0.9s linear infinite; }
+@keyframes rb-spin { to { transform: rotate(360deg); } }
+.rb-polish-msg { font-size: 11.5px; color: var(--text-secondary, #64748b); }
+
 .resume-builder-container {
   padding: 12px;
   max-width: 600px;

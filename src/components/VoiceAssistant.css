@@ -2467,3 +2467,332 @@ html.dark-mode .voice-drawer-mic-btn.on {
 .voice-drawer-mic-btn.listening:hover {
   transform: scale(1.04);
 }
+
+/* ===== Bubble v2: status, user row, send bar, drawer rows ===== */
+.bubble-row.is-user { flex-direction: row-reverse; }
+.bubble-row.is-user .bubble-text--user {
+  background: linear-gradient(135deg, rgba(255, 149, 0, 0.12), rgba(255, 94, 0, 0.1));
+  border: 1px solid rgba(255, 149, 0, 0.22);
+  padding: 7px 11px;
+  border-radius: 14px 4px 14px 14px;
+  max-width: 82%;
+}
+.bubble-text--notice { color: var(--text-secondary, #6b7280); font-style: italic; }
+.bubble-status { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bubble-status__title { font-size: 13px; font-weight: 700; color: var(--text-main); }
+.bubble-status__hint { font-size: 11.5px; color: var(--text-secondary, #6b7280); line-height: 1.35; }
+/* (Bubble v2 per-state ring glow removed — v3 uses a subtle header status chip instead) */
+
+.bubble-send-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 4px 4px 12px;
+  border-radius: 999px;
+  background: rgba(94, 92, 230, 0.07);
+  border: 1px solid rgba(94, 92, 230, 0.18);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.bubble-send-bar:focus-within { border-color: rgba(94, 92, 230, 0.55); box-shadow: 0 0 0 3px rgba(94, 92, 230, 0.14); }
+.bubble-send-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-main);
+  outline: none;
+}
+.bubble-send-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, #5E5CE6, #8B5CF6);
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+.bubble-send-btn:hover:not(:disabled) { transform: scale(1.06); }
+.bubble-send-btn:disabled { opacity: 0.4; cursor: default; }
+html.dark-mode .bubble-send-bar { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
+
+.drawer-msg-row { display: flex; align-items: flex-end; gap: 8px; min-width: 0; }
+.drawer-msg-row.is-user { justify-content: flex-end; }
+.drawer-msg-row > .drawer-msg { min-width: 0; max-width: calc(100% - 40px); }
+.drawer-msg-row .msg-text.ja-text { font-weight: 600; }
+.michi-disclaimer-text { font-size: 11px; color: #8E8E93; margin: 6px 0 0; line-height: 1.4; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble-send-btn { transition: none; }
+}
+
+/* =====================================================================
+   Bubble v3 — premium Michi AI voice bubble
+   Keeps the original gradient icon avatars (.bubble-avatar.*) with their
+   glow, and the original bouncing .typing-dots. Only layout, glass,
+   typography, header chip, compose field and motion are upgraded.
+   ===================================================================== */
+.voice-robot-speech-bubble.vb {
+  max-width: 360px;
+  padding: 12px 14px 14px;
+  gap: 10px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(17, 24, 39, 0.04),
+    0 8px 24px rgba(17, 24, 39, 0.06),
+    0 24px 48px -12px rgba(94, 92, 230, 0.22);
+  transform-origin: top right;
+}
+.voice-robot-speech-bubble.vb.animate-slide-in {
+  animation: vb-pop-in 0.42s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+@keyframes vb-pop-in {
+  0% { opacity: 0; transform: translateY(-8px) scale(0.92); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.voice-robot-speech-bubble.vb .speech-bubble-pointer {
+  top: -6px;
+  right: 26px;
+  border-radius: 3px 0 0 0;
+  background: rgba(255, 255, 255, 0.86);
+  border-top: 1px solid rgba(255, 255, 255, 0.7);
+  border-left: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+/* Avatars: same colours/icons/glow as before, slightly larger tap target */
+.vb .vb-avatar {
+  width: 26px;
+  height: 26px;
+  margin-top: 0;
+}
+
+/* Header */
+.vb-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+}
+.vb-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+.vb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary, #4b5563);
+  background: rgba(17, 24, 39, 0.05);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+.vb-chip__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vb-chip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: currentColor;
+}
+.vb-chip.tone-listening { color: #059669; background: rgba(16, 185, 129, 0.12); }
+.vb-chip.tone-listening .vb-chip__dot { animation: vb-dot-pulse 1.4s ease-in-out infinite; }
+.vb-chip.tone-thinking { color: #2563eb; background: rgba(59, 130, 246, 0.12); }
+.vb-chip.tone-error { color: #e11d48; background: rgba(244, 63, 94, 0.12); }
+@keyframes vb-dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
+  50% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+}
+.vb-header__actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.vb-lang,
+.vb-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary, #4b5563);
+  background: rgba(17, 24, 39, 0.05);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease, color 0.2s ease;
+}
+.vb-lang { padding: 0 9px; }
+.vb-close { width: 26px; padding: 0; }
+.vb-lang:hover,
+.vb-close:hover { background: rgba(17, 24, 39, 0.09); color: var(--text-main); }
+.vb-lang:active,
+.vb-close:active { transform: scale(0.94); }
+.vb-lang:focus-visible,
+.vb-close:focus-visible,
+.vb-send:focus-visible { outline: 2px solid #5E5CE6; outline-offset: 2px; }
+
+/* Body */
+.vb .vb-body {
+  gap: 10px;
+  max-height: 320px;
+}
+.vb .vb-row { align-items: center; gap: 10px; }
+.vb .vb-row.is-user { align-items: flex-start; }
+.vb-status-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+.vb .vb-status-row .typing-dots { margin-left: auto; padding: 4px 2px; }
+.vb .bubble-row.is-user .bubble-text--user {
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 8px 12px;
+  border-radius: 16px 4px 16px 16px;
+}
+.vb .vb-answer { align-items: flex-start; }
+.vb .vb-answer__text {
+  font-size: 13.5px;
+  line-height: 1.6;
+  letter-spacing: -0.003em;
+  padding-top: 3px;
+}
+
+/* Compose: spoken text, editable, explicit send */
+.vb-compose {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 5px 5px 6px;
+  border-radius: 20px;
+  background: rgba(94, 92, 230, 0.07);
+  border: 1px solid rgba(94, 92, 230, 0.16);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  animation: vb-fade-up 0.3s ease both;
+}
+.vb-compose:focus-within {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(94, 92, 230, 0.5);
+  box-shadow: 0 0 0 4px rgba(94, 92, 230, 0.12);
+}
+.vb-compose__input {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-main);
+  outline: none;
+}
+.vb-compose__input::placeholder { color: var(--text-secondary, #9ca3af); }
+.vb-send {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, #6366F1 0%, #5E5CE6 45%, #8B5CF6 100%);
+  box-shadow: 0 6px 16px rgba(94, 92, 230, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+.vb-send:hover:not(:disabled) { transform: translateY(-1px) scale(1.05); box-shadow: 0 8px 20px rgba(94, 92, 230, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+.vb-send:active:not(:disabled) { transform: scale(0.94); }
+.vb-send:disabled { opacity: 0.45; cursor: default; box-shadow: none; }
+
+/* Slow auto-close: caption + hairline bar */
+.vb-timer-caption {
+  margin: -2px 0 0 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary, #9ca3af);
+  font-variant-numeric: tabular-nums;
+}
+.vb .vb-timer-bar {
+  height: 2px;
+  left: 14px;
+  right: 14px;
+  bottom: 6px;
+  width: auto;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  opacity: 0.85;
+}
+
+@keyframes vb-fade-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dark mode (OLED) */
+html.dark-mode .voice-robot-speech-bubble.vb {
+  background: rgba(22, 22, 26, 0.86);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 32px rgba(0, 0, 0, 0.45),
+    0 24px 48px -12px rgba(94, 92, 230, 0.28);
+}
+html.dark-mode .voice-robot-speech-bubble.vb .speech-bubble-pointer {
+  background: rgba(22, 22, 26, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+html.dark-mode .vb-header { border-bottom-color: rgba(255, 255, 255, 0.07); }
+html.dark-mode .vb-chip,
+html.dark-mode .vb-lang,
+html.dark-mode .vb-close { background: rgba(255, 255, 255, 0.07); color: #c7c7cc; }
+html.dark-mode .vb-lang:hover,
+html.dark-mode .vb-close:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+html.dark-mode .vb-chip.tone-listening { color: #34d399; background: rgba(16, 185, 129, 0.16); }
+html.dark-mode .vb-chip.tone-thinking { color: #60a5fa; background: rgba(59, 130, 246, 0.16); }
+html.dark-mode .vb-chip.tone-error { color: #fb7185; background: rgba(244, 63, 94, 0.16); }
+html.dark-mode .vb-compose { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
+html.dark-mode .vb-compose:focus-within { background: rgba(255, 255, 255, 0.08); border-color: rgba(129, 140, 248, 0.55); box-shadow: 0 0 0 4px rgba(94, 92, 230, 0.2); }
+
+/* Small phones */
+@media (max-width: 360px) {
+  .voice-robot-speech-bubble.vb { right: 10px; width: calc(100% - 20px); padding: 10px 12px 12px; }
+  .vb-lang span { display: none; }
+  .vb-lang { width: 26px; padding: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-robot-speech-bubble.vb.animate-slide-in,
+  .vb-compose,
+  .vb-chip.tone-listening .vb-chip__dot { animation: none; }
+  .vb-send,
+  .vb-lang,
+  .vb-close { transition: none; }
+}

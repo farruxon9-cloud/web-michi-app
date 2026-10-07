@@ -1,0 +1,471 @@
+/**
+ * 🗣️ Resume Voice AI — interview script (7 UI languages).
+ * Everything here is static text: the interviewer never needs a network call to talk.
+ */
+
+export const SPEECH_LOCALES = {
+  uz: 'uz-UZ', en: 'en-US', ja: 'ja-JP', ru: 'ru-RU', zh: 'zh-CN', vi: 'vi-VN', ne: 'ne-NP'
+};
+
+const SCRIPTS = {
+  uz: {
+    persona: 'Michi Intervyuer',
+    greeting: "Salom! Men rezyume bo'yicha yordamchingizman. Savol beraman, siz javob bering, men esa sizning nomingizdan yozib qo'yaman.",
+    resume: 'Davom etamiz.',
+    q: {
+      fullName: "Ism va familiyangizni ayting.",
+      furigana: "Ismingizni katakanada shunday yozaman: {{value}}. To'g'rimi?",
+      furiganaAsk: "Ismingiz qanday o'qilishini aniq, bo'g'inlab ayting.",
+      gender: "Jinsingiz: erkakmi yoki ayol?",
+      birthDate: "Tug'ilgan sanangizni ayting. Masalan: 1995-yil 12-may.",
+      postalCode: "Pochta indeksingizni ayting. Yetti xonali raqam.",
+      address: "Yashash manzilingizni ayting.",
+      phone: "Telefon raqamingizni raqamma-raqam ayting.",
+      email: "Email manzilingizni ayting. Masalan: ali at gmail nuqta com.",
+      eduSchool: "O'qigan o'quv muassasangiz nomini ayting.",
+      eduMajor: "U yerda qaysi yo'nalishda o'qigansiz?",
+      eduMore: "Yana boshqa o'quv muassasasi bormi? Ha yoki yo'q deng.",
+      workCompany: "Ishlagan kompaniyangiz nomini ayting. Ish tajribangiz bo'lmasa, o'tkazib yubor deng.",
+      workPosition: "U yerda qanday lavozimda ishlagansiz?",
+      workMore: "Yana boshqa ish joyi bormi? Ha yoki yo'q deng.",
+      licenses: "Qanday haydovchilik guvohnomangiz bor? Oddiy, yarim o'rta, o'rta yoki katta. Bo'lmasa, yo'q deng.",
+      jlpt: "Yapon tili darajangiz qanday? N1 dan N5 gacha. Bo'lmasa, yo'q deng.",
+      motivation: "Nega bu ishga kirmoqchisiz? Bemalol gapiring, gapirib bo'lgach biroz jim turing.",
+      selfPR: "O'zingiz haqingizda, kuchli tomonlaringizni gapirib bering."
+    },
+    confirm: "{{value}}. Shunday yozaymi?",
+    confirmShort: "To'g'rimi?",
+    written: 'Yozdim.',
+    skipped: "Mayli, o'tkazib yuboramiz.",
+    back: 'Oldingi savolga qaytamiz.',
+    retry: {
+      generic: "Kechirasiz, yaxshi tushunmadim. Iltimos, yana bir bor ayting.",
+      date: "Sanani tushunmadim. Yil, oy va kunni ayting, masalan 1995-yil 12-may.",
+      phone: "Raqamni to'liq eshitmadim. Raqamlarni birma-bir ayting.",
+      postalCode: "Pochta indeksi yetti xonali bo'lishi kerak. Yana ayting.",
+      email: "Emailni tushunmadim. Masalan: ali at gmail nuqta com deb ayting.",
+      choice: "Tushunmadim. Variantlardan birini ayting.",
+      yesNo: "Ha yoki yo'q deb javob bering."
+    },
+    noAnswer: "Sizni eshitmayapman. Javob bering yoki o'tkazib yubor deng.",
+    paused: "Pauza. Davom etish uchun gapiring yoki tugmani bosing.",
+    done: "Tayyor! Rezyumening asosiy qismlari to'ldirildi. Endi tekshirib, PDF yuklab olishingiz mumkin.",
+    translating: 'Yapon tiliga o‘girilmoqda…',
+    hint: "Buyruqlar: «ha», «yo'q», «o'tkazib yubor», «orqaga», «takrorla», «to'xta»",
+    errMic: "Mikrofonga ruxsat berilmadi. Brauzer sozlamalaridan ruxsat bering.",
+    errUnsupported: "Bu brauzer ovozni tanib olishni qo'llamaydi. Chrome yoki Safari'dan foydalaning.",
+    months: ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'],
+    dateSpoken: '{{y}}-yil {{d}}-{{m}}',
+    at: 'at', dot: 'nuqta',
+    ui: { listening: 'Tinglayapman', speaking: 'Gapiryapman', confirm: 'Tasdiqlang', writing: 'Yozyapman', paused: 'Pauza', yes: 'Ha, yoz', again: 'Qayta', skip: "O'tkazish", resume: 'Davom etish', pause: 'Pauza', close: 'Yopish', willWrite: 'Yoziladi', progress: '{{n}} / {{total}}', heard: 'Eshitildi', done: 'Tayyor' }
+  },
+  en: {
+    persona: 'Michi Interviewer',
+    greeting: "Hi! I'm your resume assistant. I'll ask questions, you answer, and I'll write everything for you.",
+    resume: "Let's continue.",
+    q: {
+      fullName: 'Please tell me your full name.',
+      furigana: "I'll write your name in katakana like this: {{value}}. Is that right?",
+      furiganaAsk: 'Please say your name slowly, syllable by syllable.',
+      gender: 'Are you male or female?',
+      birthDate: 'What is your date of birth? For example: May 12, 1995.',
+      postalCode: 'What is your postal code? It has seven digits.',
+      address: 'What is your home address?',
+      phone: 'Please say your phone number digit by digit.',
+      email: 'What is your email? For example: ali at gmail dot com.',
+      eduSchool: 'What school or university did you attend?',
+      eduMajor: 'What did you study there?',
+      eduMore: 'Any other school? Say yes or no.',
+      workCompany: "Which company did you work for? If you have no work experience, say skip.",
+      workPosition: 'What was your position there?',
+      workMore: 'Any other job? Say yes or no.',
+      licenses: "Which driver's licence do you have? Regular, semi-medium, medium or large. If none, say no.",
+      jlpt: 'What is your Japanese level? N1 to N5. If none, say no.',
+      motivation: 'Why do you want this job? Take your time, and pause when you are done.',
+      selfPR: 'Tell me about yourself and your strengths.'
+    },
+    confirm: '{{value}}. Shall I write that?',
+    confirmShort: 'Is that right?',
+    written: 'Done.',
+    skipped: "Okay, let's skip it.",
+    back: "Let's go back to the previous question.",
+    retry: {
+      generic: "Sorry, I didn't catch that. Please say it again.",
+      date: "I couldn't understand the date. Say the day, month and year, like May 12, 1995.",
+      phone: "I didn't get the full number. Please say the digits one by one.",
+      postalCode: 'The postal code must have seven digits. Please try again.',
+      email: "I didn't get the email. Say it like: ali at gmail dot com.",
+      choice: "I didn't understand. Please choose one of the options.",
+      yesNo: 'Please answer yes or no.'
+    },
+    noAnswer: "I can't hear you. Please answer, or say skip.",
+    paused: 'Paused. Speak or tap the button to continue.',
+    done: 'All set! The main parts of your resume are filled in. You can review it and download the PDF.',
+    translating: 'Translating to Japanese…',
+    hint: 'Commands: “yes”, “no”, “skip”, “back”, “repeat”, “stop”',
+    errMic: 'Microphone access was denied. Please allow it in your browser settings.',
+    errUnsupported: 'This browser does not support speech recognition. Please use Chrome or Safari.',
+    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    dateSpoken: '{{m}} {{d}}, {{y}}',
+    at: 'at', dot: 'dot',
+    ui: { listening: 'Listening', speaking: 'Speaking', confirm: 'Confirm', writing: 'Writing', paused: 'Paused', yes: 'Yes, write', again: 'Again', skip: 'Skip', resume: 'Resume', pause: 'Pause', close: 'Close', willWrite: 'Will write', progress: '{{n}} / {{total}}', heard: 'Heard', done: 'Done' }
+  },
+  ja: {
+    persona: 'Michi 面接官',
+    greeting: 'こんにちは。履歴書作成アシスタントです。質問に答えていただければ、代わりに記入します。',
+    resume: '続けましょう。',
+    q: {
+      fullName: 'お名前を教えてください。',
+      furigana: 'フリガナは「{{value}}」でよろしいですか？',
+      furiganaAsk: 'お名前の読み方を、ゆっくり教えてください。',
+      gender: '性別は男性ですか、女性ですか？',
+      birthDate: '生年月日を教えてください。例えば、1995年5月12日。',
+      postalCode: '郵便番号を教えてください。7桁です。',
+      address: '現住所を教えてください。',
+      phone: '電話番号を一桁ずつ教えてください。',
+      email: 'メールアドレスを教えてください。例えば、ali アット gmail ドット com。',
+      eduSchool: '卒業した学校名を教えてください。',
+      eduMajor: 'そこで何を専攻しましたか？',
+      eduMore: '他にも学校はありますか？はいか、いいえで答えてください。',
+      workCompany: '勤務した会社名を教えてください。職歴がない場合は「スキップ」と言ってください。',
+      workPosition: 'そこでの役職は何でしたか？',
+      workMore: '他にも職歴はありますか？はいか、いいえで答えてください。',
+      licenses: '運転免許はお持ちですか？普通、準中型、中型、大型。なければ「なし」と言ってください。',
+      jlpt: '日本語能力試験のレベルは？N1からN5まで。なければ「なし」と言ってください。',
+      motivation: '志望動機を教えてください。話し終わったら少し間をあけてください。',
+      selfPR: '自己PRをお願いします。あなたの強みを教えてください。'
+    },
+    confirm: '「{{value}}」。これで記入してよろしいですか？',
+    confirmShort: 'よろしいですか？',
+    written: '記入しました。',
+    skipped: 'では、スキップします。',
+    back: '前の質問に戻ります。',
+    retry: {
+      generic: 'すみません、聞き取れませんでした。もう一度お願いします。',
+      date: '日付がわかりませんでした。1995年5月12日のように言ってください。',
+      phone: '番号が全部聞き取れませんでした。一桁ずつ言ってください。',
+      postalCode: '郵便番号は7桁です。もう一度お願いします。',
+      email: 'メールアドレスがわかりませんでした。ali アット gmail ドット com のように言ってください。',
+      choice: 'わかりませんでした。選択肢の中から一つ言ってください。',
+      yesNo: 'はいか、いいえで答えてください。'
+    },
+    noAnswer: '声が聞こえません。お答えいただくか、「スキップ」と言ってください。',
+    paused: '一時停止中です。話しかけるか、ボタンを押すと再開します。',
+    done: '完了です！履歴書の主な項目が記入されました。確認してPDFをダウンロードできます。',
+    translating: '日本語に翻訳中…',
+    hint: 'コマンド:「はい」「いいえ」「スキップ」「戻って」「もう一度」「ストップ」',
+    errMic: 'マイクの使用が許可されていません。ブラウザの設定で許可してください。',
+    errUnsupported: 'このブラウザは音声認識に対応していません。ChromeかSafariをご利用ください。',
+    months: null,
+    dateSpoken: '{{y}}年{{mn}}月{{d}}日',
+    at: 'アット', dot: 'ドット',
+    ui: { listening: '聞いています', speaking: '話しています', confirm: '確認', writing: '記入中', paused: '一時停止', yes: 'はい、記入', again: 'やり直す', skip: 'スキップ', resume: '再開', pause: '一時停止', close: '閉じる', willWrite: '記入内容', progress: '{{n}} / {{total}}', heard: '認識結果', done: '完了' }
+  },
+  ru: {
+    persona: 'Michi Интервьюер',
+    greeting: 'Здравствуйте! Я ваш помощник по резюме. Я задаю вопросы, вы отвечаете, а я всё заполняю за вас.',
+    resume: 'Продолжим.',
+    q: {
+      fullName: 'Назовите ваше имя и фамилию.',
+      furigana: 'Ваше имя катаканой будет так: {{value}}. Верно?',
+      furiganaAsk: 'Произнесите ваше имя медленно, по слогам.',
+      gender: 'Ваш пол: мужской или женский?',
+      birthDate: 'Назовите дату рождения. Например: 12 мая 1995 года.',
+      postalCode: 'Назовите почтовый индекс. Семь цифр.',
+      address: 'Назовите ваш адрес проживания.',
+      phone: 'Назовите номер телефона по цифрам.',
+      email: 'Назовите вашу почту. Например: ali собака gmail точка com.',
+      eduSchool: 'Назовите учебное заведение, где вы учились.',
+      eduMajor: 'По какой специальности вы учились?',
+      eduMore: 'Есть ещё учебное заведение? Скажите да или нет.',
+      workCompany: 'Назовите компанию, где вы работали. Если опыта нет, скажите «пропусти».',
+      workPosition: 'Какая у вас была должность?',
+      workMore: 'Есть ещё место работы? Скажите да или нет.',
+      licenses: 'Какие у вас водительские права? Обычные, полусредние, средние или большие. Если нет, скажите нет.',
+      jlpt: 'Ваш уровень японского? От N1 до N5. Если нет, скажите нет.',
+      motivation: 'Почему вы хотите эту работу? Говорите спокойно, в конце сделайте паузу.',
+      selfPR: 'Расскажите о себе и своих сильных сторонах.'
+    },
+    confirm: '{{value}}. Записать так?',
+    confirmShort: 'Верно?',
+    written: 'Записал.',
+    skipped: 'Хорошо, пропустим.',
+    back: 'Возвращаемся к предыдущему вопросу.',
+    retry: {
+      generic: 'Извините, я не расслышал. Повторите, пожалуйста.',
+      date: 'Не понял дату. Скажите день, месяц и год, например 12 мая 1995 года.',
+      phone: 'Я не расслышал весь номер. Назовите цифры по одной.',
+      postalCode: 'Индекс должен состоять из семи цифр. Повторите.',
+      email: 'Не понял почту. Скажите, например: ali собака gmail точка com.',
+      choice: 'Не понял. Назовите один из вариантов.',
+      yesNo: 'Ответьте да или нет.'
+    },
+    noAnswer: 'Я вас не слышу. Ответьте или скажите «пропусти».',
+    paused: 'Пауза. Скажите что-нибудь или нажмите кнопку, чтобы продолжить.',
+    done: 'Готово! Основные разделы резюме заполнены. Проверьте и скачайте PDF.',
+    translating: 'Перевод на японский…',
+    hint: 'Команды: «да», «нет», «пропусти», «назад», «повтори», «стоп»',
+    errMic: 'Доступ к микрофону запрещён. Разрешите его в настройках браузера.',
+    errUnsupported: 'Этот браузер не поддерживает распознавание речи. Используйте Chrome или Safari.',
+    months: ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'],
+    dateSpoken: '{{d}} {{m}} {{y}} года',
+    at: 'собака', dot: 'точка',
+    ui: { listening: 'Слушаю', speaking: 'Говорю', confirm: 'Подтвердите', writing: 'Пишу', paused: 'Пауза', yes: 'Да, записать', again: 'Заново', skip: 'Пропустить', resume: 'Продолжить', pause: 'Пауза', close: 'Закрыть', willWrite: 'Будет записано', progress: '{{n}} / {{total}}', heard: 'Услышано', done: 'Готово' }
+  },
+  zh: {
+    persona: 'Michi 面试官',
+    greeting: '你好！我是你的简历助手。我来提问，你来回答，我会替你填写。',
+    resume: '我们继续。',
+    q: {
+      fullName: '请说出你的姓名。',
+      furigana: '你的名字片假名写作：{{value}}。对吗？',
+      furiganaAsk: '请慢慢地、一个音节一个音节地说出你的名字。',
+      gender: '你的性别是男还是女？',
+      birthDate: '请说出你的出生日期。例如：1995年5月12日。',
+      postalCode: '请说出邮政编码，七位数字。',
+      address: '请说出你的居住地址。',
+      phone: '请一位一位地说出你的电话号码。',
+      email: '请说出你的邮箱。例如：ali 艾特 gmail 点 com。',
+      eduSchool: '请说出你就读的学校名称。',
+      eduMajor: '你在那里学的是什么专业？',
+      eduMore: '还有其他学校吗？请说是或不是。',
+      workCompany: '请说出你工作过的公司。如果没有工作经验，请说跳过。',
+      workPosition: '你在那里的职位是什么？',
+      workMore: '还有其他工作吗？请说是或不是。',
+      licenses: '你有什么驾照？普通、准中型、中型或大型。没有的话请说没有。',
+      jlpt: '你的日语等级是？N1到N5。没有的话请说没有。',
+      motivation: '你为什么想做这份工作？说完后请稍作停顿。',
+      selfPR: '请介绍一下你自己和你的优点。'
+    },
+    confirm: '{{value}}。这样填写可以吗？',
+    confirmShort: '对吗？',
+    written: '已填写。',
+    skipped: '好的，跳过。',
+    back: '回到上一个问题。',
+    retry: {
+      generic: '抱歉，我没听清。请再说一遍。',
+      date: '我没听懂日期。请说年月日，例如1995年5月12日。',
+      phone: '号码没听全。请一位一位地说。',
+      postalCode: '邮政编码必须是七位数字。请再说一遍。',
+      email: '没听懂邮箱。请这样说：ali 艾特 gmail 点 com。',
+      choice: '没听懂。请从选项中选择一个。',
+      yesNo: '请回答是或不是。'
+    },
+    noAnswer: '我听不到你的声音。请回答，或说跳过。',
+    paused: '已暂停。说话或点击按钮继续。',
+    done: '完成！简历的主要部分已填写。你可以检查并下载PDF。',
+    translating: '正在翻译成日语…',
+    hint: '指令：“是”“不是”“跳过”“返回”“重复”“停”',
+    errMic: '麦克风权限被拒绝。请在浏览器设置中允许。',
+    errUnsupported: '此浏览器不支持语音识别。请使用 Chrome 或 Safari。',
+    months: null,
+    dateSpoken: '{{y}}年{{mn}}月{{d}}日',
+    at: '艾特', dot: '点',
+    ui: { listening: '正在听', speaking: '正在说', confirm: '请确认', writing: '正在填写', paused: '已暂停', yes: '是，填写', again: '重来', skip: '跳过', resume: '继续', pause: '暂停', close: '关闭', willWrite: '将填写', progress: '{{n}} / {{total}}', heard: '听到', done: '完成' }
+  },
+  vi: {
+    persona: 'Michi Phỏng vấn',
+    greeting: 'Xin chào! Tôi là trợ lý hồ sơ của bạn. Tôi sẽ hỏi, bạn trả lời, và tôi sẽ điền thay bạn.',
+    resume: 'Chúng ta tiếp tục nhé.',
+    q: {
+      fullName: 'Hãy cho tôi biết họ tên của bạn.',
+      furigana: 'Tên của bạn viết bằng katakana là: {{value}}. Đúng không?',
+      furiganaAsk: 'Hãy đọc tên của bạn thật chậm, từng âm tiết.',
+      gender: 'Giới tính của bạn là nam hay nữ?',
+      birthDate: 'Ngày sinh của bạn là gì? Ví dụ: ngày 12 tháng 5 năm 1995.',
+      postalCode: 'Mã bưu điện của bạn là gì? Gồm bảy chữ số.',
+      address: 'Địa chỉ nơi ở của bạn là gì?',
+      phone: 'Hãy đọc số điện thoại từng chữ số một.',
+      email: 'Email của bạn là gì? Ví dụ: ali a còng gmail chấm com.',
+      eduSchool: 'Bạn đã học ở trường nào?',
+      eduMajor: 'Bạn học chuyên ngành gì ở đó?',
+      eduMore: 'Còn trường nào khác không? Hãy nói có hoặc không.',
+      workCompany: 'Bạn đã làm việc ở công ty nào? Nếu chưa có kinh nghiệm, hãy nói bỏ qua.',
+      workPosition: 'Chức vụ của bạn ở đó là gì?',
+      workMore: 'Còn công việc nào khác không? Hãy nói có hoặc không.',
+      licenses: 'Bạn có bằng lái loại nào? Phổ thông, bán trung, trung hay lớn. Nếu không có, hãy nói không.',
+      jlpt: 'Trình độ tiếng Nhật của bạn? Từ N1 đến N5. Nếu không có, hãy nói không.',
+      motivation: 'Vì sao bạn muốn làm công việc này? Nói xong hãy dừng một chút.',
+      selfPR: 'Hãy giới thiệu về bản thân và điểm mạnh của bạn.'
+    },
+    confirm: '{{value}}. Tôi ghi như vậy nhé?',
+    confirmShort: 'Đúng không?',
+    written: 'Đã ghi.',
+    skipped: 'Được, bỏ qua nhé.',
+    back: 'Quay lại câu hỏi trước.',
+    retry: {
+      generic: 'Xin lỗi, tôi chưa nghe rõ. Hãy nói lại.',
+      date: 'Tôi chưa hiểu ngày. Hãy nói ngày, tháng, năm, ví dụ ngày 12 tháng 5 năm 1995.',
+      phone: 'Tôi chưa nghe đủ số. Hãy đọc từng chữ số.',
+      postalCode: 'Mã bưu điện phải có bảy chữ số. Hãy nói lại.',
+      email: 'Tôi chưa hiểu email. Hãy nói: ali a còng gmail chấm com.',
+      choice: 'Tôi chưa hiểu. Hãy chọn một trong các lựa chọn.',
+      yesNo: 'Hãy trả lời có hoặc không.'
+    },
+    noAnswer: 'Tôi không nghe thấy bạn. Hãy trả lời hoặc nói bỏ qua.',
+    paused: 'Tạm dừng. Hãy nói hoặc nhấn nút để tiếp tục.',
+    done: 'Xong rồi! Các phần chính của hồ sơ đã được điền. Bạn có thể kiểm tra và tải PDF.',
+    translating: 'Đang dịch sang tiếng Nhật…',
+    hint: 'Lệnh: “có”, “không”, “bỏ qua”, “quay lại”, “nhắc lại”, “dừng”',
+    errMic: 'Quyền micro bị từ chối. Hãy cho phép trong cài đặt trình duyệt.',
+    errUnsupported: 'Trình duyệt này không hỗ trợ nhận dạng giọng nói. Hãy dùng Chrome hoặc Safari.',
+    months: null,
+    dateSpoken: 'ngày {{d}} tháng {{mn}} năm {{y}}',
+    at: 'a còng', dot: 'chấm',
+    ui: { listening: 'Đang nghe', speaking: 'Đang nói', confirm: 'Xác nhận', writing: 'Đang ghi', paused: 'Tạm dừng', yes: 'Có, ghi', again: 'Lại', skip: 'Bỏ qua', resume: 'Tiếp tục', pause: 'Tạm dừng', close: 'Đóng', willWrite: 'Sẽ ghi', progress: '{{n}} / {{total}}', heard: 'Đã nghe', done: 'Xong' }
+  },
+  ne: {
+    persona: 'Michi अन्तर्वार्ताकार',
+    greeting: 'नमस्ते! म तपाईंको रिजुमे सहायक हुँ। म प्रश्न सोध्छु, तपाईं जवाफ दिनुहोस्, म तपाईंको तर्फबाट लेखिदिन्छु।',
+    resume: 'जारी राखौं।',
+    q: {
+      fullName: 'कृपया आफ्नो पूरा नाम भन्नुहोस्।',
+      furigana: 'तपाईंको नाम काताकानामा यसरी लेख्छु: {{value}}। ठीक छ?',
+      furiganaAsk: 'कृपया आफ्नो नाम बिस्तारै, अक्षर अक्षर गरेर भन्नुहोस्।',
+      gender: 'तपाईं पुरुष हो कि महिला?',
+      birthDate: 'तपाईंको जन्म मिति भन्नुहोस्। जस्तै: 1995 5 12।',
+      postalCode: 'हुलाक कोड भन्नुहोस्। सात अंक।',
+      address: 'तपाईंको बसोबास ठेगाना भन्नुहोस्।',
+      phone: 'फोन नम्बर एक एक अंक गरेर भन्नुहोस्।',
+      email: 'तपाईंको इमेल भन्नुहोस्। जस्तै: ali एट gmail डट com।',
+      eduSchool: 'तपाईंले पढेको विद्यालयको नाम भन्नुहोस्।',
+      eduMajor: 'त्यहाँ के विषय पढ्नुभयो?',
+      eduMore: 'अर्को विद्यालय छ? हो वा होइन भन्नुहोस्।',
+      workCompany: 'काम गरेको कम्पनीको नाम भन्नुहोस्। अनुभव छैन भने, छोड्नुहोस् भन्नुहोस्।',
+      workPosition: 'त्यहाँ तपाईंको पद के थियो?',
+      workMore: 'अर्को काम छ? हो वा होइन भन्नुहोस्।',
+      licenses: 'तपाईंसँग कुन ड्राइभिङ लाइसेन्स छ? सामान्य, मध्यम वा ठूलो। छैन भने, छैन भन्नुहोस्।',
+      jlpt: 'तपाईंको जापानी भाषाको स्तर? N1 देखि N5। छैन भने, छैन भन्नुहोस्।',
+      motivation: 'तपाईं यो काम किन गर्न चाहनुहुन्छ? बोलिसकेपछि अलिकति रोकिनुहोस्।',
+      selfPR: 'आफ्नो बारेमा र आफ्ना बलियो पक्षहरू बताउनुहोस्।'
+    },
+    confirm: '{{value}}। यसरी लेखूँ?',
+    confirmShort: 'ठीक छ?',
+    written: 'लेखें।',
+    skipped: 'ठीक छ, छोडौं।',
+    back: 'अघिल्लो प्रश्नमा फर्कौं।',
+    retry: {
+      generic: 'माफ गर्नुहोस्, बुझिनँ। कृपया फेरि भन्नुहोस्।',
+      date: 'मिति बुझिनँ। वर्ष, महिना र दिन भन्नुहोस्।',
+      phone: 'पूरा नम्बर सुनिनँ। एक एक अंक भन्नुहोस्।',
+      postalCode: 'हुलाक कोड सात अंकको हुनुपर्छ। फेरि भन्नुहोस्।',
+      email: 'इमेल बुझिनँ। यसरी भन्नुहोस्: ali एट gmail डट com।',
+      choice: 'बुझिनँ। विकल्पहरू मध्ये एउटा भन्नुहोस्।',
+      yesNo: 'हो वा होइन भनेर जवाफ दिनुहोस्।'
+    },
+    noAnswer: 'तपाईंको आवाज सुनिनँ। जवाफ दिनुहोस् वा छोड्नुहोस् भन्नुहोस्।',
+    paused: 'रोकिएको छ। जारी राख्न बोल्नुहोस् वा बटन थिच्नुहोस्।',
+    done: 'तयार! रिजुमेका मुख्य भागहरू भरिए। जाँच गरेर PDF डाउनलोड गर्न सक्नुहुन्छ।',
+    translating: 'जापानीमा अनुवाद हुँदैछ…',
+    hint: 'आदेश: “हो”, “होइन”, “छोड्नुहोस्”, “पछाडि”, “दोहोर्याउनुहोस्”, “रोक्नुहोस्”',
+    errMic: 'माइक्रोफोन अनुमति अस्वीकार गरियो। ब्राउजर सेटिङमा अनुमति दिनुहोस्।',
+    errUnsupported: 'यो ब्राउजरले आवाज पहिचान समर्थन गर्दैन। Chrome वा Safari प्रयोग गर्नुहोस्।',
+    months: null,
+    dateSpoken: '{{y}}-{{mn}}-{{d}}',
+    at: 'एट', dot: 'डट',
+    ui: { listening: 'सुन्दैछु', speaking: 'बोल्दैछु', confirm: 'पुष्टि गर्नुहोस्', writing: 'लेख्दैछु', paused: 'रोकिएको', yes: 'हो, लेख्नुहोस्', again: 'फेरि', skip: 'छोड्नुहोस्', resume: 'जारी राख्नुहोस्', pause: 'रोक्नुहोस्', close: 'बन्द', willWrite: 'लेखिनेछ', progress: '{{n}} / {{total}}', heard: 'सुनियो', done: 'तयार' }
+  }
+};
+
+/**
+ * Resume AI 2.0 additions. The interviewer always SPEAKS Japanese (ja); the other languages are
+ * only used for the small subtitle line. zh / vi / ne fall back to English for these keys.
+ */
+const EXTRA = {
+  ja: {
+    q: {
+      fullName: 'パスポートと同じお名前を、ゆっくり言ってください。',
+      motReason: '日本で働きたい理由は何ですか？',
+      motStrength: 'あなたのいいところは何ですか？',
+      motYears: '運転の経験は何年ですか？'
+    },
+    confirm: '「{{value}}」でいいですか？',
+    wrote: '{{value}}、書きました。',
+    wroteShort: '書きました。',
+    noted: 'わかりました。',
+    undone: '消しました。もう一度お願いします。',
+    examplesIntro: '例です。',
+    pickHint: '「1番」のように番号でも選べます。',
+    composed: '志望動機と自己PRを書きました。',
+    sleep: 'マイクを止めました。タップで再開します。',
+    hint: '「ちがう」で消せます。「わからない」で例を出します。',
+    ui: { wrong: 'ちがう', yesOnly: 'はい', repeat: 'もう一度', polish: 'AIで整える', polishing: '整えています…', sleep: 'タップで再開', examples: '例', written: '書きました' }
+  },
+  uz: {
+    q: {
+      fullName: 'Pasportdagi ism-familiyangizni sekin ayting.',
+      motReason: 'Yaponiyada nega ishlamoqchisiz?',
+      motStrength: 'Sizning yaxshi tomoningiz nima?',
+      motYears: 'Necha yillik haydovchilik tajribangiz bor?'
+    },
+    wrote: '{{value}} — yozdim.',
+    wroteShort: 'Yozdim.',
+    noted: 'Tushunarli.',
+    undone: "O'chirdim. Yana bir bor ayting.",
+    examplesIntro: 'Misollar:',
+    pickHint: '«1-ban» (ichiban) deb raqam bilan ham tanlash mumkin.',
+    composed: "Motivatsiya va o'zingiz haqingizda matnni yozdim.",
+    sleep: "Mikrofonni o'chirdim. Davom etish uchun bosing.",
+    hint: '«Chigau» — o‘chiradi. «Wakaranai» — misollar beradi.',
+    ui: { wrong: "Xato (ちがう)", yesOnly: 'Ha (はい)', repeat: 'Takrorlash', polish: 'AI bilan silliqlash', polishing: 'Silliqlanmoqda…', sleep: 'Davom etish uchun bosing', examples: 'Misollar', written: 'Yozildi' }
+  },
+  en: {
+    q: {
+      fullName: 'Please say your name exactly as in your passport, slowly.',
+      motReason: 'Why do you want to work in Japan?',
+      motStrength: 'What is your best quality?',
+      motYears: 'How many years of driving experience do you have?'
+    },
+    wrote: 'Wrote: {{value}}.',
+    wroteShort: 'Written.',
+    noted: 'Got it.',
+    undone: 'Deleted. Please say it again.',
+    examplesIntro: 'Examples:',
+    pickHint: 'You can also pick by number, e.g. “ichiban” (No. 1).',
+    composed: 'I wrote your motivation and self-PR.',
+    sleep: 'Microphone off. Tap to continue.',
+    hint: '“Chigau” deletes. “Wakaranai” shows examples.',
+    ui: { wrong: 'Wrong (ちがう)', yesOnly: 'Yes (はい)', repeat: 'Repeat', polish: 'Polish with AI', polishing: 'Polishing…', sleep: 'Tap to continue', examples: 'Examples', written: 'Written' }
+  },
+  ru: {
+    q: {
+      fullName: 'Медленно назовите имя и фамилию как в паспорте.',
+      motReason: 'Почему вы хотите работать в Японии?',
+      motStrength: 'Какая ваша сильная сторона?',
+      motYears: 'Сколько лет у вас стаж вождения?'
+    },
+    wrote: 'Записал: {{value}}.',
+    wroteShort: 'Записал.',
+    noted: 'Понял.',
+    undone: 'Удалил. Скажите ещё раз.',
+    examplesIntro: 'Примеры:',
+    pickHint: 'Можно выбрать номером, например «итибан» (№1).',
+    composed: 'Я написал мотивацию и самопрезентацию.',
+    sleep: 'Микрофон выключен. Нажмите, чтобы продолжить.',
+    hint: '«Тигау» — удалить. «Вакаранай» — примеры.',
+    ui: { wrong: 'Ошибка (ちがう)', yesOnly: 'Да (はい)', repeat: 'Повторить', polish: 'Улучшить с AI', polishing: 'Улучшаю…', sleep: 'Нажмите, чтобы продолжить', examples: 'Примеры', written: 'Записано' }
+  }
+};
+
+const merged = {};
+
+export function getScript(lang) {
+  const key = getScriptLang(lang);
+  if (merged[key]) return merged[key];
+  const base = SCRIPTS[key];
+  const own = EXTRA[key];
+  const extra = own || EXTRA.en;
+  merged[key] = own
+    ? { ...base, ...extra, q: { ...base.q, ...extra.q }, ui: { ...base.ui, ...extra.ui } }
+    : { ...extra, ...base, q: { ...extra.q, ...base.q }, ui: { ...extra.ui, ...base.ui } };
+  return merged[key];
+}
+
+export function getScriptLang(lang) {
+  const key = String(lang || 'uz').slice(0, 2).toLowerCase();
+  return SCRIPTS[key] ? key : 'en';
+}
+
+export function fill(template, vars = {}) {
+  return String(template || '').replace(/\{\{(\w+)\}\}/g, (_, k) => (vars[k] ?? ''));
+}

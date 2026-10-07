@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles } from 'lucide-react';
+import { pickText } from '../../utils/localize';
 
 export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speechLang }) {
   // Y-position state (in pixels from top). Default ~42% of window height.
@@ -104,7 +105,15 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onMouseDown={handleMouseDown}
-      title={speechLang === 'ja' ? 'Michi AI Hub (ドラッグして移動可能)' : 'Michi AI Hub (Surib joylashtirish mumkin)'}
+      title={pickText(speechLang, {
+        ja: 'Michi AI Hub (ドラッグして移動可能)',
+        en: 'Michi AI Hub (drag to move)',
+        uz: 'Michi AI Hub (Surib joylashtirish mumkin)',
+        ru: 'Michi AI Hub (можно перетащить)',
+        zh: 'Michi AI Hub（可拖动移位）',
+        vi: 'Michi AI Hub (kéo để di chuyển)',
+        ne: 'Michi AI Hub (तानेर सार्न सकिन्छ)',
+      })}
       aria-label="Toggle Michi AI Side Drawer"
     >
       <div className="drawer-trigger-pulse"></div>

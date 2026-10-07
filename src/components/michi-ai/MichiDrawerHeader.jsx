@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, Sparkles, Power, Trash2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { pickText } from '../../utils/localize';
 
 export default function MichiDrawerHeader({
   status,
@@ -32,32 +33,14 @@ export default function MichiDrawerHeader({
             <span className={`voice-drawer-status-dot ${status}`}></span>
             <span className="voice-drawer-status-text">
               {(() => {
-                const lang = (speechLang || 'ja').substring(0, 2).toLowerCase();
+                const lang = speechLang || 'ja';
                 if (status === 'thinking') {
-                  if (lang === 'ja') return '考え中...';
-                  if (lang === 'uz') return "O'ylamoqda...";
-                  if (lang === 'ru') return 'Думаю...';
-                  if (lang === 'zh') return '思考中...';
-                  if (lang === 'vi') return 'Đang suy nghĩ...';
-                  if (lang === 'ne') return 'सोच्दैछ...';
-                  return 'Thinking...';
+                  return pickText(lang, { ja: '考え中...', en: 'Thinking...', uz: "O'ylamoqda...", ru: 'Думаю...', zh: '思考中...', vi: 'Đang suy nghĩ...', ne: 'सोच्दैछ...' });
                 }
                 if (status === 'speaking') {
-                  if (lang === 'ja') return '話し中...';
-                  if (lang === 'uz') return 'Gapirmoqda...';
-                  if (lang === 'ru') return 'Говорю...';
-                  if (lang === 'zh') return '说话中...';
-                  if (lang === 'vi') return 'Đang nói...';
-                  if (lang === 'ne') return 'बोल्दैछ...';
-                  return 'Speaking...';
+                  return pickText(lang, { ja: '話し中...', en: 'Speaking...', uz: 'Gapirmoqda...', ru: 'Говорю...', zh: '说话中...', vi: 'Đang nói...', ne: 'बोल्दैछ...' });
                 }
-                if (lang === 'ja') return '準備完了';
-                if (lang === 'uz') return 'Tayyor';
-                if (lang === 'ru') return 'Готов';
-                if (lang === 'zh') return '准备就绪';
-                if (lang === 'vi') return 'Sẵn sàng';
-                if (lang === 'ne') return 'तयार छ';
-                return 'Ready';
+                return pickText(lang, { ja: '準備完了', en: 'Ready', uz: 'Tayyor', ru: 'Готов', zh: '准备就绪', vi: 'Sẵn sàng', ne: 'तयार छ' });
               })()}
             </span>
           </div>
@@ -70,7 +53,7 @@ export default function MichiDrawerHeader({
             type="button"
             className="voice-drawer-action-btn power-off" 
             onClick={onDeactivateAI}
-            title={speechLang === 'ja' ? 'AIをオフにする' : speechLang === 'uz' ? "AI ni o'chirish" : 'Turn Off AI'}
+            title={pickText(speechLang, { ja: 'AIをオフにする', en: 'Turn Off AI', uz: "AI ni o'chirish", ru: 'Выключить ИИ', zh: '关闭 AI', vi: 'Tắt AI', ne: 'AI बन्द गर्नुहोस्' })}
             aria-label="Turn Off AI"
             style={{ color: '#FF3B30', background: 'rgba(255, 59, 48, 0.12)' }}
           >

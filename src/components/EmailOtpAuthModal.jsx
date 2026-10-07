@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Mail, ShieldCheck, ArrowLeft, RefreshCw, CheckCircle2, Loader2, Sparkles, X, User, Building2, GraduationCap, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { sendEmailOtpViaN8n, verifyEmailOtpCodeViaN8n, isValidEmail } from '../services/n8nEmailOtpService';
+import { pickText } from '../utils/localize';
 import './EmailOtpAuthModal.css';
 
 export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialRole = 'driver' }) {
@@ -106,10 +107,41 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
       codeInvalid: '请输入完整的 6 位验证码。',
       serverErr: '服务器连接失败，请重试。',
       verifyErr: '验证过程中发生错误，请检查验证码。'
+    },
+    vi: {
+      emailInvalid: 'Vui lòng nhập địa chỉ email hợp lệ.',
+      sentMsg: 'Mã xác minh đã được gửi đến email của bạn!',
+      codeInvalid: 'Vui lòng nhập đủ 6 chữ số.',
+      serverErr: 'Không thể kết nối máy chủ. Vui lòng thử lại.',
+      verifyErr: 'Đã xảy ra lỗi xác minh. Vui lòng kiểm tra lại mã.'
+    },
+    ne: {
+      emailInvalid: 'कृपया मान्य इमेल ठेगाना प्रविष्ट गर्नुहोस्।',
+      sentMsg: 'प्रमाणीकरण कोड तपाईंको इमेलमा पठाइयो!',
+      codeInvalid: 'कृपया सबै ६ अङ्क प्रविष्ट गर्नुहोस्।',
+      serverErr: 'सर्भरसँग जडान असफल भयो। कृपया फेरि प्रयास गर्नुहोस्।',
+      verifyErr: 'प्रमाणीकरणमा त्रुटि भयो। कृपया कोड जाँच गर्नुहोस्।'
     }
   };
 
-  const texts = localizedTexts[currentLang] || localizedTexts.ja;
+  const texts = localizedTexts[currentLang] || localizedTexts.en;
+  const tx = (map) => pickText(currentLang, map);
+  // OTP yo'riqnomasi: ba'zi tillarda email jumla boshida, ba'zilarida oxirida keladi
+  const otpPrefix = {
+    en: 'Enter the code we sent to',
+    ru: 'Введите код, отправленный на',
+    zh: '请输入发送至',
+    vi: 'Nhập mã đã gửi đến'
+  }[currentLang] || '';
+  const otpSuffix = tx({
+    ja: ' へお送りしたコードを入力してください。',
+    en: '.',
+    uz: ' manziliga yuborilgan kodni kiriting.',
+    ru: '.',
+    zh: ' 的验证码。',
+    vi: '.',
+    ne: ' मा पठाइएको कोड प्रविष्ट गर्नुहोस्।'
+  });
 
   // Kodni yuborish hodisasi
   const handleSendOtp = async (e) => {
@@ -264,11 +296,15 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
             <div>
               <h3 className="brand-title">Michi Auth</h3>
               <p className="brand-subtitle">
-                {currentLang === 'ja'
-                  ? 'メールOTP本人確認'
-                  : currentLang === 'en'
-                  ? 'Email OTP Verification'
-                  : 'Email orqali avtorizatsiya'}
+                {tx({
+                  ja: 'メールOTP本人確認',
+                  en: 'Email OTP Verification',
+                  uz: 'Email orqali avtorizatsiya',
+                  ru: 'Подтверждение по email (OTP)',
+                  zh: '邮箱 OTP 验证',
+                  vi: 'Xác minh OTP qua email',
+                  ne: 'इमेल OTP प्रमाणीकरण'
+                })}
               </p>
             </div>
           </div>
@@ -278,7 +314,7 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
             className="modal-close-btn" 
             onClick={onClose} 
             disabled={loading}
-            aria-label="Yopish"
+            aria-label={tx({ ja: '閉じる', en: 'Close', uz: 'Yopish', ru: 'Закрыть', zh: '关闭', vi: 'Đóng', ne: 'बन्द गर्नुहोस्' })}
           >
             <X size={18} aria-hidden="true" />
           </button>
@@ -288,12 +324,12 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
         <div className="email-otp-steps-bar" aria-hidden="true">
           <div className={`step-dot ${step === 'email' ? 'active' : 'completed'}`}>
             <span className="dot-number">1</span>
-            <span className="dot-label">{currentLang === 'ja' ? 'メール' : 'Email'}</span>
+            <span className="dot-label">{tx({ ja: 'メール', en: 'Email', uz: 'Email', ru: 'Email', zh: '邮箱', vi: 'Email', ne: 'इमेल' })}</span>
           </div>
           <div className="step-line"></div>
           <div className={`step-dot ${step === 'otp' ? 'active' : step === 'success' ? 'completed' : ''}`}>
             <span className="dot-number">2</span>
-            <span className="dot-label">{currentLang === 'ja' ? 'OTP認証' : 'OTP Code'}</span>
+            <span className="dot-label">{tx({ ja: 'OTP認証', en: 'OTP Code', uz: 'OTP kod', ru: 'OTP-код', zh: 'OTP 验证码', vi: 'Mã OTP', ne: 'OTP कोड' })}</span>
           </div>
         </div>
 
@@ -301,11 +337,15 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
         {step === 'email' && (
           <form className="email-otp-form" onSubmit={handleSendOtp}>
             <div className="form-section-title">
-              {currentLang === 'ja' 
-                ? 'アカウント役割の選択' 
-                : currentLang === 'en' 
-                ? 'Select Account Role' 
-                : 'Hisob turini tanlang'}
+              {tx({
+                ja: 'アカウント役割の選択',
+                en: 'Select Account Role',
+                uz: 'Hisob turini tanlang',
+                ru: 'Выберите тип аккаунта',
+                zh: '选择账户类型',
+                vi: 'Chọn loại tài khoản',
+                ne: 'खाताको प्रकार छान्नुहोस्'
+              })}
             </div>
             
             <div className="role-selector-chips">
@@ -315,7 +355,7 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
                 onClick={() => setRole('driver')}
               >
                 <User size={15} />
-                <span>{currentLang === 'ja' ? '求職者 / ドライバー' : 'Haydovchi'}</span>
+                <span>{tx({ ja: '求職者 / ドライバー', en: 'Job Seeker / Driver', uz: 'Haydovchi', ru: 'Соискатель / Водитель', zh: '求职者 / 司机', vi: 'Người tìm việc / Tài xế', ne: 'रोजगार खोजकर्ता / चालक' })}</span>
               </button>
 
               <button
@@ -324,7 +364,7 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
                 onClick={() => setRole('company')}
               >
                 <Building2 size={15} />
-                <span>{currentLang === 'ja' ? '企業 / 採用担当' : 'Ish beruvchi'}</span>
+                <span>{tx({ ja: '企業 / 採用担当', en: 'Company / Recruiter', uz: 'Ish beruvchi', ru: 'Компания / Рекрутер', zh: '企业 / 招聘负责人', vi: 'Doanh nghiệp / Nhà tuyển dụng', ne: 'कम्पनी / भर्ती प्रबन्धक' })}</span>
               </button>
 
               <button
@@ -333,13 +373,13 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
                 onClick={() => setRole('school')}
               >
                 <GraduationCap size={15} />
-                <span>{currentLang === 'ja' ? '自動車教習所' : 'Avtomaktab'}</span>
+                <span>{tx({ ja: '自動車教習所', en: 'Driving School', uz: 'Avtomaktab', ru: 'Автошкола', zh: '驾校', vi: 'Trường dạy lái xe', ne: 'ड्राइभिङ स्कुल' })}</span>
               </button>
             </div>
 
             <div className="form-group-box">
               <label className="input-label">
-                {currentLang === 'ja' ? '電子メールアドレス' : currentLang === 'en' ? 'Email Address' : 'Elektron pochta manzilingiz'}
+                {tx({ ja: '電子メールアドレス', en: 'Email Address', uz: 'Elektron pochta manzilingiz', ru: 'Адрес электронной почты', zh: '电子邮箱地址', vi: 'Địa chỉ email', ne: 'इमेल ठेगाना' })}
               </label>
               <div className="input-with-icon">
                 <Mail size={18} className="field-icon" aria-hidden="true" />
@@ -347,7 +387,7 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
                   type="email"
                   required
                   autoFocus
-                  placeholder="masalan: user@example.com"
+                  placeholder={tx({ ja: '例: user@example.com', en: 'e.g. user@example.com', uz: 'masalan: user@example.com', ru: 'например: user@example.com', zh: '例如：user@example.com', vi: 'ví dụ: user@example.com', ne: 'उदाहरण: user@example.com' })}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="email-field-input"
@@ -371,11 +411,11 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
               {loading ? (
                 <span className="flex-btn-content">
                   <Loader2 size={18} className="animate-spin" />
-                  <span>{currentLang === 'ja' ? '送信中...' : 'Yuborilmoqda...'}</span>
+                  <span>{tx({ ja: '送信中...', en: 'Sending...', uz: 'Yuborilmoqda...', ru: 'Отправка...', zh: '发送中...', vi: 'Đang gửi...', ne: 'पठाउँदै...' })}</span>
                 </span>
               ) : (
                 <span className="flex-btn-content">
-                  <span>{currentLang === 'ja' ? '確認コードを送信' : 'Tasdiqlash kodini yuborish'}</span>
+                  <span>{tx({ ja: '確認コードを送信', en: 'Send Verification Code', uz: 'Tasdiqlash kodini yuborish', ru: 'Отправить код подтверждения', zh: '发送验证码', vi: 'Gửi mã xác minh', ne: 'प्रमाणीकरण कोड पठाउनुहोस्' })}</span>
                   <ShieldCheck size={18} />
                 </span>
               )}
@@ -393,7 +433,7 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
               disabled={loading}
             >
               <ArrowLeft size={16} />
-              <span>{currentLang === 'ja' ? 'メールアドレスの変更' : "Emailni o'zgartirish"}</span>
+              <span>{tx({ ja: 'メールアドレスの変更', en: 'Change Email', uz: "Emailni o'zgartirish", ru: 'Изменить email', zh: '更改邮箱地址', vi: 'Đổi email', ne: 'इमेल परिवर्तन गर्नुहोस्' })}</span>
             </button>
 
             <div className="otp-instruct-box">
@@ -401,11 +441,12 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
                 <Lock size={22} color="#5E5CE6" />
               </div>
               <h4 className="otp-instruct-title">
-                {currentLang === 'ja' ? '6桁の確認コードを入力' : '6 xonali tasdiqlash kodini kiriting'}
+                {tx({ ja: '6桁の確認コードを入力', en: 'Enter the 6-digit verification code', uz: '6 xonali tasdiqlash kodini kiriting', ru: 'Введите 6-значный код подтверждения', zh: '请输入 6 位验证码', vi: 'Nhập mã xác minh gồm 6 chữ số', ne: '६ अङ्कको प्रमाणीकरण कोड प्रविष्ट गर्नुहोस्' })}
               </h4>
               <p className="otp-instruct-sub">
-                <strong className="user-target-email">{email}</strong>{' '}
-                {currentLang === 'ja' ? 'へお送りしたコードを入力してください。' : 'manziliga yuborilgan kodni kiriting.'}
+                {otpPrefix && <>{otpPrefix}{' '}</>}
+                <strong className="user-target-email">{email}</strong>
+                {otpSuffix}
               </p>
             </div>
 
@@ -450,12 +491,12 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
               {loading ? (
                 <span className="flex-btn-content">
                   <Loader2 size={18} className="animate-spin" />
-                  <span>{currentLang === 'ja' ? '検証中...' : 'Tekshirilmoqda...'}</span>
+                  <span>{tx({ ja: '検証中...', en: 'Verifying...', uz: 'Tekshirilmoqda...', ru: 'Проверка...', zh: '验证中...', vi: 'Đang xác minh...', ne: 'प्रमाणित गर्दै...' })}</span>
                 </span>
               ) : (
                 <span className="flex-btn-content">
                   <CheckCircle2 size={18} />
-                  <span>{currentLang === 'ja' ? '認証してログイン' : 'Tasdiqlash va kirish'}</span>
+                  <span>{tx({ ja: '認証してログイン', en: 'Verify & Sign In', uz: 'Tasdiqlash va kirish', ru: 'Подтвердить и войти', zh: '验证并登录', vi: 'Xác minh và đăng nhập', ne: 'प्रमाणित गरी लगइन गर्नुहोस्' })}</span>
                 </span>
               )}
             </button>
@@ -464,7 +505,15 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
             <div className="resend-cooldown-box">
               {cooldown > 0 ? (
                 <span className="cooldown-text">
-                  {currentLang === 'ja' ? `コードの再送信 (${cooldown}秒)` : `Kodni qayta yuborish (${cooldown}s)`}
+                  {tx({
+                    ja: `コードの再送信 (${cooldown}秒)`,
+                    en: `Resend code (${cooldown}s)`,
+                    uz: `Kodni qayta yuborish (${cooldown}s)`,
+                    ru: `Отправить код повторно (${cooldown} с)`,
+                    zh: `重新发送验证码（${cooldown}秒）`,
+                    vi: `Gửi lại mã (${cooldown}s)`,
+                    ne: `कोड पुनः पठाउनुहोस् (${cooldown} सेकेन्ड)`
+                  })}
                 </span>
               ) : (
                 <button
@@ -474,7 +523,7 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
                   className="resend-action-btn"
                 >
                   <RefreshCw size={14} />
-                  <span>{currentLang === 'ja' ? 'コードを再送信' : 'Kodni qayta yuborish'}</span>
+                  <span>{tx({ ja: 'コードを再送信', en: 'Resend Code', uz: 'Kodni qayta yuborish', ru: 'Отправить код повторно', zh: '重新发送验证码', vi: 'Gửi lại mã', ne: 'कोड पुनः पठाउनुहोस्' })}</span>
                 </button>
               )}
             </div>
@@ -488,12 +537,18 @@ export default function EmailOtpAuthModal({ isOpen, onClose, onSuccess, initialR
               <CheckCircle2 size={54} color="#34C759" />
             </div>
             <h3 className="success-title">
-              {currentLang === 'ja' ? '認証が完了しました！' : 'Muvaffaqiyatli tasdiqlandi!'}
+              {tx({ ja: '認証が完了しました！', en: 'Verification complete!', uz: 'Muvaffaqiyatli tasdiqlandi!', ru: 'Подтверждение выполнено!', zh: '验证成功！', vi: 'Xác minh thành công!', ne: 'प्रमाणीकरण सफल भयो!' })}
             </h3>
             <p className="success-sub">
-              {currentLang === 'ja'
-                ? 'Michi Appへようこそ。リダイレクト中...'
-                : "Tizimga muvaffaqiyatli kirdingiz. Yo'naltirilmoqda..."}
+              {tx({
+                ja: 'Michi Appへようこそ。リダイレクト中...',
+                en: 'Welcome to Michi App. Redirecting...',
+                uz: "Tizimga muvaffaqiyatli kirdingiz. Yo'naltirilmoqda...",
+                ru: 'Добро пожаловать в Michi App. Перенаправление...',
+                zh: '欢迎使用 Michi App。正在跳转...',
+                vi: 'Chào mừng đến với Michi App. Đang chuyển hướng...',
+                ne: 'Michi App मा स्वागत छ। रिडाइरेक्ट गर्दै...'
+              })}
             </p>
           </div>
         )}
