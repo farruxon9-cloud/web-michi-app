@@ -1,0 +1,389 @@
+/* ================================================================
+   🎙️ Resume Voice Agent — "Michi Interviewer"
+   Own persona (emerald → gold), separate from the violet AI bento.
+   ================================================================ */
+
+.rva {
+  --rva-a: #10b981;
+  --rva-b: #f5b942;
+  --rva-c: #0ea5a4;
+  --rva-bg: rgba(255, 255, 255, 0.82);
+  --rva-border: rgba(16, 185, 129, 0.22);
+  --rva-text: #0f172a;
+  --rva-sub: #64748b;
+  --rva-card: rgba(16, 185, 129, 0.07);
+
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 96px); /* sits above the floating BottomNav */
+  transform: translateX(-50%);
+  width: min(calc(100vw - 24px), 520px);
+  z-index: 1200;
+  padding: 14px 14px 12px;
+  border-radius: 26px;
+  background: var(--rva-bg);
+  border: 1px solid var(--rva-border);
+  box-shadow:
+    0 24px 60px -18px rgba(6, 78, 59, 0.35),
+    0 8px 22px -10px rgba(15, 23, 42, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(22px) saturate(1.6);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  color: var(--rva-text);
+  font-family: 'Inter', 'Hiragino Sans', 'Noto Sans JP', system-ui, sans-serif;
+  overflow: hidden;
+  animation: rva-in 0.42s cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+}
+
+.dark-mode .rva,
+body.dark-mode .rva,
+[data-theme="dark"] .rva {
+  --rva-bg: rgba(15, 23, 32, 0.84);
+  --rva-border: rgba(52, 211, 153, 0.22);
+  --rva-text: #f1f5f9;
+  --rva-sub: #94a3b8;
+  --rva-card: rgba(52, 211, 153, 0.09);
+  box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+@keyframes rva-in {
+  from { opacity: 0; transform: translate(-50%, 24px) scale(0.96); }
+  to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+.rva-aura {
+  position: absolute;
+  inset: -40% -20% auto -20%;
+  height: 160px;
+  background: radial-gradient(closest-side, rgba(16, 185, 129, 0.22), transparent 70%),
+              radial-gradient(closest-side at 80% 40%, rgba(245, 185, 66, 0.18), transparent 70%);
+  pointer-events: none;
+  filter: blur(8px);
+  opacity: 0.8;
+  transition: opacity 0.4s ease;
+}
+.rva--listening .rva-aura { animation: rva-aura 3.2s ease-in-out infinite; }
+@keyframes rva-aura { 50% { opacity: 1; transform: translateY(6px) scale(1.04); } }
+
+/* ---------- header ---------- */
+.rva-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rva-orb {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+.rva-orb-core {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: conic-gradient(from 210deg, var(--rva-a), var(--rva-c), var(--rva-b), var(--rva-a));
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.55), inset 0 0 8px rgba(255, 255, 255, 0.5);
+  animation: rva-spin 6s linear infinite;
+}
+.rva-orb-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(16, 185, 129, 0.45);
+  opacity: 0;
+}
+.rva-orb-speaking .rva-orb-core { animation-duration: 1.6s; }
+.rva-orb-speaking .rva-orb-ring.r1 { animation: rva-ring 1.2s ease-out infinite; }
+.rva-orb-speaking .rva-orb-ring.r2 { animation: rva-ring 1.2s ease-out 0.6s infinite; }
+.rva-orb-listening .rva-orb-ring.r1 { border-color: rgba(245, 185, 66, 0.6); animation: rva-ring 1.8s ease-out infinite; }
+.rva-orb-thinking .rva-orb-core,
+.rva-orb-writing .rva-orb-core { animation-duration: 0.9s; }
+.rva-orb-paused .rva-orb-core,
+.rva-orb-idle .rva-orb-core { animation-play-state: paused; filter: saturate(0.6); }
+.rva-orb-error .rva-orb-core { background: conic-gradient(#f43f5e, #fb923c, #f43f5e); animation: none; }
+
+@keyframes rva-spin { to { transform: rotate(360deg); } }
+@keyframes rva-ring {
+  0%   { opacity: 0.8; transform: scale(0.85); }
+  100% { opacity: 0; transform: scale(1.55); }
+}
+
+.rva-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.rva-title strong {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  background: linear-gradient(90deg, var(--rva-a), var(--rva-b));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rva-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rva-sub);
+}
+.rva-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rva-sub);
+}
+.rva-chip-listening .rva-chip-dot,
+.rva-chip-confirm .rva-chip-dot { background: var(--rva-b); box-shadow: 0 0 0 0 rgba(245, 185, 66, 0.6); animation: rva-dot 1.4s infinite; }
+.rva-chip-speaking .rva-chip-dot,
+.rva-chip-writing .rva-chip-dot { background: var(--rva-a); animation: rva-dot 1s infinite; }
+.rva-chip-thinking .rva-chip-dot { background: var(--rva-c); animation: rva-dot 0.8s infinite; }
+.rva-chip-done .rva-chip-dot { background: var(--rva-a); }
+.rva-chip-error .rva-chip-dot { background: #f43f5e; }
+@keyframes rva-dot {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  100% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+}
+
+.rva-progress-num {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--rva-sub);
+  font-variant-numeric: tabular-nums;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--rva-card);
+}
+
+.rva-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--rva-border);
+  background: transparent;
+  color: var(--rva-text);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+.rva-icon-btn:hover { background: var(--rva-card); }
+.rva-icon-btn:active { transform: scale(0.92); }
+
+/* ---------- AI speech ---------- */
+.rva-say {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 12px 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--rva-text);
+  cursor: default;
+  animation: rva-fade 0.3s ease both;
+}
+.rva--speaking .rva-say { cursor: pointer; }
+@keyframes rva-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ---------- live transcript ---------- */
+.rva-live {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: var(--rva-card);
+  min-height: 40px;
+}
+.rva-wave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.rva-wave span {
+  width: 3px;
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(var(--rva-b), var(--rva-a));
+  opacity: 0.5;
+}
+.rva-wave.on span { animation: rva-bar 0.9s ease-in-out infinite; opacity: 1; }
+@keyframes rva-bar { 0%, 100% { height: 5px; } 50% { height: 18px; } }
+
+.rva-live-text {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--rva-text);
+  word-break: break-word;
+}
+.rva-live-text.placeholder { color: var(--rva-sub); font-style: italic; }
+
+/* ---------- confirm card ---------- */
+.rva-confirm {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background:
+    linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(245, 185, 66, 0.10));
+  animation: rva-fade 0.3s ease both;
+}
+.rva-confirm-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rva-a);
+}
+.rva-confirm-value {
+  margin-top: 4px;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--rva-text);
+  word-break: break-word;
+  max-height: 140px;
+  overflow-y: auto;
+}
+.rva-confirm-original {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--rva-sub);
+  line-height: 1.4;
+}
+.rva-shimmer {
+  background: linear-gradient(90deg, var(--rva-sub) 30%, var(--rva-a) 50%, var(--rva-sub) 70%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rva-shimmer 1.4s linear infinite;
+}
+@keyframes rva-shimmer { to { background-position: -200% 0; } }
+
+.rva-writing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rva-a);
+}
+.rva-caret {
+  width: 2px;
+  height: 15px;
+  background: var(--rva-a);
+  animation: rva-blink 0.8s steps(2) infinite;
+}
+@keyframes rva-blink { 50% { opacity: 0; } }
+
+/* ---------- actions ---------- */
+.rva-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.rva-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid var(--rva-border);
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--rva-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+}
+.dark-mode .rva-btn, [data-theme="dark"] .rva-btn { background: rgba(255, 255, 255, 0.04); }
+.rva-btn:active { transform: scale(0.96); }
+.rva-btn:disabled { opacity: 0.45; cursor: default; }
+.rva-btn.primary {
+  flex: 1.4;
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, var(--rva-a), #059669 55%, #ca8a04);
+  box-shadow: 0 10px 22px -10px rgba(5, 150, 105, 0.8);
+}
+.rva-btn.primary:hover { box-shadow: 0 12px 26px -8px rgba(5, 150, 105, 0.9); }
+.rva-btn.ghost { background: transparent; color: var(--rva-sub); }
+
+.rva-hint {
+  margin: 8px 2px 0;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--rva-sub);
+  text-align: center;
+}
+
+.rva-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(16, 185, 129, 0.12);
+}
+.rva-track span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--rva-a), var(--rva-b));
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ---------- typewriter target in the form ---------- */
+.rva-typing {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18), 0 0 18px rgba(16, 185, 129, 0.35) !important;
+  background: rgba(16, 185, 129, 0.05) !important;
+  caret-color: transparent;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.rva-written {
+  animation: rva-written 1.6s ease both;
+}
+@keyframes rva-written {
+  0% { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Leave room so the panel never covers the last form card */
+.resume-builder-container.rva-on { padding-bottom: 340px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rva, .rva * { animation: none !important; transition: none !important; }
+}

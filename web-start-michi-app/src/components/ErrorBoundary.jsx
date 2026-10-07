@@ -32,7 +32,7 @@ export default class ErrorBoundary extends React.Component {
           <div className="error-card glass">
             <div className="error-header">
               <div className="error-icon-box animate-pulse">
-                <AlertTriangle size={32} color="#FF3B30" aria-hidden="true" />
+                <AlertTriangle size={32} color="#FF3B30" />
               </div>
               <h2>予期せぬエラーが発生しました / Unexpected Error</h2>
               <p className="error-subtitle">おっと! エラーが発生しました (Kutilmagan xatolik yuz berdi)</p>
@@ -45,14 +45,14 @@ export default class ErrorBoundary extends React.Component {
               </p>
               
               <button className="error-reload-btn" onClick={this.handleReload}>
-                <RefreshCw size={16} aria-hidden="true" />
+                <RefreshCw size={16} />
                 <span>再読み込み (Reload App)</span>
               </button>
 
               <div className="error-dev-section">
                 <button className="error-dev-toggle" onClick={this.toggleDetails}>
                   <span>技術的詳細 (Developer Details)</span>
-                  {this.state.showDetails ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
+                  {this.state.showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
                 
                 {this.state.showDetails && (

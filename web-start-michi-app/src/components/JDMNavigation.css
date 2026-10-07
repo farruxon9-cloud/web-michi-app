@@ -25,7 +25,7 @@
   border-bottom: 1px solid var(--glass-border);
   position: sticky;
   top: 0;
-  z-index: var(--z-content);
+  z-index: 10;
 }
 
 .nav-back-btn {
@@ -202,7 +202,7 @@
   border: 1px solid var(--glass-border);
   border-radius: 10px;
   box-shadow: var(--shadow-md);
-  z-index: var(--z-sticky);
+  z-index: 100;
   max-height: 140px;
   overflow-y: auto;
 }
@@ -592,7 +592,7 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  z-index: var(--z-content);
+  z-index: 9;
   box-sizing: border-box;
 }
 
@@ -661,7 +661,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-overlay);
+  z-index: 1000;
   padding: 16px;
 }
 
@@ -1099,7 +1099,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  z-index: var(--z-overlay);
+  z-index: 1000;
   transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1167,7 +1167,7 @@
   border-radius: 16px;
   padding: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  z-index: calc(var(--z-overlay) + 1);
+  z-index: 1001;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1464,7 +1464,7 @@
 /* Floating components styles */
 .floating-card {
   position: absolute;
-  z-index: var(--z-content);
+  z-index: 10;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
   width: auto !important;
 }
@@ -1483,7 +1483,7 @@
   top: 12px;
   left: 12px;
   right: 12px;
-  z-index: var(--z-content);
+  z-index: 10;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
   border-radius: 16px !important;
   width: auto !important;
@@ -1494,7 +1494,7 @@
   bottom: 96px;
   left: 12px;
   right: 12px;
-  z-index: var(--z-content);
+  z-index: 10;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
   border-radius: 16px !important;
   max-height: 350px;
@@ -1507,7 +1507,7 @@
   bottom: 96px;
   left: 12px;
   right: 12px;
-  z-index: var(--z-content);
+  z-index: 10;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
   border-radius: 16px !important;
   width: auto !important;
@@ -1612,7 +1612,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-modal);
+  z-index: 2000;
 }
 
 .save-route-modal-content {
@@ -1778,7 +1778,7 @@ button:focus,
   top: 14px;
   left: 12px;
   right: 12px;
-  z-index: calc(var(--z-overlay) + 2);
+  z-index: 1002;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1909,7 +1909,7 @@ button:focus,
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: calc(var(--z-overlay) + 10);
+  z-index: 1010;
   background: var(--bg-color, #121218);
   display: flex;
   flex-direction: column;
@@ -2012,7 +2012,7 @@ button:focus,
   top: 0;
   left: 0;
   right: 0;
-  z-index: calc(var(--z-overlay) + 2);
+  z-index: 1002;
   background: var(--om-green, #1e7e34) !important;
   color: #ffffff;
   border-radius: 0;
@@ -2224,7 +2224,7 @@ button:focus,
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: calc(var(--z-overlay) + 1);
+  z-index: 1001;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   animation: fadeIn 0.25s ease;
 }
@@ -2248,7 +2248,7 @@ button:focus,
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: var(--z-overlay);
+  z-index: 1000;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -2274,7 +2274,7 @@ button:focus,
   display: flex;
   flex-direction: column;
   gap: 8px;
-  z-index: var(--z-overlay);
+  z-index: 1000;
   transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -2341,7 +2341,7 @@ button:focus,
   top: 12px;
   left: 12px;
   right: 12px;
-  z-index: calc(var(--z-overlay) + 2);
+  z-index: 1002;
   margin: 0;
   padding: 12px 16px;
   display: flex;
@@ -2492,7 +2492,7 @@ button:focus,
   bottom: 96px;
   left: 12px;
   right: 12px;
-  z-index: calc(var(--z-overlay) + 2);
+  z-index: 1002;
   padding: 12px;
   background: var(--om-surface);
   border: 1px solid var(--om-border);
@@ -2609,7 +2609,7 @@ button:focus,
   display: flex;
   flex-direction: column;
   gap: 4px;
-  z-index: calc(var(--z-overlay) + 3);
+  z-index: 1003;
   box-shadow: var(--om-shadow-lg);
   min-width: 170px;
 }
@@ -2739,7 +2739,7 @@ button:focus,
   border: 1px solid var(--om-border);
   border-radius: 20px;
   box-shadow: var(--om-shadow-lg);
-  z-index: calc(var(--z-overlay) + 1);
+  z-index: 1001;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -2938,7 +2938,7 @@ button:focus,
   box-shadow: var(--om-shadow-lg) !important;
   padding: 0px;
   overflow: hidden;
-  z-index: calc(var(--z-overlay) + 1);
+  z-index: 1001;
 }
 
 .bottom-sheet-handle-bar {
@@ -3125,7 +3125,7 @@ button:focus,
   text-align: center;
   font-size: 13.5px;
   font-weight: 800;
-  z-index: calc(var(--z-overlay) + 2);
+  z-index: 1002;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -3144,7 +3144,7 @@ button:focus,
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  z-index: calc(var(--z-overlay) + 2);
+  z-index: 1002;
   box-shadow: 0 8px 24px rgba(0, 132, 255, 0.28);
   border: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
@@ -3178,7 +3178,7 @@ button:focus,
   right: 12px;
   width: 44px;
   height: 44px;
-  z-index: calc(var(--z-overlay) + 2);
+  z-index: 1002;
 }
 
 .speed-sign-red-border {
@@ -3204,7 +3204,7 @@ button:focus,
   top: 60px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: calc(var(--z-overlay) + 2);
+  z-index: 1002;
   background: rgba(28, 28, 30, 0.9);
   padding: 6px 12px;
   border-radius: 12px;
@@ -3219,7 +3219,7 @@ button:focus,
   top: 60px;
   left: 90px;
   right: 66px;
-  z-index: calc(var(--z-overlay) + 1);
+  z-index: 1001;
   background: rgba(28, 28, 30, 0.85);
   color: #ffffff;
   padding: 8px 12px;
@@ -3272,7 +3272,7 @@ button:focus,
   position: absolute;
   top: 16px;
   right: 16px;
-  z-index: calc(var(--z-overlay) + 2);
+  z-index: 1002;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
@@ -3321,7 +3321,7 @@ button:focus,
 /* 2. Binoculars Button & Locate Button (Bottom Left) — 48px touch target */
 .am-binoculars-btn, .am-locate-btn {
   position: absolute;
-  z-index: calc(var(--z-overlay) + 2);
+  z-index: 1002;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
@@ -3346,7 +3346,7 @@ button:focus,
 /* 3. Stacked Controls (Bottom Right Capsule) — premium glassmorphism */
 .am-stacked-controls {
   position: absolute;
-  z-index: calc(var(--z-overlay) + 2);
+  z-index: 1002;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
@@ -3393,7 +3393,7 @@ button:focus,
   bottom: 24px;
   left: 16px;
   right: 16px;
-  z-index: calc(var(--z-overlay) + 1);
+  z-index: 1001;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
@@ -3453,7 +3453,7 @@ button:focus,
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: calc(var(--z-overlay) + 102);
+  z-index: 1102;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
@@ -3788,7 +3788,7 @@ button:focus,
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: calc(var(--z-overlay) + 101);
+  z-index: 1101;
   background: rgba(0, 0, 0, 0.08);
   animation: fadeInBackdrop 0.25s ease;
 }
@@ -3827,7 +3827,7 @@ html.dark-mode, :root:not(.light-mode) {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: calc(var(--z-overlay) + 100);
+  z-index: 1100;
   background: var(--sheet-bg);
   backdrop-filter: blur(30px) saturate(180%);
   -webkit-backdrop-filter: blur(30px) saturate(180%);
@@ -4334,7 +4334,7 @@ html.dark-mode, :root:not(.light-mode) {
   top: 14px;
   left: 12px;
   right: 12px;
-  z-index: calc(var(--z-overlay) + 2);
+  z-index: 1002;
   background: rgba(44, 44, 46, 0.95);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
@@ -4385,7 +4385,7 @@ html.dark-mode, :root:not(.light-mode) {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: calc(var(--z-overlay) + 100);
+  z-index: 1100;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
@@ -4499,7 +4499,7 @@ html.dark-mode, :root:not(.light-mode) {
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  z-index: var(--z-modal);
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4606,7 +4606,7 @@ html.dark-mode, :root:not(.light-mode) {
   position: relative;
   cursor: pointer;
   transition: transform 0.15s ease;
-  z-index: var(--z-content);
+  z-index: 10;
 }
 
 .am-restriction-sign span {
@@ -4617,7 +4617,7 @@ html.dark-mode, :root:not(.light-mode) {
 
 .am-restriction-sign:hover {
   transform: scale(1.15);
-  z-index: var(--z-content);
+  z-index: 20;
 }
 
 .am-restriction-sign.warning {
@@ -4693,169 +4693,20 @@ html.dark-mode, :root:not(.light-mode) {
   color: #ff9500;
 }
 
-/* ==========================================================================
-   BOSQICH 3.6: JDM NAVIGATION (GPS) RESPONSIVE STYLES
-   ========================================================================== */
-
-/* 3.6.1 Xarita — to'liq ekran (All viewports full screen map) */
-.jdm-nav-container {
-  width: 100% !important;
-  height: 100vh !important;
-  position: relative !important;
-  overflow: hidden !important;
-  padding-bottom: 0 !important;
-}
-
-.map-canvas-container-fullscreen,
-#jdm-map-viewport,
-.leaflet-container,
-.om-map-wrapper {
-  width: 100% !important;
-  height: 100% !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  z-index: 1 !important;
-}
-
-/* 3.6.3 Qidiruv — desktop kengligi (Markazda max-width: 600px search panel) */
-@media (min-width: 768px) {
-  .om-search-bar-container,
-  .om-search-expansion,
-  .am-bottom-search-bar,
-  .am-search-panel {
-    max-width: 600px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    right: auto !important;
-    width: 90% !important;
-  }
-
-  .am-bottom-search-bar {
-    bottom: 24px !important;
-  }
-}
-
-/* 3.6.4 Trip sheet — desktop sidebar (Desktopda chap panelda doimiy ochiq) */
-@media (min-width: 1024px) {
-  .am-bottom-sheet {
-    position: absolute !important;
-    top: 20px !important;
-    left: 20px !important;
-    bottom: 20px !important;
-    right: auto !important;
-    width: 400px !important;
-    height: auto !important;
-    max-height: calc(100vh - 40px) !important;
-    border-radius: 24px !important;
-    border: 1px solid var(--sheet-border, rgba(255, 255, 255, 0.12)) !important;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35) !important;
-    z-index: calc(var(--z-overlay) + 5) !important;
-    transform: none !important;
-    transition: width 0.3s ease, opacity 0.3s ease !important;
-  }
-
-  .am-bottom-sheet.am-sheet-collapsed,
-  .am-bottom-sheet.am-sheet-half,
-  .am-bottom-sheet.am-sheet-full {
-    max-height: calc(100vh - 40px) !important;
-  }
-
-  .am-bottom-sheet .am-sheet-scroll-body {
-    max-height: calc(100vh - 120px) !important;
-    overflow-y: auto !important;
-  }
-
-  .am-bottom-sheet .am-drag-handle {
-    display: none !important;
-  }
-}
-
-/* 3.6.2 HUD panellari — responsive (Mobil: pastda, Desktop: chap/o'ng panellarda) */
-@media (min-width: 1024px) {
-  /* When trip sheet sidebar is open, shift bottom navigation HUD to right of sidebar */
-  .om-nav-bottom-bar,
-  .floating-hud {
-    left: 440px !important;
-    right: 24px !important;
-    max-width: 500px !important;
-    bottom: 24px !important;
-  }
-
-  /* Right-side stacked controls */
-  .am-stacked-controls {
-    right: 24px !important;
-    top: 80px !important;
-  }
-
-  .am-weather-widget {
-    right: 24px !important;
-    top: 24px !important;
-  }
-
-  /* Top turn maneuver bar and lane guidance */
-  .om-nav-top-street-bar {
-    left: 440px !important;
-    right: 24px !important;
-    max-width: 500px !important;
-  }
-
-  .om-nav-maneuver-box {
-    left: 440px !important;
-    top: 72px !important;
-  }
-
-  .om-nav-text-bubble {
-    left: 518px !important;
-    top: 72px !important;
-    max-width: 420px !important;
-  }
-}
-
-/* 3.6.5 Ultra-wide / Large Desktop Layout (min-width: 1200px) */
+/* ====== DESKTOP 1200PX+ ULTRA WIDE MEDIA BREAKPOINT ====== */
 @media (min-width: 1200px) {
-  /* Expand trip sheet sidebar width from 400px to 440px for comfortable reading */
-  .am-bottom-sheet {
-    width: 440px !important;
-    max-height: calc(100vh - 48px) !important;
-    top: 24px !important;
-    left: 24px !important;
+  .jdm-nav-overlay {
+    max-width: 1400px;
+    margin: 0 auto;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   }
 
-  .am-bottom-sheet .am-sheet-scroll-body {
-    max-height: calc(100vh - 130px) !important;
+  .jdm-hud-card {
+    max-width: 480px;
   }
 
-  /* Expand search bar max width on large screens */
-  .om-search-bar-container,
-  .om-search-expansion,
-  .am-bottom-search-bar,
-  .am-search-panel {
-    max-width: 680px !important;
-  }
-
-  /* Adjust HUD controls offset to match wider 440px sidebar */
-  .om-nav-bottom-bar,
-  .floating-hud {
-    left: 484px !important;
-    max-width: 600px !important;
-  }
-
-  .om-nav-top-street-bar {
-    left: 484px !important;
-    max-width: 600px !important;
-  }
-
-  .om-nav-maneuver-box {
-    left: 484px !important;
-  }
-
-  .om-nav-text-bubble {
-    left: 562px !important;
-    max-width: 500px !important;
+  .jdm-nav-search-panel {
+    max-width: 600px;
   }
 }
-
-

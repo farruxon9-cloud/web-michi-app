@@ -15,8 +15,8 @@ import { JAPANESE_EXTENDED_RESOURCES_LIBRARY } from '../data/japaneseExtendedRes
 
 class JapaneseTextbookEngine {
   constructor() {
-    this.library = JAPANESE_GLOBAL_TEXTBOOK_LIBRARY;
-    this.extendedLibrary = JAPANESE_EXTENDED_RESOURCES_LIBRARY;
+    this.library = JAPANESE_GLOBAL_TEXTBOOK_LIBRARY || {};
+    this.extendedLibrary = JAPANESE_EXTENDED_RESOURCES_LIBRARY || {};
   }
 
   /**
@@ -24,26 +24,42 @@ class JapaneseTextbookEngine {
    * @param {'N5'|'N4'|'N3'|'N2'|'N1'} level 
    */
   getSyllabusByLevel(level = 'N5') {
-    const clean = level.toUpperCase();
-    return this.library.sequentialTopicSyllabus[clean] || [];
+    if (!level || typeof level !== 'string') return [];
+    const clean = level.toUpperCase().trim();
+    const syllabusMap = this.library.sequentialTopicSyllabus || {};
+    return Array.isArray(syllabusMap[clean]) ? [...syllabusMap[clean]] : [];
   }
 
   /**
-   * Search syllabus topic by name or query
+   * Search syllabus topic by name, grammar, or keyword
    * @param {string} query 
+   * @param {number} [limit=25]
    */
-  searchSyllabusTopic(query) {
-    if (!query) return [];
+  searchSyllabusTopic(query, limit = 25) {
+    if (!query || typeof query !== 'string') return [];
     const clean = query.toLowerCase().trim();
-    const results = [];
+    if (!clean) return [];
 
-    for (const [level, topicList] of Object.entries(this.library.sequentialTopicSyllabus)) {
+    const results = [];
+    const syllabusMap = this.library.sequentialTopicSyllabus || {};
+
+    for (const [level, topicList] of Object.entries(syllabusMap)) {
+      if (!Array.isArray(topicList)) continue;
       for (const item of topicList) {
+        if (results.length >= limit) return results;
+
+        const topic = (item.topic || '').toLowerCase();
+        const textbook = (item.textbook || '').toLowerCase();
+        const grammar = (item.grammar || '').toLowerCase();
+        const uz = (item.uz || '').toLowerCase();
+        const en = (item.en || '').toLowerCase();
+
         if (
-          item.topic.toLowerCase().includes(clean) ||
-          item.textbook.toLowerCase().includes(clean) ||
-          item.grammar.toLowerCase().includes(clean) ||
-          item.uz.toLowerCase().includes(clean)
+          topic.includes(clean) || 
+          textbook.includes(clean) || 
+          grammar.includes(clean) || 
+          uz.includes(clean) ||
+          en.includes(clean)
         ) {
           results.push({ level, ...item });
         }
@@ -54,11 +70,13 @@ class JapaneseTextbookEngine {
 
   /**
    * Lookup GENKI lesson details
-   * @param {number} lessonNum 
+   * @param {number|string} lessonNum 
    */
   getGenkiLesson(lessonNum) {
-    const lessons = this.extendedLibrary.genkiSeries.lessons || [];
-    return lessons.find(l => l.lesson === Number(lessonNum)) || null;
+    if (!lessonNum) return null;
+    const target = Number(lessonNum);
+    const lessons = this.extendedLibrary.genkiSeries?.lessons || [];
+    return lessons.find(l => Number(l.lesson) === target) || null;
   }
 
   /**
@@ -66,33 +84,63 @@ class JapaneseTextbookEngine {
    * @param {string} query 
    */
   getTobiraModule(query) {
-    if (!query) return null;
-    const clean = query.toLowerCase();
-    const modules = this.extendedLibrary.tobiraSeries.modules || [];
-    return modules.find(m => m.module.toLowerCase().includes(clean) || m.focus.toLowerCase().includes(clean)) || null;
+    if (!query || typeof query !== 'string') return null;
+    const clean = query.toLowerCase().trim();
+    if (!clean) return null;
+
+    const modules = this.extendedLibrary.tobiraSeries?.modules || [];
+    return modules.find(m => 
+      (m.module || '').toLowerCase().includes(clean) || 
+      (m.focus || '').toLowerCase().includes(clean) ||
+      (m.theme || '').toLowerCase().includes(clean)
+    ) || null;
   }
 
   /**
-   * Lookup Kanji details from Kanji Master N5-N1 dataset
+   * Lookup Kanji details from Kanji Master N5-N1 dataset (Exact Match first)
    * @param {string} query 
    */
   lookupKanji(query) {
-    if (!query) return null;
+    if (!query || typeof query !== 'string') return null;
     const clean = query.trim();
+    if (!clean) return null;
+    const cleanLower = clean.toLowerCase();
 
-    for (const [level, kanjiList] of Object.entries(this.library.kanjiMaster)) {
+    const kanjiMasterMap = this.library.kanjiMaster || {};
+    let fallbackMatch = null;
+
+    for (const [level, kanjiList] of Object.entries(kanjiMasterMap)) {
+      if (!Array.isArray(kanjiList)) continue;
       for (const item of kanjiList) {
-        if (
-          item.kanji === clean ||
-          item.onyomi.includes(clean) ||
-          item.kunyomi.includes(clean) ||
-          item.example.includes(clean)
-        ) {
-          return { level, ...item };
+        const kanji = item.kanji || '';
+        
+        // 1. Aniq ieroglif mosligi (Exact Kanji character match) - eng yuqori ustuvorlik
+        if (kanji === clean) {
+          return { level, ...item, matchType: 'exact' };
+        }
+
+        // 2. O'qilishlar yoki ma'nolar bo'yicha ikkilamchi moslik (zaxira)
+        if (!fallbackMatch) {
+          const onyomi = (item.onyomi || []).join(' ').toLowerCase();
+          const kunyomi = (item.kunyomi || []).join(' ').toLowerCase();
+          const example = (item.example || '').toLowerCase();
+          const uz = (item.uz || '').toLowerCase();
+          const en = (item.en || '').toLowerCase();
+
+          if (
+            onyomi.includes(cleanLower) ||
+            kunyomi.includes(cleanLower) ||
+            example.includes(cleanLower) ||
+            uz.includes(cleanLower) ||
+            en.includes(cleanLower)
+          ) {
+            fallbackMatch = { level, ...item, matchType: 'secondary' };
+          }
         }
       }
     }
-    return null;
+
+    return fallbackMatch;
   }
 
   /**
@@ -100,31 +148,55 @@ class JapaneseTextbookEngine {
    * @param {number|string} lessonNum 
    */
   getMinnaNoNihongoLesson(lessonNum) {
-    const key = `lesson${lessonNum}`;
-    return this.library.minnaNoNihongo[key] || null;
+    if (!lessonNum && lessonNum !== 0) return null;
+    const raw = String(lessonNum).trim().replace(/^lesson/i, '');
+    const num = parseInt(raw, 10);
+    const minnaMap = this.library.minnaNoNihongo || {};
+
+    // Bir necha xil ehtimoliy kalitlarni xavfsiz tekshirish
+    return minnaMap[`lesson${num}`] || 
+           minnaMap[`lesson${raw}`] || 
+           minnaMap[raw] || 
+           minnaMap[num] || 
+           null;
   }
 
   /**
-   * Search Hajimete no Nihongo Tango ("Buddy Tango") dataset by word or level
+   * Search Hajimete no Nihongo Tango ("Buddy Tango") dataset
    * @param {string} query 
    * @param {'N5'|'N4'|'N3'|'N2'|'N1'} [levelFilter] 
+   * @param {number} [limit=30]
    */
-  searchBuddyTango(query, levelFilter) {
-    if (!query) return [];
+  searchBuddyTango(query, levelFilter, limit = 30) {
+    if (!query || typeof query !== 'string') return [];
     const clean = query.toLowerCase().trim();
-    const results = [];
+    if (!clean) return [];
 
-    const levels = levelFilter ? [levelFilter.toUpperCase()] : ['N5', 'N4', 'N3', 'N2', 'N1'];
+    const results = [];
+    const buddyTangoMap = this.library.buddyTango || {};
+    const levels = levelFilter 
+      ? [levelFilter.toUpperCase().trim()] 
+      : ['N5', 'N4', 'N3', 'N2', 'N1'];
 
     for (const level of levels) {
-      const tangoList = this.library.buddyTango[level] || [];
+      const tangoList = buddyTangoMap[level];
+      if (!Array.isArray(tangoList)) continue;
+
       for (const item of tangoList) {
+        if (results.length >= limit) return results;
+
+        const word = (item.word || '').toLowerCase();
+        const hiragana = (item.hiragana || '').toLowerCase();
+        const romaji = (item.rōmaji || item.romaji || '').toLowerCase();
+        const uz = (item.uz || '').toLowerCase();
+        const en = (item.en || '').toLowerCase();
+
         if (
-          item.word.includes(clean) ||
-          item.hiragana.includes(clean) ||
-          item.rōmaji.toLowerCase().includes(clean) ||
-          item.uz.toLowerCase().includes(clean) ||
-          item.en.toLowerCase().includes(clean)
+          word.includes(clean) ||
+          hiragana.includes(clean) ||
+          romaji.includes(clean) ||
+          uz.includes(clean) ||
+          en.includes(clean)
         ) {
           results.push({ level, ...item });
         }
@@ -137,25 +209,31 @@ class JapaneseTextbookEngine {
    * Get statistics of global textbook datasets
    */
   getTextbookStats() {
+    const kanjiMasterMap = this.library.kanjiMaster || {};
     let totalKanji = 0;
-    for (const list of Object.values(this.library.kanjiMaster)) {
-      totalKanji += list.length;
+    for (const list of Object.values(kanjiMasterMap)) {
+      if (Array.isArray(list)) totalKanji += list.length;
     }
 
+    const buddyTangoMap = this.library.buddyTango || {};
     let totalTango = 0;
-    for (const list of Object.values(this.library.buddyTango)) {
-      totalTango += list.length;
+    for (const list of Object.values(buddyTangoMap)) {
+      if (Array.isArray(list)) totalTango += list.length;
     }
 
+    const syllabusMap = this.library.sequentialTopicSyllabus || {};
     let totalSyllabusTopics = 0;
-    for (const list of Object.values(this.library.sequentialTopicSyllabus)) {
-      totalSyllabusTopics += list.length;
+    for (const list of Object.values(syllabusMap)) {
+      if (Array.isArray(list)) totalSyllabusTopics += list.length;
     }
+
+    const genkiLessons = this.extendedLibrary.genkiSeries?.lessons || [];
+    const tobiraModules = this.extendedLibrary.tobiraSeries?.modules || [];
 
     return {
-      minnaLessonsCount: Object.keys(this.library.minnaNoNihongo).length,
-      genkiLessonsCount: (this.extendedLibrary.genkiSeries.lessons || []).length,
-      tobiraModulesCount: (this.extendedLibrary.tobiraSeries.modules || []).length,
+      minnaLessonsCount: Object.keys(this.library.minnaNoNihongo || {}).length,
+      genkiLessonsCount: genkiLessons.length,
+      tobiraModulesCount: tobiraModules.length,
       kanjiMasterCount: totalKanji,
       buddyTangoCount: totalTango,
       totalSyllabusTopicsCount: totalSyllabusTopics,

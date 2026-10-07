@@ -174,14 +174,3 @@ html.dark-mode .lang-blob-1 {
 html.dark-mode .lang-blob-2 {
   opacity: 0.15;
 }
-
-@media (min-width: 768px) {
-  .language-container,
-  .language-content,
-  .language-grid {
-    max-width: 500px !important;
-    margin: 0 auto !important;
-    width: 100% !important;
-  }
-}
-

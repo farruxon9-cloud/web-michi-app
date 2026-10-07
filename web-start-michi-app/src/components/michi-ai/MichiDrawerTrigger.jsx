@@ -3,10 +3,7 @@ import { Sparkles } from 'lucide-react';
 
 export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speechLang }) {
   // Y-position state (in pixels from top). Default ~42% of window height.
-  const [yPos, setYPos] = useState(() => {
-    const saved = localStorage.getItem('michi_trigger_y_pos');
-    return saved ? parseFloat(saved) : null;
-  });
+  const [yPos, setYPos] = useState(null);
 
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
@@ -14,9 +11,6 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
   const hasDraggedRef = useRef(false);
   const buttonRef = useRef(null);
 
-  // Dynamic boundaries:
-  // Top boundary: 70px (near the top header / AI robot area)
-  // Bottom boundary: window.innerHeight - 120px (above the bottom navigation bar)
   const getMinMaxY = () => {
     const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
     const minY = 70;
@@ -24,35 +18,13 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
     return { minY, maxY };
   };
 
-  // Initialize Y position on mount if not loaded from localStorage
-  useEffect(() => {
-    if (yPos === null && typeof window !== 'undefined') {
-      const vh = window.innerHeight;
-      const defaultY = Math.round(vh * 0.42);
-      setYPos(defaultY);
-    }
-  }, [yPos]);
-
-  // Recalculate and constrain position on window resize
-  useEffect(() => {
-    const handleResize = () => {
-      setYPos((prevY) => {
-        if (prevY === null) return null;
-        const { minY, maxY } = getMinMaxY();
-        return Math.max(minY, Math.min(maxY, prevY));
-      });
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   // --- Touch Event Handlers (Mobile) ---
   const handleTouchStart = (e) => {
     if (e.touches.length !== 1) return;
     isDraggingRef.current = true;
     hasDraggedRef.current = false;
     startYRef.current = e.touches[0].clientY;
-    initialYPosRef.current = yPos !== null ? yPos : Math.round(window.innerHeight * 0.42);
+    initialYPosRef.current = yPos !== null && !isNaN(yPos) ? yPos : Math.round(window.innerHeight * 0.42);
   };
 
   const handleTouchMove = (e) => {
@@ -75,18 +47,15 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
   const handleTouchEnd = () => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
-    if (hasDraggedRef.current && yPos !== null) {
-      localStorage.setItem('michi_trigger_y_pos', yPos.toString());
-    }
   };
 
   // --- Mouse Event Handlers (Desktop) ---
   const handleMouseDown = (e) => {
-    if (e.button !== 0) return; // Only primary left mouse click
+    if (e.button !== 0) return;
     isDraggingRef.current = true;
     hasDraggedRef.current = false;
     startYRef.current = e.clientY;
-    initialYPosRef.current = yPos !== null ? yPos : Math.round(window.innerHeight * 0.42);
+    initialYPosRef.current = yPos !== null && !isNaN(yPos) ? yPos : Math.round(window.innerHeight * 0.42);
 
     const handleMouseMove = (moveEvent) => {
       if (!isDraggingRef.current) return;
@@ -106,16 +75,12 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
       isDraggingRef.current = false;
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
-      if (hasDraggedRef.current && yPos !== null) {
-        localStorage.setItem('michi_trigger_y_pos', yPos.toString());
-      }
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
   };
 
-  // Handle click: toggle drawer only if not dragging
   const handleClick = (e) => {
     if (hasDraggedRef.current) {
       e.preventDefault();
@@ -127,7 +92,7 @@ export default function MichiDrawerTrigger({ isOpen, onToggle, chatCount, speech
 
   if (isOpen) return null;
 
-  const currentTop = yPos !== null ? `${yPos}px` : '42%';
+  const currentTop = yPos !== null && !isNaN(yPos) ? `${yPos}px` : '42%';
 
   return (
     <button 

@@ -14,7 +14,7 @@
 .resume-builder-sticky-back {
   position: sticky;
   top: 0;
-  z-index: var(--z-sticky);
+  z-index: 150;
   display: flex;
   justify-content: flex-start;
   pointer-events: none;
@@ -454,7 +454,7 @@ select.glass-input {
   gap: 16px;
   margin-top: 16px;
   padding-bottom: 16px;
-  z-index: var(--z-sticky);
+  z-index: 100;
 }
 
 .dark-mode .resume-builder-footer {
@@ -856,55 +856,5 @@ select.glass-input {
 
 .open-pdf-tab-btn:hover {
   background: rgba(94, 92, 230, 0.15);
-}
-
-/* ==========================================================================
-   Desktop Split View Layout (Task 3.5.5)
-   Chap: PDF Preview (Left), O'ng: Edit Forms (Right)
-   ========================================================================== */
-@media (min-width: 1024px) {
-  .resume-builder-container {
-    max-width: 1280px !important;
-    margin: 0 auto !important;
-    padding: 24px !important;
-    width: 100% !important;
-  }
-
-  .resume-builder-body {
-    display: grid !important;
-    grid-template-columns: 460px 1fr !important;
-    grid-template-areas: "preview edit" !important;
-    gap: 24px !important;
-    align-items: start !important;
-    width: 100% !important;
-  }
-
-  .resume-builder-title {
-    grid-column: 1 / -1;
-    margin-left: 0 !important;
-    font-size: 22px !important;
-    margin-bottom: 20px !important;
-  }
-
-  .pdf-generation-section {
-    grid-area: preview !important;
-    position: sticky !important;
-    top: 24px !important;
-    z-index: var(--z-content) !important;
-    margin-bottom: 0 !important;
-  }
-
-  .pdf-iframe-preview {
-    min-height: 520px !important;
-    height: 60vh !important;
-  }
-
-  .resume-edit-forms-wrap {
-    grid-area: edit !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    width: 100% !important;
-  }
 }
 

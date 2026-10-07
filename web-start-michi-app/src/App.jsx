@@ -1,121 +1,50 @@
-import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
-import { Routes, Route, useNavigate, useLocation, useParams } from 'react-router-dom';
-import { Sun, Moon, FileText, Bell, Search, Globe } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Splash from './components/Splash';
 import LanguageSelect from './components/LanguageSelect';
 import RoleSelect from './components/RoleSelect';
 import BottomNav from './components/BottomNav';
-import SideNav from './components/SideNav';
+import './App.css';
+import Dashboard from './components/Dashboard';
+import DriverFeed from './components/DriverFeed';
+import JobDetail from './components/JobDetail';
+import DrivingAcademy from './components/DrivingAcademy';
+import ServiceComingSoon from './components/ServiceComingSoon';
+import Profile from './components/Profile';
+import VoiceAssistant from './components/VoiceAssistant';
 import RobotAvatar from './components/RobotAvatar';
+// Real map page (stage 1). Lazy so maplibre (~800KB) loads only when the map is opened.
+const MichiMap = React.lazy(() => import('./components/map/MichiMap'));
+import AssistHeroShowcase from './components/AssistHeroShowcase';
 import ErrorBoundary from './components/ErrorBoundary';
 import ReferralModal from './components/ReferralModal';
-import PageSkeleton from './components/PageSkeleton';
-import { MOCK_JOBS, MOCK_SCHOOLS } from './data/mockJobsAndSchools';
-import './App.css';
-import { useMediaQuery } from './hooks/useMediaQuery';
-import { useDebounce } from './hooks/useDebounce';
-import { Capacitor } from '@capacitor/core';
 import { getPermanentUserId } from './utils/userIdManager';
+import { loadUserDraft, saveUserDraft, removeUserDraft, pickProfileDraft } from './utils/localDraftStore';
+import { buildProfilePatch, profileFingerprint } from './utils/profileSync';
+import { sanitizeStoredApplications, slimApplicationsForStorage } from './utils/applicationItems';
 import { AppProvider } from './context/AppContext';
+import { submitApplicationToBackend, fetchApplications, updateApplicationStatus, notifyCompanyNewApplication, notifyApplicantStatusChange } from './services/applicationService';
+import { splitApplications, findStatusChanges, hasActiveApplication } from './utils/applicationMapper';
+import { useAuth } from './context/AuthContext';
+import { requestCompanyVerification } from './services/authService';
+import { isViewAs } from './services/viewAsSession';
+import ViewAsBanner from './components/ViewAsBanner';
+import { useRemoteContent, broadcastStore } from './hooks/useRemoteContent';
+import { markNotificationRead, markAllNotificationsRead } from './services/accountApi';
+import './components/trust.css';
+import MaintenanceScreen from './components/MaintenanceScreen';
+import { fetchSchools } from './services/michiSchoolsApiService';
+import { normalizeSchoolPosting } from './utils/jobPostingNormalizer';
+import { isProfileCompleteData } from './utils/profileCompleteness';
+import { useJobFeed } from './hooks/useJobFeed';
+import { useMusicPlayer } from './hooks/useMusicPlayer';
+import { MUSIC_TRACKS } from './data/musicTracks';
 
-// 5.1.1 React.lazy() Code Splitting for heavy components
-const Dashboard = lazy(() => import('./components/Dashboard'));
-const DriverFeed = lazy(() => import('./components/DriverFeed'));
-const JobDetail = lazy(() => import('./components/JobDetail'));
-const DrivingAcademy = lazy(() => import('./components/DrivingAcademy'));
-const ServiceComingSoon = lazy(() => import('./components/ServiceComingSoon'));
-const Profile = lazy(() => import('./components/Profile'));
-const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
-const CompanyHome = lazy(() => import('./components/CompanyHome'));
-const VoiceAssistant = lazy(() => import('./components/VoiceAssistant'));
-const JDMNavigation = lazy(() => import('./components/JDMNavigation'));
-const AssistHeroShowcase = lazy(() => import('./components/AssistHeroShowcase'));
-const NotFound = lazy(() => import('./components/NotFound'));
 
 
 
-
-const TRACKS = [
-  { id: 1, title: 'Tokyo Rain (東京の雨)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/chill-lofi-background-music-331434.mp3' },
-  { id: 2, title: 'Kyoto Sunset (京都の夕日)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/lofi-chill-background-music-313055.mp3' },
-  { id: 3, title: 'Shibuya Midnight (渋谷の夜中)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/piano-and-beat-120539.mp3' },
-  { id: 4, title: 'Osaka Neon (大阪のネオン)', url: 'https://raw.githubusercontent.com/jigardave8/pro_contentfiles/main/bell-fi-broadcasts-181511.mp3' }
-];
-
-const mockIncomingApplications = [
-  {
-    id: 101,
-    jobId: 1,
-    company: 'Sagawa Express',
-    title: 'ルート配送ドライバー (地場デリバリー)',
-    logo: 'https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100',
-    status: 'submitted',
-    appliedDate: '2026-06-10',
-    shoukaiId: '#Michi-REF1',
-    shoukaiAmount: '¥10,000',
-    shoukaiPaid: false,
-    applicantInfo: {
-      fullName: 'Anonim Do\'st',
-      email: 'demo@michi-app.com',
-      birthDate: '1995-01-01',
-      birthPlace: 'Yaponiya',
-      nationality: 'Xorijiy',
-      gender: 'male',
-      phone: '+81 00-0000-0000',
-      postalCode: '000-0000',
-      address: 'Tokyo, Shinjuku-ku',
-      addressHistory: [
-        { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
-        { address: 'Chiba, Matsudo 2-12', isCurrent: false }
-      ],
-      educationHistory: [
-        { school: 'Toshkent Axborot Texnologiyalari Universiteti', major: 'Kompyuter muhandisligi', startDate: '2014-09', endDate: '2018-06', isCurrent: false }
-      ],
-      driverLicenses: ['oogata', 'kenin', 'futsu'],
-      techCertificates: ['forklift'],
-      workHistory: [
-        { company: 'Yamato Transport Tokyo', position: 'Driver', startDate: '2022-10', endDate: '2025-12', isCurrent: false },
-        { company: 'Toshkent Express', position: 'Kuryer', startDate: '2018-07', endDate: '2022-09', isCurrent: false }
-      ]
-    }
-  },
-  {
-    id: 102,
-    jobId: 2,
-    company: 'Sagawa Express',
-    title: 'Xalqaro yuk tashish (Trailer)',
-    logo: 'https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100',
-    status: 'reviewed',
-    appliedDate: '2026-06-11',
-    shoukaiId: null,
-    shoukaiAmount: null,
-    shoukaiPaid: false,
-    applicantInfo: {
-      fullName: 'Jaloliddin Tursunov',
-      email: 'jaloliddin.t@gmail.com',
-      birthDate: '1993-04-15',
-      birthPlace: 'Samarqand',
-      nationality: 'O\'zbekiston',
-      gender: 'male',
-      phone: '+81 80-1111-2222',
-      postalCode: '220-0012',
-      address: 'Kanagawa, Yokohama, Nishi-ku, Minatomirai 2-1',
-      addressHistory: [
-        { address: 'Kanagawa, Yokohama, Nishi-ku, Minatomirai 2-1', isCurrent: true }
-      ],
-      educationHistory: [
-        { school: 'Samarqand Davlat Universiteti', major: 'Iqtisodiyot', startDate: '2011-09', endDate: '2015-06', isCurrent: false }
-      ],
-      driverLicenses: ['oogata', 'kenin'],
-      techCertificates: ['forklift', 'tamakake'],
-      workHistory: [
-        { company: 'Yokohama Marine Logistics', position: 'Trailer Driver', startDate: '2020-05', endDate: '2026-03', isCurrent: false }
-      ]
-    }
-  }
-];
-
+const mockIncomingApplications = [];
 
 class ChunkErrorBoundary extends React.Component {
   constructor(props) {
@@ -136,9 +65,8 @@ class ChunkErrorBoundary extends React.Component {
             {this.state.error?.toString() || "Render Error"}
           </div>
           <button 
-            onClick={() => {
-              this.setState({ hasError: false, error: null });
-            }} 
+            type="button"
+            onClick={() => this.setState({ hasError: false, error: null })} 
             style={{ padding: '10px 20px', borderRadius: '12px', background: '#0084FF', color: 'white', border: 'none', cursor: 'pointer', fontWeight: '800', fontSize: '12px' }}
           >
             Qayta Urinib Ko'rish
@@ -152,102 +80,137 @@ class ChunkErrorBoundary extends React.Component {
 
 function App() {
   const { t, i18n } = useTranslation();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const isDesktop = useMediaQuery('(min-width: 768px)');
-
   const [showSplash, setShowSplash] = useState(true);
-  const [languageSelected, setLanguageSelected] = useState(false);
-  const [userRole, setUserRole] = useState(null); // Temporarily disable auto-login
+  const [languageSelected, setLanguageSelected] = useState(() => {
+    try {
+      return Boolean(localStorage.getItem('michi_lang'));
+    } catch {
+      return false;
+    }
+  });
+  const { user, userRole, setUserRole, logout, updateProfile, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [showJDMNavigation, setShowJDMNavigation] = useState(false);
   const [showAssistHeroShowcase, setShowAssistHeroShowcase] = useState(false);
   const [hasOpenedJDM, setHasOpenedJDM] = useState(false);
 
-
-  /**
-   * Ovoz holatlari:
-   * 
-   * isVoiceStandby — Ovoz assistenti "kutish" rejimida.
-   *   true  → Mikrofon ikonkasi faol (highlight), bosishga tayyor
-   *   false → Ovoz assistenti o'chirilgan
-   * 
-   * isVoiceActive — Ovoz assistenti hozir ochiq va ishlayapti.
-   *   true  → VoiceAssistant overlay ko'rinmoqda
-   *   false → Overlay yashirilgan
-   * 
-   * Farq: Standby = tayyor tur, Active = hozir ishlayapti
-   */
-
-  // Standby: localStorage'dan o'qiladi (default true)
+  // Ovozli yordamchi holati
   const [isVoiceStandby, setIsVoiceStandby] = useState(() => {
-    const saved = localStorage.getItem('michi_voice_standby');
-    if (saved === null) return true;
-    return saved === 'true';
+    try {
+      const saved = localStorage.getItem('michi_voice_standby');
+      return saved === null ? true : saved === 'true';
+    } catch {
+      return true;
+    }
   });
 
-  // Active: har doim false boshlanadi (overlay yopiq bo'ladi)
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState('idle');
 
-  // Standby o'zgarganda localStorage'ga yozamiz
   useEffect(() => {
-    localStorage.setItem('michi_voice_standby', isVoiceStandby);
+    try {
+      localStorage.setItem('michi_voice_standby', String(isVoiceStandby));
+    } catch {}
   }, [isVoiceStandby]);
 
   useEffect(() => {
-    if (showJDMNavigation) {
-      setHasOpenedJDM(true);
-    }
+    if (showJDMNavigation) setHasOpenedJDM(true);
   }, [showJDMNavigation]);
 
-  // Ovozni yoqish — overlay ochiladi + standby faollashadi
-  const handleVoiceActivate = useCallback(() => {
-    setIsVoiceStandby(true);  // Standby rejimga qo'yamiz
-    setIsVoiceActive(true);   // Overlay ochiladi
+  // Map overlay ↔ browser history: hardware/browser Back closes the map instead of leaving the app
+  useEffect(() => {
+    if (!showJDMNavigation) return undefined;
+    window.history.pushState({ michiMap: true }, '');
+    const onPop = () => setShowJDMNavigation(false);
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      // Closed from inside the app (tab switch etc.) → drop our history entry
+      if (window.history.state?.michiMap) window.history.back();
+    };
+  }, [showJDMNavigation]);
+
+  // true while profile edits are not yet saved on the server (persisted so a reload keeps them)
+  const [initialProfilePending] = useState(() => Boolean(loadUserDraft('profile_sync_pending', getPermanentUserId(), false)));
+  const profileDirtyRef = useRef(initialProfilePending);
+
+  // Sync profileData when user object from AuthContext updates.
+  // accountId = server user id (jobs.authorId); never sent with applications.
+  // While local edits are not yet saved on the server, keep them (don't overwrite with the
+  // older server snapshot) — see the profile sync effect below.
+  useEffect(() => {
+    if (user) {
+      setProfileData(prev => (profileDirtyRef.current
+        ? { ...prev, accountId: user.id || prev.accountId || null }
+        : {
+          ...prev,
+          ...(user.profileData || {}),
+          fullName: user.fullName || user.profileData?.fullName || prev.fullName,
+          email: user.email || user.profileData?.email || prev.email,
+          phone: user.phone || user.profileData?.phone || prev.phone,
+          accountId: user.id || prev.accountId || null
+        }));
+    }
+  }, [user]);
+
+  // 5-BOSQICH: URL'dagi referral parametrini ushlab qolish (?ref=...)
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && window.location) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refCode = urlParams.get('ref');
+        if (refCode) {
+          sessionStorage.setItem('michi_referrer_id', refCode);
+        }
+      }
+    } catch (e) {}
   }, []);
 
-  // Ovozni o'chirish/yoqish toggle (to'liq o'chirish/yoqish)
-  const handleVoiceToggle = useCallback(() => {
-    if (isVoiceActive || isVoiceStandby) {
-      // Hozir faol yoki standby → to'liq o'chiramiz
+
+  // Mikrofon resurslarini xavfsiz boshqarish
+  const stopMicrophoneStream = useCallback(() => {
+    if (window.michiActiveMicStream) {
+      try {
+        window.michiActiveMicStream.getTracks().forEach(track => track.stop());
+      } catch (e) {}
+      window.michiActiveMicStream = null;
+    }
+  }, []);
+
+  const handleVoiceActivate = useCallback(async () => {
+    setIsVoiceActive(true);
+    setIsVoiceStandby(true);
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        stopMicrophoneStream();
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        window.michiActiveMicStream = stream;
+      } catch (err) {
+        console.warn("[VoiceAI] Mikrofon ruxsati berilmadi:", err);
+      }
+    }
+  }, [stopMicrophoneStream]);
+
+  const handleVoiceToggle = useCallback(async () => {
+    if (isVoiceStandby || isVoiceActive) {
       setIsVoiceActive(false);
       setIsVoiceStandby(false);
+      stopMicrophoneStream();
     } else {
-      // O'chiq → standby + active qilamiz
-      setIsVoiceStandby(true);
-      setIsVoiceActive(true);
+      await handleVoiceActivate();
     }
-  }, [isVoiceActive, isVoiceStandby]);
-  // ==========================================
-  // NAVIGATSIYA VA HOLATLARNI BOSHQARISH (LIFTED STATES & UX ENHANCEMENTS)
-  // Barcha brauzerlarda va mobil qurilmalarda bir xil, silliq va xatosiz ishlashini ta'minlash maqsadida
-  // holatlar (state) ilovaning eng yuqori qismiga ko'tarildi.
-  // ==========================================
+  }, [isVoiceStandby, isVoiceActive, handleVoiceActivate, stopMicrophoneStream]);
 
-  // selectedJob: Foydalanuvchi hozir ko'rayotgan ish e'lonining obyekti.
-  // Tanlanganida, ilova ustidan JobDetail to'liq ekranli overlay (z-index: 200) bo'lib ochiladi.
   const [selectedJob, setSelectedJob] = useState(null);
-
-  // selectedSchool: Foydalanuvchi tanlagan avtomaktab obyekti.
-  // DrivingAcademy komponentiga uzatilib, maktab tafsilotlarini ochish uchun qo'llaniladi.
   const [selectedSchool, setSelectedSchool] = useState(null);
-
-  // profileActivePage: Profil bo'limidagi faol sub-sahifa (masalan: 'main', 'saved_items', 'settings').
-  // Brauzerda tablar almashganda (masalan home tabiga o'tib qaytganda) profil reset bo'lmasligi uchun bu holat App.jsx darajasida saqlanadi.
   const [profileActivePage, setProfileActivePage] = useState('main');
   const [profileActivePageSource, setProfileActivePageSource] = useState('profile');
-  const [profileScrollToTopTrigger, setProfileScrollToTopTrigger] = useState(0);
-
-  // backTab: Profilning saqlanganlaridan e'longa kirilganda, ortga qaytish manzilini eslab qoluvchi o'zgaruvchi.
   const [backTab, setBackTab] = useState(null);
 
-  // Guest redirection states
   const [pendingApply, setPendingApply] = useState(null);
   const [authInitialStep, setAuthInitialStep] = useState('role');
   const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
 
-  // Referral Modal State
   const [referralModal, setReferralModal] = useState({
     isOpen: false,
     item: null,
@@ -255,183 +218,144 @@ function App() {
     resolve: null
   });
 
-  const openReferralModal = (item, type) => {
+  const openReferralModal = useCallback((item, type) => {
     return new Promise((resolve) => {
       setReferralModal({ isOpen: true, item, type, resolve });
     });
-  };
+  }, []);
 
-  // Music Player states
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.7);
-  const audioRef = useRef(null);
+  // 🎵 Background music (one player for home card, voice commands and macOS home)
+  const musicPlayer = useMusicPlayer(MUSIC_TRACKS);
+  const mainContentRef = useRef(null);
 
-  // Status Bar Clock State (Only active on native mobile apps)
-  const isNative = Capacitor.isNativePlatform();
-  const [clockTime, setClockTime] = useState(() => new Date());
+  // Tab almashganda tepaga skroll va dinamik SEO Title o'rnatish
   useEffect(() => {
-    if (!isNative) return;
-    const timer = setInterval(() => setClockTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, [isNative]);
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTop = 0;
+    }
+    const TAB_TITLES = {
+      home: 'Michi App — 日本のトラックドライバー・自動車教習所求人プラットフォーム',
+      jobs: '求人一覧 (Driver Jobs) — Michi App',
+      service: '自動車整備・サービス (Services) — Michi App',
+      academy: '自動車教習所 (Driving Academies) — Michi App',
+      profile: 'マイページ (My Profile) — Michi App',
+      company: '企業ダッシュボード (Company Panel) — Michi App'
+    };
+    if (TAB_TITLES[activeTab]) {
+      document.title = TAB_TITLES[activeTab];
+    }
+  }, [activeTab]);
 
-  // 5.3.4 Lifted Search and Filter States with 300ms Debounce
+  // Modal ochilganda Body Scroll Lock
+  useEffect(() => {
+    const isModalOpen = showJDMNavigation || showAssistHeroShowcase || selectedJob;
+    document.body.style.overflow = isModalOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showJDMNavigation, showAssistHeroShowcase, selectedJob]);
+
   const [jobSearchQuery, setJobSearchQuery] = useState('');
-  const debouncedJobSearchQuery = useDebounce(jobSearchQuery, 300);
   const [jobActiveSegment, setJobActiveSegment] = useState('all');
   const [academySearchQuery, setAcademySearchQuery] = useState('');
-  const debouncedAcademySearchQuery = useDebounce(academySearchQuery, 300);
 
-  // Advanced Filter States (For premium filter drawer and AI control)
   const [selectedLicenses, setSelectedLicenses] = useState([]);
-  const [selectedLangLevel, setSelectedLangLevel] = useState('all');
   const [selectedBenefits, setSelectedBenefits] = useState([]);
   const [minSalary, setMinSalary] = useState(0);
   const [selectedPrefecture, setSelectedPrefecture] = useState('all');
-  const [selectedCity, setSelectedCity] = useState('all');
-  const [stationQuery, setStationQuery] = useState('');
-  const [onlyNearStation, setOnlyNearStation] = useState(false);
 
-  const togglePlay = () => {
-    setIsPlaying(prev => !prev);
+  // Company ⭐ badge status comes from the server (approved in admin.michi.jp.net → 企業認証).
+  // UI vocabulary: 'none' | 'pending' | 'active' (verified) | 'rejected'
+  const verificationStatus = user?.verification?.status;
+  const contractStatus = verificationStatus === 'verified' ? 'active'
+    : verificationStatus === 'pending' ? 'pending'
+      : verificationStatus === 'rejected' ? 'rejected' : 'none';
+  const setContractStatus = async (next) => {
+    if (next !== 'pending') return;
+    await requestCompanyVerification({});
+    await refreshUser();
   };
 
-  const nextTrack = () => {
-    setCurrentTrackIndex(prev => (prev + 1) % TRACKS.length);
-    setIsPlaying(true);
-  };
-
-  const prevTrack = () => {
-    setCurrentTrackIndex(prev => (prev - 1 + TRACKS.length) % TRACKS.length);
-    setIsPlaying(true);
-  };
-
-  const [contractStatus, setContractStatus] = useState('none');
-  const [verifiedCompanies, setVerifiedCompanies] = useState(['Sagawa Express', 'Yamato Transport']);
-
-  const handleToggleVerify = (companyId) => {
-    setVerifiedCompanies(prev => 
-      prev.includes(companyId) ? prev.filter(id => id !== companyId) : [...prev, companyId]
-    );
-  };
-
-  const handleSetActiveTab = useCallback((tab, options = {}) => {
-    setShowJDMNavigation(false);
-    if (tab === 'profile' && options.fromBottomNav) {
-      setProfileActivePage('main');
-      setProfileScrollToTopTrigger(prev => prev + 1);
-      navigate('/profile');
-    } else if (tab === 'home') {
-      navigate('/');
-    } else if (tab === 'jobs') {
-      setSelectedBenefits([]);
-      setSelectedLicenses([]);
-      setSelectedLangLevel('all');
-      setJobSearchQuery('');
-      setJobActiveSegment('all');
-      setMinSalary(0);
-      setSelectedPrefecture('all');
-      navigate('/jobs');
-    } else if (tab === 'academy') {
-      navigate('/academy');
-    } else if (tab === 'service') {
-      navigate('/service');
-    } else if (tab === 'profile') {
-      navigate('/profile');
-    } else if (tab === 'admin') {
-      navigate('/admin');
-    }
-
-    setSelectedJob(null);
-    setSelectedSchool(null);
-    setBackTab(null);
-    setActiveTab(tab);
-  }, [navigate]);
-
-  // handleSchoolClick: Saqlangan avtomaktab bosilganda ishlaydi.
   const handleSchoolClick = (school) => {
     setBackTab('profile');
     setActiveTab('academy');
     setSelectedSchool(school);
-    if (school) {
-      navigate(`/academy/${school.id}`);
-    } else {
-      navigate('/academy');
-    }
   };
 
-  // handleSchoolBack: Avtomaktab tafsilotlaridan chiqqanda ishlaydi.
   const handleSchoolBack = () => {
     setSelectedSchool(null);
-    navigate('/academy');
     if (backTab) {
-      handleSetActiveTab(backTab);
+      setActiveTab(backTab);
       setBackTab(null);
     }
   };
 
-  // handleNavigateToInternationalJobs: Dashboarddagi Xalqaro bento card bosilganda ishlaydi.
   const handleNavigateToInternationalJobs = () => {
     setSelectedBenefits(['international']);
     setSelectedLicenses([]);
-    setSelectedLangLevel('all');
     setJobSearchQuery('');
     setJobActiveSegment('all');
     setMinSalary(0);
     setSelectedPrefecture('all');
     setActiveTab('jobs');
-    navigate('/jobs');
   };
 
-
-  // Dark mode
+  // Dark Mode boshqaruvi
   const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('michi_darkmode');
-    return saved ? saved === 'true' : false;
+    try {
+      const saved = localStorage.getItem('michi_darkmode');
+      return saved ? saved === 'true' : false;
+    } catch {
+      return false;
+    }
   });
 
-  // Sound settings
-  const [soundSettings, setSoundSettings] = useState(() => {
-    const saved = localStorage.getItem('michi_sound');
-    return saved ? JSON.parse(saved) : { sound: true, vibration: true };
-  });
-
-  // Apply dark mode class
   useEffect(() => {
     document.documentElement.classList.toggle('dark-mode', darkMode);
     document.documentElement.classList.toggle('light-mode', !darkMode);
-    localStorage.setItem('michi_darkmode', darkMode);
+    try {
+      localStorage.setItem('michi_darkmode', String(darkMode));
+    } catch {}
   }, [darkMode]);
 
+  const [soundSettings, setSoundSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem('michi_sound_settings');
+      return saved ? JSON.parse(saved) : { sound: true, vibration: true };
+    } catch {
+      return { sound: true, vibration: true };
+    }
+  });
+
   useEffect(() => {
-    localStorage.setItem('michi_sound', JSON.stringify(soundSettings));
+    try {
+      localStorage.setItem('michi_sound_settings', JSON.stringify(soundSettings));
+    } catch {}
   }, [soundSettings]);
 
-  // Show profile badges preference
-  const [showProfileBadges, setShowProfileBadges] = useState(() => {
-    const saved = localStorage.getItem('michi_show_badges');
-    return saved ? saved === 'true' : true;
-  });
-
-  // Notification sound preference
   const [notificationSound, setNotificationSound] = useState(() => {
-    const saved = localStorage.getItem('michi_notif_sound');
-    return saved ? saved === 'true' : true;
+    try {
+      const saved = localStorage.getItem('michi_notif_sound');
+      return saved !== null ? saved === 'true' : true;
+    } catch { return true; }
+  });
+
+  const [showProfileBadges, setShowProfileBadges] = useState(() => {
+    try {
+      const saved = localStorage.getItem('michi_show_badges');
+      return saved !== null ? saved === 'true' : true;
+    } catch { return true; }
   });
 
   useEffect(() => {
-    localStorage.setItem('michi_show_badges', showProfileBadges);
-  }, [showProfileBadges]);
-
-  useEffect(() => {
-    localStorage.setItem('michi_notif_sound', notificationSound);
+    try { localStorage.setItem('michi_notif_sound', String(notificationSound)); } catch {}
   }, [notificationSound]);
 
-  // Profile Data
-  const [profileData, setProfileData] = useState({
+  useEffect(() => {
+    try { localStorage.setItem('michi_show_badges', String(showProfileBadges)); } catch {}
+  }, [showProfileBadges]);
+
+  const createBaseProfile = () => ({
     userId: getPermanentUserId(),
     fullName: 'Mehmon',
     birthDate: '',
@@ -442,269 +366,307 @@ function App() {
     workHistory: [],
     addressHistory: [],
     educationHistory: [],
-    address: '',
-    education: '',
-    companyType: '',
-    companyAddress: '',
-    employeeCount: '',
-    contactPerson: '',
-    companyPhone: '',
-    companyDesc: '',
-    furigana: '',
-    phone: '',
-    postalCode: '',
     gender: 'male',
-    motivation: '',
-    selfPR: '',
-    hobbies: '',
-    personalRequests: '貴社規定に従います。',
-    jlptStatus: null
+    personalRequests: '貴社規定に従います。'
   });
 
-  // Disabled auto-save logic for role and profile
-  useEffect(() => {
-    // We intentionally don't save to localStorage anymore
-    // so the user can test the registration flow on every reload.
-  }, [userRole, profileData]);
-
-
-
-  // Control audio playback
-  useEffect(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.play().catch(err => {
-          console.log("Audio play blocked by browser autoplay policy:", err);
-          setIsPlaying(false);
-        });
-      } else {
-        audioRef.current.pause();
+  const [profileData, setProfileData] = useState(() => {
+    const base = createBaseProfile();
+    let initial = base;
+    try {
+      const cached = localStorage.getItem('michi_user_session') || localStorage.getItem('michi_auth_user');
+      if (cached) {
+        const user = JSON.parse(cached);
+        const profile = user.profileData || user;
+        initial = {
+          ...base,
+          ...profile,
+          fullName: user.fullName || profile.fullName || base.fullName,
+          email: user.email || profile.email || base.email,
+          accountId: user.id || null
+        };
       }
-    }
-  }, [isPlaying, currentTrackIndex]);
+    } catch {}
+    // Restore locally saved resume edits (kept per user, cleared on logout)
+    const draft = loadUserDraft('profile', initial.userId);
+    return draft ? { ...initial, ...draft } : initial;
+  });
 
-  // Sync volume with audio element
+  // On logout (role goes from set → null) wipe the in-memory profile, so the next
+  // account on this device never inherits the previous person's resume data.
+  const prevRoleRef = useRef(userRole);
+  const skipNextDraftSaveRef = useRef(false);
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
+    if (prevRoleRef.current && !userRole) {
+      skipNextDraftSaveRef.current = true;
+      profileDirtyRef.current = false;
+      setProfileData(createBaseProfile());
     }
-  }, [volume]);
+    prevRoleRef.current = userRole;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userRole]);
 
-  // Global Jobs & Driving Schools State
-  const [jobs, setJobs] = useState(MOCK_JOBS);
-  const [schools, setSchools] = useState(MOCK_SCHOOLS);
-
-  // Synchronize router location with component states for browser history & direct URLs
+  // Persist resume/profile edits so they survive a reload (debounced, failure-safe)
   useEffect(() => {
-    const path = location.pathname;
-    if (path === '/' || path === '/home') {
-      if (activeTab !== 'home') setActiveTab('home');
-    } else if (path.startsWith('/jobs')) {
-      if (activeTab !== 'jobs') setActiveTab('jobs');
-      const parts = path.split('/jobs/');
-      if (parts[1]) {
-        const jobId = parseInt(parts[1], 10);
-        const foundJob = jobs.find(j => j.id === jobId) || MOCK_JOBS.find(j => j.id === jobId);
-        if (foundJob && (!selectedJob || selectedJob.id !== jobId)) {
-          setSelectedJob(foundJob);
+    if (skipNextDraftSaveRef.current) {
+      skipNextDraftSaveRef.current = false;
+      return undefined;
+    }
+    const timer = setTimeout(() => {
+      saveUserDraft('profile', profileData.userId, pickProfileDraft(profileData));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [profileData]);
+
+  // ---- Server profile sync (PATCH /api/auth/me) ----
+  // Edits go through handleUpdateProfile → marked unsynced → saved ~1.5s after the last change.
+  // Transient failures (offline/5xx/429) retry on reconnect / when the tab becomes visible;
+  // invalid input (400/413) shows one alert and waits for the next edit.
+  const [profileSyncTick, setProfileSyncTick] = useState(0);
+  const profileDataRef = useRef(profileData);
+  useEffect(() => { profileDataRef.current = profileData; }, [profileData]);
+  const markProfileDirty = useCallback(() => {
+    profileDirtyRef.current = true;
+    saveUserDraft('profile_sync_pending', getPermanentUserId(), true);
+  }, []);
+  const handleUpdateProfile = useCallback((newData) => {
+    setProfileData(prev => ({ ...prev, ...newData }));
+    markProfileDirty();
+  }, [markProfileDirty, setProfileData]);
+
+  useEffect(() => {
+    if (!profileDirtyRef.current || !user || (userRole !== 'driver' && userRole !== 'company')) return undefined;
+    const timer = setTimeout(async () => {
+      const sent = profileDataRef.current;
+      const fp = profileFingerprint(sent);
+      try {
+        await updateProfile(buildProfilePatch(sent));
+        if (profileFingerprint(profileDataRef.current) === fp) {
+          profileDirtyRef.current = false;
+          removeUserDraft('profile_sync_pending', getPermanentUserId());
+        } else {
+          setProfileSyncTick(n => n + 1); // edited while saving → save again
         }
-      } else {
-        if (selectedJob) setSelectedJob(null);
-      }
-    } else if (path.startsWith('/academy')) {
-      if (activeTab !== 'academy') setActiveTab('academy');
-      const parts = path.split('/academy/');
-      if (parts[1]) {
-        const schoolId = parseInt(parts[1], 10);
-        const foundSchool = schools.find(s => s.id === schoolId) || MOCK_SCHOOLS.find(s => s.id === schoolId);
-        if (foundSchool && (!selectedSchool || selectedSchool.id !== schoolId)) {
-          setSelectedSchool(foundSchool);
+      } catch (err) {
+        console.warn('[App] profile save failed:', err.message);
+        if (err.status === 400 || err.status === 413) {
+          profileDirtyRef.current = false;
+          removeUserDraft('profile_sync_pending', getPermanentUserId());
+          alert(t('profileSaveError', 'プロフィールをサーバーに保存できませんでした。'));
         }
-      } else {
-        if (selectedSchool) setSelectedSchool(null);
       }
-    } else if (path.startsWith('/service')) {
-      if (activeTab !== 'service') setActiveTab('service');
-    } else if (path.startsWith('/profile')) {
-      if (activeTab !== 'profile') setActiveTab('profile');
-      if (path === '/profile/saved') setProfileActivePage('saved_items');
-      else if (path === '/profile/settings') setProfileActivePage('settings');
-      else if (path === '/profile/resume') setProfileActivePage('resume_builder');
-      else if (path === '/profile/ads') setProfileActivePage('my_ads');
-      else if (path === '/profile') setProfileActivePage('main');
-    } else if (path === '/admin') {
-      if (activeTab !== 'admin') setActiveTab('admin');
-    } else if (path === '/navigation') {
-      setShowJDMNavigation(true);
-    } else if (path === '/assist') {
-      setShowAssistHeroShowcase(true);
-    }
-  }, [location.pathname, jobs, schools]);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [profileData, profileSyncTick, user, userRole, updateProfile, t]);
 
+  useEffect(() => {
+    const retry = () => { if (profileDirtyRef.current && document.visibilityState !== 'hidden') setProfileSyncTick(n => n + 1); };
+    window.addEventListener('online', retry);
+    document.addEventListener('visibilitychange', retry);
+    return () => {
+      window.removeEventListener('online', retry);
+      document.removeEventListener('visibilitychange', retry);
+    };
+  }, []);
 
-  // Applications state
-  const [applications, setApplications] = useState([]);
-
-  // Company Employees state (for HR)
-  const [companyEmployees, setCompanyEmployees] = useState([]);
-
-  // Notifications state
+  const feed = useJobFeed();
+  const [companyJobs, setCompanyJobs] = useState([]);
+  const [schools, setSchools] = useState([]);
+  // Driver: own applications (server is the source of truth; a slim local copy is kept for
+  // offline start-up). Company: applications to its own listings, loaded from the server.
+  const [applications, setApplications] = useState(() =>
+    sanitizeStoredApplications(loadUserDraft('applications', profileData.userId, []))
+  );
   const [notifications, setNotifications] = useState([]);
-  
-  // Edit mode state
-  const [jobToEdit, setJobToEdit] = useState(null);
+  // Admin-managed feature flags, home announcement and broadcasts (admin.michi.jp.net), applied within ~60 s
+  const remote = useRemoteContent({ lang: i18n.language, role: userRole, setNotifications });
+  const jobsOn = remote.isOn('jobs');
+  const academyOn = remote.isOn('academy');
+  useEffect(() => {
+    // A tab switched off in the admin panel → go home instead of showing a hidden section
+    if ((activeTab === 'jobs' && !jobsOn) || (activeTab === 'academy' && !academyOn)) setActiveTab('home');
+  }, [activeTab, jobsOn, academyOn]);
+
+  // Broadcast (admin) notifications remember read/dismissed state across reloads (broadcastStore)
+  // Personal notifications (type 'personal') also tell the server: POST /api/notifications/:id/read | read-all
+  const notificationsRef = useRef(notifications);
+  useEffect(() => { notificationsRef.current = notifications; }, [notifications]);
+  const handleMarkNotifRead = useCallback((id) => {
+    broadcastStore.markRead([id]);
+    const target = notificationsRef.current.find(n => n.id === id);
+    if (target && target.type === 'personal' && !target.read) markNotificationRead(id).catch(() => {});
+    setNotifications(prev => prev.map(n => (n.id === id ? { ...n, read: true } : n)));
+  }, []);
+  const handleMarkAllNotifsRead = useCallback(() => {
+    if (notificationsRef.current.some(n => n.type === 'personal' && !n.read)) markAllNotificationsRead().catch(() => {});
+    setNotifications(prev => { broadcastStore.markRead(prev.map(n => n.id)); return prev.map(n => (n.read ? n : { ...n, read: true })); });
+  }, []);
+  const handleDeleteNotif = useCallback((id) => {
+    broadcastStore.dismiss([id]);
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
+  const handleClearAllNotifs = useCallback(() => {
+    setNotifications(prev => { broadcastStore.dismiss(prev.map(n => n.id)); return []; });
+  }, []);
+  const handleShoukaiPaid = useCallback((appId) => {
+    setApplications(prev => prev.map(a => (a.id === appId ? { ...a, shoukaiPaid: true } : a)));
+  }, []);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const isProfileComplete = useCallback(() => {
-    // If it's the admin test profile, it's always complete (bypass check)
-    if (profileData && (profileData.email === 'admin@driver.jp' || profileData.email === 'admin@sagawa.jp')) {
-      return true;
-    }
-    
-    // Required fields: fullName, birthDate, phone, address (or addressHistory), education (or educationHistory)
-    const hasFullName = !!(profileData.fullName && profileData.fullName.trim() !== '' && profileData.fullName !== 'Mehmon');
-    const hasBirthDate = !!profileData.birthDate;
-    const hasPhone = !!(profileData.phone && profileData.phone.trim() !== '');
-    const hasAddress = !!((profileData.address && profileData.address.trim() !== '') || (profileData.addressHistory && profileData.addressHistory.length > 0));
-    const hasEducation = !!((profileData.education && profileData.education.trim() !== '') || (profileData.educationHistory && profileData.educationHistory.length > 0));
-    
-    return !!(hasFullName && hasBirthDate && hasPhone && hasAddress && hasEducation);
+    // Same 5 fields + admin bypass as before — see utils/profileCompleteness.js
+    return isProfileCompleteData(profileData);
   }, [profileData]);
 
-  // Apply for a job
-  const handleApplyJob = useCallback(async (job) => {
+  const handleApplyJob = useCallback(async (job, opts = {}) => {
+    const branchId = opts && opts.branchId != null ? String(opts.branchId) : null;
+    const branchName = (opts && opts.branchName) || null;
     if (userRole === 'guest') {
-      setPendingApply({ type: 'job', item: job });
+      setPendingApply({ type: 'job', item: job, opts: { branchId, branchName } });
       setAuthInitialStep('register');
       setUserRole(null);
       return;
     }
     
-    // Check if resume is complete
     if (!isProfileComplete()) {
       setShowCompleteProfileModal(true);
       return;
     }
 
-    const exists = applications.find(a => a.jobId === job.id && !a.isSimulatedReferral);
+    const exists = hasActiveApplication(applications, { jobId: job.id });
     if (exists) return;
 
     const refId = await openReferralModal(job, 'job');
 
+    const tempId = `local_${Date.now()}`;
     const newApp = {
-      id: Date.now(),
+      id: tempId,
       jobId: job.id,
       company: job.company,
       title: job.title,
       logo: job.logo,
-      status: 'submitted', // initial state is now submitted
+      status: 'submitted',
       appliedDate: new Date().toLocaleDateString(),
+      appliedAt: new Date().toISOString(),
       shoukaiId: refId || null,
       shoukaiAmount: job.shoukaiAmount || null,
       shoukaiPaid: false,
+      branchId,
+      branchName,
       applicantInfo: { ...profileData }
     };
     setApplications(prev => [...prev, newApp]);
-  }, [userRole, applications, profileData, isProfileComplete]);
 
-  // Simulate status change (for demo - single-click idempotent)
-  const handleChangeAppStatus = (appId, newStatus) => {
-    const targetApp = applications.find(a => a.id === appId);
-    if (!targetApp || targetApp.status === newStatus) {
-      return; // Already in this status! Prevent duplicate notification bell increment.
+    // Send application to central backend server (https://api.michi.jp.net/api/applications)
+    try {
+      const result = await submitApplicationToBackend(job.id, profileData, branchId, { branchName, referrerId: refId || null });
+      // Swap the optimistic entry for the server record (real id → status updates work)
+      const saved = result && result.mapped;
+      setApplications(prev => prev.map(a => (a.id === tempId
+        ? { ...newApp, ...(saved || {}), title: (saved && saved.title) || newApp.title, company: (saved && saved.company) || newApp.company, logo: (saved && saved.logo) || newApp.logo, shoukaiAmount: (saved && saved.shoukaiAmount) || newApp.shoukaiAmount }
+        : a)));
+    } catch (err) {
+      console.error('Application submit to backend error:', err);
+      // Roll back the optimistic entry so the user can retry
+      setApplications(prev => prev.filter(a => a.id !== tempId));
+      alert(t('applySubmitError', '応募の送信に失敗しました。通信環境を確認して再度お試しください。'));
+      return;
     }
 
-    setApplications(prev => prev.map(a => 
-      a.id === appId ? { ...a, status: newStatus } : a
-    ));
-
-    if (newStatus === 'accepted' || newStatus === 'interview' || newStatus === 'reviewed' || newStatus === 'rejected') {
-      const notif = {
-        id: Date.now(),
-        type: newStatus,
-        company: targetApp.company,
-        title: targetApp.title,
-        date: new Date().toLocaleString(),
-        read: false,
-      };
-      setNotifications(prev => [notif, ...prev]);
-
-      if (newStatus === 'accepted') {
-        // Add to user work history if not already present
-        setProfileData(prev => {
-          const updatedHistory = [...(prev.workHistory || [])];
-          if (updatedHistory.some(w => w.company === targetApp.company && w.position === targetApp.title)) {
-            return prev;
-          }
-          if (updatedHistory.length >= 3) {
-            updatedHistory.shift();
-          }
-          updatedHistory.push({ company: targetApp.company, position: targetApp.title, years: 'Hozirgi vaqtda' });
-          return { ...prev, workHistory: updatedHistory };
+    // Notify company via email webhook proxy (best effort)
+    try {
+      const targetCompanyEmail = job.email || job.companyEmail || job.contactEmail;
+      if (targetCompanyEmail) {
+        await notifyCompanyNewApplication({
+          companyEmail: targetCompanyEmail,
+          applicantName: profileData.fullName || profileData.name || 'Haydovchi',
+          jobTitle: branchName ? `${job.title}（${branchName}）` : job.title,
+          type: 'new_application'
         });
+      }
+    } catch (err) {
+      console.warn('Company notify error:', err);
+    }
+  }, [userRole, applications, profileData, isProfileComplete, openReferralModal, t]);
 
-        // Auto-add to company HR employees if not already present
-        setCompanyEmployees(prev => {
-          const empName = targetApp.applicantInfo?.fullName || profileData.fullName;
-          const empPhone = targetApp.applicantInfo?.phone || profileData.phone || '+81 90-8888-9999';
-          const empRole = targetApp.title.includes('Mahalliy') ? 'ルート配送ドライバー (地場デリバリー)' : targetApp.title;
-          const empId = targetApp.shoukaiId || `EMP-${targetApp.id}`;
-          if (prev.some(emp => emp.name === empName && emp.role === empRole)) {
-            return prev;
-          }
-          return [
-            ...prev, 
-            { id: Date.now(), name: empName, phone: empPhone, role: empRole, verified: true, michiId: empId }
-          ];
-        });
+  /** Company moves an application (PATCH /api/applications/:id); optimistic with rollback. */
+  const handleChangeAppStatus = useCallback(async (appId, newStatus) => {
+    const inJobs = applications.find(a => a.id === appId);
+    const targetApp = inJobs || schoolApplicationsRef.current.find(a => a.id === appId);
+    if (!targetApp || targetApp.status === newStatus) return;
+    const setList = inJobs ? setApplications : setSchoolApplications;
+    const prevStatus = targetApp.status;
+
+    setList(prev => prev.map(a => (a.id === appId ? { ...a, status: newStatus } : a)));
+    try {
+      const saved = await updateApplicationStatus(targetApp.serverId || appId, newStatus);
+      if (saved) setList(prev => prev.map(a => (a.id === appId ? { ...a, status: saved.status, updatedAt: saved.updatedAt } : a)));
+    } catch (err) {
+      console.error('Application status update error:', err);
+      setList(prev => prev.map(a => (a.id === appId ? { ...a, status: prevStatus } : a)));
+      alert(t('appStatusUpdateError', 'ステータスを更新できませんでした。通信環境を確認して再度お試しください。'));
+      return;
+    }
+
+    if (['accepted', 'interview', 'reviewed', 'rejected'].includes(newStatus)) {
+      // Notify candidate via email webhook proxy (best effort)
+      const candidateEmail = targetApp.applicantInfo?.email || targetApp.email;
+      if (candidateEmail) {
+        notifyApplicantStatusChange({
+          applicantEmail: candidateEmail,
+          applicantName: targetApp.applicantInfo?.fullName || targetApp.applicantInfo?.name || 'Haydovchi',
+          companyName: targetApp.company,
+          jobTitle: targetApp.title || targetApp.schoolName,
+          newStatus
+        }).catch(err => console.warn('[App] Applicant email notification warning:', err.message));
       }
     }
-  };
+  }, [applications, t]);
 
-  // Add employee manually via HR
-  const handleAddEmployee = (empData) => {
-    setCompanyEmployees(prev => [...prev, { id: Date.now(), ...empData }]);
-  };
+  /** Driver withdraws own application (job or school). Returns true on success. */
+  const handleWithdrawApplication = useCallback(async (app) => {
+    if (!app) return false;
+    const setList = app.isSchool ? setSchoolApplications : setApplications;
+    const prevStatus = app.status;
+    setList(prev => prev.map(a => (a.id === app.id ? { ...a, status: 'withdrawn' } : a)));
+    try {
+      await updateApplicationStatus(app.serverId || app.id, 'withdrawn');
+      return true;
+    } catch (err) {
+      console.error('Application withdraw error:', err);
+      setList(prev => prev.map(a => (a.id === app.id ? { ...a, status: prevStatus } : a)));
+      alert(t('withdrawError', '応募を取り下げられませんでした。通信環境を確認して再度お試しください。'));
+      return false;
+    }
+  }, [t]);
 
-  const handleAcceptEmployeeRequest = (michiId, company) => {
-    // 1. Verify in company employees list
-    setCompanyEmployees(prev => prev.map(emp => 
-      emp.michiId === michiId ? { ...emp, verified: true, name: profileData.fullName, phone: profileData.phone || '+81 000-0000' } : emp
-    ));
-    // 2. Add to user's work history
-    setProfileData(prev => {
-      const newWork = { company: company, position: 'Xodim', years: 'Hozirgi vaqtda' };
-      const updatedHistory = [...(prev.workHistory || [])];
-      if (updatedHistory.length >= 3) {
-        updatedHistory.shift();
-      }
-      updatedHistory.push(newWork);
-      return { ...prev, workHistory: updatedHistory };
-    });
-  };
+  const [schoolApplications, setSchoolApplications] = useState(() =>
+    sanitizeStoredApplications(loadUserDraft('school_applications', profileData.userId, []))
+  );
+  const schoolApplicationsRef = useRef(schoolApplications);
+  useEffect(() => { schoolApplicationsRef.current = schoolApplications; }, [schoolApplications]);
 
-  // Mark notifications as read
-  const markNotificationRead = (notifId) => {
-    setNotifications(prev => prev.map(n => 
-      n.id === notifId ? { ...n, read: true } : n
-    ));
-  };
+  // Persist the driver's own application lists (slim copy, no embedded profile snapshot)
+  useEffect(() => {
+    if (userRole !== 'driver') return undefined;
+    const timer = setTimeout(() => {
+      saveUserDraft('applications', profileData.userId, slimApplicationsForStorage(applications));
+      saveUserDraft('school_applications', profileData.userId, slimApplicationsForStorage(schoolApplications));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [userRole, profileData.userId, applications, schoolApplications]);
 
-  const markAllNotificationsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
-  const deleteNotification = (notifId) => {
-    setNotifications(prev => prev.filter(n => n.id !== notifId));
-  };
-
-  const clearAllNotifications = () => {
-    setNotifications([]);
-  };
-
-  // Academy applications
-  const [schoolApplications, setSchoolApplications] = useState([]);
+  // On logout clear in-memory lists so the next account never sees them
+  const prevRoleForAppsRef = useRef(userRole);
+  useEffect(() => {
+    if (prevRoleForAppsRef.current && !userRole) {
+      setApplications([]);
+      setSchoolApplications([]);
+      setNotifications([]);
+    }
+    prevRoleForAppsRef.current = userRole;
+  }, [userRole]);
 
   const handleApplySchool = useCallback(async (school) => {
     if (userRole === 'guest') {
@@ -714,250 +676,162 @@ function App() {
       return;
     }
 
-    // Check if resume is complete
     if (!isProfileComplete()) {
       setShowCompleteProfileModal(true);
       return;
     }
 
-    const exists = schoolApplications.find(a => a.schoolId === school.id && !a.isSimulatedReferral);
+    const exists = hasActiveApplication(schoolApplications, { schoolId: school.id });
     if (exists) return;
 
     const refId = await openReferralModal(school, 'school');
 
+    const tempId = `local_${Date.now()}`;
     const newApp = {
-      id: Date.now(),
+      id: tempId,
+      isSchool: true,
       schoolId: school.id,
       schoolName: school.name,
+      status: 'submitted',
       shoukaiId: refId || null,
       shoukaiAmount: school.shoukaiAmount || null,
       paid: false,
       appliedDate: new Date().toLocaleDateString(),
+      appliedAt: new Date().toISOString(),
       applicantInfo: { ...profileData }
     };
     setSchoolApplications(prev => [...prev, newApp]);
-  }, [userRole, schoolApplications, profileData, isProfileComplete]);
 
-  // Re-apply if a guest registers/logs in
+    try {
+      const result = await submitApplicationToBackend(school.id, profileData, null, { type: 'school', referrerId: refId || null });
+      const saved = result && result.mapped;
+      setSchoolApplications(prev => prev.map(a => (a.id === tempId
+        ? { ...newApp, ...(saved || {}), schoolName: (saved && saved.schoolName) || newApp.schoolName, company: (saved && saved.company) || newApp.schoolName }
+        : a)));
+    } catch (err) {
+      console.error('School application submit error:', err);
+      setSchoolApplications(prev => prev.filter(a => a.id !== tempId));
+      alert(t('applySubmitError', '応募の送信に失敗しました。通信環境を確認して再度お試しください。'));
+    }
+  }, [userRole, schoolApplications, profileData, isProfileComplete, openReferralModal, t]);
+
+  // Load applications from the server (driver: own; company: to its listings).
+  const applicationsRef = useRef(applications);
+  useEffect(() => { applicationsRef.current = applications; }, [applications]);
+  const refreshApplications = useCallback(async () => {
+    if (userRole !== 'driver' && userRole !== 'company') return;
+    try {
+      const mapped = await fetchApplications();
+      const { jobs, schools: schoolApps } = splitApplications(mapped);
+      if (userRole === 'driver') {
+        // Raise in-app notifications for status changes made by companies since last load
+        const changed = findStatusChanges([...applicationsRef.current, ...schoolApplicationsRef.current], mapped);
+        if (changed.length) {
+          setNotifications(prev => [
+            ...changed.map((a, i) => ({
+              id: `${a.serverId}:${a.status}:${Date.now() + i}`,
+              type: a.status,
+              company: a.company,
+              title: a.title || a.schoolName,
+              date: new Date(a.updatedAt || Date.now()).toLocaleString(),
+              read: false,
+            })),
+            ...prev,
+          ]);
+        }
+      }
+      // Keep optimistic entries that are still being submitted (temp ids, not on the server yet)
+      const keepPending = (serverList, key) => (prev) => [
+        ...serverList,
+        ...prev.filter(a => String(a.id).startsWith('local_') && !serverList.some(s => String(s[key]) === String(a[key]))),
+      ];
+      setApplications(keepPending(jobs, 'jobId'));
+      setSchoolApplications(keepPending(schoolApps, 'schoolId'));
+    } catch (err) {
+      // Keep what we have (offline / server busy); company starts empty rather than stale
+      console.warn('[App] fetchApplications warning:', err.message);
+      if (userRole === 'company' && err.status === 401) { setApplications([]); setSchoolApplications([]); }
+    }
+  }, [userRole, setApplications, setSchoolApplications, setNotifications]);
+
   useEffect(() => {
-    if (userRole === 'driver' && pendingApply) {
-      if (pendingApply.type === 'job') {
-        handleApplyJob(pendingApply.item);
-      } else if (pendingApply.type === 'school') {
-        handleApplySchool(pendingApply.item);
-      }
-      setPendingApply(null);
-      setAuthInitialStep('role');
-    }
-  }, [userRole, pendingApply, handleApplyJob, handleApplySchool]);
+    refreshApplications();
+  }, [refreshApplications]);
 
-  const handleShoukaiPaid = (appId) => {
-    let isJob = applications.some(a => a.id === appId);
-    
-    if (isJob) {
-      setApplications(prev => prev.map(a => 
-        a.id === appId ? { ...a, shoukaiPaid: true } : a
-      ));
-      const app = applications.find(a => a.id === appId);
-      if (app && app.shoukaiId) {
-        const notif = {
-          id: Date.now(),
-          type: 'shoukai_paid',
-          company: app.company,
-          title: app.shoukaiAmount || '¥10,000',
-          date: new Date().toLocaleString(),
-          read: false,
-        };
-        setNotifications(prev => [notif, ...prev]);
-      }
-    } else {
-      setSchoolApplications(prev => prev.map(a => 
-        a.id === appId ? { ...a, paid: true } : a
-      ));
-      const app = schoolApplications.find(a => a.id === appId);
-      if (app && app.shoukaiId) {
-        const notif = {
-          id: Date.now(),
-          type: 'shoukai_paid',
-          company: app.schoolName,
-          title: app.shoukaiAmount || '¥10,000',
-          date: new Date().toLocaleString(),
-          read: false,
-        };
-        setNotifications(prev => [notif, ...prev]);
-      }
-    }
-  };
+  // Re-sync when the profile tab is opened and when the app comes back to the foreground
+  useEffect(() => {
+    if (activeTab === 'profile') refreshApplications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === 'visible') refreshApplications(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [refreshApplications]);
 
-  const handleRoleSelection = (role, data) => {
+  useEffect(() => {
+    let isMounted = true;
+    fetchSchools()
+      .then(rawSchools => {
+        if (isMounted && Array.isArray(rawSchools) && rawSchools.length > 0) {
+          const normSchools = rawSchools.map(normalizeSchoolPosting).filter(Boolean);
+          if (normSchools.length > 0) setSchools(normSchools);
+        }
+      })
+      .catch(err => console.warn('[App] Initial fetchSchools warning:', err.message));
+
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleRoleSelection = async (role, data) => {
     setUserRole(role);
-    if (role === 'company') {
-      setApplications(mockIncomingApplications);
-    }
+    // Applications for the new role are loaded by refreshApplications (runs on role change)
     if (data) {
       setProfileData(prev => ({
         ...prev,
         ...data,
-        fullName: data.fullName || t('roleGuest'),
+        fullName: data.fullName || t('roleGuest', 'Mehmon'),
         email: data.email || 'michi@example.com'
       }));
-    } else {
-      setProfileData(prev => ({
-        ...prev,
-        fullName: role === 'company' ? 'Sagawa Express' : t('roleGuest'),
-        email: 'michi@example.com'
-      }));
+    }
+
+    if (pendingApply) {
+      const { type, item, opts } = pendingApply;
+      setPendingApply(null);
+      if (type === 'job') {
+        await handleApplyJob(item, opts);
+      } else if (type === 'school') {
+        await handleApplySchool(item);
+      }
     }
   };
 
-  const handleChangeLanguage = () => {
-    setLanguageSelected(false);
-  };
+  useEffect(() => {
+    if (userRole && userRole !== 'guest' && pendingApply) {
+      const target = pendingApply;
+      setPendingApply(null);
+      if (target.type === 'job') {
+        handleApplyJob(target.item, target.opts);
+      } else if (target.type === 'school') {
+        handleApplySchool(target.item);
+      }
+    }
+  }, [userRole, pendingApply, handleApplyJob, handleApplySchool]);
 
-  const handleUpdateProfile = (newData) => {
-    setProfileData(prev => ({ ...prev, ...newData }));
-  };
-
-  const handleTriggerRegister = () => {
-    setUserRole(null);
-    setAuthInitialStep('register');
-  };
-
-
-
-  // ==========================================
-  // VIRAL SHOUKAI REFERRAL ALGORITHM & GROW LOOP
-  // ==========================================
-  // [UZ] Ushbu algoritm foydalanuvchilar o'rtasida e'lonlar va ilovani virusli tarqatishni simulyatsiya qiladi.
-  // Har safar foydalanuvchi "Shoukai" tugmasini bosganida, shaxsiy havola nusxalanadi va tizimda do'stlarining
-  // ilovani yuklab olib, ushbu e'longa ariza yuborgani (Friend Simulation) zudlik bilan simulyatsiya qilinadi.
-  // Bu foydalanuvchining shaxsiy arizasini yoki faolligini cheklamaydi va "Mening Shoukai'larim" sahifasida aks etadi.
-  //
-  // [JA] 紹介（Shoukai）ウイルス性拡散アルゴリズム：
-  // ユーザーが「紹介」ボタンを押すと、パーソナライズされた紹介リンクがコピーされ、
-  // 友人がアプリをダウンロードして該当の求人または自動車学校に応募したシミュレーション（Friend Simulation）が即座に実行されます。
-  // これにより、紹介報酬の追跡と、友人紹介によるアプリ認知拡大・就職支援のビジネスロジックが美しく表現されます。
-  //
-  // [EN] Viral Shoukai Referral Algorithm & Growth Engine:
-  // When a user shares via Shoukai, it copies a unique link and immediately triggers a simulated referral application
-  // representing a friend downloading the app and applying. This handles the social network effect, satisfies job seekers'
-  // demand for work, and visualizes pending/paid referral rewards under "My Shoukai" in the profile.
   const handleShoukai = (item) => {
-    // 1. Havolani nusxalash simulyatsiyasi
-    const isJob = !!((item.shoukaiAmount || item.shoukai) && (item.title || item.name));
-    const isActuallyJob = !!item.title;
-    
+    const isActuallyJob = Boolean(item.title);
     const amount = isActuallyJob ? (item.shoukaiAmount || item.shoukai || '¥50,000') : (item.shoukai || '¥10,000');
-    const title = isActuallyJob ? item.title : item.name;
-
     const link = `michi-app.com/${isActuallyJob ? 'job' : 'school'}/${item.id}?ref=${profileData.userId}`;
     
-    // Multi-language Alert messages based on active locale
     const alertMsg = i18n.language === 'ja'
-      ? `紹介リンクをコピーしました！\n\n${link}\n\n友達にシェアして紹介報酬を獲得しましょう！`
-      : i18n.language === 'en'
-      ? `Referral link copied successfully:\n\n${link}\n\nShare with friends to earn Shoukai rewards!`
-      : `Shoukai havolasi nusxalandi:\n\n${link}\n\nDo'stlaringiz bilan ulashing va mukofot oling!`;
+      ? `紹介リンクをコピーしました！\n\n${link}`
+      : `Shoukai havolasi nusxalandi:\n\n${link}`;
       
-    setTimeout(() => {
-      alert(alertMsg);
-    }, 150);
-
-    // 2. Mantiqiy algoritm: Do'stingiz ushbu havola orqali yuklab ariza yuborganligini simulyatsiya qilish.
-    if (isActuallyJob) {
-      // Dublikat bo'lmasligi uchun tekshiramiz
-      const exists = applications.some(a => a.jobId === item.id && a.shoukaiId === profileData.userId && a.isSimulatedReferral);
-      if (!exists) {
-        const newApp = {
-          id: Date.now(),
-          jobId: item.id,
-          company: item.company,
-          title: item.title,
-          logo: item.logo,
-          status: 'submitted',
-          appliedDate: new Date().toLocaleDateString(),
-          shoukaiId: profileData.userId, // Referrer ID bu hozirgi foydalanuvchining ID raqami
-          shoukaiAmount: amount,
-          shoukaiPaid: false,
-          friendName: 'Do\'stingiz (Simulyatsiya)',
-          isSimulatedReferral: true, // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
-          applicantInfo: {
-            fullName: t('simulatedFriend', 'Anonim Do\'st'),
-            email: 'demo@michi-app.com',
-            birthDate: '1995-01-01',
-            birthPlace: t('japan', 'Yaponiya'),
-            nationality: t('mixed', 'Xorijiy'),
-            gender: 'male',
-            phone: '+81 00-0000-0000',
-            postalCode: '000-0000',
-            address: t('demoAddress', 'Tokyo, Shinjuku-ku'),
-            addressHistory: [
-              { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
-              { address: 'Chiba, Matsudo 2-12', isCurrent: false }
-            ],
-            educationHistory: [
-              { school: 'Toshkent Axborot Texnologiyalari Universiteti', major: 'Kompyuter muhandisligi', startDate: '2014-09', endDate: '2018-06', isCurrent: false }
-            ],
-            driverLicenses: ['oogata', 'kenin', 'futsu'],
-            techCertificates: ['forklift'],
-            workHistory: [
-              { company: 'Yamato Transport Tokyo', position: 'Driver', startDate: '2022-10', endDate: '2025-12', isCurrent: false },
-              { company: 'Toshkent Express', position: 'Kuryer', startDate: '2018-07', endDate: '2022-09', isCurrent: false }
-            ]
-          }
-        };
-        setApplications(prev => [...prev, newApp]);
-      }
-    } else {
-      // Avtomaktablar uchun shoukai simulyatsiyasi
-      const exists = schoolApplications.some(a => a.schoolId === item.id && a.shoukaiId === profileData.userId && a.isSimulatedReferral);
-      if (!exists) {
-        const newApp = {
-          id: Date.now(),
-          schoolId: item.id,
-          schoolName: item.name,
-          image: item.image,
-          appliedDate: new Date().toLocaleDateString(),
-          shoukaiId: profileData.userId, // Referrer ID bu hozirgi foydalanuvchining ID raqami
-          shoukaiAmount: item.shoukai || '¥10,000',
-          paid: false,
-          friendName: 'Do\'stingiz (Simulyatsiya)',
-          isSimulatedReferral: true, // Do'st arizasini foydalanuvchining shaxsiy arizasidan farqlash uchun
-          applicantInfo: {
-            fullName: t('simulatedFriend', 'Anonim Do\'st'),
-            email: 'demo@michi-app.com',
-            birthDate: '1995-01-01',
-            birthPlace: t('japan', 'Yaponiya'),
-            nationality: t('mixed', 'Xorijiy'),
-            gender: 'male',
-            phone: '+81 00-0000-0000',
-            postalCode: '000-0000',
-            address: t('demoAddress', 'Tokyo, Shinjuku-ku'),
-            addressHistory: [
-              { address: 'Tokyo, Shinjuku-ku, Shinjuku 3-1-1', isCurrent: true },
-              { address: 'Chiba, Matsudo 2-12', isCurrent: false }
-            ],
-            educationHistory: [
-              { school: 'Toshkent Axborot Texnologiyalari Universiteti', major: 'Kompyuter muhandisligi', startDate: '2014-09', endDate: '2018-06', isCurrent: false }
-            ],
-            driverLicenses: ['oogata', 'kenin', 'futsu'],
-            techCertificates: ['forklift'],
-            workHistory: [
-              { company: 'Yamato Transport Tokyo', position: 'Driver', startDate: '2022-10', endDate: '2025-12', isCurrent: false },
-              { company: 'Toshkent Express', position: 'Kuryer', startDate: '2018-07', endDate: '2022-09', isCurrent: false }
-            ]
-          }
-        };
-        setSchoolApplications(prev => [...prev, newApp]);
-      }
-    }
+    setTimeout(() => alert(alertMsg), 150);
   };
 
   const handleToggleSave = (item, type) => {
-    if (userRole === 'company' || userRole === 'school' || userRole === 'admin') {
-      alert("Faqat haydovchilar e'lonlarni saqlashi mumkin.");
-      return;
-    }
+    if (userRole !== 'driver') return;
     setProfileData(prev => {
       const savedItems = prev.savedItems || { jobs: [], schools: [] };
       const currentList = savedItems[type] || [];
@@ -973,58 +847,9 @@ function App() {
     });
   };
 
-  if (showSplash) {
-    return <Splash onFinish={() => setShowSplash(false)} />;
-  }
-
-  if (!languageSelected) {
-    return <LanguageSelect onFinish={() => setLanguageSelected(true)} />;
-  }
-
-  if (!userRole) {
-    return (
-      <RoleSelect 
-        onSelectRole={handleRoleSelection}
-        onGuest={() => handleRoleSelection('guest')}
-        initialStep={authInitialStep}
-      />
-    );
-  }
-
-  if (userRole === 'admin') {
-    return <AdminDashboard verifiedCompanies={verifiedCompanies} onToggleVerify={handleToggleVerify} onLogout={() => setUserRole(null)} contractStatus={contractStatus} setContractStatus={setContractStatus} profileData={profileData} />;
-  }
-
-  const getUserNameWithHonorific = () => {
-    return profileData.fullName;
-  };
-
-  const getAvatarSrc = () => {
-    if (profileData.avatar) return profileData.avatar;
-    const name = encodeURIComponent(profileData.fullName || 'User');
-    const bg = userRole === 'company' ? 'AF52DE' : userRole === 'school' ? '34C759' : userRole === 'driver' ? '0A84FF' : '8E8E93';
-    return `https://ui-avatars.com/api/?name=${name}&background=${bg}&color=fff`;
-  };
-
-  const musicPlayer = {
-    isPlaying,
-    currentTrack: TRACKS[currentTrackIndex],
-    togglePlay,
-    play: () => setIsPlaying(true),
-    pause: () => setIsPlaying(false),
-    nextTrack,
-    prevTrack,
-    currentTime,
-    duration,
-    volume,
-    setVolume,
-    seek: (time) => {
-      if (audioRef.current) {
-        audioRef.current.currentTime = time;
-        setCurrentTime(time);
-      }
-    }
-  };
+  if (showSplash) return <ErrorBoundary><Splash onFinish={() => setShowSplash(false)} /></ErrorBoundary>;
+  if (!languageSelected) return <ErrorBoundary><LanguageSelect onFinish={() => setLanguageSelected(true)} /></ErrorBoundary>;
+  if (!userRole) return <ErrorBoundary><RoleSelect onSelectRole={handleRoleSelection} onGuest={() => handleRoleSelection('guest')} initialStep={authInitialStep} /></ErrorBoundary>;
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -1033,7 +858,6 @@ function App() {
           <Dashboard 
             setActiveTab={setActiveTab} 
             profileData={profileData} 
-            musicPlayer={musicPlayer}
             isVoiceStandby={isVoiceStandby}
             isVoiceActive={isVoiceActive}
             onVoiceActivate={handleVoiceActivate}
@@ -1044,59 +868,36 @@ function App() {
             onNavigateToInternational={handleNavigateToInternationalJobs}
             onNavigateToJDM={() => setShowJDMNavigation(true)}
             onOpenAssistShowcase={() => setShowAssistHeroShowcase(true)}
+            musicPlayer={musicPlayer}
+            flags={remote.flags}
+            announcement={remote.announcement}
+            applications={applications}
           />
-
         );
       case 'jobs':
         return (
           <DriverFeed 
             onJobClick={setSelectedJob} 
-            jobs={jobs} 
-            isContractActive={contractStatus === 'active'} 
-            verifiedCompanies={verifiedCompanies} 
+            jobs={feed.jobs} 
+            feed={feed}
             onShoukai={handleShoukai} 
             onApply={handleApplyJob}
             applications={applications}
             userRole={userRole} 
             profileData={profileData}
-            onEditJob={(job) => {
-              setSelectedJob(null);
-              setJobToEdit(job);
-              setProfileActivePage('my_ads');
-              setActiveTab('profile');
-            }}
-            searchQuery={debouncedJobSearchQuery}
+            searchQuery={jobSearchQuery}
             setSearchQuery={setJobSearchQuery}
             activeSegment={jobActiveSegment}
             setActiveSegment={setJobActiveSegment}
-            selectedLicenses={selectedLicenses}
-            setSelectedLicenses={setSelectedLicenses}
-            selectedLangLevel={selectedLangLevel}
-            setSelectedLangLevel={setSelectedLangLevel}
-            selectedBenefits={selectedBenefits}
-            setSelectedBenefits={setSelectedBenefits}
-            minSalary={minSalary}
-            setMinSalary={setMinSalary}
-            selectedPrefecture={selectedPrefecture}
-            setSelectedPrefecture={setSelectedPrefecture}
-            selectedCity={selectedCity}
-            setSelectedCity={setSelectedCity}
-            stationQuery={stationQuery}
-            setStationQuery={setStationQuery}
-            onlyNearStation={onlyNearStation}
-            setOnlyNearStation={setOnlyNearStation}
           />
         );
       case 'academy':
         return (
           <DrivingAcademy 
-            isContractActive={contractStatus === 'active'} 
             onApplySchool={handleApplySchool}
             schoolApplications={schoolApplications}
-            onShoukaiPaid={handleShoukaiPaid}
             profileData={profileData}
             onShoukai={handleShoukai}
-            verifiedCompanies={verifiedCompanies}
             onToggleSave={handleToggleSave}
             userRole={userRole}
             selectedSchool={selectedSchool}
@@ -1104,30 +905,16 @@ function App() {
             onBackPress={handleSchoolBack}
             schools={schools}
             setSchools={setSchools}
-            onEditJob={(school) => {
-              setSelectedSchool(null);
-              setJobToEdit(school);
-              setProfileActivePage('my_ads');
-              setActiveTab('profile');
-            }}
-            searchQuery={debouncedAcademySearchQuery}
+            searchQuery={academySearchQuery}
             setSearchQuery={setAcademySearchQuery}
           />
         );
       case 'service':
-        return (
-          <ServiceComingSoon 
-            onOpenAssistShowcase={() => {
-              setProfileActivePage('assist_showcase');
-              setActiveTab('profile');
-            }}
-            onNavigate={setActiveTab}
-          />
-        );
+        return <ServiceComingSoon onOpenAssistShowcase={() => { setProfileActivePage('assist_showcase'); setActiveTab('profile'); }} onNavigate={setActiveTab} />;
       case 'profile':
         return (
           <Profile 
-            onLogout={() => setUserRole(null)} 
+            onLogout={() => logout()} 
             contractStatus={contractStatus} 
             setContractStatus={setContractStatus} 
             profileData={profileData}
@@ -1136,7 +923,7 @@ function App() {
             setIsVoiceActive={setIsVoiceActive}
             isVoiceStandby={isVoiceStandby}
             setIsVoiceStandby={setIsVoiceStandby}
-            onChangeLanguage={handleChangeLanguage}
+            onChangeLanguage={() => setLanguageSelected(false)}
             onUpdateProfile={handleUpdateProfile}
             onApply={handleApplyJob}
             onApplySchool={handleApplySchool}
@@ -1144,424 +931,242 @@ function App() {
             applications={applications}
             schoolApplications={schoolApplications}
             onChangeAppStatus={handleChangeAppStatus}
-            onShoukaiPaid={handleShoukaiPaid}
+            onWithdrawApplication={handleWithdrawApplication}
             notifications={notifications}
-            onMarkRead={markNotificationRead}
-            onMarkAllRead={markAllNotificationsRead}
-            onDeleteNotif={deleteNotification}
-            onClearAllNotifs={clearAllNotifications}
+            setNotifications={setNotifications}
+            onMarkRead={handleMarkNotifRead}
+            onMarkAllRead={handleMarkAllNotifsRead}
+            onDeleteNotif={handleDeleteNotif}
+            onClearAllNotifs={handleClearAllNotifs}
+            onShoukaiPaid={handleShoukaiPaid}
             unreadCount={unreadCount}
             darkMode={darkMode}
             setDarkMode={setDarkMode}
             soundSettings={soundSettings}
             setSoundSettings={setSoundSettings}
-            companyEmployees={companyEmployees}
-            onAddEmployee={handleAddEmployee}
-            onAcceptEmployeeRequest={handleAcceptEmployeeRequest}
-            setNotifications={setNotifications}
+            notificationSound={notificationSound}
+            setNotificationSound={setNotificationSound}
+            showProfileBadges={showProfileBadges}
+            setShowProfileBadges={setShowProfileBadges}
             onNavigate={setActiveTab}
             activePage={profileActivePage}
             setActivePage={setProfileActivePage}
-            profileActivePageSource={profileActivePageSource}
-            setProfileActivePageSource={setProfileActivePageSource}
-            scrollToTopTrigger={profileScrollToTopTrigger}
-            onJobClick={setSelectedJob}
-            onSchoolClick={handleSchoolClick}
-            showProfileBadges={showProfileBadges}
-            setShowProfileBadges={setShowProfileBadges}
-            notificationSound={notificationSound}
-            setNotificationSound={setNotificationSound}
-            jobs={jobs}
+            jobs={companyJobs}
+            setJobs={setCompanyJobs}
+            onJobCreated={feed.refresh}
             schools={schools}
-            setJobs={setJobs}
-            setSchools={setSchools}
-            jobToEdit={jobToEdit}
-            setJobToEdit={setJobToEdit}
-            onTriggerRegister={handleTriggerRegister}
           />
         );
       default:
-        return <DriverFeed onJobClick={setSelectedJob} jobs={jobs} verifiedCompanies={verifiedCompanies} isContractActive={contractStatus === 'active'} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
+        return <DriverFeed onJobClick={setSelectedJob} jobs={feed.jobs} feed={feed} onShoukai={handleShoukai} userRole={userRole} onApply={handleApplyJob} applications={applications} />;
     }
   };
 
   return (
     <ErrorBoundary>
-      <AppProvider value={{
-        // Foydalanuvchi
-        userRole, setUserRole,
-        profileData, handleUpdateProfile,
-        
-        // Ilova holati
-        darkMode, setDarkMode,
-        activeTab, setActiveTab,
-        
-        // Bildirishnomalar
-        notifications, unreadCount,
-        markNotificationRead, markAllNotificationsRead,
-        
-        // Ma'lumotlar
-        jobs, setJobs,
-        schools, setSchools,
-        applications, setApplications,
-        
-        // Funksiyalar
-        handleApplyJob, handleApplySchool,
-        handleShoukai, handleToggleSave,
-      }}>
+      <AppProvider value={{ userRole, setUserRole, profileData, darkMode, setDarkMode, activeTab, setActiveTab }}>
         <div className="app-layout">
-      <div className="glass-blob blob-1"></div>
-      <div className="glass-blob blob-2"></div>
-      <div className="glass-blob blob-3"></div>
-
-      {/* Native Mobile iOS Status Bar (Only rendered inside native iOS/Android Capacitor apps) */}
-      {isNative && (
-        <div className="mobile-status-bar">
-          <span className="status-time">{clockTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
-          <div className="status-notch">
-            <div className="notch-camera"></div>
-          </div>
-          <div className="status-icons">
-            <span className="status-signal">5G</span>
-            <span className="status-battery">
-              <span className="battery-level"></span>
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Header Bar: Navigation header for all devices */}
-      {!showJDMNavigation && !selectedJob && !showAssistHeroShowcase && activeTab !== 'nav' && (
-        <header className="global-header mobile-header">
-          {/* Left Side: Clickable MICHI Logo */}
-          <div 
-            className="header-logo-left"
-            onClick={() => handleSetActiveTab('home')}
-            title={i18n.language === 'ja' ? 'ホーム' : i18n.language === 'en' ? 'Home' : 'Bosh sahifa'}
-          >
-            <div className="logo-kanji">道</div>
-            <span className="logo-text">MICHI</span>
-          </div>
-
-          {/* Center: Theme Toggle Switch */}
-          <div className="header-theme-toggle-centered">
-            <button
-              className="theme-toggle-btn"
-              onClick={() => setDarkMode(prev => !prev)}
-              aria-label="Toggle theme"
-              title={darkMode ? (i18n.language === 'ja' ? 'ライトモード' : i18n.language === 'en' ? 'Light Mode' : 'Kunduzgi rejim') : (i18n.language === 'ja' ? 'ダークモード' : i18n.language === 'en' ? 'Dark Mode' : 'Tungi rejim')}
-            >
-              <div className={`theme-toggle-track ${darkMode ? 'dark' : 'light'}`}>
-                <div className="theme-toggle-thumb">
-                  {darkMode ? <Moon size={11} strokeWidth={2.5} /> : <Sun size={11} strokeWidth={2.5} />}
-                </div>
-              </div>
-            </button>
-          </div>
-
-          {/* Right Side: Standalone Robot Avatar */}
-          <div className="header-robot-right">
-            <RobotAvatar 
-              isVoiceActive={isVoiceActive || isVoiceStandby} 
-              voiceStatus={isVoiceActive ? voiceStatus : 'idle'} 
-              onClick={handleVoiceToggle} 
-            />
-          </div>
-        </header>
-      )}
-
-
-      <main className="main-content" style={{ zIndex: 10 }}>
-        <ChunkErrorBoundary>
-          <Suspense fallback={<PageSkeleton />}>
-            <Routes>
-              <Route path="/" element={renderTabContent()} />
-              <Route path="/home" element={renderTabContent()} />
-              <Route path="/jobs" element={renderTabContent()} />
-              <Route path="/jobs/:jobId" element={renderTabContent()} />
-              <Route path="/academy" element={renderTabContent()} />
-              <Route path="/academy/:schoolId" element={renderTabContent()} />
-              <Route path="/service" element={renderTabContent()} />
-              <Route path="/profile" element={renderTabContent()} />
-              <Route path="/profile/*" element={renderTabContent()} />
-              <Route path="/admin" element={renderTabContent()} />
-              <Route path="/navigation" element={renderTabContent()} />
-              <Route path="/assist" element={renderTabContent()} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </ChunkErrorBoundary>
-      </main>
-
-      {selectedJob && (
-        <ChunkErrorBoundary>
-          <Suspense fallback={<PageSkeleton />}>
-            <JobDetail 
-              job={selectedJob} 
-              onBack={() => {
-                setSelectedJob(null);
-                if (location.pathname.startsWith('/jobs')) navigate('/jobs');
-              }} 
-              onApply={handleApplyJob}
-              applications={applications}
-              onShoukai={handleShoukai}
-              onToggleSave={handleToggleSave}
-              profileData={profileData}
-              userRole={userRole}
-              onEditJob={(job) => {
-                setSelectedJob(null);
-                setJobToEdit(job);
-                setProfileActivePage('my_ads');
-                handleSetActiveTab('profile');
+          {isViewAs() && <ViewAsBanner name={user?.fullName || ''} />}
+          {remote.isOn('maintenance') && !isViewAs() && <MaintenanceScreen />}
+          <div className="glass-blob blob-1"></div>
+          <div className="glass-blob blob-2"></div>
+          <div className="glass-blob blob-3"></div>
+          <header className="global-header">
+            <div 
+              role="button" 
+              tabIndex={0} 
+              className="header-logo-left" 
+              onClick={() => setActiveTab('home')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setActiveTab('home');
+                }
               }}
-            />
-          </Suspense>
-        </ChunkErrorBoundary>
-      )}
-
-      {hasOpenedJDM && (
-        <div 
-          className="jdm-nav-overlay-container" 
-          style={{ 
-            display: showJDMNavigation ? 'block' : 'none',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 1000,
-            height: '100%',
-            width: '100%',
-            overflow: 'hidden'
-          }}
-        >
-          <ChunkErrorBoundary>
-            <Suspense fallback={<PageSkeleton />}>
-              <JDMNavigation 
-                onBack={() => {
-                  setShowJDMNavigation(false);
-                  if (location.pathname === '/navigation') navigate(-1);
-                }} 
-                showJDMNavigation={showJDMNavigation}
-                darkMode={darkMode}
-              />
-            </Suspense>
-          </ChunkErrorBoundary>
-        </div>
-      )}
-
-      {showAssistHeroShowcase && (
-        <div 
-          className="assist-showcase-overlay-container" 
-          style={{ 
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 9000,
-            height: '100%',
-            width: '100%',
-            overflowY: 'auto',
-            borderRadius: '44px',
-            background: darkMode ? '#07090E' : '#FAFBFD'
-          }}
-        >
-          <ChunkErrorBoundary>
-            <Suspense fallback={<PageSkeleton />}>
-              <AssistHeroShowcase 
-                onBack={() => {
-                  setShowAssistHeroShowcase(false);
-                  if (location.pathname === '/assist') navigate(-1);
-                }} 
-                onActivateVoice={() => {
-                  setShowAssistHeroShowcase(false);
-                  handleVoiceActivate();
-                }}
-                darkMode={darkMode}
-              />
-            </Suspense>
-          </ChunkErrorBoundary>
-        </div>
-      )}
-
-
-      {!(activeTab === 'profile' && profileActivePage === 'resume_builder') && (
-        <BottomNav 
-          activeTab={activeTab} 
-          setActiveTab={handleSetActiveTab}
-          unreadCount={showProfileBadges ? unreadCount : 0}
-          userRole={userRole}
-          isVoiceStandby={isVoiceStandby}
-          isVoiceActive={isVoiceActive}
-          voiceStatus={voiceStatus}
-        />
-      )}
-
-      <Suspense fallback={null}>
-        <VoiceAssistant 
-          isActive={isVoiceActive} 
-          onClose={() => setIsVoiceActive(false)} 
-          onStartVoice={() => setIsVoiceActive(true)}
-          isVoiceStandby={isVoiceStandby}
-          setIsVoiceStandby={setIsVoiceStandby}
-          setActiveTab={setActiveTab} 
-          musicPlayer={musicPlayer} 
-          onStatusChange={setVoiceStatus}
-          activeTab={activeTab}
-          jobs={jobs}
-          schools={schools}
-          profileData={profileData}
-          applications={applications}
-          selectedJob={selectedJob}
-          selectedSchool={selectedSchool}
-          setSelectedJob={setSelectedJob}
-          setSelectedSchool={setSelectedSchool}
-          setJobSearchQuery={setJobSearchQuery}
-          setJobActiveSegment={setJobActiveSegment}
-          setAcademySearchQuery={setAcademySearchQuery}
-          handleApplyJob={handleApplyJob}
-          handleApplySchool={handleApplySchool}
-          handleShoukai={handleShoukai}
-          userRole={userRole}
-          selectedLicenses={selectedLicenses}
-          setSelectedLicenses={setSelectedLicenses}
-          selectedLangLevel={selectedLangLevel}
-          setSelectedLangLevel={setSelectedLangLevel}
-          selectedBenefits={selectedBenefits}
-          setSelectedBenefits={setSelectedBenefits}
-          minSalary={minSalary}
-          setMinSalary={setMinSalary}
-          selectedPrefecture={selectedPrefecture}
-          setSelectedPrefecture={setSelectedPrefecture}
-          profileActivePage={profileActivePage}
-          setProfileActivePage={setProfileActivePage}
-          setApplications={setApplications}
-          toggleDarkMode={() => setDarkMode(prev => !prev)}
-        />
-      </Suspense>
-
-      <audio 
-        ref={audioRef}
-        src={TRACKS[currentTrackIndex].url}
-        onTimeUpdate={() => {
-          if (audioRef.current) {
-            setCurrentTime(audioRef.current.currentTime);
-          }
-        }}
-        onLoadedMetadata={() => {
-          if (audioRef.current) {
-            setDuration(audioRef.current.duration);
-          }
-        }}
-        onEnded={nextTrack}
-      />
-
-      {showCompleteProfileModal && (
-        <div className="complete-profile-modal-overlay" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          backdropFilter: 'blur(10px)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 9999,
-          padding: '20px',
-          boxSizing: 'border-box'
-        }}>
-          <div className="glass squircle slide-up" role="dialog" aria-modal="true" style={{
-            maxWidth: '350px',
-            width: '100%',
-            padding: '24px',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '16px',
-            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.25)',
-            border: '1px solid rgba(255, 255, 255, 0.15)'
-          }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              background: 'rgba(10, 132, 255, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#0A84FF'
-            }}>
-              <FileText size={32} />
+              aria-label="Michi Bosh Sahifa"
+            >
+              <div className="logo-kanji">道</div>
+              <span className="logo-text">MICHI</span>
             </div>
-            <div>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>
-                {t('completeResumeModalTitle', 'Rezyumeni to\'ldiring')}
-              </h3>
-              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-                {t('completeResumeModalDesc', 'Ushbu vakansiyaga ariza topshirish uchun oldindan rezyume ma\'lumotlaringizni to\'liq to\'ldirishingiz lozim.')}
-              </p>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '8px', marginTop: '8px' }}>
+
+            <div className="header-theme-toggle-centered">
               <button 
-                className="btn-primary squircle"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  fontWeight: '700',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  border: 'none',
-                  background: 'var(--primary)',
-                  color: 'white'
-                }}
-                onClick={() => {
-                  setShowCompleteProfileModal(false);
-                  setProfileActivePage('resume_builder');
-                  setProfileActivePageSource('profile');
-                  setActiveTab('profile');
-                }}
+                type="button" 
+                className="theme-toggle-btn" 
+                onClick={() => setDarkMode(prev => !prev)} 
+                aria-label="Toggle theme"
               >
-                {t('completeResumeBtn', 'Rezyume to\'ldirish')}
-              </button>
-              <button 
-                className="btn-secondary squircle"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  border: '1px solid var(--glass-border)',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  color: 'var(--text-main)',
-                  borderRadius: '12px'
-                }}
-                onClick={() => setShowCompleteProfileModal(false)}
-              >
-                {t('cancelEdit', 'Bekor qilish')}
+                <div className={`theme-toggle-track ${darkMode ? 'dark' : 'light'}`}>
+                  <div className="theme-toggle-thumb">
+                    {darkMode ? <Moon size={11} /> : <Sun size={11} />}
+                  </div>
+                </div>
               </button>
             </div>
-          </div>
+
+            <div className="header-robot-right">
+              {remote.isOn('voiceAI') && <RobotAvatar 
+                isVoiceActive={isVoiceActive || isVoiceStandby} 
+                voiceStatus={isVoiceActive ? voiceStatus : 'idle'} 
+                onClick={handleVoiceToggle} 
+              />}
+            </div>
+          </header>
+
+          <main className="main-content" ref={mainContentRef} style={{ zIndex: 10 }}>
+            <ChunkErrorBoundary>
+              {renderTabContent()}
+            </ChunkErrorBoundary>
+          </main>
+
+          {/* Vakansiya tafsilotlari modali */}
+          {selectedJob && (
+            <ChunkErrorBoundary>
+              <JobDetail 
+                job={selectedJob} 
+                onBack={() => setSelectedJob(null)} 
+                onApply={handleApplyJob} 
+                applications={applications} 
+                onShoukai={handleShoukai} 
+                onToggleSave={handleToggleSave} 
+                profileData={profileData} 
+                userRole={userRole} 
+              />
+            </ChunkErrorBoundary>
+          )}
+
+          {/* JDM Yuk Mashinasi Navigatsiyasi */}
+          {hasOpenedJDM && (
+            <div 
+              className="jdm-nav-overlay-container" 
+              style={{ 
+                display: showJDMNavigation ? 'block' : 'none', 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                zIndex: 1000, 
+                height: '100%', 
+                width: '100%', 
+                overflow: 'hidden' 
+              }}
+            >
+              <ChunkErrorBoundary>
+                <React.Suspense fallback={null}>
+                  <MichiMap
+                    onBack={() => setShowJDMNavigation(false)}
+                    isOpen={showJDMNavigation}
+                    darkMode={darkMode}
+                  />
+                </React.Suspense>
+              </ChunkErrorBoundary>
+            </div>
+          )}
+
+          {/* AI Vitrina Taqdimoti */}
+          {showAssistHeroShowcase && (
+            <div 
+              className="assist-showcase-overlay-container" 
+              style={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                zIndex: 9000, 
+                height: '100%', 
+                width: '100%', 
+                overflowY: 'auto', 
+                borderRadius: '44px', 
+                background: darkMode ? '#07090E' : '#FAFBFD' 
+              }}
+            >
+              <ChunkErrorBoundary>
+                <AssistHeroShowcase 
+                  onBack={() => setShowAssistHeroShowcase(false)} 
+                  onActivateVoice={() => { 
+                    setShowAssistHeroShowcase(false); 
+                    handleVoiceActivate(); 
+                  }} 
+                  darkMode={darkMode} 
+                />
+              </ChunkErrorBoundary>
+            </div>
+          )}
+
+          {/* Pastki navigatsiya paneli */}
+          <BottomNav 
+            activeTab={activeTab} 
+            setActiveTab={(tab) => { 
+              setShowJDMNavigation(false); 
+              setSelectedJob(null); 
+              setSelectedSchool(null); 
+              setActiveTab(tab); 
+            }} 
+            unreadCount={unreadCount} 
+            userRole={userRole} 
+            isVoiceStandby={isVoiceStandby} 
+            isVoiceActive={isVoiceActive} 
+            voiceStatus={voiceStatus} 
+            hiddenTabs={[!remote.isOn('jobs') && 'jobs', !remote.isOn('academy') && 'academy'].filter(Boolean)}
+          />
+
+          {/* Markaziy Ovozli Yordamchi Orchestrator */}
+          {remote.isOn('voiceAI') && <VoiceAssistant 
+            isActive={isVoiceActive} 
+            onClose={() => {
+              setIsVoiceActive(false);
+              stopMicrophoneStream();
+            }} 
+            onStartVoice={() => handleVoiceActivate()} 
+            isVoiceStandby={isVoiceStandby} 
+            setIsVoiceStandby={setIsVoiceStandby} 
+            setActiveTab={setActiveTab} 
+            onStatusChange={setVoiceStatus} 
+            activeTab={activeTab} 
+            jobs={feed.jobs} 
+            schools={schools} 
+            profileData={profileData} 
+            applications={applications} 
+            musicPlayer={musicPlayer}
+            toggleDarkMode={() => setDarkMode(prev => !prev)}
+            selectedJob={selectedJob}
+            selectedSchool={selectedSchool}
+            setSelectedJob={setSelectedJob}
+            setSelectedSchool={setSelectedSchool}
+            profileActivePage={profileActivePage}
+            setProfileActivePage={setProfileActivePage}
+            setJobSearchQuery={setJobSearchQuery}
+            setJobActiveSegment={setJobActiveSegment}
+            setAcademySearchQuery={setAcademySearchQuery}
+            handleApplyJob={handleApplyJob}
+            handleApplySchool={handleApplySchool}
+            handleShoukai={handleShoukai}
+            userRole={userRole}
+            selectedLicenses={selectedLicenses}
+            setSelectedLicenses={setSelectedLicenses}
+            minSalary={minSalary}
+            setMinSalary={setMinSalary}
+            selectedPrefecture={selectedPrefecture}
+            setSelectedPrefecture={setSelectedPrefecture}
+            setApplications={setApplications}
+          />}
+
+          {/* Shoukai Taklif Kodi Modali */}
+          <ReferralModal 
+            isOpen={referralModal.isOpen} 
+            jobTitle={referralModal.item?.title || referralModal.item?.name} 
+            onConfirm={(refId) => { 
+              referralModal.resolve?.(refId); 
+              setReferralModal({ isOpen: false, item: null, type: null, resolve: null }); 
+            }} 
+            onCancel={() => { 
+              referralModal.resolve?.(null); 
+              setReferralModal({ isOpen: false, item: null, type: null, resolve: null }); 
+            }} 
+          />
         </div>
-      )}
-      {/* Referral Modal */}
-      <ReferralModal
-        isOpen={referralModal.isOpen}
-        jobTitle={referralModal.item?.title || referralModal.item?.name || referralModal.item?.schoolName}
-        onConfirm={(refId) => {
-          referralModal.resolve?.(refId);
-          setReferralModal({ isOpen: false, item: null, type: null, resolve: null });
-        }}
-        onCancel={() => {
-          referralModal.resolve?.(null);
-          setReferralModal({ isOpen: false, item: null, type: null, resolve: null });
-        }}
-      />
-      </div>
       </AppProvider>
     </ErrorBoundary>
   );

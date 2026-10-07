@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MailCheck, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { sendEmailOtpViaN8n, verifyEmailOtpCode } from '../../services/n8nEmailOtpService';
+import { sendEmailOtpViaN8n, verifyEmailOtpCodeViaN8n } from '../../services/n8nEmailOtpService';
 
 export default function N8nEmailOtpWidget({
   email,
@@ -12,6 +12,7 @@ export default function N8nEmailOtpWidget({
   const [otpCodeInput, setOtpCodeInput] = useState('');
   const [otpSending, setOtpSending] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
   const [otpErrorMsg, setOtpErrorMsg] = useState('');
   const [otpSuccessMsg, setOtpSuccessMsg] = useState('');
   const [otpCooldown, setOtpCooldown] = useState(0);
@@ -40,6 +41,7 @@ export default function N8nEmailOtpWidget({
       setOtpSending(false);
       if (res.success) {
         setOtpSent(true);
+        setSessionId(res.sessionId || null);
         setOtpCooldown(res.cooldownSeconds || 60);
         setOtpSuccessMsg(t('otpSentSuccess', '確認コードをメールに送信しました！'));
       } else {
@@ -51,7 +53,7 @@ export default function N8nEmailOtpWidget({
     }
   };
 
-  const handleVerifyInlineOtp = (overrideCode) => {
+  const handleVerifyInlineOtp = async (overrideCode) => {
     const targetCode = typeof overrideCode === 'string' ? overrideCode : otpCodeInput;
     if (!targetCode || targetCode.length !== 6) {
       setOtpErrorMsg(t('enter6DigitCode', '6桁の確認コードを入力してください。'));
@@ -60,7 +62,7 @@ export default function N8nEmailOtpWidget({
     setOtpErrorMsg('');
     setOtpSuccessMsg('');
     
-    const res = verifyEmailOtpCode(email, targetCode);
+    const res = await verifyEmailOtpCodeViaN8n(email, targetCode, sessionId);
     if (res.success) {
       setIsEmailVerified(true);
       setOtpSuccessMsg(t('emailVerifiedSuccess', '✅ メールアドレスが正常に認証されました！'));
@@ -80,8 +82,8 @@ export default function N8nEmailOtpWidget({
     <div className="otp-inline-widget glass squircle" style={{ padding: '12px 14px', marginBottom: '16px', borderRadius: '14px', background: 'rgba(10, 132, 255, 0.05)', border: '1px solid rgba(10, 132, 255, 0.2)' }}>
       {isEmailVerified ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#30D158', fontWeight: 'bold', fontSize: '14px', padding: '10px 14px', background: 'rgba(48, 209, 88, 0.12)', borderRadius: '12px', border: '1px solid rgba(48, 209, 88, 0.35)', boxShadow: '0 4px 12px rgba(48, 209, 88, 0.15)' }}>
-          <CheckCircle2 size={20} color="#30D158" aria-hidden="true" />
-          <span>{t('emailVerifiedBadge', '✅ メールアドレス認証完了')}</span>
+          <CheckCircle2 size={20} color="#30D158" />
+          <span>{t('emailVerifiedBadge', 'メール認証済み')}</span>
         </div>
       ) : (
         <div>
@@ -107,7 +109,7 @@ export default function N8nEmailOtpWidget({
               transition: 'all 0.2s ease'
             }}
           >
-            <MailCheck size={16} aria-hidden="true" />
+            <MailCheck size={16} />
             {otpSending ? t('sendingCode', '送信中...') : otpCooldown > 0 ? `${t('resendCode', '再送信')} (${otpCooldown}s)` : otpSent ? t('resendOtp', 'コードを再送信') : t('sendOtpBtn', 'コードを送信')}
           </button>
 
@@ -172,7 +174,7 @@ export default function N8nEmailOtpWidget({
                   transition: 'all 0.2s ease'
                 }}
               >
-                <ShieldCheck size={16} aria-hidden="true" />
+                <ShieldCheck size={16} />
                 <span>{t('verifyBtn', '認証する')}</span>
               </button>
             </div>

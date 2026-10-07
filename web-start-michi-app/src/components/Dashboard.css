@@ -26,17 +26,9 @@ html.light-mode {
 }
 
 .dashboard-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   padding: 14px;
-  padding-bottom: 96px;
+  padding-bottom: 0px;
   background-color: transparent;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
   width: 100% !important;
   box-sizing: border-box !important;
   scrollbar-width: none !important;
@@ -178,7 +170,7 @@ html.dark-mode .dashboard-container {
   width: 100%;
   display: flex;
   justify-content: center;
-  z-index: var(--z-content);
+  z-index: 10;
 }
 
 .dash-hero-dots {
@@ -1559,139 +1551,13 @@ html.dark-mode .ambient-light {
   }
 }
 
-/* ==========================================================================
-   🖥️ 📑 RESPONSIVE MEDIA QUERIES FOR DASHBOARD (Task 3.1)
-   ========================================================================== */
-
+/* ====== DESKTOP 768PX+ COMPACT CONTAINER BOUNDS ====== */
 @media (min-width: 768px) {
-  /* 3.1.6 Scroll container responsive */
   .dashboard-container {
-    position: relative;
-    top: auto;
-    left: auto;
-    right: auto;
-    bottom: auto;
-    padding: 24px 0 60px;
-    overflow-y: visible;
-    min-height: calc(100vh - 80px);
+    max-width: var(--app-max-w, 820px) !important;
+    margin: 0 auto !important;
     width: 100% !important;
-  }
-
-  .dashboard-container > * + * {
-    margin-top: 20px;
-  }
-
-  /* 3.1.1 Hero Banner — desktop width & height */
-  .dash-hero-card {
-    height: 200px;
-    padding: 28px 36px;
-    border-radius: 28px;
-  }
-
-  .dash-hero-title {
-    font-size: 28px;
-    margin-bottom: 8px;
-  }
-
-  .dash-hero-sub {
-    font-size: 15px;
-    max-width: 550px;
-  }
-
-  .dash-hero-icon-3d svg {
-    width: 72px;
-    height: 72px;
-  }
-
-  /* 3.1.2 Calendar & Stats row grid */
-  .calendar-row {
-    gap: 12px;
-  }
-
-  .calendar-day {
-    height: 80px;
-    border-radius: 18px;
-  }
-
-  .day-num {
-    font-size: 22px;
-  }
-
-  .greeting-title {
-    font-size: 28px;
-  }
-
-  /* 3.1.3 Quick Actions (Bento Icons Row) — 4-column horizontal grid */
-  .bento-icons-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-  }
-
-  .bento-icon-card {
-    width: 100% !important;
-    min-width: 0 !important;
-    flex: none !important;
-    min-height: 135px;
-    padding: 18px 16px;
-    border-radius: 22px;
-  }
-
-  .bento-icon-wrap {
-    width: 48px;
-    height: 48px;
-  }
-
-  .bento-text-wrap h4 {
-    font-size: 16px;
-  }
-
-  .bento-text-wrap p {
-    font-size: 12px;
-  }
-
-  /* 3.1.4 JDM Navigation banner — desktop variant */
-  .bento-jdm-card {
-    padding: 16px 24px !important;
-    border-radius: 24px !important;
-    margin-top: 16px !important;
-  }
-
-  .bento-jdm-card h3 {
-    font-size: 16px !important;
-  }
-
-  .bento-jdm-card p {
-    font-size: 12px !important;
-  }
-
-  /* 3.1.5 Music Player — desktop responsiveness */
-  .bento-music-card {
-    padding: 24px;
-    border-radius: 24px;
-  }
-
-  .compact-music-card {
-    padding: 20px 24px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .dash-hero-card {
-    height: 220px;
-    padding: 32px 44px;
-  }
-
-  .dash-hero-title {
-    font-size: 32px;
-  }
-
-  .bento-icons-row {
-    gap: 20px;
-  }
-
-  .calendar-day {
-    height: 86px;
+    box-sizing: border-box !important;
   }
 }
 

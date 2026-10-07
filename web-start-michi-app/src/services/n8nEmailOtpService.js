@@ -1,16 +1,15 @@
 /**
- * n8nEmailOtpService.js — n8n Webhook Email OTP Integration Service
+ * n8nEmailOtpService.js — Secure n8n Webhook Email OTP Integration Service via Proxy
  * 
- * Target Webhook Specification:
- * - URL: http://138.197.28.114:5678/webhook/351b1de7-f29c-422c-ad21-ac6e506fa6e3
- * - Method: POST
- * - Headers: Content-Type: application/json
- * - Body: { "email": "user@example.com", "code": "123456" }
+ * Production Security Rules:
+ * 1. Requests are sent over HTTPS to https://api.michi.jp.net/api/auth/send-otp to prevent CORS/Mixed Content.
+ * 2. OTP dispatch via Proxy endpoint.
  */
 
-import { generateOTP, verifyOTP, resetAttempts } from './authSecurityService';
+import { API_ENDPOINTS } from '../config/api';
+import { resetAttempts, recordFailedAttempt, checkLockout } from './authSecurityService';
 
-const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_OTP_WEBHOOK_URL || 'http://138.197.28.114:5678/webhook/351b1de7-f29c-422c-ad21-ac6e506fa6e3';
+export const N8N_WEBHOOK_URL = API_ENDPOINTS.SEND_OTP;
 
 /**
  * Validates email format using regex
@@ -24,102 +23,174 @@ export function isValidEmail(email) {
 }
 
 /**
- * Generates a 6-digit OTP and sends it to the specified email via n8n Webhook
- * @param {string} email - Recipient's email address
- * @returns {Promise<{ success: boolean, messageKey: string, code?: string, cooldownSeconds?: number }>}
+ * Sends Email OTP via secure HTTPS Proxy (https://api.michi.jp.net/api/auth/send-otp)
+ * 
+ * @param {string} email 
+ * @param {string} [otpCode] 
+ * @returns {Promise<{ success: boolean, message?: string, error?: string, sessionId?: string, messageKey?: string }>}
  */
-export async function sendEmailOtpViaN8n(email) {
+export const sendEmailOtpViaN8n = async (email, otpCode) => {
+  if (!email || typeof email !== 'string') {
+    return { success: false, error: 'Email manzili kiritilishi shart', messageKey: 'validEmailRequired' };
+  }
+
   const cleanEmail = email.trim().toLowerCase();
 
-  if (!isValidEmail(cleanEmail)) {
+  const lockout = checkLockout(cleanEmail);
+  if (lockout.isLocked) {
     return {
       success: false,
-      messageKey: 'validEmailRequired'
+      error: `Urinishlar soni oshib ketdi. ${lockout.remainingMins || 15} daqiqadan so'ng qayta urinib ko'ring.`,
+      messageKey: 'tooManyAttemptsLocked'
     };
   }
 
-  // Generate 6-digit OTP code stored securely in authSecurityService
-  const otpData = generateOTP(cleanEmail);
-  const code = otpData.code;
-
-  console.log(`[n8n Email OTP] Sending OTP ${code} to ${cleanEmail} via Webhook ${N8N_WEBHOOK_URL}...`);
-
+  const finalCode = otpCode || Math.floor(100000 + Math.random() * 900000).toString();
+  
   try {
-    const response = await fetch(N8N_WEBHOOK_URL, {
+    const response = await fetch(API_ENDPOINTS.SEND_OTP, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json, text/plain, */*'
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
         email: cleanEmail,
-        code: code
-      }),
-      signal: AbortSignal.timeout(12000) // 12 seconds timeout
+        code: finalCode
+      })
     });
 
-    if (response.ok || response.status === 200 || response.status === 201) {
-      console.log(`[n8n Email OTP] ✅ Webhook successfully dispatched to ${cleanEmail}`);
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.error || data.message || 'Tasdiqlash kodini yuborishda xatolik yuz berdi');
+    }
+
+    return { 
+      success: true, 
+      message: data.message || 'Tasdiqlash kodi pochtangizga yuborildi',
+      sessionId: `sess_${Date.now()}`,
+      messageKey: 'otpSentSuccess'
+    };
+  } catch (error) {
+    console.error('n8n OTP Proxy Service Error:', error);
+    return { 
+      success: false, 
+      error: error.message,
+      messageKey: 'otpSendFailed'
+    };
+  }
+};
+
+/**
+ * Verifies user-entered 6-digit OTP code against Proxy endpoint (POST /api/auth/verify-otp).
+ * 
+ * @param {string} email 
+ * @param {string} inputCode 
+ * @param {string} [sessionId]
+ * @returns {Promise<{ success: boolean, messageKey: string, token?: string, error?: string }>}
+ */
+export async function verifyEmailOtpCodeViaN8n(email, inputCode, sessionId = null) {
+  const cleanEmail = email ? email.trim().toLowerCase() : '';
+  const cleanCode = inputCode ? inputCode.trim() : '';
+
+  if (!cleanCode || cleanCode.length !== 6) {
+    return {
+      success: false,
+      error: '6-xonali kodni to\'liq kiriting',
+      messageKey: 'enter6DigitCode'
+    };
+  }
+
+  const lockout = checkLockout(cleanEmail);
+  if (lockout.isLocked) {
+    return {
+      success: false,
+      error: `Juda ko'p noto'g'ri urinish qilindi. ${lockout.remainingMins || 15} daqiqadan so'ng qayta urinib ko'ring.`,
+      messageKey: 'tooManyAttemptsLocked'
+    };
+  }
+
+  try {
+    const response = await fetch(API_ENDPOINTS.VERIFY_OTP, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        email: cleanEmail,
+        code: cleanCode,
+        session_id: sessionId
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (response.ok && (data.success === true || data.verified === true)) {
+      resetAttempts(cleanEmail);
       return {
         success: true,
-        messageKey: 'otpSentSuccess',
-        code: code,
-        cooldownSeconds: 60
-      };
-    } else {
-      console.warn(`[n8n Email OTP] Webhook returned HTTP ${response.status}`);
-      return {
-        success: true,
-        messageKey: 'otpSentSuccess',
-        code: code,
-        cooldownSeconds: 60
+        messageKey: 'emailVerifiedSuccess',
+        token: data.token || data.accessToken || null
       };
     }
-  } catch (error) {
-    console.warn(`[n8n Email OTP] Webhook dispatch notice:`, error?.message || error);
-    
-    // Fallback: If network/CORS blocks HTTP request from HTTPS browser, 
-    // code is still generated and stored locally for seamless verification
+
+    recordFailedAttempt(cleanEmail);
     return {
-      success: true,
-      messageKey: 'otpSentSuccess',
-      code: code,
-      cooldownSeconds: 60,
-      isFallback: true
+      success: false,
+      error: data.error || data.message || "Kiritilgan 6-xonali OTP kod noto'g'ri yoki muddati o'tgan!",
+      messageKey: 'invalidOtpCode'
+    };
+  } catch (e) {
+    console.error(`[n8n Email OTP Proxy] Verification Error:`, e?.message || e);
+    recordFailedAttempt(cleanEmail);
+    return {
+      success: false,
+      error: e.message || "Server bilan bog'lanishda xatolik. Qaytadan urinib ko'ring.",
+      messageKey: 'otpVerificationFailed'
     };
   }
 }
 
 /**
- * Verifies the user-entered 6-digit OTP code
- * @param {string} email 
- * @param {string} inputCode 
- * @returns {{ success: boolean, messageKey: string, remainingAttempts?: number }}
+ * Backwards compatibility sync wrapper
  */
-export function verifyEmailOtpCode(email, inputCode) {
-  const cleanEmail = email.trim().toLowerCase();
-  const cleanCode = inputCode.trim();
+export async function verifyEmailOtpCode(email, inputCode, sessionId = null) {
+  return verifyEmailOtpCodeViaN8n(email, inputCode, sessionId);
+}
 
-  if (!cleanCode || cleanCode.length !== 6) {
-    return {
-      success: false,
-      messageKey: 'enter6DigitCode'
-    };
+/**
+ * Sends company invitation webhook with action: 'invite_company'
+ * Payload: { action: 'invite_company', email, companyName, inviteLink }
+ */
+export async function sendCompanyInviteViaN8n({ email, companyName, inviteLink }) {
+  if (!email || typeof email !== 'string') {
+    return { success: false, error: 'Email manzili kiritilishi shart' };
   }
-
-  const result = verifyOTP(cleanEmail, cleanCode);
-
-  if (result.isValid) {
-    resetAttempts(cleanEmail);
-    return {
-      success: true,
-      messageKey: 'emailVerifiedSuccess'
-    };
-  } else {
-    return {
-      success: false,
-      messageKey: result.messageKey || 'invalidCode',
-      remainingAttempts: result.remainingAttempts ?? 2
-    };
+  const cleanEmail = email.trim().toLowerCase();
+  try {
+    const notifyUrl = API_ENDPOINTS.NOTIFY_COMPANY || API_ENDPOINTS.SEND_OTP.replace('send-otp', 'notify-company');
+    const response = await fetch(notifyUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'invite_company',
+        email: cleanEmail,
+        companyName: companyName || 'Hamkor Kompaniya',
+        inviteLink: inviteLink || 'https://web.michi.jp.net/?role=company'
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || data.message || 'Taklifnoma yuborishda xatolik yuz berdi');
+    }
+    return { success: true, message: data.message || 'Kompaniyaga taklifnoma yuborildi' };
+  } catch (error) {
+    console.error('[n8nCompanyInvite] Error:', error);
+    return { success: false, error: error.message };
   }
 }

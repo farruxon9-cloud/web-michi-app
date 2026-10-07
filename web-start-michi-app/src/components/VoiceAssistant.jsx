@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mic, MicOff, WifiOff, Lock, X, Sparkles, Key, AlertTriangle, RefreshCw, Trash2, User, Bot, Car, Compass, SunMedium, Send, Power, Volume2 } from 'lucide-react';
+import { SendHorizontal, X, Globe, User, Sparkles, Bot } from 'lucide-react';
 import './VoiceAssistant.css';
 import { matchLexiconCommand } from '../utils/voiceLexicon';
 import { actionRegistry } from '../services/actionRegistry';
@@ -8,2753 +8,674 @@ import { localSTT } from '../services/localSTT';
 import { learningEngine } from '../services/learningEngine';
 import { screenStructureIndex } from '../services/screenStructureIndex';
 import { japaneseLanguageEngine } from '../services/japaneseLanguageEngine';
-import { autonomousWebSearchEngine } from '../services/autonomousWebSearchEngine';
 import { multiAiMeshEngine } from '../services/multiAiMeshEngine';
 import { michiCacheEngine } from '../services/michiCacheEngine';
 import { michiLocalStorageEngine } from '../services/michiLocalStorageEngine';
-import { askMichiCore } from '../services/huggingFaceService';
+import { michiApiService } from '../services/michiApiService';
 import MichiDrawerTrigger from './michi-ai/MichiDrawerTrigger';
 import MichiSideDrawer from './michi-ai/MichiSideDrawer';
 
-function calculateReadingDuration(text, lang = 'uz') {
-  if (!text) return 12000;
-  const isJa = (lang || 'uz').toLowerCase().startsWith('ja');
-  const msPerChar = isJa ? 85 : 65;
-  const calculated = Math.round(text.length * msPerChar + 6000);
-  return Math.min(30000, Math.max(12000, calculated));
+function calculateReadingDuration(questionText = '', answerText = '', lang = 'ja') {
+  const qLen = (questionText || '').length;
+  const aLen = (answerText || '').length;
+  const totalLength = qLen + aLen;
+  if (totalLength === 0) return 8000;
+
+  const isJa = (lang || 'ja').toLowerCase().startsWith('ja');
+  // Sekinroq o'qiydigan foydalanuvchilar uchun har bir belgiga ~120ms (ja) yoki ~100ms (uz/en) + 5000ms baza vaqti
+  const msPerChar = isJa ? 120 : 100;
+  const calculated = Math.round(totalLength * msPerChar + 5000);
+  // Minimalka 8000ms (8 soniya), maksimalka 40000ms (40 soniya)
+  return Math.min(40000, Math.max(8000, calculated));
+}
+
+const STT_LANG_MAP = {
+  ja: 'ja-JP',
+  uz: 'uz-UZ',
+  en: 'en-US',
+  ru: 'ru-RU',
+  zh: 'zh-CN',
+  vi: 'vi-VN',
+  ne: 'ne-NP'
+};
+
+const SUPPORTED_SPEECH_LANGS = [
+  { code: 'ja', label: '日本語' },
+  { code: 'uz', label: "O'zbek" },
+  { code: 'en', label: 'English' },
+  { code: 'ru', label: 'Русский' },
+  { code: 'zh', label: '中文' },
+  { code: 'vi', label: 'Tiếng Việt' },
+  { code: 'ne', label: 'नेपाली' }
+];
+
+const getSttLangCode = (langKey) => {
+  const code = (langKey || 'ja').substring(0, 2).toLowerCase();
+  return STT_LANG_MAP[code] || 'ja-JP';
+};
+
+const getNextSpeechLang = (current) => {
+  const code = (current || 'ja').substring(0, 2).toLowerCase();
+  const idx = SUPPORTED_SPEECH_LANGS.findIndex(l => l.code === code);
+  const nextIdx = (idx < 0 ? 0 : idx + 1) % SUPPORTED_SPEECH_LANGS.length;
+  return SUPPORTED_SPEECH_LANGS[nextIdx].code;
+};
+
+// Typewriter: reveal the answer quickly (whole answer in ~1.2s max) so long replies never feel slow.
+const TYPE_TICK_MS = 16;
+const TYPE_MAX_MS = 1200;
+// Jo'natilmagan ovozli matn shuncha vaqt yangi ovoz/jo'natishsiz tursa, pufakcha o'zi yopiladi (juda sekin)
+const PENDING_AUTO_CLOSE_MS = 45000;
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+// Taymer chizig'i: kechikish faqat paydo bo'lganda bir marta hisoblanadi.
+// Shu bilan pufakcha yashirinib qayta chiqsa ham, chiziq boshidan emas, haqiqiy o'tgan vaqtdan davom etadi.
+function TimerBar({ durationMs, startedAt }) {
+  const [delayMs] = useState(() => Math.min(durationMs, Math.max(0, Date.now() - (startedAt || Date.now()))));
+  return (
+    <div
+      className="speech-bubble-timer-bar vb-timer-bar"
+      style={{ animationDuration: `${durationMs}ms`, animationDelay: `-${delayMs}ms` }}
+    />
+  );
 }
 
 export default function VoiceAssistant({ 
-  isActive, onClose, onStartVoice, isVoiceStandby, setIsVoiceStandby, 
-  setActiveTab, musicPlayer, onStatusChange, activeTab,
-  jobs = [], schools = [], profileData = {}, applications = [],
-  selectedJob, selectedSchool,
-  setSelectedJob, setSelectedSchool, profileActivePage = 'main', setProfileActivePage,
-  setJobSearchQuery, setJobActiveSegment, setAcademySearchQuery,
-  handleApplyJob, handleApplySchool, handleShoukai, userRole,
-  selectedLicenses, setSelectedLicenses,
-  selectedLangLevel, setSelectedLangLevel,
-  selectedBenefits, setSelectedBenefits,
-  minSalary, setMinSalary,
-  selectedPrefecture, setSelectedPrefecture,
-  setApplications, toggleDarkMode
+  isActive, 
+  onClose, 
+  onStartVoice, 
+  isVoiceStandby, 
+  setIsVoiceStandby, 
+  setActiveTab, 
+  musicPlayer, 
+  onStatusChange, 
+  activeTab = 'home',
+  jobs = [], 
+  schools = [], 
+  profileData = {}, 
+  applications = [],
+  selectedJob, 
+  selectedSchool,
+  setSelectedJob, 
+  setSelectedSchool, 
+  profileActivePage = 'main', 
+  setProfileActivePage,
+  setJobSearchQuery, 
+  setJobActiveSegment, 
+  setAcademySearchQuery,
+  handleApplyJob, 
+  handleApplySchool, 
+  handleShoukai, 
+  userRole,
+  selectedLicenses, 
+  setSelectedLicenses,
+  minSalary, 
+  setMinSalary,
+  selectedPrefecture, 
+  setSelectedPrefecture,
+  setApplications, 
+  toggleDarkMode
 }) {
   const { t, i18n } = useTranslation();
-  const defaultKey = localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
-  const [apiKey, setApiKey] = useState(defaultKey);
-  const [showKeyInput, setShowKeyInput] = useState(false);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [micPermission, setMicPermission] = useState('prompt'); // 'prompt' | 'granted' | 'denied'
   const [status, setStatus] = useState('idle'); // 'idle' | 'listening' | 'thinking' | 'speaking' | 'error'
-  const [errorMessage, setErrorMessage] = useState('');
   const [transcript, setTranscript] = useState('');
   const [aiResponseText, setAiResponseText] = useState('');
-  const [inputKeyTemp, setInputKeyTemp] = useState('');
-  const [showPill, setShowPill] = useState(false);
-  const [timerDuration, setTimerDuration] = useState(5000);
-  const [hasStarted, setHasStarted] = useState(false);
-  const [conversationHistory, setConversationHistory] = useState([]); // Array of { role, parts }
-  const [textInput, setTextInput] = useState('');
-  const [isFillingResume, setIsFillingResume] = useState(false);
-  const [resumeStep, setResumeStep] = useState('idle');
-  const [tempResumeData, setTempResumeData] = useState({});
-  const [speechLang, setSpeechLang] = useState(localStorage.getItem('michi_speech_lang') || i18n.language || 'uz');
+  const [displayedAiText, setDisplayedAiText] = useState('');
+  const [speechLang, setSpeechLang] = useState(() => localStorage.getItem('michi_speech_lang') || i18n.language || 'ja');
   const [chatHistoryList, setChatHistoryList] = useState([]);
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const [drawerInput, setDrawerInput] = useState('');
+  const [bubbleTimerMs, setBubbleTimerMs] = useState(8000);
+  const [readingStartAt, setReadingStartAt] = useState(0); // javob taymeri boshlangan aniq vaqt
+  const [notice, setNotice] = useState(''); // mic/STT problem shown inside the bubble
+  // Har safar yangi ovoz eshitilganda oshadi — sekin avto-yopilish taymerini qaytadan boshlash uchun
+  const [pendingTick, setPendingTick] = useState(0);
 
+  const chatEndRef = useRef(null);
+  const speechContentRef = useRef(null);
+  const statusRef = useRef(status);
+  useEffect(() => { statusRef.current = status; }, [status]);
+  const readingTimeoutRef = useRef(null);
+  const errorTimeoutRef = useRef(null);
+  const noticeTimeoutRef = useRef(null);
+  const pendingTimeoutRef = useRef(null);
 
-  const handleSendDrawerText = (e) => {
-    if (e) e.preventDefault();
-    if (!drawerInput.trim()) return;
-    const text = drawerInput.trim();
-    setDrawerInput('');
-    processTextWithGemini(text);
+  // Clear every pending timer when the assistant unmounts (e.g. voiceAI flag switched off).
+  useEffect(() => () => {
+    clearTimeout(readingTimeoutRef.current);
+    clearTimeout(errorTimeoutRef.current);
+    clearTimeout(noticeTimeoutRef.current);
+    clearTimeout(pendingTimeoutRef.current);
+  }, []);
+
+  // Fast typewriter for the AI answer.
+  useEffect(() => {
+    const full = aiResponseText || '';
+    const chars = Array.from(full);
+    const step = prefersReducedMotion() ? chars.length : Math.max(1, Math.ceil(chars.length / (TYPE_MAX_MS / TYPE_TICK_MS)));
+    let shown = 0;
+    const id = setInterval(() => {
+      shown = Math.min(chars.length, shown + step);
+      setDisplayedAiText(chars.slice(0, shown).join(''));
+      if (shown >= chars.length) clearInterval(id);
+    }, full ? TYPE_TICK_MS : 0);
+    return () => clearInterval(id);
+  }, [aiResponseText]);
+
+  // Mikrofonga ruxsat berilmagan / qo'llab-quvvatlanmasa qayta urinmaymiz (cheksiz sikl bo'lmasin)
+  const micBlockedRef = useRef(false);
+  const isActiveRef = useRef(isActive);
+  useEffect(() => { isActiveRef.current = isActive; }, [isActive]);
+
+  // Turn STT failures into a clear message instead of silently going idle.
+  const handleSttError = useCallback((err) => {
+    const code = err?.error || err?.message || '';
+    let msg = '';
+    if (code === 'not-allowed' || code === 'service-not-allowed') { msg = t('aiMicDenied'); micBlockedRef.current = true; }
+    else if (code === 'STT_NOT_SUPPORTED') { msg = t('aiSttUnsupported'); micBlockedRef.current = true; }
+    else if (code === 'audio-capture' || code === 'network') msg = t('aiMicError');
+    if (statusRef.current === 'listening') setStatus('idle');
+    if (!msg) return;
+    setNotice(msg);
+    clearTimeout(noticeTimeoutRef.current);
+    noticeTimeoutRef.current = setTimeout(() => setNotice(''), 6000);
+  }, [t]);
+
+  // App Context obyekti - actionRegistry harakatlari uchun
+  const actionContext = {
+    setActiveTab,
+    setSelectedJob,
+    setSelectedSchool,
+    setProfileActivePage,
+    setJobSearchQuery,
+    setSelectedPrefecture,
+    setMinSalary,
+    setSelectedLicenses,
+    toggleDarkMode,
+    musicPlayer,
+    selectedJob,
+    selectedSchool
   };
 
-  const handleQuickChipClick = (queryText) => {
-    processTextWithGemini(queryText);
-  };
-
-  // Typewriter streaming and dynamic fade-out state
-  const [displayedAiText, setDisplayedAiText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [isFadeOut, setIsFadeOut] = useState(false);
-  const typewriterIntervalRef = useRef(null);
-  const dismissTimerRef = useRef(null);
-
-
-  const reloadChatHistory = async () => {
+  // 1. Chat tarixini yuklash (IndexedDB dan to'g'ri o'qish)
+  const reloadChatHistory = useCallback(async () => {
     try {
       const saved = await michiLocalStorageEngine.getAllConversations();
       const list = Array.isArray(saved) ? [...saved].reverse() : [];
       setChatHistoryList(list);
-    } catch(e) {
-      console.warn("Failed to load chat history:", e);
+    } catch (e) {
+      console.warn("[VoiceAssistant] Tarixni yuklashda xatolik:", e);
     }
-  };
-
-  useEffect(() => {
-    reloadChatHistory();
   }, []);
 
   useEffect(() => {
-    if (isSideDrawerOpen) {
-      reloadChatHistory();
-    }
-  }, [isSideDrawerOpen]);
+    reloadChatHistory();
+  }, [reloadChatHistory]);
 
+  useEffect(() => {
+    if (isSideDrawerOpen) reloadChatHistory();
+  }, [isSideDrawerOpen, reloadChatHistory]);
+
+  // Bento karta yoniq va mikrofon ishlayotgan bo'lsa, "idle" o'rniga "listening" ko'rsatiladi
+  const effectiveStatus = status === 'idle' && isActive && !micBlockedRef.current ? 'listening' : status;
+
+  // Status o'zgarishini ota komponentga xabar qilish
+  useEffect(() => {
+    onStatusChange?.(effectiveStatus);
+  }, [effectiveStatus, onStatusChange]);
+
+  // 1. Voice AI Bento kartasi yoniq ekan, mikrofon CHEKSIZ tinglaydi (faqat matnga yozadi, avto-jo'natmaydi).
+  // Brauzer sessiyani tugatsa (gap tugashi, jo'natish, avto-yopilish) — avtomatik qayta yoqiladi.
+  useEffect(() => {
+    if (!isActive) {
+      localSTT.stopListening();
+      if (statusRef.current === 'listening') setStatus('idle');
+      return undefined;
+    }
+
+    let cancelled = false;
+    let restartTimer = null;
+    micBlockedRef.current = false;
+
+    const startMic = () => {
+      if (cancelled || !isActiveRef.current || micBlockedRef.current) return;
+      localSTT.startListening({
+        lang: getSttLangCode(speechLang),
+        continuous: true,
+        onResult: (res) => {
+          const heard = res.cleanText || res.rawText;
+          if (!heard) return;
+          if (statusRef.current !== 'thinking') {
+            // Yangi savol: eski javobni yopib, yangi matnni jo'natishga tayyorlaymiz
+            clearTimeout(readingTimeoutRef.current);
+            setTranscript('');
+            setAiResponseText('');
+            setDisplayedAiText('');
+          }
+          setDrawerInput(heard);
+          setPendingTick(n => n + 1); // sekin taymer qaytadan boshlanadi
+          // Jo'natish tugmasi bosilgandagina API so'rovi yuboriladi
+        },
+        onError: handleSttError,
+        onEnd: () => {
+          if (cancelled || !isActiveRef.current || micBlockedRef.current) {
+            if (statusRef.current === 'listening') setStatus('idle');
+            return;
+          }
+          clearTimeout(restartTimer);
+          restartTimer = setTimeout(startMic, 350);
+        }
+      });
+    };
+
+    setStatus('listening');
+    startMic();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(restartTimer);
+      localSTT.stopListening();
+    };
+  }, [isActive, speechLang, handleSttError]);
+
+  // 2. Ovozli o'qib berish o'chirildi - Faqat matnli javob beriladi
+  // (TTS o'chirilgan: drawerdagi "tinglash" tugmasi ham yashirildi, shuning uchun speakText olib tashlandi)
+
+  // 3. Chat tarixini xavfsiz tozalash
   const clearChatHistory = async () => {
     await michiLocalStorageEngine.clearAllDeviceData();
     michiCacheEngine.clear();
     setChatHistoryList([]);
-    setConversationHistory([]);
   };
 
-  const speechLangRef = useRef(speechLang);
-  speechLangRef.current = speechLang;
-  const isListeningRef = useRef(false);
-
-  const cycleSpeechLanguage = (e) => {
-    if (e) e.stopPropagation();
-    const languages = ['uz', 'ja', 'en'];
-    const cleanLang = speechLang.substring(0, 2).toLowerCase();
-    const nextIdx = (languages.indexOf(cleanLang) + 1) % languages.length;
-    const nextLang = languages[nextIdx];
-    setSpeechLang(nextLang);
-    localStorage.setItem('michi_speech_lang', nextLang);
-    
-    // Restart recognition if listening so it applies the new language instantly
-    if (recognitionRef.current && statusRef.current === 'listening') {
-      try {
-        recognitionRef.current.abort();
-      } catch(err){}
-      setTimeout(() => {
-        startLocalSpeechRecognition();
-      }, 150);
-    }
-  };
-
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
-  const audioContextRef = useRef(null);
-  const recognitionRef = useRef(null);
-  const synthesisUtteranceRef = useRef(null);
-  const pillTimeoutRef = useRef(null);
-  const relistenTimeoutRef = useRef(null);
-  const chatEndRef = useRef(null);
-  const activeAudioSourceRef = useRef(null);
-  const canvasRef = useRef(null);
-  const analyserRef = useRef(null);
-  const localStreamRef = useRef(null);
-  const speechContentRef = useRef(null);
-
-  // Unlock iOS WebKit AudioContext and SpeechSynthesis on initial user gesture
-  const unlockMobileAudio = () => {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) {
-        if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
-          audioContextRef.current.resume().catch(() => {});
-        } else if (!audioContextRef.current) {
-          const dummyCtx = new AudioCtx();
-          dummyCtx.resume().then(() => dummyCtx.close()).catch(() => {});
-        }
-      }
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        const dummyUtterance = new SpeechSynthesisUtterance('');
-        dummyUtterance.volume = 0;
-        window.speechSynthesis.speak(dummyUtterance);
-      }
-    } catch (e) {
-      console.warn('[MobileAudioUnlock] iOS audio unlock silent warning:', e);
-    }
-  };
-
-  // Auto-scroll chat window to bottom when new messages/responses arrive (scoped to container to prevent body jump)
-  useEffect(() => {
-    if (speechContentRef.current) {
-      speechContentRef.current.scrollTop = speechContentRef.current.scrollHeight;
-    }
-    if (chatEndRef.current && typeof chatEndRef.current.scrollIntoView === 'function') {
-      try {
-        chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-      } catch (e) {
-        chatEndRef.current.scrollIntoView(false);
-      }
-    }
-  }, [displayedAiText, status, aiResponseText, transcript, conversationHistory, chatHistoryList]);
-
-  const [elevenKeyTemp, setElevenKeyTemp] = useState(localStorage.getItem('michi_elevenlabs_api_key') || '');
-
-  const isActiveRef = useRef(isActive);
-  isActiveRef.current = isActive;
-
-  const isChatActiveRef = useRef(false);
-  isChatActiveRef.current = isActive || isSideDrawerOpen;
-
-  const isVoiceStandbyRef = useRef(isVoiceStandby);
-  isVoiceStandbyRef.current = isVoiceStandby;
-
-  const activeTabRef = useRef(activeTab);
-  activeTabRef.current = activeTab;
-
-  const musicPlayerRef = useRef(musicPlayer);
-  musicPlayerRef.current = musicPlayer;
-
-  const setSelectedJobRef = useRef(setSelectedJob);
-  setSelectedJobRef.current = setSelectedJob;
-
-  const setSelectedSchoolRef = useRef(setSelectedSchool);
-  setSelectedSchoolRef.current = setSelectedSchool;
-
-  const setActiveTabRef = useRef(setActiveTab);
-  setActiveTabRef.current = setActiveTab;
-
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
-
-  const profileActivePageRef = useRef(profileActivePage);
-  profileActivePageRef.current = profileActivePage;
-
-  const setProfileActivePageRef = useRef(setProfileActivePage);
-  setProfileActivePageRef.current = setProfileActivePage;
-
-  const setApplicationsRef = useRef(setApplications);
-  setApplicationsRef.current = setApplications;
-
-  const toggleDarkModeRef = useRef(toggleDarkMode);
-  toggleDarkModeRef.current = toggleDarkMode;
-
-  const isFillingResumeRef = useRef(isFillingResume);
-  isFillingResumeRef.current = isFillingResume;
-
-  const resumeStepRef = useRef(resumeStep);
-  resumeStepRef.current = resumeStep;
-
-  const tempResumeDataRef = useRef(tempResumeData);
-  tempResumeDataRef.current = tempResumeData;
-
-  const hasGreetedRef = useRef(false);
-  const originalVolumeRef = useRef(null);
-
-  const statusRef = useRef(status);
-  statusRef.current = status;
-
-  const aiResponseTextRef = useRef(aiResponseText);
-  aiResponseTextRef.current = aiResponseText;
-
-  const displayedAiTextRef = useRef(displayedAiText);
-  displayedAiTextRef.current = displayedAiText;
-
-  const apiKeyRef = useRef(apiKey);
-  apiKeyRef.current = apiKey;
-
-  // Monitor network status
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  // Manage audio ducking based on voice assistant active status
-  useEffect(() => {
-    const activeMusicPlayer = musicPlayerRef.current;
-    if (!activeMusicPlayer || typeof activeMusicPlayer.setVolume !== 'function') return;
-
-    if (isActive && (status === 'listening' || status === 'speaking' || status === 'thinking')) {
-      if (originalVolumeRef.current === null) {
-        originalVolumeRef.current = activeMusicPlayer.volume !== undefined ? activeMusicPlayer.volume : 0.5;
-      }
-      activeMusicPlayer.setVolume(0.01); // Duck volume to 1% to eliminate background noise completely
-    } else {
-      if (originalVolumeRef.current !== null) {
-        activeMusicPlayer.setVolume(originalVolumeRef.current);
-        originalVolumeRef.current = null;
-      }
-    }
-  }, [isActive, status]);
-
-  // Warm up synthesis voices
-  useEffect(() => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.getVoices();
-    }
-  }, []);
-
-  const pendingResumeStartRef = useRef(false);
-
-  // Listen for auto-start resume flow from ResumeBuilder toggle
-  useEffect(() => {
-    const handleResumeStart = () => {
-      // Agar allaqachon rezyume to'ldirilayotgan bo'lsa, qayta boshlamaymiz
-      if (isFillingResumeRef.current) return;
-      
-      hasGreetedRef.current = true;
-      isFillingResumeRef.current = true;
-      pendingResumeStartRef.current = true;
-      setIsFillingResume(true);
-      setResumeStep('ask_name');
-    };
-    
-    window.addEventListener('michi-voice-resume-start', handleResumeStart);
-    return () => window.removeEventListener('michi-voice-resume-start', handleResumeStart);
-  }, []);
-
-  // Check initial permission status if supported
-  useEffect(() => {
-    if (navigator.permissions && navigator.permissions.query) {
-      navigator.permissions.query({ name: 'microphone' })
-        .then((permissionStatus) => {
-          setMicPermission(permissionStatus.state);
-          permissionStatus.onchange = () => {
-            setMicPermission(permissionStatus.state);
-          };
-        })
-        .catch(() => {});
-    }
-  }, []);
-
-  // Sync voice assistant status to parent
-  useEffect(() => {
-    if (onStatusChange) {
-      onStatusChange(status);
-    }
-  }, [status, onStatusChange]);
-
-  // Trigger speech recognition if overlay opens, has key, and has permission
-  useEffect(() => {
-    if (isActive) {
-      if (!isOnline) {
-        stopAllVoiceActivities();
-        setStatus('error');
-        setErrorMessage(t('noInternetWait', 'インターネット接続がありません。接続の再開を待っています...'));
-        setShowPill(true);
-        speakResponse('インターネット接続がありません。接続を待機しています。', 'ja');
-      } else if (!showKeyInput) {
-        if (pendingResumeStartRef.current) {
-          pendingResumeStartRef.current = false;
-          hasGreetedRef.current = true;
-          
-          const todayStr = new Date().toISOString().split('T')[0];
-          const lastResumeGreetDate = localStorage.getItem('michi_ai_last_resume_greet_date');
-          const alreadyGreetedResumeToday = lastResumeGreetDate === todayStr;
-          localStorage.setItem('michi_ai_last_resume_greet_date', todayStr);
-
-          const lang = speechLangRef.current || i18n.language || 'uz';
-          if (alreadyGreetedResumeToday) {
-            setStatus('idle');
-            startListeningSequence();
-          } else {
-            const greetings = {
-              uz: "Tez orada rezyumeni sizning o'rningizga yozib berish imkoniyatlarim rivojlantirilmoqda. Yangilanishlarni kuting!",
-              ja: "只今、履歴書を自動作成する機能を開発中でございます。今後のアップデートにご期待ください！",
-              en: "Resume auto-fill features are currently under active development. Stay tuned for upcoming updates!"
-            };
-            const greeting = greetings[lang.startsWith('uz') ? 'uz' : lang.startsWith('ja') ? 'ja' : 'en'] || greetings['uz'];
-            
-            setAiResponseText(greeting);
-            setTranscript('');
-            setShowPill(true);
-            setStatus('speaking');
-            
-            speakResponse(greeting, lang, () => {
-              setStatus('idle');
-              startListeningSequence();
-            });
-          }
-        } else if (!hasGreetedRef.current && !isFillingResumeRef.current) {
-          hasGreetedRef.current = true;
-          
-          const todayStr = new Date().toISOString().split('T')[0];
-          const lastGreetDate = localStorage.getItem('michi_ai_last_greet_date');
-          const alreadyGreetedToday = lastGreetDate === todayStr;
-          localStorage.setItem('michi_ai_last_greet_date', todayStr);
-
-          if (alreadyGreetedToday) {
-            // Already greeted today: skip repetitive salutations and listen directly
-            setStatus('idle');
-            startListeningSequence();
-          } else {
-            // First time today: greet politely once!
-            const hour = new Date().getHours();
-            let greeting = '';
-            const lang = speechLang || i18n.language || 'uz';
-            const isUz = lang.startsWith('uz');
-            const isJa = lang.startsWith('ja');
-            
-            if (isUz) {
-              if (hour >= 6 && hour < 12) greeting = "Xayrli tong! Men Michi — sizning shaxsiy yordamchingizman. Ilovamiz va AI yordamchimiz rivojlantirish hamda sinov bosqichida. Tez orada yangilanishlardan so'ng erkin muloqot qilish imkoniyati yaratiladi. Sizga qanday yordam bera olaman?";
-              else if (hour >= 12 && hour < 18) greeting = "Assalomu alaykum! Men Michi — sizning shaxsiy yordamchingizman. Ilovamiz va AI yordamchimiz rivojlantirish hamda sinov bosqichida. Tez orada yangilanishlardan so'ng erkin muloqot qilish imkoniyati yaratiladi. Sizga qanday yordam bera olaman?";
-              else if (hour >= 18 && hour < 22) greeting = "Xayrli kech! Men Michi — sizning shaxsiy yordamchingizman. Ilovamiz va AI yordamchimiz rivojlantirish hamda sinov bosqichida. Tez orada yangilanishlardan so'ng erkin muloqot qilish imkoniyati yaratiladi. Sizga qanday yordam bera olaman?";
-              else greeting = "Kechki soatlarda ham xizmatingizdaman! Men Michi — sizning shaxsiy yordamchingizman. AI yordamchimiz rivojlantirish bosqichida. Qanday yordam bera olaman?";
-            } else if (isJa) {
-              if (hour >= 6 && hour < 12) greeting = "おはようございます！ミチと申します。当アプリおよびAIアシスタントは現在開発・改善フェーズでございます。今後のアップデートにて自由な音声対話機能が追加される予定でございます。何かお手伝いできることはございますか？";
-              else if (hour >= 12 && hour < 18) greeting = "こんにちは！ミチと申します。当アプリおよびAIアシスタントは現在開発・改善フェーズでございます。今後のアップデートにて自由な音声対話機能が追加される予定でございます。何かお手伝いできることはございますか？";
-              else if (hour >= 18 && hour < 22) greeting = "こんばんは！ミチと申します。当アプリおよびAIアシスタントは現在開発・改善フェーズでございます。今後のアップデートにて自由な音声対話機能が追加される予定でございます。何かお手伝いできることはございますか？";
-              else greeting = "夜遅くまでお疲れ様です！ミチと申します。AIアシスタントは開発フェーズでございます。何かお手伝いできますか？";
-            } else { // en
-              if (hour >= 6 && hour < 12) greeting = "Good morning! I'm Michi, your personal assistant. The app and AI assistant are currently under active development. Full open conversation will be available soon after upcoming updates. How can I help you today?";
-              else if (hour >= 12 && hour < 18) greeting = "Hello! I'm Michi, your personal assistant. The app and AI assistant are currently under active development. Full open conversation will be available soon after upcoming updates. How can I help you today?";
-              else if (hour >= 18 && hour < 22) greeting = "Good evening! I'm Michi, your personal assistant. The app and AI assistant are currently under active development. Full open conversation will be available soon after upcoming updates. How can I help you today?";
-              else greeting = "Working late? I'm Michi, your personal assistant. The AI assistant is under active development. How can I help you today?";
-            }
-            
-            setAiResponseText(greeting);
-            setShowPill(true);
-            setStatus('speaking');
-            speakResponse(greeting, lang, () => {
-              setStatus('idle');
-              startListeningSequence();
-            });
-          }
-        } else {
-          // If already greeted or currently speaking, do not cancel speech synthesis!
-          if (statusRef.current !== 'speaking' && statusRef.current !== 'listening' && statusRef.current !== 'thinking') {
-            startListeningSequence();
-          }
-        }
-      }
-    } else {
-      stopAllVoiceActivities();
-      hasGreetedRef.current = false;
-      isFillingResumeRef.current = false;
-      setIsFillingResume(false);
-      setResumeStep('idle');
-    }
-
-    return () => {
-      stopAllVoiceActivities();
-    };
-  }, [isActive, apiKey, isOnline, showKeyInput]);
-
-  // Auto-close overlay or restart listening when conversation finishes
-  useEffect(() => {
-    if (isActive && hasStarted && !showKeyInput && isOnline && micPermission !== 'denied') {
-      if (status === 'idle' && !showPill) {
-        if (isVoiceStandby) {
-          scheduleRelisten();
-        } else {
-          onClose();
-        }
-      }
-    }
-  }, [status, showPill, isActive, hasStarted, showKeyInput, isOnline, micPermission, onClose, isVoiceStandby]);
-
-  const stopAllVoiceActivities = () => {
-    if (localStreamRef.current) {
-      try {
-        localStreamRef.current.getTracks().forEach(track => track.stop());
-      } catch(e){}
-      localStreamRef.current = null;
-    }
-    analyserRef.current = null;
-
-    // Reset voice resume questionnaire flow on stop
-    setIsFillingResume(false);
-    setResumeStep('idle');
-
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      try {
-        mediaRecorderRef.current.stop();
-      } catch (e) {}
-    }
-    if (activeAudioSourceRef.current) {
-      try {
-        activeAudioSourceRef.current.stop();
-      } catch (e) {}
-    }
-    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-      try {
-        audioContextRef.current.close();
-      } catch (e) {}
-    }
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch (e) {}
-    }
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-    if (pillTimeoutRef.current) {
-      clearTimeout(pillTimeoutRef.current);
-    }
-    if (relistenTimeoutRef.current) {
-      clearTimeout(relistenTimeoutRef.current);
-    }
-    setShowPill(false);
-    setHasStarted(false);
-    setStatus('idle');
-    setErrorMessage('');
-    setTranscript('');
-    setAiResponseText('');
-  };
-
-  const closePill = () => {
-    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
-    if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-    if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
-    setShowPill(false);
-    setIsFadeOut(false);
-    setDisplayedAiText('');
-    setAiResponseText('');
-    setErrorMessage('');
-    setStatus('idle');
-  };
-
-  const scheduleRelisten = () => {
-    if (relistenTimeoutRef.current) {
-      clearTimeout(relistenTimeoutRef.current);
-    }
-    relistenTimeoutRef.current = setTimeout(() => {
-      if (isActiveRef.current || isVoiceStandbyRef.current) {
-        startLocalSpeechRecognition();
-      }
-    }, 500);
-  };
-
-  const saveApiKey = (e) => {
-    e.preventDefault();
-    if (inputKeyTemp.trim()) {
-      const cleanKey = inputKeyTemp.trim();
-      localStorage.setItem('michi_gemini_api_key', cleanKey);
-      setApiKey(cleanKey);
-    }
-    const cleanElevenKey = elevenKeyTemp.trim();
-    if (cleanElevenKey) {
-      localStorage.setItem('michi_elevenlabs_api_key', cleanElevenKey);
-    } else {
-      localStorage.removeItem('michi_elevenlabs_api_key');
-    }
-    setShowKeyInput(false);
-  };
-
-  const clearApiKey = () => {
-    localStorage.removeItem('michi_gemini_api_key');
-    localStorage.removeItem('michi_elevenlabs_api_key');
-    setApiKey('');
-    setInputKeyTemp('');
-    setElevenKeyTemp('');
-    setShowKeyInput(true);
-    if (pillTimeoutRef.current) {
-      clearTimeout(pillTimeoutRef.current);
-    }
-    setShowPill(false);
-    setHasStarted(false);
-  };
-
-  // Helper to convert base64 to ArrayBuffer
-  const base64ToArrayBuffer = (base64) => {
-    const binaryString = window.atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-  };
-
-  // Dictionary mapping common static responses to pre-rendered local audio files
-  const LOCAL_AUDIO_CACHE = {
-    "musiqani qo'yaman.": "/audio/music_play_uz.mp3",
-    "musiqani to'xtataman.": "/audio/music_pause_uz.mp3",
-    "keyingi qo'shiqni qo'yaman.": "/audio/music_next_uz.mp3",
-    "musiqa qo'yilmoqda.": "/audio/music_play_uz.mp3",
-    "musiqa to'xtatildi.": "/audio/music_pause_uz.mp3",
-    "yapon tiliga o'zgartiraman.": "/audio/lang_ja_uz.mp3",
-    "mavzuni o'zgartiraman.": "/audio/theme_change_uz.mp3",
-    
-    // Japanese equivalents
-    "音楽を再生します。": "/audio/music_play_ja.mp3",
-    "音楽を一時停止します。": "/audio/music_pause_ja.mp3",
-    "次の曲を再生します。": "/audio/music_next_ja.mp3",
-    "日本語に変更します。": "/audio/lang_ja_ja.mp3",
-    "テーマを切り替えます。": "/audio/theme_change_ja.mp3"
-  };
-
-  const speakResponse = async (text, lang = 'ja', onEndCallback) => {
-    // SILENT VISUAL MODE: Purely display visual text cards, preserve status until reading duration finishes
-    if (onEndCallback) onEndCallback();
-  };
-
-  // Helper to decode and play audio buffer with Web Audio API
-  const playWebAudio = async (arrayBuffer, onEndCallback) => {
-    try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      audioContextRef.current = audioCtx;
-      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-      
-      const source = audioCtx.createBufferSource();
-      source.buffer = audioBuffer;
-      
-      const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 256;
-      analyserRef.current = analyser;
-      
-      const gainNode = audioCtx.createGain();
-      gainNode.gain.value = 1.6; // Boost volume level by 60% for clear audition
-      
-      source.connect(analyser);
-      analyser.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      
-      activeAudioSourceRef.current = source;
-
-      let resolved = false;
-      const cleanUpAudio = () => {
-        if (resolved) return;
-        resolved = true;
-        setStatus('idle');
-        if (onEndCallback) onEndCallback();
-      };
-
-      source.onended = () => {
-        cleanUpAudio();
-      };
-
-      source.start(0);
-    } catch (e) {
-      console.error("playWebAudio failed:", e);
-      if (onEndCallback) onEndCallback();
-      setStatus('idle');
-    }
-  };
-
-  // Get screen context for READ_SCREEN and AI reasoning
-  const getScreenContext = () => {
-    const tab = activeTabRef.current || 'home';
-    const subPage = profileActivePageRef?.current || 'main';
-    const lang = speechLangRef.current || 'uz';
-    return screenStructureIndex.getRichScreenContext(tab, subPage, lang);
-  };
-
-  // Local-First Speech-to-Text Recognition for instant local matching and online fallback
-  const startLocalSpeechRecognition = async () => {
-    if (isListeningRef.current) {
-      console.log("[SpeechSTT] Recognition already listening, skipping duplicate start.");
-      return;
-    }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setStatus('error');
-      setErrorMessage(t('offlineSpeechNotSupported', "Qurilmada ovoz tanish imkoniyati yo'q."));
-      setShowPill(true);
-      return;
-    }
-
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch (e) {}
-      recognitionRef.current = null;
-    }
-
-    // Preserve active transcript and speech bubble while AI is thinking, speaking, or displaying active answer card
-    if (statusRef.current !== 'thinking' && statusRef.current !== 'speaking' && !aiResponseTextRef.current) {
-      setTranscript('');
-      setAiResponseText('');
-      setShowPill(false);
-    }
-    setHasStarted(true);
-    isListeningRef.current = true;
-    isListeningRef.current = true;
-
-    const recognition = new SpeechRecognition();
-    recognitionRef.current = recognition;
-
-    const currentLang = speechLangRef.current || 'uz';
-    const langCodeMap = { 'uz': 'uz-UZ', 'ja': 'ja-JP', 'en': 'en-US' };
-    recognition.lang = langCodeMap[currentLang.substring(0, 2).toLowerCase()] || 'ja-JP';
-    recognition.continuous = true;
-    recognition.interimResults = true;
-
-    let gotResult = false;
-    let finalProcessedText = '';
-
-    recognition.onstart = () => {
-      isListeningRef.current = true;
-      if (statusRef.current !== 'thinking' && statusRef.current !== 'speaking') {
-        setStatus('listening');
-      }
-    };
-
-    recognition.onresult = async (event) => {
-      let interimTranscript = '';
-      let currentFinal = '';
-
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          currentFinal += event.results[i][0].transcript;
-        } else {
-          interimTranscript += event.results[i][0].transcript;
-        }
-      }
-
-      const activeSpeechText = currentFinal || interimTranscript;
-      if (activeSpeechText.trim()) {
-        const cleanedLive = localSTT.cleanTranscription(activeSpeechText, currentLang);
-        setTranscript(cleanedLive);
-        setDrawerInput(cleanedLive);
-        setShowPill(true);
-      }
-
-      if (currentFinal.trim() && currentFinal !== finalProcessedText) {
-        finalProcessedText = currentFinal;
-        gotResult = true;
-        isListeningRef.current = false;
-
-        const text = localSTT.cleanTranscription(currentFinal, currentLang);
-        console.log(`STT Final raw: "${currentFinal}" -> cleaned: "${text}"`);
-
-        // Standby background mode wake word filtering
-        if (!isActiveRef.current) {
-          const lowerText = text.toLowerCase();
-          const hasWakeWord = /(michi|miki|miti|hey michi|ミチ|みち)/i.test(lowerText);
-          if (!hasWakeWord) {
-            console.log(`Standby background listening ignored text without wake word: "${text}"`);
-            setStatus('idle');
-            if (isVoiceStandbyRef.current) {
-              scheduleRelisten();
-            }
-            return;
-          }
-        }
-
-        setStatus('thinking');
-
-        try {
-          recognition.stop();
-        } catch (e) {}
-
-        // Direct 1-step Cloud AI call to eliminate latency and avoid duplicate intercept delays
-        console.log("Delegating query directly to Gemini Cloud AI...");
-        processTextWithGemini(text);
-      }
-    };
-
-    recognition.onerror = (e) => {
-      isListeningRef.current = false;
-      console.error("Speech Recognition error:", e);
-      if (localStreamRef.current) {
-        try {
-          localStreamRef.current.getTracks().forEach(track => track.stop());
-        } catch(e){}
-        localStreamRef.current = null;
-      }
-
-      if (e.error === 'no-speech' || e.error === 'aborted' || e.error === 'network') {
-        setStatus('idle');
-        if (isVoiceStandbyRef.current) scheduleRelisten();
-        return;
-      }
-
-      setStatus('error');
-      setErrorMessage(t('speechError', 'Xatolik yuz berdi.'));
-      if (isVoiceStandbyRef.current) {
-        scheduleRelisten();
-      }
-    };
-
-    recognition.onend = () => {
-      isListeningRef.current = false;
-      recognitionRef.current = null;
-      if (localStreamRef.current && !gotResult) {
-        try {
-          localStreamRef.current.getTracks().forEach(track => track.stop());
-        } catch(e){}
-        localStreamRef.current = null;
-      }
-      if (isActiveRef.current || isVoiceStandbyRef.current) {
-        setTimeout(() => {
-          if (isActiveRef.current || isVoiceStandbyRef.current) {
-            startLocalSpeechRecognition();
-          }
-        }, 250);
-      }
-    };
-
-    try {
-      recognition.start();
-    } catch (e) {
-      console.warn("recognition.start exception:", e);
-      isListeningRef.current = false;
-    }
-  };
-
-    // 100% Offline-First Instant NLP Field Extractor for Resume Builder
-    const extractCleanResumeField = (step, text) => {
-      if (!text || typeof text !== 'string') return '';
-      let cleaned = text.trim();
-
-      // 1. Strip Uzbek conversational prefixes & suffixes
-      cleaned = cleaned.replace(/^(mening\s+ismim\s+bo'ladi|mening\s+ismim|maning\s+ismim|ismim|familiyam|otamning\s+ismi|men|man)\s*[:\-]?\s*/i, '');
-      cleaned = cleaned.replace(/\s*(man|maning|bo'ladi)$/i, '');
-
-      // 2. Strip Japanese conversational prefixes & suffixes
-      cleaned = cleaned.replace(/^(私の名前は|名前は|わたしは|僕は|俺は)\s*/, '');
-      cleaned = cleaned.replace(/\s*(です|でーす|だ|と申します|と言います|ともうします|といいます)$/, '');
-      cleaned = cleaned.replace(/\s+desu$/i, '');
-      cleaned = cleaned.replace(/\s+des$/i, '');
-      cleaned = cleaned.replace(/\s+da$/i, '');
-      cleaned = cleaned.replace(/\s+to\s+moushimasu$/i, '');
-      cleaned = cleaned.replace(/\s+to\s+iimasu$/i, '');
-
-      cleaned = cleaned.trim();
-
-      // 3. Step-specific formatting
-      if (step === 'ask_name' || step === 'confirm_name') {
-        return cleaned.split(/\s+/).map(word => {
-          if (!word) return '';
-          if (/[^\x00-\x7F]/.test(word)) return word;
-          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-        }).join(' ');
-      }
-
-      if (step === 'ask_birthdate' || step === 'confirm_birthdate') {
-        const dateMatch = cleaned.match(/(\d{4})[^\d]+(\d{1,2})[^\d]+(\d{1,2})/);
-        if (dateMatch) {
-          const y = dateMatch[1];
-          const m = String(dateMatch[2]).padStart(2, '0');
-          const d = String(dateMatch[3]).padStart(2, '0');
-          return `${y}-${m}-${d}`;
-        }
-        const numMatch = cleaned.replace(/\D/g, '');
-        if (numMatch.length === 8) {
-          return `${numMatch.slice(0,4)}-${numMatch.slice(4,6)}-${numMatch.slice(6,8)}`;
-        }
-        return cleaned;
-      }
-
-      if (step === 'ask_postalcode' || step === 'confirm_postalcode') {
-        const digits = cleaned.replace(/\D/g, '');
-        if (digits.length === 7) {
-          return `${digits.slice(0,3)}-${digits.slice(3,7)}`;
-        }
-        return cleaned;
-      }
-
-      if (step === 'ask_phone' || step === 'confirm_phone') {
-        const digits = cleaned.replace(/\D/g, '');
-        if (digits.length === 11 && digits.startsWith('0')) {
-          return `${digits.slice(0,3)}-${digits.slice(3,7)}-${digits.slice(7,11)}`;
-        }
-        if (digits.length === 10 && digits.startsWith('0')) {
-          return `${digits.slice(0,2)}-${digits.slice(2,6)}-${digits.slice(6,10)}`;
-        }
-        return cleaned;
-      }
-
-      if (step.includes('year')) {
-        const yearMatch = cleaned.match(/\b(19\d\d|20\d\d)\b/);
-        if (yearMatch) return yearMatch[1];
-      }
-
-      return cleaned;
-    };
-
-    // State machine loop for filling the Rirekisho resume step-by-step
-    const processResumeFlow = async (text) => {
-      const cleanText = text.trim();
-      const lowerText = cleanText.toLowerCase();
-      const lang = i18n.language || 'uz';
-      const isUz = lang.startsWith('uz');
-      const isJa = lang.startsWith('ja');
-
-      // 1. Cancel Checks
-      const cancelPatterns = ['bekor qil', 'to\'xtat', 'chiqish', 'cancel', 'stop', 'キャンセル', '中止'];
-      if (cancelPatterns.some(p => lowerText.includes(p))) {
-        setIsFillingResume(false);
-        setResumeStep('idle');
-        const cancelMsg = isUz ? "Ovozli to'ldirish to'xtatildi." : isJa ? "入力を中止しました。" : "Form input cancelled.";
-        setAiResponseText(cancelMsg);
-        setStatus('speaking');
-        speakResponse(cancelMsg, lang, () => {
-          setStatus('idle');
-        });
-        return;
-      }
-
-      const currentStep = resumeStepRef.current;
-
-      // 2. Go Back Checks
-      const backPatterns = ['ortga', 'orqaga', 'qayt', 'qaytar', 'back', 'go back', '戻る', 'もどる', '戻って'];
-      if (backPatterns.some(p => lowerText.includes(p))) {
-        const prevStep = getPreviousStep(currentStep);
-        if (prevStep) {
-          setResumeStep(prevStep);
-          const backConfirmMsg = isUz ? "Orqaga qaytildi. " : isJa ? "前に戻りました。" : "Went back. ";
-          const nextPrompt = backConfirmMsg + getQuestionPrompt(prevStep, isUz, isJa);
-          speakStepMsg(nextPrompt);
-        } else {
-          const noBackMsg = isUz ? "Bundan ortga qaytib bo'lmaydi." : isJa ? "これ以上戻ることはできません。" : "Cannot go back further.";
-          speakStepMsg(noBackMsg);
-        }
-        return;
-      }
-
-      // 3. Skip Checks
-      const skipPatterns = ['o\'tkaz', 'otkaz', 'skip', 'スキップ', '次へ', 'つぎへ'];
-      if (skipPatterns.some(p => lowerText.includes(p))) {
-        let nextStep = '';
-        switch (currentStep) {
-          case 'ask_name': nextStep = 'ask_furigana'; break;
-          case 'confirm_name': nextStep = 'ask_furigana'; break;
-          case 'ask_furigana': nextStep = 'ask_birthdate'; break;
-          case 'confirm_furigana': nextStep = 'ask_birthdate'; break;
-          case 'ask_birthdate': nextStep = 'ask_gender'; break;
-          case 'confirm_birthdate': nextStep = 'ask_gender'; break;
-          case 'ask_gender': nextStep = 'ask_birthplace'; break;
-          case 'confirm_gender': nextStep = 'ask_birthplace'; break;
-          case 'ask_birthplace': nextStep = 'ask_nationality'; break;
-          case 'confirm_birthplace': nextStep = 'ask_nationality'; break;
-          case 'ask_nationality': nextStep = 'ask_postalcode'; break;
-          case 'confirm_nationality': nextStep = 'ask_postalcode'; break;
-          case 'ask_postalcode': nextStep = 'ask_address'; break;
-          case 'confirm_postalcode': nextStep = 'ask_address'; break;
-          case 'ask_address': nextStep = 'ask_phone'; break;
-          case 'confirm_address': nextStep = 'ask_phone'; break;
-          case 'ask_phone': nextStep = 'ask_email'; break;
-          case 'confirm_phone': nextStep = 'ask_email'; break;
-          case 'ask_email': nextStep = 'ask_licenses'; break;
-          case 'confirm_email': nextStep = 'ask_licenses'; break;
-          case 'ask_licenses': nextStep = 'ask_edu_school'; break;
-          case 'confirm_licenses': nextStep = 'ask_edu_school'; break;
-          case 'ask_edu_school': nextStep = 'ask_work_company'; break;
-          case 'confirm_edu_school': nextStep = 'ask_edu_major'; break;
-          case 'ask_edu_major': nextStep = 'ask_edu_start_year'; break;
-          case 'confirm_edu_major': nextStep = 'ask_edu_start_year'; break;
-          case 'ask_edu_start_year': nextStep = 'ask_edu_end_year'; break;
-          case 'confirm_edu_start_year': nextStep = 'ask_edu_end_year'; break;
-          case 'ask_edu_end_year': nextStep = 'ask_work_company'; break;
-          case 'confirm_edu_end_year': nextStep = 'ask_work_company'; break;
-          case 'ask_work_company': nextStep = 'ask_motivation'; break;
-          case 'confirm_work_company': nextStep = 'ask_work_position'; break;
-          case 'ask_work_position': nextStep = 'ask_work_start_year'; break;
-          case 'confirm_work_position': nextStep = 'ask_work_start_year'; break;
-          case 'ask_work_start_year': nextStep = 'ask_work_current'; break;
-          case 'confirm_work_start_year': nextStep = 'ask_work_current'; break;
-          case 'ask_work_current': nextStep = 'ask_motivation'; break;
-          case 'ask_work_end_year': nextStep = 'ask_motivation'; break;
-          case 'confirm_work_end_year': nextStep = 'ask_motivation'; break;
-          case 'ask_motivation': nextStep = 'ask_selfpr'; break;
-          case 'confirm_motivation': nextStep = 'ask_selfpr'; break;
-          case 'ask_selfpr': nextStep = 'ask_hobbies'; break;
-          case 'confirm_selfpr': nextStep = 'ask_hobbies'; break;
-          case 'ask_hobbies': nextStep = 'ask_personalrequests'; break;
-          case 'confirm_hobbies': nextStep = 'ask_personalrequests'; break;
-          case 'ask_personalrequests': nextStep = 'finish_resume'; break;
-          case 'confirm_personalrequests': nextStep = 'finish_resume'; break;
-          default: nextStep = 'idle';
-        }
-
-        if (nextStep === 'finish_resume') {
-          finishResumeFlow(lang, isUz, isJa);
-        } else if (nextStep !== 'idle') {
-          setResumeStep(nextStep);
-          const skipConfirmMsg = (isUz ? "O'tkazib yuborildi. " : isJa ? "スキップしました。" : "Skipped. ") + getQuestionPrompt(nextStep, isUz, isJa);
-          speakStepMsg(skipConfirmMsg);
-        } else {
-          setIsFillingResume(false);
-          setStatus('idle');
-        }
-        return;
-      }
-
-      // 4. Repeat Checks
-      const repeatPatterns = ['qayta', 'yana', 'repeat', 'qaytadan', 'もう一度', 'もういっかい', 'リピート'];
-      if (repeatPatterns.some(p => lowerText.includes(p))) {
-        const repeatMsg = getQuestionPrompt(currentStep, isUz, isJa);
-        if (repeatMsg) {
-          speakStepMsg(repeatMsg);
-        } else {
-          startLocalSpeechRecognition();
-        }
-        return;
-      }
-
-      const triggerUpdate = (field, val) => {
-        window.dispatchEvent(new CustomEvent('michi-voice-resume-update', {
-          detail: { field, value: val }
-        }));
-      };
-
-      switch (currentStep) {
-        case 'ask_name':
-        case 'confirm_name':
-          const finalName = extractCleanResumeField('ask_name', cleanText);
-          if (!finalName) {
-            speakStepMsg(isUz 
-              ? "Ismingizni yaxshi eshita olmadim. Iltimos, ism va familiyangizni qaytadan ayting." 
-              : isJa ? "お名前が聞き取れませんでした。もう一度お名前をフルネームで教えてください。" 
-              : "Could not hear your name. Please state your full name again.");
-            break;
-          }
-          triggerUpdate('fullName', finalName);
-          setTempResumeData(prev => ({ ...prev, fullName: finalName }));
-        setResumeStep('ask_address');
-        speakStepMsg(isUz
-          ? `Tushunarli! Pochta indeksingiz "${finalPostal}" deb yozildi. Endi yashash manzilingizni to'liq ayting (Prefektura, shahar, ko'cha).`
-          : isJa ? `郵便番号「${finalPostal}」を入力しました。次に現住所を都道府県から詳しく教えてください。`
-          : `Entered postal code "${finalPostal}". Please state your full address.`);
-        break;
-
-      case 'ask_address':
-      case 'confirm_address':
-        const cleanAddr = cleanJapaneseCopula(cleanText);
-        setTempResumeData(prev => ({ ...prev, address: cleanAddr }));
-        triggerUpdate('address', cleanAddr);
-        setResumeStep('ask_phone');
-        speakStepMsg(isUz
-          ? `Rahmat! Manzilingiz "${cleanAddr}" deb yozildi. Endi telefon raqamingizni ayting (Masalan: 080 1234 5678).`
-          : isJa ? `ご住所「${cleanAddr}」を入力しました。次に電話番号を教えてください。`
-          : `Entered address "${cleanAddr}". Please state your phone number.`);
-        break;
-
-      case 'ask_phone':
-      case 'confirm_phone':
-        setStatus('thinking');
-        const formattedPhone = await parseResumeFieldWithGemini('ask_phone', cleanText, isUz, isJa);
-        const finalPhone = formattedPhone || cleanText;
-        setTempResumeData(prev => ({ ...prev, phone: finalPhone }));
-        triggerUpdate('phone', finalPhone);
-        setResumeStep('ask_email');
-        speakStepMsg(isUz 
-          ? `Tushunarli! Telefon raqamingiz "${finalPhone}" deb yozildi. Endi elektron pochta (email) manzilingizni ayting.` 
-          : isJa ? `電話番号「${finalPhone}」を入力しました。次にメールアドレスを教えてください。` 
-          : `Entered phone "${finalPhone}". Please state your email address.`);
-        break;
-
-      case 'ask_email':
-      case 'confirm_email':
-        const emailClean = cleanText.replace(/\s+/g, '').toLowerCase().replace(/at/g, '@').replace(/dot/g, '.');
-        setTempResumeData(prev => ({ ...prev, email: emailClean }));
-        triggerUpdate('email', emailClean);
-        setResumeStep('ask_licenses');
-        speakStepMsg(isUz
-          ? `Rahmat! Emailingiz "${emailClean}" deb yozildi. Endi qanday yuk mashinasi yoki forklift guvohnomalaringiz bor?`
-          : isJa ? `メールアドレス「${emailClean}」を入力しました。次にお持ちの運転免許の種類を教えてください。`
-          : `Entered email "${emailClean}". Which driving licenses do you hold?`);
-        break;
-
-      case 'ask_licenses':
-      case 'confirm_licenses':
-        const licenseMatches = [];
-        const licenseLabels = [];
-
-        if (/(katta|oogata|大型)/i.test(lowerText)) {
-          licenseMatches.push('lic_oogata');
-          licenseLabels.push(isUz ? "Katta yuk mashinasi (Oogata)" : "大型免許");
-        }
-        if (/(o'rta|chugata|中型)/i.test(lowerText)) {
-          licenseMatches.push('lic_chugata');
-          licenseLabels.push(isUz ? "O'rta yuk mashinasi (Chugata)" : "中型免許");
-        }
-        if (/(engil|kichik|futsu|ordinary|普通)/i.test(lowerText)) {
-          licenseMatches.push('lic_futsu');
-          licenseLabels.push(isUz ? "Yengil mashina (Futsu)" : "普通免許");
-        }
-        if (/(kenin|tirkama|shatak|牽引)/i.test(lowerText)) {
-          licenseMatches.push('lic_kenin');
-          licenseLabels.push(isUz ? "Shatakchi tirkama (Kenin)" : "牽引免許");
-        }
-        if (/(forklift|pogruzchik|kar|フォークリフト)/i.test(lowerText)) {
-          licenseMatches.push('tech_forklift');
-          licenseLabels.push(isUz ? "Forklift (Pogruzchik)" : "フォークリフト運転資格");
-        }
-
-        const driverLics = licenseMatches.filter(l => l.startsWith('lic_'));
-        const techCerts = licenseMatches.filter(l => l.startsWith('tech_'));
-        if (driverLics.length > 0) triggerUpdate('driverLicenses', driverLics);
-        if (techCerts.length > 0) triggerUpdate('techCertificates', techCerts);
-        if (licenseMatches.length === 0) triggerUpdate('driverLicenses', ['lic_futsu']);
-
-        const matchedListText = licenseLabels.length > 0 ? licenseLabels.join(isUz ? " va " : "、") : cleanText;
-        setResumeStep('ask_edu_school');
-        speakStepMsg(isUz
-          ? `Tushunarli! Guvohnomalaringiz "${matchedListText}" deb saqlandi. Endi ta'lim olgan maktab yoki universitet nomini ayting.`
-          : isJa ? `免許「${matchedListText}」を登録しました。次に卒業または在籍した学校名を教えてください。`
-          : `Saved licenses "${matchedListText}". Please state your school or university name.`);
-        break;
-
-      case 'ask_edu_school':
-      case 'confirm_edu_school':
-      case 'ask_edu_major':
-      case 'confirm_edu_major':
-      case 'ask_edu_start_year':
-      case 'confirm_edu_start_year':
-      case 'ask_edu_end_year':
-      case 'confirm_edu_end_year':
-        const cleanEdu = cleanJapaneseCopula(cleanText);
-        setTempResumeData(prev => ({ ...prev, eduSchool: cleanEdu }));
-        triggerUpdate('educationHistory', [{ school: cleanEdu, major: 'Taqsimlangan', startDate: '2020-09', endDate: '2024-06' }]);
-        setResumeStep('ask_work_company');
-        speakStepMsg(isUz 
-          ? `Rahmat! Ta'lim muassasangiz "${cleanEdu}" deb yozildi. Endi ishlagan yoki hozirgi kompaniyangiz nomini ayting.` 
-          : isJa ? `学校名「${cleanEdu}」を入力しました。次に会社名を教えてください。` 
-          : `Entered school "${cleanEdu}". Now please state your employer or company name.`);
-        break;
-
-      case 'ask_work_company':
-      case 'confirm_work_company':
-      case 'ask_work_position':
-      case 'confirm_work_position':
-      case 'ask_work_start_year':
-      case 'confirm_work_start_year':
-      case 'ask_work_current':
-      case 'ask_work_end_year':
-      case 'confirm_work_end_year':
-        const cleanWork = cleanJapaneseCopula(cleanText);
-        setTempResumeData(prev => ({ ...prev, workCompany: cleanWork }));
-        triggerUpdate('workHistory', [{ company: cleanWork, position: 'Haydovchi', startDate: '2022-01', endDate: '', current: true }]);
-        setResumeStep('ask_motivation');
-        speakStepMsg(isUz 
-          ? `Tushunarli! Kompaniya nomingiz "${cleanWork}" deb yozildi. Endi ishga kirish maqsadingiz (motivatsiya) va o'zingiz haqida (Self PR) qisqacha aytib bering.` 
-          : isJa ? `会社名「${cleanWork}」を入力しました。次に志望動機と自己PRをお聞かせください。` 
-          : `Entered company "${cleanWork}". Please state your job motivation and self-PR.`);
-        break;
-
-      case 'ask_motivation':
-      case 'confirm_motivation':
-      case 'ask_selfpr':
-      case 'confirm_selfpr':
-      case 'ask_hobbies':
-      case 'confirm_hobbies':
-      case 'ask_personalrequests':
-      case 'confirm_personalrequests':
-        const cleanMotiv = cleanJapaneseCopula(cleanText);
-        setTempResumeData(prev => ({ ...prev, motivation: cleanMotiv, selfPR: cleanMotiv }));
-        triggerUpdate('motivation', cleanMotiv);
-        triggerUpdate('selfPR', cleanMotiv);
-        triggerUpdate('personalRequests', '貴社規定に従います。');
-        finishResumeFlow(lang, isUz, isJa);
-        break;
-
-      default:
-        setIsFillingResume(false);
-        setResumeStep('idle');
-        setStatus('idle');
-        break;
-    }
-  };
-
-  const finishResumeFlow = (lang, isUz, isJa) => {
-    setIsFillingResume(false);
-    setResumeStep('idle');
-    const finishedMsg = isUz 
-      ? "Ajoyib! Rezyume tayyor." 
-      : isJa ? "素晴らしい！履歴書が完成しました。" 
-      : "Excellent! Your resume is ready.";
-    
-    setAiResponseText(finishedMsg);
-    setStatus('speaking');
-    speakResponse(finishedMsg, lang, () => {
-      setStatus('idle');
-    });
-  };
-
-  const speakStepMsg = (msg) => {
-    const lang = i18n.language || 'uz';
-    setAiResponseText(msg);
-    setTranscript('');
-    setStatus('speaking');
-    speakResponse(msg, lang, () => {
-      setStatus('idle');
-      startLocalSpeechRecognition();
-    });
-  };
-
-  // Handle manual typing input submit
-  const handleSendText = (e) => {
-    e.preventDefault();
-    if (!textInput.trim()) return;
-    const userText = textInput.trim();
-    setTextInput('');
-    unlockMobileAudio();
-
-    // Cancel any running auto-dismiss timers and typewriter intervals immediately
-    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
-    if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-    if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
-
-    setTranscript(userText);
+  // 4. Asosiy So'rovni Qayta Ishlash Oqimi (Pipeline)
+  const handleSendText = async (textToSend) => {
+    const text = (textToSend || drawerInput || '').trim();
+    if (!text) return;
+
+    clearTimeout(pendingTimeoutRef.current);
+    setDrawerInput('');
     setStatus('thinking');
-    setShowPill(true);
-    setIsFadeOut(false);
-    setDisplayedAiText('');
-    setAiResponseText('');
-    setErrorMessage('');
-    
-    if (isFillingResume) {
-      processResumeFlow(userText);
-    } else {
-      processTextWithGemini(userText);
-    }
-  };
-
-  // Fetch from Gemini API using resilient multi-model fallback pool
-  const fetchGeminiWithPool = async (contents, systemPrompt, screenContext, dataContext, isAudio = false) => {
-    const activeKey = apiKeyRef.current || localStorage.getItem('michi_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
-
-    if (!activeKey) {
-      throw new Error('No API key configured');
-    }
-
-    const modelsToTry = [
-      'gemini-2.5-flash',
-      'gemini-2.0-flash-exp',
-      'gemini-1.5-flash-latest',
-      'gemini-1.5-pro-latest',
-      'gemini-flash-latest'
-    ];
-
-    let lastError = null;
-
-    for (const modelName of modelsToTry) {
-      try {
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${activeKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents,
-              systemInstruction: {
-                parts: [{ text: `${systemPrompt}\n\n${screenContext}\n\n${dataContext}` }]
-              },
-              generationConfig: { 
-                responseMimeType: "application/json",
-                maxOutputTokens: 800,
-                temperature: 0.3
-              },
-              safetySettings: [
-                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" }
-              ]
-            }),
-            signal: AbortSignal.timeout(9000)
-          }
-        );
-
-        if (response.ok) {
-          const resData = await response.json();
-          if (resData?.candidates?.[0]?.content?.parts?.[0]?.text) {
-            return resData;
-          }
-        }
-
-        const errText = await response.text();
-        console.warn(`[GeminiPool] Model ${modelName} returned status ${response.status}:`, errText);
-        lastError = errText;
-      } catch (e) {
-        lastError = e;
-      }
-    }
-
-    throw new Error(typeof lastError === 'string' && lastError.includes('API_KEY_INVALID') ? 'invalid_key' : 'api_failed');
-  };
-
-  // Helper to strip markdown formatting wrappers and extract JSON objects from Gemini responses
-  const cleanJsonText = (rawText) => {
-    if (!rawText || typeof rawText !== 'string') return '';
-    let clean = rawText.trim();
-    clean = clean.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
-
-    // Extract JSON object if prepended or appended with conversational text (e.g. "かしこまりました。{...}")
-    const jsonMatch = clean.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return jsonMatch[0].trim();
-    }
-    return clean.trim();
-  };
-
-  // Bulletproof JSON parser that gracefully handles markdown, unescaped quotes, raw text, and embedded JSON
-  const safeJsonParse = (rawText, fallbackText = '') => {
-    if (!rawText || typeof rawText !== 'string') {
-      return { command: 'NONE', response: fallbackText || '申し訳ありません。', language: 'ja' };
-    }
-
-    const clean = cleanJsonText(rawText);
-    try {
-      const parsed = JSON.parse(clean);
-      if (parsed && typeof parsed === 'object') {
-        return {
-          userTranscription: parsed.userTranscription || parsed.transcription || '',
-          command: 'NONE',
-          response: japaneseLanguageEngine.stripRawJsonSyntax(parsed.response || parsed.text || parsed.answer || clean),
-          language: parsed.language || 'ja'
-        };
-      }
-    } catch (e) {
-      console.warn('[VoiceAssistant] Direct JSON parse failed, attempting regex/fallback recovery:', e.message);
-      
-      const responseMatch = clean.match(/"response"\s*:\s*"((?:[^"\\]|\\.)*)"/s) 
-                         || clean.match(/"response"\s*:\s*`([^`]*)`/s)
-                         || rawText.match(/"response"\s*:\s*"([\s\S]*?)"(?=\s*,\s*"|\s*\}|$)/);
-      const textMatch = clean.match(/"userTranscription"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
-      const langMatch = clean.match(/"language"\s*:\s*"([^"]+)"/s);
-
-      if (responseMatch && responseMatch[1]) {
-        return {
-          userTranscription: textMatch ? textMatch[1] : '',
-          command: 'NONE',
-          response: japaneseLanguageEngine.stripRawJsonSyntax(responseMatch[1]),
-          language: langMatch ? langMatch[1] : 'ja'
-        };
-      }
-
-      return {
-        userTranscription: '',
-        command: 'NONE',
-        response: japaneseLanguageEngine.stripRawJsonSyntax(rawText),
-        language: 'ja'
-      };
-    }
-
-    return { command: 'NONE', response: japaneseLanguageEngine.stripRawJsonSyntax(rawText), language: 'ja' };
-  };
-
-  // Generates ultra-fast, lightweight data context to minimize latency (<1.0s)
-  const generateDataContext = () => {
-    return `
-CURRENT USER PROFILE:
-- Name: ${profileData?.fullName || 'User'}
-- Role: ${userRole || 'driver'}
-- Driver Licenses: ${JSON.stringify(profileData?.driverLicenses || [])}
-`;
-  };
-
-  const processTextWithGemini = async (text) => {
-    if (!isChatActiveRef.current) return;
-    
-    // Cancel any running auto-dismiss timers and typewriter intervals immediately
-    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
-    if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-    if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
-
     setTranscript(text);
-    setDisplayedAiText('');
     setAiResponseText('');
-    setErrorMessage('');
-    setStatus('thinking');
-    setShowPill(true);
-    setIsFadeOut(false);
+    setDisplayedAiText('');
+    setNotice('');
 
-    const userLang = speechLangRef.current || 'ja';
-
-    // Tier 0: Instant 0ms cache check
-    const cachedHit = michiCacheEngine.get(text, userLang);
-    if (cachedHit && cachedHit.text) {
-      console.log('[VoiceAssistant] ⚡ Instant 0ms cache response served for:', text);
-      handleGeminiSuccess({
-        userTranscription: text,
-        command: 'NONE',
-        response: cachedHit.text,
-        language: userLang
-      }, text);
-      return;
-    }
-
-    // Fast Instant Intent Greetings (0ms response)
-    const lowerText = text.trim().toLowerCase();
-    const isUzGreeting = /^(salom|assalomu\s*alaykum|salomalaykum|hayrli\s*kun)$/i.test(lowerText);
-    const isJaGreeting = /^(こんにちは|おはよう|こんばんは|はじめまして)$/i.test(lowerText);
-    const isEnGreeting = /^(hello|hi|good\s*morning|good\s*afternoon)$/i.test(lowerText);
-
-    if (isUzGreeting || isJaGreeting || isEnGreeting) {
-      const instantGreeting = isUzGreeting
-        ? "Assalomu alaykum! Men Michi AI yordamchisiman. Sizga qanday yordam bera olaman?"
-        : isJaGreeting
-        ? "こんにちは！Michi AIアシスタントです。本日はどのようなご用件でしょうか？"
-        : "Hello! I am Michi AI assistant. How may I help you today?";
-
-      michiCacheEngine.set(text, instantGreeting, userLang);
-      handleGeminiSuccess({
-        userTranscription: text,
-        command: 'NONE',
-        response: instantGreeting,
-        language: userLang
-      }, text);
-      return;
-    }
-
-    const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
-    const dataContext = generateDataContext();
-
-    const now = new Date();
-    const localTimeContext = `\nCurrent local date and time: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}, ${now.toLocaleTimeString('en-US', { hour12: false })}. You MUST use this local date and time context to answer questions about the current day, date, year, month, or time in the user's language.`;
-
-    let weatherContext = '';
-    const isWeatherQuery = /天気|気象|雨|気温|weather|forecast|ob[- ]?havo|yomg'ir|harorat/i.test(text);
-    if (isWeatherQuery) {
-      try {
-        const liveWeather = await autonomousWebSearchEngine.fetchLiveWeather(text, speechLangRef.current || 'ja');
-        if (liveWeather.success) {
-          weatherContext = `\nREAL-TIME LIVE WEATHER DATA (from Open-Meteo API):
-- City: ${liveWeather.cityName}
-- Current Weather: ${liveWeather.weatherText} (${liveWeather.currentTemp}°C)
-- Today Max/Min: ${liveWeather.todayMax}°C / ${liveWeather.todayMin}°C
-- Tomorrow Forecast: ${liveWeather.tomorrowText}, Max ${liveWeather.tomorrowMax}°C, Min ${liveWeather.tomorrowMin}°C`;
-        }
-      } catch (wErr) {
-        console.warn('Weather fetch error:', wErr);
-      }
-    }
-
-    let webSearchContext = '';
-    const isQuestionQuery = /nima|kim|qanday|qachon|qaerda|qayerda|haqida|何|どう|誰|いつ|どこ|なぜ|戦争|ニュース|政治|経済|社会|what|who|how|when|where|why|war|news|politic|economy/i.test(text);
-    if (isQuestionQuery && !isWeatherQuery) {
-      try {
-        const searchRes = await Promise.race([
-          autonomousWebSearchEngine.searchWebFreeSources(text, speechLangRef.current || 'ja'),
-          new Promise(res => setTimeout(() => res({ success: false }), 2000))
-        ]);
-        if (searchRes.success && searchRes.answer) {
-          webSearchContext = "\nREAL-TIME INTERNET WEB SEARCH CONTEXT (Source: " + searchRes.source + "):\n" + searchRes.answer + "\nSynthesize and use this fresh web search data to enrich your response.";
-        }
-      } catch (sErr) {
-        console.warn('Web search fetch error:', sErr);
-      }
-    }
-
-    const systemPrompt = `
-You are "Michi AI" - a universal AI knowledge search engine with comprehensive global intelligence across all domains (weather, news, science, history, technology, daily life, culture, education, business, Japan, Uzbekistan, global topics).
-${localTimeContext}
-${weatherContext}
-${webSearchContext}
-
-STRICT RESPONSE RULES:
-1. UNIVERSAL COMPREHENSION & RESPECTFUL ETIQUETTE:
-   - If user speaks Japanese: Use proper Keigo (丁寧語 / 尊敬語) with polite greetings like "かしこまりました。" or "お疲れ様でございます。".
-   - If user speaks Uzbek: Use highly respectful Uzbek ("Assalomu alaykum", "Siz", "-siz", "marhamat").
-   - If user speaks English: Use warm, professional, polite expressions ("Certainly", "It is my pleasure").
-
-2. STRICT SEARCH ENGINE & CONVERSATIONAL MODE (NO PLATFORM CONTROL):
-   - Answer ANY user question directly with rich, accurate, detailed, and comprehensive text explanations.
-   - You NEVER execute UI commands, screen filtering, or platform navigation.
-   - ALWAYS set "command": "NONE".
-
-3. DYNAMIC RESPONSE LENGTH & CONCISE QUALITY:
-   - Simple questions (greetings, date/time): 1-2 concise, polite sentences.
-   - Medium questions (weather forecast, simple facts): 3-5 informative sentences.
-   - Complex questions (jobs, education, history, science, region guides, complex topics): 5-10 detailed, structured, comprehensive sentences.
-
-Your task: analyze the user's message and return a JSON object:
-{
-  "userTranscription": "${text}",
-  "command": "NONE",
-  "response": "<rich, detailed, comprehensive, accurate, and polite text response directly answering the user's question>",
-  "language": "<detected language: uz, ja, or en>"
-}
-
-Return ONLY the raw JSON object, no markdown wrappers.
-`;
-
-    const recentHistory = conversationHistory.slice(-4);
-    const contents = [
-      ...recentHistory,
-      {
-        role: 'user',
-        parts: [{ text: text }]
-      }
-    ];
+    if (readingTimeoutRef.current) clearTimeout(readingTimeoutRef.current);
+    clearTimeout(errorTimeoutRef.current);
 
     try {
-      const coreAnswer = await askMichiCore(text, (chunkText) => {
-        setErrorMessage(''); // Clear error message as soon as streaming chunk arrives
-        setStatus('speaking'); // Hide "思考中..." indicator as soon as first chunk arrives
-        setAiResponseText(chunkText);
-        setDisplayedAiText(chunkText);
-      });
-      if (!isChatActiveRef.current) return;
+      // BOSQICH 1: Lokal Buyruqlar Registri (Intent Match)
+      const matchedCommand = matchLexiconCommand(text) || learningEngine.findLearnedIntent(text);
+      if (matchedCommand && actionRegistry.has(matchedCommand)) {
+        await actionRegistry.execute(matchedCommand, {}, actionContext);
+        const actionResponse = actionRegistry.getResponse(matchedCommand, speechLang) || t('actionExecuted', 'Buyruq bajarildi.');
 
-      const activeAns = coreAnswer || aiResponseTextRef.current;
-      if (activeAns && activeAns.trim().length > 0) {
-        setErrorMessage('');
-        michiCacheEngine.set(text, activeAns, userLang);
-        handleGeminiSuccess({
-          userTranscription: text,
-          command: 'NONE',
-          response: activeAns,
-          language: userLang
-        }, text);
-        return;
-      }
-    } catch (error) {
-      if (!isChatActiveRef.current) return;
-      console.warn("[Michi Core Error / ZeroGPU Limit]:", error?.message || error);
+        setAiResponseText(actionResponse);
+        setStatus('idle');
 
-      // If stream chunks were already received in aiResponseTextRef, treat as success!
-      if (aiResponseTextRef.current && aiResponseTextRef.current.trim().length > 0) {
-        const streamAns = aiResponseTextRef.current.trim();
-        setErrorMessage('');
-        setStatus('speaking');
-        michiCacheEngine.set(text, streamAns, userLang);
-        handleGeminiSuccess({
-          userTranscription: text,
-          command: 'NONE',
-          response: streamAns,
-          language: userLang
-        }, text);
+        // Tarixga saqlash (Michi AI Hub uchun)
+        await michiLocalStorageEngine.saveConversation({
+          question: text,
+          answer: actionResponse,
+          language: speechLang,
+          category: 'command'
+        });
+        await reloadChatHistory();
+
+        // Sekinroq o'qiydiganlar uchun hisoblangan avto-yo'qolish vaqti
+        const duration = calculateReadingDuration(text, actionResponse, speechLang);
+        setBubbleTimerMs(duration);
+        setReadingStartAt(Date.now());
+
+        if (readingTimeoutRef.current) clearTimeout(readingTimeoutRef.current);
+        readingTimeoutRef.current = setTimeout(() => {
+          setTranscript('');
+          setAiResponseText('');
+          setDisplayedAiText('');
+        }, duration);
+
         return;
       }
 
-      // Tier 2 Fallback: Multi-AI Mesh Engine & Gemini Pool (Zero-Downtime Resilience)
+      // BOSQICH 2: Lingvistik qoidalar va Ekran Konteksti
+      const screenContext = screenStructureIndex.getRichScreenContext(activeTab, profileActivePage, speechLang);
+
+      // BOSQICH 3: Multi-AI Gateway / VPS Shlyuzi (https://api.michi.jp.net/api/chat) orqali javob olish
+      let replyText = '';
       try {
-        console.log("[VoiceAssistant] 🚀 Falling back to Multi-AI Mesh Engine for:", text);
-        const meshResult = await multiAiMeshEngine.processCascadingQuery(text, userLang);
-        if (meshResult && meshResult.text && !meshResult.text.includes('一時的に途絶えました')) {
-          setErrorMessage('');
-          handleGeminiSuccess({
-            userTranscription: text,
-            command: 'NONE',
-            response: meshResult.text,
-            language: userLang
-          }, text);
-          return;
-        }
-
-        const geminiResData = await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext);
-        const rawText = geminiResData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const parsed = safeJsonParse(rawText, text);
-        if (parsed && (parsed.response || parsed.text)) {
-          setErrorMessage('');
-          handleGeminiSuccess(parsed, text);
-          return;
-        }
-      } catch (geminiErr) {
-        console.warn("[VoiceAssistant] Mesh Fallback Error:", geminiErr);
+        const gatewayRes = await michiApiService.sendChatMessage({
+          message: text,
+          speechLang,
+          context: screenContext
+        });
+        replyText = typeof gatewayRes === 'string' ? gatewayRes : (gatewayRes?.reply || gatewayRes?.text || gatewayRes?.message || '');
+      } catch (gatewayErr) {
+        console.warn('[VoiceAssistant] Gateway xatosi, kaskadli AI qatlamiga o\'tilmoqda:', gatewayErr.message);
+        // Tier 1-3 Kaskadli zaxira tarmog'i
+        const fallbackRes = await multiAiMeshEngine.processCascadingQuery(text, speechLang);
+        replyText = typeof fallbackRes === 'string' ? fallbackRes : (fallbackRes?.text || fallbackRes?.reply || '');
       }
-    }
 
-    const errText = "サーバーとの通信が一時的に途絶えました。もう一度お試しください。";
+      // Javobni nozik yapon biznes odobiga o'girish (agar til ja bo'lsa)
+      const polishedReply = speechLang.startsWith('ja') 
+        ? japaneseLanguageEngine.formatPoliteResponse(replyText, 'ja')
+        : replyText;
 
-    setStatus('error');
-    setErrorMessage(errText);
-    setShowPill(true);
-    setIsFadeOut(false);
-    setTimerDuration(6000);
-    
-    // Persist error event into chat history and React state
-    try {
-      const errorEntry = {
-        id: Date.now(),
+      setAiResponseText(polishedReply);
+      setStatus('idle');
+
+      // BOSQICH 4: Tarixga saqlash (Michi AI Hub da ko'rish va o'chirish imkoniyati bilan)
+      await michiLocalStorageEngine.saveConversation({
         question: text,
-        answer: errText,
-        isError: true,
-        command: 'ERROR',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      const savedHistory = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
-      savedHistory.push(errorEntry);
-      localStorage.setItem('michi_chat_history', JSON.stringify(savedHistory.slice(-100)));
-      setChatHistoryList(prev => [...prev, errorEntry]);
-    } catch(e){}
+        answer: polishedReply,
+        language: speechLang,
+        category: 'chat'
+      });
+      await reloadChatHistory();
 
-    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
-    if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
+      // Sekin o'qiydigan foydalanuvchilar o'qib tugatishi uchun dynamic timer
+      const duration = calculateReadingDuration(text, polishedReply, speechLang);
+      setBubbleTimerMs(duration);
+      setReadingStartAt(Date.now());
 
-    dismissTimerRef.current = setTimeout(() => {
-      setIsFadeOut(true);
-      pillTimeoutRef.current = setTimeout(() => {
-        closePill();
-      }, 500);
-    }, 6000);
+      if (readingTimeoutRef.current) clearTimeout(readingTimeoutRef.current);
+      readingTimeoutRef.current = setTimeout(() => {
+        setTranscript('');
+        setAiResponseText('');
+        setDisplayedAiText('');
+      }, duration);
 
-    speakResponse(errText, userLang);
+    } catch (error) {
+      console.error("[VoiceAssistant] Chat bajarishda xatolik:", error);
+      setStatus('error');
+      const errText = t('aiErrorOccurred', "So'rovni bajarishda xatolik yuz berdi. Qayta urinib ko'ring.");
+      setAiResponseText(errText);
+      errorTimeoutRef.current = setTimeout(() => {
+        setStatus('idle');
+        setTranscript('');
+        setAiResponseText('');
+        setDisplayedAiText('');
+      }, 5000);
+    }
   };
 
-  // Real-time canvas visualizer loop for Siri-style glowing liquid orb
   useEffect(() => {
-    if (status === 'idle' || isVoiceStandby) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    let animationId;
-    const bufferLength = analyserRef.current ? analyserRef.current.frequencyBinCount : 128;
-    const dataArray = new Uint8Array(bufferLength);
-
-    canvas.width = 120;
-    canvas.height = 120;
-
-    let phase = 0;
-
-    const draw = () => {
-      animationId = requestAnimationFrame(draw);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      let volume = 0;
-      if (analyserRef.current) {
-        analyserRef.current.getByteFrequencyData(dataArray);
-        let sum = 0;
-        for (let i = 0; i < bufferLength; i++) {
-          sum += dataArray[i];
-        }
-        volume = sum / bufferLength;
-      } else {
-        // Soft pulsing fallback in case no mic/speaker stream is active
-        volume = 20 + Math.sin(phase * 0.8) * 5;
+    if (i18n?.language) {
+      const saved = localStorage.getItem('michi_speech_lang');
+      if (!saved) {
+        setSpeechLang(i18n.language);
       }
+    }
+  }, [i18n?.language]);
 
-      const amplitude = Math.max(0.1, Math.min(1.3, volume / 70));
+  const liveText = drawerInput || transcript;
+  // Pufakcha faqat foydalanuvchi gapirgandan keyin (matn paydo bo'lganda) chiqadi
+  const showBubble = (Boolean(liveText) || status === 'thinking' || aiResponseText || notice) && !isSideDrawerOpen;
+  // Yangi savol javob ko'rinib turgan paytda aytilsa ham jo'natish maydoni chiqadi
+  const showEditBar = Boolean(liveText) && status !== 'thinking' && (!aiResponseText || Boolean(drawerInput));
 
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
-
-      // Overlapping glowing paths with colors matched to the Michi theme
-      const colors = [
-        'rgba(59, 130, 246, 0.4)',  // Blue
-        'rgba(168, 85, 247, 0.4)',  // Purple
-        'rgba(16, 185, 129, 0.35)'  // Green
-      ];
-
-      phase += 0.03;
-      ctx.globalCompositeOperation = 'screen';
-
-      for (let w = 0; w < 3; w++) {
-        ctx.beginPath();
-        const baseRadius = 38 - w * 4;
-        const color = colors[w];
-
-        for (let angle = 0; angle <= 360; angle += 5) {
-          const rad = (angle * Math.PI) / 180;
-          const offset = Math.sin(angle * 4 * Math.PI / 180 + phase + w) * 9 * amplitude;
-          const radius = baseRadius + offset;
-
-          const x = cx + Math.cos(rad) * radius;
-          const y = cy + Math.sin(rad) * radius;
-
-          if (angle === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
-        }
-        ctx.closePath();
-        ctx.fillStyle = color;
-        ctx.fill();
-
-        ctx.strokeStyle = color.replace('0.4', '0.85').replace('0.35', '0.75');
-        ctx.lineWidth = 1.8;
-        ctx.stroke();
-      }
-    };
-
-    draw();
-
+  // Jo'natilmagan matn uchun juda sekin avto-yopilish taymeri.
+  // Yangi ovoz eshitilsa (pendingTick o'zgarsa) yoki matn tahrirlansa qaytadan boshlanadi.
+  const [pendingSecondsLeft, setPendingSecondsLeft] = useState(Math.round(PENDING_AUTO_CLOSE_MS / 1000));
+  // Taymer boshlangan aniq vaqt: pufakcha yashirinib (AI Hub ochilsa) qayta chiqsa ham davomidan ketadi
+  const [pendingStartAt, setPendingStartAt] = useState(0);
+  useEffect(() => {
+    clearTimeout(pendingTimeoutRef.current);
+    if (!showEditBar) return undefined;
+    const startAt = Date.now();
+    const deadline = startAt + PENDING_AUTO_CLOSE_MS;
+    setPendingStartAt(startAt);
+    setPendingSecondsLeft(Math.round(PENDING_AUTO_CLOSE_MS / 1000));
+    const tickId = setInterval(() => {
+      setPendingSecondsLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+    }, 1000);
+    pendingTimeoutRef.current = setTimeout(() => {
+      setDrawerInput('');
+      setTranscript('');
+    }, PENDING_AUTO_CLOSE_MS);
     return () => {
-      cancelAnimationFrame(animationId);
+      clearInterval(tickId);
+      clearTimeout(pendingTimeoutRef.current);
     };
-  }, [status, isVoiceStandby]);
+  }, [showEditBar, pendingTick]);
+  const isTyping = Boolean(aiResponseText) && displayedAiText.length < aiResponseText.length;
+  const speechLangLabel = SUPPORTED_SPEECH_LANGS.find(l => l.code === (speechLang || 'ja').substring(0, 2))?.label || '日本語';
+  // Sarlavhadagi holat chipi
+  const statusChip = status === 'thinking'
+    ? { tone: 'thinking', label: t('aiThinking') }
+    : effectiveStatus === 'listening'
+      ? { tone: 'listening', label: t('aiListening') }
+      : status === 'error' || notice
+        ? { tone: 'error', label: t('aiErrorShort', 'Error') }
+        : null;
 
-  // Start speech recording sequence (Local-First Speech Recognition, falls back to MediaRecorder)
-  const startListeningSequence = () => {
-    if (!isActiveRef.current) return;
-    
-    // Stop synthesis if speaking, before starting listening
-    if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
+  const closeBubble = () => {
+    localSTT.stopListening(true);
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
-
-    if (activeAudioSourceRef.current) {
-      try { activeAudioSourceRef.current.stop(); } catch(e){}
-    }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      console.log("Using Local-First Speech Recognition path...");
-      startLocalSpeechRecognition();
-    } else {
-      console.log("Local SpeechRecognition not supported. Using Audio Recording fallback...");
-      startAudioRecording();
-    }
+    clearTimeout(readingTimeoutRef.current);
+    clearTimeout(errorTimeoutRef.current);
+    clearTimeout(pendingTimeoutRef.current);
+    setDrawerInput('');
+    setStatus('idle');
+    setTranscript('');
+    setAiResponseText('');
+    setDisplayedAiText('');
+    setNotice('');
+    if (onClose) onClose();
   };
 
-  // Web Audio downsampling helper to convert audio Blob to 16kHz Mono 16-bit WAV PCM
-  const downsampleToWav = async (audioBlob, targetSampleRate = 16000) => {
-    const arrayBuffer = await audioBlob.arrayBuffer();
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-    
-    // OfflineAudioContext for downsampling
-    const offlineCtx = new OfflineAudioContext(
-      1, // Mono channel
-      Math.round(audioBuffer.duration * targetSampleRate),
-      targetSampleRate
-    );
-
-    const bufferSource = offlineCtx.createBufferSource();
-    bufferSource.buffer = audioBuffer;
-    bufferSource.connect(offlineCtx.destination);
-    bufferSource.start();
-    
-    const renderedBuffer = await offlineCtx.startRendering();
-    audioCtx.close();
-
-    return audioBufferToWav(renderedBuffer);
-  };
-
-  const audioBufferToWav = (buffer) => {
-    const numOfChan = buffer.numberOfChannels;
-    const sampleRate = buffer.sampleRate;
-    const format = 1; // PCM
-    const bitDepth = 16;
-    
-    let result;
-    if (numOfChan === 1) {
-      result = buffer.getChannelData(0);
-    } else {
-      const chan0 = buffer.getChannelData(0);
-      const chan1 = buffer.getChannelData(1);
-      const len = chan0.length;
-      result = new Float32Array(len);
-      for (let i = 0; i < len; i++) {
-        result[i] = (chan0[i] + chan1[i]) / 2;
-      }
-    }
-
-    const bufferLen = result.length * 2;
-    const wavBuffer = new ArrayBuffer(44 + bufferLen);
-    const view = new DataView(wavBuffer);
-
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + bufferLen, true);
-    writeString(view, 8, 'WAVE');
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, format, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, bitDepth, true);
-    writeString(view, 36, 'data');
-    view.setUint32(40, bufferLen, true);
-
-    floatTo16BitPCM(view, 44, result);
-
-    return new Blob([wavBuffer], { type: 'audio/wav' });
-  };
-
-  const floatTo16BitPCM = (output, offset, input) => {
-    for (let i = 0; i < input.length; i++, offset += 2) {
-      let s = Math.max(-1, Math.min(1, input[i]));
-      output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-    }
-  };
-
-  const writeString = (view, offset, string) => {
-    for (let i = 0; i < string.length; i++) {
-      view.setUint8(offset + i, string.charCodeAt(i));
-    }
-  };
-
-  // Web Audio VAD & MediaRecorder based recording
-  const startAudioRecording = async () => {
-    unlockMobileAudio();
-    let hasSpoken = false;
-    try {
-      // 1. Request microphone permissions
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      setMicPermission('granted');
-
-      // 2. Stop ongoing voice activities before starting new session
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        try { mediaRecorderRef.current.stop(); } catch(e){}
-      }
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        try { audioContextRef.current.close(); } catch(e){}
-      }
-
-      setTranscript('');
-      setAiResponseText('');
-      setStatus('listening');
-      setHasStarted(true);
-      setShowPill(false);
-
-      // 3. Determine supported MIME type
-      let mimeType = 'audio/webm';
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = 'audio/mp4'; // Fallback for Safari/iOS
-      }
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = ''; // Let browser choose default
-      }
-
-      const options = mimeType ? { mimeType, audioBitsPerSecond: 24000 } : { audioBitsPerSecond: 24000 };
-      const mediaRecorder = new MediaRecorder(stream, options);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        // Release tracks
-        stream.getTracks().forEach(track => track.stop());
-
-        if (!hasSpoken) {
-          console.log("No speech detected. Aborting API request to save traffic and prevent loops.");
-          setStatus('idle');
-          if (isVoiceStandbyRef.current) {
-            scheduleRelisten();
-          }
-          return;
-        }
-
-        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/wav' });
-        
-        try {
-          setStatus('thinking');
-          const wavBlob = await downsampleToWav(audioBlob);
-          console.log(`Original Audio size: ${Math.round(audioBlob.size / 1024)}KB, Compressed WAV size: ${Math.round(wavBlob.size / 1024)}KB`);
-
-          const reader = new FileReader();
-          reader.readAsDataURL(wavBlob);
-          reader.onloadend = () => {
-            const base64Data = reader.result.split(',')[1];
-            processAudioWithGemini(base64Data, 'audio/wav');
-          };
-        } catch (e) {
-          console.error("Downsampling failed, falling back to original blob:", e);
-          const reader = new FileReader();
-          reader.readAsDataURL(audioBlob);
-          reader.onloadend = () => {
-            const base64Data = reader.result.split(',')[1];
-            const actualMime = audioBlob.type || 'audio/wav';
-            processAudioWithGemini(base64Data, actualMime);
-          };
-        }
-      };
-
-      // 4. Set up Client-Side Voice Activity Detection (VAD) via AnalyserNode
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      audioContextRef.current = audioContext;
-      const source = audioContext.createMediaStreamSource(stream);
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 512;
-      source.connect(analyser);
-
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      let silenceStart = Date.now();
-      const silenceThreshold = 12; // Audio level threshold
-      const maxSilenceTime = 1600;  // Auto stop after 1.6s of silence
-
-      const checkSilence = () => {
-        if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
-        analyser.getByteFrequencyData(dataArray);
-
-        let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) {
-          sum += dataArray[i];
-        }
-        const average = sum / dataArray.length;
-
-        // If sound volume exceeds threshold, reset silence timer
-        if (average > silenceThreshold) {
-          silenceStart = Date.now();
-          if (average > silenceThreshold + 6) {
-            hasSpoken = true;
-          }
-        }
-
-        // Auto-stop after 1.6s silence or 15s max recording duration
-        if (Date.now() - silenceStart > maxSilenceTime) {
-          try {
-            mediaRecorder.stop();
-          } catch (e) {}
-        } else if (Date.now() - silenceStart > 15000) { // Safety limit: max 15 seconds
-          try {
-            mediaRecorder.stop();
-          } catch (e) {}
-        } else {
-          requestAnimationFrame(checkSilence);
-        }
-      };
-
-      mediaRecorder.start(100); // chunk every 100ms
-      requestAnimationFrame(checkSilence);
-
-    } catch (err) {
-      console.error('Audio recording init error:', err);
-      setStatus('error');
-      setMicPermission('denied');
-      setErrorMessage(t('micDeniedTitle', 'Mikrofon ruxsati rad etilgan'));
-      setShowPill(true);
-    }
-  };
-
-  // Stop audio recording ref manually
-  const stopAudioRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      try {
-        mediaRecorderRef.current.stop();
-      } catch (e) {}
-    }
-  };
-
-  // Process Multimodal Audio directly with Gemini 2.0 Flash (Zero-roundtrip STT+LLM)
-  const processAudioWithGemini = async (base64Audio, mimeType) => {
-    if (!isActiveRef.current) return;
-    setStatus('thinking');
-
-    const screenContext = `\nCurrent screen context: ${getScreenContext()}`;
-    const dataContext = generateDataContext();
-
-    const now = new Date();
-    const localTimeContext = `\nCurrent local date and time: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}, ${now.toLocaleTimeString('en-US', { hour12: false })}. You MUST use this local date and time context to answer questions about the current day, date, year, month, or time in the user's language.`;
-
-    const systemPrompt = `
-You are "Michi AI" - a universal AI search and knowledge engine with access to comprehensive global information across all fields (weather, news, science, history, technology, daily life, culture, education, business, Japan, Uzbekistan, etc.).
-${localTimeContext}
-
-The user is speaking to you directly via recorded audio. You must listen to the audio data, transcribe it with high fidelity, and return a JSON structure answering their question.
-
-STRICT RESPONSE RULES:
-1. UNIVERSAL COMPREHENSION & RESPECTFUL ETIQUETTE:
-   - Always populate "userTranscription" with high-fidelity transcription of the spoken audio.
-   - If user speaks Japanese: Use proper Keigo (丁寧語 / 尊敬語) with polite greetings like "かしこまりました。" or "お疲れ様でございます。".
-   - If user speaks Uzbek: Use highly respectful Uzbek ("Assalomu alaykum", "Siz", "-siz", "marhamat").
-   - If user speaks English: Use warm, professional, polite expressions ("Certainly", "It is my pleasure").
-
-2. STRICT SEARCH ENGINE & CONVERSATIONAL MODE (NO PLATFORM CONTROL):
-   - Answer ANY user question directly with rich, accurate, detailed, and comprehensive text explanations.
-   - You NEVER execute UI commands, screen filtering, or platform navigation.
-   - ALWAYS set "command": "NONE".
-
-3. DYNAMIC RESPONSE LENGTH & CONCISE QUALITY:
-   - Simple questions (greetings, date/time): 1-2 concise, polite sentences.
-   - Medium questions (weather forecast, simple facts): 3-5 informative sentences.
-   - Complex questions (jobs, education, history, science, region guides, complex topics): 5-10 detailed, structured, comprehensive sentences.
-   - Always meaningful, clear, and rich — never include useless fluff or redundant filler words.
-
-Your task: analyze the user's speech and return a JSON object:
-{
-  "userTranscription": "<transcribed text of the user's speech in the language they spoke>",
-  "command": "NONE",
-  "response": "<rich, detailed, comprehensive, accurate, and polite text response directly answering the user's question>",
-  "language": "<detected language: uz, ja, or en>"
-}
-
-Return ONLY the raw JSON object, no markdown wrappers.
-`;
-
-    const recentHistory = conversationHistory.slice(-4);
-    const contents = [
-      ...recentHistory,
-      {
-        role: 'user',
-        parts: [
-          {
-            inlineData: {
-              mimeType: mimeType,
-              data: base64Audio
-            }
-          }
-        ]
-      }
-    ];
-
-    try {
-      const data = await fetchGeminiWithPool(contents, systemPrompt, screenContext, dataContext, true);
-
-      if (!isActiveRef.current) return;
-
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      const aiResult = safeJsonParse(rawText, '音声の解析に成功しました。');
-
-      const finalTranscription = aiResult.userTranscription || '';
-
-      // Update transcription in UI
-      setTranscript(finalTranscription);
-      setShowPill(true);
-
-      handleGeminiSuccess(aiResult, finalTranscription);
-
-    } catch (error) {
-      if (!isActiveRef.current) return;
-      console.error('Gemini API Error:', error);
-      setStatus('error');
-      
-      const errorText = error.message === 'quota_exceeded' 
-        ? t('aiSystemBusy', 'システムが混雑しています。')
-        : t('aiError', 'リクエストを処理できませんでした。');
-
-      setErrorMessage(errorText);
-
-      // Save error into persistent local chat history
-      try {
-        const savedHistory = JSON.parse(localStorage.getItem('michi_chat_history') || '[]');
-        savedHistory.push({
-          id: Date.now(),
-          question: transcript || (speechLangRef.current === 'ja' ? '音声リクエスト' : 'Ovozli so\'rov'),
-          answer: errorText,
-          isError: true,
-          command: 'ERROR',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-        localStorage.setItem('michi_chat_history', JSON.stringify(savedHistory.slice(-100)));
-      } catch(e){}
-
-      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
-      if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-
-      setTimerDuration(6000);
-      setShowPill(true);
-      setIsFadeOut(false);
-
-      dismissTimerRef.current = setTimeout(() => {
-        setIsFadeOut(true);
-        pillTimeoutRef.current = setTimeout(() => {
-          closePill();
-          if (isVoiceStandbyRef.current) scheduleRelisten();
-        }, 500);
-      }, 6000);
-
-      speakResponse(errorText, 'ja');
-    }
-  };
-
-  // Handle successful Gemini JSON parsing and routing
-  const handleGeminiSuccess = (aiResult, userText) => {
-    setStatus('speaking'); // Separate response display from listening phase
-    const detectedLang = aiResult.language || speechLangRef.current || 'ja';
-    const rawResp = aiResult.response || aiResult.text || userText;
-    const cleanRawResp = typeof rawResp === 'string'
-      ? rawResp.replace(/---\s*\n\s*\*\*【確認済み参照ソース】[\s\S]*$/gi, '').trim()
-      : rawResp;
-    const politeResponse = japaneseLanguageEngine.formatPoliteResponse(cleanRawResp, detectedLang);
-    setAiResponseText(politeResponse);
-    setShowPill(true);
-    setIsFadeOut(false);
-
-    // Save into 0ms instant local cache
-    michiCacheEngine.set(userText, politeResponse, detectedLang);
-
-    // Calculate dynamic reading duration based on character count for human reading pace
-    const readDuration = calculateReadingDuration(politeResponse, detectedLang);
-    setTimerDuration(readDuration);
-
-    // Clear any previous typewriter interval and dismiss timer
-    if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
-    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
-    if (pillTimeoutRef.current) clearTimeout(pillTimeoutRef.current);
-
-    // 1. Typewriter Streaming Effect vs Live Streamed Response
-    const scheduleAutoDismiss = () => {
-      dismissTimerRef.current = setTimeout(() => {
-        setIsFadeOut(true);
-        pillTimeoutRef.current = setTimeout(() => {
-          setShowPill(false);
-          setIsFadeOut(false);
-          setDisplayedAiText('');
-          setAiResponseText('');
-          if (isActiveRef.current) {
-            setStatus('idle');
-            startLocalSpeechRecognition();
-          }
-        }, 500); // 500ms fade-out transition duration
-      }, readDuration);
-    };
-
-    const hasAlreadyStreamed = (aiResponseTextRef.current && aiResponseTextRef.current.trim().length > 5) || 
-                               (displayedAiTextRef.current && displayedAiTextRef.current.trim().length > 5);
-
-    if (hasAlreadyStreamed) {
-      // Text was already streamed live chunk-by-chunk: finalize text smoothly without restarting from 0!
-      setDisplayedAiText(politeResponse);
-      setIsTyping(false);
-      scheduleAutoDismiss();
-    } else {
-      // Instant cache hit or non-streamed response: use smooth typewriter effect
-      setDisplayedAiText('');
-      setIsTyping(true);
-      let charIndex = 0;
-      const stepChunk = 2; // 2 characters per step for smooth fast writing
-      
-      typewriterIntervalRef.current = setInterval(() => {
-        charIndex += stepChunk;
-        if (charIndex >= politeResponse.length) {
-          setDisplayedAiText(politeResponse);
-          setIsTyping(false);
-          if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
-          typewriterIntervalRef.current = null;
-          scheduleAutoDismiss();
-        } else {
-          setDisplayedAiText(politeResponse.slice(0, charIndex));
-        }
-      }, 30);
-    }
-
-    // Record positive feedback in local learning engine
-    if (userText && aiResult.command && aiResult.command !== 'NONE') {
-      learningEngine.recordFeedback(userText, aiResult.command, true);
-    }
-
-    // Persist to device local storage (IndexedDB / LocalStorage) for 100% privacy
-    michiLocalStorageEngine.saveConversation({
-      question: userText,
-      answer: politeResponse,
-      language: detectedLang
-    }).then(newEntry => {
-      if (newEntry) {
-        setChatHistoryList(prev => [...prev, newEntry]);
-      }
-    }).catch(e => console.warn("Failed to save chat item:", e));
-
-    // Store interaction in conversation history
-    setConversationHistory(prev => [
-      ...prev,
-      { role: 'user', parts: [{ text: userText }] },
-      { role: 'model', parts: [{ text: politeResponse }] }
-    ]);
-
-    const isDelayedCommand = [
-      'NAVIGATE_TO_HOME', 'NAVIGATE_TO_JOBS', 'NAVIGATE_TO_ACADEMY',
-      'NAVIGATE_TO_SERVICE', 'NAVIGATE_TO_PROFILE', 'OPEN_RESUME',
-      'FILTER_JOBS', 'FILTER_ACADEMIES', 'GO_BACK', 'TOGGLE_THEME',
-      'NAVIGATE_TO_NOTIFICATIONS', 'NAVIGATE_TO_SETTINGS', 'NAVIGATE_TO_APPLICATIONS',
-      'NAVIGATE_TO_SAVED', 'NAVIGATE_TO_SHOUKAI', 'NAVIGATE_TO_MY_ADS',
-      'NAVIGATE_TO_EMPLOYEES', 'NAVIGATE_TO_PERSONAL_INFO', 'SELECT_JOB_BY_NAME'
-    ].includes(aiResult.command);
-
-    if (!isDelayedCommand && aiResult.command && aiResult.command !== 'NONE') {
-      // Execute the command immediately for instant UX feedback (e.g. music play/pause)
-      executeVoiceCommand(aiResult.command, aiResult);
-    }
-
-    // Speech synthesis cascade
-    speakResponse(politeResponse, detectedLang, () => {
-      if (isDelayedCommand) {
-        setTimeout(() => {
-          executeVoiceCommand(aiResult.command, aiResult);
-        }, 300);
-      }
-    });
-  };
-
-  // Execute UI commands in React using refs to avoid stale closures
-  const executeVoiceCommand = (command, result = {}) => {
-    const shouldClose = !isVoiceStandbyRef.current;
-    const activeMusicPlayer = musicPlayerRef.current;
-
-    const checkIsProfileComplete = () => {
-      if (profileData && (profileData.email === 'admin@driver.jp' || profileData.email === 'admin@sagawa.jp')) {
-        return true;
-      }
-      const hasFullName = !!(profileData.fullName && profileData.fullName.trim() !== '' && profileData.fullName !== 'Mehmon');
-      const hasBirthDate = !!profileData.birthDate;
-      const hasPhone = !!(profileData.phone && profileData.phone.trim() !== '');
-      const hasAddress = !!((profileData.address && profileData.address.trim() !== '') || (profileData.addressHistory && profileData.addressHistory.length > 0));
-      const hasEducation = !!((profileData.education && profileData.education.trim() !== '') || (profileData.educationHistory && profileData.educationHistory.length > 0));
-      return !!(hasFullName && hasBirthDate && hasPhone && hasAddress && hasEducation);
-    };
-
-    // List of navigation commands that require resetting selection overlays for tab visibility
-    const isNavigationCommand = [
-      'NAVIGATE_TO_HOME', 'NAVIGATE_TO_JOBS', 'NAVIGATE_TO_ACADEMY',
-      'NAVIGATE_TO_SERVICE', 'NAVIGATE_TO_PROFILE', 'OPEN_RESUME',
-      'FILTER_JOBS', 'FILTER_ACADEMIES', 'GO_BACK',
-      'NAVIGATE_TO_NOTIFICATIONS', 'NAVIGATE_TO_SETTINGS', 'NAVIGATE_TO_APPLICATIONS',
-      'NAVIGATE_TO_SAVED', 'NAVIGATE_TO_SHOUKAI', 'NAVIGATE_TO_MY_ADS',
-      'NAVIGATE_TO_EMPLOYEES', 'NAVIGATE_TO_PERSONAL_INFO', 'SELECT_JOB_BY_NAME'
-    ].includes(command);
-
-    if (isNavigationCommand) {
-      if (setSelectedJobRef.current && command !== 'SELECT_JOB_BY_NAME') setSelectedJobRef.current(null);
-      if (setSelectedSchoolRef.current) setSelectedSchoolRef.current(null);
-    }
-
-    switch (command) {
-      case 'GO_BACK':
-        if (setSelectedJobRef.current) setSelectedJobRef.current(null);
-        if (setSelectedSchoolRef.current) setSelectedSchoolRef.current(null);
-        if (setProfileActivePageRef.current) setProfileActivePageRef.current('main');
-        break;
-      case 'NAVIGATE_TO_HOME':
-        if (setActiveTabRef.current) setActiveTabRef.current('home');
-        break;
-      case 'NAVIGATE_TO_JOBS':
-        if (setActiveTabRef.current) setActiveTabRef.current('jobs');
-        break;
-      case 'NAVIGATE_TO_ACADEMY':
-        if (setActiveTabRef.current) setActiveTabRef.current('academy');
-        break;
-      case 'NAVIGATE_TO_SERVICE':
-        if (setActiveTabRef.current) setActiveTabRef.current('service');
-        break;
-      case 'NAVIGATE_TO_PROFILE':
-        if (setActiveTabRef.current) setActiveTabRef.current('profile');
-        if (setProfileActivePageRef.current) setProfileActivePageRef.current('main');
-        break;
-      case 'NAVIGATE_TO_NOTIFICATIONS':
-        if (setActiveTabRef.current) setActiveTabRef.current('profile');
-        if (setProfileActivePageRef.current) setProfileActivePageRef.current('notifications');
-        break;
-      case 'NAVIGATE_TO_SETTINGS':
-        if (setActiveTabRef.current) setActiveTabRef.current('profile');
-        if (setProfileActivePageRef.current) setProfileActivePageRef.current('settings');
-        break;
-      case 'NAVIGATE_TO_APPLICATIONS':
-        if (setActiveTabRef.current) setActiveTabRef.current('profile');
-        if (setProfileActivePageRef.current) setProfileActivePageRef.current('applications');
-        break;
-      case 'NAVIGATE_TO_SAVED':
-        if (setActiveTabRef.current) setActiveTabRef.current('profile');
-        if (setProfileActivePageRef.current) setProfileActivePageRef.current('saved_items');
-        break;
-      case 'NAVIGATE_TO_SHOUKAI':
-        if (setActiveTabRef.current) setActiveTabRef.current('profile');
-        if (setProfileActivePageRef.current) setProfileActivePageRef.current('my_shoukai');
-        break;
-      case 'NAVIGATE_TO_MY_ADS':
-        if (setActiveTabRef.current) setActiveTabRef.current('profile');
-        if (setProfileActivePageRef.current) setProfileActivePageRef.current('my_ads');
-        break;
-      case 'NAVIGATE_TO_EMPLOYEES':
-        if (setActiveTabRef.current) setActiveTabRef.current('profile');
-        if (setProfileActivePageRef.current) setProfileActivePageRef.current('employees');
-        break;
-      case 'NAVIGATE_TO_PERSONAL_INFO':
-        if (setActiveTabRef.current) setActiveTabRef.current('profile');
-        if (setProfileActivePageRef.current) setProfileActivePageRef.current('personalInfo');
-        break;
-      case 'MUSIC_PLAY':
-        if (activeMusicPlayer) {
-          if (typeof activeMusicPlayer.play === 'function') {
-            activeMusicPlayer.play();
-          } else if (!activeMusicPlayer.isPlaying) {
-            activeMusicPlayer.togglePlay();
-          }
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'MUSIC_PAUSE':
-        if (activeMusicPlayer) {
-          if (typeof activeMusicPlayer.pause === 'function') {
-            activeMusicPlayer.pause();
-          } else if (activeMusicPlayer.isPlaying) {
-            activeMusicPlayer.togglePlay();
-          }
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'MUSIC_NEXT':
-        if (activeMusicPlayer) {
-          activeMusicPlayer.nextTrack();
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'MUSIC_PREV':
-        if (activeMusicPlayer && typeof activeMusicPlayer.prevTrack === 'function') {
-          activeMusicPlayer.prevTrack();
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'READ_SCREEN':
-        // Prompt covers screen context organically
-        break;
-      case 'TOGGLE_THEME':
-        if (toggleDarkModeRef.current) {
-          toggleDarkModeRef.current();
-        } else {
-          const isDark = document.documentElement.classList.contains('dark-mode');
-          if (isDark) {
-            document.documentElement.classList.remove('dark-mode');
-            document.documentElement.classList.add('light-mode');
-          } else {
-            document.documentElement.classList.remove('light-mode');
-            document.documentElement.classList.add('dark-mode');
-          }
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'CHANGE_LANGUAGE':
-        const targetLang = result.targetLang || result.language || 'ja';
-        if (targetLang === 'uz' || targetLang.includes('uz')) {
-          i18n.changeLanguage('uz');
-        } else if (targetLang === 'en' || targetLang.includes('en')) {
-          i18n.changeLanguage('en');
-        } else {
-          i18n.changeLanguage('ja');
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'OPEN_RESUME':
-        if (setActiveTabRef.current) setActiveTabRef.current('profile');
-        if (setProfileActivePageRef.current) setProfileActivePageRef.current('resume_builder');
-        
-        setIsFillingResume(true);
-        setResumeStep('ask_name');
-        
-        const welcomeLang = i18n.language || 'uz';
-        const welcomeMsgs = {
-          uz: "Savollarimga qisqacha javob bersangiz, rezyumengizni to'g'ri to'ldirib boraman. Boshladik: Ismingiz va familiyangizni ayting.",
-          ja: "ご質問にお答えいただければ、履歴書を正確に入力いたします。それでは、お名前をフルネームで教えてください。",
-          en: "Please answer my questions to complete your resume. First, please state your full name."
-        };
-        const welcomeMsg = welcomeMsgs[welcomeLang.startsWith('uz') ? 'uz' : welcomeLang.startsWith('ja') ? 'ja' : 'en'] || welcomeMsgs['uz'];
-        
-        setAiResponseText(welcomeMsg);
-        setTranscript('');
-        setShowPill(true);
-        setStatus('speaking');
-        
-        speakResponse(welcomeMsg, welcomeLang, () => {
-          setStatus('idle');
-          startLocalSpeechRecognition();
-        });
-        break;
-      case 'CLEAR_RESUME_FORM':
-        window.dispatchEvent(new CustomEvent('michi-voice-resume-reset'));
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'CLEAR_APPLICATIONS':
-        if (setApplicationsRef.current) {
-          setApplicationsRef.current([]);
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'FILTER_JOBS':
-        if (setJobSearchQuery && setJobActiveSegment) {
-          const params = result.parameters || {};
-          setJobSearchQuery(params.searchQuery || '');
-          setJobActiveSegment(params.segment || 'all');
-          
-          if (setSelectedLicenses && params.licenses) {
-            setSelectedLicenses(Array.isArray(params.licenses) ? params.licenses : [params.licenses]);
-          }
-          if (setSelectedLangLevel && params.langLevel) {
-            setSelectedLangLevel(params.langLevel);
-          }
-          if (setSelectedBenefits && params.benefits) {
-            setSelectedBenefits(Array.isArray(params.benefits) ? params.benefits : [params.benefits]);
-          }
-          if (setMinSalary && params.minSalary !== undefined) {
-            setMinSalary(Number(params.minSalary));
-          }
-          if (setSelectedPrefecture && params.prefecture !== undefined) {
-            setSelectedPrefecture(params.prefecture);
-          }
-          
-          if (setActiveTabRef.current) setActiveTabRef.current('jobs');
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'RESET_FILTERS':
-        if (setJobSearchQuery) setJobSearchQuery('');
-        if (setJobActiveSegment) setJobActiveSegment('all');
-        if (setSelectedLicenses) setSelectedLicenses([]);
-        if (setSelectedLangLevel) setSelectedLangLevel('all');
-        if (setSelectedBenefits) setSelectedBenefits([]);
-        if (setMinSalary) setMinSalary(0);
-        if (setSelectedPrefecture) setSelectedPrefecture('all');
-        if (setActiveTabRef.current) setActiveTabRef.current('jobs');
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'FILTER_ACADEMIES':
-        if (setAcademySearchQuery) {
-          const params = result.parameters || {};
-          setAcademySearchQuery(params.searchQuery || '');
-          if (setActiveTabRef.current) setActiveTabRef.current('academy');
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'APPLY_TO_CURRENT':
-        if (!checkIsProfileComplete()) {
-          const lCode = i18n.language || 'uz';
-          const errorMsg = lCode.startsWith('uz')
-            ? "Kechirasiz, rezyumengiz hali to'liq emas. Arizangizni topshirish uchun avval uni to'ldirishimiz kerak. Keling boshlaymiz: ismingiz va familiyangizni ayting."
-            : lCode.startsWith('ja')
-            ? "申し訳ありません。応募を完了するにはプロフィールが不十分です。まず履歴書を作成しましょう。お名前をフルネームで教えてください。"
-            : "Sorry, your profile is incomplete. We need to fill in your resume first. Let's start: please state your full name.";
-          
-          setAiResponseText(errorMsg);
-          setShowPill(true);
-          setStatus('speaking');
-          speakResponse(errorMsg, lCode, () => {
-            if (setActiveTabRef.current) setActiveTabRef.current('profile');
-            if (setProfileActivePageRef.current) setProfileActivePageRef.current('resume_builder');
-            setIsFillingResume(true);
-            setResumeStep('ask_name');
-            setStatus('idle');
-            startLocalSpeechRecognition();
-          });
-          break;
-        }
-        if (selectedJob && handleApplyJob) {
-          handleApplyJob(selectedJob);
-        } else if (selectedSchool && handleApplySchool) {
-          handleApplySchool(selectedSchool);
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'SHARE_CURRENT':
-        if (selectedJob && handleShoukai) {
-          handleShoukai(selectedJob);
-        } else if (selectedSchool && handleShoukai) {
-          handleShoukai(selectedSchool);
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'CALL_COMPANY':
-        const activeItem = selectedJob || selectedSchool;
-        if (activeItem && activeItem.phone) {
-          window.open(`tel:${activeItem.phone}`);
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      case 'SELECT_JOB_BY_NAME':
-        const searchVal = (result.parameters?.name || '').toLowerCase();
-        if (searchVal && jobs && setSelectedJobRef.current) {
-          const found = jobs.find(j => 
-            j.title.toLowerCase().includes(searchVal) || 
-            j.companyName.toLowerCase().includes(searchVal)
-          );
-          if (found) {
-            setSelectedJobRef.current(found);
-          }
-        }
-        if (shouldClose && onCloseRef.current) onCloseRef.current();
-        break;
-      default:
-        break;
-    }
-  };
-
-  // Render setup/error modals if active and API key or mic permission is missing
-  if (isActive && (showKeyInput || micPermission === 'denied')) {
-    return (
-      <div className="voice-setup-overlay animate-fade-in">
-        <div className="voice-setup-modal glass squircle" role="dialog" aria-modal="true">
-          <button className="voice-close-btn" onClick={onClose} aria-label="Close Assistant">
-            <X size={18} />
-          </button>
-          
-          <div className="voice-modal-content">
-            <div className="voice-modal-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div className="ai-logo-gradient">
-                  <Sparkles size={20} color="#FFF" />
-                </div>
-                <h2>Michi Voice AI</h2>
-                <span className="ai-beta-tag">3.6 FLASH</span>
-              </div>
-
-              <button 
-                onClick={() => setIsSideDrawerOpen(true)}
-                style={{
-                  background: 'rgba(94, 92, 230, 0.15)',
-                  border: '1px solid rgba(94, 92, 230, 0.3)',
-                  color: 'var(--primary)',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  padding: '5px 12px',
-                  borderRadius: '16px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px'
-                }}
-              >
-                📜 {speechLang === 'ja' ? '会話履歴' : speechLang === 'uz' ? 'Tarix' : 'History'}
-              </button>
-            </div>
-
-            {showKeyInput && (
-              <div className="voice-sub-card">
-                <div className="voice-icon-box key-bg animate-pulse-slow">
-                  <span className="voice-icon-text">🔑</span>
-                </div>
-                <h3>Gemini API Key Required</h3>
-                <p>
-                  {t('apiRequiredDesc', 'Ovozli yordamchini ishlatish uchun bepul Google Gemini API kalitini kiriting. Kalit faqat brauzeringiz xotirasida xavfsiz saqlanadi.')}
-                </p>
-                <form onSubmit={saveApiKey} className="voice-key-form">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', textAlign: 'left' }}>
-                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Google Gemini API Key:</label>
-                    <input 
-                      type="password" 
-                      placeholder="AIzaSy..." 
-                      value={inputKeyTemp} 
-                      onChange={(e) => setInputKeyTemp(e.target.value)}
-                      className="voice-key-input"
-                      required
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', textAlign: 'left', marginTop: '6px' }}>
-                    <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>ElevenLabs API Key (Optional):</label>
-                    <input 
-                      type="password" 
-                      placeholder="Optional ElevenLabs key..." 
-                      value={elevenKeyTemp} 
-                      onChange={(e) => setElevenKeyTemp(e.target.value)}
-                      className="voice-key-input"
-                    />
-                  </div>
-                  <button type="submit" className="voice-key-btn btn-primary" style={{ marginTop: '8px' }}>
-                    {t('saveKeyBtn', 'Saqlash')}
-                  </button>
-                </form>
-                <a 
-                  href="https://aistudio.google.com/" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="voice-link"
-                >
-                  {t('getFreeKey', 'Bepul API kalit olish (Google AI Studio)')} &rarr;
-                </a>
-              </div>
-            )}
-
-            {!showKeyInput && micPermission === 'denied' && (
-              <div className="voice-sub-card animate-shake">
-                <div className="voice-icon-box lock-bg">
-                  <span className="voice-icon-text">🔒</span>
-                </div>
-                <h3>{t('micDeniedTitle', 'Mikrofon ruxsati rad etilgan')}</h3>
-                <div className="mic-instructions">
-                  <p><strong>{t('howToEnable', 'Ruxsat berish yo\'riqnomasi:')}</strong></p>
-                  <ol>
-                    <li>{t('step1', 'Brauzerning manzil satridagi qulf (lock) belgisini bosing.')}</li>
-                    <li>{t('step2', 'Mikrofon (Microphone) ruxsatini "Ruxsat berish" (Allow) rejimiga o\'tkazing.')}</li>
-                    <li>{t('step3', 'Sahifani yangilang yoki quyidagi tugmani bosing.')}</li>
-                  </ol>
-                </div>
-                <button 
-                  onClick={() => {
-                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                      navigator.mediaDevices.getUserMedia({ audio: true })
-                        .then(() => setMicPermission('granted'))
-                        .catch(() => setMicPermission('denied'));
-                    } else {
-                      window.location.reload();
-                    }
-                  }} 
-                  className="voice-retry-btn"
-                >
-                  <RefreshCw size={14} /> {t('checkPermissionBtn', 'Ruxsatni tekshirish')}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Render ambient voice control interface
   return (
     <>
-      {/* Robot Speech Bubble - floats near the top right below the header robot */}
-      {showPill && (
-        <div className={`voice-robot-speech-bubble animate-slide-in ${isFadeOut ? 'fade-out' : ''}`}>
-          <div className="speech-bubble-pointer"></div>
-          {(aiResponseText || errorMessage) && (
-            <div 
-              className="speech-bubble-timer-bar" 
-              key={aiResponseText || errorMessage} 
-              style={{ '--timer-duration': `${timerDuration}ms` }} 
-            />
-          )}
-          
-          <div className="speech-bubble-content" ref={speechContentRef}>
-            {/* Top Section: User Transcribed Question */}
-            {transcript && (
-              <div className="voice-card-section user-section">
-                <div className="card-badge-row">
-                  <div className="avatar-badge user-avatar-badge">
-                    <User size={13} className="badge-svg-icon" />
-                    <span>{speechLang === 'uz' ? 'Savolingiz' : speechLang === 'ja' ? 'ご質問' : 'Your Query'}</span>
-                  </div>
-                  <span className="card-timestamp">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                </div>
-                <p className="user-transcription-text">{transcript}</p>
-              </div>
+      {/* Michi AI ovozli pufakchasi (v3, premium) — faqat gapirilgandan keyin paydo bo'ladi */}
+      {showBubble && (
+        <div className={`voice-robot-speech-bubble vb animate-slide-in${statusChip ? ` is-${statusChip.tone}` : ''}`}>
+          <div className="speech-bubble-pointer" />
+
+          {/* Sarlavha: Michi AI + holat chipi + til + yopish */}
+          <header className="vb-header">
+            <div className="bubble-avatar ai-avatar vb-avatar" aria-hidden="true">
+              <Bot size={13} color="#FFF" strokeWidth={2.5} />
+            </div>
+            <span className="vb-title">Michi AI</span>
+            {statusChip && (
+              <span className={`vb-chip tone-${statusChip.tone}`}>
+                <i className="vb-chip__dot" aria-hidden="true" />
+                <span className="vb-chip__label">{statusChip.label}</span>
+              </span>
             )}
-            
-            {/* Middle Section: Thinking Pulse Indicator (only when thinking and no response yet) */}
-            {status === 'thinking' && !aiResponseText && !errorMessage && (
-              <div className="voice-card-section thinking-section">
-                <div className="card-badge-row">
-                  <div className="avatar-badge ai-avatar-badge thinking-glow">
-                    <Sparkles size={13} className="badge-svg-icon spin-sparkle" />
-                    <span>{speechLang === 'uz' ? 'Michi AI fikrlamoqda...' : speechLang === 'ja' ? '思考中...' : 'Thinking...'}</span>
-                  </div>
+            <div className="vb-header__actions">
+              <button
+                type="button"
+                className="vb-lang"
+                aria-label={`${t('aiSpeechLang')}: ${speechLangLabel}`}
+                title={t('aiSpeechLang')}
+                onClick={() => {
+                  const nextLang = getNextSpeechLang(speechLang);
+                  setSpeechLang(nextLang);
+                  localStorage.setItem('michi_speech_lang', nextLang);
+                }}
+              >
+                <Globe size={12} aria-hidden="true" />
+                <span>{speechLangLabel}</span>
+              </button>
+              <button
+                type="button"
+                className="vb-close"
+                onClick={closeBubble}
+                title={t('aiClose')}
+                aria-label={t('aiClose')}
+              >
+                <X size={13} strokeWidth={2.6} aria-hidden="true" />
+              </button>
+            </div>
+          </header>
+
+          <div className="speech-bubble-content vb-body" role="log" aria-live="polite" aria-atomic="false">
+            {/* Jo'natilgan savol */}
+            {transcript && (status === 'thinking' || aiResponseText) && (
+              <div className="bubble-row is-user vb-row">
+                <div className="bubble-avatar user-avatar vb-avatar" title={t('youLabel', 'You')}>
+                  <User size={13} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
                 </div>
-                <div className="thinking-dots-wave">
-                  <span className="pulse-dot"></span>
-                  <span className="pulse-dot"></span>
-                  <span className="pulse-dot"></span>
-                </div>
+                <p className="bubble-text bubble-text--user">{transcript}</p>
               </div>
             )}
 
-            {/* Bottom Section: AI Response Card (only when response is ready) */}
-            {aiResponseText && (
-              <div className="voice-card-section ai-section">
-                <div className="card-badge-row">
-                  <div className="avatar-badge ai-avatar-badge">
-                    <Bot size={14} className="badge-svg-icon" />
-                    <span>Michi AI</span>
-                  </div>
+            {/* O'ylamoqda (joy tejash uchun uch nuqtasiz) */}
+            {status === 'thinking' && (
+              <div className="bubble-row vb-row vb-status-row">
+                <div className="bubble-avatar thinking-avatar vb-avatar" aria-hidden="true">
+                  <Sparkles size={13} color="#FFF" strokeWidth={2.5} />
                 </div>
-                <p className="ai-response-text">
-                  {displayedAiText || aiResponseText}
-                  {isTyping && <span className="typewriter-cursor">|</span>}
+                <span className="vb-status-text" role="status">{t('aiThinking')}</span>
+              </div>
+            )}
+
+            {/* Javob (typewriter) */}
+            {aiResponseText && (
+              <div className="bubble-row vb-row vb-answer">
+                <div className="bubble-avatar ai-avatar vb-avatar" title="Michi AI">
+                  <Bot size={13} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
+                </div>
+                <p className={`bubble-text vb-answer__text ${speechLang.startsWith('ja') ? 'ja-text' : ''}`}>
+                  {displayedAiText}
+                  {isTyping && <span className="typewriter-cursor" aria-hidden="true">▍</span>}
                 </p>
               </div>
             )}
 
-            {errorMessage && (
-              <div className="voice-card-section error-section">
-                <div className="card-badge-row">
-                  <div className="avatar-badge error-avatar-badge">
-                    <AlertTriangle size={13} className="badge-svg-icon" />
-                    <span>{speechLang === 'uz' ? 'Xatolik' : 'Error'}</span>
-                  </div>
+            {/* Mikrofon / STT muammosi */}
+            {notice && (
+              <div className="bubble-row vb-row" role="alert">
+                <div className="bubble-avatar ai-avatar vb-avatar" aria-hidden="true">
+                  <Bot size={13} color="#FFF" strokeWidth={2.5} />
                 </div>
-                <p className="error-response-text">{errorMessage}</p>
+                <p className="bubble-text bubble-text--notice">{notice}</p>
               </div>
             )}
-            <div ref={chatEndRef} />
           </div>
-          
-          <div className="bubble-footer-actions">
-            <button 
-              className="voice-lang-toggle-bubble" 
-              onClick={cycleSpeechLanguage}
-              title={speechLang === 'ja' ? '音声言語を変更' : speechLang === 'en' ? 'Change Voice Language' : "Ovozli tilni o'zgartirish"}
-            >
-              {speechLang === 'uz' ? '🇺🇿 UZ' : speechLang === 'ja' ? '🇯🇵 JA' : '🇬🇧 EN'}
-            </button>
 
-            <button 
-              className="voice-history-btn"
-              onClick={() => setIsSideDrawerOpen(true)}
-              style={{
-                background: 'rgba(94, 92, 230, 0.12)',
-                border: '1px solid rgba(94, 92, 230, 0.25)',
-                color: 'var(--primary)',
-                fontSize: '11px',
-                fontWeight: '600',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
+          {/* Gapirilgan matn: ko'rib chiqish/tahrirlash, keyin faqat tugma bilan jo'natish */}
+          {showEditBar && (
+            <form
+              className="vb-compose"
+              onSubmit={(e) => {
+                e.preventDefault();
+                // Mikrofon o'chirilmaydi: bento karta yoniq ekan keyingi savollar ham eshitiladi
+                handleSendText(liveText);
               }}
             >
-              📜 {speechLang === 'ja' ? '会話履歴' : speechLang === 'uz' ? 'Tarix' : 'History'}
-            </button>
+              <div className="bubble-avatar user-avatar vb-avatar" title={t('youLabel', 'You')}>
+                <User size={13} color="#FFF" strokeWidth={2.5} aria-hidden="true" />
+              </div>
+              <input
+                type="text"
+                className="vb-compose__input"
+                value={liveText}
+                onChange={(e) => {
+                  setTranscript(e.target.value);
+                  setDrawerInput(e.target.value);
+                  setPendingTick(n => n + 1); // tahrirlanayotganda ham taymer qaytadan boshlanadi
+                }}
+                placeholder={t('aiEditPlaceholder')}
+                aria-label={t('aiEditPlaceholder')}
+              />
+              <button
+                type="submit"
+                className="vb-send"
+                aria-label={t('aiSend')}
+                title={t('aiSend')}
+                disabled={!liveText.trim()}
+              >
+                <SendHorizontal size={16} strokeWidth={2.4} aria-hidden="true" />
+              </button>
+            </form>
+          )}
 
-            <button 
-              className="voice-cache-clear-btn" 
-              onClick={() => {
-                clearChatHistory();
-                const msg = speechLang.startsWith('ja') 
-                  ? "【AIキャッシュ消去】会話メモリを全消去いたしました。"
-                  : speechLang.startsWith('uz')
-                  ? "AI kesh va muloqotlar tarixi tozaladi!"
-                  : "AI memory cache and history cleared!";
-                setAiResponseText(msg);
-                speakResponse(msg, speechLang);
-              }}
-              title={speechLang === 'ja' ? 'AIキャッシュ消去' : speechLang === 'uz' ? 'AI keshini tozalash' : 'Clear AI Cache'}
-              style={{
-                background: 'rgba(239, 68, 68, 0.15)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                color: '#ef4444',
-                fontSize: '11px',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              <Trash2 size={10} /> {speechLang === 'ja' ? '消去' : speechLang === 'uz' ? 'Tozalash' : 'Clear'}
-            </button>
-            
-            <button className="voice-bubble-close-btn" onClick={closePill}>
-              <X size={12} />
-            </button>
-          </div>
+          {/* Juda sekin avto-yopilish: izoh + chiziq (yangi ovozda qaytadan boshlanadi) */}
+          {showEditBar && (
+            <>
+              <p className="vb-timer-caption" aria-live="off">
+                {t('aiAutoCloseIn', { s: pendingSecondsLeft })}
+              </p>
+              <TimerBar key={`pending-${pendingTick}-${pendingStartAt}`} durationMs={PENDING_AUTO_CLOSE_MS} startedAt={pendingStartAt} />
+            </>
+          )}
+
+          {/* Javobni o'qish vaqti chizig'i */}
+          {aiResponseText && !isTyping && (
+            <TimerBar key={`${aiResponseText}-${readingStartAt}`} durationMs={bubbleTimerMs} startedAt={readingStartAt} />
+          )}
         </div>
       )}
 
-      {/* Non-Intrusive Floating AI Side Drawer Trigger (Always Visible for AI Hub Chat Access) */}
-      <MichiDrawerTrigger 
+      {/* 1. Suzuvchi Trigger Tugmasi */}
+      <MichiDrawerTrigger
         isOpen={isSideDrawerOpen}
-        onToggle={() => setIsSideDrawerOpen(prev => !prev)} 
-        chatCount={chatHistoryList.length} 
-        speechLang={speechLang} 
+        onToggle={() => setIsSideDrawerOpen(prev => !prev)}
+        chatCount={chatHistoryList.length}
+        speechLang={speechLang}
       />
 
-      {/* Slide-out Translucent Glass Side Drawer Panel */}
+      {/* 2. Asosiy Michi AI Side Drawer Interfeysi */}
       <MichiSideDrawer
         isOpen={isSideDrawerOpen}
-        onClose={() => setIsSideDrawerOpen(false)}
+        onClose={() => {
+          setIsSideDrawerOpen(false);
+          localSTT.stopListening();
+          if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+          }
+          setStatus('idle');
+        }}
         isActive={isActive}
         status={status}
         speechLang={speechLang}
         chatHistoryList={chatHistoryList}
+        profileData={profileData}
         transcript={transcript}
         aiResponseText={aiResponseText}
         displayedAiText={displayedAiText}
         drawerInput={drawerInput}
         setDrawerInput={setDrawerInput}
-        onSendText={handleSendDrawerText}
-        onQuickChipClick={handleQuickChipClick}
+        onSendText={() => handleSendText(drawerInput)}
+        onQuickChipClick={(query) => handleSendText(query)}
         onActivateAI={() => {
-          unlockMobileAudio();
-          if (setIsVoiceStandby) setIsVoiceStandby(true);
           if (onStartVoice) onStartVoice();
-          setTimeout(() => {
-            startLocalSpeechRecognition();
-          }, 100);
         }}
         onDeactivateAI={() => {
-          stopAllVoiceActivities();
-          setIsSideDrawerOpen(false);
-          if (setIsVoiceStandby) setIsVoiceStandby(false);
+          localSTT.stopListening(true);
+          if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+          }
+          setStatus('idle');
           if (onClose) onClose();
         }}
         onMicToggle={() => {
-          if (!isActive) {
-            unlockMobileAudio();
-            if (setIsVoiceStandby) setIsVoiceStandby(true);
-            if (onStartVoice) onStartVoice();
-            setTimeout(() => {
-              startLocalSpeechRecognition();
-            }, 100);
+          if (status === 'listening') {
+            localSTT.stopListening();
+            setStatus('idle');
           } else {
-            stopAllVoiceActivities();
-            if (setIsVoiceStandby) setIsVoiceStandby(false);
-            if (onClose) onClose();
+            setStatus('listening');
+            localSTT.startListening({
+              lang: getSttLangCode(speechLang),
+              onResult: (res) => {
+                if (res.cleanText || res.rawText) {
+                  setDrawerInput(res.cleanText || res.rawText);
+                }
+              },
+              onError: handleSttError,
+              onEnd: () => {
+                if (statusRef.current === 'listening') setStatus('idle');
+              }
+            });
           }
         }}
-        onClearHistory={() => {
-          clearChatHistory();
-          setChatHistoryList([]);
-        }}
-        onSpeakResponse={(text, lang) => speakResponse(text, lang)}
+        onClearHistory={clearChatHistory}
         speechContentRef={speechContentRef}
         chatEndRef={chatEndRef}
       />

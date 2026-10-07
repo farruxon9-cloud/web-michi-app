@@ -10,7 +10,7 @@ import { JLPT_N5_TO_N1_DATA } from '../data/jlptN5toN1GrammarData.js';
 
 class JLPTN1LanguageEngine {
   constructor() {
-    this.data = JLPT_N5_TO_N1_DATA;
+    this.data = JLPT_N5_TO_N1_DATA || {};
   }
 
   /**
@@ -18,7 +18,9 @@ class JLPTN1LanguageEngine {
    * @param {'N5'|'N4'|'N3'|'N2'|'N1'} level 
    */
   getGrammarByLevel(level = 'N1') {
-    return this.data.grammarLevels[level.toUpperCase()] || this.data.grammarLevels.N1;
+    const clean = (level || 'N1').toUpperCase().trim();
+    const grammarMap = this.data.grammarLevels || {};
+    return Array.isArray(grammarMap[clean]) ? [...grammarMap[clean]] : (grammarMap.N1 || []);
   }
 
   /**
@@ -28,7 +30,9 @@ class JLPTN1LanguageEngine {
   detectParticles(text) {
     if (!text || typeof text !== 'string') return [];
     const matchedParticles = [];
-    for (const [particle, info] of Object.entries(this.data.particleRules)) {
+    const particleRules = this.data.particleRules || {};
+
+    for (const [particle, info] of Object.entries(particleRules)) {
       if (text.includes(particle)) {
         matchedParticles.push({ particle, ...info });
       }
@@ -41,22 +45,21 @@ class JLPTN1LanguageEngine {
    * @param {string} text 
    */
   detectFormality(text) {
-    if (!text) return 'Casual';
-    if (text.includes('申し上げます') || text.includes('拝見') || text.includes('承知') || text.includes('参り') || text.includes('伺う')) {
+    if (!text || typeof text !== 'string') return 'Casual';
+    if (/(申し上げます|拝見|承知いた|参り|伺い|存じ|いたし)/.test(text)) {
       return 'Kenjougo (謙譲語 - Humble)';
     }
-    if (text.includes('いらっしゃる') || text.includes('お越し') || text.includes('ご覧になる') || text.includes('おっしゃる')) {
+    if (/(いらっしゃる|お越し|ご覧になる|おっしゃる|なさる|くださる)/.test(text)) {
       return 'Sonkeigo (尊敬語 - Respectful)';
     }
-    if (text.includes('です') || text.includes('ます') || text.includes('ください')) {
+    if (/(です|ます|でした|ました|ござい|ください)/.test(text)) {
       return 'Teineigo (丁寧語 - Polite)';
     }
     return 'Casual (普通形)';
   }
 
   /**
-   * Parse and analyze Japanese sentence structure, identifying JLPT level (N5-N1),
-   * matched grammar patterns, particles, formality, and Uzbek explanation.
+   * Parse and analyze Japanese sentence structure
    * @param {string} text 
    */
   analyzeSentenceStructure(text) {
@@ -74,25 +77,26 @@ class JLPTN1LanguageEngine {
     const matchedPatterns = [];
     const levelOrder = ['N1', 'N2', 'N3', 'N4', 'N5'];
     let highestLevel = 'N5';
+    const grammarMap = this.data.grammarLevels || {};
 
-    // Scan all JLPT levels for pattern matches
     for (const level of levelOrder) {
-      const patterns = this.data.grammarLevels[level] || [];
+      const patterns = grammarMap[level] || [];
       for (const item of patterns) {
-        // Handle slash-separated sub-patterns like 〜に関して / 〜に関する
+        if (!item?.pattern) continue;
+
         const subPatterns = item.pattern
           .split('/')
           .map(p => p.trim().replace(/〜/g, '').replace(/（.*?）/g, ''))
-          .filter(Boolean);
+          .filter(p => p.length >= 2);
 
-        if (subPatterns.some(sp => sp.length >= 2 && text.includes(sp))) {
+        if (subPatterns.some(sp => text.includes(sp))) {
           matchedPatterns.push({
             level,
             pattern: item.pattern,
-            meaning: item.meaning,
-            formula: item.formula,
-            example: item.example,
-            uz: item.uz
+            meaning: item.meaning || '',
+            formula: item.formula || '',
+            example: item.example || '',
+            uz: item.uz || ''
           });
           if (levelOrder.indexOf(level) < levelOrder.indexOf(highestLevel)) {
             highestLevel = level;
@@ -104,12 +108,11 @@ class JLPTN1LanguageEngine {
     const particlesUsed = this.detectParticles(text);
     const formality = this.detectFormality(text);
 
-    // Build Uzbek structural explanation
     const patternSummaryUz = matchedPatterns.length > 0
-      ? matchedPatterns.map(p => `• [${p.level}] ${p.pattern}: ${p.uz}`).join('\n')
-      : 'Standard Yaponiya gap tuzilishi.';
+      ? matchedPatterns.map(p => `• [${p.level}] ${p.pattern}: ${p.uz || p.meaning}`).join('\n')
+      : 'Standard yapon tili gap tuzilishi.';
 
-    const explanationUz = `🇺🇿 GAP STRUKTURASI TAHLILI:\n• Daraja: ${highestLevel}\n• Uslub: ${formality}\n• Grammatik Qoidalar:\n${patternSummaryUz}`;
+    const explanationUz = `🇺🇿 GAP STRUKTURASI TAHLILI:\n• Daraja: ${highestLevel}\n• Uslub: ${formality}\n• Grammatik qoidalar:\n${patternSummaryUz}`;
 
     return {
       originalText: text,
@@ -122,64 +125,54 @@ class JLPTN1LanguageEngine {
   }
 
   /**
-   * Dynamically build a Japanese sentence based on JLPT level, components, and politeness.
-   * @param {Object} options 
-   * @param {'N5'|'N4'|'N3'|'N2'|'N1'} options.level
-   * @param {string} options.subject
-   * @param {string} options.object
-   * @param {string} options.verb
-   * @param {string} [options.pattern]
-   * @param {boolean} [options.isKeigo=true]
+   * Dynamically build a Japanese sentence based on JLPT level
    */
-  buildSentencePattern({ level = 'N1', subject = '', object = '', verb = '', pattern = '', isKeigo = true }) {
+  buildSentencePattern({ level = 'N1', subject = '', object = '', verb = '', pattern = '', isKeigo = true } = {}) {
     let sentence = '';
-    const upperLevel = level.toUpperCase();
+    const upperLevel = (level || 'N1').toUpperCase().trim();
 
-    // Select pattern formula based on level if not explicitly provided
-    let targetPattern = pattern;
-    if (!targetPattern) {
-      const levelPatterns = this.getGrammarByLevel(upperLevel);
-      targetPattern = levelPatterns[0]?.pattern || '〜です / 〜ます';
-    }
+    const cleanSubject = typeof subject === 'string' ? subject.trim() : '';
+    const cleanObject = typeof object === 'string' ? object.trim() : '';
+    const cleanVerb = typeof verb === 'string' ? verb.trim() : '';
 
     switch (upperLevel) {
       case 'N1':
-        if (subject && object) {
-          sentence = `${subject}にあって、${object}を皮切りに${verb || '展開いたします'}。`;
-        } else if (object) {
-          sentence = `${object}を踏まえ、${verb || 'ご案内申し上げます'}。`;
+        if (cleanSubject && cleanObject) {
+          sentence = `${cleanSubject}にあって、${cleanObject}を皮切りに${cleanVerb || '展開いたします'}。`;
+        } else if (cleanObject) {
+          sentence = `${cleanObject}を踏まえ、${cleanVerb || 'ご案内申し上げます'}。`;
         } else {
-          sentence = `最高レベルの対応をもって${verb || '対応いたします'}。`;
+          sentence = `最高レベルの対応をもって${cleanVerb || '対応いたします'}。`;
         }
         break;
 
       case 'N2':
-        if (subject && object) {
-          sentence = `${subject}を踏まえて、${object}に関して${verb || 'ご案内いたします'}。`;
+        if (cleanSubject && cleanObject) {
+          sentence = `${cleanSubject}を踏まえて、${cleanObject}に関して${cleanVerb || 'ご案内いたします'}。`;
         } else {
-          sentence = `${object || 'ご要望'}に際して、${verb || '対応いたします'}。`;
+          sentence = `${cleanObject || 'ご要望'}に際して、${cleanVerb || '対応いたします'}。`;
         }
         break;
 
       case 'N3':
-        if (subject && object) {
-          sentence = `${subject}に関して、${object}を通じて${verb || '案内します'}。`;
+        if (cleanSubject && cleanObject) {
+          sentence = `${cleanSubject}に関して、${cleanObject}を通じて${cleanVerb || '案内します'}。`;
         } else {
-          sentence = `${object || '条件'}によって${verb || '異なります'}。`;
+          sentence = `${cleanObject || '条件'}によって${cleanVerb || '異なります'}。`;
         }
         break;
 
       case 'N4':
-        if (subject && object) {
-          sentence = `${subject}は${object}を${verb || '探す'}ことができます。`;
+        if (cleanSubject && cleanObject) {
+          sentence = `${cleanSubject}は${cleanObject}を${cleanVerb || '探す'}ことができます。`;
         } else {
-          sentence = `${object || '仕事'}を${verb || 'しなければなりません'}。`;
+          sentence = `${cleanObject || '仕事'}を${cleanVerb || 'しなければなりません'}。`;
         }
         break;
 
       case 'N5':
       default:
-        sentence = `${subject ? subject + 'は' : ''}${object ? object + 'を' : ''}${verb || '探します'}。`;
+        sentence = `${cleanSubject ? cleanSubject + 'は' : ''}${cleanObject ? cleanObject + 'を' : ''}${cleanVerb || '探します'}。`;
         break;
     }
 
@@ -192,13 +185,23 @@ class JLPTN1LanguageEngine {
 
   /**
    * Get detailed information on a specific grammar pattern
-   * @param {string} patternQuery 
    */
   getGrammarRuleDetails(patternQuery) {
-    if (!patternQuery) return null;
-    for (const [level, patterns] of Object.entries(this.data.grammarLevels)) {
+    if (!patternQuery || typeof patternQuery !== 'string') return null;
+    const clean = patternQuery.toLowerCase().trim();
+    if (!clean) return null;
+
+    const grammarMap = this.data.grammarLevels || {};
+
+    for (const [level, patterns] of Object.entries(grammarMap)) {
+      if (!Array.isArray(patterns)) continue;
       for (const item of patterns) {
-        if (item.pattern.includes(patternQuery) || item.meaning.toLowerCase().includes(patternQuery.toLowerCase())) {
+        if (!item) continue;
+        const pat = (item.pattern || '').toLowerCase();
+        const meaning = (item.meaning || '').toLowerCase();
+        const uz = (item.uz || '').toLowerCase();
+
+        if (pat.includes(clean) || meaning.includes(clean) || uz.includes(clean)) {
           return { level, ...item };
         }
       }
@@ -208,54 +211,61 @@ class JLPTN1LanguageEngine {
 
   /**
    * Transform casual/plain Japanese verb into Sonkeigo (尊敬語 - Respectful)
-   * @param {string} verb 
    */
   toSonkeigo(verb) {
-    if (!verb) return '';
-    for (const entry of Object.values(this.data.keigoMatrix)) {
-      if (entry.casual.includes(verb)) {
+    if (!verb || typeof verb !== 'string') return '';
+    const clean = verb.trim();
+    const keigoMatrix = this.data.keigoMatrix || {};
+
+    for (const entry of Object.values(keigoMatrix)) {
+      if (Array.isArray(entry.casual) && entry.casual.includes(clean)) {
         return entry.sonkeigo;
       }
     }
-    return `お${verb}になる`;
+    // Masu-stem asosida yumshoqroq fallback
+    const stem = clean.replace(/る$|く$|ぐ$|す$|つ$|ぬ$|ぶ$|む$|う$/, '');
+    return `お${stem || clean}になる`;
   }
 
   /**
    * Transform casual/plain Japanese verb into Kenjougo (謙譲語 - Humble)
-   * @param {string} verb 
    */
   toKenjougo(verb) {
-    if (!verb) return '';
-    for (const entry of Object.values(this.data.keigoMatrix)) {
-      if (entry.casual.includes(verb)) {
+    if (!verb || typeof verb !== 'string') return '';
+    const clean = verb.trim();
+    const keigoMatrix = this.data.keigoMatrix || {};
+
+    for (const entry of Object.values(keigoMatrix)) {
+      if (Array.isArray(entry.casual) && entry.casual.includes(clean)) {
         return entry.kenjougo;
       }
     }
-    return `お${verb}いたす`;
+    const stem = clean.replace(/る$|く$|ぐ$|す$|つ$|ぬ$|ぶ$|む$|う$/, '');
+    return `お${stem || clean}いたす`;
   }
 
   /**
    * Elevate Japanese text response to JLPT N1 Master Keigo etiquette
-   * @param {string} text 
    */
   elevateToN1MasterKeigo(text) {
     if (!text || typeof text !== 'string') return '';
 
-    let n1Text = text;
+    let n1Text = text.trim();
 
-    // Apply N1 Master Honorific Substitutions
+    // 1. Matndagi standart fe'llarni nozik hurmat shakllariga almashtirish
     n1Text = n1Text
-      .replace(/言います|言った/g, '申し上げます')
-      .replace(/見せます|見せる/g, 'ご案内申し上げます')
-      .replace(/探します|探す/g, 'お探しいたします')
-      .replace(/検索します|検索する/g, '検索いたします')
-      .replace(/行きます|行く/g, '参ります')
-      .replace(/知っています|知る/g, '承知いたしております')
-      .replace(/分かりました|了解/g, 'かしこまりました');
+      .replace(/言います/g, '申し上げます')
+      .replace(/見せます/g, 'ご案内申し上げます')
+      .replace(/探します/g, 'お探しいたします')
+      .replace(/検索します/g, '検索いたします')
+      .replace(/行きます/g, '参ります')
+      .replace(/知っています/g, '承知いたしております')
+      .replace(/分かりました|了解いたしました/g, 'かしこまりました');
 
-    // Add N1 Master Prefix greeting if appropriate
-    if (!n1Text.startsWith('かしこまりました') && !n1Text.startsWith('本日も')) {
-      n1Text = `かしこまりました。${n1Text}`;
+    // 2. Tabiiy va o'rinli salomlashuv tekshiruvi (takroriy qo'shishdan himoya)
+    const hasFormalOpening = /^(かしこまりました|承知いた|本日も|いつも|恐れ入りますが|誠に|お世話になっております)/.test(n1Text);
+    if (!hasFormalOpening && n1Text.length > 5) {
+      n1Text = `承知いたしました。${n1Text}`;
     }
 
     return n1Text;
@@ -265,16 +275,19 @@ class JLPTN1LanguageEngine {
    * Get coverage stats for JLPT N5-N1 levels
    */
   getProficiencyCoverage() {
-    const levels = Object.keys(this.data.grammarLevels);
+    const grammarMap = this.data.grammarLevels || {};
+    const levels = Object.keys(grammarMap);
     let totalPatterns = 0;
-    for (const list of Object.values(this.data.grammarLevels)) {
-      totalPatterns += list.length;
+
+    for (const list of Object.values(grammarMap)) {
+      if (Array.isArray(list)) totalPatterns += list.length;
     }
+
     return {
       levelsCovered: levels,
       totalGrammarPatterns: totalPatterns,
-      particleRulesCount: Object.keys(this.data.particleRules).length,
-      keigoVerbsCount: Object.keys(this.data.keigoMatrix).length,
+      particleRulesCount: Object.keys(this.data.particleRules || {}).length,
+      keigoVerbsCount: Object.keys(this.data.keigoMatrix || {}).length,
       n1MasterStatus: 'FULL_N1_SOTA'
     };
   }

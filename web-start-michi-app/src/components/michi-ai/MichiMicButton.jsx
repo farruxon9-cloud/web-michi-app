@@ -30,9 +30,9 @@ export default function MichiMicButton({
   };
 
   const getMicTitle = () => {
-    if (!isActive) return t('activateAiTitle');
-    if (status === 'listening') return t('listeningPlaceholder');
-    return t('deactivateAiTitle');
+    if (!isActive) return t('activateAiTitle', 'AI ni yoqish');
+    if (status === 'listening') return t('listeningPlaceholder', 'Tinglanmoqda...');
+    return t('deactivateAiTitle', 'AI ni o\'chirish');
   };
 
   return (

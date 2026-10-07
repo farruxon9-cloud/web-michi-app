@@ -1,12 +1,42 @@
-# Security & Cache Headers for Cloudflare Pages & Web Hosting (web.michi.jp.net)
 /*
-  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Content-Type-Options: nosniff
-  X-Frame-Options: SAMEORIGIN
-  X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: http:; media-src 'self' https: blob: data:; connect-src 'self' https: http://138.197.28.114:5678 wss: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';
+  Permissions-Policy: camera=(), microphone=(self), geolocation=(self), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; worker-src 'self' blob:; manifest-src 'self'; frame-src 'self' blob:; frame-ancestors 'self' https://admin.michi.jp.net; base-uri 'self'; form-action 'self'; object-src 'self' blob:; upgrade-insecure-requests
 
-# Long-term caching for immutable hashed static assets
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+/audio/*
+  Cache-Control: public, max-age=2592000
+  Content-Type: audio/mp4
+
+/index.html
+  Cache-Control: no-cache
+
+/sw.js
+  Cache-Control: no-cache
+
+/registerSW.js
+  Cache-Control: no-cache
+
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: no-cache
+
+/favicon.ico
+  Cache-Control: no-cache
+
+/favicon.svg
+  Cache-Control: no-cache
+
+/apple-touch-icon.png
+  Cache-Control: no-cache
+
+/masked-icon.svg
+  Cache-Control: no-cache
+
+/pwa-*
+  Cache-Control: no-cache

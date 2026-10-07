@@ -154,7 +154,6 @@ export default function CustomInlineDropdown({
         <ChevronDown 
           size={16} 
           color="var(--primary)" 
-          aria-hidden="true"
           style={{ 
             transform: isOpen ? 'rotate(180deg)' : 'none', 
             transition: 'transform 0.2s ease',
@@ -246,7 +245,7 @@ export default function CustomInlineDropdown({
                   }}
                 >
                   <span>{opt.name}</span>
-                  {isSelected && <Check size={16} color="#28a745" aria-hidden="true" />}
+                  {isSelected && <Check size={16} color="#28a745" />}
                 </div>
               );
             })}

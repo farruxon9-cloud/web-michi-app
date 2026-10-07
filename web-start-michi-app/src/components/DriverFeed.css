@@ -748,7 +748,7 @@ html.dark-mode .filter-badge {
   background: rgba(0, 0, 0, 0.4); /* Slightly darker for better focus */
   backdrop-filter: blur(16px);    /* Enhanced glass blur */
   -webkit-backdrop-filter: blur(16px);
-  z-index: var(--z-modal);
+  z-index: 12000;
   display: flex;
   align-items: center;            /* Centered in the middle of simulator/phone viewport */
   justify-content: center;
@@ -1037,7 +1037,7 @@ html.dark-mode .townwork-tab-btn.active::after {
   padding: 14px 20px;
   background: var(--card-bg);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
-  z-index: var(--z-content);
+  z-index: 20;
 }
 
 .townwork-btn-clear {
@@ -1183,7 +1183,7 @@ html.dark-mode .townwork-tab-btn.active::after {
   position: sticky;
   right: 0;
   flex-shrink: 0;
-  z-index: var(--z-content);
+  z-index: 10;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1394,7 +1394,7 @@ html.dark-mode .chip-svg-icon {
 .job-map-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
+  z-index: 1000;
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -1480,7 +1480,7 @@ html.dark-mode .chip-svg-icon {
   background: linear-gradient(135deg, #34C759 0%, #249D44 100%);
   border-color: #FFFFFF;
   box-shadow: 0 6px 20px rgba(52, 199, 89, 0.6);
-  z-index: var(--z-content);
+  z-index: 999;
 }
 
 @media (prefers-color-scheme: light) {
@@ -1509,282 +1509,9 @@ html.dark-mode .chip-svg-icon {
   min-height: 156px;
 }
 
-/* ============================================================
-   RESPONSIVE DESIGN SYSTEM & DESKTOP ENHANCEMENTS (BOSQICH 3.2)
-   ============================================================ */
 
-/* Map Modal Body Base Layout */
-.job-map-modal-body {
-  flex: 1;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  overflow: hidden;
-}
-
-.job-map-modal-sidebar {
-  display: none;
-}
-
-.job-map-modal-map {
-  flex: 1;
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-/* 3.2.8 Filter Chips Hover Effects */
-@media (hover: hover) and (pointer: fine) {
-  .job-chip {
-    transition: all 0.2s ease;
-  }
-  .job-chip:hover {
-    background: rgba(10, 132, 255, 0.15);
-    color: var(--primary);
-    transform: translateY(-1px);
-  }
-  .filter-tag-chip {
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .filter-tag-chip:hover {
-    background: rgba(10, 132, 255, 0.12);
-    border-color: var(--primary);
-    color: var(--primary);
-    transform: translateY(-1px);
-  }
-  .active-chip {
-    transition: all 0.2s ease;
-  }
-  .active-chip:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(10, 132, 255, 0.2);
-  }
-  .segment:hover {
-    background: rgba(118, 118, 128, 0.15);
-    color: var(--primary);
-  }
-  .prefecture-pill-btn:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-    transform: translateY(-1px);
-  }
-}
-
-/* 3.2.7 Image Size — Mobile Default (< 768px) */
-@media (max-width: 767px) {
-  .job-card-img {
-    width: 105px !important;
-    min-width: 105px !important;
-    max-width: 105px !important;
-    height: 105px !important;
-  }
-}
-
-/* ------------------------------------------------------------
-   TABLET BREAKPOINT (768px – 1199px)
-   ------------------------------------------------------------ */
-@media (min-width: 768px) {
-  /* 3.2.1 Grid Layout: 2 Columns on Tablet */
-  .jobs-list {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 16px !important;
-    padding: 16px !important;
-  }
-
-  /* 3.2.7 Image Size — Tablet (140px) */
-  .job-card-img {
-    width: 140px !important;
-    min-width: 140px !important;
-    max-width: 140px !important;
-    height: 140px !important;
-  }
-
-  /* 3.2.2 Horizontal Scroll -> Grid Wrap */
-  .segmented-control {
-    flex-wrap: wrap !important;
-    overflow-x: visible !important;
-  }
-
-  .active-filter-chips-row {
-    flex-wrap: wrap !important;
-    overflow-x: visible !important;
-  }
-
-  .filter-tags {
-    flex-wrap: wrap !important;
-  }
-
-  /* 3.2.3 Qidiruv paneli — desktop kengligi (max-width: 600px markazlashtirilgan) */
-  .search-row {
-    max-width: 600px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    width: 100% !important;
-  }
-
-  /* 3.2.4 Segment filter — desktop kengligi */
-  .segmented-control {
-    max-width: 600px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    justify-content: center !important;
-    padding: 4px !important;
-    gap: 4px !important;
-  }
-
-  .segment {
-    padding: 9px 16px !important;
-    font-size: 13px !important;
-  }
-
-  /* 3.2.5 Advanced Filter Modal -> Sidebar Panel (Slide in from Right) */
-  .filter-drawer-overlay {
-    justify-content: flex-end !important;
-    padding: 0 !important;
-  }
-
-  .townwork-filter-drawer {
-    width: 420px !important;
-    max-width: 420px !important;
-    height: 100vh !important;
-    max-height: 100vh !important;
-    border-radius: 24px 0 0 24px !important;
-    box-shadow: -12px 0 40px rgba(0, 0, 0, 0.25) !important;
-    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-  }
-
-  /* 3.2.6 Xarita modal — desktop split view */
-  .job-map-modal-card {
-    width: 90vw !important;
-    max-width: 1100px !important;
-    height: 85vh !important;
-    max-height: 750px !important;
-    border-radius: 28px !important;
-  }
-
-  .job-map-modal-body {
-    display: flex !important;
-    flex-direction: row !important;
-  }
-
-  .job-map-modal-sidebar {
-    display: flex !important;
-    flex-direction: column !important;
-    width: 320px !important;
-    min-width: 320px !important;
-    background: var(--card-bg) !important;
-    border-right: 1px solid var(--glass-border) !important;
-    padding: 14px !important;
-    overflow-y: auto !important;
-    box-sizing: border-box !important;
-  }
-
-  .job-map-sidebar-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .job-map-sidebar-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    border-radius: 14px;
-    background: var(--bg-color);
-    border: 1px solid var(--glass-border);
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .job-map-sidebar-item:hover,
-  .job-map-sidebar-item.active {
-    border-color: var(--primary);
-    background: rgba(10, 132, 255, 0.08);
-    transform: translateX(2px);
-  }
-
-  .sidebar-item-logo {
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
-    object-fit: cover;
-    flex-shrink: 0;
-  }
-
-  .sidebar-item-info {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    flex: 1;
-  }
-
-  .sidebar-item-company {
-    font-size: 10.5px;
-    color: var(--text-secondary);
-    font-weight: 600;
-  }
-
-  .sidebar-item-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-main);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .sidebar-item-salary {
-    font-size: 11.5px;
-    font-weight: 800;
-    color: #30D158;
-  }
-}
-
-/* ------------------------------------------------------------
-   DESKTOP BREAKPOINT (≥ 1200px)
-   ------------------------------------------------------------ */
-@media (min-width: 1200px) {
-  /* 3.2.1 Grid Layout: 3 Columns on Desktop */
-  .jobs-list {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 20px !important;
-    padding: 20px !important;
-  }
-
-  /* 3.2.7 Image Size — Desktop (180px) */
-  .job-card-img {
-    width: 180px !important;
-    min-width: 180px !important;
-    max-width: 180px !important;
-    height: 180px !important;
-  }
-
-  .job-card-hz {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .search-row {
-    max-width: 680px !important;
-  }
-
-  .segmented-control {
-    max-width: 680px !important;
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-
+/* Owner-only moderation notice (company dashboard): hidden / rejected by an admin */
+.moderation-notice { display: flex; flex-direction: column; gap: 3px; margin: 6px 0 8px; padding: 9px 11px; border-radius: 12px; font-size: 12.5px; line-height: 1.45; color: #b45309; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.32); }
+.moderation-notice strong { font-weight: 700; }
+.moderation-notice-hint { opacity: 0.85; font-size: 11.5px; }
+.dark-mode .moderation-notice { color: #fbbf24; background: rgba(245, 158, 11, 0.12); }
