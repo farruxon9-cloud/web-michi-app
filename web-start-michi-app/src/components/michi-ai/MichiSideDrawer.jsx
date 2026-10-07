@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { getModalRoot } from '../AppSheet';
 import MichiDrawerHeader from './MichiDrawerHeader';
 import MichiQuickChips from './MichiQuickChips';
 import MichiActivationCard from './MichiActivationCard';
@@ -10,8 +12,8 @@ export default function MichiSideDrawer({
   onClose,
   isActive,
   status,
-  speechLang,
-  chatHistoryList,
+  speechLang = 'ja',
+  chatHistoryList = [],
   transcript,
   aiResponseText,
   displayedAiText,
@@ -23,7 +25,7 @@ export default function MichiSideDrawer({
   onDeactivateAI,
   onMicToggle,
   onClearHistory,
-  onSpeakResponse,
+  profileData,
   speechContentRef,
   chatEndRef
 }) {
@@ -33,14 +35,14 @@ export default function MichiSideDrawer({
 
   const handleCopy = (text, idKey) => {
     if (!text) return;
-    navigator.clipboard.writeText(text);
+    navigator.clipboard?.writeText(text).catch(() => {});
     setCopiedId(idKey);
     setTimeout(() => {
       setCopiedId(null);
     }, 2000);
   };
 
-  return (
+  const drawerContent = (
     <div className="voice-side-drawer-overlay" onClick={onClose}>
       <aside className="voice-side-drawer-panel animate-slide-left" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
         {/* Modular Drawer Header */}
@@ -71,7 +73,7 @@ export default function MichiSideDrawer({
           displayedAiText={displayedAiText}
           copiedId={copiedId}
           onCopy={handleCopy}
-          onSpeakResponse={onSpeakResponse}
+          profileData={profileData}
           speechLang={speechLang}
           speechContentRef={speechContentRef}
           chatEndRef={chatEndRef}
@@ -92,4 +94,6 @@ export default function MichiSideDrawer({
       </aside>
     </div>
   );
+
+  return createPortal(drawerContent, getModalRoot() || document.body);
 }

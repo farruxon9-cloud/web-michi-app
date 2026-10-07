@@ -2,18 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Compass, ShieldAlert, Sparkles, MapPin, Navigation, Info, Clock, Calendar, Truck, CheckCircle2, MessageSquare, AlertTriangle, Send, Check, Play, Pause, Locate, Car, Bike, Plus, Minus, Layers, Trash2, Bookmark, X, Save, ChevronDown, ChevronUp, Volume2, VolumeX, Menu, Search, Share2, Star, Cloud, Train, Binoculars, ArrowUpDown, User } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
+import * as maplibregl from 'maplibre-gl';
 import ReactMap from 'react-map-gl/maplibre';
+const { Marker } = maplibregl;
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './JDMNavigation.css';
-
-// Dynamic import for maplibre-gl to reduce initial bundle size
-let maplibreglPromise = null;
-const loadMapLibre = () => {
-  if (!maplibreglPromise) {
-    maplibreglPromise = import('maplibre-gl').then(m => m.default || m);
-  }
-  return maplibreglPromise;
-};
 import { checkClearanceLimits, MLIT_RESTRICTIONS } from '../utils/mlitRestrictions';
 import { parseOSRMSteps, parseValhallaSteps, decodePolyline6, getRemainingMetrics, getCountdownText, formatDistanceJa } from '../utils/turnInstructions';
 import { fetchOverpassRestrictions, checkOverpassRestrictions, mergeRestrictionResults } from '../utils/overpassRestrictions';
@@ -482,20 +475,6 @@ const getDynamicFitPadding = (map, sheetDetentValue, isRoutePreviewActive = fals
 export default function JDMNavigation({ onBack, showJDMNavigation, darkMode }) {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'uz';
-
-  const [maplibreglModule, setMaplibreglModule] = useState(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    loadMapLibre().then(mod => {
-      if (isMounted) {
-        setMaplibreglModule(mod);
-      }
-    });
-    return () => { isMounted = false; };
-  }, []);
-
-  const Marker = maplibreglModule?.Marker || maplibreglModule?.default?.Marker;
 
   const localize = (strings) => {
     if (!strings || typeof strings !== 'object') return '';
@@ -2931,7 +2910,7 @@ const formatText = (template, vars = {}) => {
           onClick={handleMapClick}
           style={{ width: '100%', height: '100%' }}
           mapStyle={darkMode ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' : 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'}
-          mapLib={maplibreglModule || loadMapLibre()}
+          mapLib={maplibregl}
           onLoad={(e) => {
             const map = e.target;
             mapInstanceRef.current = map;
@@ -4363,7 +4342,7 @@ const formatText = (template, vars = {}) => {
       {/* Rich Frosted Glass Route Save Modal */}
       {isSaveModalOpen && (
         <div className="save-route-modal-backdrop glass">
-          <div className="save-route-modal-content nav-card glass squircle animate-scale-up" role="dialog" aria-modal="true" style={{ width: '280px', padding: '16px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)' }}>
+          <div className="save-route-modal-content nav-card glass squircle animate-scale-up" style={{ width: '280px', padding: '16px', border: '1px solid var(--glass-border)', background: 'var(--card-bg)' }}>
             <h3 style={{ margin: '0 0 10px 0', fontSize: '12.5px', fontWeight: '900', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Save size={14} color="#30D158" />
               <span>{getNavText('saveRoute')}</span>
@@ -4651,7 +4630,7 @@ const formatText = (template, vars = {}) => {
           background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: '20px'
         }} onClick={() => setShowAttributionModal(false)}>
-          <div role="dialog" aria-modal="true" style={{
+          <div style={{
             maxWidth: '380px', width: '100%', maxHeight: '80vh', overflowY: 'auto',
             background: 'var(--card-bg)', borderRadius: '20px', padding: '24px',
             border: '1px solid var(--glass-border)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
@@ -4701,7 +4680,7 @@ const formatText = (template, vars = {}) => {
       {/* 🛡️ Premium Geolocations Consent Modal */}
       {showGpsConsentModal && (
         <div className="om-consent-modal-overlay">
-          <div className="om-consent-modal animate-fade-in" role="dialog" aria-modal="true">
+          <div className="om-consent-modal animate-fade-in">
             <div className="om-consent-icon-wrap">
               <Navigation size={32} style={{ color: '#007aff', transform: 'rotate(45deg)' }} fill="#007aff" />
             </div>

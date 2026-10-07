@@ -1167,7 +1167,20 @@ const translation = {
   "deleteAccountConfirmMsg": "After 30 days your account, listings, applications and other data are permanently deleted. You can cancel any time within 30 days.",
   "loginSuspendedUntil": "This account is suspended until {{date}}.",
   "loginSuspendedPermanent": "This account has been suspended.",
-  "loginSuspendedHelp": "Questions? Contact support@michi.jp.net."
+  "loginSuspendedHelp": "Questions? Contact support@michi.jp.net.",
+  "aiListening": "Listening…",
+  "aiListeningHint": "Ask your question",
+  "aiThinking": "Michi AI is thinking",
+  "aiSend": "Send",
+  "aiEditPlaceholder": "Review or edit your question…",
+  "aiClose": "Close",
+  "aiSpeechLang": "Speech language",
+  "aiMicDenied": "Microphone access is blocked. Please allow it in your browser settings.",
+  "aiSttUnsupported": "This browser does not support voice input. Please type instead.",
+  "aiMicError": "Could not hear you. Please try again.",
+  "aiErrorOccurred": "Something went wrong. Please try again.",
+  "actionExecuted": "Done.",
+  "aiDisclaimer": "※ Michi AI uses AI technology and may generate inaccurate information. Check official sources for important decisions."
 };
 
 export default { translation };

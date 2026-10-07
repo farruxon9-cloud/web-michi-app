@@ -1108,7 +1108,20 @@ const translation = {
   "deleteAccountConfirmMsg": "Sau 30 ngày, tài khoản, tin đăng, hồ sơ ứng tuyển và dữ liệu khác sẽ bị xóa vĩnh viễn. Bạn có thể hủy bất cứ lúc nào trong 30 ngày.",
   "loginSuspendedUntil": "Tài khoản này bị tạm khóa đến {{date}}.",
   "loginSuspendedPermanent": "Tài khoản này đã bị khóa.",
-  "loginSuspendedHelp": "Thắc mắc? Liên hệ support@michi.jp.net."
+  "loginSuspendedHelp": "Thắc mắc? Liên hệ support@michi.jp.net.",
+  "aiListening": "Đang nghe…",
+  "aiListeningHint": "Hãy nói câu hỏi của bạn",
+  "aiThinking": "Michi AI đang suy nghĩ",
+  "aiSend": "Gửi",
+  "aiEditPlaceholder": "Xem lại hoặc sửa câu hỏi…",
+  "aiClose": "Đóng",
+  "aiSpeechLang": "Ngôn ngữ giọng nói",
+  "aiMicDenied": "Micrô đang bị chặn. Hãy cho phép trong cài đặt trình duyệt.",
+  "aiSttUnsupported": "Trình duyệt này không hỗ trợ nhập bằng giọng nói. Vui lòng gõ chữ.",
+  "aiMicError": "Không nghe rõ. Vui lòng thử lại.",
+  "aiErrorOccurred": "Đã xảy ra lỗi. Vui lòng thử lại.",
+  "actionExecuted": "Đã thực hiện.",
+  "aiDisclaimer": "※ Michi AI sử dụng AI và có thể đưa ra thông tin không chính xác. Hãy kiểm tra nguồn chính thức cho các quyết định quan trọng."
 };
 
 export default { translation };

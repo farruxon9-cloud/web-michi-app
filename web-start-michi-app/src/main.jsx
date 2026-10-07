@@ -1,12 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
+import { AuthProvider } from './context/AuthContext'
 import './i18n'; // Import i18n setup
 import './index.css'
 
-// Global visual error logger for client-side debugging
-if (typeof window !== 'undefined') {
+// Global visual error logger for client-side debugging (DEV mode only)
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
   const showVisualError = (msg) => {
     let container = document.getElementById('debug-error-console');
     if (!container) {
@@ -68,9 +68,8 @@ if (typeof window !== 'undefined') {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <AuthProvider>
       <App />
-    </BrowserRouter>
+    </AuthProvider>
   </React.StrictMode>,
 )
-

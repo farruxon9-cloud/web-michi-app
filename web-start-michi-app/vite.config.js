@@ -4,37 +4,28 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // '/' (not './'): with a relative base, refreshing a nested URL on the web
+  // requested /some/path/assets/*.js and got index.html → white screen.
+  // Capacitor serves from the WebView root, so '/' works there too.
   base: '/',
   build: {
-    sourcemap: false,
-    chunkSizeWarningLimit: 1200,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/react-router-dom/')) {
-            return 'vendor-react';
-          }
-          if (id.includes('node_modules/lucide-react/')) {
-            return 'vendor-icons';
-          }
-          if (id.includes('node_modules/maplibre-gl/') || id.includes('node_modules/leaflet/') || id.includes('node_modules/react-map-gl/')) {
-            return 'vendor-maps';
-          }
-          if (id.includes('node_modules/i18next/') || id.includes('node_modules/react-i18next/')) {
-            return 'vendor-i18n';
-          }
-        }
-      }
-    },
+    minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
-        drop_debugger: true
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace']
       }
     }
   },
   server: {
-    allowedHosts: true
+    allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'https://api.michi.jp.net',
+        changeOrigin: true,
+        secure: true
+      }
+    }
   },
   optimizeDeps: {
     exclude: ['maplibre-gl']
@@ -43,75 +34,31 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'logo.png', 'logo.webp', 'truck.png', 'truck.webp', 'school.png', 'school.webp'],
+      includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        id: 'michi-web-app',
-        name: 'Michi App — Drive Your Career in Japan',
+        name: 'Michi App',
         short_name: 'Michi',
-        description: 'Michi app for Japan — Find driver jobs, get certified at driving academies, and access dedicated truck navigation.',
-        start_url: '/',
-        scope: '/',
-        theme_color: '#0A84FF',
-        background_color: '#07090E',
+        description: 'Michi app for Japan - Driver and driving academy database platform',
+        theme_color: '#5E5CE6',
+        background_color: '#1C1C1E',
         display: 'standalone',
-        display_override: ['window-controls-overlay', 'standalone', 'minimal-ui', 'browser'],
-        orientation: 'any',
-        categories: ['business', 'navigation', 'education', 'utilities'],
-        shortcuts: [
-          {
-            name: 'Driver Jobs',
-            short_name: 'Jobs',
-            description: 'Search truck and delivery driver jobs in Japan',
-            url: '/jobs',
-            icons: [{ src: 'logo.png', sizes: '512x512' }]
-          },
-          {
-            name: 'Driving Academies',
-            short_name: 'Academy',
-            description: 'Find driving schools and get licensed in Japan',
-            url: '/academy',
-            icons: [{ src: 'school.png', sizes: '920x920' }]
-          },
-          {
-            name: 'Truck Navigation',
-            short_name: 'Navi',
-            description: 'Open JDM Truck GPS Navigation',
-            url: '/navigation',
-            icons: [{ src: 'truck.png', sizes: '835x835' }]
-          }
-        ],
-        screenshots: [
-          {
-            src: 'logo.png',
-            sizes: '512x512',
-            type: 'image/png',
-            form_factor: 'wide',
-            label: 'Michi App Desktop'
-          },
-          {
-            src: 'logo.png',
-            sizes: '512x512',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'Michi App Mobile'
-          }
-        ],
+        orientation: 'portrait',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: 'pwa-192x192.png?v=4',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'pwa-512x512.png?v=4',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'pwa-maskable-512x512.png?v=4',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
           }
         ]
       },

@@ -4,22 +4,20 @@
    ============================================================ */
 
 .job-detail-container {
-  position: fixed !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  height: 100dvh !important;
-  background: var(--bg-color) !important;
-  z-index: calc(var(--z-modal, 900) + 100) !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  display: flex !important;
-  flex-direction: column !important;
-  box-sizing: border-box !important;
-  padding-bottom: 110px !important;
+  position: absolute;
+  top: 56px;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-width: 100%;
+  background: var(--bg-color);
+  z-index: 200;
+  overflow-y: auto;
+  overflow-x: hidden; /* Prevent horizontal scroll completely */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding-bottom: 96px; /* Exact formula: (0px detail padding + 96px container) - 84px (BottomNav top) = 12px visual gap */
 }
 
 .detail-header-image {
@@ -70,7 +68,7 @@
   left: 0;
   width: 100%;
   box-sizing: border-box;
-  z-index: var(--z-header);
+  z-index: 250;
   display: flex;
   justify-content: space-between;
   padding: 0 16px;
@@ -99,7 +97,7 @@
   border-radius: 32px 32px 0 0;
   margin-top: -32px;
   position: relative;
-  z-index: var(--z-content);
+  z-index: 10;
 }
 
 .company-header {
@@ -332,39 +330,7 @@
   color: #FF9F0A;
 }
 
-/* ====== PASTKI E'LON TUGMALARI (STICKY BOTTOM FLOATING BAR ON RESPONSIVE) ====== */
-@media (max-width: 1023px) {
-  .detail-right-col {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: calc(var(--z-modal, 900) + 10) !important;
-    padding: 10px 14px max(12px, env(safe-area-inset-bottom)) 14px !important;
-    background: var(--glass-bg, rgba(255, 255, 255, 0.88)) !important;
-    backdrop-filter: blur(25px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
-    border-top: 1px solid var(--glass-border, rgba(0, 0, 0, 0.08)) !important;
-    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15) !important;
-    box-sizing: border-box !important;
-  }
-
-  html.dark-mode .detail-right-col {
-    background: rgba(20, 20, 24, 0.88) !important;
-    border-top-color: rgba(255, 255, 255, 0.1) !important;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.45) !important;
-  }
-
-  .sticky-action {
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    backdrop-filter: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-}
-
+/* ====== PASTKI E'LON TUGMALARI (IN-FLOW AT PAGE END) ====== */
 .sticky-action {
   position: relative;
   margin: 0;
@@ -841,137 +807,12 @@ html.dark-mode .ssw-requirements-block {
   border-color: rgba(175, 82, 222, 0.25);
 }
 
-/* ============================================================
-   RESPONSIVE DESIGN & DESKTOP ENHANCEMENTS (BOSQICH 3.3)
-   ============================================================ */
-
-/* Base Layout Classes */
-.detail-main-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-}
-
-.detail-left-col {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.detail-right-col {
-  width: 100%;
-}
-
-/* ------------------------------------------------------------
-   TABLET & DESKTOP BREAKPOINT (≥ 768px)
-   ------------------------------------------------------------ */
+/* ====== DESKTOP 768PX+ COMPACT CONTAINER BOUNDS ====== */
 @media (min-width: 768px) {
   .job-detail-container {
-    left: 260px !important;
-    width: calc(100vw - 260px) !important;
-    padding-bottom: 40px !important;
-  }
-
-  .detail-header-image {
-    height: 320px !important;
-  }
-
-  .detail-content {
-    max-width: 1060px !important;
-    margin: -36px auto 0 auto !important;
-    padding: 28px 24px 40px 24px !important;
-    border-radius: 36px 36px 0 0 !important;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15) !important;
-  }
-
-  /* 3.3.1 Desktop: Ikki ustunli layout */
-  .detail-main-layout {
-    display: grid !important;
-    grid-template-columns: 1fr 340px !important;
-    gap: 28px !important;
-    align-items: start !important;
-  }
-
-  .detail-left-col {
-    display: flex !important;
-    flex-direction: column !important;
-    min-width: 0 !important;
-  }
-
-  .detail-right-col {
-    position: sticky !important;
-    top: 80px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    z-index: var(--z-sticky) !important;
-  }
-
-  /* 3.3.3 Company logo — Desktop o'lcham (72px) */
-  .detail-logo {
-    width: 72px !important;
-    height: 72px !important;
-    border-radius: 18px !important;
-  }
-
-  .detail-title {
-    font-size: 25px !important;
-    line-height: 1.25 !important;
-  }
-
-  /* 3.3.2 Bento kartochkalar — Desktop Grid */
-  .job-dashboard-layout {
-    gap: 16px !important;
-  }
-
-  .db-list-rows {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px 16px !important;
-  }
-
-  .db-list-row {
-    border-bottom: 1px solid rgba(142, 142, 147, 0.08) !important;
-    padding: 8px 10px !important;
-    border-radius: 10px !important;
-    background: rgba(118, 118, 128, 0.03) !important;
-  }
-
-  /* 3.3.4 Sticky Apply bar — Desktop variant (Panel in right column) */
-  .sticky-action {
-    flex-direction: column !important;
-    padding: 20px !important;
-    gap: 12px !important;
-    border-radius: 24px !important;
-    border: 1px solid var(--glass-border) !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12) !important;
-  }
-
-  .apply-btn {
+    max-width: var(--app-max-w, 820px) !important;
+    margin: 0 auto !important;
     width: 100% !important;
-    height: 48px !important;
-    font-size: 14px !important;
-    border-radius: 16px !important;
+    box-sizing: border-box !important;
   }
 }
-
-/* ------------------------------------------------------------
-   LARGE DESKTOP BREAKPOINT (≥ 1200px)
-   ------------------------------------------------------------ */
-@media (min-width: 1200px) {
-  .detail-content {
-    max-width: 1140px !important;
-  }
-
-  .detail-main-layout {
-    grid-template-columns: 1fr 360px !important;
-    gap: 32px !important;
-  }
-
-  /* 3.3.2 Bento Grid — 3-4 Ustunli Layout */
-  .db-schedule-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-

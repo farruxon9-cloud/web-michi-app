@@ -54,7 +54,6 @@ export default function ReferralModal({ isOpen, onConfirm, onCancel, jobTitle })
   return (
     /* Fon — qorong'i shaffof qatlam */
     <div
-      className="referral-modal-overlay animate-fade-in"
       style={{
         position: 'fixed',
         inset: 0,
@@ -75,11 +74,11 @@ export default function ReferralModal({ isOpen, onConfirm, onCancel, jobTitle })
     >
       {/* Modal oynasi */}
       <div
-        className="referral-modal-card glass squircle"
         role="dialog"
         aria-modal="true"
+        className="glass squircle"
         style={{
-          maxWidth: '420px',
+          maxWidth: '360px',
           width: '100%',
           padding: '24px',
           display: 'flex',
@@ -98,7 +97,7 @@ export default function ReferralModal({ isOpen, onConfirm, onCancel, jobTitle })
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#0A84FF'
             }}>
-              <Users size={18} aria-hidden="true" />
+              <Users size={18} />
             </div>
             <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--text-main)' }}>
               {t('referralModalTitle', 'Shoukai (紹介)')}
@@ -113,7 +112,7 @@ export default function ReferralModal({ isOpen, onConfirm, onCancel, jobTitle })
               color: 'var(--text-secondary)', padding: 4
             }}
           >
-            <X size={20} aria-hidden="true" />
+            <X size={20} />
           </button>
         </div>
 
@@ -189,7 +188,7 @@ export default function ReferralModal({ isOpen, onConfirm, onCancel, jobTitle })
             }}
           >
             {t('applyBtn', 'Ariza yuborish')}
-            <ArrowRight size={15} aria-hidden="true" />
+            <ArrowRight size={15} />
           </button>
         </div>
 

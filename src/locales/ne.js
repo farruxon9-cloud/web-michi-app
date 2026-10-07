@@ -1108,7 +1108,20 @@ const translation = {
   "deleteAccountConfirmMsg": "३० दिनपछि तपाईंको खाता, विज्ञापन, आवेदन र अन्य डाटा स्थायी रूपमा मेटिन्छ। ३० दिनभित्र जुनसुकै बेला रद्द गर्न सकिन्छ।",
   "loginSuspendedUntil": "यो खाता {{date}} सम्म निलम्बित छ।",
   "loginSuspendedPermanent": "यो खाता निलम्बित गरिएको छ।",
-  "loginSuspendedHelp": "प्रश्न भए support@michi.jp.net मा सम्पर्क गर्नुहोस्।"
+  "loginSuspendedHelp": "प्रश्न भए support@michi.jp.net मा सम्पर्क गर्नुहोस्।",
+  "aiListening": "सुन्दैछु…",
+  "aiListeningHint": "आफ्नो प्रश्न भन्नुहोस्",
+  "aiThinking": "Michi AI सोच्दैछ",
+  "aiSend": "पठाउनुहोस्",
+  "aiEditPlaceholder": "प्रश्न जाँच्नुहोस् वा सम्पादन गर्नुहोस्…",
+  "aiClose": "बन्द गर्नुहोस्",
+  "aiSpeechLang": "बोलीको भाषा",
+  "aiMicDenied": "माइक्रोफोन अनुमति छैन। ब्राउजर सेटिङमा अनुमति दिनुहोस्।",
+  "aiSttUnsupported": "यो ब्राउजरले आवाज इनपुट समर्थन गर्दैन। कृपया टाइप गर्नुहोस्।",
+  "aiMicError": "आवाज बुझ्न सकिएन। फेरि प्रयास गर्नुहोस्।",
+  "aiErrorOccurred": "केही गलत भयो। फेरि प्रयास गर्नुहोस्।",
+  "actionExecuted": "सम्पन्न भयो।",
+  "aiDisclaimer": "※ Michi AI ले AI प्रयोग गर्छ र गलत जानकारी दिन सक्छ। महत्त्वपूर्ण निर्णयका लागि आधिकारिक स्रोत जाँच्नुहोस्।"
 };
 
 export default { translation };

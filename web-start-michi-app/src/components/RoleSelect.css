@@ -701,13 +701,4 @@ html.dark-mode .premium-input-wrapper:focus-within {
   animation: fadeIn 0.25s ease;
 }
 
-@media (min-width: 768px) {
-  .role-container {
-    max-width: 500px !important;
-    margin: 0 auto !important;
-    width: 100% !important;
-  }
-}
-
-
 

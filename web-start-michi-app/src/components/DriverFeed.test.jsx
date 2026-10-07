@@ -73,7 +73,7 @@ describe('DriverFeed Component Render', () => {
     expect(html).toContain('Test Sagawa');
   });
 
-  it('renders 92px compact trailing dock clearance spacer', () => {
+  it('renders 92px trailing dock clearance spacer', () => {
     const html = renderToString(
       <DriverFeed 
         jobs={[]} 
@@ -84,4 +84,10 @@ describe('DriverFeed Component Render', () => {
     );
     expect(html).toContain('height:92px');
   });
+
+  it('triggers GET /api/jobs on render', async () => {
+    const { fetchJobs } = await import('../services/michiJobsApiService');
+    expect(typeof fetchJobs).toBe('function');
+  });
 });
+

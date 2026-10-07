@@ -1,17 +1,11 @@
 .profile-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0; /* Extends to bottom of screen so cards scroll smoothly under glass BottomNav */
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  overflow-x: hidden;
-  padding-bottom: 104px; /* 104px scroll padding for exact 20px clearance gap above BottomNav */
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 12px !important;
   width: 100% !important;
   box-sizing: border-box !important;
-  -webkit-overflow-scrolling: touch;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -35,17 +29,7 @@
 }
 
 .profile-container.sub-page-view {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  touch-action: pan-y;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 0px !important;
+  padding-bottom: 12px !important;
 }
 
 .profile-container.sub-page-view > .sub-page-header,
@@ -54,7 +38,7 @@
 }
 
 .profile-container.sub-page-view > .profile-menu {
-  padding-bottom: 0px !important;
+  padding-bottom: 12px !important;
 }
 
 @keyframes skeletonPulse {
@@ -727,7 +711,7 @@ html.light-mode .contract-btn:active {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 16px;
+  padding: 14px 16px;
   border: 1px solid var(--glass-border) !important;
   border-radius: 20px !important;
   background: var(--card-bg) !important;
@@ -1126,7 +1110,7 @@ html.light-mode .contract-btn:active {
 /* Sub-page back button pointer safety and positioning */
 .sub-page-header {
   position: relative;
-  z-index: var(--z-content);
+  z-index: 10;
 }
 
 .sub-page-tab-track {
@@ -1141,7 +1125,7 @@ html.light-mode .contract-btn:active {
 
 .sub-page-header .icon-btn {
   position: relative;
-  z-index: var(--z-content);
+  z-index: 20;
   pointer-events: auto !important;
   cursor: pointer !important;
   display: flex !important;
@@ -1164,7 +1148,7 @@ html.light-mode .contract-btn:active {
   top: 16px;
   left: 0;
   width: 100%;
-  z-index: var(--z-nav);
+  z-index: 250;
   pointer-events: none;
   background: transparent;
   padding: 0 16px;
@@ -1729,145 +1713,15 @@ button.profile-btn-interactive {
   letter-spacing: -0.2px;
 }
 
-/* ==========================================================================
-   BOSQICH 3.5: PROFILE RESPONSIVE ENHANCEMENTS
-   ========================================================================== */
-
-/* 3.5.1 Profil bosh sahifa — desktop ikki ustunli */
+/* ====== DESKTOP 768PX+ COMPACT CONTAINER BOUNDS ====== */
 @media (min-width: 768px) {
-  .profile-container:has(.profile-header):has(.profile-menu) {
-    display: grid !important;
-    grid-template-columns: 320px 1fr !important;
-    gap: 24px !important;
-    max-width: 1200px !important;
-    margin: 0 auto !important;
-    padding: 24px !important;
-    align-items: start !important;
-  }
-
-  .profile-container:has(.profile-header):has(.profile-menu) > .profile-header {
-    background: var(--card-bg, rgba(255, 255, 255, 0.05));
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-    border-radius: 24px;
-    padding: 32px 20px;
-    position: sticky;
-    top: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
-  }
-
-  .profile-container:has(.profile-header):has(.profile-menu) > .profile-menu {
-    padding: 0 !important;
-  }
-
-  .profile-main-view {
-    display: grid !important;
-    grid-template-columns: 320px 1fr !important;
-    gap: 24px !important;
-    max-width: 1200px !important;
-    margin: 0 auto !important;
-    align-items: start !important;
-  }
-
-  .profile-main-view > .profile-header-card {
-    position: sticky;
-    top: 24px;
-  }
-}
-
-/* 3.5.2 Contact grid — responsive: Mobil (<440px 1 col), Tablet (440px-1199px 2 cols), Desktop (>=1200px 3 cols) */
-.about-contact-btn-grid,
-.contact-grid,
-.about-contact-grid {
-  display: grid !important;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px !important;
-  width: 100% !important;
-}
-
-@media (max-width: 440px) {
-  .about-contact-btn-grid,
-  .contact-grid,
-  .about-contact-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-@media (min-width: 1200px) {
-  .about-contact-btn-grid,
-  .contact-grid,
-  .about-contact-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-}
-
-/* 3.5.3 Ariza ro'yxatlari — jadval/kartochka (Mobil: kartochka, Desktop: table view) */
-.desktop-only {
-  display: none !important;
-}
-
-@media (min-width: 768px) {
-  .desktop-only {
-    display: flex !important;
-  }
-
-  .mobile-only {
-    display: none !important;
-  }
-
-  .applications-list {
-    gap: 10px !important;
-    max-width: 1000px;
-    margin: 0 auto;
-  }
-
-  .applications-table-header {
-    display: grid !important;
-    grid-template-columns: 2fr 1.2fr 1fr;
-    padding: 12px 20px !important;
-    font-size: 13px !important;
-    font-weight: 700 !important;
-    color: var(--text-secondary) !important;
-    border-bottom: 1px solid var(--glass-border) !important;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 12px 12px 0 0;
-  }
-
-  .applications-list .application-card {
-    display: grid !important;
-    grid-template-columns: 2fr 1.2fr 1fr !important;
-    align-items: center !important;
-    padding: 16px 20px !important;
-    border-radius: 16px !important;
-  }
-
-  .applications-list .application-card .app-main-info {
-    margin-bottom: 0 !important;
-  }
-
-  .applications-list .application-card .status-pill {
-    justify-self: start;
-  }
-}
-
-/* 3.5.4 Settings — desktop markazlashtirilgan (max-width: 600px; margin: 0 auto;) */
-@media (min-width: 768px) {
-  .settings-container,
-  .settings-section-wrap,
-  .settings-page-content,
-  .profile-container:has(.settings-toggle-row) > .profile-menu,
-  .profile-container:has(.settings-toggle-row) > .sub-page-header {
-    max-width: 600px !important;
+  .profile-container {
+    max-width: var(--app-max-w, 820px) !important;
     margin: 0 auto !important;
     width: 100% !important;
-  }
-
-  .settings-section {
-    max-width: 600px !important;
-    margin: 0 auto 16px auto !important;
-    width: 100% !important;
+    box-sizing: border-box !important;
   }
 }
-
 
 
 

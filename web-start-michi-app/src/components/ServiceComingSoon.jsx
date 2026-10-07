@@ -10,7 +10,7 @@ export default function ServiceComingSoon() {
     <div className="coming-soon-container fade-in">
       <div className="coming-soon-content">
         <div className="icon-wrapper">
-          <Wrench size={48} color="#AF52DE" aria-hidden="true" />
+          <Wrench size={48} color="#AF52DE" />
         </div>
         <h2>{t('comingSoon', 'Tez kunda')}</h2>
         <p>{t('comingSoonDesc', 'Tez orada ushbu bo\'limda yangi xizmatlar paydo bo\'ladi.')}</p>

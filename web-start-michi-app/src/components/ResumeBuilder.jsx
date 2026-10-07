@@ -1,8 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, User, Phone, Briefcase, GraduationCap, Award, BookOpen, FileText, Loader2, Sparkles, ShieldCheck, CheckCircle2, X, Plus } from 'lucide-react';
-import { generateRirekisho } from '../utils/resumeGenerator';
+import { 
+  ArrowLeft, User, Phone, Briefcase, GraduationCap, 
+  Award, BookOpen, FileText, Loader2, Sparkles, 
+  CheckCircle2, Download, Eye
+} from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { generateRirekishoBlob } from '../utils/resumeGenerator';
+import { saveResumeBlob, safeResumeFilename, isMobileDevice } from '../utils/resumeDownload';
+import ResumeVoiceAgent from './resume/ResumeVoiceAgent';
 import './ResumeBuilder.css';
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+// Typewriter speed: short values are typed visibly, long texts faster so it never feels slow
+const typeDelay = (len) => (len <= 16 ? 60 : len <= 60 ? 34 : len <= 200 ? 16 : 7);
+
+const JLPT_LEVELS = ['N1', 'N2', 'N3', 'N4', 'N5'];
+
+// Stable signature of the resume content — used to know whether a generated PDF is still up to date
+const resumeSignature = (data) => {
+  try { return JSON.stringify(data); } catch { return String(Date.now()); }
+};
 
 const getJapaneseEra = (year) => {
   const y = parseInt(year, 10);
@@ -23,7 +41,7 @@ const getJapaneseEra = (year) => {
 };
 
 export default function ResumeBuilder({ 
-  profileData, 
+  profileData = {}, 
   onUpdateProfile, 
   onBack,
   isVoiceActive,
@@ -32,33 +50,9 @@ export default function ResumeBuilder({
   setIsVoiceStandby
 }) {
   const { t, i18n } = useTranslation();
-  const currentLang = i18n.language || 'uz';
-
-  const getFullNamePlaceholder = () => {
-    switch (currentLang) {
-      case 'ja': return '例：山田 太郎 (YAMADA TARO)';
-      case 'uz': return 'Masalan: ALIMOV ANVAR';
-      case 'ru': return 'Например: ALIMOV ANVAR';
-      case 'en': return 'e.g., ALIMOV ANVAR';
-      case 'vi': return 'Ví dụ: ALIMOV ANVAR';
-      case 'zh': return '例如：ALIMOV ANVAR';
-      case 'hi': return 'उदा. ALIMOV ANVAR';
-      default: return 'Masalan: ALIMOV ANVAR';
-    }
-  };
-
-  const getFuriganaPlaceholder = () => {
-    switch (currentLang) {
-      case 'ja': return '例：ヤマダ タロウ';
-      case 'uz': return 'Masalan: アリモフ アンバル';
-      case 'ru': return 'Например: アリモフ アンバル';
-      case 'en': return 'e.g., アリモフ アンバル';
-      case 'vi': return 'Ví dụ: アリモフ アンバル';
-      case 'zh': return '例如：アリモフ アンバル';
-      case 'hi': return 'उदा. アリモフ アンバル';
-      default: return 'Masalan: アリモフ アンバル';
-    }
-  };
+  // Dedicated resume interviewer (independent from the global AI bento assistant)
+  const [isAgentOn, setIsAgentOn] = useState(false);
+  const typingTokenRef = useRef(0);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -79,30 +73,46 @@ export default function ResumeBuilder({
     workHistory: [],
     driverLicenses: [],
     techCertificates: [],
-    jlptStatus: profileData.jlptStatus || null
+    jlptStatus: null
   });
 
-  const [pdfStatus, setPdfStatus] = useState(null); // null, 'loading_font', 'generating_pdf', 'downloading', 'completed', 'failed'
+  const [pdfStatus, setPdfStatus] = useState(null);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [pdfNotice, setPdfNotice] = useState(null); // { type: 'success' | 'error', text }
+  const lastBlobRef = useRef(null);      // last generated PDF blob
+  const lastSigRef = useRef(null);       // signature of the data it was generated from
+  const noticeTimerRef = useRef(null);
+  const isMobile = isMobileDevice();
 
-  // JLPT Verification simulation states
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationProgress, setVerificationProgress] = useState(0);
-  const [verificationStatusText, setVerificationStatusText] = useState('');
-  const [detectedLevel, setDetectedLevel] = useState('N3');
-  const [detectedCertNo, setDetectedCertNo] = useState('');
-  const [verificationStage, setVerificationStage] = useState('idle'); // 'idle', 'uploading', 'analyzing', 'success'
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const fileInputRef = useRef(null);
+  // Auto-save: push edits to the app profile (which persists them) shortly after typing stops.
+  // Guarded by isHydrated so the empty initial form can never overwrite saved data.
+  const [isHydrated, setIsHydrated] = useState(false);
+  const onUpdateProfileRef = useRef(onUpdateProfile);
+  useEffect(() => { onUpdateProfileRef.current = onUpdateProfile; }, [onUpdateProfile]);
+  useEffect(() => {
+    if (!isHydrated) return undefined;
+    const timer = setTimeout(() => onUpdateProfileRef.current?.(formData), 800);
+    return () => clearTimeout(timer);
+  }, [formData, isHydrated]);
 
-  // Local state for Day, Month, Year select dropdowns
+  // Sana boshqaruvi
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedDay, setSelectedDay] = useState('');
 
-  const debounceTimeoutRef = useRef(null);
+  const previousUrlRef = useRef(null);
 
-  // Sync initial data ONCE on mount
+  // 1. Blob URL larni tozalash (Memory Leak Prevention)
+  const setCleanPreviewUrl = useCallback((newUrl) => {
+    if (previousUrlRef.current && previousUrlRef.current.startsWith('blob:')) {
+      URL.revokeObjectURL(previousUrlRef.current);
+    }
+    previousUrlRef.current = newUrl;
+    setPdfPreviewUrl(newUrl);
+  }, []);
+
+  // 2. Boshlang'ich ma'lumotlarni sinxronlash
   useEffect(() => {
     const bDate = profileData.birthDate || '';
     const initialData = {
@@ -120,16 +130,21 @@ export default function ResumeBuilder({
       selfPR: profileData.selfPR || '',
       hobbies: profileData.hobbies || '',
       personalRequests: profileData.personalRequests || '貴社規定に従います。',
-      educationHistory: profileData.educationHistory ? profileData.educationHistory.map(edu => ({
-        school: edu.school || '',
-        major: edu.major || edu.degree || '',
-        startDate: edu.startDate || '',
-        endDate: edu.endDate || edu.gradDate || ''
-      })) : [],
-      workHistory: profileData.workHistory ? [...profileData.workHistory] : [],
-      driverLicenses: profileData.driverLicenses ? [...profileData.driverLicenses] : [],
-      techCertificates: profileData.techCertificates ? [...profileData.techCertificates] : [],
-      jlptStatus: profileData.jlptStatus || null
+      educationHistory: Array.isArray(profileData.educationHistory) 
+        ? profileData.educationHistory.map(edu => ({
+            school: edu.school || '',
+            major: edu.major || edu.degree || '',
+            startDate: edu.startDate || '',
+            endDate: edu.endDate || edu.gradDate || ''
+          })) 
+        : [],
+      workHistory: Array.isArray(profileData.workHistory) ? [...profileData.workHistory] : [],
+      driverLicenses: Array.isArray(profileData.driverLicenses) ? [...profileData.driverLicenses] : [],
+      techCertificates: Array.isArray(profileData.techCertificates) ? [...profileData.techCertificates] : [],
+      // Legacy data from the old "verification" flow is kept only as a self-declared level
+      jlptStatus: profileData.jlptStatus?.level
+        ? { level: profileData.jlptStatus.level, selfDeclared: true }
+        : null
     };
 
     setFormData(initialData);
@@ -143,22 +158,30 @@ export default function ResumeBuilder({
       }
     }
 
-    // Generate preview using initial data
-    handlePreviewPDF(initialData);
+    setIsHydrated(true);
+
+    // The global AI bento assistant must stay quiet here: the resume interviewer owns the microphone
+    if (setIsVoiceActive) setIsVoiceActive(false);
+    if (setIsVoiceStandby) setIsVoiceStandby(false);
+
+    // PDF is generated on demand (preview / download buttons), not on every mount or keystroke.
 
     return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
+      typingTokenRef.current += 1; // finish any running typewriter instantly
+      if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
+      if (previousUrlRef.current && previousUrlRef.current.startsWith('blob:')) {
+        URL.revokeObjectURL(previousUrlRef.current);
       }
-      // Auto-turn OFF AI voice assistant when leaving Resume Builder page so it resets cleanly
+      lastBlobRef.current = null;
       if (setIsVoiceActive) setIsVoiceActive(false);
       if (setIsVoiceStandby) setIsVoiceStandby(false);
     };
   }, []);
 
-  // Handle voice updates from Voice Assistant questionnaire
+  // 3. Ovozli yordamchi orqali rezyumeni to'ldirish hodisasi
   useEffect(() => {
     const handleVoiceUpdate = (e) => {
+      if (!e.detail) return;
       const { field, value } = e.detail;
       setFormData(prev => {
         let updated;
@@ -170,146 +193,142 @@ export default function ResumeBuilder({
         } else {
           updated = { ...prev, [field]: value };
         }
-        
-        // Auto scroll and highlight the updated field
+
         setTimeout(() => {
           const inputEl = document.getElementById(field);
           if (inputEl) {
+            // No focus(): focusing would pop up the on-screen keyboard on phones
             inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            inputEl.focus();
             inputEl.classList.add('voice-highlight');
-            setTimeout(() => inputEl.classList.remove('voice-highlight'), 3000);
+            setTimeout(() => inputEl.classList.remove('voice-highlight'), 2500);
           }
         }, 100);
 
-        // Instantly generate new PDF preview with updated data
-        handlePreviewPDF(updated);
-        
-        // Sync with global profile state
-        if (onUpdateProfile) {
-          onUpdateProfile(updated);
-        }
-
+        onUpdateProfile?.(updated);
         return updated;
       });
     };
 
-    const handleVoiceReset = () => {
-      const emptyData = {
-        fullName: '',
-        furigana: '',
-        birthDate: '',
-        gender: 'male',
-        birthPlace: '',
-        nationality: '',
-        postalCode: '',
-        address: '',
-        phone: '',
-        email: '',
-        motivation: '',
-        selfPR: '',
-        hobbies: '',
-        personalRequests: '貴社規定に従います。',
-        educationHistory: [],
-        workHistory: [],
-        driverLicenses: [],
-        techCertificates: []
-      };
-      setFormData(emptyData);
-      handlePreviewPDF(emptyData);
-      if (onUpdateProfile) {
-        onUpdateProfile(emptyData);
-      }
-    };
-
     window.addEventListener('michi-voice-resume-update', handleVoiceUpdate);
-    window.addEventListener('michi-voice-resume-reset', handleVoiceReset);
-    return () => {
-      window.removeEventListener('michi-voice-resume-update', handleVoiceUpdate);
-      window.removeEventListener('michi-voice-resume-reset', handleVoiceReset);
-    };
+    return () => window.removeEventListener('michi-voice-resume-update', handleVoiceUpdate);
   }, [onUpdateProfile]);
 
-  // Debounced auto-preview generation on form edits
-  useEffect(() => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
+  const isPdfFresh = () => Boolean(lastBlobRef.current) && lastSigRef.current === resumeSignature(formData);
+
+  const showNotice = (type, text) => {
+    if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
+    setPdfNotice({ type, text });
+    noticeTimerRef.current = setTimeout(() => setPdfNotice(null), 4000);
+  };
+
+  // Generate (or reuse) the PDF blob for the current form data
+  const ensurePdfBlob = async () => {
+    if (isPdfFresh()) return lastBlobRef.current;
+    const sig = resumeSignature(formData);
+    const blob = await generateRirekishoBlob(formData, {
+      onProgress: (status) => setPdfStatus(status)
+    });
+    lastBlobRef.current = blob;
+    lastSigRef.current = sig;
+    setCleanPreviewUrl(URL.createObjectURL(blob));
+    return blob;
+  };
+
+  // PDF Preview yaratish (faqat tugma bosilganda)
+  const handlePreviewPDF = async () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    try {
+      await ensurePdfBlob();
+    } catch {
+      setPdfStatus('failed');
+      showNotice('error', t('pdfError', 'PDF yaratishda xatolik yuz berdi. Iltimos qayta urinib ko\'ring.'));
+    } finally {
+      setIsGenerating(false);
     }
-    
-    // Set a timer to generate preview after 3 seconds of inactivity
-    debounceTimeoutRef.current = setTimeout(() => {
-      handlePreviewPDF(formData);
-    }, 3000);
+  };
 
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
+  // PDF Yuklab olish / ulashish — barcha platformalarda ishonchli
+  const handleDownloadPDF = async () => {
+    if (isGenerating) return;
+    onUpdateProfile?.(formData);
+    setIsGenerating(true);
+    try {
+      const blob = await ensurePdfBlob();
+      const result = await saveResumeBlob(blob, safeResumeFilename(formData.fullName));
+      if (result !== 'cancelled') {
+        showNotice('success', t('resumeSaved', '✅ Rezyume saqlandi'));
       }
-    };
-  }, [
-    formData.fullName,
-    formData.furigana,
-    formData.birthDate,
-    formData.gender,
-    formData.birthPlace,
-    formData.nationality,
-    formData.postalCode,
-    formData.address,
-    formData.phone,
-    formData.email,
-    formData.motivation,
-    formData.selfPR,
-    formData.hobbies,
-    formData.personalRequests,
-    formData.educationHistory,
-    formData.workHistory,
-    formData.driverLicenses,
-    formData.techCertificates
-  ]);
+    } catch {
+      setPdfStatus('failed');
+      showNotice('error', t('pdfError', 'PDF yaratishda xatolik yuz berdi. Iltimos qayta urinib ko\'ring.'));
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
+  // Yangi oynada xavfsiz ochish.
+  // The tab is opened synchronously inside the click (so popup blockers allow it),
+  // then pointed at the PDF once it is ready. 'noopener' is not passed because it makes
+  // window.open() return null; the opener link is cut manually instead.
+  const handleOpenPDFInNewTab = async (e) => {
+    e.preventDefault();
+    if (isGenerating) return;
+
+    if (Capacitor.isNativePlatform()) {
+      // WebViews ignore window.open — hand the file to the native viewer/share sheet
+      return handleDownloadPDF();
+    }
+
+    const fresh = isPdfFresh();
+    const win = window.open(fresh ? previousUrlRef.current : '', '_blank');
+    if (win) win.opener = null;
+    if (fresh) {
+      if (!win) showNotice('error', t('popupBlocked', 'Pop-up oyna bloklandi. Brauzer sozlamalaridan ruxsat bering yoki PDFni yuklab oling.'));
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      await ensurePdfBlob();
+      if (win && !win.closed) {
+        win.location.href = previousUrlRef.current;
+      } else {
+        showNotice('error', t('popupBlocked', 'Pop-up oyna bloklandi. Brauzer sozlamalaridan ruxsat bering yoki PDFni yuklab oling.'));
+      }
+    } catch {
+      if (win && !win.closed) win.close();
+      setPdfStatus('failed');
+      showNotice('error', t('pdfError', 'PDF yaratishda xatolik yuz berdi. Iltimos qayta urinib ko\'ring.'));
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Sana kiritish hodisalari
   const handleDayInput = (val) => {
     const clean = val.replace(/\D/g, '').slice(0, 2);
     setSelectedDay(clean);
-    const y = selectedYear;
-    const m = selectedMonth;
-    if (y && m && clean && parseInt(clean, 10) >= 1 && parseInt(clean, 10) <= 31) {
-      const fm = String(m).padStart(2, '0');
-      const fd = String(clean).padStart(2, '0');
-      setFormData(prev => ({ ...prev, birthDate: `${y}-${fm}-${fd}` }));
-    } else {
-      setFormData(prev => ({ ...prev, birthDate: '' }));
-    }
+    updateBirthDate(selectedYear, selectedMonth, clean);
   };
 
   const handleMonthInput = (val) => {
     const clean = val.replace(/\D/g, '').slice(0, 2);
     setSelectedMonth(clean);
-    const y = selectedYear;
-    const d = selectedDay;
-    if (y && clean && d && parseInt(clean, 10) >= 1 && parseInt(clean, 10) <= 12) {
-      let dayVal = d;
-      const maxDays = new Date(parseInt(y, 10), parseInt(clean, 10), 0).getDate();
-      if (parseInt(d, 10) > maxDays) {
-        dayVal = maxDays.toString();
-        setSelectedDay(dayVal);
-      }
-      const fm = String(clean).padStart(2, '0');
-      const fd = String(dayVal).padStart(2, '0');
-      setFormData(prev => ({ ...prev, birthDate: `${y}-${fm}-${fd}` }));
-    } else {
-      setFormData(prev => ({ ...prev, birthDate: '' }));
-    }
+    updateBirthDate(selectedYear, clean, selectedDay);
   };
 
   const handleYearInput = (val) => {
     const clean = val.replace(/\D/g, '').slice(0, 4);
     setSelectedYear(clean);
-    const m = selectedMonth;
-    const d = selectedDay;
-    if (clean && clean.length === 4 && m && d) {
+    updateBirthDate(clean, selectedMonth, selectedDay);
+  };
+
+  const updateBirthDate = (y, m, d) => {
+    if (y && y.length === 4 && m && d && parseInt(m, 10) >= 1 && parseInt(m, 10) <= 12 && parseInt(d, 10) >= 1 && parseInt(d, 10) <= 31) {
       const fm = String(m).padStart(2, '0');
       const fd = String(d).padStart(2, '0');
-      setFormData(prev => ({ ...prev, birthDate: `${clean}-${fm}-${fd}` }));
+      setFormData(prev => ({ ...prev, birthDate: `${y}-${fm}-${fd}` }));
     } else {
       setFormData(prev => ({ ...prev, birthDate: '' }));
     }
@@ -320,7 +339,6 @@ export default function ResumeBuilder({
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Year/Month helpers for numeric date inputs
   const parseYearMonth = (dateStr) => {
     if (!dateStr) return { year: '', month: '' };
     const parts = dateStr.split('-');
@@ -331,21 +349,10 @@ export default function ResumeBuilder({
     if (!year && !month) return '';
     const y = year || '';
     const m = month ? String(month).padStart(2, '0') : '';
-    if (y && m) return `${y}-${m}`;
-    if (y) return y;
-    return '';
+    return (y && m) ? `${y}-${m}` : (y || '');
   };
 
-  const handleSaveData = (dataToSave = formData) => {
-    onUpdateProfile(dataToSave);
-  };
-
-  const handleBackWithSave = () => {
-    handleSaveData(formData);
-    onBack();
-  };
-
-  // Education list management
+  // Ta'lim ro'yxati
   const handleAddEdu = () => {
     setFormData(prev => ({
       ...prev,
@@ -368,7 +375,7 @@ export default function ResumeBuilder({
     });
   };
 
-  // Work list management
+  // Ish tajribasi ro'yxati
   const handleAddWork = () => {
     setFormData(prev => ({
       ...prev,
@@ -391,13 +398,10 @@ export default function ResumeBuilder({
     });
   };
 
-  // License and Certificate lists
   const handleToggleLicense = (lic) => {
     setFormData(prev => {
       const exists = prev.driverLicenses.includes(lic);
-      const updated = exists 
-        ? prev.driverLicenses.filter(l => l !== lic) 
-        : [...prev.driverLicenses, lic];
+      const updated = exists ? prev.driverLicenses.filter(l => l !== lic) : [...prev.driverLicenses, lic];
       return { ...prev, driverLicenses: updated };
     });
   };
@@ -405,215 +409,222 @@ export default function ResumeBuilder({
   const handleToggleCertificate = (cert) => {
     setFormData(prev => {
       const exists = prev.techCertificates.includes(cert);
-      const updated = exists 
-        ? prev.techCertificates.filter(c => c !== cert) 
-        : [...prev.techCertificates, cert];
+      const updated = exists ? prev.techCertificates.filter(c => c !== cert) : [...prev.techCertificates, cert];
       return { ...prev, techCertificates: updated };
     });
   };
 
-  const handleVerifyStart = (file) => {
-    if (!file) return;
-    setUploadedFile(file);
-    setIsVerifying(true);
-    setVerificationStage('uploading');
-    setVerificationProgress(0);
-    setVerificationStatusText(currentLang === 'ja' ? 'ファイルをアップロード中...' : 'Fayl yuklanmoqda...');
-
-    // Extract potential JLPT level from filename (e.g. N1, N2, N3, N4, N5)
-    let extractedLevel = 'N3';
-    const nameUpper = file.name.toUpperCase();
-    const match = nameUpper.match(/N[1-5]|Ｎ[１-５]/);
-    if (match) {
-      let matchStr = match[0];
-      if (matchStr === 'Ｎ１') matchStr = 'N1';
-      else if (matchStr === 'Ｎ２') matchStr = 'N2';
-      else if (matchStr === 'Ｎ３') matchStr = 'N3';
-      else if (matchStr === 'Ｎ４') matchStr = 'N4';
-      else if (matchStr === 'Ｎ５') matchStr = 'N5';
-      extractedLevel = matchStr;
-    }
-    setDetectedLevel(extractedLevel);
-
-    // Simulate progress timer
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      setVerificationProgress(progress);
-
-      if (progress === 40) {
-        setVerificationStage('analyzing');
-        setVerificationStatusText(currentLang === 'ja' ? '証明書署名とテキストを解析中 (Tesseract.js)...' : 'Sertifikat imzosi va matni tahlil qilinmoqda (Tesseract.js)...');
-      } else if (progress === 80) {
-        setVerificationStatusText(currentLang === 'ja' ? 'JEESデータベースと整合性を確認中...' : 'JEES ma\'lumotlar bazasi bilan solishtirilmoqda...');
-      } else if (progress >= 100) {
-        clearInterval(interval);
-        
-        // Generate random unique certificate number
-        const yearCode = new Date().getFullYear().toString().substring(2);
-        const randomNum1 = Math.floor(100000 + Math.random() * 900000);
-        const randomNum2 = Math.floor(1000 + Math.random() * 9000);
-        const certNo = `No. ${yearCode}A${randomNum1}-${randomNum2}`;
-        setDetectedCertNo(certNo);
-        
-        setVerificationStage('success');
-        setVerificationStatusText('');
-        setIsVerifying(false);
-
-        // Update local state and parent profileData
-        const updatedStatus = {
-          level: extractedLevel,
-          verified: true,
-          certNo,
-          date: new Date().toISOString().split('T')[0]
-        };
-
-        setFormData(prev => {
-          const updated = { ...prev, jlptStatus: updatedStatus };
-          if (onUpdateProfile) {
-            onUpdateProfile(updated);
-          }
-          return updated;
-        });
-      }
-    }, 300);
-  };
-
-  const handleResetVerification = () => {
-    setUploadedFile(null);
-    setVerificationStage('idle');
+  // JLPT darajasi — haydovchining o'zi kiritadi (自己申告). Platforma tomonidan tasdiqlanmaydi.
+  const handleSelectJlpt = (level) => {
     setFormData(prev => {
-      const updated = { ...prev, jlptStatus: null };
-      if (onUpdateProfile) {
-        onUpdateProfile(updated);
-      }
+      const nextStatus = prev.jlptStatus?.level === level || !level
+        ? null
+        : { level, selfDeclared: true, date: new Date().toISOString().split('T')[0] };
+      const updated = { ...prev, jlptStatus: nextStatus };
+      onUpdateProfile?.(updated);
       return updated;
     });
   };
 
-  // PDF Generation Trigger
-  const handleDownloadPDF = async () => {
-    handleSaveData(formData);
-    try {
-      await generateRirekisho(formData, {
-        onProgress: (status) => setPdfStatus(status),
-        download: true
-      });
-    } catch (e) {
-      setPdfStatus('failed');
-      alert(t('pdfError', 'PDF yaratishda xatolik yuz berdi. Iltimos qayta urinib ko\'ring.'));
+  /* ===== Resume Voice AI: writes on the user's behalf with a typewriter effect ===== */
+
+  // Types `value` into the element `id` character by character. The field is read-only and never
+  // focused while typing, so the on-screen keyboard does not appear.
+  const typeInto = async (id, value, setValue) => {
+    const token = typingTokenRef.current;
+    if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
+    let el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.readOnly = true;
+      el.classList.add('rva-typing');
+    }
+    await sleep(380);
+    const chars = Array.from(String(value ?? ''));
+    const delay = typeDelay(chars.length);
+    for (let i = 1; i <= chars.length; i++) {
+      if (token !== typingTokenRef.current) break;
+      setValue(chars.slice(0, i).join(''));
+      if (el && el.tagName === 'TEXTAREA') el.scrollTop = el.scrollHeight;
+      await sleep(delay);
+    }
+    setValue(String(value ?? ''));
+    el = document.getElementById(id) || el;
+    if (el) {
+      el.readOnly = false;
+      el.classList.remove('rva-typing');
+      el.classList.add('rva-written');
+      setTimeout(() => el.classList.remove('rva-written'), 1700);
     }
   };
 
-  // Generate URL for local preview
-  const handlePreviewPDF = async (dataToUse = formData) => {
-    try {
-      const dataUrl = await generateRirekisho(dataToUse, {
-        onProgress: (status) => setPdfStatus(status),
-        download: false
-      });
-      setPdfPreviewUrl(dataUrl);
-    } catch (e) {
-      setPdfStatus('failed');
+  const flashElement = async (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('rva-written');
+      setTimeout(() => el.classList.remove('rva-written'), 1700);
     }
+    await sleep(700);
   };
 
-  const handleOpenPDFInNewTab = (e) => {
-    if (e) e.preventDefault();
-    if (pdfPreviewUrl) {
-      const newWindow = window.open('', '_blank');
-      if (newWindow) {
-        newWindow.location.href = pdfPreviewUrl;
-      } else {
-        alert(t('popupBlocked', 'Pop-up oyna bloklandi. Brauzer sozlamalaridan ruxsat bering yoki PDFni yuklab oling.'));
+  const handleVoiceWrite = async (effect) => {
+    if (!effect) return;
+    switch (effect.type) {
+      case 'text': {
+        const { field, value } = effect;
+        await typeInto(field, value, v => setFormData(prev => ({ ...prev, [field]: v })));
+        break;
       }
-    } else {
-      alert(t('previewNotReady', 'PDF hali tayyor emas. Iltimos, bir oz kuting.'));
+      case 'birthDate': {
+        const [y, m, d] = effect.value.split('-');
+        await typeInto('dob-day', String(parseInt(d, 10)), setSelectedDay);
+        await typeInto('dob-month', String(parseInt(m, 10)), setSelectedMonth);
+        await typeInto('dob-year', y, setSelectedYear);
+        setFormData(prev => ({ ...prev, birthDate: effect.value }));
+        break;
+      }
+      case 'gender':
+        setFormData(prev => ({ ...prev, gender: effect.value }));
+        await flashElement('gender-group');
+        break;
+      case 'licenses':
+        setFormData(prev => ({ ...prev, driverLicenses: Array.from(new Set([...(prev.driverLicenses || []), ...effect.value])) }));
+        await flashElement('license-group');
+        break;
+      case 'jlpt':
+        setFormData(prev => ({
+          ...prev,
+          jlptStatus: effect.value ? { level: effect.value, selfDeclared: true, date: new Date().toISOString().split('T')[0] } : null
+        }));
+        await flashElement('jlpt-group');
+        break;
+      case 'list': {
+        const { list, index, key, value } = effect;
+        const template = list === 'educationHistory'
+          ? { school: '', major: '', startDate: '', endDate: '' }
+          : { company: '', position: '', startDate: '', endDate: '', isCurrent: false };
+        setFormData(prev => {
+          const arr = [...(prev[list] || [])];
+          while (arr.length <= index) arr.push({ ...template });
+          return { ...prev, [list]: arr };
+        });
+        await sleep(90); // let the new card render before typing into it
+        const prefix = list === 'educationHistory' ? 'edu' : 'work';
+        await typeInto(`${prefix}-${index}-${key}`, value, v => setFormData(prev => {
+          const arr = [...(prev[list] || [])];
+          while (arr.length <= index) arr.push({ ...template });
+          arr[index] = { ...arr[index], [key]: v };
+          return { ...prev, [list]: arr };
+        }));
+        break;
+      }
+      default:
+        break;
     }
+  };
+
+  const voiceLabels = {
+    male: t('male', 'Erkak'),
+    female: t('female', 'Ayol'),
+    none: t('jlptNone', 'Yo\'q'),
+    lic_futsu: t('lic_futsu', '普通'),
+    lic_junchugata: t('lic_junchugata', '準中型'),
+    lic_chugata: t('lic_chugata', '中型'),
+    lic_oogata: t('lic_oogata', '大型')
   };
 
   return (
-    <div className="resume-builder-container fade-in">
-      {/* Floating Sticky Back Button */}
+    <div className={`resume-builder-container fade-in ${isAgentOn ? 'rva-on' : ''}`}>
+      {/* Yuqori orqaga qaytish va ovozli panel */}
       <div className="resume-builder-sticky-back" style={{ display: 'flex', width: '92%', justifyContent: 'space-between', alignItems: 'center' }}>
-        <button onClick={handleBackWithSave} className="icon-btn glass" aria-label="Back">
+        <button 
+          type="button" 
+          onClick={() => {
+            onUpdateProfile?.(formData);
+            onBack?.();
+          }} 
+          className="icon-btn glass" 
+          aria-label={t('backBtn', 'Orqaga')}
+        >
           <ArrowLeft size={20} />
         </button>
 
-        {setIsVoiceActive && setIsVoiceStandby && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>AI VOICE</span>
-            <button
-              className="theme-toggle-btn"
-              onClick={() => {
-                const nextVal = !isVoiceStandby;
-                if (nextVal) {
-                  // Synchronously trigger resume voice flow before setting active state
-                  window.dispatchEvent(new CustomEvent('michi-voice-resume-start'));
-                }
-                setIsVoiceStandby(nextVal);
-                setIsVoiceActive(nextVal);
-              }}
-              aria-label="Toggle AI Assistant"
-            >
-              <div className={`theme-toggle-track ${isVoiceStandby ? 'dark' : 'light'}`} style={{ width: '48px', height: '24px', borderRadius: '12px' }}>
-                <div className="theme-toggle-thumb" style={{ width: '18px', height: '18px', left: isVoiceStandby ? 'calc(100% - 20px)' : '2px', top: '2px', background: isVoiceStandby ? 'linear-gradient(135deg, #a133ff, #8b5cf6)' : 'linear-gradient(135deg, #e5e5ea, #8e8e93)', boxShadow: isVoiceStandby ? '0 2px 6px rgba(138, 43, 226, 0.4)' : 'none' }}>
-                  <Sparkles size={10} color="#ffffff" fill="#ffffff" style={{ opacity: 0.95 }} />
-                </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>AI VOICE</span>
+          <button
+            type="button"
+            id="resume-ai-voice-toggle"
+            className="theme-toggle-btn"
+            onClick={() => {
+              typingTokenRef.current += 1;
+              setIsAgentOn(v => !v);
+            }}
+            aria-label="AI Voice"
+            aria-pressed={isAgentOn}
+          >
+            <div className={`theme-toggle-track ${isAgentOn ? 'dark' : 'light'}`} style={{ width: '48px', height: '24px', borderRadius: '12px' }}>
+              <div className="theme-toggle-thumb" style={{ width: '18px', height: '18px', left: isAgentOn ? 'calc(100% - 20px)' : '2px', top: '2px' }}>
+                <Sparkles size={10} color="#ffffff" />
               </div>
-            </button>
-          </div>
-        )}
+            </div>
+          </button>
+        </div>
       </div>
 
-      {/* Main Content Area */}
+      {isAgentOn && (
+        <ResumeVoiceAgent
+          formData={formData}
+          lang={i18n.language}
+          labels={voiceLabels}
+          onWrite={handleVoiceWrite}
+          onClose={() => {
+            typingTokenRef.current += 1;
+            setIsAgentOn(false);
+          }}
+        />
+      )}
+
       <div className="resume-builder-body">
         <h2 className="resume-builder-title">{t('resumeBuilderTitle', 'Yapon Rezyumesi (履歴書)')}</h2>
-        
-        <div className="resume-edit-forms-wrap">
-        {/* SECTION 1: Shaxsiy ma'lumotlar */}
+
+        {/* 1-BO'LIM: Shaxsiy ma'lumotlar */}
         <div className="step-content glass squircle">
           <div className="step-intro">
             <User className="step-icon text-purple" size={24} />
             <h3>{t('personalInfo', 'Shaxsiy ma\'lumotlar')}</h3>
-            <p>{t('step1Desc', 'Rirekisho rezyumesi uchun shaxsiy ma\'lumotlaringizni to\'g\'rilang. Ismlar katakana va yapon formatida yozilishi maqsadga muvofiq.')}</p>
+            <p>{t('step1Desc', 'Rirekisho rezyumesi uchun shaxsiy ma\'lumotlaringizni to\'ldiring.')}</p>
           </div>
 
           <div className="form-group">
             <label htmlFor="fullName">{t('fullNameLabel', 'Ism va familiya')}</label>
-            <div className="form-input-hint">
-              {t('fullNameHint', 'Yapon tilida to\'ldirish uchun lotin harflarida (Masalan: ALIMOV ANVAR) yoki kanjida (Masalan: 山田 太郎) yozing.')}
-            </div>
             <input 
               type="text" 
               id="fullName"
               name="fullName" 
               value={formData.fullName} 
               onChange={handleChange}
-              placeholder={getFullNamePlaceholder()}
+              placeholder="Masalan: ALIMOV ANVAR"
               className="glass-input"
             />
           </div>
 
           <div className="form-group">
             <label htmlFor="furigana">{t('katakanaNameLabel', 'Katakanada yozilishi')}</label>
-            <div className="form-input-hint">
-              {t('furiganaHint', 'Ismingizning yaponcha katakana talaffuzi (Masalan: アリモフ アンバル yoki ヤマダ タロウ).')}
-            </div>
             <input 
               type="text" 
               id="furigana"
               name="furigana" 
               value={formData.furigana} 
               onChange={handleChange}
-              placeholder={getFuriganaPlaceholder()}
+              placeholder="Masalan: アリモフ アンバル"
               className="glass-input"
             />
           </div>
 
           <div className="form-group">
             <label>{t('genderLabel', 'Jins')}</label>
-            <div className="gender-select-row">
+            <div className="gender-select-row" id="gender-group">
               <button
                 type="button"
                 className={`gender-select-btn male ${formData.gender === 'male' ? 'active' : ''}`}
@@ -633,16 +644,12 @@ export default function ResumeBuilder({
 
           <div className="form-group">
             <label>{t('dobLabel', "Tug'ilgan sana")}</label>
-            <div className="form-input-hint">
-              {t('dobHint', 'Tug\'ilgan kuningizni kun, oy va yil ketma-ketligida faqat sonlar bilan kiriting.')}
-            </div>
-            
             <div className="dob-inputs-row">
               <div className="dob-input-wrapper">
                 <input 
                   type="text" 
+                  id="dob-day"
                   inputMode="numeric"
-                  pattern="[0-9]*"
                   placeholder="DD"
                   value={selectedDay} 
                   onChange={(e) => handleDayInput(e.target.value)}
@@ -654,8 +661,8 @@ export default function ResumeBuilder({
               <div className="dob-input-wrapper">
                 <input 
                   type="text" 
+                  id="dob-month"
                   inputMode="numeric"
-                  pattern="[0-9]*"
                   placeholder="MM"
                   value={selectedMonth} 
                   onChange={(e) => handleMonthInput(e.target.value)}
@@ -667,8 +674,8 @@ export default function ResumeBuilder({
               <div className="dob-input-wrapper year-wrapper">
                 <input 
                   type="text" 
+                  id="dob-year"
                   inputMode="numeric"
-                  pattern="[0-9]*"
                   placeholder="YYYY"
                   value={selectedYear} 
                   onChange={(e) => handleYearInput(e.target.value)}
@@ -684,70 +691,37 @@ export default function ResumeBuilder({
               </div>
             )}
           </div>
-
-          <div className="form-group">
-            <label htmlFor="birthPlace">{t('birthPlaceLabel', 'Tug\'ilgan joyi')}</label>
-            <div className="form-input-hint">
-              {t('birthPlaceHint', 'Tug\'ilgan mamlakatingiz yoki viloyatingiz (Masalan: O\'zbekiston, Samarqand).')}
-            </div>
-            <input 
-              type="text" 
-              id="birthPlace"
-              name="birthPlace" 
-              value={formData.birthPlace} 
-              onChange={handleChange}
-              placeholder={t('birthPlacePlaceholder', 'Masalan: O\'zbekiston')}
-              className="glass-input"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="nationality">{t('nationalityLabel', 'Millati')}</label>
-            <div className="form-input-hint">
-              {t('nationalityHint', 'Fuqaroligingiz yoki millatingiz (Masalan: O\'zbekiston).')}
-            </div>
-            <input 
-              type="text" 
-              id="nationality"
-              name="nationality" 
-              value={formData.nationality} 
-              onChange={handleChange}
-              placeholder={t('nationalityPlaceholder', 'Masalan: O\'zbekistonlik')}
-              className="glass-input"
-            />
-          </div>
         </div>
 
-        {/* SECTION 2: Aloqa va Manzil */}
+        {/* 2-BO'LIM: Aloqa va Manzil */}
         <div className="step-content glass squircle">
           <div className="step-intro">
             <Phone className="step-icon text-purple" size={24} />
             <h3>{t('contactInfo', 'Aloqa va Manzil')}</h3>
-            <p>{t('step2Desc', 'Yaponiyadagi manzilingiz va aloqa ma\'lumotlari. Pochta indeksini to\'g\'ri kiritsangiz kompaniyalar sizni tez topishadi.')}</p>
           </div>
 
           <div className="form-group">
-            <label htmlFor="postalCode">{t('postalCodeLabel', 'Pochta indeksi (Postal Code)')}</label>
+            <label htmlFor="postalCode">{t('postalCodeLabel', 'Pochta indeksi')}</label>
             <input 
               type="text" 
               id="postalCode"
               name="postalCode" 
               value={formData.postalCode} 
               onChange={handleChange}
-              placeholder="E.g. 160-0023"
+              placeholder="160-0023"
               className="glass-input"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="address">{t('livingAddressTitle', 'Hozirgi yashash manzilingiz')}</label>
+            <label htmlFor="address">{t('livingAddressTitle', 'Yashash manzilingiz')}</label>
             <input 
               type="text" 
               id="address"
               name="address" 
               value={formData.address} 
               onChange={handleChange}
-              placeholder="E.g. Tokyo-to, Shinjuku-ku, Nishi-Shinjuku 1-chome"
+              placeholder="Tokyo-to, Shinjuku-ku..."
               className="glass-input"
             />
           </div>
@@ -760,7 +734,7 @@ export default function ResumeBuilder({
               name="phone" 
               value={formData.phone} 
               onChange={handleChange}
-              placeholder="E.g. 080-1234-5678"
+              placeholder="080-1234-5678"
               className="glass-input"
             />
           </div>
@@ -778,12 +752,11 @@ export default function ResumeBuilder({
           </div>
         </div>
 
-        {/* SECTION 3: Ta'lim tarixi */}
+        {/* 3-BO'LIM: Ta'lim tarixi */}
         <div className="step-content glass squircle">
           <div className="step-intro">
             <GraduationCap className="step-icon text-purple" size={24} />
             <h3>{t('educationTitle', 'Ta\'lim tarixi')}</h3>
-            <p>{t('step3Desc', 'O\'qigan maktablar, kollejlar va oliy ta\'lim muassasalarini qo\'shing. (Yil va oy formatida)')}</p>
           </div>
 
           <div className="history-list">
@@ -791,14 +764,15 @@ export default function ResumeBuilder({
               <div key={idx} className="history-card glass-card">
                 <div className="history-card-header">
                   <h4>{t('education', 'Ta\'lim')} #{idx + 1}</h4>
-                  <button onClick={() => handleRemoveEdu(idx)} className="remove-btn">
+                  <button type="button" onClick={() => handleRemoveEdu(idx)} className="remove-btn">
                     {t('remove', 'O\'chirish')}
                   </button>
                 </div>
                 <div className="form-group">
                   <input 
                     type="text" 
-                    placeholder={t('schoolName', 'Muassasa nomi (e.g. ○○ University)')}
+                    id={`edu-${idx}-school`}
+                    placeholder={t('schoolName', 'Muassasa nomi')}
                     value={edu.school} 
                     onChange={(e) => handleEduChange(idx, 'school', e.target.value)}
                     className="glass-input"
@@ -807,89 +781,27 @@ export default function ResumeBuilder({
                 <div className="form-group">
                   <input 
                     type="text" 
-                    placeholder={t('degree', 'Mutaxassislik/Daraja (e.g. Bachelor)')}
+                    id={`edu-${idx}-major`}
+                    placeholder={t('degree', 'Mutaxassislik')}
                     value={edu.major} 
                     onChange={(e) => handleEduChange(idx, 'major', e.target.value)}
                     className="glass-input"
                   />
                 </div>
-                <div className="form-group">
-                  <label className="sub-label">{t('admissionDateLabel', 'Kirgan sanasi')}</label>
-                  <div className="date-input-group">
-                    <input
-                      type="number"
-                      placeholder={t('monthPlaceholder', 'Oy')}
-                      value={parseYearMonth(edu.startDate).month}
-                      onChange={(e) => {
-                        const { year } = parseYearMonth(edu.startDate);
-                        handleEduChange(idx, 'startDate', buildYearMonth(year, e.target.value));
-                      }}
-                      className="glass-input date-num-input month-input"
-                      min="1"
-                      max="12"
-                    />
-                    <span className="date-separator">{t('monthSuffix', 'oy')}</span>
-                    <input
-                      type="number"
-                      placeholder={t('yearPlaceholder', 'Yil')}
-                      value={parseYearMonth(edu.startDate).year}
-                      onChange={(e) => {
-                        const { month } = parseYearMonth(edu.startDate);
-                        handleEduChange(idx, 'startDate', buildYearMonth(e.target.value, month));
-                      }}
-                      className="glass-input date-num-input year-input"
-                      min="1950"
-                      max="2040"
-                    />
-                    <span className="date-separator">{t('yearSuffix', 'yil')}</span>
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label className="sub-label">{t('gradDateLabel', 'Bitirgan sanasi')}</label>
-                  <div className="date-input-group">
-                    <input
-                      type="number"
-                      placeholder={t('monthPlaceholder', 'Oy')}
-                      value={parseYearMonth(edu.endDate).month}
-                      onChange={(e) => {
-                        const { year } = parseYearMonth(edu.endDate);
-                        handleEduChange(idx, 'endDate', buildYearMonth(year, e.target.value));
-                      }}
-                      className="glass-input date-num-input month-input"
-                      min="1"
-                      max="12"
-                    />
-                    <span className="date-separator">{t('monthSuffix', 'oy')}</span>
-                    <input
-                      type="number"
-                      placeholder={t('yearPlaceholder', 'Yil')}
-                      value={parseYearMonth(edu.endDate).year}
-                      onChange={(e) => {
-                        const { month } = parseYearMonth(edu.endDate);
-                        handleEduChange(idx, 'endDate', buildYearMonth(e.target.value, month));
-                      }}
-                      className="glass-input date-num-input year-input"
-                      min="1950"
-                      max="2040"
-                    />
-                    <span className="date-separator">{t('yearSuffix', 'yil')}</span>
-                  </div>
-                </div>
               </div>
             ))}
           </div>
 
-          <button onClick={handleAddEdu} className="add-btn squircle">
+          <button type="button" onClick={handleAddEdu} className="add-btn squircle">
             + {t('addEducation', 'Ta\'lim qo\'shish')}
           </button>
         </div>
 
-        {/* SECTION 4: Ish tajribasi va Guvohnomalar */}
+        {/* 4-BO'LIM: Ish tajribasi va Litsenziyalar */}
         <div className="step-content glass squircle">
           <div className="step-intro">
             <Briefcase className="step-icon text-purple" size={24} />
             <h3>{t('workExperience', 'Ish tajribasi')}</h3>
-            <p>{t('step4Desc', 'Avvalgi ishlagan kompaniyalaringiz, lavozimingiz va boshlanish/tugash sanalari. Haydovchilik tajribalaringizni yoritish muhim.')}</p>
           </div>
 
           <div className="history-list">
@@ -897,13 +809,14 @@ export default function ResumeBuilder({
               <div key={idx} className="history-card glass-card">
                 <div className="history-card-header">
                   <h4>{t('company', 'Kompaniya')} #{idx + 1}</h4>
-                  <button onClick={() => handleRemoveWork(idx)} className="remove-btn">
+                  <button type="button" onClick={() => handleRemoveWork(idx)} className="remove-btn">
                     {t('remove', 'O\'chirish')}
                   </button>
                 </div>
                 <div className="form-group">
                   <input 
                     type="text" 
+                    id={`work-${idx}-company`}
                     placeholder={t('companyName', 'Kompaniya nomi')}
                     value={work.company} 
                     onChange={(e) => handleWorkChange(idx, 'company', e.target.value)}
@@ -913,260 +826,82 @@ export default function ResumeBuilder({
                 <div className="form-group">
                   <input 
                     type="text" 
-                    placeholder={t('position', 'Lavozim (e.g. Truck Driver)')}
+                    id={`work-${idx}-position`}
+                    placeholder={t('position', 'Lavozim')}
                     value={work.position} 
                     onChange={(e) => handleWorkChange(idx, 'position', e.target.value)}
                     className="glass-input"
                   />
                 </div>
-                <div className="form-group">
-                  <label className="sub-label">{t('startDate', 'Boshlanish sanasi')}</label>
-                  <div className="date-input-group">
-                    <input
-                      type="number"
-                      placeholder={t('monthPlaceholder', 'Oy')}
-                      value={parseYearMonth(work.startDate).month}
-                      onChange={(e) => {
-                        const { year } = parseYearMonth(work.startDate);
-                        handleWorkChange(idx, 'startDate', buildYearMonth(year, e.target.value));
-                      }}
-                      className="glass-input date-num-input month-input"
-                      min="1"
-                      max="12"
-                    />
-                    <span className="date-separator">{t('monthSuffix', 'oy')}</span>
-                    <input
-                      type="number"
-                      placeholder={t('yearPlaceholder', 'Yil')}
-                      value={parseYearMonth(work.startDate).year}
-                      onChange={(e) => {
-                        const { month } = parseYearMonth(work.startDate);
-                        handleWorkChange(idx, 'startDate', buildYearMonth(e.target.value, month));
-                      }}
-                      className="glass-input date-num-input year-input"
-                      min="1950"
-                      max="2040"
-                    />
-                    <span className="date-separator">{t('yearSuffix', 'yil')}</span>
-                  </div>
-                </div>
-                {!work.isCurrent && (
-                  <div className="form-group">
-                    <label className="sub-label">{t('endDate', 'Tugash sanasi')}</label>
-                    <div className="date-input-group">
-                      <input
-                        type="number"
-                        placeholder={t('monthPlaceholder', 'Oy')}
-                        value={parseYearMonth(work.endDate).month}
-                        onChange={(e) => {
-                          const { year } = parseYearMonth(work.endDate);
-                          handleWorkChange(idx, 'endDate', buildYearMonth(year, e.target.value));
-                        }}
-                        className="glass-input date-num-input month-input"
-                        min="1"
-                        max="12"
-                      />
-                      <span className="date-separator">{t('monthSuffix', 'oy')}</span>
-                      <input
-                        type="number"
-                        placeholder={t('yearPlaceholder', 'Yil')}
-                        value={parseYearMonth(work.endDate).year}
-                        onChange={(e) => {
-                          const { month } = parseYearMonth(work.endDate);
-                          handleWorkChange(idx, 'endDate', buildYearMonth(e.target.value, month));
-                        }}
-                        className="glass-input date-num-input year-input"
-                        min="1950"
-                        max="2040"
-                      />
-                      <span className="date-separator">{t('yearSuffix', 'yil')}</span>
-                    </div>
-                  </div>
-                )}
-                <div className="checkbox-group">
-                  <input 
-                    type="checkbox" 
-                    id={`isCurrent-${idx}`}
-                    checked={work.isCurrent}
-                    onChange={(e) => handleWorkChange(idx, 'isCurrent', e.target.checked)}
-                  />
-                  <label htmlFor={`isCurrent-${idx}`}>{t('currentPositionCheckbox', 'Hozirgi vaqtda ishlayapman')}</label>
-                </div>
               </div>
             ))}
           </div>
 
-          <button onClick={handleAddWork} className="add-btn squircle">
+          <button type="button" onClick={handleAddWork} className="add-btn squircle">
             + {t('addWork', 'Ish joyi qo\'shish')}
           </button>
 
-          {/* Guvohnomalar & Sertifikatlar section */}
+          {/* Guvohnomalar */}
           <div className="step-intro" style={{ marginTop: '20px' }}>
             <Award className="step-icon text-purple" size={24} />
             <h3>{t('licensesQualifications', 'Guvohnoma va Sertifikatlar')}</h3>
           </div>
           
-          <div className="licenses-grid">
-            <div className="license-group-container">
-              <span className="license-group-title">{t('class1Licenses', 'Birinchi toifa (Class 1 - Shaxsiy)')}</span>
-              <div className="badges-select-group">
-                {['futsu', 'junchugata', 'chugata', 'oogata'].map(lic => (
-                  <button 
-                    key={lic}
-                    onClick={() => handleToggleLicense(lic)}
-                    className={`badge-select-btn squircle ${formData.driverLicenses.includes(lic) ? 'selected' : ''}`}
-                  >
-                    {t(`lic_${lic}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="license-group-container">
-              <span className="license-group-title">{t('class2Licenses', 'Ikkinchi toifa (Class 2 - Tijorat/Taksi/Avtobus)')}</span>
-              <div className="badges-select-group">
-                {['futsu_nishu', 'junchugata_nishu', 'chugata_nishu', 'oogata_nishu'].map(lic => (
-                  <button 
-                    key={lic}
-                    onClick={() => handleToggleLicense(lic)}
-                    className={`badge-select-btn squircle ${formData.driverLicenses.includes(lic) ? 'selected' : ''}`}
-                  >
-                    {t(`lic_${lic}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="license-group-container">
-              <span className="license-group-title">{t('specialLicenses', 'Maxsus texnika, Tirkama va Motosikllar')}</span>
-              <div className="badges-select-group">
-                {['oogata_tokushu', 'kogata_tokushu', 'kenin', 'oogata_tokushu_nishu', 'kenin_nishu', 'motorcycle', 'oogata_motorcycle', 'gentsuki'].map(lic => (
-                  <button 
-                    key={lic}
-                    onClick={() => handleToggleLicense(lic)}
-                    className={`badge-select-btn squircle ${formData.driverLicenses.includes(lic) ? 'selected' : ''}`}
-                  >
-                    {t(`lic_${lic}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <span className="section-label" style={{ marginTop: '10px', display: 'block' }}>{t('otherCertificates', 'Maxsus sertifikatlar')}</span>
-            <div className="badges-select-group">
-              {['forklift', 'crane', 'towing'].map(cert => (
-                <button 
-                  key={cert}
-                  onClick={() => handleToggleCertificate(cert)}
-                  className={`badge-select-btn squircle ${formData.techCertificates.includes(cert) ? 'selected' : ''}`}
-                >
-                  {t(`cert_${cert}`, cert === 'forklift' ? 'Forklift (フォークリフト)' : cert === 'crane' ? 'Crane (クレーン)' : 'Towing (牽引)')}
-                </button>
-              ))}
-            </div>
-
-            {/* JLPT Certificate Verification Block */}
-            <span className="section-label" style={{ marginTop: '20px', display: 'block', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '15px' }}>
-              🇯🇵 {t('jlptVerificationTitle', 'JLPT Yapon tili sertifikatini tasdiqlash')}
-            </span>
-
-            {formData.jlptStatus && formData.jlptStatus.verified ? (
-              /* Verified State Card */
-              <div className="glass squircle animate-scale-up" style={{ padding: '16px', border: '1px solid rgba(48, 209, 88, 0.3)', background: 'rgba(48, 209, 88, 0.06)', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <ShieldCheck size={26} color="#30D158" className="animate-pulse" />
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <strong style={{ fontSize: '15px', color: '#30D158' }}>JLPT {formData.jlptStatus.level} Tasdiqlangan ✓</strong>
-                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Hujjat raqami: {formData.jlptStatus.certNo}</span>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px', marginTop: '4px' }}>
-                  <button 
-                    type="button"
-                    className="badge-select-btn squircle"
-                    style={{ flex: 1, padding: '8px', fontSize: '12px', borderColor: 'rgba(255, 59, 48, 0.3)', color: '#FF3B30', background: 'rgba(255, 59, 48, 0.05)', cursor: 'pointer' }}
-                    onClick={handleResetVerification}
-                  >
-                    O'chirish (Reset)
-                  </button>
-                </div>
-              </div>
-            ) : (
-              /* Unverified / Upload State Box */
-              <div className="glass squircle" style={{ padding: '16px', border: '1px solid var(--glass-border)', background: 'rgba(255, 255, 255, 0.01)', marginTop: '10px' }}>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, margin: '0 0 14px 0' }}>
-                  {t('jlptVerificationDesc', 'Yaponiya logistika firmalariga til darajangizni isbotlash va oyligingizni 1.5-2 barobar oshirish uchun JLPT hujjatingizni (PDF yoki rasm) yuklab tasdiqlang.')}
-                </p>
-
-                {isVerifying ? (
-                  /* Loading Progress UI */
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <Loader2 size={18} className="animate-spin" color="var(--primary)" />
-                      <span style={{ fontSize: '13px', color: 'var(--text-main)', fontWeight: 'bold' }}>{verificationStatusText}</span>
-                    </div>
-                    <div style={{ height: '6px', background: 'var(--glass-bg)', borderRadius: '3px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
-                      <div style={{ height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, #30D158 100%)', width: `${verificationProgress}%`, transition: 'width 0.2s ease' }}></div>
-                    </div>
-                  </div>
-                ) : (
-                  /* Form selectors and file upload fields */
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                        <label style={{ fontSize: '11px', marginBottom: '4px' }}>Sertifikat darajasi</label>
-                        <select 
-                          value={detectedLevel} 
-                          onChange={(e) => setDetectedLevel(e.target.value)}
-                          style={{ padding: '8px', borderRadius: '8px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', width: '100%', fontSize: '12px' }}
-                        >
-                          <option value="N1">JLPT N1</option>
-                          <option value="N2">JLPT N2</option>
-                          <option value="N3">JLPT N3</option>
-                          <option value="N4">JLPT N4</option>
-                          <option value="N5">JLPT N5</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div 
-                      onClick={() => fileInputRef.current?.click()}
-                      style={{ border: '2px dashed var(--glass-border)', borderRadius: '12px', padding: '24px 10px', textAlign: 'center', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.01)', transition: 'all 0.2s' }}
-                      onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-                      onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--glass-border)'}
-                    >
-                      <FileText size={24} style={{ color: 'var(--text-secondary)', marginBottom: '8px' }} />
-                      <strong style={{ display: 'block', fontSize: '13px', color: 'var(--text-main)' }}>
-                        {uploadedFile ? uploadedFile.name : t('uploadCertFile', 'Faylni tanlash (PDF yoki rasm)')}
-                      </strong>
-                      <span style={{ fontSize: '11px', color: '#8E8E93', marginTop: '4px', display: 'block' }}>Maksimal o\'lcham 10 MB</span>
-                    </div>
-
-                    <input 
-                      ref={fileInputRef}
-                      type="file" 
-                      accept=".pdf,image/*" 
-                      style={{ display: 'none' }}
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          handleVerifyStart(file);
-                        }
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
+          <div className="badges-select-group" id="license-group">
+            {['futsu', 'junchugata', 'chugata', 'oogata'].map(lic => (
+              <button 
+                key={lic}
+                type="button"
+                onClick={() => handleToggleLicense(lic)}
+                className={`badge-select-btn squircle ${formData.driverLicenses.includes(lic) ? 'selected' : ''}`}
+              >
+                {t(`lic_${lic}`)}
+              </button>
+            ))}
           </div>
+
+          {/* JLPT darajasi — 自己申告 (o'zi kiritgan, platforma tasdiqlamaydi) */}
+          <div className="step-intro" style={{ marginTop: '20px' }}>
+            <FileText className="step-icon text-purple" size={24} />
+            <h3>{t('jlptLevelLabel', 'Yapon tili darajasi (JLPT)')}</h3>
+            <p>{t('jlptSelfDeclaredHint', 'O\'zingiz tanlaysiz (自己申告). Sertifikat suhbat paytida tekshiriladi.')}</p>
+          </div>
+          <div className="badges-select-group" id="jlpt-group" role="radiogroup" aria-label="JLPT">
+            {JLPT_LEVELS.map(level => (
+              <button
+                key={level}
+                type="button"
+                role="radio"
+                aria-checked={formData.jlptStatus?.level === level}
+                onClick={() => handleSelectJlpt(level)}
+                className={`badge-select-btn squircle ${formData.jlptStatus?.level === level ? 'selected' : ''}`}
+              >
+                {level}
+              </button>
+            ))}
+            <button
+              type="button"
+              role="radio"
+              aria-checked={!formData.jlptStatus?.level}
+              onClick={() => handleSelectJlpt(null)}
+              className={`badge-select-btn squircle ${!formData.jlptStatus?.level ? 'selected' : ''}`}
+            >
+              {t('jlptNone', 'Yo\'q')}
+            </button>
+          </div>
+          {formData.jlptStatus?.level && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '10px', fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>
+              <Award size={14} />
+              <span>JLPT {formData.jlptStatus.level} · {t('jlptSelfDeclared', '自己申告')}</span>
+            </div>
+          )}
         </div>
 
-        {/* SECTION 5: Motivatsiya, Hobbies, va Maxsus Istaklar */}
+        {/* 5-BO'LIM: Motivatsiya va Self-PR */}
         <div className="step-content glass squircle">
           <div className="step-intro">
             <BookOpen className="step-icon text-purple" size={24} />
             <h3>{t('motivationPR', 'Motivatsiya va O\'z-o\'zini taqdim')}</h3>
-            <p>{t('step5Desc', 'Yapon firmalarida eng ko\'p e\'tibor qaratiladigan bo\'lim. "Nima sababdan ushbu ishga topshiryapsiz?" va "O\'z kuchli taraflaringiz (Self-PR)" haqida yozing.')}</p>
           </div>
 
           <div className="form-group">
@@ -1176,7 +911,6 @@ export default function ResumeBuilder({
               name="motivation" 
               value={formData.motivation} 
               onChange={handleChange}
-              placeholder="E.g. 日本での運転経験を活かし、貴社の安全輸送に貢献したいと考え応募いたしました..."
               rows={3}
               className="glass-input"
             />
@@ -1189,84 +923,88 @@ export default function ResumeBuilder({
               name="selfPR" 
               value={formData.selfPR} 
               onChange={handleChange}
-              placeholder="E.g. 私の強みは責任感と時間厳守です。前職では大型トラックを3年間無事故無違反で運転しました..."
               rows={3}
               className="glass-input"
             />
           </div>
-
-          <div className="form-group">
-            <label htmlFor="hobbies">{t('hobbiesLabel', 'Qiziqishlaringiz va maxsus ko\'nikmalar (趣味・特技)')}</label>
-            <textarea 
-              id="hobbies"
-              name="hobbies" 
-              value={formData.hobbies} 
-              onChange={handleChange}
-              placeholder="E.g. 趣味：サッカー、旅行。特技：日常英会話、車の簡単なメンテナンス。"
-              rows={2}
-              className="glass-input"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="personalRequests">{t('personalRequestsLabel', 'Kompaniyaga shaxsiy istaklaringiz (本人希望記入欄)')}</label>
-            <textarea 
-              id="personalRequests"
-              name="personalRequests" 
-              value={formData.personalRequests} 
-              onChange={handleChange}
-              rows={2}
-              className="glass-input"
-            />
-          </div>
         </div>
-      </div>
 
-        {/* SECTION 6: PDF Preview and Download Actions */}
-        <div className="step-content glass squircle pdf-generation-section text-center">
-
-          {/* Font / Generation Status Indicator */}
-          {pdfStatus && pdfStatus !== 'completed' && pdfStatus !== 'failed' && (
-            <div className="pdf-status-pill glass" style={{ margin: '8px auto' }}>
+        {/* 6-BO'LIM: PDF Yuklab olish va Oldindan ko'rish */}
+        <div className="step-content glass squircle text-center">
+          {isGenerating && (
+            <div className="pdf-status-pill glass" role="status" aria-live="polite" style={{ margin: '8px auto', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <Loader2 size={14} className="animate-spin text-blue" />
               <span>
-                {pdfStatus === 'loading_font' && t('loadingFont')}
-                {pdfStatus === 'generating_pdf' && t('generatingPDF')}
-                {pdfStatus === 'downloading' && t('downloading')}
+                {pdfStatus === 'loading_font'
+                  ? t('resumeLoadingFont', 'Shrift yuklanmoqda…')
+                  : t('resumePreparing', 'PDF tayyorlanmoqda…')}
               </span>
             </div>
           )}
 
-          {/* Embedded PDF iframe Preview (if generated) */}
-          {pdfPreviewUrl ? (
+          {pdfNotice && (
+            <div
+              className="pdf-status-pill glass"
+              role={pdfNotice.type === 'error' ? 'alert' : 'status'}
+              aria-live="polite"
+              style={{ margin: '8px auto', display: 'inline-flex', alignItems: 'center', gap: '6px', color: pdfNotice.type === 'error' ? '#FF3B30' : 'var(--text-main)' }}
+            >
+              {pdfNotice.type === 'success' && <CheckCircle2 size={14} color="#30D158" />}
+              <span>{pdfNotice.text}</span>
+            </div>
+          )}
+
+          {/* Desktop: inline preview. Mobile browsers can't render PDFs inside iframes reliably,
+              so phones get a tap-to-open card instead. */}
+          {pdfPreviewUrl && !isMobile ? (
             <div className="pdf-preview-box glass">
               <iframe src={pdfPreviewUrl} title="Resume PDF Preview" className="pdf-iframe-preview"></iframe>
             </div>
           ) : (
-            <div className="pdf-preview-placeholder glass squircle">
-              <span>{t('pdfPreviewRendering', '📄 PDF preview rendering...')}</span>
-            </div>
+            <button
+              type="button"
+              onClick={isMobile && pdfPreviewUrl ? handleOpenPDFInNewTab : handlePreviewPDF}
+              disabled={isGenerating}
+              className="pdf-preview-placeholder glass squircle"
+              style={{ width: '100%', border: 'none', cursor: isGenerating ? 'wait' : 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', color: 'var(--text-main)' }}
+            >
+              <FileText size={28} style={{ color: 'var(--text-secondary)' }} />
+              <span>
+                {isMobile && pdfPreviewUrl
+                  ? t('resumeTapToOpen', 'PDFni ko\'rish uchun bosing')
+                  : t('resumePreviewBtn', 'Oldindan ko\'rish')}
+              </span>
+            </button>
           )}
 
-          <div className="action-buttons-group">
-            <button onClick={handleDownloadPDF} className="download-pdf-btn squircle">
-              📥 {t('downloadPDF', 'PDF yuklab olish')}
-            </button>
-            
-            <a 
-              href={pdfPreviewUrl || '#'} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="open-pdf-tab-btn squircle"
-              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
-              onClick={handleOpenPDFInNewTab}
+          <div className="action-buttons-group" style={{ display: 'flex', gap: '10px', marginTop: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={handleDownloadPDF}
+              disabled={isGenerating}
+              aria-busy={isGenerating}
+              className="download-pdf-btn squircle"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', opacity: isGenerating ? 0.7 : 1 }}
             >
-              👁️ {t('openInNewTab', 'Yangi oynada ochish')}
-            </a>
+              {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+              {t('downloadPDF', 'PDF yuklab olish')}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleOpenPDFInNewTab}
+              disabled={isGenerating}
+              className="open-pdf-tab-btn squircle"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', opacity: isGenerating ? 0.7 : 1 }}
+            >
+              <Eye size={16} />
+              {t('openInNewTab', 'Yangi oynada ochish')}
+            </button>
           </div>
         </div>
-
       </div>
+      {/* Trailing clearance: last card stops 12px above the floating BottomNav (michi-subpage-spacing rule) */}
+      <div aria-hidden="true" style={{ height: '72px', minHeight: '72px', width: '100%', flexShrink: 0, clear: 'both' }} />
     </div>
   );
 }

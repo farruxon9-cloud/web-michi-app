@@ -1,18 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2, UserCircle, Plus, X, Camera, MailCheck, ArrowLeft, Mail, Lock, Eye, EyeOff, User, Calendar, ShieldAlert, CheckCircle2, RefreshCw, KeyRound } from 'lucide-react';
+import { Building2, UserCircle, Plus, X, Camera, MailCheck, ArrowLeft, Mail, Lock, Eye, EyeOff, User, ShieldAlert, RefreshCw, KeyRound } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import {
   checkLockout,
   recordFailedAttempt,
   resetAttempts,
-  generateOTP,
-  verifyOTP,
   generateCaptcha,
   sanitizeInput,
   evaluatePasswordStrength
 } from '../services/authSecurityService';
 import N8nEmailOtpWidget from './auth/N8nEmailOtpWidget';
+import { sendEmailOtpViaN8n, verifyEmailOtpCodeViaN8n } from '../services/n8nEmailOtpService';
+import { checkEmailExists } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
+import { API_ENDPOINTS } from '../config/api';
+import { suspensionInfo, formatDate } from '../utils/trustHelpers';
 import './RoleSelect.css';
 
 
@@ -28,6 +31,7 @@ const TECH_CERTS = [
 
 export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role' }) {
   const { t } = useTranslation();
+  const { login, register } = useAuth();
   
   // Auth flow states: 'role' -> 'login' -> 'register' -> 'verify'
   const [authStep, setAuthStep] = useState(() => {
@@ -38,19 +42,6 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
   });
   const [registerDirectly, setRegisterDirectly] = useState(initialStep === 'register');
   const [selectedRole, setSelectedRole] = useState(null);
-  const [showEmailOtpModal, setShowEmailOtpModal] = useState(false);
-
-  const handleEmailOtpSuccess = (userData) => {
-    const userEmail = userData.email || 'user@example.com';
-    const chosenRole = userData.role || selectedRole || 'driver';
-    const userPayload = chosenRole === 'company'
-      ? { fullName: userEmail.split('@')[0], companyType: 'logistics', email: userEmail, isVerified: true }
-      : { fullName: userEmail.split('@')[0], email: userEmail, driverLicenses: ['futsu'], isVerified: true };
-    
-    if (onSelectRole) {
-      onSelectRole(chosenRole, userPayload);
-    }
-  };
 
   // Login credentials
   const [loginEmail, setLoginEmail] = useState('');
@@ -63,6 +54,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
   const [userCaptchaAns, setUserCaptchaAns] = useState('');
   const [captchaError, setCaptchaError] = useState(false);
   const [loginErrorMessage, setLoginErrorMessage] = useState('');
+  const [suspended, setSuspended] = useState(null); // { until, reason } from 403 SUSPENDED
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 6-Digit OTP UI States
@@ -89,67 +81,11 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
   const [avatar, setAvatar] = useState(null);
   const [gender, setGender] = useState('male');
 
-  // n8n Email OTP Verification Inline States
+  // n8n Email OTP Verification Inline State
   const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [otpCodeInput, setOtpCodeInput] = useState('');
-  const [otpSending, setOtpSending] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
+  const [, setOtpSent] = useState(false);
   const [otpErrorMsg, setOtpErrorMsg] = useState('');
-  const [otpSuccessMsg, setOtpSuccessMsg] = useState('');
-  const [otpCooldown, setOtpCooldown] = useState(0);
-
-  // OTP Cooldown Timer for Inline Widget
-  useEffect(() => {
-    let timer;
-    if (otpCooldown > 0) {
-      timer = setInterval(() => {
-        setOtpCooldown(prev => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [otpCooldown]);
-
-  const handleSendInlineOtp = async () => {
-    if (!email || !email.includes('@')) {
-      setOtpErrorMsg(t('validEmailRequired', 'Iltimos, to\'g\'ri email kiriting!'));
-      return;
-    }
-    setOtpErrorMsg('');
-    setOtpSuccessMsg('');
-    setOtpSending(true);
-
-    try {
-      const res = await sendEmailOtpViaN8n(email);
-      setOtpSending(false);
-      if (res.success) {
-        setOtpSent(true);
-        setOtpCooldown(res.cooldownSeconds || 60);
-        setOtpSuccessMsg(t('otpSentSuccess', 'Tasdiqlash kodi n8n orqali pochtangizga yuborildi!'));
-      } else {
-        setOtpErrorMsg(res.message || 'Xatolik yuz berdi');
-      }
-    } catch (err) {
-      setOtpSending(false);
-      setOtpErrorMsg('Pochtaga kod yuborishda xatolik yuz berdi.');
-    }
-  };
-
-  const handleVerifyInlineOtp = () => {
-    if (!otpCodeInput || otpCodeInput.length !== 6) {
-      setOtpErrorMsg(t('enter6DigitCode', 'Iltimos, 6 xonali kodni kiriting!'));
-      return;
-    }
-    setOtpErrorMsg('');
-    setOtpSuccessMsg('');
-    
-    const res = verifyEmailOtpCode(email, otpCodeInput);
-    if (res.success) {
-      setIsEmailVerified(true);
-      setOtpSuccessMsg(t('emailVerifiedSuccess', '✅ Email n8n orqali tasdiqlandi!'));
-    } else {
-      setOtpErrorMsg(res.message);
-    }
-  };
+  const [, setOtpSuccessMsg] = useState('');
 
   // Live password strength
   const passwordStrength = evaluatePasswordStrength(password);
@@ -244,52 +180,52 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-
+    (async () => {
       if (!sanitizedEmail) {
+        setIsSubmitting(false);
         setLoginErrorMessage(t('emailRequired', "Iltimos, elektron pochtangizni kiriting."));
         return;
       }
 
-      // Check admin / demo test accounts
-      if (loginPassword === 'admin' && (sanitizedEmail === 'admin' || sanitizedEmail === 'admin@driver.jp' || sanitizedEmail === 'admin@sagawa.jp')) {
-        resetAttempts(sanitizedEmail);
-        const mockData = selectedRole === 'company' 
-          ? { fullName: 'Sagawa Express', companyType: 'logistics', email: 'admin@sagawa.jp', isEmailVerified: true }
-          : { fullName: t('testDriverName', 'Test Haydovchi'), driverLicenses: ['oogata', 'kenin'], techCertificates: ['forklift'], email: 'admin@driver.jp', isEmailVerified: true };
-        onSelectRole(selectedRole || 'driver', mockData);
-        return;
-      }
-
-      // Check registered users in local database
-      const registeredUsers = JSON.parse(localStorage.getItem('michi_registered_users') || '[]');
-      const userMatch = registeredUsers.find(
-        u => (u.email === sanitizedEmail || u.phone === sanitizedEmail) && u.password === loginPassword
-      );
-
-      if (userMatch) {
-        resetAttempts(sanitizedEmail);
-        onSelectRole(userMatch.role || selectedRole || 'driver', userMatch.profileData);
-        return;
-      }
-
-      // Account not found or password incorrect in database
-      const failRes = recordFailedAttempt(sanitizedEmail);
-      if (failRes.isLocked) {
-        setLockoutState(checkLockout(sanitizedEmail));
-      } else {
-        if (failRes.requireCaptcha) {
-          setCaptchaChallenge(generateCaptcha());
+      try {
+        const res = await login(sanitizedEmail, loginPassword);
+        setIsSubmitting(false);
+        if (res.success && res.user) {
+          resetAttempts(sanitizedEmail);
+          const userRole = res.user.role || selectedRole || 'driver';
+          const profilePayload = res.user.profileData || {
+            fullName: res.user.fullName || sanitizedEmail.split('@')[0],
+            email: res.user.email || sanitizedEmail,
+            isEmailVerified: true
+          };
+          onSelectRole(userRole, profilePayload);
+          return;
         }
-        setLoginErrorMessage(
-          t('invalidLoginCredentials', "Kiritilgan login yoki parol noto'g'ri! Tizim bazasidan bu foydalanuvchi topilmadi. Qaytadan urinib ko'ring yoki ro'yxatdan o'ting.")
-        );
+      } catch (apiErr) {
+        console.warn("Backend Login Error:", apiErr);
+        setIsSubmitting(false);
+        // Suspended account: explain why instead of counting it as a wrong password
+        const susp = suspensionInfo(apiErr);
+        if (susp) {
+          setLoginErrorMessage('');
+          setSuspended(susp);
+          return;
+        }
+        setSuspended(null);
+        const failRes = recordFailedAttempt(sanitizedEmail);
+        if (failRes.isLocked) {
+          setLockoutState(checkLockout(sanitizedEmail));
+        } else {
+          if (failRes.requireCaptcha) {
+            setCaptchaChallenge(generateCaptcha());
+          }
+          setLoginErrorMessage('invalidLoginCredentials');
+        }
       }
-    }, 300);
+    })();
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     if (!allLegalAccepted) return;
 
@@ -299,8 +235,6 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
       return;
     }
 
-    const registeredUsers = JSON.parse(localStorage.getItem('michi_registered_users') || '[]');
-    
     const filteredAddressHistory = addressHistory.filter(a => a.address);
     const filteredEducationHistory = educationHistory.filter(e => e.school || e.major);
     const fallbackAddress = filteredAddressHistory.map(a => a.address + (a.isCurrent ? ` (${t('currentAddressLabel', 'Hozirgi')})` : '')).join(', ');
@@ -336,71 +270,86 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
       education: fallbackEducation || education,
     };
 
-    const newUserRecord = {
+    const registerPayload = {
+      fullName: fullName || (selectedRole === 'company' ? 'Kompaniya' : 'Michi User'),
       email: email.trim().toLowerCase(),
       password: password,
       role: selectedRole || 'driver',
-      profileData: userProfilePayload,
-      createdAt: new Date().toISOString()
+      profileData: userProfilePayload
     };
 
-    const updatedUsers = registeredUsers.filter(u => u.email !== newUserRecord.email);
-    updatedUsers.push(newUserRecord);
-    localStorage.setItem('michi_registered_users', JSON.stringify(updatedUsers));
+    setIsSubmitting(true);
+    try {
+      const res = await register(registerPayload);
+      setIsSubmitting(false);
 
-    resetAttempts(email);
-    setLockoutState({ isLocked: false, remainingMs: 0, level: 0, isStrictEmailLock: false });
-    
-    onSelectRole(selectedRole || 'driver', userProfilePayload);
-  };
-
-  const handleVerifySubmit = (e) => {
-    e.preventDefault();
-    const fullOtp = otpDigits.join('') || verifyCode;
-    const res = verifyOTP(email || forgotEmail || loginEmail, fullOtp);
-
-    if (res.isValid) {
-      resetAttempts(email || forgotEmail || loginEmail);
+      resetAttempts(email);
       setLockoutState({ isLocked: false, remainingMs: 0, level: 0, isStrictEmailLock: false });
       
-      if (selectedRole === 'company') {
-        onSelectRole(selectedRole, {
-          fullName: fullName || 'Kompaniya',
-          email,
-          avatar,
-          companyType,
-          companyAddress,
-          employeeCount,
-          contactPerson,
-          companyPhone,
-          companyDesc,
-          corporateNumber,
-          website,
-          establishedYear,
-        });
-      } else {
-        const filteredAddressHistory = addressHistory.filter(a => a.address);
-        const filteredEducationHistory = educationHistory.filter(e => e.school || e.major);
-        const fallbackAddress = filteredAddressHistory.map(a => a.address + (a.isCurrent ? ` (${t('currentAddressLabel', 'Hozirgi')})` : '')).join(', ');
-        const fallbackEducation = filteredEducationHistory.map(e => `${e.school}${e.major ? ` (${e.major})` : ''} • ${e.startDate || ''} ~ ${e.isCurrent ? t('currentlyStudyingLabel', 'O\'qiyotgan') : e.endDate || ''}`).join(', ');
+      const returnedRole = res.user?.role || selectedRole || 'driver';
+      const returnedProfile = res.user?.profileData || userProfilePayload;
+      onSelectRole(returnedRole, returnedProfile);
+    } catch (err) {
+      console.error("Backend Register Error:", err);
+      setIsSubmitting(false);
+      setOtpErrorMsg(err.message || t('registerErrorMsg', "Ro'yxatdan o'tishda xatolik yuz berdi. Iltimos qaytadan urinib ko'ring."));
+    }
+  };
 
-        onSelectRole(selectedRole || 'driver', {
-          fullName: fullName || 'Michi User',
-          email,
-          avatar,
-          gender,
-          birthDate,
-          driverLicenses,
-          techCertificates,
-          workHistory: workHistory.filter(w => w.company || w.position),
-          addressHistory: filteredAddressHistory,
-          educationHistory: filteredEducationHistory,
-          address: fallbackAddress || address,
-          education: fallbackEducation || education,
-        });
+  const handleVerifySubmit = async (e) => {
+    e.preventDefault();
+    const fullOtp = otpDigits.join('') || verifyCode;
+    setIsSubmitting(true);
+    try {
+      const res = await verifyEmailOtpCodeViaN8n(email || forgotEmail || loginEmail, fullOtp);
+      setIsSubmitting(false);
+
+      if (res.success) {
+        resetAttempts(email || forgotEmail || loginEmail);
+        setLockoutState({ isLocked: false, remainingMs: 0, level: 0, isStrictEmailLock: false });
+      
+        if (selectedRole === 'company') {
+          onSelectRole(selectedRole, {
+            fullName: fullName || 'Kompaniya',
+            email,
+            avatar,
+            companyType,
+            companyAddress,
+            employeeCount,
+            contactPerson,
+            companyPhone,
+            companyDesc,
+            corporateNumber,
+            website,
+            establishedYear,
+          });
+        } else {
+          const filteredAddressHistory = addressHistory.filter(a => a.address);
+          const filteredEducationHistory = educationHistory.filter(e => e.school || e.major);
+          const fallbackAddress = filteredAddressHistory.map(a => a.address + (a.isCurrent ? ` (${t('currentAddressLabel', 'Hozirgi')})` : '')).join(', ');
+          const fallbackEducation = filteredEducationHistory.map(e => `${e.school}${e.major ? ` (${e.major})` : ''} • ${e.startDate || ''} ~ ${e.isCurrent ? t('currentlyStudyingLabel', 'O\'qiyotgan') : e.endDate || ''}`).join(', ');
+
+          onSelectRole(selectedRole || 'driver', {
+            fullName: fullName || 'Michi User',
+            email,
+            avatar,
+            gender,
+            birthDate,
+            driverLicenses,
+            techCertificates,
+            workHistory: workHistory.filter(w => w.company || w.position),
+            addressHistory: filteredAddressHistory,
+            educationHistory: filteredEducationHistory,
+            address: fallbackAddress || address,
+            education: fallbackEducation || education,
+          });
+        }
+      } else {
+        alert(res.error || t(res.messageKey, "Tasdiqlash kodi noto'g'ri!"));
       }
-    } else {
-      alert(t(res.messageKey, "Tasdiqlash kodi noto'g'ri!"));
+    } catch (err) {
+      setIsSubmitting(false);
+      alert(err.message || t('verifyError', "Tasdiqlash kodi noto'g'ri!"));
     }
   };
 
@@ -529,11 +478,11 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
             <button 
               type="button" 
               className="btn-primary" 
-              onClick={() => {
+              onClick={async () => {
                 setAuthStep('forgot_password');
                 setRecoveryStep('email');
                 setForgotEmail(loginEmail);
-                generateOTP(loginEmail);
+                if (loginEmail) await sendEmailOtpViaN8n(loginEmail);
               }}
               style={{ width: '100%', background: 'linear-gradient(135deg, #0A84FF, #0056B3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
             >
@@ -600,7 +549,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
           <MailCheck size={44} color="#0A84FF" style={{ margin: '16px auto 12px auto' }} />
           <h2 style={{ marginBottom: '8px', fontSize: '20px', fontWeight: '800' }}>{t('otpTitle', 'Email Tasdiqlash Kodi')}</h2>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
-            {t('otpSub', 'Elektron pochtangizga 6-xonali tasdiqlash kodi yuborildi. (Test: 1234 yoki 123456)')}
+            {t('otpSub', 'Elektron pochtangizga 6-xonali tasdiqlash kodi yuborildi.')}
           </p>
 
           <form onSubmit={handleVerifySubmit}>
@@ -636,8 +585,9 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
               ) : (
                 <button
                   type="button"
-                  onClick={() => {
-                    generateOTP(email || forgotEmail || loginEmail);
+                  onClick={async () => {
+                    const targetEmail = email || forgotEmail || loginEmail;
+                    if (targetEmail) await sendEmailOtpViaN8n(targetEmail);
                     setOtpTimer(60);
                   }}
                   style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', fontSize: '12.5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
@@ -672,33 +622,76 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
     // メール送信及びコード入力（テストコード: 1234）が完了すると、新パスワードが適用され、
     // 古いメールアドレスを保持したままで、即座に該当ロール（運転手/企業）としてログイン（onSelectRole）を実行します。
     // ==========================================================================
-    const handleRecoverySubmit = (e) => {
+    const handleRecoverySubmit = async (e) => {
       e.preventDefault();
       if (recoveryStep === 'email') {
-        if (!forgotEmail) {
-          alert(t('emailRequired', "Iltimos, elektron pochtangizni kiriting."));
+        if (!forgotEmail || !forgotEmail.includes('@')) {
+          alert(t('emailRequired', "Iltimos, elektron pochtangizni to'g'ri kiriting."));
           return;
         }
-        setRecoveryStep('code');
+        setIsSubmitting(true);
+        try {
+          const res = await sendEmailOtpViaN8n(forgotEmail);
+          setIsSubmitting(false);
+          if (res.success) {
+            setRecoveryStep('code');
+          } else {
+            alert(res.error || t('otpSendFailed', "Pochtaga kod yuborishda xatolik yuz berdi."));
+            setRecoveryStep('code');
+          }
+        } catch (err) {
+          setIsSubmitting(false);
+          setRecoveryStep('code');
+        }
       } else if (recoveryStep === 'code') {
-        if (recoveryCode === '1234') {
-          setRecoveryStep('new_password');
-        } else {
+        if (!recoveryCode) {
+          alert(t('enter6DigitCode', "Iltimos, 6 xonali tasdiqlash kodini kiriting!"));
+          return;
+        }
+        setIsSubmitting(true);
+        try {
+          const res = await verifyEmailOtpCodeViaN8n(forgotEmail, recoveryCode);
+          setIsSubmitting(false);
+          if (res.success) {
+            setRecoveryStep('new_password');
+          } else {
+            alert(res.error || t('verifyError', "Tasdiqlash kodi noto'g'ri!"));
+          }
+        } catch (err) {
+          setIsSubmitting(false);
           alert(t('verifyError', "Tasdiqlash kodi noto'g'ri!"));
         }
       } else if (recoveryStep === 'new_password') {
-        if (!newPassword) {
-          alert(t('passwordRequired', "Iltimos, yangi parol kiriting."));
+        if (!newPassword || newPassword.length < 6) {
+          alert(t('passwordRequired', "Iltimos, kamida 6 xonali yangi parol kiriting."));
           return;
         }
-        alert(t('recoverySuccessAlert', "Parolingiz muvaffaqiyatli tiklandi va profilingizga kirdingiz!"));
-        
-        // [UZ] Eski elektron pochta va yangilangan parol ostida tizimga darhol kirish (yengil o'tish)
-        // [JA] 古いメールアドレス情報を引き継いだ形で即時自動ログインを実行するモックデータ定義
-        const mockData = selectedRole === 'company'
-          ? { fullName: 'Sagawa Express', companyType: 'logistics', email: forgotEmail }
-          : { fullName: t('guestDriverName', 'Mehmon Haydovchi'), driverLicenses: ['oogata', 'kenin'], techCertificates: ['forklift'], email: forgotEmail };
-        onSelectRole(selectedRole, mockData);
+        setIsSubmitting(true);
+        try {
+          const res = await fetch(API_ENDPOINTS.RESET_PASSWORD, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              email: forgotEmail, 
+              code: recoveryCode, 
+              otpCode: recoveryCode, 
+              newPassword: newPassword 
+            })
+          });
+          const data = await res.json().catch(() => ({}));
+          setIsSubmitting(false);
+          if (res.ok && data.success !== false) {
+            alert(t('recoverySuccessAlert', "Parol muvaffaqiyatli yangilandi!"));
+            resetAttempts(forgotEmail);
+            setLockoutState({ isLocked: false, remainingMs: 0, level: 0, isStrictEmailLock: false });
+            setAuthStep('login');
+          } else {
+            alert(data.error || data.message || t('passwordResetFailed', "Parolni tiklashda xatolik yuz berdi."));
+          }
+        } catch (err) {
+          setIsSubmitting(false);
+          alert(err.message || t('passwordResetFailed', "Parolni tiklashda xatolik yuz berdi."));
+        }
       }
     };
 
@@ -758,11 +751,11 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
               {recoveryStep === 'code' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
                   <p style={{ fontSize: '13px', color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '8px' }}>
-                    {t('recoveryCodeSentMsg', 'Esda tuting, tiklash kodi emailingizga yuborildi. (Test kodi: 1234)')}
+                    {t('recoveryCodeSentMsg', 'Tiklash kodi emailingizga yuborildi.')}
                   </p>
                   <input 
                     type="number" 
-                    placeholder="1234" 
+                    placeholder="000000" 
                     className="auth-input" 
                     style={{ textAlign: 'center', fontSize: '24px', letterSpacing: '8px', borderRadius: '16px', padding: '14px', border: '1px solid rgba(90, 85, 234, 0.25)' }}
                     value={recoveryCode}
@@ -893,7 +886,25 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
                   fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'
                 }}>
                   <ShieldAlert size={16} style={{ flexShrink: 0 }} />
-                  <span>{loginErrorMessage}</span>
+                  <span>{t(loginErrorMessage, t('invalidLoginCredentials', 'メールアドレスまたはパスワードが正しくありません。'))}</span>
+                </div>
+              )}
+
+              {/* Suspended account (403 SUSPENDED) */}
+              {suspended && (
+                <div role="alert" id="login-suspended-notice" style={{
+                  background: 'rgba(255, 149, 0, 0.08)', border: '1px solid rgba(255, 149, 0, 0.3)',
+                  borderRadius: '12px', padding: '10px 12px', color: '#FF9500', fontSize: '12.5px',
+                  fontWeight: '700', display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px'
+                }}>
+                  <ShieldAlert size={16} style={{ flexShrink: 0, marginTop: '1px' }} />
+                  <span style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <span>{suspended.until
+                      ? t('loginSuspendedUntil', { date: formatDate(suspended.until), defaultValue: 'このアカウントは {{date}} まで利用停止中です。' })
+                      : t('loginSuspendedPermanent', 'このアカウントは利用停止されています。')}</span>
+                    {suspended.reason && <span style={{ fontWeight: 600 }}>{t('moderationReasonLabel')}: {suspended.reason}</span>}
+                    <span style={{ fontWeight: 600, opacity: 0.85 }}>{t('loginSuspendedHelp', 'ご不明な点は support@michi.jp.net までお問い合わせください。')}</span>
+                  </span>
                 </div>
               )}
 
@@ -1531,6 +1542,11 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
                 </label>
               </div>
             </div>
+            {otpErrorMsg && (
+              <div role="alert" style={{ color: '#FF3B30', fontSize: '13px', fontWeight: 600, marginTop: '10px' }}>
+                {otpErrorMsg}
+              </div>
+            )}
 
             <button 
               type="submit" 

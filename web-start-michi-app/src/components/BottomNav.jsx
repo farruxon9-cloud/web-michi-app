@@ -4,16 +4,17 @@ import { Home, Briefcase, GraduationCap, Wrench, User } from 'lucide-react';
 import { playHapticClick } from '../utils/haptics';
 import './BottomNav.css';
 
-const BottomNav = React.memo(function BottomNav({ activeTab, setActiveTab, unreadCount = 0, userRole, isVoiceStandby, isVoiceActive, voiceStatus }) {
+export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, userRole, isVoiceStandby, isVoiceActive, voiceStatus, hiddenTabs = [] }) {
   const { t } = useTranslation();
   
   const navItems = [
-    { id: 'home', icon: Home, label: t('navHome', 'Asosiy') },
-    { id: 'jobs', icon: Briefcase, label: t('navJobs', 'Ishlar') },
-    { id: 'service', icon: Wrench, label: t('navService', 'Servis') },
-    { id: 'academy', icon: GraduationCap, label: t('navAcademy', 'Maktablar') },
-    { id: 'profile', icon: User, label: t('navProfile', 'Profil') },
-  ];
+    { id: 'home', icon: Home, label: t('navHome', 'ホーム') },
+    { id: 'jobs', icon: Briefcase, label: t('navJobs', '求人') },
+    { id: 'service', icon: Wrench, label: t('navService', '整備') },
+    { id: 'academy', icon: GraduationCap, label: t('navAcademy', '教習所') },
+    { id: 'profile', icon: User, label: t('navProfile', 'マイページ') },
+  ].filter((item) => !hiddenTabs.includes(item.id)); // tabs switched off in the admin panel
+  const count = navItems.length;
 
   const handleTabClick = (tabId) => {
     try {
@@ -52,7 +53,7 @@ const BottomNav = React.memo(function BottomNav({ activeTab, setActiveTab, unrea
     
     if (trackRef.current && indicatorRef.current) {
       const trackWidth = trackRef.current.getBoundingClientRect().width;
-      const tabWidth = trackWidth / 5;
+      const tabWidth = trackWidth / count;
       startOffset.current = activeIndex * tabWidth;
       
       indicatorRef.current.style.transition = 'none';
@@ -80,7 +81,7 @@ const BottomNav = React.memo(function BottomNav({ activeTab, setActiveTab, unrea
     
     if (trackRef.current && indicatorRef.current) {
       const trackWidth = trackRef.current.getBoundingClientRect().width;
-      const tabWidth = trackWidth / 5;
+      const tabWidth = trackWidth / count;
       
       let newOffset = startOffset.current + deltaX;
       
@@ -103,14 +104,14 @@ const BottomNav = React.memo(function BottomNav({ activeTab, setActiveTab, unrea
     
     if (trackRef.current && indicatorRef.current) {
       const trackWidth = trackRef.current.getBoundingClientRect().width;
-      const tabWidth = trackWidth / 5;
+      const tabWidth = trackWidth / count;
       
       indicatorRef.current.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.4, 1)';
       
       const matrix = new DOMMatrix(window.getComputedStyle(indicatorRef.current).transform);
       const currentTranslateX = matrix.m41;
       
-      const closestIndex = Math.max(0, Math.min(4, Math.round(currentTranslateX / tabWidth)));
+      const closestIndex = Math.max(0, Math.min(count - 1, Math.round(currentTranslateX / tabWidth)));
       
       if (dragDistance.current > 12) {
         handleTabClick(navItems[closestIndex].id);
@@ -125,50 +126,51 @@ const BottomNav = React.memo(function BottomNav({ activeTab, setActiveTab, unrea
   }, []);
 
   return (
-    <div 
-      className="bottom-nav" 
-      ref={containerRef}
-      onMouseDown={handlePointerDown}
-      onTouchStart={handlePointerDown}
-    >
-      {/* Sliding Active Indicator Pill */}
-      <div className="bottom-nav-indicator-track" ref={trackRef}>
-        <div 
-          ref={indicatorRef}
-          className="bottom-nav-indicator" 
-          style={{ 
-            transform: `translateX(${activeIndex * 100}%)`,
-            '--active-index': activeIndex
-          }}
-        />
-      </div>
-
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = activeTab === item.id;
-        const showBadge = item.id === 'profile' && unreadCount > 0;
-        return (
-          <button
-            key={item.id}
-            className={`nav-item ${isActive ? 'active' : ''} ${item.isSpecial ? 'nav-item-special' : ''}`}
-            onClick={() => {
-              if (dragDistance.current <= 25) {
-                handleTabClick(item.id);
-              }
+    <div className="bottom-nav-dock">
+      <div 
+        className="bottom-nav" 
+        ref={containerRef}
+        onMouseDown={handlePointerDown}
+        onTouchStart={handlePointerDown}
+      >
+        {/* Sliding Active Indicator Pill */}
+        <div className="bottom-nav-indicator-track" ref={trackRef}>
+          <div 
+            ref={indicatorRef}
+            className="bottom-nav-indicator" 
+            style={{ 
+              width: `${100 / count}%`,
+              transform: `translateX(${activeIndex * 100}%)`,
+              '--active-index': activeIndex
             }}
-          >
-            <div className={`nav-icon-wrap ${item.isSpecial ? 'special-icon-wrap' : ''}`}>
-              <Icon size={24} strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
-              {showBadge && (
-                <span className="nav-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
-              )}
-            </div>
-            <span>{item.label}</span>
-          </button>
-        );
-      })}
+          />
+        </div>
+
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          const showBadge = item.id === 'profile' && unreadCount > 0;
+          return (
+            <button
+              key={item.id}
+              className={`nav-item ${isActive ? 'active' : ''} ${item.isSpecial ? 'nav-item-special' : ''}`}
+              onClick={() => {
+                if (dragDistance.current <= 25) {
+                  handleTabClick(item.id);
+                }
+              }}
+            >
+              <div className={`nav-icon-wrap ${item.isSpecial ? 'special-icon-wrap' : ''}`}>
+                <Icon size={24} strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
+                {showBadge && (
+                  <span className="nav-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                )}
+              </div>
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
-});
-
-export default BottomNav;
+}

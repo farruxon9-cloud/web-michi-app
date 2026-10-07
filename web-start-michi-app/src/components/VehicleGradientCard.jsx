@@ -40,12 +40,12 @@ const BRAND_GRADIENTS = {
  */
 function getBodyIcon(bodyStyle, type) {
   if (type === 'truck_4t' || type === 'truck_10t' || type === 'truck_trailer') {
-    return <Truck size={28} color="rgba(255,255,255,0.6)" aria-hidden="true" />;
+    return <Truck size={28} color="rgba(255,255,255,0.6)" />;
   }
   if (bodyStyle === 'van' || bodyStyle === 'minivan' || bodyStyle === 'bus') {
-    return <Bus size={28} color="rgba(255,255,255,0.6)" aria-hidden="true" />;
+    return <Bus size={28} color="rgba(255,255,255,0.6)" />;
   }
-  return <Car size={28} color="rgba(255,255,255,0.6)" aria-hidden="true" />;
+  return <Car size={28} color="rgba(255,255,255,0.6)" />;
 }
 
 /**

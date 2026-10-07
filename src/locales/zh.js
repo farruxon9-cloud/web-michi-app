@@ -1109,7 +1109,20 @@ const translation = {
   "deleteAccountConfirmMsg": "30天后，您的账户、招聘、应聘等数据将被永久删除。30天内可随时取消。",
   "loginSuspendedUntil": "此账户已被暂停至{{date}}。",
   "loginSuspendedPermanent": "此账户已被停用。",
-  "loginSuspendedHelp": "如有疑问，请联系 support@michi.jp.net。"
+  "loginSuspendedHelp": "如有疑问，请联系 support@michi.jp.net。",
+  "aiListening": "正在聆听…",
+  "aiListeningHint": "请说出您的问题",
+  "aiThinking": "Michi AI 正在思考",
+  "aiSend": "发送",
+  "aiEditPlaceholder": "确认或编辑您的问题…",
+  "aiClose": "关闭",
+  "aiSpeechLang": "语音语言",
+  "aiMicDenied": "麦克风权限被拒绝，请在浏览器设置中允许。",
+  "aiSttUnsupported": "此浏览器不支持语音输入，请改用文字输入。",
+  "aiMicError": "没有听清，请再试一次。",
+  "aiErrorOccurred": "出现错误，请重试。",
+  "actionExecuted": "已完成。",
+  "aiDisclaimer": "※ Michi AI 使用人工智能技术，可能生成不准确的信息。重要决定请以官方信息为准。"
 };
 
 export default { translation };

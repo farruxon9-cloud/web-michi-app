@@ -1,32 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Fustat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700;900&family=Sawarabi+Gothic&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fustat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --font-outfit: "Outfit", -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-fustat: "Fustat", -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
-  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "SF Pro Text", "Plus Jakarta Sans", "Inter", "Nunito", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", "Sawarabi Gothic", sans-serif;
-
-  /* 4.2.1 Fluid Typography Tokens (clamp) */
-  --font-size-xs: clamp(10px, 0.6vw + 9px, 12px);
-  --font-size-sm: clamp(12px, 0.8vw + 10px, 14px);
-  --font-size-base: clamp(14px, 1.2vw + 11px, 17px);
-  --font-size-h4: clamp(14px, 1.4vw + 10px, 18px);
-  --font-size-h3: clamp(16px, 1.8vw + 10px, 22px);
-  --font-size-h2: clamp(20px, 2.5vw + 10px, 28px);
-  --font-size-h1: clamp(24px, 3.5vw + 10px, 36px);
-
-  /* 4.4.1 Standardized Z-Index Hierarchy Tokens */
-  --z-background: 0;
-  --z-content: 10;
-  --z-sticky: 100;
-  --z-header: 200;
-  --z-nav: 300;
-  --z-overlay: 1000;
-  --z-modal: 2000;
-  --z-voice: 3000;
-  --z-auth: 4000;
-  --z-error: 5000;
-
+  --font-outfit: "Outfit", sans-serif;
+  --font-fustat: "Fustat", sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
   /* Brand colors: Refined & Sophisticated, escaping overly high saturation for ultra-minimalist UX */
   --primary: #5E5CE6; /* iOS Premium Indigo */
@@ -74,6 +51,18 @@
   
   --font-family: 'SF Pro Rounded', 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 
+  /* 🏗️ Z-Index Layer Stacking Variables */
+  --z-background: 0;
+  --z-content: 10;
+  --z-sticky: 100;
+  --z-header: 200;
+  --z-nav: 300;
+  --z-overlay: 1000;
+  --z-modal: 2000;
+  --z-voice: 3000;
+  --z-auth: 4000;
+  --z-error: 5000;
+
   /* 📐 Single Vertical Line Grid & Spacing Variables (Devorlari Bir Chiziqda Standarti) */
   --screen-margin-x: 14px;
   --card-width-full: calc(100% - 28px);
@@ -82,12 +71,6 @@
   --bottom-dock-clearance: 90px;
   --card-pad-compact: 10px 12px;
   --card-pad-standard: 14px 16px;
-
-  /* 🖥️ Desktop / Tablet Responsive Layout Dimensions */
-  --sidebar-width: 260px;
-  --content-max-width: 960px;
-  --layout-max-width: 1400px;
-  --header-height: 64px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -113,6 +96,7 @@ html.dark-mode {
   --text-secondary: #A1A1AA;
   --shadow-sm: none;
   --shadow-md: none;
+  --desktop-side-bg: #000000;
 }
 
 html.light-mode {
@@ -126,75 +110,11 @@ html.light-mode {
   --shadow-md: 0 8px 32px rgba(90, 85, 234, 0.06);
 }
 
-*, *::before, *::after {
+* {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(140, 140, 160, 0.35) transparent;
-}
-
-/* WebKit Scrollbar Reset (Chrome, Safari, Edge, Samsung Internet) */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(140, 140, 160, 0.35);
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(140, 140, 160, 0.65);
-}
-
-button, input, select, textarea {
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-  color: inherit;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-}
-
-html, body, #root, button, a, input, select, textarea, [role="button"] {
-  touch-action: manipulation;
-}
-
-/* 7.3.7 Keyboard Navigation & Focus Ring Standards */
-:focus-visible {
-  outline: 2px solid var(--primary, #5E5CE6);
-  outline-offset: 2px;
-}
-
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-[role="button"]:focus-visible {
-  outline: 2px solid var(--primary, #5E5CE6);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(94, 92, 230, 0.25);
-}
-
-/* 7.3.6 RTL (Right-to-Left) Support */
-[dir="rtl"] {
-  direction: rtl;
-  text-align: right;
-}
-
-[dir="rtl"] .side-nav,
-[dir="rtl"] .sidebar {
-  border-right: none;
-  border-left: 1px solid var(--glass-border);
 }
 
 body {
@@ -204,37 +124,33 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
   overflow-x: hidden;
   margin: 0;
   padding: 0;
 }
 
+:root {
+  /* Desktop: the app is a centered phone-style column up to 820px wide */
+  --app-max-w: 820px;
+  --desktop-side-bg: #ffffff;
+}
+
 #root {
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+  max-width: var(--app-max-w);
+  margin: 0 auto;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top, 0px);
   background-color: var(--bg-color);
   position: relative;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
-/* ==========================================================================
-   📱 💻 🖥️ RESPONSIVE LAYOUT ENGINE & BREAKPOINTS
-   ========================================================================== */
-
-/* 📱 Mobil (< 768px): Full screen container */
-@media (max-width: 767px) {
-  #root {
-    max-width: 100%;
-    margin: 0 auto;
-  }
-}
-
-/* 📑 Planshet (768px – 1199px): Expanded 2-column wide layout */
-@media (min-width: 768px) {
+/* Phones and tablets up to 820px: full-bleed app. Wider screens: rounded column. */
+@media (min-width: 821px) {
   html, body {
     width: 100%;
     min-height: 100vh;
@@ -244,63 +160,95 @@ body {
   }
 
   body {
-    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--desktop-side-bg);
+    box-sizing: border-box;
+    position: relative;
   }
 
   #root {
     width: 100%;
-    max-width: 100%;
-    min-height: 100vh;
-    position: static;
-    transform: none;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    margin: 0 auto;
+    max-width: var(--app-max-w);
+    height: 100dvh;
+    max-height: 920px;
+    position: relative;
+    margin: auto;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 0 80px rgba(94, 92, 230, 0.12);
+    box-sizing: border-box;
+    /* Makes position:fixed children (FABs, drawers, overlays) stay inside the column */
+    transform: translateZ(0);
+  }
+
+  html.dark-mode #root {
+    border-color: rgba(255, 255, 255, 0.1);
   }
 
   .app-layout {
     width: 100%;
-    max-width: var(--layout-max-width);
+    max-width: var(--app-max-w);
+    height: 100%;
     margin: 0 auto;
-    border-radius: 0;
-    min-height: 100vh;
-    container-type: inline-size;
+    border-radius: 24px;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
-  .main-content {
-    max-width: var(--content-max-width);
-    margin: 0 auto;
-    width: 100%;
-    padding: 0 24px;
+  /* Full-screen overlays: fill the column, not the browser viewport */
+  #root .voice-setup-overlay,
+  #root .voice-history-sheet-overlay {
+    height: 100%;
+    min-height: 0;
   }
-}
-
-/* 🖥️ Desktop (≥ 1200px): Ultra-wide 3-zone architecture */
-@media (min-width: 1200px) {
-  .app-layout {
-    max-width: 1440px;
-    padding: 0 32px;
+  #root .voice-side-drawer-overlay {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
   }
-
-  .main-content {
-    max-width: 1080px;
-    padding: 0 32px;
+  #root .jdm-nav-container {
+    height: 100%;
   }
-}
-
-/* 📐 SideNav margin adjustments for tablet & desktop */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .app-layout.has-sidenav {
-    margin-left: 72px;
-    width: calc(100% - 72px);
+  #root .language-container,
+  #root .login-centered-container {
+    min-height: 100%;
   }
 }
 
-@media (min-width: 1024px) {
-  .app-layout.has-sidenav {
-    margin-left: 260px;
-    width: calc(100% - 260px);
+/* Small phones (iPhone SE 1st gen, Galaxy Fold cover, 320–360px) */
+@media (max-width: 360px) {
+  :root {
+    --screen-margin-x: 10px;
+    --card-width-full: calc(100% - 20px);
+    --card-pad-standard: 12px 12px;
+  }
+
+  /* Header: status text overlapped the centered theme toggle. Keep it for screen readers only. */
+  #root .robot-avatar-container > .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  #root .global-header {
+    padding: 0 12px;
+  }
+
+  /* Dashboard clock stays on one line */
+  #root .time-pill {
+    white-space: nowrap;
+    padding: 6px 10px;
+    font-size: 13px;
   }
 }
 
@@ -311,7 +259,7 @@ body {
   filter: blur(80px);
   z-index: 0;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.64;
   mix-blend-mode: multiply;
   animation: blob-float 15s infinite alternate ease-in-out;
 }
@@ -334,9 +282,9 @@ html.dark-mode .glass-blob {
 }
 
 .blob-1 {
-  width: 350px;
-  height: 350px;
-  background: #e0f2fe;
+  width: 360px;
+  height: 360px;
+  background: #d8f0fe;
   top: -50px;
   left: -50px;
 }
@@ -344,7 +292,7 @@ html.dark-mode .glass-blob {
 .blob-2 {
   width: 400px;
   height: 400px;
-  background: #e0e7ff;
+  background: #dbe2fe;
   bottom: 0px;
   right: -50px;
   animation-duration: 18s;
@@ -352,8 +300,8 @@ html.dark-mode .glass-blob {
 }
 
 .blob-3 {
-  width: 300px;
-  height: 300px;
+  width: 320px;
+  height: 320px;
   background: #f3e8ff;
   top: 30%;
   left: 20%;
@@ -438,22 +386,11 @@ html.dark-mode .glass-blob {
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* Typography Standards (Task 4.2) */
-body, p, span, li, button, input, select, textarea {
-  line-height: 1.5;
-  letter-spacing: normal;
-}
-
+/* Typography */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
-  line-height: 1.25;
   letter-spacing: -0.02em;
 }
-
-h1 { font-size: var(--font-size-h1); }
-h2 { font-size: var(--font-size-h2); }
-h3 { font-size: var(--font-size-h3); }
-h4 { font-size: var(--font-size-h4); }
 
 /* Hide all scrollbar gutters globally to ensure 100% left-right symmetry */
 *::-webkit-scrollbar {
@@ -494,100 +431,69 @@ button:active {
 .premium-btn:hover { transform: scale(1.02); box-shadow: 0 6px 24px rgba(0, 102, 204, 0.3); }
 .premium-btn:active { transform: scale(0.95); filter: brightness(0.88); box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2), inset 0 2px 4px rgba(0,0,0,0.15); }
 
-/* Prevent horizontal body overflow while respecting #root max-width: 430px */
 html, body {
   overflow-x: hidden;
 }
 
-/* ==========================================================================
-   4.1.5 Windows High Contrast Mode (forced-colors) Support
-   ========================================================================== */
-@media (forced-colors: active) {
-  *, *::before, *::after {
-    forced-color-adjust: auto;
-  }
-  button, a, input, select, textarea {
-    border: 1px solid ButtonText !important;
-  }
-  .btn-primary, button[type="submit"] {
-    background: Highlight !important;
-    color: HighlightText !important;
-  }
+/* iOS Safari: inputs < 16px trigger auto-zoom, which breaks layout parity */
+input, select, textarea {
+  font-size: 16px;
 }
 
-/* ==========================================================================
-   BOSQICH 4.3: Rasm va Media Konsistentligi (Responsive, aspect-ratio, object-fit, WebP)
-   ========================================================================== */
-
-/* 4.3.1 Responsive Media Reset */
-img, video, iframe, canvas, svg {
-  max-width: 100%;
-  height: auto;
+/* Keep floating nav above the iPhone home indicator */
+.bottom-nav-dock {
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
-img {
-  content-visibility: auto;
+/* Modals stay inside the app column on desktop too */
+.app-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
-
-/* 4.3.2 Aspect Ratio & Skeleton placeholders */
-.card-img,
-.job-card-thumb,
-.school-card-thumb,
-.article-thumb,
-.truck-image-placeholder {
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
+.app-modal-sheet {
   width: 100%;
-  background-color: var(--color-bg-secondary, #1e293b);
-  border-radius: var(--radius-md, 8px);
+  max-height: 88%;
+  overflow-y: auto;
+  background: var(--bg-color);
+  color: var(--text-main);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25);
+  animation: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-
-.avatar-img,
-.user-avatar,
-.profile-avatar-img,
-.driver-avatar {
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  border-radius: 50%;
+@keyframes sheet-up {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
-
-.banner-img,
-.hero-banner-img {
-  aspect-ratio: 21 / 9;
-  object-fit: cover;
-  width: 100%;
-}
-
-@media (max-width: 640px) {
-  .banner-img,
-  .hero-banner-img {
-    aspect-ratio: 16 / 9;
-  }
-}
-
-/* 4.3.3 Object-fit consistency */
-img.cover {
-  object-fit: cover;
-}
-
-img.contain {
-  object-fit: contain;
-}
-
-/* 4.3.4 & 4.3.5 Lazy Loading & Fade-in */
-img[loading="lazy"] {
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-img[loading="lazy"].loaded,
-img[loading="lazy"]:not([src=""]) {
-  opacity: 1;
-}
-
-picture {
+.app-field-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
   display: block;
-  width: 100%;
+  margin-bottom: 4px;
 }
+.app-field-input {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: var(--input-bg);
+  color: var(--text-main);
+  box-sizing: border-box;
+}
+.app-field-input.has-error { border-color: #FF3B30; }
+.app-field-error { color: #FF3B30; font-size: 11.5px; margin-top: 3px; font-weight: 600; }
 
+@keyframes pill-drop {
+  from { transform: translateY(-16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.new-jobs-pill { animation: pill-drop 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
 

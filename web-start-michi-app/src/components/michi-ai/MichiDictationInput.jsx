@@ -6,16 +6,21 @@ import MichiSendButton from './MichiSendButton';
 export default function MichiDictationInput({ 
   isActive, 
   status, 
-  drawerInput, 
+  drawerInput = '', 
   setDrawerInput, 
   onSubmit, 
   onMicToggle, 
   onActivateAI,
-  onDeactivateAI
+  onDeactivateAI,
+  speechLang = 'ja'
 }) {
+  const isThinking = status === 'thinking';
+  const cleanInput = (drawerInput || '').trim();
+  const isSendDisabled = !cleanInput || isThinking;
+
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (!drawerInput.trim()) return;
+    if (isSendDisabled) return;
     if (onSubmit) onSubmit(e);
   };
 
@@ -24,6 +29,7 @@ export default function MichiDictationInput({
       <MichiMicButton 
         isActive={isActive}
         status={status}
+        speechLang={speechLang}
         onMicToggle={onMicToggle}
         onActivateAI={onActivateAI}
         onDeactivateAI={onDeactivateAI}
@@ -33,9 +39,11 @@ export default function MichiDictationInput({
         status={status}
         drawerInput={drawerInput}
         setDrawerInput={setDrawerInput}
+        speechLang={speechLang}
+        disabled={isThinking}
       />
 
-      <MichiSendButton disabled={!drawerInput.trim()} />
+      <MichiSendButton disabled={isSendDisabled} />
     </form>
   );
 }

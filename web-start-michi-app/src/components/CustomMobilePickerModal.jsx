@@ -72,7 +72,7 @@ export default function CustomMobilePickerModal({
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%',
-          maxWidth: '430px',
+          maxWidth: '500px',
           maxHeight: '80vh',
           background: 'var(--card-bg, #FFFFFF)',
           borderTopLeftRadius: '24px',
@@ -102,7 +102,7 @@ export default function CustomMobilePickerModal({
           background: 'transparent'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={18} color="var(--primary, #0A84FF)" aria-hidden="true" />
+            <Sparkles size={18} color="var(--primary, #0A84FF)" />
             <span style={{ fontSize: '17px', fontWeight: '800', letterSpacing: '-0.3px', color: 'var(--text-main, #1C1C1E)' }}>
               {title}
             </span>
@@ -124,7 +124,7 @@ export default function CustomMobilePickerModal({
               transition: 'background 0.15s ease'
             }}
           >
-            <X size={16} aria-hidden="true" />
+            <X size={16} />
           </button>
         </div>
 
@@ -139,7 +139,7 @@ export default function CustomMobilePickerModal({
             borderRadius: '16px',
             padding: '11px 16px'
           }}>
-            <Search size={17} color="var(--text-secondary, #8E8E93)" aria-hidden="true" />
+            <Search size={17} color="var(--text-secondary, #8E8E93)" />
             <input
               type="text"
               placeholder={t('searchPlaceholder', i18n.language === 'ja' ? '市区町村名や都道府県で探す...' : i18n.language === 'en' ? 'Search location...' : 'Qidirish...')}
@@ -161,7 +161,7 @@ export default function CustomMobilePickerModal({
                 onClick={() => setSearchQuery('')}
                 style={{ background: 'none', border: 'none', color: 'var(--text-secondary, #8E8E93)', cursor: 'pointer', padding: 0 }}
               >
-                <X size={15} aria-hidden="true" />
+                <X size={15} />
               </button>
             )}
           </div>

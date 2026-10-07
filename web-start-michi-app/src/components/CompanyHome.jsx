@@ -1,170 +1,67 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Plus, Edit3, X, Image as ImageIcon, Camera, ArrowLeft, Upload, Clock, Banknote, Share2, Briefcase, CheckCircle2, Globe, Phone } from 'lucide-react';
+import { MapPin, Plus, Edit3, Trash2, Camera, ArrowLeft, Upload, Clock, Banknote, Share2, Briefcase, Globe, Phone } from 'lucide-react';
 import VerifiedBadge from './VerifiedBadge';
-import CustomMobilePickerModal from './CustomMobilePickerModal';
 import CustomInlineDropdown from './CustomInlineDropdown';
+import BranchListEditor from './BranchListEditor';
 import { compressImage } from '../utils/imageCompressor';
-import { lookupJapaneseZipcode, cleanAddressKanji, JAPAN_PREFECTURE_MAP } from '../utils/japaneseZipcodeLookup';
+import { lookupJapaneseZipcode, JAPAN_PREFECTURE_MAP } from '../utils/japaneseZipcodeLookup';
 import { ALL_47_PREFECTURES } from '../data/japanRegions.js';
 import { getCitiesByPrefecture } from '../data/japanCities.js';
-import { getAllTrainLineOptions, getStationsByLine, getStationsByPrefecture } from '../data/japanStations.js';
+import { getAllTrainLineOptions, getStationsByLine } from '../data/japanStations.js';
 import './DriverFeed.css';
 import { JOB_CATEGORIES } from '../data/jobCategories';
-import CompanyHeader from './company/CompanyHeader';
-import CompanyJobCard from './company/CompanyJobCard';
-import CompanySchoolCard from './company/CompanySchoolCard';
-import CompanyAdTypeModal from './company/CompanyAdTypeModal';
+import { submitJobToBackend, updateJobInBackend, deleteJobInBackend, fetchJobs } from '../services/michiJobsApiService';
+import ConfirmSheet from './ConfirmSheet';
+import { createSchoolInBackend, updateSchoolInBackend, deleteSchoolInBackend } from '../services/schoolService';
+import { normalizeOwnJobPosting, normalizeSchoolPosting, jobValueLabel } from '../utils/jobPostingNormalizer';
+import { validateBranch } from '../utils/branchUtils';
+import { useOptionalAuth } from '../context/AuthContext';
+import { listingExpiryInfo, normalizeVerification, listingVerifiedAt } from '../utils/trustHelpers';
+import { renewListing } from '../services/accountApi';
+import './trust.css';
 
-const INITIAL_COMPANY_JOBS = [
-  {
-    id: 1,
-    company: "Sagawa Express",
-    title: "Mahalliy yetkazib berish (Local Delivery)",
-    salary: "¥300,000 / oyiga",
-    type: "fulltime",
-    category: "delivery_driver",
-    subcategory: "delivery_local",
-    payType: "monthly",
-    duration: "long",
-    startTime: "8",
-    transportPaid: true,
-    noExperienceOk: true,
-    shoukai: "¥50,000",
-    shoukaiAmount: "¥50,000",
-    image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800",
-    verified: true,
-    location: "東京都江東区 (Tokyo, Koto-ku)",
-    prefecture: "Tokyo",
-    city: "東京23区",
-    ward: "江東区",
-    fullAddress: "〒135-0063 東京都江東区有明3-1-1 (Tokyo, Koto-ku, Ariake 3-1-1)",
-    nearestStation: "東京駅 (Tokyo Station)",
-    walkTime: 8,
-    logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
-    phone: "03-1234-5678",
-    phoneMode: "public",
-    isActive: true
-  },
-  {
-    id: 2,
-    company: "Sagawa Express",
-    title: "Xalqaro yuk tashish (Trailer)",
-    salary: "¥500,000 / oyiga",
-    type: "fulltime",
-    category: "delivery_driver",
-    subcategory: "driver_truck",
-    payType: "monthly",
-    duration: "long",
-    startTime: "9",
-    transportPaid: true,
-    noExperienceOk: false,
-    shoukai: "¥100,000",
-    shoukaiAmount: "¥100,000",
-    image: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
-    verified: true,
-    location: "神奈川県横浜市 (Kanagawa, Yokohama)",
-    prefecture: "Kanagawa",
-    city: "横浜市",
-    ward: "中区",
-    fullAddress: "〒231-0023 神奈川県横浜市中区山下町12 (Kanagawa, Yokohama, Naka-ku)",
-    nearestStation: "横浜駅 (Yokohama Station)",
-    walkTime: 12,
-    logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
-    phone: "045-222-3333",
-    phoneMode: "interview_only",
-    isInternational: true,
-    isActive: true
-  },
-  {
-    id: 3,
-    company: "Sagawa Express",
-    title: "Tungi reys haydovchisi (10t)",
-    salary: "¥450,000 / oyiga",
-    type: "contract",
-    category: "delivery_driver",
-    subcategory: "driver_truck",
-    payType: "monthly",
-    duration: "long",
-    startTime: "20",
-    transportPaid: true,
-    noExperienceOk: true,
-    shoukai: "¥80,000",
-    shoukaiAmount: "¥80,000",
-    image: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
-    verified: true,
-    location: "埼玉県さいたま市 (Saitama, Omiya)",
-    prefecture: "Saitama",
-    city: "さいたま市",
-    ward: "大宮区",
-    fullAddress: "〒330-0854 埼玉県さいたま市大宮区桜木町2-1 (Saitama, Omiya-ku)",
-    nearestStation: "大宮駅 (Omiya Station)",
-    walkTime: 5,
-    logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
-    phone: "048-444-5555",
-    phoneMode: "public",
-    isActive: true
-  },
-  {
-    id: 4,
-    company: "Sagawa Express",
-    title: "Ekskavator va Maxsus texnika haydovchisi",
-    salary: "¥380,000 / oyiga",
-    type: "fulltime",
-    category: "construction",
-    subcategory: "construction_general",
-    payType: "monthly",
-    duration: "long",
-    startTime: "7",
-    transportPaid: true,
-    noExperienceOk: false,
-    shoukai: "0",
-    shoukaiAmount: "0",
-    image: "https://images.unsplash.com/photo-1541888062837-7b247f082e05?auto=format&fit=crop&q=80&w=800",
-    verified: true,
-    location: "千葉県松戸市 (Chiba, Matsudo)",
-    prefecture: "Chiba",
-    city: "松戸市",
-    ward: "",
-    fullAddress: "〒270-2253 千葉県松戸市常盤平3-2-1 (Chiba, Matsudo)",
-    nearestStation: "船橋駅 (Funabashi Station)",
-    walkTime: 15,
-    logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
-    phone: "047-666-7777",
-    phoneMode: "interview_only",
-    isActive: true
-  },
-  {
-    id: 5,
-    company: "Sagawa Express",
-    title: "Omborxona Forklift operatori",
-    salary: "¥250,000 / oyiga",
-    type: "parttime",
-    category: "warehouse_light",
-    subcategory: "tech_forklift",
-    payType: "monthly",
-    duration: "long",
-    startTime: "9",
-    transportPaid: true,
-    noExperienceOk: true,
-    shoukai: "¥30,000",
-    shoukaiAmount: "¥30,000",
-    image: "https://images.unsplash.com/photo-1587293852726-70cdb56c28ea?auto=format&fit=crop&q=80&w=800",
-    verified: true,
-    location: "愛知県名古屋市 (Aichi, Nagoya)",
-    prefecture: "Aichi",
-    city: "名古屋市",
-    ward: "中村区",
-    fullAddress: "〒450-0002 愛知県名古屋市中村区名駅1-1-4 (Aichi, Nagoya, Nakamura-ku)",
-    nearestStation: "名古屋駅 (Nagoya Station)",
-    walkTime: 10,
-    logo: "https://ui-avatars.com/api/?name=Sagawa+Express&background=0D8ABC&color=fff&size=100",
-    phone: "052-888-9999",
-    phoneMode: "public",
-    isInternational: true,
-    isActive: true
+// Single figure → max = 0 ("not given"); unparseable → 0/0. The typed text is still sent as `salary`.
+export function parseSalaryRange(salaryStr) {
+  if (!salaryStr) return { min: 0, max: 0 };
+
+  if (typeof salaryStr === 'object' && salaryStr !== null) {
+    const min = Number(salaryStr.min) || 0;
+    const max = Number(salaryStr.max) || 0;
+    return { min, max };
   }
-];
+
+  if (typeof salaryStr === 'number') {
+    return { min: salaryStr, max: 0 };
+  }
+
+  const str = String(salaryStr).replace(/,/g, '');
+
+  const manMatches = str.match(/(\d+(?:\.\d+)?)\s*万/g);
+  if (manMatches && manMatches.length > 0) {
+    const numbers = manMatches.map(m => parseFloat(m) * 10000);
+    if (numbers.length >= 2) {
+      return { min: Math.min(...numbers), max: Math.max(...numbers) };
+    } else if (numbers.length === 1) {
+      return { min: numbers[0], max: 0 };
+    }
+  }
+
+  const digitMatches = str.match(/\d+/g);
+  if (digitMatches && digitMatches.length > 0) {
+    const numbers = digitMatches.map(Number).filter(n => n > 0);
+    if (numbers.length >= 2) {
+      return { min: Math.min(...numbers), max: Math.max(...numbers) };
+    } else if (numbers.length === 1) {
+      return { min: numbers[0], max: 0 };
+    }
+  }
+
+  return { min: 0, max: 0 };
+}
+
+
+
 
 const parseAddress = (fullAddressInput = '') => {
   const fullAddress = fullAddressInput || '';
@@ -197,8 +94,8 @@ const parseAddress = (fullAddressInput = '') => {
   
   // Clean punctuation
   detailAddress = detailAddress
-    .replace(/^\s*[,\(\)（），、]\s*/, '')
-    .replace(/\s*[,\(\)（），、]\s*$/, '')
+    .replace(/^\s*[,()（），、]\s*/, '')
+    .replace(/\s*[,()（），、]\s*$/, '')
     .trim();
   
   return {
@@ -208,16 +105,86 @@ const parseAddress = (fullAddressInput = '') => {
   };
 };
 
-export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, schools, setSchools, profileData, jobToEdit, setJobToEdit, onFormToggle, onApply, onApplySchool, onShoukai, applications = [], schoolApplications = [], userRole = 'company' }) {
+export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, onJobCreated, schools, setSchools, profileData, jobToEdit, setJobToEdit, onFormToggle, onApply, onApplySchool, onShoukai, applications = [], schoolApplications = [], userRole = 'company' }) {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'ja';
   
   const [showAddForm, setShowAddForm] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null); // { type: 'job' | 'school', id }
   const [showAdTypeSelect, setShowAdTypeSelect] = useState(false);
   const [showJobTypeSelect, setShowJobTypeSelect] = useState(false);
   const [selectedAdType, setSelectedAdType] = useState('job'); // 'job' | 'school'
   const [jobImage, setJobImage] = useState(null);
   const fileInputRef = useRef(null);
+  const savingJobRef = useRef(false);
+  // Own ⭐ status (header strip) comes from the signed-in user's server record
+  const auth = useOptionalAuth();
+  const ownVerification = normalizeVerification(auth && auth.user ? auth.user.verification : null);
+  const [renewingId, setRenewingId] = useState(null);
+  const [renewError, setRenewError] = useState('');
+
+  /** POST /api/listings/:id/renew → { expiresAt }; works for jobs and schools (same listings route). */
+  const handleRenewListing = async (item, kind) => {
+    if (!item || renewingId) return;
+    setRenewingId(item.id);
+    setRenewError('');
+    try {
+      const res = await renewListing(item.id);
+      const patch = (x) => (String(x.id) === String(item.id)
+        ? { ...x, expiresAt: (res && res.expiresAt) || x.expiresAt, status: x.status === 'expired' ? 'active' : x.status }
+        : x);
+      if (kind === 'school') setSchools?.((prev) => (prev || []).map(patch));
+      else setJobs?.((prev) => (prev || []).map(patch));
+    } catch (err) {
+      setRenewError(err && err.status === 404 ? t('featureUnavailable', 'この機能はまだ利用できません') : t('renewFailed', '更新できませんでした'));
+    }
+    setRenewingId(null);
+  };
+
+  const renderExpiry = (item, kind) => {
+    const info = listingExpiryInfo(item);
+    if (info.state === 'none') return null;
+    return (
+      <div className="listing-expiry-row" onClick={(e) => e.stopPropagation()}>
+        <span className={`trust-chip ${info.state === 'expired' ? 'bad' : info.state === 'soon' ? 'warn' : 'muted'}`} data-testid="listing-expiry">
+          {info.state === 'expired' ? t('listingExpired', '掲載期限切れ') : t('listingExpiresIn', { count: info.days, defaultValue: 'あと{{count}}日で掲載終了' })}
+        </span>
+        {(info.state === 'expired' || info.state === 'soon') && (
+          <button
+            type="button"
+            className="trust-btn"
+            id={`renew-listing-${item.id}`}
+            disabled={renewingId === item.id}
+            onClick={() => handleRenewListing(item, kind)}
+          >
+            {renewingId === item.id ? t('renewing', '更新中…') : t('renewListing', '掲載を更新')}
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    const accountId = profileData?.accountId;
+    // Own jobs are matched by the server account id (jobs.authorId), never by the company name.
+    if (!accountId) return undefined;
+    const loadCompanyJobs = async () => {
+      try {
+        // mine: the server also returns own hidden/rejected jobs with the moderator's reason
+        const myJobs = await fetchJobs({ authorId: String(accountId), mine: true });
+        if (cancelled) return;
+        if (Array.isArray(myJobs) && typeof setJobs === 'function') {
+          // Own dashboard keeps private branch phones (normalizeOwnJobPosting)
+          setJobs(myJobs.map((j) => normalizeOwnJobPosting(j)).filter(Boolean).map((j) => ({ ...j, isMine: true })));
+        }
+      } catch (err) {
+        console.error('Failed to load company jobs:', err);
+      }
+    };
+    loadCompanyJobs();
+    return () => { cancelled = true; };
+  }, [profileData?.accountId, setJobs]);
 
   // Address lookup state
   const [isFetchingAddress, setIsFetchingAddress] = useState(false);
@@ -330,7 +297,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           email: jobToEdit.email || '',
           description: jobToEdit.description || '',
           langs: jobToEdit.langs || ['UZ', 'JP'],
-          courses: jobToEdit.courses || ['Oogata', 'Chugata', 'Futsu'],
+          courses: Array.isArray(jobToEdit.courses)
+            ? jobToEdit.courses.map((c) => (typeof c === 'string' ? c : (c?.license || c?.name || ''))).filter(Boolean)
+            : ['Oogata', 'Chugata', 'Futsu'],
           hasShoukai: (jobToEdit.shoukaiFee > 0 || jobToEdit.hasShoukai === 'yes' || jobToEdit.hasShoukai === true) ? 'yes' : 'no',
           shoukaiFee: jobToEdit.shoukaiFee ? String(jobToEdit.shoukaiFee) : '',
           shoukaiConditions: jobToEdit.shoukaiConditions || '',
@@ -368,7 +337,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           isInternational: jobToEdit.isInternational || false,
           type: jobToEdit.type || 'fulltime',
           nearestStation: jobToEdit.nearestStation || '',
-          walkTime: jobToEdit.walkTime ? String(jobToEdit.walkTime) : ''
+          walkTime: jobToEdit.walkTime ? String(jobToEdit.walkTime) : '',
+          branches: Array.isArray(jobToEdit.branches) ? jobToEdit.branches : [],
+          hiringScope: (jobToEdit.hiringScope === 'branch' && Array.isArray(jobToEdit.branches) && jobToEdit.branches.length > 0) ? 'branch' : 'headquarters'
         });
       }
       setJobImage(jobToEdit.image || null);
@@ -412,7 +383,9 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     type: '',
     subcategory: '',
     nearestStation: '',
-    walkTime: ''
+    walkTime: '',
+    branches: [],
+    hiringScope: 'headquarters'
   });
   const [errors, setErrors] = useState({});
   const [isSubcategoryPickerOpen, setIsSubcategoryPickerOpen] = useState(false);
@@ -420,57 +393,68 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   const [isBonusPickerOpen, setIsBonusPickerOpen] = useState(false);
 
   const WORK_HOURS_OPTIONS = [
-    { value: '08:00 - 17:00 (Kunduzgi)', key: 'wh_day' },
-    { value: '20:00 - 05:00 (Tungi)', key: 'wh_night' },
-    { value: 'Smenali ish (Jadval)', key: 'wh_shift' },
-    { value: 'Erkin grafik', key: 'wh_flex' },
-    { value: 'Boshqa', key: 'wh_other' }
+    { value: 'wh_day', key: 'wh_day', label: '08:00 - 17:00 (Kunduzgi)' },
+    { value: 'wh_night', key: 'wh_night', label: '20:00 - 05:00 (Tungi)' },
+    { value: 'wh_shift', key: 'wh_shift', label: 'Smenali ish (Jadval)' },
+    { value: 'wh_flex', key: 'wh_flex', label: 'Erkin grafik' },
+    { value: 'wh_other', key: 'wh_other', label: 'Boshqa' }
   ];
   const DAY_OFF_OPTIONS = [
-    { value: 'Shanba va Yakshanba', key: 'do_weekend' },
-    { value: 'Haftada 2 kun (Smenali)', key: 'do_2days' },
-    { value: 'Haftada 1 kun', key: 'do_1day' },
-    { value: 'Boshqa', key: 'do_other' }
+    { value: 'do_weekend', key: 'do_weekend', label: 'Shanba va Yakshanba' },
+    { value: 'do_2days', key: 'do_2days', label: 'Haftada 2 kun (Smenali)' },
+    { value: 'do_1day', key: 'do_1day', label: 'Haftada 1 kun' },
+    { value: 'do_other', key: 'do_other', label: 'Boshqa' }
   ];
   const INSURANCE_OPTIONS = [
-    { value: 'To\'liq ijtimoiy sug\'urta', key: 'ins_full' },
-    { value: 'Koyo Hoken (Bandlik)', key: 'ins_koyo' },
-    { value: 'Yo\'q', key: 'ins_none' }
+    { value: 'insurance_full', key: 'ins_full', label: 'To\'liq ijtimoiy sug\'urta' },
+    { value: 'insurance_employment', key: 'ins_koyo', label: 'Koyo Hoken (Bandlik)' },
+    { value: 'insurance_none', key: 'ins_none', label: 'Yo\'q' }
   ];
   const FOREIGNERS_OPTIONS = [
-    { value: 'foreigners_visa', key: 'foreigners_visa' },
-    { value: 'foreigners_visa_renew', key: 'foreigners_visa_renew' },
-    { value: 'foreigners_ok', key: 'foreigners_ok' },
-    { value: 'foreigners_n4', key: 'foreigners_n4' },
-    { value: 'foreigners_n3', key: 'foreigners_n3' },
-    { value: 'foreigners_n2', key: 'foreigners_n2' }
+    { value: 'foreigners_visa', key: 'for_visa', label: 'Viza yordami bor' },
+    { value: 'foreigners_visa_renew', key: 'for_visa_renew', label: 'Viza uzaytirish yordami' },
+    { value: 'foreigners_ok', key: 'for_all', label: 'Chet elliklar qabul qilinadi' },
+    { value: 'foreigners_n4', key: 'for_n4', label: 'JLPT N4 darajasi' },
+    { value: 'foreigners_n3', key: 'for_n3', label: 'JLPT N3 darajasi' },
+    { value: 'foreigners_n2', key: 'for_n2', label: 'JLPT N2 darajasi' }
   ];
   const HOUSING_OPTIONS = [
-    { value: 'Yotoqxona mavjud', key: 'hou_dorm' },
-    { value: 'Ijara yordami bor (Yachin hojo)', key: 'hou_rent' },
-    { value: 'Ko\'chib kelish to\'lanadi', key: 'hou_move' },
-    { value: 'Yo\'q', key: 'hou_none' }
+    { value: 'housing_dorm', key: 'hou_dorm', label: 'Yotoqxona mavjud' },
+    { value: 'housing_rent', key: 'hou_rent', label: 'Ijara yordami bor (Yachin hojo)' },
+    { value: 'housing_move', key: 'hou_move', label: 'Ko\'chib kelish to\'lanadi' },
+    { value: 'housing_none', key: 'hou_none', label: 'Yo\'q' }
   ];
   const LICENSE_OPTIONS = [
-    { value: 'Futsu (Oddiy)', key: 'lic_futsu_opt' },
-    { value: 'Chugata (O\'rta yuk)', key: 'lic_chugata_opt' },
-    { value: 'Oogata (Katta yuk)', key: 'lic_oogata_opt' },
-    { value: 'Tokushu (Maxsus)', key: 'lic_tokushu_opt' },
-    { value: 'Forklift', key: 'lic_forklift_opt' },
-    { value: 'Talab qilinmaydi', key: 'lic_none_opt' }
+    { value: 'lic_futsu', key: 'lic_futsu_opt', label: 'Futsu (Oddiy)' },
+    { value: 'lic_chugata', key: 'lic_chugata_opt', label: 'Chugata (O\'rta yuk)' },
+    { value: 'lic_oogata', key: 'lic_oogata_opt', label: 'Oogata (Katta yuk)' },
+    { value: 'lic_tokushu', key: 'lic_tokushu_opt', label: 'Tokushu (Maxsus)' },
+    { value: 'lic_forklift', key: 'lic_forklift_opt', label: 'Forklift' },
+    { value: 'lic_none', key: 'lic_none_opt', label: 'Talab qilinmaydi' }
   ];
 
 
+  // Security: never treat a job as "mine" just because the profile name is missing.
   const isMyJob = (job) => {
-    const myName = profileData?.fullName;
-    if (!myName) return false;
-    return job.company === myName || (myName === 'Sagawa Express' && job.company === 'Sagawa Express');
+    if (!job) return false;
+    if (job.isMine) return true;
+    const myId = profileData?.accountId || profileData?.companyId || profileData?.id;
+    if (myId && job.companyId) return String(job.companyId) === String(myId);
+    // Legacy records without companyId: fall back to an exact, non-empty company name match.
+    const myName = (profileData?.fullName || '').trim();
+    if (!myName || myName === 'Mehmon') return false;
+    return !job.companyId && job.company === myName;
   };
 
   const isMySchool = (school) => {
+    if (!school) return false;
+    if (school.isMine) return true;
+    const myId = profileData?.accountId != null ? String(profileData.accountId) : '';
+    const ownerId = school.authorId || school.companyId;
+    if (ownerId) return Boolean(myId) && String(ownerId) === myId;
+    // Legacy local-only records without an owner: exact name match only
     const myName = profileData?.fullName;
-    if (!myName) return false;
-    return school.name === myName || (myName === 'Koyama Driving School' && school.name === 'Koyama Driving School');
+    return Boolean(myName) && myName !== 'Mehmon' && school.name === myName;
   };
 
   const handleImageChange = async (e) => {
@@ -535,7 +519,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
     }
   };
 
-  const handleAddJob = () => {
+  const handleAddJob = async () => {
     // 1. Mandatory Fields Validation with inline errors
     const newErrors = {};
     if (!newJob.title) newErrors.title = t('reqTitle');
@@ -567,6 +551,17 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       newErrors.townAddress = t('reqTownAddress', '町名・丁目を入力してください');
     }
 
+    // 支店・営業所での募集: 1件以上、かつ全件が有効であること
+    if (!isAdCourse && newJob.hiringScope === 'branch') {
+      const list = Array.isArray(newJob.branches) ? newJob.branches : [];
+      if (list.length === 0) {
+        newErrors.branches = '募集する支店・営業所を1件以上追加してください';
+      } else {
+        const badIdx = list.findIndex((b) => Object.keys(validateBranch(b)).length > 0);
+        if (badIdx >= 0) newErrors.branches = `「${list[badIdx].name || `支店${badIdx + 1}`}」の入力内容に不備があります。編集して修正してください`;
+      }
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -588,6 +583,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       if (newErrors.description) errorList.push(isAdCourse ? t('schoolDescLabel') : t('jobDescLabel'));
       if (newErrors.hasShoukai) errorList.push(t('shoukaiSettings'));
       if (newErrors.shoukaiFee) errorList.push(t('shoukaiSumLabel'));
+      if (newErrors.branches) errorList.push(newErrors.branches);
 
       alert(`${t('validationFailedAlert')}:\n- ${errorList.join('\n- ')}`);
       return;
@@ -609,9 +605,10 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         name: profileData?.fullName || "Koyama Driving School",
         type: newJob.title,
         price: newJob.salary,
-        discount: newJob.bonus || "¥10,000",
+        discount: newJob.bonus || '',
+        ...(profileData?.avatar ? { logo: profileData.avatar } : {}),
         image: jobImage || "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800",
-        verified: true,
+        verified: false, // ⭐ comes only from the server (authorVerified)
         location: generatedLocation,
         fullAddress: generatedFullAddress,
         postalCode: newJob.postalCode,
@@ -629,12 +626,27 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         shoukai: newJob.hasShoukai === 'yes' ? `¥${Number(newJob.shoukaiFee).toLocaleString()}` : '0'
       };
 
+      // Persist first (POST new / PUT edit); local list changes only after the server confirms.
+      let saved;
+      try {
+        saved = newJob.id
+          ? await updateSchoolInBackend(newJob.id, school)
+          : await createSchoolInBackend(school);
+      } catch (err) {
+        console.warn('[CompanyHome] School save failed:', err?.message);
+        alert(t('schoolSaveError'));
+        return;
+      }
+      const merged = normalizeSchoolPosting({ ...school, ...(saved && typeof saved === 'object' ? saved : {}), id: saved?.id || newJob.id }) || school;
+      const savedSchool = { ...merged, isMine: true };
       if (newJob.id) {
-        setSchools(schools.map(s => s.id === newJob.id ? school : s));
+        setSchools((prev) => (prev || []).map(s => String(s.id) === String(newJob.id) ? savedSchool : s));
       } else {
-        setSchools([school, ...schools]);
+        setSchools((prev) => [savedSchool, ...(prev || []).filter(s => String(s.id) !== String(savedSchool.id))]);
       }
     } else {
+
+
       const job = {
         id: newJob.id || Date.now(),
         company: profileData?.fullName || "Sagawa Express",
@@ -658,7 +670,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         description: newJob.description,
         dayOff: newJob.dayOff,
         image: jobImage || "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800",
-        verified: true,
+        verified: false, // ⭐ comes only from the server (authorVerified)
         logo: profileData?.avatar || "https://ui-avatars.com/api/?name=Company&background=0D8ABC&color=fff&size=100",
         hasShoukai: newJob.hasShoukai === 'yes',
         shoukaiFee: newJob.hasShoukai === 'yes' ? Number(newJob.shoukaiFee) : 0,
@@ -672,17 +684,86 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
         license: newJob.license || 'lic_futsu',
         type: newJob.type || 'fulltime',
         nearestStation: newJob.nearestStation || '',
-        walkTime: newJob.walkTime ? Number(newJob.walkTime) : ''
+        walkTime: newJob.walkTime ? Number(newJob.walkTime) : '',
+        hiringScope: newJob.hiringScope === 'branch' ? 'branch' : 'headquarters',
+        branches: newJob.hiringScope === 'branch' ? (newJob.branches || []) : [],
+        companyId: profileData?.accountId || profileData?.companyId || profileData?.id || null,
+        isMine: true
       };
 
-      if (newJob.id) {
-        setJobs(jobs.map(j => j.id === newJob.id ? job : j));
-      } else {
-        setJobs([job, ...jobs]);
+      const backendPayload = {
+        companyId: job.companyId,
+        title: job.title,
+        company: job.company,
+        salary: job.salary,
+        employmentType: job.type,
+        bonusPrivilege: job.bonus,
+        postalCode: job.postalCode,
+        prefecture: job.prefecture,
+        city: job.detailAddress,
+        addressLine: job.townAddress,
+        building: job.buildingAddress,
+        trainLine: job.trainLine,
+        subcategory: job.subcategory,
+        nearestStation: job.nearestStation,
+        walkMinutes: job.walkTime,
+        licenses: Array.isArray(job.license) ? job.license : [job.license],
+        workShift: job.hours,
+        holidayType: job.dayOff,
+        socialInsurance: job.insurance,
+        dormitorySupport: job.housing,
+        foreignerSupport: Array.isArray(job.foreigners) ? job.foreigners : (job.foreigners ? [job.foreigners] : []),
+        isInternational: Boolean(job.isInternational),
+        callReceptionStyle: job.phoneMode,
+        phone: job.phone,
+        email: job.email,
+        image: job.image,
+        logo: profileData?.avatar || '',
+        description: job.description,
+        hasShoukai: job.hasShoukai,
+        shoukaiAmount: job.shoukaiFee,
+        shoukaiConditions: job.shoukaiConditions || '',
+        hiringScope: job.hiringScope,
+        branches: job.branches
+      };
+
+      if (savingJobRef.current) return; // prevent double submit while awaiting the API
+      savingJobRef.current = true;
+      try {
+        const parsedSalary = parseSalaryRange(newJob.salary);
+        const payload = { ...backendPayload, minSalary: parsedSalary.min, maxSalary: parsedSalary.max };
+        if (newJob.id) {
+          const result = await updateJobInBackend(newJob.id, payload);
+          const savedRaw = result && (result.job || result.data);
+          const saved = savedRaw && savedRaw.id ? normalizeOwnJobPosting({ ...job, ...savedRaw }) : null;
+          setJobs((prev) => (prev || []).map(j => j.id === newJob.id ? (saved ? { ...saved, isMine: true } : job) : j));
+        } else {
+          // 3-BOSQICH: Send job payload to VPS backend (POST /api/jobs) — awaited, so the feed
+          // refresh below sees the new job and a failure keeps the form open.
+          const result = await submitJobToBackend(payload);
+          const savedRaw = result && (result.job || result.data || result);
+          const saved = savedRaw && savedRaw.id ? normalizeOwnJobPosting({ ...job, ...savedRaw }) : null;
+          setJobs((prev) => [saved ? { ...saved, isMine: true } : job, ...(prev || [])]);
+        }
+      } catch (err) {
+        console.error('[CompanyHome] Job save failed:', err);
+        alert('求人の保存に失敗しました。通信環境を確認して再度お試しください。');
+        return; // keep the form open with the user's input
+      } finally {
+        savingJobRef.current = false;
+      }
+
+      if (typeof onJobCreated === 'function') {
+        try {
+          await onJobCreated();
+        } catch (err) {
+          console.warn('[CompanyHome] Feed refresh failed:', err);
+        }
       }
     }
 
     setShowAddForm(false);
+
     setJobImage(null);
     setNewJob({
       title: '', 
@@ -711,8 +792,43 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       langs: ['UZ', 'JP'],
       courses: ['Oogata', 'Chugata', 'Futsu'],
       phoneMode: 'public',
-      isInternational: false
+      isInternational: false,
+      branches: [],
+      hiringScope: 'headquarters'
     });
+  };
+
+  const performDeleteJob = async (jobId) => {
+    try {
+      await deleteJobInBackend(jobId);
+      setJobs((prev) => (prev || []).filter(j => j.id !== jobId));
+    } catch (err) {
+      alert(t('deleteError', 'O\'chirishda xatolik yuz berdi'));
+      return;
+    }
+    if (typeof onJobCreated === 'function') {
+      try { await onJobCreated(); } catch { /* feed will catch up on next poll */ }
+    }
+  };
+
+  const performDeleteSchool = async (schoolId) => {
+    try {
+      await deleteSchoolInBackend(schoolId);
+      setSchools((prev) => (prev || []).filter(s => String(s.id) !== String(schoolId)));
+    } catch (err) {
+      alert(t('deleteError', 'O\'chirishda xatolik yuz berdi'));
+    }
+  };
+
+  // Ask first (in-app sheet), then delete
+  const handleDeleteJob = (jobId) => setPendingDelete({ type: 'job', id: jobId });
+  const handleDeleteSchool = (schoolId) => setPendingDelete({ type: 'school', id: schoolId });
+  const confirmPendingDelete = async () => {
+    const target = pendingDelete;
+    setPendingDelete(null);
+    if (!target) return;
+    if (target.type === 'school') await performDeleteSchool(target.id);
+    else await performDeleteJob(target.id);
   };
 
   // ===== ADD NEW JOB FORM (Full Page Premium) =====
@@ -725,7 +841,7 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             const opt = typeof optObj === 'string' ? optObj : optObj.value;
             const label = typeof optObj === 'string' 
               ? t(optObj, optObj) 
-              : (optObj.key ? t(optObj.key, optObj.value) : (optObj.value || optObj.name || ''));
+              : (optObj.key ? t(optObj.key, optObj.label || optObj.value) : (optObj.label || optObj.value || optObj.name || ''));
             const isSelected = isMulti ? (selectedValue && selectedValue.includes(opt)) : selectedValue === opt;
             return (
               <button
@@ -868,6 +984,60 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                 {t('jobBasicInfo')}
               </h4>
             </div>
+
+            {/* Kompaniya Filiallari (支店・営業所) Muharriri */}
+            {!isAdCourse && (
+              <div style={{ marginBottom: '16px' }} id="hiring-scope-section">
+                <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: 'var(--text-main)' }}>
+                  勤務地の募集方法 <span style={{ color: '#FF3B30' }}>*</span>
+                </div>
+                <div role="radiogroup" aria-label="勤務地の募集方法" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {[
+                    { value: 'headquarters', title: '本社・単一の勤務地で募集', sub: 'このフォームの住所欄に入力した1か所で募集します' },
+                    { value: 'branch', title: '複数の支店・営業所で募集', sub: '勤務地ごとに名称・住所・電話番号を登録できます' }
+                  ].map((opt) => {
+                    const selected = (newJob.hiringScope || 'headquarters') === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        id={`hiring-scope-${opt.value}`}
+                        onClick={() => { setNewJob(prev => ({ ...prev, hiringScope: opt.value })); setErrors(prev => ({ ...prev, branches: null })); }}
+                        style={{
+                          textAlign: 'left',
+                          padding: '12px 14px',
+                          borderRadius: '12px',
+                          border: `1.5px solid ${selected ? '#007AFF' : 'var(--glass-border)'}`,
+                          background: selected ? 'rgba(0,122,255,0.08)' : 'var(--glass-bg)',
+                          color: 'var(--text-main)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          gap: '10px',
+                          alignItems: 'flex-start'
+                        }}
+                      >
+                        <span style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${selected ? '#007AFF' : 'var(--text-secondary)'}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                          {selected && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#007AFF' }} />}
+                        </span>
+                        <span>
+                          <span style={{ display: 'block', fontWeight: 700, fontSize: '14px' }}>{opt.title}</span>
+                          <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginTop: 2 }}>{opt.sub}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {newJob.hiringScope === 'branch' && (
+                  <BranchListEditor
+                    branches={newJob.branches || []}
+                    error={errors.branches || ''}
+                    onChange={(updatedBranches) => { setNewJob(prev => ({ ...prev, branches: updatedBranches })); setErrors(prev => ({ ...prev, branches: null })); }}
+                  />
+                )}
+              </div>
+            )}
             
             <div className="input-group" style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-main)' }}>
@@ -1528,8 +1698,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
             {isAdCourse ? t('publishSchoolAd') : t('publishJob')}
           </button>
 
-          {/* Trailing Clearance Spacer */}
-          <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0 }} />
+          {/* 76px clearance spacer yielding exact visual clearance above floating BottomNav */}
+          <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       </div>
     );
@@ -1623,8 +1793,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               </p>
             </div>
           </div>
-          {/* Trailing Clearance Spacer */}
-          <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0 }} />
+          {/* 76px clearance spacer yielding exact visual clearance above floating BottomNav */}
+          <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       </div>
     );
@@ -1705,8 +1875,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
               </p>
             </div>
           </div>
-          {/* Trailing Clearance Spacer */}
-          <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0 }} />
+          {/* 76px clearance spacer yielding exact visual clearance above floating BottomNav */}
+          <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
         </div>
       </div>
     );
@@ -1716,7 +1886,35 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
   // ===== MAIN JOB LIST =====
   return (
     <div className="feed-container fade-in" style={{ display: 'block', flex: 'none', minHeight: 'auto', height: 'auto', maxHeight: 'none', overflowY: 'visible', paddingTop: '10px', paddingBottom: '0px' }}>
+      <ConfirmSheet
+        open={Boolean(pendingDelete)}
+        id="delete-ad-confirm-sheet"
+        title={pendingDelete?.type === 'school'
+          ? t('confirmDeleteSchool', 'Bu avtomaktab e\'lonini o\'chirmoqchimisiz?')
+          : t('confirmDeleteJob', 'Bu e\'lonni o\'chirmoqchimisiz?')}
+        message={t('deleteAdIrreversible', '削除すると元に戻せません。')}
+        confirmLabel={t('delete', '削除')}
+        cancelLabel={t('cancel', 'キャンセル')}
+        onConfirm={confirmPendingDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
       
+      {/* OWN ⭐ STATUS STRIP */}
+      {userRole === 'company' && auth && auth.user && (
+        <div style={{ padding: '0 14px', marginBottom: '14px' }}>
+          <div className="trust-card" style={{ flexDirection: 'row', alignItems: 'center', padding: '12px 14px', gap: '10px' }} data-testid="company-own-status">
+            <strong style={{ fontSize: '15px', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+              {profileData?.companyName || profileData?.fullName || ''}
+            </strong>
+            {ownVerification.status === 'verified' && <VerifiedBadge size={16} verifiedAt={ownVerification.verifiedAt} />}
+            <span style={{ marginLeft: 'auto' }} className={`trust-chip ${ownVerification.status === 'verified' ? 'info' : ownVerification.status === 'pending' ? 'warn' : ownVerification.status === 'none' ? 'muted' : 'bad'}`}>
+              {t(`verifyStatus_${ownVerification.status}`)}
+            </span>
+          </div>
+          {renewError && <p className="trust-notice bad" role="alert" style={{ marginTop: '8px' }}>{renewError}</p>}
+        </div>
+      )}
+
       {/* ADD ANNOUNCEMENT BUTTON CARD */}
       <div style={{ padding: '0 14px', marginBottom: '24px' }}>
         <div 
@@ -1770,12 +1968,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       </div>
 
       <div className="jobs-list hide-scrollbar" style={{ marginBottom: '0px', paddingBottom: '0px' }}>
-        {(jobs || []).length === 0 ? (
+        {(jobs || []).filter(job => isMyJob(job)).length === 0 ? (
           <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13.5px' }}>
             {t('noJobsYet')}
           </p>
         ) : (
-          (jobs || []).map(job => {
+          (jobs || []).filter(job => isMyJob(job)).map(job => {
             const isMine = isMyJob(job);
             return (
               <div key={job.id} className="job-card-hz glass" onClick={() => onJobClick({...job})}>
@@ -1795,14 +1993,23 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                     <div className="job-card-company">
                       <img src={job.logo} alt={job.company} className="job-card-company-logo" />
                       <span>{job.company}</span>
-                      {job.verified && <VerifiedBadge size={14} />}
+                      {job.verified === true && <VerifiedBadge size={14} verifiedAt={listingVerifiedAt(job)} />}
                     </div>
 
                     <h3 className="job-card-title">{t(`job_${job.id}_title`, job.title)}</h3>
+                    {isMine && renderExpiry(job, 'job')}
+
+                    {isMine && job.status && job.status !== 'active' && job.status !== 'expired' && (
+                      <div className="moderation-notice" role="status">
+                        <strong>{t(job.status === 'rejected' ? 'moderationRejected' : job.status === 'pending' ? 'moderationPending' : 'moderationHidden')}</strong>
+                        {job.moderation && job.moderation.reason && <span>{t('moderationReasonLabel')}: {job.moderation.reason}</span>}
+                        <span className="moderation-notice-hint">{t('moderationFixHint')}</span>
+                      </div>
+                    )}
 
                     <div className="job-card-salary">
                       <Banknote size={15} />
-                      <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth')}`) : ''}</span>
+                      <span>{job.salary ? job.salary.replace('/ oyiga', `/ ${t('perMonth')}`) : t('notProvided', '未入力')}</span>
                     </div>
 
                     <div className="job-card-chips">
@@ -1810,12 +2017,10 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                         <MapPin size={12} />
                         {t(`job_${job.id}_location`, job.location)}
                       </span>
-                      {job.hours && (
-                        <span className="job-chip">
-                          <Clock size={12} />
-                          {job.hours === 'shift' ? t('shiftWork') : t(job.hours, job.hours)}
-                        </span>
-                      )}
+                      <span className="job-chip">
+                        <Clock size={12} />
+                        {jobValueLabel(t, job.hours)}
+                      </span>
                       {job.shoukaiFee > 0 && (
                         <span className="job-chip chip-highlight">
                           <Share2 size={10} />
@@ -1831,25 +2036,39 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
                 <div className="job-card-actions">
                   {isMine ? (
-                    <button 
-                      className="job-card-btn btn-apply"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setJobToEdit(job);
-                      }}
-                      style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
-                    >
-                      <Edit3 size={13} />
-                      {t('editJob')}
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                      <button 
+                        className="job-card-btn btn-apply"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setJobToEdit(job);
+                        }}
+                        style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
+                      >
+                        <Edit3 size={13} />
+                        {t('editJob')}
+                      </button>
+                      <button 
+                        className="job-card-btn btn-delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteJob(job.id);
+                        }}
+                        style={{ background: 'rgba(255,59,48,0.15)', color: '#FF3B30', border: '1px solid rgba(255,59,48,0.3)', padding: '0 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: '600' }}
+                      >
+                        <Trash2 size={13} />
+                        {t('deleteJob', 'O\'chirish')}
+                      </button>
+                    </div>
                   ) : userRole === 'company' ? (
                     <button 
                       className="job-card-btn btn-apply"
+                      disabled={!job.phone}
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.location.href = `tel:${job.phone || '03-1234-5678'}`;
+                        if (job.phone) window.location.href = `tel:${job.phone}`;
                       }}
-                      style={{ flex: 1, background: '#505759', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
+                      style={{ flex: 1, background: '#505759', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', opacity: job.phone ? 1 : 0.5 }}
                     >
                       <Phone size={13} />
                       <span>{t('callCompany', '電話する')}</span>
@@ -1896,12 +2115,12 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
           </div>
 
           <div className="jobs-list hide-scrollbar" style={{ marginBottom: '0px', paddingBottom: '0px' }}>
-            {(schools || []).length === 0 ? (
+            {(schools || []).filter(school => isMySchool(school)).length === 0 ? (
               <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13.5px' }}>
                 {t('noSchoolsYet')}
               </p>
             ) : (
-              (schools || []).map(school => {
+              (schools || []).filter(school => isMySchool(school)).map(school => {
                 const isMine = isMySchool(school);
                 return (
                   <div key={school.id} className="job-card-hz glass" onClick={() => onSchoolClick ? onSchoolClick(school) : onJobClick(school)}>
@@ -1913,21 +2132,22 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
                           onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&q=80&w=800"; }}
                         />
                         <div className="job-type-badge type-fulltime">
-                          {school.langs ? school.langs.join(', ') : 'UZ, JP'}
+                          {Array.isArray(school.langs) && school.langs.length ? school.langs.join(', ') : t('notProvided')}
                         </div>
                       </div>
 
                       <div className="job-card-body">
                         <div className="job-card-company">
                           <span>{t(`school_${school.id}_name`, school.name)}</span>
-                          <VerifiedBadge size={14} />
+                          {school.verified === true && <VerifiedBadge size={14} verifiedAt={listingVerifiedAt(school)} />}
                         </div>
 
                         <h3 className="job-card-title">{t(`school_${school.id}_type`, school.type)}</h3>
+                        {isMine && renderExpiry(school, 'school')}
 
                         <div className="job-card-salary">
                           <Banknote size={15} color="#30D158" />
-                          <span>{school.price}</span>
+                          <span>{school.price || t('notProvided')}</span>
                           {school.discount && (
                             <span className="discount-tag" style={{ marginLeft: '4px', fontSize: '9px', padding: '1.5px 4px' }}>
                               -{school.discount}
@@ -1955,17 +2175,30 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
 
                     <div className="job-card-actions">
                       {isMine ? (
-                        <button 
-                          className="job-card-btn btn-apply"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setJobToEdit(school);
-                          }}
-                          style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
-                        >
-                          <Edit3 size={13} />
-                          {t('editJob')}
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                          <button 
+                            className="job-card-btn btn-apply"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setJobToEdit(school);
+                            }}
+                            style={{ flex: 1, background: '#1c1c1e', color: '#fff' }}
+                          >
+                            <Edit3 size={13} />
+                            {t('editJob')}
+                          </button>
+                          <button 
+                            className="job-card-btn btn-delete"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteSchool(school.id);
+                            }}
+                            style={{ background: 'rgba(255,59,48,0.15)', color: '#FF3B30', border: '1px solid rgba(255,59,48,0.3)', padding: '0 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: '600' }}
+                          >
+                            <Trash2 size={13} />
+                            {t('deleteJob', 'O\'chirish')}
+                          </button>
+                        </div>
                       ) : userRole === 'company' ? (
                         <button 
                           className="job-card-btn btn-apply"
@@ -2016,8 +2249,8 @@ export default function CompanyHome({ onJobClick, onSchoolClick, jobs, setJobs, 
       )}
 
 
-      {/* Explicit BottomNav clearance spacer for compact clearance gap */}
-      <div style={{ height: '12px', minHeight: '12px', width: '100%', flexShrink: 0, clear: 'both' }} />
+      {/* 76px clearance spacer yielding exact visual clearance above floating BottomNav */}
+      <div style={{ height: '76px', minHeight: '76px', width: '100%', flexShrink: 0, clear: 'both' }} />
     </div>
   );
 }

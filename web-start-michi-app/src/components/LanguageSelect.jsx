@@ -21,6 +21,9 @@ export default function LanguageSelect({ onFinish }) {
   const handleSelectLanguage = (code) => {
     setSelected(code);
     i18n.changeLanguage(code);
+    if (typeof document !== 'undefined' && document.documentElement) {
+      document.documentElement.lang = code;
+    }
     localStorage.setItem('michi_lang', code);
     // Small delay for visual feedback before proceeding
     setTimeout(() => onFinish(), 350);
@@ -51,7 +54,7 @@ export default function LanguageSelect({ onFinish }) {
                 <span className="lang-native-name">{lang.label}</span>
                 <span className="lang-sub">{lang.native}</span>
               </div>
-              {selected === lang.code && <Check size={18} color="#0A84FF" className="lang-check" aria-hidden="true" />}
+              {selected === lang.code && <Check size={18} color="#0A84FF" className="lang-check" />}
             </button>
           ))}
         </div>
