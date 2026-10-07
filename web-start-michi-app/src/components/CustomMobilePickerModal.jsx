@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, X, Check, Sparkles } from 'lucide-react';
+import { pickText } from '../utils/localize';
 
 /**
  * CustomMobilePickerModal — Mobile-first glassmorphism modal picker.
@@ -17,6 +18,7 @@ export default function CustomMobilePickerModal({
   allowCustom = false
 }) {
   const { t, i18n } = useTranslation();
+  const tx = (map) => pickText(i18n?.language, map);
   const [searchQuery, setSearchQuery] = useState('');
   const [customValue, setCustomValue] = useState('');
 
@@ -142,7 +144,7 @@ export default function CustomMobilePickerModal({
             <Search size={17} color="var(--text-secondary, #8E8E93)" />
             <input
               type="text"
-              placeholder={t('searchPlaceholder', i18n.language === 'ja' ? '市区町村名や都道府県で探す...' : i18n.language === 'en' ? 'Search location...' : 'Qidirish...')}
+              placeholder={t('searchPlaceholder', 'Search location...')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{
@@ -226,7 +228,7 @@ export default function CustomMobilePickerModal({
             })
           ) : (
             <div style={{ textAlign: 'center', padding: '36px 20px', color: 'var(--text-secondary, #8E8E93)', fontSize: '14px', fontWeight: '600' }}>
-              {t('noResultsFound', i18n.language === 'ja' ? '該当する項目が見つかりません' : i18n.language === 'en' ? 'No items found' : "Ro'yxatda topilmadi.")}
+              {tx({ ja: '該当する項目が見つかりません', en: 'No items found', uz: "Ro'yxatda topilmadi.", ru: 'Ничего не найдено', zh: '未找到相关项目', vi: 'Không tìm thấy mục nào', ne: 'कुनै वस्तु भेटिएन' })}
             </div>
           )}
 
@@ -242,12 +244,12 @@ export default function CustomMobilePickerModal({
               gap: '8px'
             }}>
               <span style={{ fontSize: '11.5px', color: 'var(--text-secondary, #8E8E93)', fontWeight: '700' }}>
-                {t('otherCustomInput', i18n.language === 'ja' ? 'その他 (直接入力):' : i18n.language === 'en' ? 'Other (Custom input):' : 'Boshqa (Custom nom yozish):')}
+                {tx({ ja: 'その他 (直接入力):', en: 'Other (Custom input):', uz: 'Boshqa (Custom nom yozish):', ru: 'Другое (свой вариант):', zh: '其他（直接输入）：', vi: 'Khác (tự nhập):', ne: 'अन्य (आफ्नै लेख्नुहोस्):' })}
               </span>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <input
                   type="text"
-                  placeholder={t('customInputPlaceholder', i18n.language === 'ja' ? '入力してください...' : i18n.language === 'en' ? 'Enter value...' : 'Kiritishingiz mumkin...')}
+                  placeholder={tx({ ja: '入力してください...', en: 'Enter value...', uz: 'Kiritishingiz mumkin...', ru: 'Введите значение...', zh: '请输入...', vi: 'Nhập giá trị...', ne: 'मान प्रविष्ट गर्नुहोस्...' })}
                   value={customValue}
                   onChange={e => setCustomValue(e.target.value)}
                   style={{
@@ -281,7 +283,7 @@ export default function CustomMobilePickerModal({
                     cursor: 'pointer'
                   }}
                 >
-                  {t('selectBtn', i18n.language === 'ja' ? '選択' : i18n.language === 'en' ? 'Select' : 'Tanlash')}
+                  {tx({ ja: '選択', en: 'Select', uz: 'Tanlash', ru: 'Выбрать', zh: '选择', vi: 'Chọn', ne: 'छान्नुहोस्' })}
                 </button>
               </div>
             </div>

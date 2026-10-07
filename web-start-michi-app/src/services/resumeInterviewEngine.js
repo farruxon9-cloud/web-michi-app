@@ -262,7 +262,7 @@ export class ResumeInterview {
       case 'reason':
       case 'strength': {
         const ex = FIELD_HELP[step.id]?.examples.find(e => e.value === value);
-        if (ex) return lang === 'ja' ? ex.label : (ex.sub[lang] || ex.label);
+        if (ex) return lang === 'ja' ? ex.label : (ex.sub[lang] || ex.sub.en || ex.label);
         return value;
       }
       default: return value;

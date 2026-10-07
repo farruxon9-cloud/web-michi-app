@@ -14,6 +14,7 @@ import { pressable } from '../../utils/a11y';
 import { getProfileCompleteness } from '../../utils/profileCompleteness';
 import ProfileQuickActions from './ProfileQuickActions';
 import { useAuth } from '../../context/AuthContext';
+import { pickText } from '../../utils/localize';
 
 const ADMIN_PANEL_URL = 'https://admin.michi.jp.net/';
 
@@ -171,7 +172,7 @@ export default function ProfileMainView(ctx) {
                   transition: 'all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)'
                 }}
                 onClick={() => handleOpenSubPage('resume_builder')}
-                title={i18n.language === 'ja' ? '日本標準履歴書PDFを作成・編集' : i18n.language === 'en' ? 'Create / Edit Resume PDF' : 'Yapon Rezyumesi (PDF) Yaratish / Tahrirlash'}
+                title={pickText(i18n?.language, { ja: '日本標準履歴書PDFを作成・編集', en: 'Create / Edit Resume PDF', uz: 'Yapon Rezyumesi (PDF) Yaratish / Tahrirlash', ru: 'Создать / редактировать японское резюме (PDF)', zh: '创建 / 编辑日本标准履历书 PDF', vi: 'Tạo / Chỉnh sửa sơ yếu lý lịch chuẩn Nhật Bản (PDF)', ne: 'जापानी मानक बायोडाटा (PDF) बनाउनुहोस् / सम्पादन गर्नुहोस्' })}
               >
                 <FileText size={13} strokeWidth={2.5} color="#30D158" />
                 <span style={{ letterSpacing: '-0.2px' }}>{t('createResume')}</span>

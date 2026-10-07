@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { pickText } from '../../utils/localize';
 
 export default function MichiTextInputField({
   status,
@@ -13,9 +14,33 @@ export default function MichiTextInputField({
   const isListening = status === 'listening';
 
   const getPlaceholder = () => {
-    if (isListening) return speechLang === 'ja' ? '聴き取り中...' : speechLang === 'uz' ? 'Tinglanmoqda...' : 'Listening...';
-    if (isThinking) return speechLang === 'ja' ? '思考中...' : speechLang === 'uz' ? 'Javob tayyorlanmoqda...' : 'Thinking...';
-    return speechLang === 'ja' ? 'Michi AI に質問を入力...' : speechLang === 'uz' ? 'Michi AI ga savolingizni kiriting...' : 'Type a message to Michi AI...';
+    if (isListening) return pickText(speechLang, {
+      ja: '聴き取り中...',
+      en: 'Listening...',
+      uz: 'Tinglanmoqda...',
+      ru: 'Слушаю...',
+      zh: '正在聆听...',
+      vi: 'Đang nghe...',
+      ne: 'सुन्दैछ...',
+    });
+    if (isThinking) return pickText(speechLang, {
+      ja: '思考中...',
+      en: 'Thinking...',
+      uz: 'Javob tayyorlanmoqda...',
+      ru: 'Думаю...',
+      zh: '思考中...',
+      vi: 'Đang suy nghĩ...',
+      ne: 'सोच्दैछ...',
+    });
+    return pickText(speechLang, {
+      ja: 'Michi AI に質問を入力...',
+      en: 'Type a message to Michi AI...',
+      uz: 'Michi AI ga savolingizni kiriting...',
+      ru: 'Напишите сообщение Michi AI...',
+      zh: '向 Michi AI 输入问题...',
+      vi: 'Nhập tin nhắn cho Michi AI...',
+      ne: 'Michi AI लाई सन्देश लेख्नुहोस्...',
+    });
   };
 
   return (

@@ -1,9 +1,13 @@
 // v1.1 Faza E: Profile.jsx dagi `activePage === 'employees'` sahifasi o'zgarishsiz ko'chirildi.
 // Holat va funksiyalar Profile'dan `ctx` orqali keladi (klasslar, stil va DOM bir xil).
 import { User, CheckCircle2, Phone, Users, ArrowLeft, Plus, UserCheck, UserPlus, KeyRound, Send, Clock } from 'lucide-react';
+import { pickText } from '../../utils/localize';
 
 export default function EmployeesPage(ctx) {
   const { companyEmployees, empAddMode, empFilter, empInputId, empInputName, empInputPhone, handleBackToMain, i18n, onAddEmployee, profileData, setEmpAddMode, setEmpFilter, setEmpInputId, setEmpInputName, setEmpInputPhone, setNotifications, t } = ctx;
+  const tx = (map) => pickText(i18n?.language, map);
+  const verifiedLabel = tx({ ja: '確認済み', en: 'Verified', uz: 'Tasdiqlangan', ru: 'Подтверждено', zh: '已确认', vi: 'Đã xác minh', ne: 'प्रमाणित' });
+  const pendingLabel = tx({ ja: '承認待ち', en: 'Pending', uz: 'Kutilmoqda', ru: 'В ожидании', zh: '待批准', vi: 'Đang chờ duyệt', ne: 'स्वीकृति बाँकी' });
   const filteredEmployees = (companyEmployees || []).filter(emp => {
     if (empFilter === 'verified') return emp.verified;
     if (empFilter === 'pending') return !emp.verified;
@@ -58,7 +62,7 @@ export default function EmployeesPage(ctx) {
               }}
             >
               <KeyRound size={12} />
-              <span>Michi IDで招待</span>
+              <span>{tx({ ja: 'Michi IDで招待', en: 'Invite by Michi ID', uz: 'Michi ID orqali taklif', ru: 'Пригласить по Michi ID', zh: '通过 Michi ID 邀请', vi: 'Mời bằng Michi ID', ne: 'Michi ID बाट आमन्त्रण' })}</span>
             </button>
             <button
               type="button"
@@ -81,7 +85,7 @@ export default function EmployeesPage(ctx) {
               }}
             >
               <UserCheck size={12} />
-              <span>手動で登録</span>
+              <span>{tx({ ja: '手動で登録', en: 'Add Manually', uz: "Qo'lda qo'shish", ru: 'Добавить вручную', zh: '手动登记', vi: 'Thêm thủ công', ne: 'म्यानुअल रूपमा दर्ता' })}</span>
             </button>
           </div>
 
@@ -109,20 +113,20 @@ export default function EmployeesPage(ctx) {
                 style={{ width: '100%', padding: '9px 14px', fontSize: '12.5px', fontWeight: '800', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 onClick={() => {
                   if (!empInputId.trim()) {
-                    alert(i18n.language === 'ja' ? 'Michi IDを入力してください。' : 'Iltimos, Michi ID ni kiriting.');
+                    alert(tx({ ja: 'Michi IDを入力してください。', en: 'Please enter a Michi ID.', uz: 'Iltimos, Michi ID ni kiriting.', ru: 'Пожалуйста, введите Michi ID.', zh: '请输入 Michi ID。', vi: 'Vui lòng nhập Michi ID.', ne: 'कृपया Michi ID प्रविष्ट गर्नुहोस्।' }));
                     return;
                   }
                   setNotifications(prev => [{
                     id: Date.now(),
                     type: 'employee_request',
-                    company: profileData.companyName || '貴社',
+                    company: profileData.companyName || tx({ ja: '貴社', en: 'Your company', uz: 'Kompaniyangiz', ru: 'Ваша компания', zh: '贵公司', vi: 'Công ty của bạn', ne: 'तपाईंको कम्पनी' }),
                     title: t('empRequestTitle', '従業員追加リクエスト'),
                     date: new Date().toLocaleString(),
                     read: false,
                     michiId: empInputId.trim()
                   }, ...prev]);
                   onAddEmployee({ name: t('pending', '承認待ち'), phone: '', role: t('roleDriver', '運転手'), verified: false, michiId: empInputId.trim() });
-                  alert(i18n.language === 'ja' ? '招待リクエストを送信しました！' : 'Taklif yuborildi!');
+                  alert(tx({ ja: '招待リクエストを送信しました！', en: 'Invitation request sent!', uz: 'Taklif yuborildi!', ru: 'Приглашение отправлено!', zh: '邀请请求已发送！', vi: 'Đã gửi lời mời!', ne: 'आमन्त्रण अनुरोध पठाइयो!' }));
                   setEmpInputId('');
                 }}
               >
@@ -170,7 +174,7 @@ export default function EmployeesPage(ctx) {
                 style={{ width: '100%', padding: '9px 14px', fontSize: '12.5px', fontWeight: '800', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 onClick={() => {
                   if (!empInputName.trim()) {
-                    alert(i18n.language === 'ja' ? '従業員名を入力してください。' : 'Iltimos, xodim ismini kiriting.');
+                    alert(tx({ ja: '従業員名を入力してください。', en: 'Please enter the employee name.', uz: 'Iltimos, xodim ismini kiriting.', ru: 'Пожалуйста, введите имя сотрудника.', zh: '请输入员工姓名。', vi: 'Vui lòng nhập tên nhân viên.', ne: 'कृपया कर्मचारीको नाम प्रविष्ट गर्नुहोस्।' }));
                     return;
                   }
                   onAddEmployee({ name: empInputName.trim(), phone: empInputPhone.trim(), role: t('roleDriver', '運転手'), verified: true, michiId: null });
@@ -226,7 +230,7 @@ export default function EmployeesPage(ctx) {
               }}
             >
               <Users size={13} color={empFilter === 'all' ? '#0A84FF' : 'var(--text-secondary)'} style={{ flexShrink: 0 }} />
-              <span style={{ whiteSpace: 'nowrap' }}>すべての従業員</span>
+              <span style={{ whiteSpace: 'nowrap' }}>{tx({ ja: 'すべての従業員', en: 'All Employees', uz: 'Barcha xodimlar', ru: 'Все сотрудники', zh: '全部员工', vi: 'Tất cả nhân viên', ne: 'सबै कर्मचारी' })}</span>
               <span style={{ opacity: empFilter === 'all' ? 1 : 0.65, fontSize: '10px', fontFamily: 'monospace', fontWeight: '800', whiteSpace: 'nowrap' }}>
                 ({companyEmployees.length})
               </span>
@@ -259,7 +263,7 @@ export default function EmployeesPage(ctx) {
               }}
             >
               <CheckCircle2 size={13} color={empFilter === 'verified' ? '#30D158' : 'var(--text-secondary)'} style={{ flexShrink: 0 }} />
-              <span style={{ whiteSpace: 'nowrap' }}>確認済み</span>
+              <span style={{ whiteSpace: 'nowrap' }}>{verifiedLabel}</span>
               <span style={{ opacity: empFilter === 'verified' ? 1 : 0.65, fontSize: '10px', fontFamily: 'monospace', fontWeight: '800', whiteSpace: 'nowrap' }}>
                 ({(companyEmployees || []).filter(e => e.verified).length})
               </span>
@@ -292,7 +296,7 @@ export default function EmployeesPage(ctx) {
               }}
             >
               <Clock size={13} color={empFilter === 'pending' ? '#FF9F0A' : 'var(--text-secondary)'} style={{ flexShrink: 0 }} />
-              <span style={{ whiteSpace: 'nowrap' }}>承認待ち</span>
+              <span style={{ whiteSpace: 'nowrap' }}>{pendingLabel}</span>
               <span style={{ opacity: empFilter === 'pending' ? 1 : 0.65, fontSize: '10px', fontFamily: 'monospace', fontWeight: '800', whiteSpace: 'nowrap' }}>
                 ({(companyEmployees || []).filter(e => !e.verified).length})
               </span>
@@ -306,10 +310,18 @@ export default function EmployeesPage(ctx) {
                 <Users size={24} color="#0A84FF" />
               </div>
               <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-secondary)', margin: 0 }}>
-                {companyEmployees.length === 0 ? t('noEmployeesYet', 'まだ従業員が登録されていません') : '該当する従業員が見つかりません'}
+                {companyEmployees.length === 0 ? t('noEmployeesYet', 'まだ従業員が登録されていません') : tx({ ja: '該当する従業員が見つかりません', en: 'No matching employees found', uz: 'Mos xodimlar topilmadi', ru: 'Подходящие сотрудники не найдены', zh: '未找到符合条件的员工', vi: 'Không tìm thấy nhân viên phù hợp', ne: 'मिल्दो कर्मचारी भेटिएन' })}
               </p>
               <span style={{ fontSize: '11px', color: 'var(--text-secondary)', opacity: 0.8 }}>
-                上のフォームからMichi IDまたは手動で従業員を追加してください
+                {tx({
+                  ja: '上のフォームからMichi IDまたは手動で従業員を追加してください',
+                  en: 'Add employees using the form above, by Michi ID or manually',
+                  uz: "Yuqoridagi forma orqali xodimlarni Michi ID bilan yoki qo'lda qo'shing",
+                  ru: 'Добавьте сотрудников через форму выше — по Michi ID или вручную',
+                  zh: '请通过上方表单，使用 Michi ID 或手动添加员工',
+                  vi: 'Thêm nhân viên bằng biểu mẫu phía trên, qua Michi ID hoặc thủ công',
+                  ne: 'माथिको फारमबाट Michi ID वा म्यानुअल रूपमा कर्मचारी थप्नुहोस्'
+                })}
               </span>
             </div>
           ) : (
@@ -326,11 +338,11 @@ export default function EmployeesPage(ctx) {
                         {emp.verified ? (
                           <span style={{ fontSize: '9.5px', background: 'rgba(48, 209, 88, 0.12)', color: '#30D158', border: '1px solid rgba(48, 209, 88, 0.3)', padding: '1px 5px', borderRadius: '7px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
                             <CheckCircle2 size={9} color="#30D158" />
-                            <span>確認済み</span>
+                            <span>{verifiedLabel}</span>
                           </span>
                         ) : (
                           <span style={{ fontSize: '9.5px', background: 'rgba(255, 159, 10, 0.12)', color: '#FF9F0A', border: '1px solid rgba(255, 159, 10, 0.3)', padding: '1px 5px', borderRadius: '7px', fontWeight: 'bold' }}>
-                            ⏳ 承認待ち
+                            ⏳ {pendingLabel}
                           </span>
                         )}
                       </h4>

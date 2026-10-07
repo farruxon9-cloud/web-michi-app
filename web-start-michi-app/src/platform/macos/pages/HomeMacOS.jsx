@@ -4,6 +4,7 @@ import { Briefcase, GraduationCap, Wrench, ChevronRight, User, ArrowRight, Gift,
 import { playHapticClick } from '../../../utils/haptics';
 import { MACOS_CONFIG } from '../macosBridge';
 import './HomeMacOS.css';
+import { pickText } from '../../../utils/localize';
 
 const formatTime = (secs) => {
   if (isNaN(secs)) return '0:00';
@@ -86,8 +87,8 @@ export default function HomeMacOS({ setActiveTab, profileData, musicPlayer, isVo
   const currentLang = i18n.language || 'uz';
   const displayRole = userRole || profileData?.role || 'driver';
   const roleNameDisplay = displayRole === 'company' 
-    ? (currentLang === 'uz' ? 'Ish Beruvchi (B2B)' : currentLang === 'en' ? 'Employer (B2B)' : '企業・求人者')
-    : (currentLang === 'uz' ? 'Haydovchi' : currentLang === 'en' ? 'Driver' : 'ドライバー');
+    ? pickText(currentLang, { ja: '企業・求人者', uz: 'Ish Beruvchi (B2B)', en: 'Employer (B2B)', ru: 'Работодатель (B2B)', zh: '企业・招聘方 (B2B)', vi: 'Nhà tuyển dụng (B2B)', ne: 'रोजगारदाता (B2B)' })
+    : pickText(currentLang, { ja: 'ドライバー', uz: 'Haydovchi', en: 'Driver', ru: 'Водитель', zh: '司机', vi: 'Tài xế', ne: 'चालक' });
 
   return (
     <div className="macos-home-container fade-in hide-scrollbar">
