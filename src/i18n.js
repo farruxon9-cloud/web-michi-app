@@ -2,9 +2,19 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import resources from './locales';
 
+// ?lang=ja|uz|en (hreflang havolalari uchun) — faqat shu tashrif uchun, saqlangan tanlovni o'zgartirmaydi
+const urlLang = (() => {
+  try {
+    const l = new URLSearchParams(window.location.search).get('lang');
+    return l && Object.prototype.hasOwnProperty.call(resources, l) ? l : null;
+  } catch {
+    return null;
+  }
+})();
+
 i18n.use(initReactI18next).init({
   resources,
-  lng: localStorage.getItem('michi_lang') || 'ja',
+  lng: urlLang || localStorage.getItem('michi_lang') || 'ja',
   fallbackLng: 'en',
   interpolation: { escapeValue: false }
 });

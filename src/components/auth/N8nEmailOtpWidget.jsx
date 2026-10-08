@@ -6,11 +6,13 @@ import { sendEmailOtpViaN8n, verifyEmailOtpCodeViaN8n } from '../../services/n8n
 export default function N8nEmailOtpWidget({
   email,
   isEmailVerified,
-  setIsEmailVerified
+  setIsEmailVerified,
+  onVerified
 }) {
   const { t } = useTranslation();
   const [otpCodeInput, setOtpCodeInput] = useState('');
   const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const [otpErrorMsg, setOtpErrorMsg] = useState('');
@@ -27,6 +29,31 @@ export default function N8nEmailOtpWidget({
     return () => clearInterval(timer);
   }, [otpCooldown]);
 
+  /** Translated message for a server-side OTP error (falls back to the server text). */
+  const otpErrorText = (res) => {
+    switch (res.messageKey) {
+      case 'invalidOtpCode':
+        return typeof res.remainingAttempts === 'number'
+          ? t('invalidCodeWithRemaining', '認証コードが正しくありません。残り試行回数: {{count}}回', { count: res.remainingAttempts })
+          : (res.error || t('invalidCodeWithRemaining', { count: 0 }));
+      case 'otpExpired':
+        return t('otpExpired', '認証コードの期限が切れています。再送信してください。');
+      case 'otpMaxAttemptsExceeded':
+        return t('otpMaxAttemptsExceeded', '試行回数が上限に達しました。新しいコードをリクエストしてください。');
+      case 'enter6DigitCode':
+        return t('enter6DigitCode', '6桁の確認コードを入力してください。');
+      case 'validEmailRequired':
+        return t('validEmailRequired', '有効なメールアドレスを入力してください。');
+      case 'otpSendLimit':
+      case 'otpCooldown':
+        return t(res.messageKey, res.error || '');
+      case 'otpSendFailed':
+        return t('otpSendFailed', 'コードを送信できませんでした。');
+      default:
+        return res.error || t('otpSendFailed', 'コードを送信できませんでした。');
+    }
+  };
+
   const handleSendInlineOtp = async () => {
     if (!email || !email.includes('@')) {
       setOtpErrorMsg(t('validEmailRequired', '有効なメールアドレスを入力してください。'));
@@ -41,19 +68,22 @@ export default function N8nEmailOtpWidget({
       setOtpSending(false);
       if (res.success) {
         setOtpSent(true);
+        setOtpCodeInput('');
         setSessionId(res.sessionId || null);
         setOtpCooldown(res.cooldownSeconds || 60);
         setOtpSuccessMsg(t('otpSentSuccess', '確認コードをメールに送信しました！'));
       } else {
-        setOtpErrorMsg(t(res.messageKey || 'invalidEmail', 'メールアドレスを確認してください'));
+        if (res.cooldownSeconds) setOtpCooldown(res.cooldownSeconds);
+        setOtpErrorMsg(otpErrorText(res));
       }
     } catch (err) {
       setOtpSending(false);
-      setOtpErrorMsg(t('validEmailRequired', '有効なメールアドレスを入力してください。'));
+      setOtpErrorMsg(t('otpSendFailed', 'コードを送信できませんでした。'));
     }
   };
 
   const handleVerifyInlineOtp = async (overrideCode) => {
+    if (otpVerifying || isEmailVerified) return;
     const targetCode = typeof overrideCode === 'string' ? overrideCode : otpCodeInput;
     if (!targetCode || targetCode.length !== 6) {
       setOtpErrorMsg(t('enter6DigitCode', '6桁の確認コードを入力してください。'));
@@ -61,20 +91,16 @@ export default function N8nEmailOtpWidget({
     }
     setOtpErrorMsg('');
     setOtpSuccessMsg('');
-    
+    setOtpVerifying(true);
     const res = await verifyEmailOtpCodeViaN8n(email, targetCode, sessionId);
+    setOtpVerifying(false);
     if (res.success) {
+      setOtpCodeInput('');
+      if (onVerified) onVerified(res.verificationToken || null);
       setIsEmailVerified(true);
       setOtpSuccessMsg(t('emailVerifiedSuccess', '✅ メールアドレスが正常に認証されました！'));
     } else {
-      const remaining = res.remainingAttempts ?? 3;
-      if (res.messageKey === 'otpExpired') {
-        setOtpErrorMsg(t('otpExpired', '認証コードの期限が切れています。再送信してください。'));
-      } else if (res.messageKey === 'otpMaxAttemptsExceeded') {
-        setOtpErrorMsg(t('otpMaxAttemptsExceeded', '試行回数が上限に達しました。新しいコードをリクエストしてください。'));
-      } else {
-        setOtpErrorMsg(t('invalidCodeWithRemaining', '認証コードが正しくありません。残り試行回数: {{count}}回', { count: remaining }));
-      }
+      setOtpErrorMsg(otpErrorText(res));
     }
   };
 
@@ -117,7 +143,11 @@ export default function N8nEmailOtpWidget({
             <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center', width: '100%' }}>
               <input
                 type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                name="one-time-code"
                 maxLength={6}
+                disabled={otpVerifying}
                 placeholder={t('otpInputPlaceholder', '6桁の認証コード')}
                 value={otpCodeInput}
                 onChange={(e) => {
@@ -153,7 +183,7 @@ export default function N8nEmailOtpWidget({
               <button
                 type="button"
                 onClick={() => handleVerifyInlineOtp()}
-                disabled={otpCodeInput.length !== 6}
+                disabled={otpCodeInput.length !== 6 || otpVerifying}
                 style={{
                   height: '44px',
                   minWidth: '105px',

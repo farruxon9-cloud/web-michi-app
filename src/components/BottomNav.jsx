@@ -42,6 +42,7 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
     document.removeEventListener('mouseup', handlePointerUp);
     document.removeEventListener('touchmove', handlePointerMove);
     document.removeEventListener('touchend', handlePointerUp);
+    document.removeEventListener('touchcancel', handlePointerUp);
   };
 
   const handlePointerDown = (e) => {
@@ -61,6 +62,8 @@ export default function BottomNav({ activeTab, setActiveTab, unreadCount = 0, us
       if (e.type.startsWith('touch')) {
         document.addEventListener('touchmove', handlePointerMove, { passive: false });
         document.addEventListener('touchend', handlePointerUp);
+        // iOS sends touchcancel instead of touchend when the system takes the gesture
+        document.addEventListener('touchcancel', handlePointerUp);
       } else {
         document.addEventListener('mousemove', handlePointerMove);
         document.addEventListener('mouseup', handlePointerUp);

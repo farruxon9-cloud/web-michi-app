@@ -19,6 +19,8 @@ import Licenses from './pages/Licenses';
 import AiMonitor from './pages/AiMonitor';
 import Deletions from './pages/Deletions';
 import Templates from './pages/Templates';
+import Campaigns from './pages/Campaigns';
+import Messages from './pages/Messages';
 
 /** Pages, the permission that unlocks each, and its icon. Order = sidebar order. */
 const PAGES = [
@@ -36,6 +38,8 @@ const PAGES = [
   ['notifications', 'notify.broadcast', '📣', Notifications],
   ['content', 'content.edit', '🎛', Content],
   ['templates', 'content.edit', '✉', Templates],
+  ['campaigns', 'outreach.read', '📨', Campaigns],
+  ['messages', 'outreach.read', '📬', Messages],
   ['preview', 'dashboard.view', '📱', Preview],
   ['deletions', 'users.read', '🗑', Deletions],
   ['audit', 'audit.read', '🧾', Audit],

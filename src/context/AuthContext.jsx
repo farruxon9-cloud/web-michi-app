@@ -17,36 +17,23 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => getStoredUser());
   const [userRole, setUserRoleState] = useState(() => {
     const stored = getStoredUser();
+    // Mehmon rejimi endi saqlanmaydi: hisobsiz foydalanuvchi har doim rol tanlash → login/ro'yxatdan o'tishga tushadi.
+    try { localStorage.removeItem('michi_guest_session'); } catch {}
     if (stored?.role) return stored.role;
-    try {
-      if (localStorage.getItem('michi_guest_session') === 'true') return 'guest';
-    } catch {}
     return null;
   });
   const [isLoading, setIsLoading] = useState(true);
 
   const setUserRole = useCallback((role) => {
     setUserRoleState(role);
-    try {
-      if (role === 'guest') {
-        localStorage.setItem('michi_guest_session', 'true');
-      } else {
-        localStorage.removeItem('michi_guest_session');
-      }
-    } catch {}
+    try { localStorage.removeItem('michi_guest_session'); } catch {}
   }, []);
 
   const refreshUser = useCallback(async () => {
     const token = getStoredToken();
     if (!token) {
       setUser(null);
-      try {
-        if (localStorage.getItem('michi_guest_session') === 'true') {
-          setUserRoleState('guest');
-        } else {
-          setUserRoleState(null);
-        }
-      } catch {}
+      setUserRoleState(null);
       setIsLoading(false);
       return null;
     }
