@@ -84,6 +84,8 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
 
   // n8n Email OTP Verification Inline State
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  // One-time proof from /verify-otp (memory only, never persisted); /register requires it.
+  const [emailVerificationToken, setEmailVerificationToken] = useState(null);
   const [, setOtpSent] = useState(false);
   const [otpErrorMsg, setOtpErrorMsg] = useState('');
   const [, setOtpSuccessMsg] = useState('');
@@ -276,7 +278,8 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
       email: email.trim().toLowerCase(),
       password: password,
       role: selectedRole || 'driver',
-      profileData: userProfilePayload
+      profileData: userProfilePayload,
+      ...(emailVerificationToken ? { verificationToken: emailVerificationToken } : {})
     };
 
     setIsSubmitting(true);
@@ -291,8 +294,16 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
       const returnedProfile = res.user?.profileData || userProfilePayload;
       onSelectRole(returnedRole, returnedProfile);
     } catch (err) {
-      console.error("Backend Register Error:", err);
+      console.error("Backend Register Error:", err?.message || err);
       setIsSubmitting(false);
+      if (err?.code === 'EMAIL_VERIFICATION_INVALID' || err?.code === 'EMAIL_NOT_VERIFIED') {
+        // Proof expired or already used: verify the email again with a new code.
+        setIsEmailVerified(false);
+        setEmailVerificationToken(null);
+        setOtpSent(false);
+        setOtpErrorMsg(t('emailVerificationExpired', "Email tasdig'i muddati tugadi. Emailni qayta tasdiqlang."));
+        return;
+      }
       setOtpErrorMsg(err.message || t('registerErrorMsg', "Ro'yxatdan o'tishda xatolik yuz berdi. Iltimos qaytadan urinib ko'ring."));
     }
   };
@@ -1458,6 +1469,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
                     onChange={(e) => {
                       setEmail(e.target.value);
                       setIsEmailVerified(false);
+                      setEmailVerificationToken(null);
                       setOtpSent(false);
                       setOtpErrorMsg('');
                       setOtpSuccessMsg('');
@@ -1474,6 +1486,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
                 email={email} 
                 isEmailVerified={isEmailVerified} 
                 setIsEmailVerified={setIsEmailVerified} 
+                onVerified={setEmailVerificationToken}
               />
 
               <div className="premium-input-group" style={{ marginBottom: '16px' }}>
@@ -1592,7 +1605,7 @@ export default function RoleSelect({ onSelectRole, onGuest, initialStep = 'role'
         </div>
       </div>
 
-      <button className="guest-btn" onClick={() => onGuest()}>
+      <button className="guest-btn" onClick={() => onGuest && onGuest()}>
         {t("guestBtn", "Mehmon sifatida kirish")}
       </button>
     </div>

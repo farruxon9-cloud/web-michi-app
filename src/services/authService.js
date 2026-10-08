@@ -131,9 +131,12 @@ export const registerUser = async (userData) => {
       body: JSON.stringify(userData)
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'Ro\'yxatdan o\'tishda xatolik yuz berdi');
+      const err = new Error(data.message || data.error || 'Ro\'yxatdan o\'tishda xatolik yuz berdi');
+      err.code = data.code;
+      err.status = response.status;
+      throw err;
     }
 
     const accessToken = data.token || data.accessToken;

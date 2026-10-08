@@ -23,6 +23,47 @@ function ConfiguredBadge({ on }) {
   return on ? <Badge kind="ok">✓ {t('configured')}</Badge> : <Badge kind="warn">{t('notConfigured')}</Badge>;
 }
 
+/** Outbound email via n8n (only for admins with outreach.read). */
+function OutboundRow({ canSend }) {
+  const { t } = useT();
+  const toast = useToast();
+  const { data, reload } = useApi('/outreach/status');
+  const [busy, setBusy] = useState(false);
+  const ready = Boolean(data && data.configured && data.configured.outbound && data.configured.secret);
+  const sendTest = async () => {
+    setBusy(true);
+    try {
+      await api('POST', '/outreach/test', {});
+      toast(t('outboundTestSent'));
+    } catch (e) {
+      toast(isMissing(e) ? t('notAvailable') : errText(e, t), 'bad');
+    }
+    setBusy(false);
+    reload();
+  };
+  return (
+    <div className="flag-row">
+      <div>
+        <strong>{t('outbound')}</strong>
+        <div className="small muted">{t('outboundSub')}</div>
+        {data && (
+          <div className="small muted">
+            {t('outboundToday')}: {data.today ? `${data.today.sent} / ${data.today.cap}` : '—'} · {t('outboundSuppressed')}: {data.suppressions ?? 0} · {t('outboundLastEvent')}: {data.lastEventAt ? fmtDate(data.lastEventAt) : '—'}
+          </div>
+        )}
+      </div>
+      <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <ConfiguredBadge on={data ? ready : undefined} />
+        {canSend && (
+          <button id="outbound-test" type="button" className="btn btn-sm" disabled={busy || !ready} onClick={sendTest}>
+            {busy && <span className="spinner" style={{ width: 12, height: 12 }} aria-hidden="true" />}✉ {t('outboundTest')}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function System({ admin }) {
   const { t } = useT();
   const toast = useToast();
@@ -93,6 +134,7 @@ export function System({ admin }) {
                 <div><strong>{t('mailer')}</strong><div className="small muted">{t('mailerSub')}</div></div>
                 <ConfiguredBadge on={data.mailer ? Boolean(data.mailer.configured) : undefined} />
               </div>
+              {admin.perms.includes('outreach.read') && <OutboundRow canSend={admin.perms.includes('outreach.send')} />}
             </section>
             <section className="card">
               <h2>{t('backups')}</h2>

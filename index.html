@@ -15,12 +15,14 @@
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#5E5CE6" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1C1C1E" />
     <link rel="canonical" href="https://web.michi.jp.net/" />
+    <meta name="google-site-verification" content="H6IyYSbgw-n0fi5q9j-EGJVnUx-Aaa0sjgLPLD7BJxA" />
 
-    <!-- Favicon & PWA Icons -->
-    <link rel="icon" href="/favicon.ico?v=4" sizes="any" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=4" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4" />
-    <link rel="mask-icon" href="/masked-icon.svg?v=4" color="#5E5CE6" />
+    <!-- Favicon & PWA Icons (yangi fayl nomlari: brauzer keshidagi eski qalqon belgisini chetlab o'tadi) -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/michi-favicon-32.png?v=5" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/michi-favicon-16.png?v=5" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=5" />
+    <link rel="shortcut icon" href="/michi-favicon.ico?v=5" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=5" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
     <!-- Open Graph / Facebook -->
@@ -51,23 +53,84 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Michi App",
-      "url": "https://web.michi.jp.net/",
-      "logo": "https://web.michi.jp.net/pwa-512x512.png",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "All",
-      "description": "Michi App connects foreign and Japanese drivers with logistics companies and driving academies across Japan.",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "JPY"
-      }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://web.michi.jp.net/#organization",
+          "name": "Michi App",
+          "alternateName": ["Michi", "道", "ミチ", "Michi Japan"],
+          "url": "https://web.michi.jp.net/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://web.michi.jp.net/pwa-512x512.png",
+            "width": 512,
+            "height": 512
+          },
+          "email": "info@michi.jp.net",
+          "areaServed": "JP",
+          "sameAs": ["https://michi.jp.net/"]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://web.michi.jp.net/#website",
+          "name": "Michi App",
+          "alternateName": "Michi",
+          "url": "https://web.michi.jp.net/",
+          "inLanguage": ["ja", "uz", "en"],
+          "publisher": { "@id": "https://web.michi.jp.net/#organization" }
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://web.michi.jp.net/#app",
+          "name": "Michi App",
+          "url": "https://web.michi.jp.net/",
+          "image": "https://web.michi.jp.net/pwa-512x512.png",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "All",
+          "inLanguage": ["ja", "uz", "en"],
+          "description": "Michi App connects foreign and Japanese drivers with logistics companies and driving academies across Japan: truck driver jobs, driving school information and vehicle maintenance booking.",
+          "publisher": { "@id": "https://web.michi.jp.net/#organization" },
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "JPY"
+          }
+        }
+      ]
     }
     </script>
+
+    <!-- Pre-render shell: same look as the in-app Splash; React replaces it on mount.
+         Gives search engines real text (h1 + description) before JavaScript runs. -->
+    <style>
+      .michi-shell { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; background: #e5eafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      .michi-shell__logo { width: 80px; height: 80px; border-radius: 24px; background: linear-gradient(135deg, #6366F1, #4338CA); color: #fff; font-size: 48px; font-weight: 600; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); user-select: none; }
+      .michi-shell__loader { width: 40px; height: 40px; border: 4px solid rgba(94, 92, 230, 0.2); border-top-color: #5E5CE6; border-radius: 50%; animation: michi-shell-spin 1s linear infinite; }
+      .michi-shell__text { position: absolute; left: 16px; right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); text-align: center; color: rgba(60, 60, 67, 0.6); font-size: 11px; line-height: 1.5; }
+      .michi-shell__text h1 { margin: 0 0 2px; font-size: 12px; font-weight: 600; }
+      .michi-shell__text p { margin: 0; }
+      .michi-shell__text a { color: inherit; }
+      @keyframes michi-shell-spin { to { transform: rotate(360deg); } }
+      @media (prefers-color-scheme: dark) {
+        .michi-shell { background: #0B0C10; }
+        .michi-shell__text { color: rgba(235, 235, 245, 0.45); }
+      }
+      @media (prefers-reduced-motion: reduce) { .michi-shell__loader { animation: none; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main class="michi-shell">
+        <div class="michi-shell__logo" aria-hidden="true">道</div>
+        <div class="michi-shell__loader" role="progressbar" aria-label="Loading"></div>
+        <div class="michi-shell__text">
+          <h1>Michi App — 日本のトラックドライバー求人・自動車教習所プラットフォーム</h1>
+          <p lang="ja">日本全国のトラックドライバー求人、自動車教習所情報、車両整備予約。外国人・日本人ドライバーと運送会社をつなぎます。</p>
+          <p lang="uz">Yaponiyada haydovchilar uchun ish, avtomaktablar va servis — bitta ilovada.</p>
+          <p lang="en">Driver jobs, driving schools and vehicle service across Japan. <a href="https://michi.jp.net/">michi.jp.net</a></p>
+        </div>
+      </main>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

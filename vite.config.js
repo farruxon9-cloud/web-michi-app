@@ -34,7 +34,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'michi-favicon.ico', 'michi-favicon-16.png', 'michi-favicon-32.png'],
       manifest: {
         name: 'Michi App',
         short_name: 'Michi',

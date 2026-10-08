@@ -1,13 +1,16 @@
 /**
- * n8nEmailOtpService.js — Secure n8n Webhook Email OTP Integration Service via Proxy
- * 
- * Production Security Rules:
- * 1. Requests are sent over HTTPS to https://api.michi.jp.net/api/auth/send-otp to prevent CORS/Mixed Content.
- * 2. OTP dispatch via Proxy endpoint.
+ * n8nEmailOtpService.js — email verification code (OTP) via the Michi gateway.
+ *
+ * Security model (do not weaken):
+ * 1. The 6-digit code is generated, stored (hashed) and checked ONLY on the server
+ *    (POST /api/auth/send-otp → n8n → Brevo → user's mailbox). The browser never creates,
+ *    receives, stores or logs a code — the only copy on this side is what the user types.
+ * 2. /api/auth/verify-otp returns a one-time `verificationToken` (bound to that email, 30 min).
+ *    /api/auth/register needs it, so registration cannot be faked from devtools.
+ * 3. Attempt limits, cooldowns and expiry are enforced by the server; this file only shows them.
  */
 
 import { API_ENDPOINTS } from '../config/api';
-import { resetAttempts, recordFailedAttempt, checkLockout } from './authSecurityService';
 
 export const N8N_WEBHOOK_URL = API_ENDPOINTS.SEND_OTP;
 
@@ -22,79 +25,83 @@ export function isValidEmail(email) {
   return emailRegex.test(email.trim());
 }
 
+/** Server error code → i18n key used by the UI. */
+const MESSAGE_KEYS = {
+  OTP_COOLDOWN: 'otpCooldown',
+  OTP_SEND_LIMIT: 'otpSendLimit',
+  OTP_GLOBAL_LIMIT: 'otpSendLimit',
+  OTP_DELIVERY_FAILED: 'otpSendFailed',
+  OTP_EXPIRED: 'otpExpired',
+  OTP_LOCKED: 'otpMaxAttemptsExceeded',
+  OTP_INVALID: 'invalidOtpCode',
+  OTP_FORMAT: 'enter6DigitCode',
+};
+
+const postJson = async (url, body) => {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    cache: 'no-store',
+    credentials: 'omit',
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({}));
+  return { response, data };
+};
+
 /**
- * Sends Email OTP via secure HTTPS Proxy (https://api.michi.jp.net/api/auth/send-otp)
- * 
- * @param {string} email 
- * @param {string} [otpCode] 
- * @returns {Promise<{ success: boolean, message?: string, error?: string, sessionId?: string, messageKey?: string }>}
+ * Ask the server to email a new verification code. Only the email address is sent.
+ *
+ * @param {string} email
+ * @returns {Promise<{ success: boolean, message?: string, error?: string, sessionId?: string, messageKey?: string,
+ *   cooldownSeconds?: number, expiresInSec?: number }>}
  */
-export const sendEmailOtpViaN8n = async (email, otpCode) => {
-  if (!email || typeof email !== 'string') {
-    return { success: false, error: 'Email manzili kiritilishi shart', messageKey: 'validEmailRequired' };
+export const sendEmailOtpViaN8n = async (email) => {
+  if (!isValidEmail(email)) {
+    return { success: false, error: 'Email manzili noto‘g‘ri', messageKey: 'validEmailRequired' };
   }
-
   const cleanEmail = email.trim().toLowerCase();
-
-  const lockout = checkLockout(cleanEmail);
-  if (lockout.isLocked) {
-    return {
-      success: false,
-      error: `Urinishlar soni oshib ketdi. ${lockout.remainingMins || 15} daqiqadan so'ng qayta urinib ko'ring.`,
-      messageKey: 'tooManyAttemptsLocked'
-    };
-  }
-
-  const finalCode = otpCode || Math.floor(100000 + Math.random() * 900000).toString();
-  
   try {
-    const response = await fetch(API_ENDPOINTS.SEND_OTP, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        email: cleanEmail,
-        code: finalCode
-      })
-    });
-
-    const data = await response.json().catch(() => ({}));
-
+    const { response, data } = await postJson(API_ENDPOINTS.SEND_OTP, { email: cleanEmail });
     if (!response.ok) {
-      throw new Error(data.error || data.message || 'Tasdiqlash kodini yuborishda xatolik yuz berdi');
+      return {
+        success: false,
+        error: data.error || data.message || 'Tasdiqlash kodini yuborishda xatolik yuz berdi',
+        messageKey: MESSAGE_KEYS[data.code] || 'otpSendFailed',
+        cooldownSeconds: Number(data.retryAfterSec) || 0,
+      };
     }
-
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: data.message || 'Tasdiqlash kodi pochtangizga yuborildi',
-      sessionId: `sess_${Date.now()}`,
+      sessionId: data.session_id || null,
+      expiresInSec: Number(data.expiresInSec) || 600,
+      cooldownSeconds: Number(data.resendAfterSec) || 60,
       messageKey: 'otpSentSuccess'
     };
   } catch (error) {
-    console.error('n8n OTP Proxy Service Error:', error);
-    return { 
-      success: false, 
-      error: error.message,
+    console.error('[otp] send failed:', error?.message || 'network error');
+    return {
+      success: false,
+      error: "Server bilan bog'lanishda xatolik. Qaytadan urinib ko'ring.",
       messageKey: 'otpSendFailed'
     };
   }
 };
 
 /**
- * Verifies user-entered 6-digit OTP code against Proxy endpoint (POST /api/auth/verify-otp).
- * 
- * @param {string} email 
- * @param {string} inputCode 
+ * Verifies the 6-digit code the user typed (POST /api/auth/verify-otp). The server decides.
+ *
+ * @param {string} email
+ * @param {string} inputCode
  * @param {string} [sessionId]
- * @returns {Promise<{ success: boolean, messageKey: string, token?: string, error?: string }>}
+ * @returns {Promise<{ success: boolean, messageKey: string, verificationToken?: string, error?: string, remainingAttempts?: number }>}
  */
 export async function verifyEmailOtpCodeViaN8n(email, inputCode, sessionId = null) {
   const cleanEmail = email ? email.trim().toLowerCase() : '';
-  const cleanCode = inputCode ? inputCode.trim() : '';
+  const cleanCode = inputCode ? String(inputCode).replace(/\D/g, '') : '';
 
-  if (!cleanCode || cleanCode.length !== 6) {
+  if (cleanCode.length !== 6) {
     return {
       success: false,
       error: '6-xonali kodni to\'liq kiriting',
@@ -102,52 +109,32 @@ export async function verifyEmailOtpCodeViaN8n(email, inputCode, sessionId = nul
     };
   }
 
-  const lockout = checkLockout(cleanEmail);
-  if (lockout.isLocked) {
-    return {
-      success: false,
-      error: `Juda ko'p noto'g'ri urinish qilindi. ${lockout.remainingMins || 15} daqiqadan so'ng qayta urinib ko'ring.`,
-      messageKey: 'tooManyAttemptsLocked'
-    };
-  }
-
   try {
-    const response = await fetch(API_ENDPOINTS.VERIFY_OTP, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        email: cleanEmail,
-        code: cleanCode,
-        session_id: sessionId
-      })
+    const { response, data } = await postJson(API_ENDPOINTS.VERIFY_OTP, {
+      email: cleanEmail,
+      code: cleanCode,
+      ...(sessionId ? { session_id: sessionId } : {}),
     });
 
-    const data = await response.json().catch(() => ({}));
-
-    if (response.ok && (data.success === true || data.verified === true)) {
-      resetAttempts(cleanEmail);
+    if (response.ok && data.verified === true) {
       return {
         success: true,
         messageKey: 'emailVerifiedSuccess',
-        token: data.token || data.accessToken || null
+        verificationToken: data.verificationToken || null,
       };
     }
 
-    recordFailedAttempt(cleanEmail);
     return {
       success: false,
-      error: data.error || data.message || "Kiritilgan 6-xonali OTP kod noto'g'ri yoki muddati o'tgan!",
-      messageKey: 'invalidOtpCode'
+      error: data.error || data.message || "Kiritilgan 6-xonali kod noto'g'ri yoki muddati o'tgan!",
+      messageKey: MESSAGE_KEYS[data.code] || 'invalidOtpCode',
+      remainingAttempts: typeof data.attemptsLeft === 'number' ? data.attemptsLeft : undefined,
     };
   } catch (e) {
-    console.error(`[n8n Email OTP Proxy] Verification Error:`, e?.message || e);
-    recordFailedAttempt(cleanEmail);
+    console.error('[otp] verify failed:', e?.message || 'network error');
     return {
       success: false,
-      error: e.message || "Server bilan bog'lanishda xatolik. Qaytadan urinib ko'ring.",
+      error: "Server bilan bog'lanishda xatolik. Qaytadan urinib ko'ring.",
       messageKey: 'otpVerificationFailed'
     };
   }

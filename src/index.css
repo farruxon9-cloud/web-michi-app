@@ -433,6 +433,26 @@ button:active {
 
 html, body {
   overflow-x: hidden;
+  /* iOS: never rubber-band the document itself. Otherwise, after an inner list
+     hits its end, the next swipe "latches" onto the body bounce and scrolling
+     back up feels stuck. Only the app's own scroll containers scroll. */
+  overscroll-behavior: none;
+}
+
+/* Phones/tablets: the document never scrolls (#root is 100dvh), so lock it.
+   Layout, paddings and gaps are unchanged. */
+@media (max-width: 820px) {
+  html, body {
+    overflow: hidden;
+  }
+}
+
+/* App scroll containers: keep scroll chaining inside the list (no hand-off
+   to the parent / body), so up and down swipes feel the same. */
+.main-content,
+.profile-container,
+.feed-container {
+  overscroll-behavior-y: contain;
 }
 
 /* iOS Safari: inputs < 16px trigger auto-zoom, which breaks layout parity */
