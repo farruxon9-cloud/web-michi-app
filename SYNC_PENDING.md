@@ -12,3 +12,4 @@ Auto-written by scripts/sync_web_start.mjs. The mirror diverged here, so the pat
 - [ ] 2026-10-08 10:40 `src/services/authService.js`
 - [ ] 2026-10-08 10:40 `src/services/n8nEmailOtpService.js`
 - [ ] 2026-10-08 10:40 `src/services/n8nEmailOtpService.test.js`
+- [ ] 2026-10-09 04:58 `public/logo.png`
